@@ -1,5 +1,4 @@
-// A library for parsing HTTP request bodies and queries.
-
+/// A library for parsing HTTP request bodies and queries.
 library body_parser;
 
 import 'dart:async';

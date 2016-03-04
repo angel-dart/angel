@@ -33,15 +33,66 @@ main() {
       god = null;
     });
 
-    group('JSON', () {
-      test('Post Simple JSON', () async {
-        var response = await client.post(url, body: {
-          'hello': 'world'
-        });
+    group('query string', () {
+      test('GET Simple', () async {
+        print('GET $url/?hello=world');
+        var response = await client.get('$url/?hello=world');
+        print('Response: ${response.body}');
+        expect(response.body, equals('{"body":{},"query":{"hello":"world"}}'));
+      });
+
+      test('GET Complex', () async {
+        var postData = 'hello=world&nums[]=1&nums[]=2.0&nums[]=${3 -
+            1}&map.foo.bar=baz';
+        var response = await client.get('$url/?$postData');
+        var body = god.deserialize(response.body)['body'];
+        expect(body['hello'], equals('world'));
+        expect(body['nums'][2], equals(2));
+        expect(body['map'] is Map, equals(true));
+        expect(body['map']['foo'], equals({'bar': 'baz'}));
+      }, skip: 'Array support via query string is pending.');
+    });
+
+    group('urlencoded', () {
+      Map<String, String> headers = {
+        HttpHeaders.CONTENT_TYPE: 'application/x-www-form-urlencoded'
+      };
+      test('POST Simple', () async {
+        print('Body: hello=world');
+        var response = await client.post(
+            url, headers: headers, body: 'hello=world');
+        print('Response: ${response.body}');
         expect(response.body, equals('{"body":{"hello":"world"},"query":{}}'));
       });
 
-      test('Post Complex JSON', () async {
+      test('Post Complex', () async {
+        var postData = 'hello=world&nums[]=1&nums[]=2.0&nums[]=${3 -
+            1}&map.foo.bar=baz';
+        var response = await client.post(url, headers: headers, body: postData);
+        var body = god.deserialize(response.body)['body'];
+        expect(body['hello'], equals('world'));
+        expect(body['nums'][2], equals(2));
+        expect(body['map'] is Map, equals(true));
+        expect(body['map']['foo'], equals({'bar': 'baz'}));
+      }, skip: 'Array support via urlencoded is pending.');
+    });
+
+    group('JSON', () {
+      Map<String, String> headers = {
+        HttpHeaders.CONTENT_TYPE: ContentType.JSON.toString()
+      };
+      test('Post Simple', () async {
+        var postData = god.serialize({
+          'hello': 'world'
+        });
+        print('Body: $postData');
+        var response = await client.post(
+            url, headers: headers, body: postData);
+        print('Response: ${response.body}');
+        expect(response.body, equals('{"body":{"hello":"world"},"query":{}}'));
+      });
+
+      test('Post Complex', () async {
         var postData = god.serialize({
           'hello': 'world',
           'nums': [1, 2.0, 3 - 1],
@@ -51,9 +102,14 @@ main() {
             }
           }
         });
-        var response = await client.post(url, body: postData);
+        print('Body: $postData');
+        var response = await client.post(url, headers: headers, body: postData);
+        print('Response: ${response.body}');
         var body = god.deserialize(response.body)['body'];
         expect(body['hello'], equals('world'));
+        expect(body['nums'][2], equals(2));
+        expect(body['map'] is Map, equals(true));
+        expect(body['map']['foo'], equals({'bar': 'baz'}));
       });
     });
   });
