@@ -11,7 +11,7 @@ Parse request bodies and query strings in Dart.
 *   [About](#about)
 *   [Installation](#installation)
 *   [Usage](#usage)
-*   [Thanks](#thank-you-for-using-body_parser)
+*   [Thanks](#thank-you-for-using-body-parser)
 
 # About
 
