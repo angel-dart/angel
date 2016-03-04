@@ -49,11 +49,12 @@ main() async {
 }
 ```
 
+You can also use `buildMapFromUri(Map, String)` to populate a map from a URL encoded string.
+
 This can easily be used with a library like [JSON God](https://github.com/thosakwe/json_god)
 to build structured JSON/REST APIs. Add validation and you've got an instant backend.
 
 ```dart
-
 MyClass create(HttpRequest request) async {
     God god = new God();
     return god.deserialize(await parseBody(request).body, MyClass);

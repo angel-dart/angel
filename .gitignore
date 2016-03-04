@@ -49,8 +49,9 @@ atlassian-ide-plugin.xml
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
+
 ### Dart template
-# Donâ€™t commit the following directories created by pub.
+# Don't commit the following directories created by pub.
 .buildlog
 .pub/
 build/
@@ -65,4 +66,6 @@ packages
 
 # Include when developing application packages.
 pubspec.lock
+
+doc/api
 

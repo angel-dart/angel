@@ -44,6 +44,8 @@ Future<BodyParseResult> parseBody(HttpRequest request) async {
 }
 
 /// Parses a URI-encoded string into real data! **Wow!**
+///
+/// Whichever map you provide will be automatically populated from the urlencoded body string you provide.
 buildMapFromUri(Map map, String body) {
   God god = new God();
   for (String keyValuePair in body.split('&')) {
