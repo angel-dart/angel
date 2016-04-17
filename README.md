@@ -1,9 +1,9 @@
 # Body Parser
-![version 1.0.0-dev](https://img.shields.io/badge/version-1.0.0--dev-red.svg)
+![version 1.0.0-beta](https://img.shields.io/badge/version-1.0.0--beta-blue.svg)
 
 **NOT YET PRODUCTION READY**
 
-Parse request bodies and query strings in Dart.
+Parse request bodies and query strings in Dart. No external dependencies required.
 
 ### Contents
 

@@ -4,7 +4,6 @@ library body_parser;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:json_god/json_god.dart';
 
 /// A representation of data from an incoming request.
 class BodyParseResult {
@@ -47,22 +46,51 @@ Future<BodyParseResult> parseBody(HttpRequest request) async {
 ///
 /// Whichever map you provide will be automatically populated from the urlencoded body string you provide.
 buildMapFromUri(Map map, String body) {
-  God god = new God();
+  RegExp parseArray = new RegExp(r'^(.+)\[\]$');
+
   for (String keyValuePair in body.split('&')) {
     if (keyValuePair.contains('=')) {
       List<String> split = keyValuePair.split('=');
       String key = Uri.decodeQueryComponent(split[0]);
       String value = Uri.decodeQueryComponent(split[1]);
-      num numValue = num.parse(value, (_) => double.NAN);
-      if (!numValue.isNaN)
-        map[key] = numValue;
-      else if (value.startsWith('[') && value.endsWith(']'))
-        map[key] = god.deserialize(value);
-      else if (value.startsWith('{') && value.endsWith('}'))
-        map[key] = god.deserialize(value);
-      else if (value.trim().toLowerCase() == 'null')
-        map[key] = null;
-      else map[key] = value;
+
+      if (parseArray.hasMatch(key)) {
+        Match queryMatch = parseArray.firstMatch(key);
+        key = queryMatch.group(1);
+        if (!(map[key] is List)) {
+          map[key] = [];
+        }
+
+        map[key].add(getValue(value));
+      } else if(key.contains('.')) {
+        // i.e. map.foo.bar => [map, foo, bar]
+        List<String> keys = key.split('.');
+
+        Map targetMap = map[keys[0]] ?? {};
+        map[keys[0]] = targetMap;
+        for (int i = 1; i < keys.length; i++) {
+          if (i < keys.length - 1) {
+            targetMap[keys[i]] = targetMap[keys[i]] ?? {};
+            targetMap = targetMap[keys[i]];
+          } else {
+            targetMap[keys[i]] = getValue(value);
+          }
+        }
+      }
+      else map[key] = getValue(value);
     } else map[Uri.decodeQueryComponent(keyValuePair)] = true;
   }
+}
+
+getValue(String value) {
+  num numValue = num.parse(value, (_) => double.NAN);
+  if (!numValue.isNaN)
+    return numValue;
+  else if (value.startsWith('[') && value.endsWith(']'))
+    return JSON.decode(value);
+  else if (value.startsWith('{') && value.endsWith('}'))
+    return JSON.decode(value);
+  else if (value.trim().toLowerCase() == 'null')
+    return null;
+  else return value;
 }

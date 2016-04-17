@@ -42,15 +42,17 @@ main() {
       });
 
       test('GET Complex', () async {
-        var postData = 'hello=world&nums[]=1&nums[]=2.0&nums[]=${3 -
+        var postData = 'hello=world&nums%5B%5D=1&nums%5B%5D=2.0&nums%5B%5D=${3 -
             1}&map.foo.bar=baz';
+        print('Body: $postData');
         var response = await client.get('$url/?$postData');
-        var body = god.deserialize(response.body)['body'];
-        expect(body['hello'], equals('world'));
-        expect(body['nums'][2], equals(2));
-        expect(body['map'] is Map, equals(true));
-        expect(body['map']['foo'], equals({'bar': 'baz'}));
-      }, skip: 'Array support via query string is pending.');
+        print('Response: ${response.body}');
+        var query = god.deserialize(response.body)['query'];
+        expect(query['hello'], equals('world'));
+        expect(query['nums'][2], equals(2));
+        expect(query['map'] is Map, equals(true));
+        expect(query['map']['foo'], equals({'bar': 'baz'}));
+      });
     });
 
     group('urlencoded', () {
@@ -66,7 +68,7 @@ main() {
       });
 
       test('Post Complex', () async {
-        var postData = 'hello=world&nums[]=1&nums[]=2.0&nums[]=${3 -
+        var postData = 'hello=world&nums%5B%5D=1&nums%5B%5D=2.0&nums%5B%5D=${3 -
             1}&map.foo.bar=baz';
         var response = await client.post(url, headers: headers, body: postData);
         var body = god.deserialize(response.body)['body'];
@@ -74,7 +76,7 @@ main() {
         expect(body['nums'][2], equals(2));
         expect(body['map'] is Map, equals(true));
         expect(body['map']['foo'], equals({'bar': 'baz'}));
-      }, skip: 'Array support via urlencoded is pending.');
+      });
     });
 
     group('JSON', () {

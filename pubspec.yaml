@@ -1,9 +1,8 @@
 name: body_parser
 author: Tobe O <thosakwe@gmail.com>
-version: 1.0.0-dev
+version: 1.0.0-beta
 description: Parse request bodies and query strings in Dart.
-dependencies:
-  json_god: any
 dev_dependencies:
   http: any
+  json_god: any
   test: any
