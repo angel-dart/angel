@@ -1,5 +1,5 @@
 # Body Parser
-![version 1.0.0-beta](https://img.shields.io/badge/version-1.0.0--beta-blue.svg)
+![version 1.0.0-dev](https://img.shields.io/badge/version-1.0.0--dev-red.svg)
 
 **NOT YET PRODUCTION READY**
 
@@ -16,9 +16,8 @@ Parse request bodies and query strings in Dart. No external dependencies require
 # About
 
 I needed something like Express.js's `body-parser` module, so I made it here. It fully supports JSON requests.
-x-www-form-urlencoded is partially supported, as well as query strings. By the next update, they will be fully supported.
-The only missing link in the implementation is that I have not yet provided support for arrays in the query. File upload support
-will also be present by the production 1.0.0 release.
+x-www-form-urlencoded fully supported, as well as query strings. You can also include arrays in your query,
+in the same way you would for a PHP application. File upload support will also be present by the production 1.0.0 release.
 
 A benefit of this is that primitive types are automatically deserialized correctly. As in, if you have a `hello=1.5` request, then
 `body['hello']` will equal `1.5` and not `'1.5'`. A very semantic difference, yes, but it relieves stress in my head.
