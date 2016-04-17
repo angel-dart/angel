@@ -7,7 +7,7 @@
 *.iml
 
 ## Directory-based project format:
-.idea/
+.idea
 /Test Results - Run_All_Tests.html
 # if you remove the above rule, at least ignore the following:
 

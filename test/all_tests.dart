@@ -38,7 +38,8 @@ main() {
         print('GET $url/?hello=world');
         var response = await client.get('$url/?hello=world');
         print('Response: ${response.body}');
-        expect(response.body, equals('{"body":{},"query":{"hello":"world"},"files":[]}'));
+        expect(response.body,
+            equals('{"body":{},"query":{"hello":"world"},"files":[]}'));
       });
 
       test('GET Complex', () async {
@@ -64,7 +65,8 @@ main() {
         var response = await client.post(
             url, headers: headers, body: 'hello=world');
         print('Response: ${response.body}');
-        expect(response.body, equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
+        expect(response.body,
+            equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
       });
 
       test('Post Complex', () async {
@@ -91,7 +93,8 @@ main() {
         var response = await client.post(
             url, headers: headers, body: postData);
         print('Response: ${response.body}');
-        expect(response.body, equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
+        expect(response.body,
+            equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
       });
 
       test('Post Complex', () async {
@@ -121,21 +124,45 @@ main() {
         Map headers = {
           HttpHeaders.CONTENT_TYPE: 'multipart/form-data; boundary=$boundary'
         };
-        String postData = '''
-
-      $boundary
-      Content-Dispositition: form-data; name="file"
-      Content-Type: text/plain
-
-      Hello world
-      $boundary--
-      ''';
+        String postData = '\r\n$boundary\r\n' +
+            'Content-Disposition: form-data; name="hello"\r\nworld\r\n$boundary\r\n' +
+            'Content-Disposition: file; name="file"; filename="app.dart"\r\n' +
+            'Content-Type: text/plain\r\nHello world\r\n$boundary--';
 
         print('Form Data: \n$postData');
         var response = await client.post(url, headers: headers, body: postData);
         print('Response: ${response.body}');
-        var body = god.deserialize(response.body)['body'];
+        Map json = god.deserialize(response.body);
+        List<Map> files = json['files'];
+        expect(files.length, equals(1));
+        expect(files[0]['name'], equals('file'));
+        expect(files[0]['mimeType'], equals('text/plain'));
+        expect(files[0]['data'].length, equals(11));
+        expect(files[0]['filename'], equals('app.dart'));
+        expect(json['body']['hello'], equals('world'));
       });
+
+      test('Multiple upload', () async {
+        String boundary = '----myBoundary';
+        Map headers = {
+          HttpHeaders.CONTENT_TYPE: 'multipart/form-data; boundary=$boundary'
+        };
+        String postData = '\r\n$boundary\r\n' +
+            'Content-Disposition: form-data; name="json"\r\ngod\r\n$boundary\r\n' +
+            'Content-Disposition: file; name="file"; filename="app.dart"\r\n' +
+            'Content-Type: text/plain\r\nHello world\r\n$boundary--';
+
+        print('Form Data: \n$postData');
+        var response = await client.post(url, headers: headers, body: postData);
+        print('Response: ${response.body}');
+        Map json = god.deserialize(response.body);
+        List<Map> files = json['files'];
+        expect(files.length, equals(1));
+        expect(files[0]['name'], equals('file'));
+        expect(files[0]['mimeType'], equals('text/plain'));
+        expect(files[0]['data'].length, equals(11));
+        expect(json['body']['json'], equals('god'));
+      }, skip: 'Multiple file uploads are yet to come.');
     });
   });
 }
