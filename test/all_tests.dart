@@ -38,7 +38,7 @@ main() {
         print('GET $url/?hello=world');
         var response = await client.get('$url/?hello=world');
         print('Response: ${response.body}');
-        expect(response.body, equals('{"body":{},"query":{"hello":"world"}}'));
+        expect(response.body, equals('{"body":{},"query":{"hello":"world"},"files":[]}'));
       });
 
       test('GET Complex', () async {
@@ -64,7 +64,7 @@ main() {
         var response = await client.post(
             url, headers: headers, body: 'hello=world');
         print('Response: ${response.body}');
-        expect(response.body, equals('{"body":{"hello":"world"},"query":{}}'));
+        expect(response.body, equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
       });
 
       test('Post Complex', () async {
@@ -91,7 +91,7 @@ main() {
         var response = await client.post(
             url, headers: headers, body: postData);
         print('Response: ${response.body}');
-        expect(response.body, equals('{"body":{"hello":"world"},"query":{}}'));
+        expect(response.body, equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
       });
 
       test('Post Complex', () async {
@@ -112,6 +112,29 @@ main() {
         expect(body['nums'][2], equals(2));
         expect(body['map'] is Map, equals(true));
         expect(body['map']['foo'], equals({'bar': 'baz'}));
+      });
+    });
+
+    group('File', () {
+      test('Single upload', () async {
+        String boundary = '----myBoundary';
+        Map headers = {
+          HttpHeaders.CONTENT_TYPE: 'multipart/form-data; boundary=$boundary'
+        };
+        String postData = '''
+
+      $boundary
+      Content-Dispositition: form-data; name="file"
+      Content-Type: text/plain
+
+      Hello world
+      $boundary--
+      ''';
+
+        print('Form Data: \n$postData');
+        var response = await client.post(url, headers: headers, body: postData);
+        print('Response: ${response.body}');
+        var body = god.deserialize(response.body)['body'];
       });
     });
   });
