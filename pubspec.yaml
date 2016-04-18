@@ -3,5 +3,10 @@ version: 0.0.1-dev
 description: Core libraries for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 dependencies:
+  body_parser: ^1.0.0-dev
   json_god: any
+  mime: ^0.9.3
   route: any
+dev_dependencies:
+  http: any
+  test: any
