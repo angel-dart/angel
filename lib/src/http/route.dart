@@ -5,6 +5,7 @@ class Route {
   String method;
   List handlers = [];
   String path;
+  String name;
 
   Route(String method, Pattern path, [List handlers]) {
     this.method = method;

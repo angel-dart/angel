@@ -1,9 +1,9 @@
 part of angel_framework.http;
 
-typedef RouteAssigner(Pattern path, handler, {List middleware});
+typedef Route RouteAssigner(Pattern path, handler, {List middleware});
 
 /// A routable server that can handle dynamic requests.
-class Routable {
+class Routable extends Extensible {
   /// Additional filters to be run on designated requests.
   Map <String, Middleware> middleware = {};
 
@@ -18,6 +18,7 @@ class Routable {
       var route = new Route(method, path, (middleware ?? [])
         ..add(handler));
       routes.add(route);
+      return route;
     };
   }
 

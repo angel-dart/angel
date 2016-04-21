@@ -19,12 +19,18 @@ main() {
       nested = new Angel();
       todos = new Angel();
 
+      angel.registerMiddleware('interceptor', (req, res) async {
+        res.write('Middleware');
+        return false;
+      });
+
       todos.get('/action/:action', (req, res) => res.json(req.params));
-
       nested.post('/ted/:route', (req, res) => res.json(req.params));
-
+      angel.get('/intercepted', 'This should not be shown',
+          middleware: ['interceptor']);
       angel.get('/hello', 'world');
       angel.get('/name/:first/last/:last', (req, res) => res.json(req.params));
+      angel.post('/lambda', (req, res) => req.body);
       angel.use('/nes', nested);
       angel.use('/todos/:id', todos);
 
@@ -67,6 +73,19 @@ main() {
       var json = god.deserialize(response.body);
       expect(json['id'], equals(1337));
       expect(json['action'], equals('test'));
+    });
+
+    test('Can add and use named middleware', () async {
+      var response = await client.get('$url/intercepted');
+      expect(response.body, equals('Middleware'));
+    });
+
+    test('Can serialize function result as JSON', () async {
+      Map headers = {'Content-Type': 'application/json'};
+      String postData = god.serialize({'it': 'works'});
+      var response = await client.post(
+          "$url/lambda", headers: headers, body: postData);
+      expect(god.deserialize(response.body)['it'], equals('works'));
     });
   });
 }

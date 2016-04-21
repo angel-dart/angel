@@ -32,7 +32,7 @@ class Service extends Routable {
     get('/', (req, res) async => res.json(await this.index(req.query)));
     get('/:id', (req, res) async =>
         res.json(await this.read(req.params['id'], req.query)));
-    post('/', (req, res) async => res.json(await this.create(req.body))g);
+    post('/', (req, res) async => res.json(await this.create(req.body)));
     post('/:id', (req, res) async =>
         res.json(await this.update(req.params['id'], req.body)));
     delete('/:id', (req, res) async =>

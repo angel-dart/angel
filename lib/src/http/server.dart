@@ -15,11 +15,6 @@ class Angel extends Routable {
   HttpServer httpServer;
   God god = new God();
 
-  /// A set of custom properties that can be assigned to the server.
-  ///
-  /// Useful for configuration and extension.
-  Map properties = {};
-
   startServer(InternetAddress address, int port) async {
     var server = await _serverGenerator(
         address ?? InternetAddress.LOOPBACK_IP_V4, port);
@@ -61,22 +56,38 @@ class Angel extends Routable {
   Future<bool> _applyHandler(handler, RequestContext req,
       ResponseContext res) async {
     if (handler is Middleware) {
-      return await handler(req, res);
+      var result = await handler(req, res);
+      if (result is bool)
+        return result == true;
+      else if (result != null) {
+        res.json(result);
+        return false;
+      } else return true;
     }
 
-    else if (handler is RequestHandler) {
+    if (handler is RequestHandler) {
       await handler(req, res);
       return res.isOpen;
     }
 
     else if (handler is RawRequestHandler) {
       var result = await handler(req.underlyingRequest);
-      return result is bool && result == true;
+      if (result is bool)
+        return result == true;
+      else if (result != null) {
+        res.json(result);
+        return false;
+      } else return true;
     }
 
     else if (handler is Function || handler is Future) {
       var result = await handler();
-      return result is bool && result == true;
+      if (result is bool)
+        return result == true;
+      else if (result != null) {
+        res.json(result);
+        return false;
+      } else return true;
     }
 
     else if (middleware.containsKey(handler)) {
@@ -114,23 +125,4 @@ class Angel extends Routable {
 
   /// Creates an HTTPS server.
   Angel.secure() : super() {}
-
-  noSuchMethod(Invocation invocation) {
-    if (invocation.memberName != null) {
-      String name = MirrorSystem.getName(invocation.memberName);
-      if (properties.containsKey(name)) {
-        if (invocation.isGetter)
-          return properties[name];
-        else if (invocation.isMethod) {
-          return Function.apply(
-              properties[name], invocation.positionalArguments,
-              invocation.namedArguments);
-        }
-      }
-    }
-
-    super.noSuchMethod(invocation);
-  }
-
-
 }

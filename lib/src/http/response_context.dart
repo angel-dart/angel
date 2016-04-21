@@ -4,7 +4,7 @@ part of angel_framework.http;
 typedef Future<String> ViewGenerator(String path, {Map data});
 
 /// A convenience wrapper around an outgoing HTTP request.
-class ResponseContext {
+class ResponseContext extends Extensible {
   /// The [Angel] instance that is sending a response.
   Angel app;
 

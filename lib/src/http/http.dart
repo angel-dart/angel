@@ -10,6 +10,7 @@ import 'package:json_god/json_god.dart';
 import 'package:mime/mime.dart';
 import 'package:route/server.dart';
 
+part 'extensible.dart';
 part 'request_context.dart';
 part 'response_context.dart';
 part 'route.dart';

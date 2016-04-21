@@ -9,7 +9,7 @@ class Todo {
 }
 
 main() {
-  group('Utilities', () {
+  group('Services', () {
     Map headers = {
       'Content-Type': 'application/json'
     };

@@ -10,7 +10,7 @@ typedef Future RequestHandler(RequestContext req, ResponseContext res);
 typedef Future RawRequestHandler(HttpRequest request);
 
 /// A convenience wrapper around an incoming HTTP request.
-class RequestContext {
+class RequestContext extends Extensible {
   /// The [Angel] instance that is responding to this request.
   Angel app;
 
