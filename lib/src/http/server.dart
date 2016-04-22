@@ -10,7 +10,8 @@ typedef AngelConfigurer(Angel app);
 class Angel extends Routable {
   ServerGenerator _serverGenerator = (address, port) async => await HttpServer
       .bind(address, port);
-  var viewGenerator = (String view, {Map data}) => "No view engine has been configured yet.";
+  var viewGenerator = (String view,
+      {Map data}) => "No view engine has been configured yet.";
 
   HttpServer httpServer;
   God god = new God();
@@ -43,11 +44,18 @@ class Angel extends Routable {
           }
         }
 
-        if (!res.willCloseItself) {
-          res.responseData.forEach((blob) => request.response.add(blob));
-          await request.response.close();
-        }
+        _finalizeResponse(request, res);
       });
+    });
+
+    router.defaultStream.listen((HttpRequest request) async {
+      RequestContext req = await RequestContext.from(
+          request, {}, this,
+          null);
+      ResponseContext res = await ResponseContext.from(
+          request.response, this);
+      on404(req, res);
+      _finalizeResponse(request, res);
     });
 
     return server;
@@ -102,6 +110,13 @@ class Angel extends Routable {
     }
   }
 
+  _finalizeResponse(HttpRequest request, ResponseContext res) async {
+    if (!res.willCloseItself) {
+      res.responseData.forEach((blob) => request.response.add(blob));
+      await request.response.close();
+    }
+  }
+
   /// Applies an [AngelConfigurer] to this instance.
   void configure(AngelConfigurer configurer) {
     configurer(this);
@@ -114,12 +129,15 @@ class Angel extends Routable {
     }, onError: onError);
   }
 
+  /// Responds to a 404.
+  RequestHandler on404 = (req, res) => res.write("404 Not Found");
+
   /// Handles a server error.
-  var onError = (e, [StackTrace stackTrace]) {
+  onError(e, [StackTrace stackTrace]) {
     stderr.write(e.toString());
     if (stackTrace != null)
       stderr.write(stackTrace.toString());
-  };
+  }
 
   Angel() : super() {}
 
