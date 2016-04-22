@@ -5,7 +5,14 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:mime/mime.dart' show lookupMimeType;
 
 /// Serves files statically from a given directory.
-Middleware serveStatic(Directory sourceDirectory) {
+Middleware serveStatic([Directory sourceDirectory]) {
+  if (sourceDirectory == null) {
+    String dirPath = Platform.environment['ANGEL_ENV'] == 'production'
+        ? './build/web'
+        : './web';
+    sourceDirectory = new Directory(dirPath);
+  }
+
   return (RequestContext req, ResponseContext res) async {
     String requested = req.path.replaceAll(new RegExp(r'^\/'), '');
     File file = new File.fromUri(
