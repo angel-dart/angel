@@ -11,7 +11,7 @@ class Angel extends Routable {
   ServerGenerator _serverGenerator = (address, port) async => await HttpServer
       .bind(address, port);
   var viewGenerator = (String view,
-      {Map data}) => "No view engine has been configured yet.";
+      [Map data]) => "No view engine has been configured yet.";
 
   HttpServer httpServer;
   God god = new God();
@@ -54,7 +54,7 @@ class Angel extends Routable {
           null);
       ResponseContext res = await ResponseContext.from(
           request.response, this);
-      on404(req, res..status(404));
+      on404(req, res);
       _finalizeResponse(request, res);
     });
 

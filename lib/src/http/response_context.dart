@@ -65,8 +65,8 @@ class ResponseContext extends Extensible {
   }
 
   /// Renders a view to the response stream, and closes the response.
-  Future render(String view, {Map data}) async {
-    write(await app.viewGenerator(view, data: data));
+  Future render(String view, [Map data]) async {
+    write(await app.viewGenerator(view, data));
     header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
     end();
   }
