@@ -54,7 +54,7 @@ class Angel extends Routable {
           null);
       ResponseContext res = await ResponseContext.from(
           request.response, this);
-      on404(req, res);
+      on404(req, res..status(404));
       _finalizeResponse(request, res);
     });
 
