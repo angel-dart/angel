@@ -1,0 +1,2 @@
+# Development-only server configuration.
+port: 3000

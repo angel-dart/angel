@@ -1,0 +1,2 @@
+# Production-only server configuration
+port: 80
