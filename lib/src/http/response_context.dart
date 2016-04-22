@@ -18,7 +18,7 @@ class ResponseContext extends Extensible {
 
   /// Sets the status code to be sent with this response.
   status(int code) {
-   underlyingResponse.statusCode = code;
+    underlyingResponse.statusCode = code;
   }
 
   /// The underlying [HttpResponse] under this instance.
@@ -66,9 +66,7 @@ class ResponseContext extends Extensible {
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, {Map data}) async {
-    /// TODO: app.viewGenerator
-    var generator = app.viewGenerator(view, data: data);
-    write(await generator);
+    write(await app.viewGenerator(view, data: data));
     header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
     end();
   }

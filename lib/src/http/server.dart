@@ -10,7 +10,7 @@ typedef AngelConfigurer(Angel app);
 class Angel extends Routable {
   ServerGenerator _serverGenerator = (address, port) async => await HttpServer
       .bind(address, port);
-  var viewGenerator = (String view, {Map data}) => {};
+  var viewGenerator = (String view, {Map data}) => "No view engine has been configured yet.";
 
   HttpServer httpServer;
   God god = new God();
