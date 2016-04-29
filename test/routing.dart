@@ -29,10 +29,11 @@ main() {
       angel.get('/intercepted', 'This should not be shown',
           middleware: ['interceptor']);
       angel.get('/hello', 'world');
-      angel.get('/name/:first/last/:last', (req, res) => res.json(req.params));
+      angel.get('/name/:first/last/:last', (req, res) => req.params);
       angel.post('/lambda', (req, res) => req.body);
       angel.use('/nes', nested);
       angel.use('/todos/:id', todos);
+      angel.get('*', 'MJ');
 
       client = new http.Client();
       await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
@@ -86,6 +87,11 @@ main() {
       var response = await client.post(
           "$url/lambda", headers: headers, body: postData);
       expect(god.deserialize(response.body)['it'], equals('works'));
+    });
+
+    test('Fallback routes', () async {
+      var response = await client.get('$url/my_favorite_artist');
+      expect(response.body, equals('"MJ"'));
     });
   });
 }

@@ -4,57 +4,97 @@ part of angel_framework.http;
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
 /// A function that configures an [Angel] server in some way.
-typedef AngelConfigurer(Angel app);
+typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends Routable {
-  ServerGenerator _serverGenerator = (address, port) async => await HttpServer
-      .bind(address, port);
-  var viewGenerator = (String view,
-      [Map data]) => "No view engine has been configured yet.";
+  ServerGenerator _serverGenerator =
+      (address, port) async => await HttpServer.bind(address, port);
+
+  /// Default error handler, show HTML error page
+  var _errorHandler = (AngelHttpException e, req, ResponseContext res) {
+    res.status(e.statusCode);
+    res.write("<DOCTYPE html><html><head><title>${e.message}</title>");
+    res.write("</head><body><h1>${e.message}</h1><ul>");
+    for (String error in e.errors) {
+      res.write("<li>$error</li>");
+    }
+    res.write("</ul></body></html>");
+    res.end();
+  };
+
+  var viewGenerator =
+      (String view, [Map data]) => "No view engine has been configured yet.";
+
+  /// [Middleware] to be run before all requests.
+  List before = [];
+
+  /// [Middleware] to be run after all requests.
+  List after = [];
 
   HttpServer httpServer;
   God god = new God();
 
   startServer(InternetAddress address, int port) async {
-    var server = await _serverGenerator(
-        address ?? InternetAddress.LOOPBACK_IP_V4, port);
+    var server =
+    await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
     this.httpServer = server;
-    var router = new Router(server);
 
-    this.routes.forEach((Route route) {
-      router.serve(route.matcher, method: route.method).listen((
-          HttpRequest request) async {
-        RequestContext req = await RequestContext.from(
-            request, route.parseParameters(request.uri.toString()), this,
-            route);
-        ResponseContext res = await ResponseContext.from(
-            request.response, this);
-        bool canContinue = true;
+    server.listen((HttpRequest request) async {
+      String req_url =
+      request.uri.toString().replaceAll(new RegExp(r'\/+$'), '');
+      RequestContext req = await RequestContext.from(request, {}, this, null);
+      ResponseContext res = await ResponseContext.from(request.response, this);
 
-        for (var handler in route.handlers) {
-          if (canContinue) {
-            canContinue = await new Future<bool>.sync(() async {
-              return _applyHandler(handler, req, res);
-            }).catchError((e) {
-              stderr.write(e.error);
-              canContinue = false;
-              return false;
-            });
+      bool canContinue = true;
+
+      var execHandler = (handler, req) async {
+        if (canContinue) {
+          canContinue = await new Future.sync(() async {
+            return _applyHandler(handler, req, res);
+          }).catchError((e, [StackTrace stackTrace]) async {
+            if (e is AngelHttpException) {
+              // Special handling for AngelHttpExceptions :)
+              try {
+                String accept = request.headers.value(HttpHeaders.ACCEPT) ?? "*/*";
+                if (accept == "*/*" ||
+                    accept.contains("application/json") ||
+                    accept.contains("application/javascript")) {
+                  res.json(e.toMap());
+                } else {
+                  await _applyHandler(_errorHandler, req, res);
+                }
+              } catch (_) {
+              }
+            }
+            _onError(e, stackTrace);
+            canContinue = false;
+            return false;
+          });
+        } else
+          return false;
+      };
+
+      for (var handler in before) {
+        await execHandler(handler, req);
+      }
+
+      for (Route route in routes) {
+        if (!canContinue) break;
+        if (route.matcher.hasMatch(req_url) &&
+            (request.method == route.method || route.method == '*')) {
+          req.params = route.parseParameters(request.uri.toString());
+          req.route = route;
+
+          for (var handler in route.handlers) {
+            await execHandler(handler, req);
           }
         }
+      }
 
-        _finalizeResponse(request, res);
-      });
-    });
-
-    router.defaultStream.listen((HttpRequest request) async {
-      RequestContext req = await RequestContext.from(
-          request, {}, this,
-          null);
-      ResponseContext res = await ResponseContext.from(
-          request.response, this);
-      on404(req, res);
+      for (var handler in after) {
+        await execHandler(handler, req);
+      }
       _finalizeResponse(request, res);
     });
 
@@ -70,39 +110,34 @@ class Angel extends Routable {
       else if (result != null) {
         res.json(result);
         return false;
-      } else return true;
+      } else
+        return res.isOpen;
     }
 
     if (handler is RequestHandler) {
       await handler(req, res);
       return res.isOpen;
-    }
-
-    else if (handler is RawRequestHandler) {
+    } else if (handler is RawRequestHandler) {
       var result = await handler(req.underlyingRequest);
       if (result is bool)
         return result == true;
       else if (result != null) {
         res.json(result);
         return false;
-      } else return true;
-    }
-
-    else if (handler is Function || handler is Future) {
+      } else
+        return true;
+    } else if (handler is Function || handler is Future) {
       var result = await handler();
       if (result is bool)
         return result == true;
       else if (result != null) {
         res.json(result);
         return false;
-      } else return true;
-    }
-
-    else if (middleware.containsKey(handler)) {
+      } else
+        return true;
+    } else if (middleware.containsKey(handler)) {
       return await _applyHandler(middleware[handler], req, res);
-    }
-
-    else {
+    } else {
       res.willCloseItself = true;
       res.underlyingResponse.write(god.serialize(handler));
       await res.underlyingResponse.close();
@@ -117,30 +152,64 @@ class Angel extends Routable {
     }
   }
 
+  String _randomString(int length) {
+    var rand = new Random();
+    var codeUnits = new List.generate(length, (index) {
+      return rand.nextInt(33) + 89;
+    });
+
+    return new String.fromCharCodes(codeUnits);
+  }
+
   /// Applies an [AngelConfigurer] to this instance.
-  void configure(AngelConfigurer configurer) {
-    configurer(this);
+  Future configure(AngelConfigurer configurer) async {
+    await configurer(this);
   }
 
   /// Starts the server.
   void listen({InternetAddress address, int port: 3000}) {
     runZoned(() async {
       await startServer(address, port);
-    }, onError: onError);
+    }, onError: _onError);
   }
 
-  /// Responds to a 404.
-  RequestHandler on404 = (req, res) => res.write("404 Not Found");
+  @override
+  use(Pattern path, Routable routable) {
+    if (routable is Service) {
+      routable.app = this;
+    }
+    super.use(path, routable);
+  }
+
+  onError(handler) {
+    _errorHandler = handler;
+  }
 
   /// Handles a server error.
-  onError(e, [StackTrace stackTrace]) {
+  _onError(e, [StackTrace stackTrace]) {
     stderr.write(e.toString());
-    if (stackTrace != null)
-      stderr.write(stackTrace.toString());
+    if (stackTrace != null) stderr.write(stackTrace.toString());
   }
 
   Angel() : super() {}
 
   /// Creates an HTTPS server.
-  Angel.secure() : super() {}
+  /// Provide paths to a certificate chain and server key (both .pem).
+  /// If no password is provided, a random one will be generated upon running
+  /// the server.
+  Angel.secure(String certificateChainPath, String serverKeyPath,
+      {String password})
+      : super() {
+    _serverGenerator = (InternetAddress address, int port) async {
+      var certificateChain =
+      Platform.script.resolve('server_chain.pem').toFilePath();
+      var serverKey = Platform.script.resolve('server_key.pem').toFilePath();
+      var serverContext = new SecurityContext();
+      serverContext.useCertificateChain(certificateChain);
+      serverContext.usePrivateKey(serverKey,
+          password: password ?? _randomString(8));
+
+      return await HttpServer.bindSecure(address, port, serverContext);
+    };
+  }
 }

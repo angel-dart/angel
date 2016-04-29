@@ -13,15 +13,6 @@ class Routable extends Extensible {
   /// A set of [Service] objects that have been mapped into routes.
   Map <Pattern, Service> services = {};
 
-  _makeRouteAssigner(String method) {
-    return (Pattern path, Object handler, {List middleware}) {
-      var route = new Route(method, path, (middleware ?? [])
-        ..add(handler));
-      routes.add(route);
-      return route;
-    };
-  }
-
   /// Assigns a middleware to a name for convenience.
   registerMiddleware(String name, Middleware middleware) {
     this.middleware[name] = middleware;
@@ -35,6 +26,10 @@ class Routable extends Extensible {
     middleware.addAll(routable.middleware);
     for (Route route in routable.routes) {
       Route provisional = new Route('', path);
+      if (route.path == '/') {
+        route.path = '';
+        route.matcher = new RegExp(r'^\/?$');
+      }
       route.matcher = new RegExp(route.matcher.pattern.replaceAll(
           new RegExp('^\\^'),
           provisional.matcher.pattern.replaceAll(new RegExp(r'\$$'), '')));
@@ -48,13 +43,42 @@ class Routable extends Extensible {
     }
   }
 
-  RouteAssigner get, post, patch, delete;
+  /// Adds a route that responds to the given path
+  /// for requests with the given method (case-insensitive).
+  /// Provide '*' as the method to respond to all methods.
+  addRoute(String method, Pattern path, Object handler, {List middleware}) {
+    var route = new Route(method.toUpperCase().trim(), path, (middleware ?? [])
+      ..add(handler));
+    routes.add(route);
+    return route;
+  }
+
+  /// Adds a route that responds to any request matching the given path.
+  all(Pattern path, Object handler, {List middleware}) {
+    return addRoute('*', path, handler, middleware: middleware);
+  }
+
+  /// Adds a route that responds to a GET request.
+  get(Pattern path, Object handler, {List middleware}) {
+    return addRoute('GET', path, handler, middleware: middleware);
+  }
+
+  /// Adds a route that responds to a POST request.
+  post(Pattern path, Object handler, {List middleware}) {
+    return addRoute('POST', path, handler, middleware: middleware);
+  }
+  
+  /// Adds a route that responds to a PATCH request.
+  patch(Pattern path, Object handler, {List middleware}) {
+    return addRoute('PATCH', path, handler, middleware: middleware);
+  }
+  
+  /// Adds a route that responds to a DELETE request.
+  delete(Pattern path, Object handler, {List middleware}) {
+    return addRoute('DELETE', path, handler, middleware: middleware);
+  }
 
   Routable() {
-    this.get = _makeRouteAssigner('GET');
-    this.post = _makeRouteAssigner('POST');
-    this.patch = _makeRouteAssigner('PATCH');
-    this.delete = _makeRouteAssigner('DELETE');
   }
 
 }
