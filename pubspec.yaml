@@ -1,0 +1,10 @@
+name: angel_websocket
+description: WebSocket plugin for Angel
+version: 0.0.0-dev.0
+author: thosakwe <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/angel_websocket
+dependencies:
+  angel_framework: ">=0.0.0-dev < 0.1.0"
+dev_dependencies:
+  http: ">= 0.11.3 < 0.12.0"
+  test: ">= 0.12.13 < 0.13.0"
