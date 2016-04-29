@@ -39,7 +39,7 @@ class Routable extends Extensible {
     }
 
     if (routable is Service) {
-      services[path.toString()] = routable;
+      services[path.toString().trim().replaceAll(new RegExp(r'(^\/+)|(\/+$)'), '')] = routable;
     }
   }
 
