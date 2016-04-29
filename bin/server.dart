@@ -4,7 +4,7 @@ import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
-  Angel app = createServer();
+  Angel app = await createServer();
 
   runZoned(() async {
     await app.startServer(
