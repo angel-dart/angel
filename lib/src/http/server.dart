@@ -41,8 +41,9 @@ class Angel extends Routable {
     this.httpServer = server;
 
     server.listen((HttpRequest request) async {
-      String req_url =
-      request.uri.toString().replaceAll(new RegExp(r'\/+$'), '');
+      String req_url = request.uri.toString().replaceAll(new RegExp(r'\/+$'), '');
+      if (req_url.isEmpty)
+        req_url = '/';
       RequestContext req = await RequestContext.from(request, {}, this, null);
       ResponseContext res = await ResponseContext.from(request.response, this);
 
