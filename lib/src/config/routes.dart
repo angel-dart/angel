@@ -5,7 +5,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
 
 /// Put your app routes here!
-configureRoutes(Angel app) {
+configureRoutes(Angel app) async {
   app.get('/', (req, ResponseContext res) => res.render('hello'));
   app.all('*', serveStatic());
 

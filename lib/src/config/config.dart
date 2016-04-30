@@ -8,7 +8,7 @@ import 'package:angel_mustache/angel_mustache.dart';
 import 'routes.dart';
 
 configureServer(Angel app) async {
-  await app.configure(loadConfigurationFile());
+  app.configure(loadConfigurationFile());
   await app.configure(mustache(new Directory('views')));
   await app.configure(configureRoutes);
 }
