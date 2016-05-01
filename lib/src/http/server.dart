@@ -64,9 +64,9 @@ class Angel extends Routable {
                     accept.contains("application/javascript")) {
                   res.json(e.toMap());
                 } else {
-                  await _applyHandler(_errorHandler, req, res);
-                  _finalizeResponse(request, res);
+                  await _errorHandler(e, req, res);
                 }
+                _finalizeResponse(request, res);
               } catch (_) {}
             }
             _onError(e, stackTrace);
