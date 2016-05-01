@@ -13,6 +13,7 @@ class Angel extends Routable {
 
   /// Default error handler, show HTML error page
   var _errorHandler = (AngelHttpException e, req, ResponseContext res) {
+    res.header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
     res.status(e.statusCode);
     res.write("<DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
