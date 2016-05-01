@@ -41,7 +41,8 @@ class Angel extends Routable {
     this.httpServer = server;
 
     server.listen((HttpRequest request) async {
-      String req_url = request.uri.toString().replaceAll(new RegExp(r'\/+$'), '');
+      String req_url = request.uri.toString().replaceAll(
+          new RegExp(r'\/+$'), '');
       if (req_url.isEmpty)
         req_url = '/';
       RequestContext req = await RequestContext.from(request, {}, this, null);
@@ -57,16 +58,16 @@ class Angel extends Routable {
             if (e is AngelHttpException) {
               // Special handling for AngelHttpExceptions :)
               try {
-                String accept = request.headers.value(HttpHeaders.ACCEPT) ?? "*/*";
+                String accept = request.headers.value(HttpHeaders.ACCEPT);
                 if (accept == "*/*" ||
                     accept.contains("application/json") ||
                     accept.contains("application/javascript")) {
                   res.json(e.toMap());
                 } else {
                   await _applyHandler(_errorHandler, req, res);
+                  _finalizeResponse(request, res);
                 }
-              } catch (_) {
-              }
+              } catch (_) {}
             }
             _onError(e, stackTrace);
             canContinue = false;
@@ -147,9 +148,13 @@ class Angel extends Routable {
   }
 
   _finalizeResponse(HttpRequest request, ResponseContext res) async {
-    if (!res.willCloseItself) {
-      res.responseData.forEach((blob) => request.response.add(blob));
-      await request.response.close();
+    try {
+      if (!res.willCloseItself) {
+        res.responseData.forEach((blob) => request.response.add(blob));
+        await request.response.close();
+      }
+    } catch (e) {
+      // Remember: This fails silently
     }
   }
 
@@ -192,15 +197,24 @@ class Angel extends Routable {
     if (stackTrace != null) stderr.write(stackTrace.toString());
   }
 
-  Angel() : super() {}
+  Angel
+      ()
+      :
+        super() {}
 
   /// Creates an HTTPS server.
   /// Provide paths to a certificate chain and server key (both .pem).
   /// If no password is provided, a random one will be generated upon running
   /// the server.
-  Angel.secure(String certificateChainPath, String serverKeyPath,
-      {String password})
-      : super() {
+  Angel.secure
+      (String certificateChainPath, String
+  serverKeyPath
+      ,
+      {
+      String password
+      })
+      : super()
+  {
     _serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
       Platform.script.resolve('server_chain.pem').toFilePath();
