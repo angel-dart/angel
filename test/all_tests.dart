@@ -12,7 +12,14 @@ main() {
 
     setUp(() async {
       angel = new Angel();
-      angel.registerMiddleware("static", serveStatic(new Directory("test")));
+      angel.registerMiddleware(
+          "static", serveStatic(sourceDirectory: new Directory("test"),
+          indexFileNames: ['index.php', 'index.txt']));
+      angel.get('/virtual/*', "Fallback",
+          middleware: [serveStatic(sourceDirectory: new Directory("test"),
+              virtualRoot: '/virtual',
+              indexFileNames: ['index.txt'])
+          ]);
       angel.get("*", "Fallback", middleware: ["static"]);
 
       await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
@@ -32,6 +39,16 @@ main() {
     test('non-existent files are skipped', () async {
       var response = await client.get("$url/nonexist.ent");
       expect(response.body, equals('"Fallback"'));
+    });
+
+    test('can match index files', () async {
+      var response = await client.get(url);
+      expect(response.body, equals("index!"));
+    });
+
+    test('virtualRoots can match index', () async {
+      var response = await client.get("$url/virtual");
+      expect(response.body, equals("index!"));
     });
   });
 }
