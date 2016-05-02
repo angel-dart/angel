@@ -16,6 +16,7 @@ class Route {
     else {
       this.matcher = new RegExp('^' +
           path.toString()
+              .replaceAll(new RegExp(r'\/\*$'), "*")
               .replaceAll(new RegExp('\/'), r'\/')
               .replaceAll(new RegExp(':[a-zA-Z_]+'), '([^\/]+)')
               .replaceAll(new RegExp('\\*'), '.*')
