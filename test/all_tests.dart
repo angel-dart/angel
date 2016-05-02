@@ -4,9 +4,9 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mustache/angel_mustache.dart';
 import 'package:test/test.dart';
 
-main() {
+main() async {
   Angel angel = new Angel();
-  angel.configure(mustache(new Directory('/test')));
+  await angel.configure(mustache(new Directory('/test')));
 
   test('can render templates', () async {
     var hello = await angel.viewGenerator('hello', {'name': 'world'});
@@ -23,5 +23,10 @@ main() {
               'fail', {'this_should': 'fail'});
           print(fails);
         }), throws);
+  });
+
+  test("partials", () async {
+    var withPartial = await angel.viewGenerator('with-partial');
+    expect(withPartial, equals("Hello, world!"));
   });
 }

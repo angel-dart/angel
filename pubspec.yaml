@@ -2,7 +2,7 @@ name: angel_mustache
 description: Mustache view generator for Angel.
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_mustache
-version: 1.0.0-dev
+version: 1.0.1
 dependencies:
   angel_framework: ">=0.0.0-dev < 0.1.0"
   mustache4dart: ">= 1.0.0 < 2.0.0"
