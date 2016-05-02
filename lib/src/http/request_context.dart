@@ -1,7 +1,7 @@
 part of angel_framework.http;
 
 /// A function that intercepts a request and determines whether handling of it should continue.
-typedef Future<bool> Middleware(RequestContext req, ResponseContext res);
+typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
 
 /// A function that receives an incoming [RequestContext] and responds to it.
 typedef Future RequestHandler(RequestContext req, ResponseContext res);

@@ -28,6 +28,23 @@ class Route {
     }
   }
 
+  /// Assigns a name to this Route.
+  as(String name) {
+    this.name = name;
+    return this;
+  }
+
+  String makeUri([Map<String, dynamic> params]) {
+    String result = path;
+    if (params != null) {
+      for (String key in (params.keys)) {
+        result = result.replaceAll(new RegExp(":$key"), params[key].toString());
+      }
+    }
+
+    return result;
+  }
+
   parseParameters(String requestPath) {
     Map result = {};
 

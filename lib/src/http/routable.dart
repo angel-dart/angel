@@ -2,10 +2,34 @@ part of angel_framework.http;
 
 typedef Route RouteAssigner(Pattern path, handler, {List middleware});
 
+_matchingAnnotation(List<InstanceMirror> metadata, Type T) {
+  for (InstanceMirror metaDatum in metadata) {
+    if (metaDatum.hasReflectee) {
+      var reflectee = metaDatum.reflectee;
+      if (reflectee.runtimeType == T) {
+        return reflectee;
+      }
+    }
+  }
+  return null;
+}
+
+_getAnnotation(obj, Type T) {
+  if (obj is Function || obj is Future) {
+    MethodMirror methodMirror = (reflect(obj) as ClosureMirror).function;
+    return _matchingAnnotation(methodMirror.metadata, T);
+  } else {
+    ClassMirror classMirror = reflectClass(obj.runtimeType);
+    return _matchingAnnotation(classMirror.metadata, T);
+  }
+
+  return null;
+}
+
 /// A routable server that can handle dynamic requests.
 class Routable extends Extensible {
   /// Additional filters to be run on designated requests.
-  Map <String, Middleware> middleware = {};
+  Map <String, RequestMiddleware> requestMiddleware = {};
 
   /// Dynamic request paths that this server will respond to.
   List<Route> routes = [];
@@ -14,16 +38,26 @@ class Routable extends Extensible {
   Map <Pattern, Service> services = {};
 
   /// Assigns a middleware to a name for convenience.
-  registerMiddleware(String name, Middleware middleware) {
-    this.middleware[name] = middleware;
+  registerMiddleware(String name, RequestMiddleware middleware) {
+    this.requestMiddleware[name] = middleware;
   }
 
   /// Retrieves the service assigned to the given path.
   Service service(Pattern path) => services[path];
 
-  /// Incorporates another routable's routes into this one's.
-  use(Pattern path, Routable routable) {
-    middleware.addAll(routable.middleware);
+  /// Incorporates another [Routable]'s routes into this one's.
+  ///
+  /// If `hooked` is set to `true` and a [Service] is provided,
+  /// then that service will be wired to a [HookedService] proxy.
+  /// If a `middlewareNamespace` is provided, then any middleware
+  /// from the provided [Routable] will be prefixed by that namespace,
+  /// with a dot.
+  /// For example, if the [Routable] has a middleware 'y', and the `middlewareNamespace`
+  /// is 'x', then that middleware will be available as 'x.y' in the main application.
+  /// These namespaces can be nested.
+  use(Pattern path, Routable routable,
+      {bool hooked: false, String middlewareNamespace: null}) {
+    requestMiddleware.addAll(routable.requestMiddleware);
     for (Route route in routable.routes) {
       Route provisional = new Route('', path);
       if (route.path == '/') {
@@ -38,43 +72,77 @@ class Routable extends Extensible {
       routes.add(route);
     }
 
+    // Let's copy middleware, heeding the optional middleware namespace.
+    String middlewarePrefix = "";
+    if (middlewareNamespace != null)
+      middlewarePrefix = "$middlewareNamespace.";
+
+    for (String middlewareName in routable.requestMiddleware.keys) {
+      requestMiddleware["$middlewarePrefix$middlewareName"] =
+      routable.requestMiddleware[middlewareName];
+    }
+
+    // Copy services, too. :)
+    for (Pattern servicePath in routable.services.keys) {
+      String newServicePath = path.toString().trim().replaceAll(
+          new RegExp(r'(^\/+)|(\/+$)'), '') + '/$servicePath';
+      services[newServicePath] = routable.services[servicePath];
+    }
+
     if (routable is Service) {
-      services[path.toString().trim().replaceAll(new RegExp(r'(^\/+)|(\/+$)'), '')] = routable;
+      Hooked hookedDeclaration = _getAnnotation(routable, Hooked);
+      Service service = (hookedDeclaration != null || hooked)
+          ? new HookedService(routable)
+          : routable;
+      services[path.toString().trim().replaceAll(
+          new RegExp(r'(^\/+)|(\/+$)'), '')] = service;
     }
   }
 
   /// Adds a route that responds to the given path
   /// for requests with the given method (case-insensitive).
   /// Provide '*' as the method to respond to all methods.
-  addRoute(String method, Pattern path, Object handler, {List middleware}) {
-    var route = new Route(method.toUpperCase().trim(), path, (middleware ?? [])
-      ..add(handler));
+  Route addRoute(String method, Pattern path, Object handler,
+      {List middleware}) {
+    List handlers = [];
+
+    // Merge @Middleware declaration, if any
+    Middleware middlewareDeclaration = _getAnnotation(
+        handler, Middleware);
+    if (middlewareDeclaration != null) {
+      handlers.addAll(middlewareDeclaration.handlers);
+    }
+
+    handlers
+      ..addAll(middleware ?? [])
+      ..add(handler);
+    var route = new Route(method.toUpperCase().trim(), path, handlers);
     routes.add(route);
     return route;
   }
 
   /// Adds a route that responds to any request matching the given path.
-  all(Pattern path, Object handler, {List middleware}) {
+  Route all(Pattern path, Object handler, {List middleware}) {
     return addRoute('*', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a GET request.
-  get(Pattern path, Object handler, {List middleware}) {
+  Route get(Pattern path, Object handler, {List middleware}) {
     return addRoute('GET', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a POST request.
-  post(Pattern path, Object handler, {List middleware}) {
+  Route post(Pattern path, Object handler, {List middleware}) {
     return addRoute('POST', path, handler, middleware: middleware);
   }
-  
+
   /// Adds a route that responds to a PATCH request.
-  patch(Pattern path, Object handler, {List middleware}) {
+  Route patch(Pattern path, Object handler, {List middleware}) {
     return addRoute('PATCH', path, handler, middleware: middleware);
   }
-  
+
   /// Adds a route that responds to a DELETE request.
-  delete(Pattern path, Object handler, {List middleware}) {
+  Route delete(Pattern path, Object handler, {List middleware}) {
     return addRoute('DELETE', path, handler, middleware: middleware);
   }
 

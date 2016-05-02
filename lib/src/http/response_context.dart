@@ -74,7 +74,7 @@ class ResponseContext extends Extensible {
   /// Redirects to user to the given URL.
   redirect(String url, {int code: 301}) {
     header(HttpHeaders.LOCATION, url);
-    status(code);
+    status(code ?? 301);
     write('''
     <!DOCTYPE html>
     <html>
@@ -93,6 +93,16 @@ class ResponseContext extends Extensible {
     </html>
     ''');
     end();
+  }
+
+  /// Redirects to the given named [Route].
+  redirectTo(String name, [Map params, int code]) {
+    Route matched = app.routes.firstWhere((Route route) => route.name == name);
+    if (matched != null) {
+      return redirect(matched.makeUri(params), code: code);
+    }
+
+    throw new ArgumentError.notNull('Route to redirect to ($name)');
   }
 
   /// Streams a file to this response as chunked data.

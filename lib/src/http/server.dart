@@ -3,6 +3,10 @@ part of angel_framework.http;
 /// A function that binds an [Angel] server to an Internet address and port.
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
+/// Handles an [AngelHttpException].
+typedef Future AngelErrorHandler(AngelHttpException err, RequestContext req,
+    ResponseContext res);
+
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
 
@@ -27,10 +31,10 @@ class Angel extends Routable {
   var viewGenerator =
       (String view, [Map data]) => "No view engine has been configured yet.";
 
-  /// [Middleware] to be run before all requests.
+  /// [RequestMiddleware] to be run before all requests.
   List before = [];
 
-  /// [Middleware] to be run after all requests.
+  /// [RequestMiddleware] to be run after all requests.
   List after = [];
 
   HttpServer httpServer;
@@ -106,7 +110,7 @@ class Angel extends Routable {
 
   Future<bool> _applyHandler(handler, RequestContext req,
       ResponseContext res) async {
-    if (handler is Middleware) {
+    if (handler is RequestMiddleware) {
       var result = await handler(req, res);
       if (result is bool)
         return result == true;
@@ -138,8 +142,8 @@ class Angel extends Routable {
         return false;
       } else
         return true;
-    } else if (middleware.containsKey(handler)) {
-      return await _applyHandler(middleware[handler], req, res);
+    } else if (requestMiddleware.containsKey(handler)) {
+      return await _applyHandler(requestMiddleware[handler], req, res);
     } else {
       res.willCloseItself = true;
       res.underlyingResponse.write(god.serialize(handler));
@@ -181,11 +185,13 @@ class Angel extends Routable {
   }
 
   @override
-  use(Pattern path, Routable routable) {
+  use(Pattern path, Routable routable,
+      {bool hooked: false, String middlewareNamespace: null}) {
     if (routable is Service) {
       routable.app = this;
     }
-    super.use(path, routable);
+    super.use(
+        path, routable, hooked: hooked, middlewareNamespace: middlewareNamespace);
   }
 
   onError(handler) {

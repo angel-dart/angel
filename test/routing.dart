@@ -4,6 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart';
 import 'package:test/test.dart';
 
+@Middleware(const ['interceptor'])
+testMiddlewareMetadata(RequestContext req, ResponseContext res) async {
+  return "This should not be shown.";
+}
+
 main() {
   group('routing', () {
     Angel angel;
@@ -26,6 +31,7 @@ main() {
 
       todos.get('/action/:action', (req, res) => res.json(req.params));
       nested.post('/ted/:route', (req, res) => res.json(req.params));
+      angel.get('/meta', testMiddlewareMetadata);
       angel.get('/intercepted', 'This should not be shown',
           middleware: ['interceptor']);
       angel.get('/hello', 'world');
@@ -33,6 +39,10 @@ main() {
       angel.post('/lambda', (req, res) => req.body);
       angel.use('/nes', nested);
       angel.use('/todos/:id', todos);
+      angel.get('/greet/:name', (RequestContext req, res) async => "Hello ${req.params['name']}").as('Named routes');
+      angel.get('/named', (req, ResponseContext res) async {
+        res.redirectTo('Named routes', {'name': 'tests'});
+      });
       angel.get('*', 'MJ');
 
       client = new http.Client();
@@ -81,6 +91,12 @@ main() {
       expect(response.body, equals('Middleware'));
     });
 
+    test('Middleware via metadata', () async {
+      // Metadata
+      var response = await client.get('$url/meta');
+      expect(response.body, equals('Middleware'));
+    });
+
     test('Can serialize function result as JSON', () async {
       Map headers = {'Content-Type': 'application/json'};
       String postData = god.serialize({'it': 'works'});
@@ -92,6 +108,19 @@ main() {
     test('Fallback routes', () async {
       var response = await client.get('$url/my_favorite_artist');
       expect(response.body, equals('"MJ"'));
+    });
+
+    test('Can name routes', () {
+      Route foo = angel.get('/framework/:id', 'Angel').as('frm');
+      String uri = foo.makeUri({'id': 'angel'});
+      print(uri);
+      expect(uri, equals('/framework/angel'));
+    });
+
+    test('Redirect to named routes', () async {
+      var response = await client.get('$url/named');
+      print(response.body);
+      expect(god.deserialize(response.body), equals('Hello tests'));
     });
   });
 }

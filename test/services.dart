@@ -1,3 +1,4 @@
+import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart';
@@ -23,7 +24,8 @@ main() {
       angel = new Angel();
       client = new http.Client();
       god = new God();
-      angel.use('/todos', new MemoryService<Todo>());
+      Service todos = new MemoryService<Todo>();
+      angel.use('/todos', todos);
       await angel.startServer(null, 0);
       url = "http://${angel.httpServer.address.host}:${angel.httpServer.port}";
     });

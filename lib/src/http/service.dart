@@ -11,27 +11,27 @@ class Service extends Routable {
   }
 
   /// Retrieves the desired resource.
-  Future<Object> read(id, [Map params]) {
+  Future read(id, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
   /// Creates a resource.
-  Future<Object> create(Map data, [Map params]) {
+  Future create(Map data, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
   /// Modifies a resource.
-  Future<Object> modify(id, Map data, [Map params]) {
+  Future modify(id, Map data, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
   /// Overwrites a resource.
-  Future<Object> update(id, Map data, [Map params]) {
+  Future update(id, Map data, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
   /// Removes the given resource.
-  Future<Object> remove(id, [Map params]) {
+  Future remove(id, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
