@@ -1,6 +1,6 @@
 name: angel_configuration
 description: YAML configuration loader for Angel.
-version: 1.0.0-dev
+version: 1.0.0
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_configuration
 dependencies:

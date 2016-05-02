@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:yaml/yaml.dart';
 
-_loadYamlFile(Angel app, File yamlFile) {
-  if (yamlFile.existsSync()) {
-    Map config = loadYaml(yamlFile.readAsStringSync());
+_loadYamlFile(Angel app, File yamlFile) async {
+  if (await yamlFile.exists()) {
+    Map config = loadYaml(await yamlFile.readAsString());
     for (String key in config.keys) {
       app.properties[key] = config[key];
     }
@@ -15,7 +15,7 @@ _loadYamlFile(Angel app, File yamlFile) {
 
 loadConfigurationFile(
     {String directoryPath: "./config", String overrideEnvironmentName}) {
-  return (Angel app) {
+  return (Angel app) async {
     Directory sourceDirectory = new Directory(directoryPath);
     String environmentName = Platform.environment['ANGEL_ENV'] ?? 'development';
 
@@ -25,12 +25,12 @@ loadConfigurationFile(
 
     File defaultYaml = new File.fromUri(
         sourceDirectory.absolute.uri.resolve("default.yaml"));
-    _loadYamlFile(app, defaultYaml);
+    await _loadYamlFile(app, defaultYaml);
 
     String configFilePath = "$environmentName.yaml";
     File configFile = new File.fromUri(
         sourceDirectory.absolute.uri.resolve(configFilePath));
 
-    _loadYamlFile(app, configFile);
+    await _loadYamlFile(app, configFile);
   };
 }
