@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'shared.dart';
 
+List<WebSocket> sockets = [];
+
 _respond(AngelMessage message, Service service, Angel app) async {
   if (message.method == 'index') {
     return await service.index(message.body['query']);
@@ -20,12 +22,12 @@ _respond(AngelMessage message, Service service, Angel app) async {
   }
 
   else if (message.method == 'update') {
-    return await service.update(
+    await service.update(
         message.body['id'], message.body['data'] ?? {}, message.body['query']);
   }
 
   else if (message.method == 'remove') {
-    return await service.remove(message.body['id'], message.body['query']);
+    await service.remove(message.body['id'], message.body['query']);
   }
 
   else throw new AngelHttpException.NotImplemented(
@@ -66,7 +68,27 @@ _handleMsg(WebSocket socket, Angel app) {
   };
 }
 
-websocket({String endPoint: '/ws'}) {
+_wireHooks(bool hookAll) {
+  return (Angel app) async {
+    for (Pattern path in app.services.keys) {
+      Service _service = app.services[path];
+
+      // Hook any unhooked services
+      if (!(_service is HookedService) && hookAll) {
+        app.services[path] = new HookedService(_service);
+      }
+
+      Service service = app.services[path];
+      if (service is HookedService) {
+        service.onIndexed.listen((List items) {
+
+        });
+      }
+    }
+  };
+}
+
+websocket({String endPoint: '/ws', bool hookAll: true}) {
   return (Angel app) async {
     app.get(endPoint, (RequestContext req, ResponseContext res) async {
       if (WebSocketTransformer.isUpgradeRequest(req.underlyingRequest)) {
@@ -76,11 +98,17 @@ websocket({String endPoint: '/ws'}) {
         WebSocket socket = await WebSocketTransformer.upgrade(
             req.underlyingRequest);
 
-        socket.listen(_handleMsg(socket, app));
+        sockets.add(socket);
+        socket.listen(_handleMsg(socket, app), onDone: () {
+          // Remove from cache on disconnect
+          sockets.remove(socket);
+        });
       } else {
         throw new AngelHttpException.BadRequest(
             message: 'This endpoint is only available via WebSockets.');
       }
     });
+
+    await app.configure(_wireHooks(hookAll));
   };
 }
