@@ -33,11 +33,14 @@ class Auth {
       strategies.firstWhere((AuthStrategy x) => x.name == type);
       var result = await strategy.authenticate(
           req, res, options: options ?? {});
-      if (result is bool)
+      print("${req.path} -> $result");
+      if (result == true)
         return result;
-      else {
+      else if(result != false) {
         req.session['userId'] = await serializer(result);
         return true;
+      } else {
+        throw new AngelHttpException.NotAuthenticated();
       }
     };
   }

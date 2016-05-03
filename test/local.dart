@@ -30,6 +30,7 @@ main() async {
     Angel app;
     http.Client client;
     String url;
+    String basicAuthUrl;
 
     setUp(() async {
       client = new http.Client();
@@ -39,22 +40,26 @@ main() async {
       app.get('/hello', 'Woo auth', middleware: [Auth.authenticate('local')]);
       app.post('/login', 'This should not be shown',
           middleware: [Auth.authenticate('local', localOpts)]);
-      app.get('/success', "yep", middleware: []);
+      app.get('/success', "yep", middleware: ['auth']);
       app.get('/failure', "nope");
 
       HttpServer server = await app.startServer(
           InternetAddress.LOOPBACK_IP_V4, 0);
       url = "http://${server.address.host}:${server.port}";
+      basicAuthUrl =
+      "http://username:password@${server.address.host}:${server.port}";
     });
 
     tearDown(() async {
       await app.httpServer.close(force: true);
       client = null;
       url = null;
+      basicAuthUrl = null;
     });
 
     test('can use login as middleware', () async {
-      var response = await client.get("$url/success");
+      var response = await client.get("$url/success", headers: {'Accept': 'application/json'});
+      print(response.body);
       expect(response.statusCode, equals(401));
     });
 
@@ -87,6 +92,12 @@ main() async {
       Map auth = {HttpHeaders.AUTHORIZATION: 'Basic $authString'};
       var response = await client.get(
           "$url/hello", headers: mergeMap([auth, headers]));
+      expect(response.body, equals('"Woo auth"'));
+    });
+
+    test('allow basic via URL encoding', () async {
+      var response = await client.get(
+          basicAuthUrl, headers: headers);
       expect(response.body, equals('"Woo auth"'));
     });
 
