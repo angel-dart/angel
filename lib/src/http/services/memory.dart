@@ -26,9 +26,10 @@ class MemoryService<T> extends Service {
     } else throw new AngelHttpException.NotFound();
   }
 
-  Future<Object> create(Map data, [Map params]) async {
+  Future<Object> create(data, [Map params]) async {
     try {
-      items[items.length] = god.deserializeFromMap(data, T);
+      items[items.length] =
+      (data is Map) ? god.deserializeFromMap(data, T) : data;
       T created = items[items.length - 1];
       return makeJson(items.length - 1, created);
     } catch (e) {
@@ -36,13 +37,14 @@ class MemoryService<T> extends Service {
     }
   }
 
-  Future<Object> modify(id, Map data, [Map params]) async {
+  Future<Object> modify(id, data, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       try {
         Map existing = god.serializeToMap(items[desiredId]);
         data = mergeMap([existing, data]);
-        items[desiredId] = god.deserializeFromMap(data, T);
+        items[desiredId] =
+        (data is Map) ? god.deserializeFromMap(data, T) : data;
         return makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.BadRequest(message: 'Invalid data.');
@@ -50,11 +52,12 @@ class MemoryService<T> extends Service {
     } else throw new AngelHttpException.NotFound();
   }
 
-  Future<Object> update(id, Map data, [Map params]) async {
+  Future<Object> update(id, data, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       try {
-        items[desiredId] = god.deserializeFromMap(data, T);
+        items[desiredId] =
+        (data is Map) ? god.deserializeFromMap(data, T) : data;
         return makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.BadRequest(message: 'Invalid data.');
