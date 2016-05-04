@@ -46,6 +46,13 @@ class Route {
     return result;
   }
 
+  Route middleware(handler) {
+    if (handler is Iterable)
+      handlers.addAll(handler);
+    else handlers.add(handler);
+    return this;
+  }
+
   parseParameters(String requestPath) {
     Map result = {};
 

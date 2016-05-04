@@ -43,14 +43,14 @@ class HookedService extends Service {
 
 
   @override
-  Future create(Map data, [Map params]) async {
+  Future create(data, [Map params]) async {
     var created = await inner.create(data, params);
     _onCreated.add(created);
     return created;
   }
 
   @override
-  Future modify(id, Map data, [Map params]) async {
+  Future modify(id, data, [Map params]) async {
     var modified = await inner.modify(id, data, params);
     _onUpdated.add(modified);
     return modified;
@@ -58,7 +58,7 @@ class HookedService extends Service {
 
 
   @override
-  Future update(id, Map data, [Map params]) async {
+  Future update(id, data, [Map params]) async {
     var updated = await inner.update(id, data, params);
     _onUpdated.add(updated);
     return updated;
