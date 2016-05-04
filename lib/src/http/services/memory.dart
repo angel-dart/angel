@@ -5,8 +5,11 @@ class MemoryService<T> extends Service {
   God god = new God();
   Map <int, T> items = {};
 
-  Map makeJson(int index, T t) {
-    return mergeMap([god.serializeToMap(t), {'id': index}]);
+  makeJson(int index, T t) {
+    if (T == null || T == Map)
+      return mergeMap([god.serializeToMap(t), {'id': index}]);
+    else
+      return t;
   }
 
   Future<List> index([Map params]) async {
@@ -16,7 +19,7 @@ class MemoryService<T> extends Service {
         .toList();
   }
 
-  Future<Object> read(id, [Map params]) async {
+  Future read(id, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       T found = items[desiredId];
@@ -26,7 +29,7 @@ class MemoryService<T> extends Service {
     } else throw new AngelHttpException.NotFound();
   }
 
-  Future<Object> create(data, [Map params]) async {
+  Future create(data, [Map params]) async {
     try {
       items[items.length] =
       (data is Map) ? god.deserializeFromMap(data, T) : data;
@@ -37,7 +40,7 @@ class MemoryService<T> extends Service {
     }
   }
 
-  Future<Object> modify(id, data, [Map params]) async {
+  Future modify(id, data, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       try {
@@ -52,7 +55,7 @@ class MemoryService<T> extends Service {
     } else throw new AngelHttpException.NotFound();
   }
 
-  Future<Object> update(id, data, [Map params]) async {
+  Future update(id, data, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       try {
@@ -65,7 +68,7 @@ class MemoryService<T> extends Service {
     } else throw new AngelHttpException.NotFound();
   }
 
-  Future<Object> remove(id, [Map params]) async {
+  Future remove(id, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       T item = items[desiredId];
