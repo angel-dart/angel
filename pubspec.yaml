@@ -5,6 +5,8 @@ author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_auth
 dependencies:
   angel_framework: ">=0.0.0-dev < 0.1.0"
+  crypto: ">= 1.1.1 < 2.0.0"
+  oauth2: ">= 1.0.2 < 2.0.0"
 dev_dependencies:
   http: ">= 0.11.3 < 0.12.0"
   test: ">= 0.12.13 < 0.13.0"

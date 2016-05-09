@@ -7,7 +7,10 @@ import 'package:merge_map/merge_map.dart';
 import 'package:test/test.dart';
 
 Map headers = {HttpHeaders.ACCEPT: ContentType.JSON.mimeType};
-Map localOpts = {'failureRedirect': '/failure'};
+AngelAuthOptions localOpts = new AngelAuthOptions(
+    failureRedirect: '/failure',
+    successRedirect: '/success'
+);
 Map sampleUser = {'hello': 'world'};
 
 verifier(username, password) async {
@@ -35,7 +38,6 @@ main() async {
     setUp(() async {
       client = new http.Client();
       app = new Angel();
-
       await app.configure(wireAuth);
       app.get('/hello', 'Woo auth', middleware: [Auth.authenticate('local')]);
       app.post('/login', 'This should not be shown',
@@ -58,7 +60,8 @@ main() async {
     });
 
     test('can use login as middleware', () async {
-      var response = await client.get("$url/success", headers: {'Accept': 'application/json'});
+      var response = await client.get(
+          "$url/success", headers: {'Accept': 'application/json'});
       print(response.body);
       expect(response.statusCode, equals(401));
     });
@@ -96,15 +99,14 @@ main() async {
     });
 
     test('allow basic via URL encoding', () async {
-      var response = await client.get(
-          basicAuthUrl, headers: headers);
+      var response = await client.get("$basicAuthUrl/hello", headers: headers);
       expect(response.body, equals('"Woo auth"'));
     });
 
     test('force basic', () async {
       Auth.strategies.clear();
       Auth.strategies.add(new LocalAuthStrategy(
-          verifier, forceBasic: true, basicRealm: 'test'));
+          verifier, forceBasic: true, realm: 'test'));
       var response = await client.get("$url/hello", headers: headers);
       expect(response.headers[HttpHeaders.WWW_AUTHENTICATE],
           equals('Basic realm="test"'));

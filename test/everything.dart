@@ -48,5 +48,9 @@ main() async {
     test('force everything', () async {
 
     });
+
+    test('logout', () async {
+
+    });
   });
 }

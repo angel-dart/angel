@@ -15,7 +15,7 @@ class LocalAuthStrategy extends AuthStrategy {
   String invalidMessage;
   bool allowBasic;
   bool forceBasic;
-  String basicRealm;
+  String realm;
 
   LocalAuthStrategy(LocalAuthVerifier this.verifier,
       {String this.usernameField: 'username',
@@ -24,7 +24,7 @@ class LocalAuthStrategy extends AuthStrategy {
       'Please provide a valid username and password.',
       bool this.allowBasic: true,
       bool this.forceBasic: false,
-      String this.basicRealm: 'Authentication is required.'}) {}
+      String this.realm: 'Authentication is required.'}) {}
 
   @override
   Future<bool> canLogout(RequestContext req, ResponseContext res) async {
@@ -33,7 +33,8 @@ class LocalAuthStrategy extends AuthStrategy {
 
   @override
   Future<bool> authenticate(RequestContext req, ResponseContext res,
-      {Map options: const {}}) async {
+      [AngelAuthOptions options_]) async {
+    AngelAuthOptions options = options_ ?? new AngelAuthOptions();
     var verificationResult;
 
     if (allowBasic) {
@@ -60,23 +61,24 @@ class LocalAuthStrategy extends AuthStrategy {
     }
 
     if (verificationResult == false || verificationResult == null) {
-      if (options.containsKey('failureRedirect')) {
+      if (options.failureRedirect != null &&
+          options.failureRedirect.isNotEmpty) {
         return res.redirect(
-            options['failureRedirect'], code: HttpStatus.UNAUTHORIZED);
+            options.failureRedirect, code: HttpStatus.UNAUTHORIZED);
       }
 
       if (forceBasic) {
         res
           ..status(401)
-          ..header(HttpHeaders.WWW_AUTHENTICATE, 'Basic realm="$basicRealm"')
+          ..header(HttpHeaders.WWW_AUTHENTICATE, 'Basic realm="$realm"')
           ..end();
         return false;
       } else throw new AngelHttpException.NotAuthenticated();
     }
 
     req.session['user'] = await Auth.serializer(verificationResult);
-    if (options.containsKey('successRedirect')) {
-      return res.redirect(options['successRedirect'], code: HttpStatus.OK);
+    if (options.successRedirect != null && options.successRedirect.isNotEmpty) {
+      return res.redirect(options.successRedirect, code: HttpStatus.OK);
     }
 
     return true;
