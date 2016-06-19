@@ -63,6 +63,7 @@ class Angel extends Routable {
             if (e is AngelHttpException) {
               // Special handling for AngelHttpExceptions :)
               try {
+                res.status(e.statusCode);
                 String accept = request.headers.value(HttpHeaders.ACCEPT);
                 if (accept == "*/*" ||
                     accept.contains("application/json") ||

@@ -31,12 +31,12 @@ class AngelHttpException extends _AngelHttpExceptionBase {
   /// Throws a 500 Internal Server Error.
   /// Set includeRealException to true to print include the actual exception along with
   /// this error. Useful flag for development vs. production.
-  AngelHttpException(Exception exception,
-      {bool includeRealException: false, StackTrace stackTrace}) :super.base() {
+  AngelHttpException(error,
+      {bool includeRealError: false, StackTrace stackTrace}) :super.base() {
     statusCode = 500;
     message = "500 Internal Server Error";
-    if (includeRealException) {
-      errors.add(exception.toString());
+    if (includeRealError) {
+      errors.add(error.toString());
       if (stackTrace != null) {
         errors.add(stackTrace.toString());
       }

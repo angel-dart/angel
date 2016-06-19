@@ -1,5 +1,15 @@
 part of angel_framework.http;
 
+class Providers {
+  final String via;
+
+  const Providers._base(String this.via);
+
+  static final Providers SERVER = const Providers._base('server_side');
+  static final Providers REST = const Providers._base('rest');
+  static final Providers WEBSOCKET = const Providers._base('websocket');
+}
+
 /// A data store exposed to the Internet.
 class Service extends Routable {
   /// The [Angel] app powering this service.
@@ -16,17 +26,17 @@ class Service extends Routable {
   }
 
   /// Creates a resource.
-  Future create(Map data, [Map params]) {
+  Future create(data, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
   /// Modifies a resource.
-  Future modify(id, Map data, [Map params]) {
+  Future modify(id, data, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
   /// Overwrites a resource.
-  Future update(id, Map data, [Map params]) {
+  Future update(id, data, [Map params]) {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
@@ -36,19 +46,24 @@ class Service extends Routable {
   }
 
   Service() : super() {
-    get('/', (req, res) async => await this.index(req.query));
+    Map restProvider = {'provider': Providers.REST};
 
-    post('/', (req, res) async => await this.create(req.body));
+    get('/', (req, res) async => await this.index(
+        mergeMap([req.query, restProvider])));
+
+    post('/', (req, res) async => await this.create(
+        mergeMap([req.body, restProvider])));
 
     get('/:id', (req, res) async =>
-    await this.read(req.params['id'], req.query));
+    await this.read(req.params['id'], mergeMap([req.query, restProvider])));
 
     patch('/:id', (req, res) async => await this.modify(
-        req.params['id'], req.body));
+        req.params['id'], mergeMap([req.body, restProvider])));
 
     post('/:id', (req, res) async => await this.update(
-        req.params['id'], req.body));
+        req.params['id'], mergeMap([req.body, restProvider])));
 
-    delete('/:id', (req, res) async => await this.remove(req.params['id'], req.query));
+    delete('/:id', (req, res) async => await this.remove(
+        req.params['id'], mergeMap([req.query, restProvider])));
   }
 }

@@ -5,7 +5,7 @@ class MemoryService<T> extends Service {
   God god = new God();
   Map <int, T> items = {};
 
-  makeJson(int index, T t) {
+  _makeJson(int index, T t) {
     if (T == null || T == Map)
       return mergeMap([god.serializeToMap(t), {'id': index}]);
     else
@@ -15,7 +15,7 @@ class MemoryService<T> extends Service {
   Future<List> index([Map params]) async {
     return items.keys
         .where((index) => items[index] != null)
-        .map((index) => makeJson(index, items[index]))
+        .map((index) => _makeJson(index, items[index]))
         .toList();
   }
 
@@ -24,7 +24,7 @@ class MemoryService<T> extends Service {
     if (items.containsKey(desiredId)) {
       T found = items[desiredId];
       if (found != null) {
-        return makeJson(desiredId, found);
+        return _makeJson(desiredId, found);
       } else throw new AngelHttpException.NotFound();
     } else throw new AngelHttpException.NotFound();
   }
@@ -34,7 +34,7 @@ class MemoryService<T> extends Service {
       items[items.length] =
       (data is Map) ? god.deserializeFromMap(data, T) : data;
       T created = items[items.length - 1];
-      return makeJson(items.length - 1, created);
+      return _makeJson(items.length - 1, created);
     } catch (e) {
       throw new AngelHttpException.BadRequest(message: 'Invalid data.');
     }
@@ -48,7 +48,7 @@ class MemoryService<T> extends Service {
         data = mergeMap([existing, data]);
         items[desiredId] =
         (data is Map) ? god.deserializeFromMap(data, T) : data;
-        return makeJson(desiredId, items[desiredId]);
+        return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.BadRequest(message: 'Invalid data.');
       }
@@ -61,7 +61,7 @@ class MemoryService<T> extends Service {
       try {
         items[desiredId] =
         (data is Map) ? god.deserializeFromMap(data, T) : data;
-        return makeJson(desiredId, items[desiredId]);
+        return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.BadRequest(message: 'Invalid data.');
       }
@@ -73,7 +73,7 @@ class MemoryService<T> extends Service {
     if (items.containsKey(desiredId)) {
       T item = items[desiredId];
       items[desiredId] = null;
-      return makeJson(desiredId, item);
+      return _makeJson(desiredId, item);
     } else throw new AngelHttpException.NotFound();
   }
 
