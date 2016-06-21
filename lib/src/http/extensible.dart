@@ -1,6 +1,6 @@
 part of angel_framework.http;
 
-/// Basically an Expando whoops
+/// Supports accessing members of a Map as though they were actual members.
 class Extensible {
   /// A set of custom properties that can be assigned to the server.
   ///

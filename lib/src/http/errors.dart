@@ -1,8 +1,11 @@
 part of angel_framework.http;
 
 class _AngelHttpExceptionBase implements Exception {
+  /// An HTTP status code this exception will throw.
   int statusCode;
+  /// The cause of this exception.
   String message;
+  /// A list of errors that occurred when this exception was thrown.
   List<String> errors;
 
   _AngelHttpExceptionBase.base() {}

@@ -1,7 +1,6 @@
-import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart';
+import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';
 
 class Todo {
@@ -18,12 +17,10 @@ main() {
     Angel app;
     String url;
     http.Client client;
-    God god;
 
     setUp(() async {
       app = new Angel();
       client = new http.Client();
-      god = new God();
       Service todos = new MemoryService<Todo>();
       app.use('/todos', todos);
       print(app.service("todos"));
@@ -36,7 +33,6 @@ main() {
       url = null;
       client.close();
       client = null;
-      god = null;
     });
 
     group('memory', () {

@@ -1,10 +1,16 @@
 part of angel_framework.http;
 
+/// Represents an endpoint open for connection via the Internet.
 class Route {
+  /// A regular expression used to match URI's to this route.
   RegExp matcher;
+  /// The HTTP method this route responds to.
   String method;
+  /// An array of functions, Futures and objects that can respond to this route.
   List handlers = [];
+  /// The path this route is mounted on.
   String path;
+  /// (Optional) - A name for this route.
   String name;
 
   Route(String method, Pattern path, [List handlers]) {
@@ -35,6 +41,7 @@ class Route {
     return this;
   }
 
+  /// Generates a URI to this route with the given parameters.
   String makeUri([Map<String, dynamic> params]) {
     String result = path;
     if (params != null) {
@@ -46,6 +53,7 @@ class Route {
     return result;
   }
 
+  /// Enables one or more handlers to be called whenever this route is visited.
   Route middleware(handler) {
     if (handler is Iterable)
       handlers.addAll(handler);
@@ -53,7 +61,8 @@ class Route {
     return this;
   }
 
-  parseParameters(String requestPath) {
+  /// Extracts route parameters from a given path.
+  Map parseParameters(String requestPath) {
     Map result = {};
 
     Iterable<String> values = _parseParameters(requestPath);

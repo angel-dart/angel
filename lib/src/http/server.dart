@@ -16,7 +16,7 @@ class Angel extends Routable {
       (address, port) async => await HttpServer.bind(address, port);
 
   /// Default error handler, show HTML error page
-  var _errorHandler = (AngelHttpException e, req, ResponseContext res) {
+  AngelErrorHandler _errorHandler = (AngelHttpException e, req, ResponseContext res) {
     res.header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
     res.status(e.statusCode);
     res.write("<DOCTYPE html><html><head><title>${e.message}</title>");
@@ -28,8 +28,10 @@ class Angel extends Routable {
     res.end();
   };
 
-  var viewGenerator =
-      (String view, [Map data]) => "No view engine has been configured yet.";
+  /// A function that renders views.
+  ///
+  /// Called by [ResponseContext]@`render`.
+  ViewGenerator viewGenerator = (String view, [Map data]) async => "No view engine has been configured yet.";
 
   /// [RequestMiddleware] to be run before all requests.
   List before = [];
@@ -37,8 +39,12 @@ class Angel extends Routable {
   /// [RequestMiddleware] to be run after all requests.
   List after = [];
 
+  /// The native HttpServer running this instancce.
   HttpServer httpServer;
 
+  /// Starts the server.
+  ///
+  /// Returns false on failure; otherwise, returns the HttpServer.
   startServer(InternetAddress address, int port) async {
     var server =
         await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
@@ -193,7 +199,8 @@ class Angel extends Routable {
         hooked: hooked, middlewareNamespace: middlewareNamespace);
   }
 
-  onError(handler) {
+  /// Registers a callback to run upon errors.
+  onError(AngelErrorHandler handler) {
     _errorHandler = handler;
   }
 

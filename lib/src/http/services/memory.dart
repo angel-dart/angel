@@ -2,12 +2,11 @@ part of angel_framework.http;
 
 /// An in-memory [Service].
 class MemoryService<T> extends Service {
-  God god = new God();
   Map <int, T> items = {};
 
   _makeJson(int index, T t) {
     if (T == null || T == Map)
-      return mergeMap([god.serializeToMap(t), {'id': index}]);
+      return mergeMap([god.serializeObject(t), {'id': index}]);
     else
       return t;
   }
@@ -32,7 +31,7 @@ class MemoryService<T> extends Service {
   Future create(data, [Map params]) async {
     //try {
       print("Data: $data");
-      var created = (data is Map) ? god.deserializeFromMap(data, T) : data;
+      var created = (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
       print("Created $created");
       items[items.length] = created;
       return _makeJson(items.length - 1, created);
@@ -45,10 +44,10 @@ class MemoryService<T> extends Service {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
       try {
-        Map existing = god.serializeToMap(items[desiredId]);
+        Map existing = god.serializeObject(items[desiredId]);
         data = mergeMap([existing, data]);
         items[desiredId] =
-        (data is Map) ? god.deserializeFromMap(data, T) : data;
+        (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
         return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.BadRequest(message: 'Invalid data.');
@@ -61,7 +60,7 @@ class MemoryService<T> extends Service {
     if (items.containsKey(desiredId)) {
       try {
         items[desiredId] =
-        (data is Map) ? god.deserializeFromMap(data, T) : data;
+        (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
         return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.BadRequest(message: 'Invalid data.');

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart';
+import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';
 
 @Middleware(const ['interceptor'])
@@ -16,10 +16,8 @@ main() {
     Angel todos;
     String url;
     http.Client client;
-    God god;
 
     setUp(() async {
-      god = new God();
       angel = new Angel();
       nested = new Angel();
       todos = new Angel();
@@ -58,7 +56,6 @@ main() {
       client.close();
       client = null;
       url = null;
-      god = null;
     });
 
     test('Can match basic url', () async {

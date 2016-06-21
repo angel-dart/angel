@@ -1,16 +1,28 @@
 part of angel_framework.http;
 
+/// Indicates how the service was accessed.
+///
+/// This will be passed to the `params` object in a service method.
+/// When requested on the server side, this will be null.
 class Providers {
+  /// The transport through which the client is accessing this service.
   final String via;
 
-  const Providers._base(String this.via);
+  const Providers(String this.via);
 
-  static final Providers SERVER = const Providers._base('server_side');
-  static final Providers REST = const Providers._base('rest');
-  static final Providers WEBSOCKET = const Providers._base('websocket');
+  static const String VIA_REST = "rest";
+  static const String VIA_WEBSOCKET = "websocket";
+
+  /// Represents a request via REST.
+  static final Providers REST = const Providers(VIA_REST);
+
+  /// Represents a request over WebSockets.
+  static final Providers WEBSOCKET = const Providers(VIA_WEBSOCKET);
 }
 
-/// A data store exposed to the Internet.
+/// A front-facing interface that can present data to and operate on data on behalf of the user.
+///
+/// Heavily inspired by FeathersJS. <3
 class Service extends Routable {
   /// The [Angel] app powering this service.
   Angel app;

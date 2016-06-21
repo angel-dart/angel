@@ -2,6 +2,7 @@ part of angel_framework.http;
 
 /// Wraps another service in a service that broadcasts events on actions.
 class HookedService extends Service {
+  /// Tbe service that is proxied by this hooked one.
   final Service inner;
 
   HookedServiceEventDispatcher beforeIndexed =

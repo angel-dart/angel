@@ -1,14 +1,12 @@
 part of angel_framework.http;
 
 /// A function that asynchronously generates a view from the given path and data.
-typedef Future<String> ViewGenerator(String path, {Map data});
+typedef Future<String> ViewGenerator(String path, [Map data]);
 
 /// A convenience wrapper around an outgoing HTTP request.
 class ResponseContext extends Extensible {
   /// The [Angel] instance that is sending a response.
   Angel app;
-
-  God god = new God();
 
   /// Can we still write to this response?
   bool isOpen = true;

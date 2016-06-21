@@ -1,13 +1,13 @@
 part of angel_framework.http;
 
-/// Maps the given middleware(s) onto this handler.
+/// Annotation to map middleware onto a handler.
 class Middleware {
   final List handlers;
 
   const Middleware(List this.handlers);
 }
 
-/// This service will send an event after every action.
+/// Annotation to set a service up to release hooks on every action.
 class Hooked {
   const Hooked();
 }
