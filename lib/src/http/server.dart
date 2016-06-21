@@ -4,8 +4,8 @@ part of angel_framework.http;
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
 /// Handles an [AngelHttpException].
-typedef Future AngelErrorHandler(AngelHttpException err, RequestContext req,
-    ResponseContext res);
+typedef Future AngelErrorHandler(
+    AngelHttpException err, RequestContext req, ResponseContext res);
 
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
@@ -38,18 +38,16 @@ class Angel extends Routable {
   List after = [];
 
   HttpServer httpServer;
-  God god = new God();
 
   startServer(InternetAddress address, int port) async {
     var server =
-    await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
+        await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
     this.httpServer = server;
 
     server.listen((HttpRequest request) async {
-      String req_url = request.uri.toString().replaceAll(
-          new RegExp(r'\/+$'), '');
-      if (req_url.isEmpty)
-        req_url = '/';
+      String req_url =
+          request.uri.toString().replaceAll(new RegExp(r'\/+$'), '');
+      if (req_url.isEmpty) req_url = '/';
       RequestContext req = await RequestContext.from(request, {}, this, null);
       ResponseContext res = await ResponseContext.from(request.response, this);
 
@@ -109,8 +107,8 @@ class Angel extends Routable {
     return server;
   }
 
-  Future<bool> _applyHandler(handler, RequestContext req,
-      ResponseContext res) async {
+  Future<bool> _applyHandler(
+      handler, RequestContext req, ResponseContext res) async {
     if (handler is RequestMiddleware) {
       var result = await handler(req, res);
       if (result is bool)
@@ -191,8 +189,8 @@ class Angel extends Routable {
     if (routable is Service) {
       routable.app = this;
     }
-    super.use(
-        path, routable, hooked: hooked, middlewareNamespace: middlewareNamespace);
+    super.use(path, routable,
+        hooked: hooked, middlewareNamespace: middlewareNamespace);
   }
 
   onError(handler) {
@@ -205,27 +203,18 @@ class Angel extends Routable {
     if (stackTrace != null) stderr.write(stackTrace.toString());
   }
 
-  Angel
-      ()
-      :
-        super() {}
+  Angel() : super() {}
 
   /// Creates an HTTPS server.
   /// Provide paths to a certificate chain and server key (both .pem).
   /// If no password is provided, a random one will be generated upon running
   /// the server.
-  Angel.secure
-      (String certificateChainPath, String
-  serverKeyPath
-      ,
-      {
-      String password
-      })
-      : super()
-  {
+  Angel.secure(String certificateChainPath, String serverKeyPath,
+      {String password})
+      : super() {
     _serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
-      Platform.script.resolve('server_chain.pem').toFilePath();
+          Platform.script.resolve('server_chain.pem').toFilePath();
       var serverKey = Platform.script.resolve('server_key.pem').toFilePath();
       var serverContext = new SecurityContext();
       serverContext.useCertificateChain(certificateChain);
