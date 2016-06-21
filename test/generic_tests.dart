@@ -6,6 +6,11 @@ import 'package:json_god/json_god.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:test/test.dart';
 
+class Greeting {
+  final String to;
+  const Greeting(String this.to);
+}
+
 final headers = {
   HttpHeaders.ACCEPT: ContentType.JSON.mimeType,
   HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType
@@ -17,6 +22,12 @@ wireHooked(HookedService hooked) {
   });
 }
 
+wireGreeting(HookedService hooked) {
+  hooked.onCreated.listen((item) {
+    print("Greeting: $item");
+  });
+}
+
 main() {
   group('angel_mongo', () {
     Angel app = new Angel();
@@ -24,19 +35,28 @@ main() {
     God god = new God();
     Db db = new Db('mongodb://localhost:27017/angel_mongo');
     DbCollection testData;
+    DbCollection testGreetings;
     String url;
 
     setUp(() async {
       client = new http.Client();
       await db.open();
       testData = db.collection('test_data');
+      testGreetings = db.collection('test_greetings');
       // Delete anything before we start
       await testData.remove();
+      await testGreetings.remove();
+
       var service = new MongoService(testData);
       var hooked = new HookedService(service);
       wireHooked(hooked);
 
+      var greetings = new MongoService<Greeting>(testGreetings);
+      var hookedGreetings = new HookedService(greetings);
+      wireGreeting(hookedGreetings);
+
       app.use('/api', hooked);
+      app.use('/greetings', hookedGreetings);
       HttpServer server = await app.startServer(
           InternetAddress.LOOPBACK_IP_V4, 0);
       url = "http://${server.address.host}:${server.port}";
