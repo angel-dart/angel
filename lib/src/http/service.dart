@@ -48,20 +48,20 @@ class Service extends Routable {
   Service() : super() {
     Map restProvider = {'provider': Providers.REST};
 
-    get('/', (req, res) async => await this.index(
-        mergeMap([req.query, restProvider])));
+    get('/', (req, res) async {
+      return await this.index(mergeMap([req.query, restProvider]));
+    });
 
-    post('/', (req, res) async => await this.create(
-        mergeMap([req.body, restProvider])));
+    post('/', (req, res) async => await this.create(req.body, restProvider));
 
     get('/:id', (req, res) async =>
     await this.read(req.params['id'], mergeMap([req.query, restProvider])));
 
     patch('/:id', (req, res) async => await this.modify(
-        req.params['id'], mergeMap([req.body, restProvider])));
+        req.params['id'], req.body, restProvider));
 
     post('/:id', (req, res) async => await this.update(
-        req.params['id'], mergeMap([req.body, restProvider])));
+        req.params['id'], req.body, restProvider));
 
     delete('/:id', (req, res) async => await this.remove(
         req.params['id'], mergeMap([req.query, restProvider])));

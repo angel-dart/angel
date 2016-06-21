@@ -15,23 +15,24 @@ main() {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     };
-    Angel angel;
+    Angel app;
     String url;
     http.Client client;
     God god;
 
     setUp(() async {
-      angel = new Angel();
+      app = new Angel();
       client = new http.Client();
       god = new God();
       Service todos = new MemoryService<Todo>();
-      angel.use('/todos', todos);
-      await angel.startServer(null, 0);
-      url = "http://${angel.httpServer.address.host}:${angel.httpServer.port}";
+      app.use('/todos', todos);
+      print(app.service("todos"));
+      await app.startServer(null, 0);
+      url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
     });
 
     tearDown(() async {
-      angel = null;
+      app = null;
       url = null;
       client.close();
       client = null;

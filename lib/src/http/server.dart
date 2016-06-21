@@ -187,7 +187,7 @@ class Angel extends Routable {
 
   @override
   use(Pattern path, Routable routable,
-      {bool hooked: false, String middlewareNamespace: null}) {
+      {bool hooked: true, String middlewareNamespace: null}) {
     if (routable is Service) {
       routable.app = this;
     }

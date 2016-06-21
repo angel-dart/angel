@@ -30,14 +30,15 @@ class MemoryService<T> extends Service {
   }
 
   Future create(data, [Map params]) async {
-    try {
-      items[items.length] =
-      (data is Map) ? god.deserializeFromMap(data, T) : data;
-      T created = items[items.length - 1];
+    //try {
+      print("Data: $data");
+      var created = (data is Map) ? god.deserializeFromMap(data, T) : data;
+      print("Created $created");
+      items[items.length] = created;
       return _makeJson(items.length - 1, created);
-    } catch (e) {
+    /*} catch (e) {
       throw new AngelHttpException.BadRequest(message: 'Invalid data.');
-    }
+    }*/
   }
 
   Future modify(id, data, [Map params]) async {

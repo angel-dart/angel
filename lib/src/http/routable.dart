@@ -56,9 +56,23 @@ class Routable extends Extensible {
   /// is 'x', then that middleware will be available as 'x.y' in the main application.
   /// These namespaces can be nested.
   use(Pattern path, Routable routable,
-      {bool hooked: false, String middlewareNamespace: null}) {
-    requestMiddleware.addAll(routable.requestMiddleware);
-    for (Route route in routable.routes) {
+      {bool hooked: true, String middlewareNamespace: null}) {
+    Routable _routable = routable;
+
+    // If we need to hook this service, do it here. It has to be first, or
+    // else all routes will point to the old service.
+    if (_routable is Service) {
+      Hooked hookedDeclaration = _getAnnotation(_routable, Hooked);
+      Service service = (hookedDeclaration != null || hooked)
+          ? new HookedService(_routable)
+          : _routable;
+      services[path.toString().trim().replaceAll(
+          new RegExp(r'(^\/+)|(\/+$)'), '')] = service;
+      _routable = service;
+    }
+
+    requestMiddleware.addAll(_routable.requestMiddleware);
+    for (Route route in _routable.routes) {
       Route provisional = new Route('', path);
       if (route.path == '/') {
         route.path = '';
@@ -77,25 +91,16 @@ class Routable extends Extensible {
     if (middlewareNamespace != null)
       middlewarePrefix = "$middlewareNamespace.";
 
-    for (String middlewareName in routable.requestMiddleware.keys) {
+    for (String middlewareName in _routable.requestMiddleware.keys) {
       requestMiddleware["$middlewarePrefix$middlewareName"] =
-      routable.requestMiddleware[middlewareName];
+      _routable.requestMiddleware[middlewareName];
     }
 
     // Copy services, too. :)
-    for (Pattern servicePath in routable.services.keys) {
+    for (Pattern servicePath in _routable.services.keys) {
       String newServicePath = path.toString().trim().replaceAll(
           new RegExp(r'(^\/+)|(\/+$)'), '') + '/$servicePath';
-      services[newServicePath] = routable.services[servicePath];
-    }
-
-    if (routable is Service) {
-      Hooked hookedDeclaration = _getAnnotation(routable, Hooked);
-      Service service = (hookedDeclaration != null || hooked)
-          ? new HookedService(routable)
-          : routable;
-      services[path.toString().trim().replaceAll(
-          new RegExp(r'(^\/+)|(\/+$)'), '')] = service;
+      services[newServicePath] = _routable.services[servicePath];
     }
   }
 

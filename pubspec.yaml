@@ -1,13 +1,13 @@
 name: angel_framework
-version: 0.0.0-dev.18
+version: 0.0.0-dev.19
 description: Core libraries for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_framework
 dependencies:
-  body_parser: ">=1.0.0-dev <2.0.0"
-  json_god: ">=1.0.0 <2.0.0"
-  merge_map: ">=1.0.0 <2.0.0"
+  body_parser: ^1.0.0-dev
+  json_god: ^1.0.0
+  merge_map: ^1.0.0
   mime: ^0.9.3
 dev_dependencies:
-  http: ">= 0.11.3 < 0.12.0"
-  test: ">= 0.12.13 < 0.13.0"
+  http: ^0.11.3
+  test: ^0.12.13
