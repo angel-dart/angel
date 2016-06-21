@@ -4,11 +4,11 @@ version: 0.0.0-dev.0
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel
 dependencies:
-  angel_configuration: ">= 1.0.0-dev < 2.0.0"
-  angel_framework: ">=0.0.0-dev < 0.1.0"
-  angel_mustache: ">= 1.0.0-dev < 2.0.0"
-  angel_static: ">= 1.0.0-beta.1 < 1.1.0"
-  json_god: ">= 1.0.0 < 2.0.0"
+  angel_configuration: ">=1.0.0-dev <2.0.0"
+  angel_framework: ">=1.0.0-dev <2.0.0"
+  angel_mustache: ">=1.0.0-dev <2.0.0"
+  angel_static: ">=1.0.0 <1.1.0"
+  json_god: ">=2.0.0-beta <3.0.0"
 dev_dependencies:
-  http: ">= 0.11.3 < 0.12.0"
-  test: ">= 0.12.13 < 0.13.0"
+  http: ">=0.11.3 <0.12.0"
+  test: ">=0.12.13 <0.13.0"
