@@ -1,29 +1,33 @@
 part of angel_mongo;
 
+/// Manipulates data from MongoDB as Maps.
 class MongoService extends Service {
   DbCollection collection;
 
-  MongoService(DbCollection this.collection);
+  MongoService(DbCollection this.collection):super();
 
-  Map _jsonify(Map doc) {
+  Map _transformId(Map doc) {
+    Map result = mergeMap([doc]);
+    result['id'] = doc['_id'];
+
+    return result..remove('_id');
+  }
+
+  _jsonify(Map doc, [Map params]) {
     Map result = {};
     for (var key in doc.keys) {
       if (doc[key] is ObjectId) {
         result[key] = doc[key].toHexString();
-      } else result[key] = doc[key];
+      } else
+        result[key] = doc[key];
     }
-    return result;
-  }
 
-  _lastItem() async {
-    return (await (await collection.find(
-        where.sortBy('\$natural', descending: true))).toList())
-        .map(_jsonify)
-        .first;
+    return _transformId(result);
   }
 
   SelectorBuilder _makeQuery([Map params_]) {
     Map params = params_ ?? {};
+    params = params..remove('provider');
     SelectorBuilder result = where.exists('_id');
 
     for (var key in params.keys) {
@@ -43,9 +47,7 @@ class MongoService extends Service {
           // by that, ascending
           result = result.sortBy(params[key]);
         }
-      }
-
-      else if (key is String) {
+      } else if (key is String) {
         result = result.and(where.eq(key, params[key]));
       }
     }
@@ -56,37 +58,70 @@ class MongoService extends Service {
   @override
   Future<List> index([Map params]) async {
     return await (await collection.find(_makeQuery(params)))
-        .map(_jsonify)
+        .map((x) => _jsonify(x, params))
         .toList();
   }
 
   @override
-  Future create(data, [Map params]) async {
-    Map item = (data is Map) ? data : _god.serializeToMap(data);
-    item = mergeMap([item, params]);
-    item['createdAt'] = new DateTime.now();
-    await collection.insert(item);
-    return await _lastItem();
+  Future create(Map data, [Map params]) async {
+    Map item = (data is Map) ? data : god.serializeObject(data);
+    item = _removeSensitive(item);
+
+    try {
+      item['createdAt'] = new DateTime.now();
+      await collection.insert(item);
+      return await _lastItem(collection, _jsonify, params);
+    } catch (e, st) {
+      throw new AngelHttpException(e, stackTrace: st);
+    }
   }
 
   @override
   Future read(id, [Map params]) async {
-    ObjectId id_;
-    try {
-      id_ = (id is ObjectId) ? id : new ObjectId.fromHexString(
-          id.toString());
-    } catch (e) {
-      throw new AngelHttpException.BadRequest();
-    }
-
-    Map found = await collection.findOne(
-        where.id(id_).and(_makeQuery(params)));
+    ObjectId _id = _makeId(id);
+    Map found = await collection.findOne(where.id(_id).and(_makeQuery(params)));
 
     if (found == null) {
       throw new AngelHttpException.NotFound(
-          message: 'No record found for ID ${id_.toHexString()}');
+          message: 'No record found for ID ${_id.toHexString()}');
     }
 
-    return _jsonify(found);
+    return _jsonify(found, params);
   }
+
+  @override
+  Future modify(id, Map data, [Map params]) async {
+    Map target = await read(id, params);
+    Map result = mergeMap([target, _removeSensitive(data)]);
+    result['updatedAt'] = new DateTime.now();
+
+    try {
+      await collection.update(where.id(_makeId(id)), result);
+      result = _jsonify(result, params);
+      result['id'] = id;
+      return result;
+    } catch (e, st) {
+      throw new AngelHttpException(e, stackTrace: st);
+    }
+  }
+
+  @override
+  Future update(id, data, [Map params]) async {
+    Map target = await read(id, params);
+    Map result = _removeSensitive(data);
+    result['_id'] = _makeId(id);
+    result['createdAt'] = target['createdAt'];
+    result['updatedAt'] = new DateTime.now();
+
+    try {
+      await collection.update(where.id(_makeId(id)), result);
+      result = _jsonify(result, params);
+      result['id'] = id;
+      return result;
+    } catch (e, st) {
+      throw new AngelHttpException(e, stackTrace: st);
+    }
+  }
+
+
 }

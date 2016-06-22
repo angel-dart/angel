@@ -2,63 +2,53 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mongo/angel_mongo.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart';
+import 'package:json_god/json_god.dart' as god;
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:test/test.dart';
-
-class Greeting {
-  final String to;
-  const Greeting(String this.to);
-}
 
 final headers = {
   HttpHeaders.ACCEPT: ContentType.JSON.mimeType,
   HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType
 };
 
-wireHooked(HookedService hooked) {
-  hooked.onCreated.listen((item) {
-    print("Just created: $item");
-  });
-}
+final Map testGreeting = {'to': 'world'};
 
-wireGreeting(HookedService hooked) {
-  hooked.onCreated.listen((item) {
-    print("Greeting: $item");
-  });
+wireHooked(HookedService hooked) {
+  hooked
+    ..afterCreated.listen((HookedServiceEvent event) {
+      print("Just created: ${event.result}");
+    })
+    ..afterModified.listen((HookedServiceEvent event) {
+      print("Just modified: ${event.result}");
+    })
+    ..afterUpdated.listen((HookedServiceEvent event) {
+      print("Just updated: ${event.result}");
+    });
 }
 
 main() {
   group('angel_mongo', () {
     Angel app = new Angel();
     http.Client client;
-    God god = new God();
     Db db = new Db('mongodb://localhost:27017/angel_mongo');
     DbCollection testData;
-    DbCollection testGreetings;
     String url;
+    HookedService Greetings;
 
     setUp(() async {
       client = new http.Client();
       await db.open();
       testData = db.collection('test_data');
-      testGreetings = db.collection('test_greetings');
       // Delete anything before we start
       await testData.remove();
-      await testGreetings.remove();
 
       var service = new MongoService(testData);
-      var hooked = new HookedService(service);
-      wireHooked(hooked);
+      Greetings = new HookedService(service);
+      wireHooked(Greetings);
 
-      var greetings = new MongoService<Greeting>(testGreetings);
-      var hookedGreetings = new HookedService(greetings);
-      wireGreeting(hookedGreetings);
-
-      app.use('/api', hooked);
-      app.use('/greetings', hookedGreetings);
-      HttpServer server = await app.startServer(
-          InternetAddress.LOOPBACK_IP_V4, 0);
+      app.use('/api', Greetings);
+      HttpServer server =
+      await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
       url = "http://${server.address.host}:${server.port}";
     });
 
@@ -69,13 +59,12 @@ main() {
       await app.httpServer.close(force: true);
       client = null;
       url = null;
+      Greetings = null;
     });
 
     test('insert items', () async {
-      Map testUser = {'hello': 'world'};
-
-      var response = await client.post(
-          "$url/api", body: god.serialize(testUser), headers: headers);
+      var response = await client.post("$url/api",
+          body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, equals(HttpStatus.OK));
 
       response = await client.get("$url/api");
@@ -85,42 +74,56 @@ main() {
     });
 
     test('read item', () async {
-      Map testUser = {'hello': 'world'};
-      var response = await client.post(
-          "$url/api", body: god.serialize(testUser), headers: headers);
+      var response = await client.post("$url/api",
+          body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, equals(HttpStatus.OK));
       Map created = god.deserialize(response.body);
 
-      response = await client.get("$url/api/${created['_id']}");
+      response = await client.get("$url/api/${created['id']}");
       expect(response.statusCode, equals(HttpStatus.OK));
       Map read = god.deserialize(response.body);
-      expect(read['_id'], equals(created['_id']));
-      expect(read['hello'], equals('world'));
+      expect(read['id'], equals(created['id']));
+      expect(read['to'], equals('world'));
       expect(read['createdAt'], isNot(null));
     });
 
     test('modify item', () async {
+      var response = await client.post("$url/api",
+          body: god.serialize(testGreeting), headers: headers);
+      expect(response.statusCode, equals(HttpStatus.OK));
+      Map created = god.deserialize(response.body);
 
+      response = await client.patch(
+          "$url/api/${created['id']}", body: god.serialize({"to": "Mom"}),
+          headers: headers);
+      Map modified = god.deserialize(response.body);
+      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(modified['id'], equals(created['id']));
+      expect(modified['to'], equals('Mom'));
+      expect(modified['updatedAt'], isNot(null));
     });
 
     test('update item', () async {
+      var response = await client.post("$url/api",
+          body: god.serialize(testGreeting), headers: headers);
+      expect(response.statusCode, equals(HttpStatus.OK));
+      Map created = god.deserialize(response.body);
 
+      response = await client.post(
+          "$url/api/${created['id']}", body: god.serialize({"to": "Updated"}),
+          headers: headers);
+      Map modified = god.deserialize(response.body);
+      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(modified['id'], equals(created['id']));
+      expect(modified['to'], equals('Updated'));
+      expect(modified['updatedAt'], isNot(null));
     });
 
-    test('remove item', () async {
+    test('remove item', () async {});
 
+    test(r'$sort', () async {
     });
 
-    test('sort by string', () async {
-
-    });
-
-    test('sort by map', () async {
-
-    });
-
-    test('query parameters', () async {
-
-    });
+    test('query parameters', () async {});
   });
 }
