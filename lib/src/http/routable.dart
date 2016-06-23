@@ -70,8 +70,7 @@ class Routable extends Extensible {
           new RegExp(r'(^\/+)|(\/+$)'), '')] = service;
       _routable = service;
     }
-
-    requestMiddleware.addAll(_routable.requestMiddleware);
+    
     for (Route route in _routable.routes) {
       Route provisional = new Route('', path);
       if (route.path == '/') {
