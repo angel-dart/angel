@@ -28,7 +28,7 @@ class User extends Model {
 Db db = new Db('mongodb://localhost:27017/local');
 await db.open();
 
-app.use('/api/users', new MongoTypedService<User>());
+app.use('/api/users', new MongoTypedService<User>(db.collection("users")));
 
 app.service('api/users').afterCreated.listen((HookedServiceEvent event) {
 	print("New user: ${event.result}");
