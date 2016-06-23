@@ -52,7 +52,7 @@ class Angel extends Routable {
 
     server.listen((HttpRequest request) async {
       String req_url =
-          request.uri.toString().replaceAll(new RegExp(r'\/+$'), '');
+          request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(new RegExp(r'\/+$'), '');
       if (req_url.isEmpty) req_url = '/';
       RequestContext req = await RequestContext.from(request, {}, this, null);
       ResponseContext res = await ResponseContext.from(request.response, this);
@@ -95,7 +95,7 @@ class Angel extends Routable {
         if (!canContinue) break;
         if (route.matcher.hasMatch(req_url) &&
             (request.method == route.method || route.method == '*')) {
-          req.params = route.parseParameters(request.uri.toString());
+          req.params = route.parseParameters(req_url);
           req.route = route;
 
           for (var handler in route.handlers) {

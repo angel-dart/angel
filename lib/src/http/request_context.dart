@@ -73,7 +73,7 @@ class RequestContext extends Extensible {
     context.contentType = request.headers.contentType;
     context.remoteAddress = request.connectionInfo.remoteAddress;
     context.params = parameters;
-    context.path = request.uri.toString();
+    context.path = request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(new RegExp(r'\/+$'), '');
     context.route = sourceRoute;
     context.session = request.session;
     context.underlyingRequest = request;

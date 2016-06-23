@@ -60,22 +60,46 @@ class Service extends Routable {
   Service() : super() {
     Map restProvider = {'provider': Providers.REST};
 
+    Middleware indexMiddleware = _getAnnotation(this.index, Middleware);
     get('/', (req, res) async {
       return await this.index(mergeMap([req.query, restProvider]));
-    });
+    }, middleware: (indexMiddleware == null) ? [] : indexMiddleware.handlers);
 
-    post('/', (req, res) async => await this.create(req.body, restProvider));
+    Middleware createMiddleware = _getAnnotation(this.create, Middleware);
+    post('/', (req, res) async => await this.create(req.body, restProvider),
+        middleware:
+            (createMiddleware == null) ? [] : createMiddleware.handlers);
 
-    get('/:id', (req, res) async =>
-    await this.read(req.params['id'], mergeMap([req.query, restProvider])));
+    Middleware readMiddleware = _getAnnotation(this.read, Middleware);
 
-    patch('/:id', (req, res) async => await this.modify(
-        req.params['id'], req.body, restProvider));
+    get(
+        '/:id',
+        (req, res) async => await this
+            .read(req.params['id'], mergeMap([req.query, restProvider])),
+        middleware: (readMiddleware == null) ? [] : readMiddleware.handlers);
 
-    post('/:id', (req, res) async => await this.update(
-        req.params['id'], req.body, restProvider));
+    Middleware modifyMiddleware = _getAnnotation(this.modify, Middleware);
+    patch(
+        '/:id',
+        (req, res) async =>
+            await this.modify(req.params['id'], req.body, restProvider),
+        middleware:
+            (modifyMiddleware == null) ? [] : modifyMiddleware.handlers);
 
-    delete('/:id', (req, res) async => await this.remove(
-        req.params['id'], mergeMap([req.query, restProvider])));
+    Middleware updateMiddleware = _getAnnotation(this.update, Middleware);
+    post(
+        '/:id',
+        (req, res) async =>
+            await this.update(req.params['id'], req.body, restProvider),
+        middleware:
+            (updateMiddleware == null) ? [] : updateMiddleware.handlers);
+
+    Middleware removeMiddleware = _getAnnotation(this.remove, Middleware);
+    delete(
+        '/:id',
+        (req, res) async => await this
+            .remove(req.params['id'], mergeMap([req.query, restProvider])),
+        middleware:
+            (removeMiddleware == null) ? [] : removeMiddleware.handlers);
   }
 }

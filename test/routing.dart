@@ -9,6 +9,14 @@ testMiddlewareMetadata(RequestContext req, ResponseContext res) async {
   return "This should not be shown.";
 }
 
+class QueryService extends Service {
+  @override
+  @Middleware(const ['intercept_service', 'interceptor'])
+  read(id, [Map params]) {
+    return params;
+  }
+}
+
 main() {
   group('routing', () {
     Angel angel;
@@ -22,10 +30,16 @@ main() {
       nested = new Angel();
       todos = new Angel();
 
-      angel.registerMiddleware('interceptor', (req, res) async {
-        res.write('Middleware');
-        return false;
-      });
+      angel
+        ..registerMiddleware('interceptor', (req, res) async {
+          res.write('Middleware');
+          return false;
+        })
+        ..registerMiddleware('intercept_service',
+            (RequestContext req, res) async {
+          print("Intercepting a service!");
+          return true;
+        });
 
       todos.get('/action/:action', (req, res) => res.json(req.params));
       nested.post('/ted/:route', (req, res) => res.json(req.params));
@@ -37,11 +51,24 @@ main() {
       angel.post('/lambda', (req, res) => req.body);
       angel.use('/nes', nested);
       angel.use('/todos/:id', todos);
-      angel.get('/greet/:name', (RequestContext req, res) async => "Hello ${req.params['name']}").as('Named routes');
+      angel
+          .get('/greet/:name',
+              (RequestContext req, res) async => "Hello ${req.params['name']}")
+          .as('Named routes');
       angel.get('/named', (req, ResponseContext res) async {
         res.redirectTo('Named routes', {'name': 'tests'});
       });
+      angel.get('/log', (RequestContext req, res) async {
+        print("Query: ${req.query}");
+        return "Logged";
+      });
+      angel.use('/query', new QueryService());
       angel.get('*', 'MJ');
+
+      print("DUMPING ROUTES: ");
+      for (Route route in angel.routes) {
+        print("${route.method} ${route.path} - ${route.handlers}");
+      }
 
       client = new http.Client();
       await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
@@ -97,8 +124,8 @@ main() {
     test('Can serialize function result as JSON', () async {
       Map headers = {'Content-Type': 'application/json'};
       String postData = god.serialize({'it': 'works'});
-      var response = await client.post(
-          "$url/lambda", headers: headers, body: postData);
+      var response =
+          await client.post("$url/lambda", headers: headers, body: postData);
       expect(god.deserialize(response.body)['it'], equals('works'));
     });
 
@@ -118,6 +145,17 @@ main() {
       var response = await client.get('$url/named');
       print(response.body);
       expect(god.deserialize(response.body), equals('Hello tests'));
+    });
+
+    test('Match routes, even with query params', () async {
+      var response =
+          await client.get("$url/log?foo=bar&bar=baz&baz.foo=bar&baz.bar=foo");
+      print(response.body);
+      expect(god.deserialize(response.body), equals('Logged'));
+
+      response = await client.get("$url/query/foo?bar=baz");
+      print(response.body);
+      expect(response.body, equals("Middleware"));
     });
   });
 }

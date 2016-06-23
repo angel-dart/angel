@@ -6,29 +6,32 @@ class HookedService extends Service {
   final Service inner;
 
   HookedServiceEventDispatcher beforeIndexed =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher beforeRead = new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher beforeCreated =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher beforeModified =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher beforeUpdated =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher beforeRemoved =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher afterIndexed =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher afterRead = new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher afterCreated =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher afterModified =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher afterUpdated =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
   HookedServiceEventDispatcher afterRemoved =
-  new HookedServiceEventDispatcher();
+      new HookedServiceEventDispatcher();
 
-  HookedService(Service this.inner) : super() {}
+  HookedService(Service this.inner) {
+    // Clone all routes, including middleware
+    routes..clear()..addAll(inner.routes);
+  }
 
   @override
   Future<List> index([Map params]) async {
