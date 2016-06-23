@@ -4,14 +4,7 @@ part of angel_mongo;
 class MongoService extends Service {
   DbCollection collection;
 
-  MongoService(DbCollection this.collection):super();
-
-  Map _transformId(Map doc) {
-    Map result = mergeMap([doc]);
-    result['id'] = doc['_id'];
-
-    return result..remove('_id');
-  }
+  MongoService(DbCollection this.collection) : super();
 
   _jsonify(Map doc, [Map params]) {
     Map result = {};
@@ -123,5 +116,15 @@ class MongoService extends Service {
     }
   }
 
+  @override
+  Future remove(id, [Map params]) async {
+    Map result = await read(id, params);
 
+    try {
+      await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
+      return result;
+    } catch (e, st) {
+      throw new AngelHttpException(e, stackTrace: st);
+    }
+  }
 }

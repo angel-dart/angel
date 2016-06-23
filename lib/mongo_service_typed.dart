@@ -4,17 +4,10 @@ part of angel_mongo;
 class MongoTypedService<T> extends Service {
   DbCollection collection;
 
-  MongoTypedService(DbCollection this.collection):super() {
+  MongoTypedService(DbCollection this.collection) : super() {
     if (!reflectType(T).isAssignableTo(reflectType(Model)))
       throw new Exception(
           "If you specify a type for MongoService, it must be dynamic, Map, or extend from Model.");
-  }
-
-  Map _transformId(Map doc) {
-    Map result = mergeMap([doc]);
-    result['id'] = doc['_id'];
-
-    return result..remove('_id');
   }
 
   _jsonify(Map doc, [Map params]) {
@@ -31,8 +24,7 @@ class MongoTypedService<T> extends Service {
     // Clients will always receive JSON.
     if ((params != null && params['provider'] != null)) {
       return result;
-    }
-    else {
+    } else {
       // However, when we run server-side, we should return a T, not a Map.
       Model typedResult = god.deserializeDatum(result, outputType: T);
       typedResult.createdAt = result['createdAt'];
@@ -54,7 +46,7 @@ class MongoTypedService<T> extends Service {
 
     try {
       Model target =
-      (data is T) ? data : god.deserializeDatum(data, outputType: T);
+          (data is T) ? data : god.deserializeDatum(data, outputType: T);
       item = god.serializeObject(target);
       item = _removeSensitive(item);
 
@@ -86,8 +78,8 @@ class MongoTypedService<T> extends Service {
   Future modify(id, Map data, [Map params]) async {
     ObjectId _id = _makeId(id);
     try {
-      Map result = await collection.findOne(
-          where.id(_id).and(_makeQuery(params)));
+      Map result =
+          await collection.findOne(where.id(_id).and(_makeQuery(params)));
 
       if (result == null) {
         throw new AngelHttpException.NotFound(
@@ -108,8 +100,8 @@ class MongoTypedService<T> extends Service {
   @override
   Future update(id, _data, [Map params]) async {
     try {
-      Model data = (_data is T) ? _data : god.deserializeDatum(
-          _data, outputType: T);
+      Model data =
+          (_data is T) ? _data : god.deserializeDatum(_data, outputType: T);
       ObjectId _id = _makeId(id);
       Map rawData = _removeSensitive(god.serializeObject(data));
       rawData['_id'] = _id;
@@ -123,6 +115,18 @@ class MongoTypedService<T> extends Service {
         result.createdAt = data.createdAt;
         result.updatedAt = rawData['updatedAt'];
       }
+      return result;
+    } catch (e, st) {
+      throw new AngelHttpException(e, stackTrace: st);
+    }
+  }
+
+  @override
+  Future remove(id, [Map params]) async {
+    Map result = await read(id, params);
+
+    try {
+      await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
       return result;
     } catch (e, st) {
       throw new AngelHttpException(e, stackTrace: st);

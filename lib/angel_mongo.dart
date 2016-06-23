@@ -23,7 +23,6 @@ class Model {
   DateTime updatedAt;
 }
 
-
 Map _transformId(Map doc) {
   Map result = mergeMap([doc]);
   result['id'] = doc['_id'];
@@ -33,8 +32,8 @@ Map _transformId(Map doc) {
 
 _lastItem(DbCollection collection, Function _jsonify, [Map params]) async {
   return (await (await collection
-      .find(where.sortBy('\$natural', descending: true)))
-      .toList())
+              .find(where.sortBy('\$natural', descending: true)))
+          .toList())
       .map((x) => _jsonify(x, params))
       .first;
 }
@@ -48,8 +47,11 @@ ObjectId _makeId(id) {
 }
 
 Map _removeSensitive(Map data) {
-  return data..remove('id')..remove('_id')..remove('createdAt')..remove(
-      'updatedAt');
+  return data
+    ..remove('id')
+    ..remove('_id')
+    ..remove('createdAt')
+    ..remove('updatedAt');
 }
 
 SelectorBuilder _makeQuery([Map params_]) {
