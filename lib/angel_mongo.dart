@@ -60,11 +60,12 @@ SelectorBuilder _makeQuery([Map params_]) {
   SelectorBuilder result = where.exists('_id');
 
   // You can pass a SelectorBuilder as 'query';
-  if (params['query'] != null && params['query'] is SelectorBuilder)
+  if (params['query'] != null && params['query'] is SelectorBuilder) {
     return params['query'];
+  }
 
   for (var key in params.keys) {
-    if (key == r'$sort') {
+    if (key == r'$sort' || key == r'$query') {
       if (params[key] is Map) {
         // If they send a map, then we'll sort by every key in the map
         for (String fieldName in params[key].keys.where((x) => x is String)) {
@@ -73,9 +74,11 @@ SelectorBuilder _makeQuery([Map params_]) {
             result = result.sortBy(fieldName, descending: sorter == -1);
           } else if (sorter is String) {
             result = result.sortBy(fieldName, descending: sorter == "-1");
+          } else if (sorter is SelectorBuilder) {
+            result = result.and(sorter);
           }
         }
-      } else if (params[key] is String) {
+      } else if (params[key] is String && key == r'$sort') {
         // If they send just a string, then we'll sort
         // by that, ascending
         result = result.sortBy(params[key]);

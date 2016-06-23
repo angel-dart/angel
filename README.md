@@ -24,6 +24,15 @@ class User extends Model {
   String username;
   String password;
 }
+
+Db db = new Db('mongodb://localhost:27017/local');
+await db.open();
+
+app.use('/api/users', new MongoTypedService<User>());
+
+app.service('api/users').afterCreated.listen((HookedServiceEvent event) {
+	print("New user: ${event.result}");
+});
 ```
 
 ## MongoService
@@ -31,5 +40,22 @@ This class interacts with a `DbCollection` (from mongo_dart) and serializing dat
 
 ## MongoTypedService<T>
 Does the same as above, but serializes to and from a target class using json_god and its support for reflection.
+
+## Querying
+You can query these services as follows:
+
+    /path/to/service?foo=bar
+
+The above will query the database to find records where 'foo' equals 'bar'. Thanks to body_parser, this
+also works with numbers, and even Maps.
+
+	/path/to/service?$sort=createdAt
+	/path/to/service?$sort.createdAt=1
+
+The former will sort result in ascending order of creation, and so will the latter. 
+
+    List queried = await MyService.index({r"$query": where.id(new ObjectId.fromHexString("some hex string"})));
+
+And, of course, you can use mongo_dart queries. Just pass it as `query` within `params`.
 
 See the tests for more usage examples.

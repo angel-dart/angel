@@ -18,36 +18,6 @@ class MongoService extends Service {
     return _transformId(result);
   }
 
-  SelectorBuilder _makeQuery([Map params_]) {
-    Map params = params_ ?? {};
-    params = params..remove('provider');
-    SelectorBuilder result = where.exists('_id');
-
-    for (var key in params.keys) {
-      if (key == r'$sort') {
-        if (params[key] is Map) {
-          // If they send a map, then we'll sort by every key in the map
-          for (String fieldName in params[key].keys.where((x) => x is String)) {
-            var sorter = params[key][fieldName];
-            if (sorter is num) {
-              result = result.sortBy(fieldName, descending: sorter == -1);
-            } else if (sorter is String) {
-              result = result.sortBy(fieldName, descending: sorter == "-1");
-            }
-          }
-        } else if (params[key] is String) {
-          // If they send just a string, then we'll sort
-          // by that, ascending
-          result = result.sortBy(params[key]);
-        }
-      } else if (key is String) {
-        result = result.and(where.eq(key, params[key]));
-      }
-    }
-
-    return result;
-  }
-
   @override
   Future<List> index([Map params]) async {
     return await (await collection.find(_makeQuery(params)))

@@ -33,7 +33,7 @@ wireHooked(HookedService hooked) {
 }
 
 main() {
-  group('angel_mongo', () {
+  group('Typed Tests', () {
     Angel app = new Angel();
     http.Client client;
     Db db = new Db('mongodb://localhost:27017/angel_mongo');
@@ -155,8 +155,37 @@ main() {
       expect((await Greetings.index()).length, equals(lastCount - 1));
     });
 
-    test(r'$sort', () async {});
+    test('\$sort and query parameters', () async {
+      // Search by where.eq
+      Greeting world = await Greetings.create(new Greeting(to: "world"));
+      Greeting Mom = await Greetings.create(new Greeting(to: "Mom"));
+      Greeting Updated = await Greetings.create(new Greeting(to: "Updated"));
 
-    test('query parameters', () async {});
+      var response = await client.get("$url/api?to=world");
+      print(response.body);
+      List queried = god.deserialize(response.body);
+      expect(queried.length, equals(1));
+      expect(queried[0].keys.length, equals(4));
+      expect(queried[0]["id"], equals(world.id));
+      expect(queried[0]["to"], equals(world.to));
+      expect(
+          queried[0]["createdAt"], equals(world.createdAt.toIso8601String()));
+
+      response = await client.get("$url/api?\$sort.createdAt=-1");
+      print(response.body);
+      queried = god.deserialize(response.body);
+      expect(queried[0]["id"], equals(Updated.id));
+      expect(queried[1]["id"], equals(Mom.id));
+      expect(queried[2]["id"], equals(world.id));
+
+      queried = await Greetings.index({
+        "\$query": {"_id": where.id(new ObjectId.fromHexString(world.id))}
+      });
+      print(queried.map(god.serialize).toList());
+      expect(queried.length, equals(1));
+      expect(queried[0].id, equals(world.id));
+      expect(queried[0].to, equals(world.to));
+      expect(queried[0].createdAt, equals(world.createdAt));
+    });
   });
 }
