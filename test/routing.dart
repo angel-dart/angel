@@ -9,9 +9,10 @@ testMiddlewareMetadata(RequestContext req, ResponseContext res) async {
   return "This should not be shown.";
 }
 
+@Middleware(const ['intercept_service'])
 class QueryService extends Service {
   @override
-  @Middleware(const ['intercept_service', 'interceptor'])
+  @Middleware(const ['interceptor'])
   read(id, [Map params]) {
     return params;
   }

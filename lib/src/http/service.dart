@@ -60,6 +60,12 @@ class Service extends Routable {
   Service() : super() {
     Map restProvider = {'provider': Providers.REST};
 
+    // Add global middleware if declared on the instance itself
+    Middleware before = _getAnnotation(this, Middleware);
+    if (before != null) {
+      routes.add(new Route("*", "*", before.handlers));
+    }
+
     Middleware indexMiddleware = _getAnnotation(this.index, Middleware);
     get('/', (req, res) async {
       return await this.index(mergeMap([req.query, restProvider]));
