@@ -4,17 +4,21 @@ import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
-  Angel app = await createServer();
+  runZoned(startServer, onError: onError);
+}
 
-  runZoned(() async {
-    await app.startServer(
-        new InternetAddress(app.properties['host']), app.properties['port']);
-    print("Angel server listening on ${app.httpServer.address.host}:${app
-        .httpServer.port}");
-  }, onError: (error, [StackTrace stackTrace]) {
-    stderr.writeln("Unhandled error occurred: $error");
-    if (stackTrace != null) {
-      stderr.writeln(stackTrace);
-    }
-  });
+startServer() async {
+  Angel app = await createServer();
+  InternetAddress host = new InternetAddress(app.properties['host']);
+  int port = app.properties['port'];
+
+  await app.startServer(host, port);
+  print("Angel server listening on ${host.address}:${port}");
+}
+
+onError(error, [StackTrace stackTrace]) {
+  stderr.writeln("Unhandled error occurred: $error");
+  if (stackTrace != null) {
+    stderr.writeln(stackTrace);
+  }
 }

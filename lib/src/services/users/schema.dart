@@ -1,0 +1,1 @@
+const Map UserSchema = const {};
