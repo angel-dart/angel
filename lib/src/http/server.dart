@@ -195,7 +195,7 @@ class Angel extends Routable {
     if (routable is Service) {
       routable.app = this;
     }
-    super.use(path, routable,
+    return super.use(path, routable,
         hooked: hooked, middlewareNamespace: middlewareNamespace);
   }
 

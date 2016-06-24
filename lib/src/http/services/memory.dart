@@ -30,9 +30,7 @@ class MemoryService<T> extends Service {
 
   Future create(data, [Map params]) async {
     //try {
-      print("Data: $data");
       var created = (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
-      print("Created $created");
       items[items.length] = created;
       return _makeJson(items.length - 1, created);
     /*} catch (e) {

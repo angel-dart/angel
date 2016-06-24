@@ -6,6 +6,8 @@ import 'package:test/test.dart';
 class Todo {
   String text;
   String over;
+
+  Todo({String this.text, String this.over});
 }
 
 main() {
