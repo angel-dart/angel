@@ -4,19 +4,32 @@ library angel_client;
 import 'dart:async';
 import 'dart:convert' show JSON;
 import 'package:http/http.dart';
+import 'package:json_god/json_god.dart' as god;
+
 part 'rest.dart';
 
+/// A function that configures an [Angel] client in some way.
+typedef Future AngelConfigurer(Angel app);
 
 /// Represents an Angel server that we are querying.
 abstract class Angel {
   String basePath;
 
   Angel(String this.basePath);
-  Service service(Pattern path);
+
+  /// Applies an [AngelConfigurer] to this instance.
+  Future configure(AngelConfigurer configurer) async {
+    await configurer(this);
+  }
+
+  Service service(Pattern path, {Type type});
 }
 
 /// Queries a service on an Angel server, with the same API.
 abstract class Service {
+  /// The Angel instance powering this service.
+  Angel app;
+
   /// Retrieves all resources.
   Future<List> index([Map params]);
 
