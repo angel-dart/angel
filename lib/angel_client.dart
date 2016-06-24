@@ -2,7 +2,18 @@
 library angel_client;
 
 import 'dart:async';
-export 'src/rest.dart';
+import 'dart:convert' show JSON;
+import 'package:http/http.dart';
+part 'rest.dart';
+
+
+/// Represents an Angel server that we are querying.
+abstract class Angel {
+  String basePath;
+
+  Angel(String this.basePath);
+  Service service(Pattern path);
+}
 
 /// Queries a service on an Angel server, with the same API.
 abstract class Service {

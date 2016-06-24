@@ -1,9 +1,4 @@
-library angel_client.rest;
-
-import 'dart:async';
-import 'dart:convert' show JSON;
-import 'package:http/http.dart';
-import '../angel_client.dart';
+part of angel_client;
 
 _buildQuery(Map params) {
   if (params == null || params == {})
@@ -22,12 +17,24 @@ const Map _writeHeaders = const {
   "Content-Type": "application/json"
 };
 
+class Rest extends Angel {
+  BaseClient client;
+
+  Rest(String path, BaseClient this.client):super(path);
+
+  @override
+  RestService service(String path) {
+    String uri = path.replaceAll(new RegExp(r"(^\/)|(\/+$)"), "");
+    return new RestService._base("$basePath/$uri", client);
+  }
+}
+
 /// Queries an Angel service via REST.
 class RestService extends Service {
   String basePath;
   BaseClient client;
 
-  RestService(Pattern path, BaseClient this.client) {
+  RestService._base(Pattern path, BaseClient this.client) {
     this.basePath = (path is RegExp) ? path.pattern : path;
   }
 
