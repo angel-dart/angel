@@ -1,14 +1,23 @@
 part of angel_framework.http;
 
+/// Represents data that can be serialized into a MemoryService;
+class MemoryModel {
+  int id;
+}
+
 /// An in-memory [Service].
 class MemoryService<T> extends Service {
-  Map <int, T> items = {};
+  Map <int, MemoryModel> items = {};
 
-  _makeJson(int index, T t) {
-    if (T == null || T == Map)
-      return mergeMap([god.serializeObject(t), {'id': index}]);
-    else
-      return t;
+  MemoryService() :super() {
+    if (!reflectType(T).isAssignableTo(reflectType(MemoryModel))) {
+      throw new Exception(
+          "MemoryServices only support classes that inherit from MemoryModel.");
+    }
+  }
+
+  _makeJson(int index, MemoryModel t) {
+    return t..id = index;
   }
 
   Future<List> index([Map params]) async {
@@ -21,7 +30,7 @@ class MemoryService<T> extends Service {
   Future read(id, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
-      T found = items[desiredId];
+      MemoryModel found = items[desiredId];
       if (found != null) {
         return _makeJson(desiredId, found);
       } else throw new AngelHttpException.NotFound();
@@ -30,9 +39,12 @@ class MemoryService<T> extends Service {
 
   Future create(data, [Map params]) async {
     //try {
-      var created = (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
-      items[items.length] = created;
-      return _makeJson(items.length - 1, created);
+    MemoryModel created = (data is MemoryModel) ? data : god.deserializeDatum(
+        data, outputType: T);
+
+    created.id = items.length;
+    items[created.id] = created;
+    return created;
     /*} catch (e) {
       throw new AngelHttpException.BadRequest(message: 'Invalid data.');
     }*/
@@ -69,11 +81,9 @@ class MemoryService<T> extends Service {
   Future remove(id, [Map params]) async {
     int desiredId = int.parse(id.toString());
     if (items.containsKey(desiredId)) {
-      T item = items[desiredId];
+      MemoryModel item = items[desiredId];
       items[desiredId] = null;
       return _makeJson(desiredId, item);
     } else throw new AngelHttpException.NotFound();
   }
-
-  MemoryService() : super();
 }
