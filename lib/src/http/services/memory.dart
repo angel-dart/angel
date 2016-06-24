@@ -7,7 +7,7 @@ class MemoryModel {
 
 /// An in-memory [Service].
 class MemoryService<T> extends Service {
-  List<MemoryModel> items = [];
+  Map <int, MemoryModel> items = {};
 
   MemoryService() :super() {
     if (!reflectType(T).isAssignableTo(reflectType(MemoryModel))) {
@@ -21,18 +21,15 @@ class MemoryService<T> extends Service {
   }
 
   Future<List> index([Map params]) async {
-    List result = [];
-
-    for (int i = 0; i < items.length; i++) {
-      result.add(_makeJson(i, items[i]));
-    }
-
-    return result;
+    return items.keys
+        .where((index) => items[index] != null)
+        .map((index) => _makeJson(index, items[index]))
+        .toList();
   }
 
   Future read(id, [Map params]) async {
     int desiredId = int.parse(id.toString());
-    if (items.length > desiredId) {
+    if (items.containsKey(desiredId)) {
       MemoryModel found = items[desiredId];
       if (found != null) {
         return _makeJson(desiredId, found);
@@ -46,7 +43,7 @@ class MemoryService<T> extends Service {
         data, outputType: T);
 
     created.id = items.length;
-    items.add(created);
+    items[created.id] = created;
     return created;
     /*} catch (e) {
       throw new AngelHttpException.BadRequest(message: 'Invalid data.');
@@ -55,7 +52,7 @@ class MemoryService<T> extends Service {
 
   Future modify(id, data, [Map params]) async {
     int desiredId = int.parse(id.toString());
-    if (items.length > desiredId) {
+    if (items.containsKey(desiredId)) {
       try {
         Map existing = god.serializeObject(items[desiredId]);
         data = mergeMap([existing, data]);
@@ -70,7 +67,7 @@ class MemoryService<T> extends Service {
 
   Future update(id, data, [Map params]) async {
     int desiredId = int.parse(id.toString());
-    if (items.length > desiredId) {
+    if (items.containsKey(desiredId)) {
       try {
         items[desiredId] =
         (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
@@ -83,9 +80,9 @@ class MemoryService<T> extends Service {
 
   Future remove(id, [Map params]) async {
     int desiredId = int.parse(id.toString());
-    if (items.length > desiredId) {
+    if (items.containsKey(desiredId)) {
       MemoryModel item = items[desiredId];
-      items.removeAt(desiredId);
+      items[desiredId] = null;
       return _makeJson(desiredId, item);
     } else throw new AngelHttpException.NotFound();
   }
