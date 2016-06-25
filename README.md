@@ -2,15 +2,17 @@
 Client library for the Angel framework.
 
 # Isomorphic
-The REST client depends on `http`, because it can run in the browser or on the command-line.
-Depending on your environment, you must pass an instance of `BaseClient` to the constructor.
+The REST client can run in the browser or on the command-line.
 
 # Usage
 This library provides the same API as an Angel server.
 
 ```dart
-import 'package:angel_client/angel_client.dart';
-import 'package:http/browser_client.dart';
+// Import this file to import symbols "Angel" and "Service"
+import 'package:angel_cli/shared.dart';
+// Choose one or the other, depending on platform
+import 'package:angel_client/cli.dart';
+import 'package:angel_client/browser.dart';
 
 main() async {
   Angel app = new Rest("http://localhost:3000", new BrowserClient());
