@@ -46,11 +46,11 @@ class Route {
     String result = path;
     if (params != null) {
       for (String key in (params.keys)) {
-        result = result.replaceAll(new RegExp(":$key"), params[key].toString());
+        result = result.replaceAll(new RegExp(":$key" + r"\??"), params[key].toString());
       }
     }
 
-    return result;
+    return result.replaceAll("*", "");
   }
 
   /// Enables one or more handlers to be called whenever this route is visited.
