@@ -11,3 +11,17 @@ class Middleware {
 class Hooked {
   const Hooked();
 }
+
+class Expose {
+  final String method;
+  final Pattern path;
+  final List middleware;
+  final String as;
+  final List<String> allowNull;
+
+  const Expose(Pattern this.path,
+      {String this.method: "GET",
+      List this.middleware: const [],
+      String this.as: null,
+      List<String> this.allowNull: const[]});
+}

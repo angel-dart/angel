@@ -1,10 +1,5 @@
 part of angel_framework.http;
 
-/// Represents data that can be serialized into a MemoryService;
-class MemoryModel {
-  int id;
-}
-
 /// An in-memory [Service].
 class MemoryService<T> extends Service {
   Map <int, MemoryModel> items = {};

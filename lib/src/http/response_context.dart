@@ -103,6 +103,27 @@ class ResponseContext extends Extensible {
     throw new ArgumentError.notNull('Route to redirect to ($name)');
   }
 
+  /// Redirects to the given [Controller] action.
+  redirectToAction(String action, [Map params, int code]) {
+    // UserController@show
+    List<String> split = action.split("@");
+
+    if (split.length < 2)
+      throw new Exception("Controller redirects must take the form of 'Controller@action'. You gave: $action");
+
+    Controller controller = app.controller(split[0]);
+
+    if (controller == null)
+      throw new Exception("Could not find a controller named '${split[0]}'");
+
+    Route matched = controller._mappings[split[1]];
+
+    if (matched == null)
+      throw new Exception("Controller '${split[0]}' does not contain any action named '${split[1]}'");
+
+    return redirect(matched.makeUri(params), code: code);
+  }
+
   /// Streams a file to this response as chunked data.
   ///
   /// Useful for video sites.

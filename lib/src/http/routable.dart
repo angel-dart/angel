@@ -37,6 +37,9 @@ class Routable extends Extensible {
   /// A set of [Service] objects that have been mapped into routes.
   Map <Pattern, Service> services = {};
 
+  /// A set of [Controller] objects that have been loaded into the application.
+  Map<String, Controller> controllers = {};
+
   /// Assigns a middleware to a name for convenience.
   registerMiddleware(String name, RequestMiddleware middleware) {
     this.requestMiddleware[name] = middleware;
@@ -44,6 +47,9 @@ class Routable extends Extensible {
 
   /// Retrieves the service assigned to the given path.
   Service service(Pattern path) => services[path];
+
+  /// Retrieves the controller with the given name.
+  Controller controller(String name) => controllers[name];
 
   /// Incorporates another [Routable]'s routes into this one's.
   ///
