@@ -83,7 +83,9 @@ class Controller {
           Route route = new Route(
               exposeMirror.reflectee.method,
               exposeMirror.reflectee.path,
-              [handler]..addAll(exposeMirror.reflectee.middleware));
+              []
+                ..addAll(exposeMirror.reflectee.middleware)
+                ..add(handler));
           routes.add(route);
 
           String name = exposeMirror.reflectee.as;

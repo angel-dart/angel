@@ -76,7 +76,15 @@ class Routable extends Extensible {
           new RegExp(r'(^\/+)|(\/+$)'), '')] = service;
       _routable = service;
     }
-    
+
+    if (_routable is Angel) {
+      all(path, (RequestContext req, ResponseContext res) async {
+        req.app = _routable;
+        res.app = _routable;
+        return true;
+      });
+    }
+
     for (Route route in _routable.routes) {
       Route provisional = new Route('', path);
       if (route.path == '/') {
