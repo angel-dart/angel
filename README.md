@@ -4,9 +4,11 @@ Static server middleware for Angel.
 # Installation
 In `pubspec.yaml`:
 
-    dependencies:
-        angel_framework: ^1.0.0-dev
-        angel_static: ^1.0.0
+```yaml
+dependencies:
+    angel_framework: ^1.0.0-dev
+    angel_static: ^1.0.0
+```
 
 # Usage
 As with all Angel middleware, this can be used simply via a function
