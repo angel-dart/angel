@@ -73,14 +73,19 @@ class LocalAuthStrategy extends AuthStrategy {
           ..header(HttpHeaders.WWW_AUTHENTICATE, 'Basic realm="$realm"')
           ..end();
         return false;
-      } else throw new AngelHttpException.NotAuthenticated();
+      } else return false;
     }
 
-    req.session['user'] = await Auth.serializer(verificationResult);
-    if (options.successRedirect != null && options.successRedirect.isNotEmpty) {
-      return res.redirect(options.successRedirect, code: HttpStatus.OK);
-    }
+    else if (verificationResult != null && verificationResult != false) {
+      req.session['userId'] = await Auth.serializer(verificationResult);
+      if (options.successRedirect != null &&
+          options.successRedirect.isNotEmpty) {
+        return res.redirect(options.successRedirect, code: HttpStatus.OK);
+      }
 
-    return true;
+      return true;
+    } else {
+      throw new AngelHttpException.NotAuthenticated();
+    }
   }
 }

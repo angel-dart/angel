@@ -7,7 +7,7 @@ Future<bool> requireAuth(RequestContext req, ResponseContext res,
     return true;
   else if (throws) {
     res.status(HttpStatus.UNAUTHORIZED);
-    throw new AngelHttpException.NotAuthenticated();
+    throw new AngelHttpException.Forbidden();
   }
   else return false;
 }
