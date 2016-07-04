@@ -52,33 +52,29 @@ class Controller {
               ResponseContext res) async {
             List args = [];
 
-            try {
-              // Load parameters, and execute
-              for (int i = 0; i < methodMirror.parameters.length; i++) {
-                ParameterMirror parameter = methodMirror.parameters[i];
-                if (parameter.type.reflectedType == RequestContext)
-                  args.add(req);
-                else if (parameter.type.reflectedType == ResponseContext)
-                  args.add(res);
-                else {
-                  String name = MirrorSystem.getName(parameter.simpleName);
-                  var arg = req.params[name];
+            // Load parameters, and execute
+            for (int i = 0; i < methodMirror.parameters.length; i++) {
+              ParameterMirror parameter = methodMirror.parameters[i];
+              if (parameter.type.reflectedType == RequestContext)
+                args.add(req);
+              else if (parameter.type.reflectedType == ResponseContext)
+                args.add(res);
+              else {
+                String name = MirrorSystem.getName(parameter.simpleName);
+                var arg = req.params[name];
 
-                  if (arg == null &&
-                      !exposeMirror.reflectee.allowNull.contain(name)) {
-                    throw new AngelHttpException.BadRequest();
-                  }
-
-                  args.add(arg);
+                if (arg == null &&
+                    !exposeMirror.reflectee.allowNull.contain(name)) {
+                  throw new AngelHttpException.BadRequest();
                 }
-              }
 
-              return await instanceMirror
-                  .invoke(key, args)
-                  .reflectee;
-            } catch (e) {
-              throw new AngelHttpException(e);
+                args.add(arg);
+              }
             }
+
+            return await instanceMirror
+                .invoke(key, args)
+                .reflectee;
           };
           Route route = new Route(
               exposeMirror.reflectee.method,

@@ -12,6 +12,12 @@ typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends Routable {
+  var _beforeProcessed = new StreamController<HttpRequest>();
+  var _afterProcessed = new StreamController<HttpRequest>();
+
+  Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
+  Stream<HttpRequest> get afterProcessed => _afterProcessed.stream;
+
   ServerGenerator _serverGenerator =
       (address, port) async => await HttpServer.bind(address, port);
 
@@ -50,67 +56,70 @@ class Angel extends Routable {
         await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
     this.httpServer = server;
 
-    server.listen((HttpRequest request) async {
-      String req_url =
-          request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(new RegExp(r'\/+$'), '');
-      if (req_url.isEmpty) req_url = '/';
-      RequestContext req = await RequestContext.from(request, {}, this, null);
-      ResponseContext res = await ResponseContext.from(request.response, this);
-
-      bool canContinue = true;
-
-      var execHandler = (handler, req) async {
-        if (canContinue) {
-          canContinue = await new Future.sync(() async {
-            return _applyHandler(handler, req, res);
-          }).catchError((e, [StackTrace stackTrace]) async {
-            if (e is AngelHttpException) {
-              // Special handling for AngelHttpExceptions :)
-              try {
-                res.status(e.statusCode);
-                String accept = request.headers.value(HttpHeaders.ACCEPT);
-                if (accept == "*/*" ||
-                    accept.contains("application/json") ||
-                    accept.contains("application/javascript")) {
-                  res.json(e.toMap());
-                } else {
-                  await _errorHandler(e, req, res);
-                }
-                _finalizeResponse(request, res);
-              } catch (_) {}
-            }
-            _onError(e, stackTrace);
-            canContinue = false;
-            return false;
-          });
-        } else
-          return false;
-      };
-
-      for (var handler in before) {
-        await execHandler(handler, req);
-      }
-
-      for (Route route in routes) {
-        if (!canContinue) break;
-        if (route.matcher.hasMatch(req_url) &&
-            (request.method == route.method || route.method == '*')) {
-          req.params = route.parseParameters(req_url);
-          req.route = route;
-
-          for (var handler in route.handlers) {
-            await execHandler(handler, req);
-          }
-        }
-      }
-
-      for (var handler in after) {
-        await execHandler(handler, req);
-      }
-      _finalizeResponse(request, res);
-    });
+    server.listen(handleRequest);
 
     return server;
+  }
+
+  Future handleRequest(HttpRequest request) async {
+    _beforeProcessed.add(request);
+    String req_url =
+    request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(new RegExp(r'\/+$'), '');
+    if (req_url.isEmpty) req_url = '/';
+    RequestContext req = await RequestContext.from(request, {}, this, null);
+    ResponseContext res = await ResponseContext.from(request.response, this);
+
+    bool canContinue = true;
+
+    var execHandler = (handler, req) async {
+      if (canContinue) {
+        canContinue = await new Future.sync(() async {
+          return _applyHandler(handler, req, res);
+        }).catchError((e, [StackTrace stackTrace]) async {
+          if (e is AngelHttpException) {
+            // Special handling for AngelHttpExceptions :)
+            try {
+              res.status(e.statusCode);
+              String accept = request.headers.value(HttpHeaders.ACCEPT);
+              if (accept == "*/*" ||
+                  accept.contains("application/json") ||
+                  accept.contains("application/javascript")) {
+                res.json(e.toMap());
+              } else {
+                await _errorHandler(e, req, res);
+              }
+              _finalizeResponse(request, res);
+            } catch (_) {}
+          }
+          _onError(e, stackTrace);
+          canContinue = false;
+          return false;
+        });
+      } else
+        return false;
+    };
+
+    for (var handler in before) {
+      await execHandler(handler, req);
+    }
+
+    for (Route route in routes) {
+      if (!canContinue) break;
+      if (route.matcher.hasMatch(req_url) &&
+          (request.method == route.method || route.method == '*')) {
+        req.params = route.parseParameters(req_url);
+        req.route = route;
+
+        for (var handler in route.handlers) {
+          await execHandler(handler, req);
+        }
+      }
+    }
+
+    for (var handler in after) {
+      await execHandler(handler, req);
+    }
+    _finalizeResponse(request, res);
   }
 
   Future<bool> _applyHandler(
@@ -162,6 +171,7 @@ class Angel extends Routable {
       if (!res.willCloseItself) {
         res.responseData.forEach((blob) => request.response.add(blob));
         await request.response.close();
+        _afterProcessed.add(request);
       }
     } catch (e) {
       // Remember: This fails silently

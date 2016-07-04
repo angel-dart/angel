@@ -83,7 +83,7 @@ class ResponseContext extends Extensible {
       <body>
         <h1>Currently redirecting you...</h1>
         <br />
-        Click <a href="$url"></a> if you are not automatically redirected...
+        Click <a href="$url">here</a> if you are not automatically redirected...
         <script>
           window.location = "$url";
         </script>
