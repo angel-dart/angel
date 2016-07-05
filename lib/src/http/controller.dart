@@ -1,12 +1,14 @@
 part of angel_framework.http;
 
 class Controller {
+  Angel app;
   List middleware = [];
   List<Route> routes = [];
   Map<String, Route> _mappings = {};
   Expose exposeDecl;
 
   Future call(Angel app) async {
+    this.app = app;
     Routable routable = new Routable()
       ..routes.addAll(routes);
     app.use(exposeDecl.path, routable);

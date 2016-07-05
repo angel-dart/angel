@@ -40,6 +40,13 @@ class Routable extends Extensible {
   /// A set of [Controller] objects that have been loaded into the application.
   Map<String, Controller> controllers = {};
 
+  StreamController<Service> _onService = new StreamController<Service>.broadcast();
+
+  /// Fired whenever a service is added to this instance.
+  ///
+  /// **NOTE**: This is a broadcast stream.
+  Stream<Service> get onService => _onService.stream;
+
   /// Assigns a middleware to a name for convenience.
   registerMiddleware(String name, RequestMiddleware middleware) {
     this.requestMiddleware[name] = middleware;
@@ -61,7 +68,7 @@ class Routable extends Extensible {
   /// For example, if the [Routable] has a middleware 'y', and the `middlewareNamespace`
   /// is 'x', then that middleware will be available as 'x.y' in the main application.
   /// These namespaces can be nested.
-  use(Pattern path, Routable routable,
+  void use(Pattern path, Routable routable,
       {bool hooked: true, String middlewareNamespace: null}) {
     Routable _routable = routable;
 
@@ -115,6 +122,9 @@ class Routable extends Extensible {
           new RegExp(r'(^\/+)|(\/+$)'), '') + '/$servicePath';
       services[newServicePath] = _routable.services[servicePath];
     }
+
+    if (routable is Service)
+      _onService.add(routable);
   }
 
   /// Adds a route that responds to the given path

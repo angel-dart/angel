@@ -4,8 +4,8 @@ part of angel_framework.http;
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
 /// Handles an [AngelHttpException].
-typedef Future AngelErrorHandler(
-    AngelHttpException err, RequestContext req, ResponseContext res);
+typedef Future AngelErrorHandler(AngelHttpException err, RequestContext req,
+    ResponseContext res);
 
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
@@ -14,15 +14,25 @@ typedef Future AngelConfigurer(Angel app);
 class Angel extends Routable {
   var _beforeProcessed = new StreamController<HttpRequest>();
   var _afterProcessed = new StreamController<HttpRequest>();
+  var _onController = new StreamController<Controller>.broadcast();
 
+  /// Fired before a request is processed. Always runs.
   Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
+
+  /// Fired after a request is processed. Always runs.
   Stream<HttpRequest> get afterProcessed => _afterProcessed.stream;
+
+  /// Fired whenever a controller is added to this instance.
+  ///
+  /// **NOTE**: This is a broadcast stream.
+  Stream<Controller> get onController => _onController.stream;
 
   ServerGenerator _serverGenerator =
       (address, port) async => await HttpServer.bind(address, port);
 
   /// Default error handler, show HTML error page
-  AngelErrorHandler _errorHandler = (AngelHttpException e, req, ResponseContext res) {
+  AngelErrorHandler _errorHandler = (AngelHttpException e, req,
+      ResponseContext res) {
     res.header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
     res.status(e.statusCode);
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
@@ -37,7 +47,8 @@ class Angel extends Routable {
   /// A function that renders views.
   ///
   /// Called by [ResponseContext]@`render`.
-  ViewGenerator viewGenerator = (String view, [Map data]) async => "No view engine has been configured yet.";
+  ViewGenerator viewGenerator = (String view,
+      [Map data]) async => "No view engine has been configured yet.";
 
   /// [RequestMiddleware] to be run before all requests.
   List before = [];
@@ -53,7 +64,7 @@ class Angel extends Routable {
   /// Returns false on failure; otherwise, returns the HttpServer.
   startServer(InternetAddress address, int port) async {
     var server =
-        await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
+    await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port);
     this.httpServer = server;
 
     server.listen(handleRequest);
@@ -64,7 +75,8 @@ class Angel extends Routable {
   Future handleRequest(HttpRequest request) async {
     _beforeProcessed.add(request);
     String req_url =
-    request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(new RegExp(r'\/+$'), '');
+    request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(
+        new RegExp(r'\/+$'), '');
     if (req_url.isEmpty) req_url = '/';
     RequestContext req = await RequestContext.from(request, {}, this, null);
     ResponseContext res = await ResponseContext.from(request.response, this);
@@ -122,8 +134,8 @@ class Angel extends Routable {
     _finalizeResponse(request, res);
   }
 
-  Future<bool> _applyHandler(
-      handler, RequestContext req, ResponseContext res) async {
+  Future<bool> _applyHandler(handler, RequestContext req,
+      ResponseContext res) async {
     if (handler is RequestMiddleware) {
       var result = await handler(req, res);
       if (result is bool)
@@ -190,6 +202,9 @@ class Angel extends Routable {
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) async {
     await configurer(this);
+
+    if (configurer is Controller)
+      _onController.add(configurer);
   }
 
   /// Starts the server.
@@ -231,7 +246,7 @@ class Angel extends Routable {
       : super() {
     _serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
-          Platform.script.resolve('server_chain.pem').toFilePath();
+      Platform.script.resolve('server_chain.pem').toFilePath();
       var serverKey = Platform.script.resolve('server_key.pem').toFilePath();
       var serverContext = new SecurityContext();
       serverContext.useCertificateChain(certificateChain);
