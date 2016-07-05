@@ -1,8 +1,9 @@
 name: angel
 description: An easily-extensible web server framework in Dart.
-version: 0.0.0-dev.0
+version: 1.0.0-dev
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel
+publish_to: none
 dependencies:
   angel_auth: ">=1.0.0-dev <2.0.0"
   angel_configuration: ">=1.0.0-dev <2.0.0"

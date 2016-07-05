@@ -110,3 +110,7 @@ pubspec.lock
 
 # Don't commit pubspec lock file
 # (Library packages only! Remove pattern if developing an application package)
+
+packages
+**/packages
+bin/packages
