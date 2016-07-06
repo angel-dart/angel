@@ -1,6 +1,7 @@
 library angel_websocket.server;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
@@ -60,6 +61,7 @@ class AngelWebSocket {
       god.deserializeDatum(action.params),
       {"provider": Providers.WEBSOCKET}
     ]);
+
     try {
       if (eventName == "index") {
         return socket.send("${split[0]}::" + HookedServiceEvent.INDEXED,
@@ -107,22 +109,37 @@ class AngelWebSocket {
     servicesAlreadyWired.add(path);
   }
 
-  onData(WebSocketContext socket, data) {
+  Future onConnect(WebSocketContext socket) async {}
+
+  onData(WebSocketContext socket, data) async {
     try {
-      WebSocketAction action =
-          god.deserialize(data, outputType: WebSocketAction);
+      var fromJson = JSON.decode(data);
+      var action = new WebSocketAction(
+          id: fromJson['id'],
+          eventName: fromJson['eventName'],
+          data: fromJson['data'],
+          params: fromJson['params']);
 
       if (action.eventName == null ||
           action.eventName is! String ||
-          action.eventName.isEmpty) throw new AngelHttpException.BadRequest();
+          action.eventName.isEmpty) {
+        throw new AngelHttpException.BadRequest();
+      }
 
       var event = handleAction(action, socket);
+      if (event is Future)
+        event = await event;
+
+
       if (event is WebSocketEvent) {
         batchEvent(event);
       }
     } catch (e) {
       // Send an error
-      socket.sendError(new AngelHttpException(e));
+      if (e is AngelHttpException)
+        socket.sendError(e);
+      else
+        socket.sendError(new AngelHttpException(e));
     }
   }
 
@@ -154,7 +171,10 @@ class AngelWebSocket {
         throw new AngelHttpException.BadRequest();
 
       var ws = await WebSocketTransformer.upgrade(req.underlyingRequest);
+      _clients.add(ws);
+
       var socket = new WebSocketContext(ws, req, res);
+      await onConnect(socket);
 
       ws.listen((data) {
         onData(socket, data);
