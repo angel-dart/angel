@@ -14,6 +14,8 @@ part 'middleware/serialization.dart';
 
 part 'strategies/local.dart';
 
+part 'strategies/token.dart';
+
 part 'strategies/oauth2.dart';
 
 _validateString(String str) {
