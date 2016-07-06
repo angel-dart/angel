@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:crypto/crypto.dart' as Crypto;
 import 'package:oauth2/oauth2.dart' as Oauth2;
 
 part 'strategy.dart';
