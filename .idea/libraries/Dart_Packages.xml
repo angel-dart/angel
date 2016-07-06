@@ -9,10 +9,17 @@
             </list>
           </value>
         </entry>
+        <entry key="angel_client">
+          <value>
+            <list>
+              <option value="$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/angel_client-1.0.0-dev+3/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="angel_framework">
           <value>
             <list>
-              <option value="$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/angel_framework-1.0.0-dev+4pub/lib" />
+              <option value="$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/angel_framework-1.0.0-dev.14/lib" />
             </list>
           </value>
         </entry>
@@ -321,7 +328,8 @@
     </properties>
     <CLASSES>
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/analyzer-0.27.2/lib" />
-      <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/angel_framework-1.0.0-dev+4pub/lib" />
+      <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/angel_client-1.0.0-dev+3/lib" />
+      <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/angel_framework-1.0.0-dev.14/lib" />
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/args-0.13.4+2/lib" />
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/async-1.11.0/lib" />
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/barback-0.15.2+8/lib" />
