@@ -114,3 +114,5 @@ pubspec.lock
 packages
 **/packages
 bin/packages
+
+.idea
