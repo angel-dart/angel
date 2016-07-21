@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart' as server;
 import 'package:angel_websocket/client.dart' as client;
