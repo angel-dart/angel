@@ -126,9 +126,7 @@ class AngelWebSocket {
       }
 
       var event = handleAction(action, socket);
-      if (event is Future)
-        event = await event;
-
+      if (event is Future) event = await event;
 
       if (event is WebSocketEvent) {
         batchEvent(event);
@@ -168,6 +166,10 @@ class AngelWebSocket {
     app.get(endpoint, (RequestContext req, ResponseContext res) async {
       if (!WebSocketTransformer.isUpgradeRequest(req.underlyingRequest))
         throw new AngelHttpException.BadRequest();
+
+      res
+        ..willCloseItself = true
+        ..end();
 
       var ws = await WebSocketTransformer.upgrade(req.underlyingRequest);
       _clients.add(ws);

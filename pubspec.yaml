@@ -1,6 +1,6 @@
 name: angel_websocket
 description: WebSocket plugin for Angel
-version: 1.0.0-dev+2
+version: 1.0.0-dev+3
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_websocket
 dependencies:
