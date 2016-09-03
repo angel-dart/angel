@@ -8,8 +8,6 @@ The REST client can run in the browser or on the command-line.
 This library provides the same API as an Angel server.
 
 ```dart
-// Import this file to import symbols "Angel" and "Service"
-import 'package:angel_cli/shared.dart';
 // Choose one or the other, depending on platform
 import 'package:angel_client/cli.dart';
 import 'package:angel_client/browser.dart';
@@ -31,7 +29,7 @@ foo() async {
 }
 ```
 
-The REST client also supports reflection via `json_god`. There is no need to work with Maps;
+The CLI client also supports reflection via `json_god`. There is no need to work with Maps;
 you can use the same class on the client and the server.
 
 ```dart
