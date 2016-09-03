@@ -3,11 +3,9 @@ library angel_websocket.server;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
-import 'package:uuid/uuid.dart';
 import 'angel_websocket.dart';
 
 part 'websocket_context.dart';

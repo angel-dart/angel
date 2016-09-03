@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:html';
 import 'package:angel_client/angel_client.dart';
 import 'package:angel_websocket/angel_websocket.dart';
+export 'package:angel_websocket/angel_websocket.dart';
 
 class WebSocketClient extends Angel {
   WebSocket _socket;
@@ -97,8 +98,9 @@ class _WebSocketServiceTransformer
     var _stream = new StreamController<WebSocketEvent>();
 
     stream.listen((WebSocketEvent e) {
-      if (_outputType != null && e.eventName != "error")
+      /* if (_outputType != null && e.eventName != "error")
         e.data = god.deserialize(god.serialize(e.data), outputType: _outputType);
+      */
       _stream.add(e);
     });
 
@@ -154,40 +156,55 @@ class WebSocketService extends Service {
     _transformer = new _WebSocketServiceTransformer.base(this._outputType);
   }
 
+  _serialize(WebSocketAction action) {
+    var data = {
+      "id": action.id,
+      "eventName": action.eventName
+    };
+
+    if (action.data != null)
+      data["data"] = action.data;
+
+    if (action.params != null)
+      data["params"] = action.params;
+
+    return JSON.encode(data);
+  }
+
   @override
   Future<List> index([Map params]) async {
-    connection.send(god.serialize(
+    connection.send(_serialize(
         new WebSocketAction(eventName: "$_path::index", params: params)));
     return null;
   }
 
   @override
   Future read(id, [Map params]) async {
-    connection.send(god.serialize(new WebSocketAction(
+    connection.send(_serialize(new WebSocketAction(
         eventName: "$_path::read", id: id, params: params)));
   }
 
   @override
   Future create(data, [Map params]) async {
-    connection.send(god.serialize(new WebSocketAction(
+    connection.send(_serialize(new WebSocketAction(
         eventName: "$_path::create", data: data, params: params)));
   }
 
   @override
   Future modify(id, data, [Map params]) async {
-    connection.send(god.serialize(new WebSocketAction(
+    connection.send(_serialize(new WebSocketAction(
         eventName: "$_path::modify", id: id, data: data, params: params)));
   }
 
   @override
   Future update(id, data, [Map params]) async {
-    connection.send(god.serialize(new WebSocketAction(
+    connection.send(_serialize(new WebSocketAction(
         eventName: "$_path::update", id: id, data: data, params: params)));
   }
 
   @override
   Future remove(id, [Map params]) async {
-    connection.send(god.serialize(new WebSocketAction(
+    connection.send(_serialize(new WebSocketAction(
         eventName: "$_path::remove", id: id, params: params)));
   }
 }
