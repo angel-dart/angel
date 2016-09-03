@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:angel_client/shared.dart' as clientLib;
 import 'package:angel_client/cli.dart' as client;
 import 'package:angel_framework/angel_framework.dart' as server;
 import 'package:http/http.dart' as http;
@@ -11,18 +10,19 @@ main() {
   group("rest", () {
     server.Angel serverApp = new server.Angel();
     server.HookedService serverPostcards;
-    clientLib.Angel clientApp;
-    clientLib.Service clientPostcards;
-    clientLib.Service clientTypedPostcards;
+    client.Angel clientApp;
+    client.Service clientPostcards;
+    client.Service clientTypedPostcards;
     HttpServer httpServer;
+    String url;
 
     setUp(() async {
-      httpServer =
-      await serverApp.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
+      httpServer = await serverApp.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+      url = "http://localhost:${httpServer.port}";
       serverApp.use("/postcards", new server.MemoryService<Postcard>());
       serverPostcards = serverApp.service("postcards");
 
-      clientApp = new client.Rest("http://localhost:3000", new http.Client());
+      clientApp = new client.Rest(url, new http.Client());
       clientPostcards = clientApp.service("postcards");
       clientTypedPostcards = clientApp.service("postcards", type: Postcard);
     });

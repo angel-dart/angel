@@ -2,11 +2,6 @@
 library angel_client;
 
 import 'dart:async';
-import 'dart:convert' show JSON;
-import 'package:http/http.dart';
-import 'package:json_god/json_god.dart' as god;
-
-part 'rest.dart';
 
 /// A function that configures an [Angel] client in some way.
 typedef Future AngelConfigurer(Angel app);

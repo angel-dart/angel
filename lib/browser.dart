@@ -4,7 +4,8 @@ library angel_client.browser;
 import 'dart:async';
 import 'dart:convert' show JSON;
 import 'dart:html';
-import 'shared.dart';
+import 'angel_client.dart';
+export 'angel_client.dart';
 
 _buildQuery(Map params) {
   if (params == null || params == {})
@@ -21,7 +22,7 @@ class Rest extends Angel {
   @override
   RestService service(String path, {Type type}) {
     String uri = path.replaceAll(new RegExp(r"(^\/)|(\/+$)"), "");
-    return new RestService._base("$basePath/$uri")
+    return new RestService("$basePath/$uri")
       ..app = this;
   }
 }
@@ -30,7 +31,7 @@ class Rest extends Angel {
 class RestService extends Service {
   String basePath;
 
-  RestService._base(Pattern path) {
+  RestService(Pattern path) {
     this.basePath = (path is RegExp) ? path.pattern : path;
   }
 
@@ -38,7 +39,7 @@ class RestService extends Service {
     return JSON.encode(data);
   }
 
-  HttpRequest _buildRequest(String url,
+  HttpRequest buildRequest(String url,
       {String method: "POST", bool write: true}) {
     HttpRequest request = new HttpRequest();
     request.open(method, url, async: false);
@@ -63,30 +64,29 @@ class RestService extends Service {
 
   @override
   Future create(data, [Map params]) async {
-    var request = _buildRequest("$basePath/${_buildQuery(params)}");
+    var request = buildRequest("$basePath/${_buildQuery(params)}");
     request.send(_makeBody(data));
     return request.response;
   }
 
   @override
   Future modify(id, data, [Map params]) async {
-    var request = _buildRequest("$basePath/$id${_buildQuery(params)}", method: "PATCH");
+    var request = buildRequest("$basePath/$id${_buildQuery(params)}", method: "PATCH");
     request.send(_makeBody(data));
     return request.response;
   }
 
   @override
   Future update(id, data, [Map params]) async {
-    var request = _buildRequest("$basePath/$id${_buildQuery(params)}");
+    var request = buildRequest("$basePath/$id${_buildQuery(params)}");
     request.send(_makeBody(data));
     return request.response;
   }
 
   @override
   Future remove(id, [Map params]) async {
-    var request = _buildRequest("$basePath/$id${_buildQuery(params)}", method: "DELETE");
+    var request = buildRequest("$basePath/$id${_buildQuery(params)}", method: "DELETE");
     request.send();
     return request.response;
   }
 }
-

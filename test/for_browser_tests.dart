@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:angel_framework/angel_framework.dart';
+import "package:angel_framework/angel_framework.dart";
+import "package:angel_framework/defs.dart";
 
 main() async {
   Angel app = new Angel();
@@ -9,8 +10,8 @@ main() async {
 
   app.use("/todos", new MemoryService<Todo>());
 
-  await app.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
-  print("Server up on localhost:3000");
+  await app.startServer(InternetAddress.LOOPBACK_IP_V4, 3001);
+  print("Server up on localhost:3001");
 }
 
 class Todo extends MemoryModel {

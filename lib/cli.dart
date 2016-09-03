@@ -5,7 +5,8 @@ import 'dart:async';
 import 'dart:convert' show JSON;
 import 'package:http/http.dart';
 import 'package:json_god/json_god.dart' as god;
-import 'shared.dart';
+import 'angel_client.dart';
+export 'angel_client.dart';
 
 _buildQuery(Map params) {
   if (params == null || params == {})
@@ -107,4 +108,3 @@ class RestService extends Service {
     return god.deserialize(response.body, outputType: outputType);
   }
 }
-
