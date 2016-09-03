@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart' as server;
-import 'package:angel_websocket/client.dart' as client;
-import 'package:angel_websocket/angel_websocket.dart';
+import 'package:angel_websocket/cli.dart' as client;
 import 'package:angel_websocket/server.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';

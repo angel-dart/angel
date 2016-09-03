@@ -5,6 +5,8 @@ import 'package:angel_client/angel_client.dart';
 import 'package:angel_framework/angel_framework.dart' as srv;
 import 'package:angel_websocket/angel_websocket.dart';
 import 'package:json_god/json_god.dart' as god;
+export 'package:angel_client/angel_client.dart';
+export 'package:angel_websocket/angel_websocket.dart';
 
 class WebSocketClient extends Angel {
   WebSocket _socket;

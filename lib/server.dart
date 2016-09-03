@@ -7,6 +7,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
 import 'angel_websocket.dart';
+export 'angel_websocket.dart';
 
 part 'websocket_context.dart';
 

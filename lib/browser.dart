@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:html';
 import 'package:angel_client/angel_client.dart';
 import 'package:angel_websocket/angel_websocket.dart';
+export 'package:angel_client/angel_client.dart';
 export 'package:angel_websocket/angel_websocket.dart';
 
 class WebSocketClient extends Angel {
