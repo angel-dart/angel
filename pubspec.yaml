@@ -6,8 +6,9 @@ homepage: https://github.com/angel-dart/angel_cli
 executables:
   angel: angel
 dependencies:
+  analyzer: ">=0.28.1 <1.0.0"
   args: ">=0.3.4 <1.0.0"
-  colorize: ">=0.1.2 <1.0.0"
   console: ">=2.2.3 <3.0.0"
+  dart_style: "0.2.9+1 <0.3.0"
   mustache4dart: ">=1.0.0 <3.0.0"
   yaml: ">=2.0.0 <3.0.0"

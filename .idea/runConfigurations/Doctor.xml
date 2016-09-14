@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Doctor" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="arguments" value="doctor" />
+    <option name="filePath" value="$PROJECT_DIR$/bin/angel.dart" />
+    <method />
+  </configuration>
+</component>
