@@ -73,3 +73,4 @@ doc/api/
 # (Library packages only! Remove pattern if developing an application package)
 pubspec.lock
 /sample_project/lib/src/services/
+/sample_project/test/services/

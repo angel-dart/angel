@@ -1,5 +1,8 @@
-name: sample_project
+name: angel
 publish_to: none
 dependencies:
   angel_framework: ^1.0.0-dev
   angel_mongo: ^1.0.0-dev
+dev_dependencies:
+  http: ^0.11.3
+  test: ^0.12.13
