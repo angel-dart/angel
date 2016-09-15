@@ -39,13 +39,13 @@ class ServiceCommand extends Command {
 
   _generateMongoService(String name) {
     return '''
-    import "package:angel_mongo/angel_mongo.dart";
+import "package:angel_mongo/angel_mongo.dart";
 
-    class ${name}Service extends MongoService {
-      ${name}Service(collection):super(collection) {
-        print("YEET");
-      }
-    }
-    ''';
+class ${name}Service extends MongoService {
+  ${name}Service(collection):super(collection) {
+    print("YEET");
+  }
+}
+    '''.trim();
   }
 }
