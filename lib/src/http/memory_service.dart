@@ -1,4 +1,12 @@
-part of angel_framework.http;
+library angel_framework.http.memory_service;
+
+import 'dart:async';
+import 'dart:mirrors';
+import 'package:json_god/json_god.dart' as god;
+import 'package:merge_map/merge_map.dart';
+import '../defs.dart';
+import 'angel_http_exception.dart';
+import 'service.dart';
 
 /// An in-memory [Service].
 class MemoryService<T> extends Service {

@@ -1,30 +1,29 @@
-part of angel_framework.http;
+library angel_framework.http.routable;
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:mirrors';
+import '../extensible.dart';
+import '../util.dart';
+import 'angel_base.dart';
+import 'controller.dart';
+import 'hooked_service.dart';
+import 'metadata.dart';
+import 'request_context.dart';
+import 'response_context.dart';
+import 'route.dart';
+import 'service.dart';
 
 typedef Route RouteAssigner(Pattern path, handler, {List middleware});
 
-_matchingAnnotation(List<InstanceMirror> metadata, Type T) {
-  for (InstanceMirror metaDatum in metadata) {
-    if (metaDatum.hasReflectee) {
-      var reflectee = metaDatum.reflectee;
-      if (reflectee.runtimeType == T) {
-        return reflectee;
-      }
-    }
-  }
-  return null;
-}
+/// A function that intercepts a request and determines whether handling of it should continue.
+typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
 
-_getAnnotation(obj, Type T) {
-  if (obj is Function || obj is Future) {
-    MethodMirror methodMirror = (reflect(obj) as ClosureMirror).function;
-    return _matchingAnnotation(methodMirror.metadata, T);
-  } else {
-    ClassMirror classMirror = reflectClass(obj.runtimeType);
-    return _matchingAnnotation(classMirror.metadata, T);
-  }
+/// A function that receives an incoming [RequestContext] and responds to it.
+typedef Future RequestHandler(RequestContext req, ResponseContext res);
 
-  return null;
-}
+/// A function that handles an [HttpRequest].
+typedef Future RawRequestHandler(HttpRequest request);
 
 /// A routable server that can handle dynamic requests.
 class Routable extends Extensible {
@@ -75,7 +74,7 @@ class Routable extends Extensible {
     // If we need to hook this service, do it here. It has to be first, or
     // else all routes will point to the old service.
     if (_routable is Service) {
-      Hooked hookedDeclaration = _getAnnotation(_routable, Hooked);
+      Hooked hookedDeclaration = getAnnotation(_routable, Hooked);
       Service service = (hookedDeclaration != null || hooked)
           ? new HookedService(_routable)
           : _routable;
@@ -84,7 +83,7 @@ class Routable extends Extensible {
       _routable = service;
     }
 
-    if (_routable is Angel) {
+    if (_routable is AngelBase) {
       all(path, (RequestContext req, ResponseContext res) async {
         req.app = _routable;
         res.app = _routable;
@@ -135,7 +134,7 @@ class Routable extends Extensible {
     List handlers = [];
 
     // Merge @Middleware declaration, if any
-    Middleware middlewareDeclaration = _getAnnotation(
+    Middleware middlewareDeclaration = getAnnotation(
         handler, Middleware);
     if (middlewareDeclaration != null) {
       handlers.addAll(middlewareDeclaration.handlers);

@@ -1,4 +1,4 @@
-part of angel_framework.http;
+library angel_framework.http.metadata;
 
 /// Annotation to map middleware onto a handler.
 class Middleware {

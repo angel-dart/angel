@@ -1,4 +1,4 @@
-part of angel_framework.http;
+library angel_framework.http.route;
 
 /// Represents an endpoint open for connection via the Internet.
 class Route {

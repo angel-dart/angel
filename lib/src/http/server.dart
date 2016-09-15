@@ -1,4 +1,17 @@
-part of angel_framework.http;
+library angel_framework.http.server;
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:math' show Random;
+import 'package:json_god/json_god.dart' as god;
+import 'angel_base.dart';
+import 'angel_http_exception.dart';
+import 'controller.dart';
+import 'request_context.dart';
+import 'response_context.dart';
+import 'routable.dart';
+import 'route.dart';
+import 'service.dart';
 
 /// A function that binds an [Angel] server to an Internet address and port.
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
@@ -7,11 +20,11 @@ typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 typedef Future AngelErrorHandler(AngelHttpException err, RequestContext req,
     ResponseContext res);
 
-/// A function that configures an [Angel] server in some way.
-typedef Future AngelConfigurer(Angel app);
+/// A function that configures an [AngelBase] server in some way.
+typedef Future AngelConfigurer(AngelBase app);
 
 /// A powerful real-time/REST/MVC server class.
-class Angel extends Routable {
+class Angel extends AngelBase {
   var _beforeProcessed = new StreamController<HttpRequest>();
   var _afterProcessed = new StreamController<HttpRequest>();
   var _onController = new StreamController<Controller>.broadcast();
@@ -43,12 +56,6 @@ class Angel extends Routable {
     res.write("</ul></body></html>");
     res.end();
   };
-
-  /// A function that renders views.
-  ///
-  /// Called by [ResponseContext]@`render`.
-  ViewGenerator viewGenerator = (String view,
-      [Map data]) async => "No view engine has been configured yet.";
 
   /// [RequestMiddleware] to be run before all requests.
   List before = [];

@@ -1,4 +1,4 @@
-part of angel_framework.http;
+library angel_framework.http.angel_http_exception;
 
 class _AngelHttpExceptionBase implements Exception {
   /// An HTTP status code this exception will throw.
@@ -18,7 +18,7 @@ class _AngelHttpExceptionBase implements Exception {
     return "$statusCode: $message";
   }
 
-  Map toMap() {
+  Map toJson() {
     return {
       'isError': true,
       'statusCode': statusCode,
@@ -26,6 +26,8 @@ class _AngelHttpExceptionBase implements Exception {
       'errors': errors
     };
   }
+
+  Map toMap() => toJson();
 }
 
 /// Basically the same as

@@ -1,4 +1,6 @@
-part of angel_framework.http;
+library angel_framework.extensible;
+
+import 'dart:mirrors';
 
 /// Supports accessing members of a Map as though they were actual members.
 class Extensible {

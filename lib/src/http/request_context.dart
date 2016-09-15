@@ -1,18 +1,15 @@
-part of angel_framework.http;
-
-/// A function that intercepts a request and determines whether handling of it should continue.
-typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
-
-/// A function that receives an incoming [RequestContext] and responds to it.
-typedef Future RequestHandler(RequestContext req, ResponseContext res);
-
-/// A function that handles an [HttpRequest].
-typedef Future RawRequestHandler(HttpRequest request);
+library angel_framework.http.request_context;
+import 'dart:async';
+import 'dart:io';
+import 'package:body_parser/body_parser.dart';
+import '../../src/extensible.dart';
+import 'angel_base.dart';
+import 'route.dart';
 
 /// A convenience wrapper around an incoming HTTP request.
 class RequestContext extends Extensible {
   /// The [Angel] instance that is responding to this request.
-  Angel app;
+  AngelBase app;
 
   /// Any cookies sent with this request.
   List<Cookie> get cookies => underlyingRequest.cookies;
@@ -66,7 +63,7 @@ class RequestContext extends Extensible {
 
   /// Magically transforms an [HttpRequest] into a RequestContext.
   static Future<RequestContext> from(HttpRequest request,
-      Map parameters, Angel app, Route sourceRoute) async {
+      Map parameters, AngelBase app, Route sourceRoute) async {
     RequestContext context = new RequestContext();
 
     context.app = app;

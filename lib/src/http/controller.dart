@@ -1,26 +1,21 @@
-part of angel_framework.http;
+library angel_framework.http.controller;
+
+import 'dart:async';
+import 'dart:mirrors';
+import 'angel_base.dart';
+import 'angel_http_exception.dart';
+import 'metadata.dart';
+import 'request_context.dart';
+import 'response_context.dart';
+import 'routable.dart';
+import 'route.dart';
 
 class Controller {
-  Angel app;
+  AngelBase app;
   List middleware = [];
   List<Route> routes = [];
-  Map<String, Route> _mappings = {};
+  Map<String, Route> routeMappings = {};
   Expose exposeDecl;
-
-  Future call(Angel app) async {
-    this.app = app;
-    Routable routable = new Routable()
-      ..routes.addAll(routes);
-    app.use(exposeDecl.path, routable);
-
-    TypeMirror typeMirror = reflectType(this.runtimeType);
-    String name = exposeDecl.as;
-
-    if (name == null || name.isEmpty)
-      name = MirrorSystem.getName(typeMirror.simpleName);
-
-    app.controllers[name] = this;
-  }
 
   Controller() {
     // Load global expose decl
@@ -91,9 +86,24 @@ class Controller {
           if (name == null || name.isEmpty)
             name = MirrorSystem.getName(key);
 
-          _mappings[name] = route;
+          routeMappings[name] = route;
         }
       }
     });
   }
+
+  Future call(AngelBase app) async {
+    this.app = app;
+    app.use(exposeDecl.path, generateRoutable());
+
+    TypeMirror typeMirror = reflectType(this.runtimeType);
+    String name = exposeDecl.as;
+
+    if (name == null || name.isEmpty)
+      name = MirrorSystem.getName(typeMirror.simpleName);
+
+    app.controllers[name] = this;
+  }
+
+  Routable generateRoutable() => new Routable()..routes.addAll(routes);
 }

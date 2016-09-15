@@ -1,4 +1,11 @@
-part of angel_framework.http;
+library angel_framework.http;
+
+import 'dart:async';
+import 'package:merge_map/merge_map.dart';
+import '../util.dart';
+import 'metadata.dart';
+import 'route.dart';
+import 'service.dart';
 
 /// Wraps another service in a service that broadcasts events on actions.
 class HookedService extends Service {
@@ -38,22 +45,22 @@ class HookedService extends Service {
     Map restProvider = {'provider': Providers.REST};
 
     // Add global middleware if declared on the instance itself
-    Middleware before = _getAnnotation(inner, Middleware);
+    Middleware before = getAnnotation(inner, Middleware);
     if (before != null) {
       routes.add(new Route("*", "*", before.handlers));
     }
 
-    Middleware indexMiddleware = _getAnnotation(inner.index, Middleware);
+    Middleware indexMiddleware = getAnnotation(inner.index, Middleware);
     get('/', (req, res) async {
       return await this.index(mergeMap([req.query, restProvider]));
     }, middleware: (indexMiddleware == null) ? [] : indexMiddleware.handlers);
 
-    Middleware createMiddleware = _getAnnotation(inner.create, Middleware);
+    Middleware createMiddleware = getAnnotation(inner.create, Middleware);
     post('/', (req, res) async => await this.create(req.body, restProvider),
         middleware:
         (createMiddleware == null) ? [] : createMiddleware.handlers);
 
-    Middleware readMiddleware = _getAnnotation(inner.read, Middleware);
+    Middleware readMiddleware = getAnnotation(inner.read, Middleware);
 
     get(
         '/:id',
@@ -61,7 +68,7 @@ class HookedService extends Service {
         .read(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: (readMiddleware == null) ? [] : readMiddleware.handlers);
 
-    Middleware modifyMiddleware = _getAnnotation(inner.modify, Middleware);
+    Middleware modifyMiddleware = getAnnotation(inner.modify, Middleware);
     patch(
         '/:id',
         (req, res) async =>
@@ -69,7 +76,7 @@ class HookedService extends Service {
         middleware:
         (modifyMiddleware == null) ? [] : modifyMiddleware.handlers);
 
-    Middleware updateMiddleware = _getAnnotation(inner.update, Middleware);
+    Middleware updateMiddleware = getAnnotation(inner.update, Middleware);
     post(
         '/:id',
         (req, res) async =>
@@ -77,7 +84,7 @@ class HookedService extends Service {
         middleware:
         (updateMiddleware == null) ? [] : updateMiddleware.handlers);
 
-    Middleware removeMiddleware = _getAnnotation(inner.remove, Middleware);
+    Middleware removeMiddleware = getAnnotation(inner.remove, Middleware);
     delete(
         '/:id',
         (req, res) async => await this

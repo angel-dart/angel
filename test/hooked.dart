@@ -5,8 +5,7 @@ import 'package:test/test.dart';
 import 'common.dart';
 
 main() {
-  group('Hooked', () {
-    Map headers = {
+  Map headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     };
@@ -77,5 +76,4 @@ main() {
       List result = god.deserialize(response.body);
       expect(result[0]["angel"], equals("framework"));
     });
-  });
 }

@@ -1,12 +1,19 @@
-part of angel_framework.http;
+library angel_framework.http.response_context;
 
-/// A function that asynchronously generates a view from the given path and data.
-typedef Future<String> ViewGenerator(String path, [Map data]);
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:json_god/json_god.dart' as god;
+import 'package:mime/mime.dart';
+import '../extensible.dart';
+import 'angel_base.dart';
+import 'controller.dart';
+import 'route.dart';
 
 /// A convenience wrapper around an outgoing HTTP request.
 class ResponseContext extends Extensible {
   /// The [Angel] instance that is sending a response.
-  Angel app;
+  AngelBase app;
 
   /// Can we still write to this response?
   bool isOpen = true;
@@ -32,8 +39,7 @@ class ResponseContext extends Extensible {
 
   /// Sends a download as a response.
   download(File file, {String filename}) {
-    header("Content-Disposition",
-        'Content-Disposition: attachment; filename="${filename ?? file.path}"');
+    header("Content-Disposition", 'attachment; filename="${filename ?? file.path}"');
     header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path));
     header(HttpHeaders.CONTENT_LENGTH, file.lengthSync().toString());
     responseData.add(file.readAsBytesSync());
@@ -116,7 +122,7 @@ class ResponseContext extends Extensible {
     if (controller == null)
       throw new Exception("Could not find a controller named '${split[0]}'");
 
-    Route matched = controller._mappings[split[1]];
+    Route matched = controller.routeMappings[split[1]];
 
     if (matched == null)
       throw new Exception("Controller '${split[0]}' does not contain any action named '${split[1]}'");
@@ -147,7 +153,7 @@ class ResponseContext extends Extensible {
 
   /// Magically transforms an [HttpResponse] object into a ResponseContext.
   static Future<ResponseContext> from
-      (HttpResponse response, Angel app) async
+      (HttpResponse response, AngelBase app) async
   {
     ResponseContext context = new ResponseContext(response);
     context.app = app;

@@ -19,61 +19,62 @@ class TodoController extends Controller {
   }
 
   @Expose("/namedRoute/:foo", as: "foo")
-  Future<String> someRandomRoute(RequestContext req, ResponseContext res) async {
+  Future<String> someRandomRoute(RequestContext req,
+      ResponseContext res) async {
     return "${req.params['foo']}!";
   }
 }
 
 main() {
-  group("controller", () {
-    Angel app = new Angel();
-    HttpServer server;
-    InternetAddress host = InternetAddress.LOOPBACK_IP_V4;
-    int port = 3000;
-    http.Client client;
-    String url = "http://${host.address}:$port";
+  Angel app = new Angel();
+  HttpServer server;
+  InternetAddress host = InternetAddress.LOOPBACK_IP_V4;
+  int port = 3000;
+  http.Client client;
+  String url = "http://${host.address}:$port";
 
-    setUp(() async {
-      app.registerMiddleware("foo", (req, res) async => res.write("Hello, "));
-      app.registerMiddleware("bar", (req, res) async => res.write("world!"));
-      app.get("/redirect", (req, ResponseContext res) async =>
-          res.redirectToAction("TodoController@foo", {"foo": "world"}));
-      await app.configure(new TodoController());
+  setUp(() async {
+    app.registerMiddleware("foo", (req, res) async => res.write("Hello, "));
+    app.registerMiddleware("bar", (req, res) async => res.write("world!"));
+    app.get("/redirect", (req, ResponseContext res) async =>
+        res.redirectToAction("TodoController@foo", {"foo": "world"}));
+    await app.configure(new TodoController());
 
-      print(app.controllers);
-      print("\nDUMPING ROUTES:");
-      app.routes.forEach((Route route) {
-        print("\t${route.method} ${route.path} -> ${route.handlers}");
-      });
-      print("\n");
-
-      server = await app.startServer(host, port);
-      client = new http.Client();
+    print(app.controllers);
+    print("\nDUMPING ROUTES:");
+    app.routes.forEach((Route route) {
+      print("\t${route.method} ${route.path} -> ${route.handlers}");
     });
+    print("\n");
 
-    tearDown(() async {
-      await server.close(force: true);
-      client.close();
-      client = null;
-    });
+    server = await app.startServer(host, port);
+    client = new http.Client();
+  });
 
-    test("middleware", () async {
-      var response = await client.get("$url/todos/0");
-      print(response.body);
+  tearDown(() async {
+    await server.close(force: true);
+    client.close();
+    client = null;
+  });
 
-      expect(response.body.indexOf("Hello, "), equals(0));
+  test("middleware", () async {
+    var rgx = new RegExp("^Hello, world!");
+    var response = await client.get("$url/todos/0");
+    print(response.body);
 
-      Map todo = JSON.decode(response.body.substring(7));
-      expect(todo.keys.length, equals(2));
-      expect(todo['text'], equals("Hello"));
-      expect(todo['over'], equals("world"));
-    });
+    expect(response.body.indexOf("Hello, "), equals(0));
 
-    test("named actions", () async {
-      var response = await client.get("$url/redirect");
-      print(response.body);
+    Map todo = JSON.decode(response.body.replaceAll(rgx, ""));
+    print("Todo: $todo");
+    expect(todo.keys.length, equals(3));
+    expect(todo['text'], equals("Hello"));
+    expect(todo['over'], equals("world"));
+  });
 
-      expect(response.body, equals("Hello, \"world!\""));
-    });
+  test("named actions", () async {
+    var response = await client.get("$url/redirect");
+    print(response.body);
+
+    expect(response.body, equals("Hello, \"world!\""));
   });
 }

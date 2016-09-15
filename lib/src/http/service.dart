@@ -1,4 +1,14 @@
-part of angel_framework.http;
+library angel_framework.http.service;
+
+import 'dart:async';
+import 'package:merge_map/merge_map.dart';
+import '../defs.dart';
+import '../util.dart';
+import 'angel_base.dart';
+import 'angel_http_exception.dart';
+import 'metadata.dart';
+import 'routable.dart';
+import 'route.dart';
 
 /// Indicates how the service was accessed.
 ///
@@ -25,7 +35,7 @@ class Providers {
 /// Heavily inspired by FeathersJS. <3
 class Service extends Routable {
   /// The [Angel] app powering this service.
-  Angel app;
+  AngelBase app;
 
   /// Retrieves all resources.
   Future<List> index([Map params]) {
@@ -61,22 +71,22 @@ class Service extends Routable {
     Map restProvider = {'provider': Providers.REST};
 
     // Add global middleware if declared on the instance itself
-    Middleware before = _getAnnotation(this, Middleware);
+    Middleware before = getAnnotation(this, Middleware);
     if (before != null) {
       routes.add(new Route("*", "*", before.handlers));
     }
 
-    Middleware indexMiddleware = _getAnnotation(this.index, Middleware);
+    Middleware indexMiddleware = getAnnotation(this.index, Middleware);
     get('/', (req, res) async {
       return await this.index(mergeMap([req.query, restProvider]));
     }, middleware: (indexMiddleware == null) ? [] : indexMiddleware.handlers);
 
-    Middleware createMiddleware = _getAnnotation(this.create, Middleware);
+    Middleware createMiddleware = getAnnotation(this.create, Middleware);
     post('/', (req, res) async => await this.create(req.body, restProvider),
         middleware:
             (createMiddleware == null) ? [] : createMiddleware.handlers);
 
-    Middleware readMiddleware = _getAnnotation(this.read, Middleware);
+    Middleware readMiddleware = getAnnotation(this.read, Middleware);
 
     get(
         '/:id',
@@ -84,7 +94,7 @@ class Service extends Routable {
             .read(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: (readMiddleware == null) ? [] : readMiddleware.handlers);
 
-    Middleware modifyMiddleware = _getAnnotation(this.modify, Middleware);
+    Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
     patch(
         '/:id',
         (req, res) async =>
@@ -92,7 +102,7 @@ class Service extends Routable {
         middleware:
             (modifyMiddleware == null) ? [] : modifyMiddleware.handlers);
 
-    Middleware updateMiddleware = _getAnnotation(this.update, Middleware);
+    Middleware updateMiddleware = getAnnotation(this.update, Middleware);
     post(
         '/:id',
         (req, res) async =>
@@ -100,7 +110,7 @@ class Service extends Routable {
         middleware:
             (updateMiddleware == null) ? [] : updateMiddleware.handlers);
 
-    Middleware removeMiddleware = _getAnnotation(this.remove, Middleware);
+    Middleware removeMiddleware = getAnnotation(this.remove, Middleware);
     delete(
         '/:id',
         (req, res) async => await this
