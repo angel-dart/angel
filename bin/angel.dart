@@ -14,9 +14,8 @@ main(List<String> args) {
   runner.addCommand(new DoctorCommand());
   runner.addCommand(new ServiceCommand());
 
-  return runner.run(args).then((_) {}).catchError((exc, st) {
+  return runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");
-    stderr.writeln(st);
     exitCode = 1;
   });
 }
