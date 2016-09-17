@@ -262,6 +262,8 @@ class Angel extends AngelBase {
             args.add(req);
           else if (name == "res")
             args.add(res);
+          else if (req.params.containsKey(name))
+            args.add(req.params[name]);
           else {
             throw new Exception("Cannot resolve parameter '$name' within handler.");
           }
