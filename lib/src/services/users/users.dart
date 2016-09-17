@@ -1,11 +1,9 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mongo/angel_mongo.dart';
 import 'package:crypto/crypto.dart' show sha256;
-import 'package:json_god/json_god.dart' as god;
 import 'package:mongo_dart/mongo_dart.dart';
-import 'schema.dart';
+import 'package:validate/validate.dart';
 
-@god.WithSchema(UserSchema)
 class User extends Model {
   String email;
   String username;
@@ -35,6 +33,13 @@ configureServer(Db db) {
     HookedService service = app.service("api/users");
 
     // Place your hooks here!
+
+    service.beforeCreated.listen((HookedServiceEvent e) {
+      Validate.isKeyInMap("username", e.data);
+      Validate.isEmail(e.data["email"]);
+      Validate.isPassword(e.data["password"]);
+    });
+
     service.beforeCreated.listen(hashPassword);
   };
 }
