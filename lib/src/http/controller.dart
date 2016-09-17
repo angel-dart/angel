@@ -56,16 +56,26 @@ class Controller {
                 args.add(req);
               else if (parameter.type.reflectedType == ResponseContext)
                 args.add(res);
-              else {
-                String name = MirrorSystem.getName(parameter.simpleName);
+              else {String name = MirrorSystem.getName(parameter.simpleName);
                 var arg = req.params[name];
 
-                if (arg == null &&
-                    !exposeMirror.reflectee.allowNull.contain(name)) {
-                  throw new AngelHttpException.BadRequest();
-                }
+                if (arg == null) {
+                  if (parameter.type.reflectedType != dynamic) {
+                    try {
+                      arg = app.container.make(parameter.type.reflectedType);
+                      if (arg != null) {
+                        args.add(arg);
+                        continue;
+                      }
+                    } catch(e) {
+                      //
+                    }
+                  }
 
-                args.add(arg);
+                  if (!exposeMirror.reflectee.allowNull.contain(name))
+                    throw new AngelHttpException.BadRequest(message: "Missing parameter '$name'");
+
+                } else args.add(arg);
               }
             }
 
