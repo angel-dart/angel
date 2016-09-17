@@ -12,6 +12,7 @@ class WebSocketClient extends Angel {
 
   WebSocketClient(String wsEndpoint) : super(wsEndpoint) {
     _socket = new WebSocket(wsEndpoint);
+    _connect();
   }
 
   onData(data) {
@@ -60,7 +61,7 @@ class WebSocketClient extends Angel {
     }
   }
 
-  Future connect() async {
+  void _connect() {
     _socket.onMessage.listen((MessageEvent event) {
       onData(event.data);
     });

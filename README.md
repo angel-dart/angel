@@ -1,5 +1,13 @@
 # angel_websocket
-WebSocket plugin for Angel. Features JWT support.
+WebSocket plugin for Angel.
+
+This plugin broadcasts events from hooked services via WebSockets. 
+
+In addition,
+it adds itself to the app's IoC container as `AngelWebSocket`, so that it can be used
+in controllers as well.
+
+WebSocket contexts are add to `req.params` as `'socket'`.
 
 
 # Usage
@@ -51,6 +59,8 @@ class Car extends srv.Model {
 
 main() async {
   Angel app = new WebSocketClient("/ws");
+  // Wait for WebSocket connection...
+  await app.connect();
   var Cars = app.service("api/cars", type: Car);
 
   Cars.onCreated.listen((e) {

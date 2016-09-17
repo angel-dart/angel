@@ -17,9 +17,10 @@ class Realtime {
   const Realtime();
 }
 
-class AngelWebSocket {
+class AngelWebSocket extends AngelPlugin {
   Angel _app;
   List<WebSocket> _clients = [];
+  List<WebSocket> get clients => new List.from(_clients, growable: false);
   List<String> servicesAlreadyWired = [];
   String endpoint;
 
@@ -153,8 +154,12 @@ class AngelWebSocket {
     }
   }
 
+  @override
   Future call(Angel app) async {
-    this._app = app;
+    this._app = app..container.singleton(this);
+
+    if (runtimeType != AngelWebSocket)
+      app.container.singleton(this, as: AngelWebSocket);
 
     // Set up services
     wireAllServices(app);
@@ -176,6 +181,8 @@ class AngelWebSocket {
 
       var socket = new WebSocketContext(ws, req, res);
       await onConnect(socket);
+
+      req.params['socket'] = socket;
 
       ws.listen((data) {
         onData(socket, data);

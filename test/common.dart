@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/defs.dart';
+import 'package:angel_framework/src/defs.dart';
 
 class Todo extends MemoryModel {
   String text;
