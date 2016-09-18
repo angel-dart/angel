@@ -89,6 +89,8 @@ class WebSocketController extends Controller {
         }
       });
     });
+
+    ws.onDisconnection.listen(onDisconnect);
   }
 
   void broadcast(String eventName, data) {
@@ -96,6 +98,8 @@ class WebSocketController extends Controller {
   }
 
   Future onConnect(WebSocketContext socket) async {}
+
+  Future onDisconnect(WebSocketContext socket) async {}
 
   Future onAllEvents(Map data) async {}
 

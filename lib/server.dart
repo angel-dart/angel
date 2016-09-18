@@ -18,10 +18,13 @@ class AngelWebSocket extends AngelPlugin {
   List<WebSocket> _clients = [];
   StreamController<WebSocketContext> _onConnection =
       new StreamController<WebSocketContext>.broadcast();
+  StreamController<WebSocketContext> _onDisconnect =
+      new StreamController<WebSocketContext>.broadcast();
   List<WebSocket> get clients => new List.from(_clients, growable: false);
   List<String> servicesAlreadyWired = [];
   String endpoint;
   Stream<WebSocketContext> get onConnection => _onConnection.stream;
+  Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
   AngelWebSocket(String this.endpoint);
 
@@ -208,8 +211,10 @@ class AngelWebSocket extends AngelPlugin {
       ws.listen((data) {
         onData(socket, data);
       }, onDone: () {
+        _onDisconnect.add(socket);
         _clients.remove(ws);
       }, onError: (e) {
+        _onDisconnect.add(socket);
         _clients.remove(ws);
       }, cancelOnError: true);
     });
