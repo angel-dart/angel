@@ -13,6 +13,7 @@ main(List<String> args) {
 
   runner.addCommand(new DoctorCommand());
   runner.addCommand(new ServiceCommand());
+  runner.addCommand(new InitCommand());
 
   return runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");
