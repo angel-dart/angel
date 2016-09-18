@@ -242,7 +242,7 @@ class Angel extends AngelBase {
   }
 
   // Run a function after injecting from service container
-  Future runContained(Function handler, RequestContext req, ResponseContext res) async {
+  Future runContained(Function handler, RequestContext req, ResponseContext res, {Map<String, dynamic> namedParameters, Map<Type, dynamic> injecting}) async {
     ClosureMirror closureMirror = reflect(handler);
     List args = [];
 
@@ -254,7 +254,7 @@ class Angel extends AngelBase {
       else {
         // First, search to see if we can map this to a type
         if (parameter.type.reflectedType != dynamic) {
-          args.add(container.make(parameter.type.reflectedType));
+          args.add(container.make(parameter.type.reflectedType, namedParameters: namedParameters, injecting: injecting));
         } else {
           String name = MirrorSystem.getName(parameter.simpleName);
 
