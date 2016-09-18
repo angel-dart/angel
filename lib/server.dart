@@ -11,8 +11,6 @@ export 'angel_websocket.dart';
 
 part 'websocket_context.dart';
 
-final AngelWebSocket websocket = new AngelWebSocket("/ws");
-
 class Realtime {
   const Realtime();
 }
@@ -20,9 +18,12 @@ class Realtime {
 class AngelWebSocket extends AngelPlugin {
   Angel _app;
   List<WebSocket> _clients = [];
+  StreamController<WebSocketContext> _onConnection =
+      new StreamController<WebSocketContext>.broadcast();
   List<WebSocket> get clients => new List.from(_clients, growable: false);
   List<String> servicesAlreadyWired = [];
   String endpoint;
+  Stream<WebSocketContext> get onConnection => _onConnection.stream;
 
   AngelWebSocket(String this.endpoint);
 
@@ -113,6 +114,7 @@ class AngelWebSocket extends AngelPlugin {
 
   onData(WebSocketContext socket, data) async {
     try {
+      socket._onData.add(data);
       var fromJson = JSON.decode(data);
       var action = new WebSocketAction(
           id: fromJson['id'],
@@ -126,11 +128,31 @@ class AngelWebSocket extends AngelPlugin {
         throw new AngelHttpException.BadRequest();
       }
 
-      var event = handleAction(action, socket);
-      if (event is Future) event = await event;
+      if (fromJson is Map && fromJson.containsKey("eventName")) {
+        socket._onAll.add(fromJson);
+        socket.on._getStreamForEvent(fromJson["eventName"].toString()).add(fromJson);
+      }
 
-      if (event is WebSocketEvent) {
-        batchEvent(event);
+      if (action.eventName.contains("::")) {
+        var split = action.eventName.split("::");
+
+        if (split.length >= 2) {
+          if ([
+            "index",
+            "read",
+            "create",
+            "modify",
+            "update",
+            "remove"
+          ].contains(split[1])) {
+            var event = handleAction(action, socket);
+            if (event is Future) event = await event;
+
+            if (event is WebSocketEvent) {
+              batchEvent(event);
+            }
+          }
+        }
       }
     } catch (e) {
       // Send an error
@@ -182,6 +204,7 @@ class AngelWebSocket extends AngelPlugin {
       var socket = new WebSocketContext(ws, req, res);
       await onConnect(socket);
 
+      _onConnection.add(socket);
       req.params['socket'] = socket;
 
       ws.listen((data) {

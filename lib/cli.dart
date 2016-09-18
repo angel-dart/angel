@@ -11,6 +11,7 @@ export 'package:angel_websocket/angel_websocket.dart';
 class WebSocketClient extends Angel {
   WebSocket _socket;
   Map<Pattern, List<WebSocketService>> _services = {};
+  WebSocket get underlyingSocket => _socket;
 
   WebSocketClient(String wsEndpoint) : super(wsEndpoint);
 
@@ -68,6 +69,13 @@ class WebSocketClient extends Angel {
   Future connect() async {
     _socket = await WebSocket.connect(basePath);
     _socket.listen(onData);
+  }
+
+  void send(String eventName, data) {
+    _socket.add(JSON.encode({
+      "eventName": eventName,
+      "data": data
+    }));
   }
 
   @override

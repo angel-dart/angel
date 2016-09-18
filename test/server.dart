@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart' as server;
 import 'package:angel_websocket/cli.dart' as client;
@@ -10,7 +11,9 @@ main() {
   server.Angel app;
   client.WebSocketClient clientApp;
   client.WebSocketService clientTodos;
+  Stream<Map> customEventStream;
   WebSocket socket;
+  AngelWebSocket webSocket = new AngelWebSocket("/ws");
 
   setUp(() async {
     app = new server.Angel();
@@ -21,7 +24,18 @@ main() {
         .service("api/todos")
         .create(new Todo(text: "Clean your room", when: "now"));
 
-    await app.configure(websocket);
+    await app.configure(webSocket);
+    await app.configure((server.Angel app) async {
+      AngelWebSocket ws = app.container.make(AngelWebSocket);
+
+      ws.onConnection.listen((WebSocketContext socket) {
+        socket.onData.listen((data) {
+          print("Data: $data");
+        });
+
+        customEventStream = socket.on["custom"];
+      });
+    });
     await app.configure(startTestServer);
 
     socket = await WebSocket.connect(app.properties["ws_url"]);
@@ -36,8 +50,8 @@ main() {
   });
 
   test("find all real-time services", () {
-    print(websocket.servicesAlreadyWired);
-    expect(websocket.servicesAlreadyWired, equals(["api/todos"]));
+    print(webSocket.servicesAlreadyWired);
+    expect(webSocket.servicesAlreadyWired, equals(["api/todos"]));
   });
 
   test("index", () async {
@@ -66,6 +80,15 @@ main() {
     expect(e.data is Todo, equals(true));
     expect(e.data.text, equals(todo.text));
     expect(e.data.when, equals(todo.when));
+  });
+
+  test("custom event via controller", () async {
+    clientApp.send("custom", {"hello": "world"});
+
+    var data = await customEventStream.first;
+
+    expect(data["eventName"], equals("custom"));
+    expect(data["data"]["hello"], equals("world"));
   });
 }
 

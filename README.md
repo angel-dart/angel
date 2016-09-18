@@ -25,6 +25,27 @@ main() async {
 
 ```
 
+**Adding Handlers within a Controller**
+
+```dart
+import 'dart:async';
+import "package:angel_framework/angel_framework.dart";
+import "package:angel_websocket/server.dart";
+
+@Expose("/")
+class MyController extends Controller {
+  @override
+  Future call(AngelBase app) async {
+    var ws = app.container.make(AngelWebSocket);
+    ws.onConnection.listen((WebSocketContext socket) {
+      socket.on["message"].listen((WebSocketEvent e) {
+        socket.send("new_message", { "text": e.data["text"] });
+      });
+    });
+  }
+}
+```
+
 **In the Browser**
 
 ```dart
