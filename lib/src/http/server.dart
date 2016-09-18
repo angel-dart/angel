@@ -39,7 +39,6 @@ class Angel extends AngelBase {
   /// Fired before a request is processed. Always runs.
   Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
 
-
   /// Fired whenever a controller is added to this instance.
   ///
   /// **NOTE**: This is a broadcast stream.
@@ -72,8 +71,8 @@ class Angel extends AngelBase {
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
-    var server =
-        await _serverGenerator(address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0);
+    var server = await _serverGenerator(
+        address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0);
     this.httpServer = server;
 
     server.listen(handleRequest);
@@ -86,8 +85,7 @@ class Angel extends AngelBase {
     container.singleton(this, as: AngelBase);
     container.singleton(this);
 
-    if (runtimeType != Angel)
-      container.singleton(this, as: Angel);
+    if (runtimeType != Angel) container.singleton(this, as: Angel);
   }
 
   Future handleRequest(HttpRequest request) async {
@@ -242,7 +240,9 @@ class Angel extends AngelBase {
   }
 
   // Run a function after injecting from service container
-  Future runContained(Function handler, RequestContext req, ResponseContext res, {Map<String, dynamic> namedParameters, Map<Type, dynamic> injecting}) async {
+  Future runContained(Function handler, RequestContext req, ResponseContext res,
+      {Map<String, dynamic> namedParameters,
+      Map<Type, dynamic> injecting}) async {
     ClosureMirror closureMirror = reflect(handler);
     List args = [];
 
@@ -254,18 +254,20 @@ class Angel extends AngelBase {
       else {
         // First, search to see if we can map this to a type
         if (parameter.type.reflectedType != dynamic) {
-          args.add(container.make(parameter.type.reflectedType, namedParameters: namedParameters, injecting: injecting));
+          args.add(container.make(parameter.type.reflectedType,
+              namedParameters: namedParameters, injecting: injecting));
         } else {
           String name = MirrorSystem.getName(parameter.simpleName);
 
-          if (name == "req")
+          if (req.params.containsKey(name))
+            args.add(req.params[name]);
+          else if (name == "req")
             args.add(req);
           else if (name == "res")
             args.add(res);
-          else if (req.params.containsKey(name))
-            args.add(req.params[name]);
           else {
-            throw new Exception("Cannot resolve parameter '$name' within handler.");
+            throw new Exception(
+                "Cannot resolve parameter '$name' within handler.");
           }
         }
       }
