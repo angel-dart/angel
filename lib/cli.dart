@@ -12,13 +12,16 @@ class WebSocketClient extends Angel {
   WebSocket _socket;
   Map<Pattern, List<WebSocketService>> _services = {};
   WebSocket get underlyingSocket => _socket;
+  _WebSocketEventTable on = new _WebSocketEventTable();
 
   WebSocketClient(String wsEndpoint) : super(wsEndpoint);
 
-  onData(data) {
+  onData(data) async {
     var fromJson = JSON.decode(data);
+    print("a: $fromJson");
     var e = new WebSocketEvent(
         eventName: fromJson['eventName'], data: fromJson['data']);
+    print("b: $e");
     var split = e.eventName.split("::");
     var serviceName = split[0];
     var services = _services[serviceName];
@@ -30,37 +33,41 @@ class WebSocketClient extends Angel {
       exc.errors = exc.errors ?? [];
       exc.errors.addAll(e.data['errors'] ?? []);
       throw exc;
-    } else if (services != null) {
-      e.eventName = split[1];
+    } else {
+      on._getStreamForEvent(serviceName).add(e.data);
 
-      for (WebSocketService service in services) {
-        service._onAllEvents.add(e);
-        switch (e.eventName) {
-          case srv.HookedServiceEvent.INDEXED:
-            service._onIndexed.add(e);
-            break;
-          case srv.HookedServiceEvent.READ:
-            service._onRead.add(e);
-            break;
-          case srv.HookedServiceEvent.CREATED:
-            service._onCreated.add(e);
-            break;
-          case srv.HookedServiceEvent.MODIFIED:
-            service._onModified.add(e);
-            break;
-          case srv.HookedServiceEvent.UPDATED:
-            service._onUpdated.add(e);
-            break;
-          case srv.HookedServiceEvent.REMOVED:
-            service._onRemoved.add(e);
-            break;
-          case "error":
-            service._onError.add(e);
-            break;
-          default:
-            if (service._on._events.containsKey(e.eventName))
-              service._on._events[e.eventName].add(e);
-            break;
+      if (services != null) {
+        e.eventName = split[1];
+
+        for (WebSocketService service in services) {
+          service._onAllEvents.add(e);
+          switch (e.eventName) {
+            case srv.HookedServiceEvent.INDEXED:
+              service._onIndexed.add(e);
+              break;
+            case srv.HookedServiceEvent.READ:
+              service._onRead.add(e);
+              break;
+            case srv.HookedServiceEvent.CREATED:
+              service._onCreated.add(e);
+              break;
+            case srv.HookedServiceEvent.MODIFIED:
+              service._onModified.add(e);
+              break;
+            case srv.HookedServiceEvent.UPDATED:
+              service._onUpdated.add(e);
+              break;
+            case srv.HookedServiceEvent.REMOVED:
+              service._onRemoved.add(e);
+              break;
+            case "error":
+              service._onError.add(e);
+              break;
+            default:
+              if (service._on._events.containsKey(e.eventName))
+                service._on._events[e.eventName].add(e);
+              break;
+          }
         }
       }
     }
@@ -72,10 +79,7 @@ class WebSocketClient extends Angel {
   }
 
   void send(String eventName, data) {
-    _socket.add(JSON.encode({
-      "eventName": eventName,
-      "data": data
-    }));
+    _socket.add(JSON.encode({"eventName": eventName, "data": data}));
   }
 
   @override
@@ -112,7 +116,8 @@ class _WebSocketServiceTransformer
 
     stream.listen((WebSocketEvent e) {
       if (_outputType != null && e.eventName != "error")
-        e.data = god.deserialize(god.serialize(e.data), outputType: _outputType);
+        e.data =
+            god.deserialize(god.serialize(e.data), outputType: _outputType);
       _stream.add(e);
     });
 
@@ -204,4 +209,16 @@ class WebSocketService extends Service {
     connection.add(god.serialize(new WebSocketAction(
         eventName: "$_path::remove", id: id, params: params)));
   }
+}
+
+class _WebSocketEventTable {
+  Map<String, StreamController<Map>> _handlers = {};
+
+  StreamController<Map> _getStreamForEvent(eventName) {
+    if (!_handlers.containsKey(eventName))
+      _handlers[eventName] = new StreamController<Map>.broadcast();
+    return _handlers[eventName];
+  }
+
+  Stream<Map> operator [](String key) => _getStreamForEvent(key).stream;
 }

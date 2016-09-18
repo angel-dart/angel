@@ -3,6 +3,7 @@ library angel_websocket.server;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
@@ -10,10 +11,7 @@ import 'angel_websocket.dart';
 export 'angel_websocket.dart';
 
 part 'websocket_context.dart';
-
-class Realtime {
-  const Realtime();
-}
+part 'websocket_controller.dart';
 
 class AngelWebSocket extends AngelPlugin {
   Angel _app;
@@ -130,7 +128,7 @@ class AngelWebSocket extends AngelPlugin {
 
       if (fromJson is Map && fromJson.containsKey("eventName")) {
         socket._onAll.add(fromJson);
-        socket.on._getStreamForEvent(fromJson["eventName"].toString()).add(fromJson);
+        socket.on._getStreamForEvent(fromJson["eventName"].toString()).add(fromJson["data"]);
       }
 
       if (action.eventName.contains("::")) {

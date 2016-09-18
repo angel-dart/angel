@@ -12,6 +12,7 @@ main() {
   client.WebSocketClient clientApp;
   client.WebSocketService clientTodos;
   Stream<Map> customEventStream;
+  Stream<Map> customEventStream2;
   WebSocket socket;
   AngelWebSocket webSocket = new AngelWebSocket("/ws");
 
@@ -36,11 +37,13 @@ main() {
         customEventStream = socket.on["custom"];
       });
     });
+    await app.configure(new Custom2Controller());
     await app.configure(startTestServer);
 
     socket = await WebSocket.connect(app.properties["ws_url"]);
     clientApp = new client.WebSocketClient(app.properties["ws_url"]);
     await clientApp.connect();
+    customEventStream2 = clientApp.on["custom2"];
 
     clientTodos = clientApp.service("api/todos", type: Todo);
   });
@@ -61,8 +64,7 @@ main() {
     String json = await socket.first;
     print(json);
 
-    WebSocketEvent e =
-    god.deserialize(json, outputType: WebSocketEvent);
+    WebSocketEvent e = god.deserialize(json, outputType: WebSocketEvent);
     expect(e.eventName, equals("api/todos::indexed"));
     expect(e.data[0]["when"], equals("now"));
   });
@@ -87,10 +89,29 @@ main() {
 
     var data = await customEventStream.first;
 
-    expect(data["eventName"], equals("custom"));
-    expect(data["data"]["hello"], equals("world"));
+    expect(data["hello"], equals("world"));
+  });
+
+  test("custom event via ws controller", () async {
+    clientApp.send("custom2", {"hello": "world"});
+
+    var data = customEventStream2.first;
+    print("Received data from server: $data");
   });
 }
 
-@Realtime()
 class FakeService extends server.Service {}
+
+@server.Expose("/custom2")
+class Custom2Controller extends WebSocketController {
+  @override
+  Future onConnect(WebSocketContext socket) async {
+    print(
+        "Got a WS connection from session #${socket.requestContext.session.id}!");
+  }
+
+  @ExposeWs("custom2")
+  void sayFoo(WebSocketContext socket, server.RequestContext req, AngelWebSocket ws) {
+    socket.send("custom2", {"franken": "stein"});
+  }
+}

@@ -27,21 +27,24 @@ main() async {
 
 **Adding Handlers within a Controller**
 
+`WebSocketController` extends a normal `Controller`, but also listens to WebSockets.
+
 ```dart
 import 'dart:async';
 import "package:angel_framework/angel_framework.dart";
 import "package:angel_websocket/server.dart";
 
 @Expose("/")
-class MyController extends Controller {
+class MyController extends WebSocketController {
   @override
-  Future call(AngelBase app) async {
-    var ws = app.container.make(AngelWebSocket);
-    ws.onConnection.listen((WebSocketContext socket) {
-      socket.on["message"].listen((WebSocketEvent e) {
-        socket.send("new_message", { "text": e.data["text"] });
-      });
-    });
+  void onConnect(WebSocketContext socket) {
+    // On connect...
+  }
+  
+  // Dependency injection works, too..
+  @ExposeWs("read_message")
+  void sendMessage(WebSocketContext socket, Db db) async {
+    socket.send("found_message", db.collection("messages").findOne(where.id("...")));
   }
 }
 ```
