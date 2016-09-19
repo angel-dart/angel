@@ -21,6 +21,25 @@ integration with backend tools, at least in JavaScript, where there are a trilli
 of each. With the right server framework in Dart, we can build full-stack apps that
 breathe and function as one single body, rather than as two segregated, monolithic units.
 
+Thus, the third, and perhaps most important goal of the Angel framework is to be isomorphic. Angel is designed from the ground up to share code across the server and client. The client libraries even expose an identical API to the server implementation. Creating a full-stack app should be a streamlined experience, and this is virtually impossible without shared code.
+
+Angel also prioritizes tooling. The app boilerplate is pre-fitted with all the plugins and configuration you need to launch an MVP in a matter of days. There is also Swagger code generator in the works. The rest is just implementation detail for you. No need to worry about the following:
+
+* Mustache
+* MongoDB
+* Seeding
+* Angular2 Client
+* Static File Server
+* Load Balancing
+* Authentication
+* REST and WebSockets (client and server)
+* Server daemon
+* Command-line code generators
+* Diagnostics and Logging
+* Configuration (client and server)
+
+It's all taken care of for you.
+
 Tally ho!
 
 # Development
