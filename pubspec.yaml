@@ -20,3 +20,5 @@ dev_dependencies:
   http: ^0.11.3
   grinder: ^0.8.0+2
   test: ^0.12.13
+transformers:
+- angel_configuration
