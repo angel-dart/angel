@@ -6,8 +6,6 @@ import 'package:angel_configuration/angel_configuration.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:furlong/furlong.dart';
 import 'package:sqljocky/sqljocky.dart';
-export 'group.dart';
-export 'todo.dart';
 
 Future<ConnectionPool> createPool() async {
   var app = new Angel();

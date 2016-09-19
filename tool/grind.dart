@@ -1,13 +1,9 @@
-import 'dart:async';
-import 'dart:io';
 import 'package:angel/migrations/migrations.dart';
 import 'package:furlong/furlong.dart';
 import 'package:grinder/grinder.dart';
 
 final List<Migration> migrations = [
   // Your migrations here!
-  new GroupMigration(),
-  new TodoMigration()
 ];
 
 main(args) => grind(args);
