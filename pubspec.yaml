@@ -1,6 +1,6 @@
 name: angel_configuration
 description: Isomorphic YAML configuration loader for Angel.
-version: 1.0.1+1
+version: 1.0.1+2
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_configuration
 dependencies:

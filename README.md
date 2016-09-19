@@ -3,7 +3,7 @@ Isomorphic YAML configuration loader for Angel.
 
 # About
 Any web app needs different configuration for development and production. This plugin will search
-for a `config/default.yaml` file. If it is found, configuratiom from it is loaded into `angel.properties`.
+for a `config/default.yaml` file. If it is found, configuration from it is loaded into `angel.properties`.
 Then, it will look for a `config/$ANGEL_ENV` file. (i.e. config/development.yaml). If this found, all of its
 configuration be loaded, and will override anything loaded from the `default.yaml` file. This allows for your
 app to work under different conditions without you re-coding anything. :)
@@ -47,3 +47,6 @@ main() async {
     print(config("some_key.other.nested_key"));
 }
 ```
+
+You can also provide a `dir` or `env` argument, corresponding to
+the ones on the server-side.
