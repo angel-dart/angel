@@ -13,8 +13,7 @@ In `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    angel_framework: ^0.0.0-dev
-    angel_static: ^1.0.0-beta
+    angel_configuration: ^1.0.0-dev
 ```
 
 # Usage
