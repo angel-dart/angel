@@ -11,9 +11,11 @@ app to work under different conditions without you re-coding anything. :)
 # Installation
 In `pubspec.yaml`:
 
-    dependencies:
-        angel_framework: ^0.0.0-dev
-        angel_static: ^1.0.0-beta
+```yaml
+dependencies:
+    angel_framework: ^0.0.0-dev
+    angel_static: ^1.0.0-beta
+```
 
 # Usage
 
