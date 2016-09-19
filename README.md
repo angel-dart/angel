@@ -1,5 +1,5 @@
 # Angel Configuration
-YAML configuration loader for Angel.
+Isomorphic YAML configuration loader for Angel.
 
 # About
 Any web app needs different configuration for development and production. This plugin will search
@@ -18,6 +18,8 @@ dependencies:
 
 # Usage
 
+**Server-side**
+
 ```dart
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
@@ -25,10 +27,23 @@ import 'package:angel_configuration/angel_configuration.dart';
 
 main() async {
     Angel angel = new Angel();
-    angel.configure(loadConfigurationFile()); // It's that easy
+    angel.configure(loadConfigurationFile()); // It's that easy!
 }
 ```
 
 `loadConfigurationFile` also accepts a `sourceDirectory` or `overrideEnvironmentName` parameter.
 The former will allow you to search in a directory other than `config`, and the latter lets you
 override `$ANGEL_ENV` by specifying a specific configuration name to look for (i.e. 'production').
+
+**In the Browser**
+
+You can easily load configuration values within your client-side app,
+and they will be automatically replaced by a Barback transformer.
+
+```dart
+import 'package:angel_configuration/browser.dart';
+
+main() async {
+    print(config("some_key.other.nested_key"));
+}
+```
