@@ -11,6 +11,8 @@ dependencies:
   angel_mongo: ^1.0.0-dev
   angel_mustache: ^1.0.0-dev
   angel_static: ^1.0.0
+  furlong:
+    path: /Users/tobe/Source/Dart/furlong
   json_god: ^2.0.0-beta
   validate: ^1.5.2
 dev_dependencies:

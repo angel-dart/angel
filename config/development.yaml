@@ -1,2 +1,6 @@
 # Development-only server configuration.
 port: 3000
+furlong:
+  database: angel
+  username: root
+  password: password
