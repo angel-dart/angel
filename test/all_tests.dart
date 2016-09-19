@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_configuration/angel_configuration.dart';
 import 'package:test/test.dart';
+import 'transformer.dart' as transformer;
 
 main() async {
   // Note: Set ANGEL_ENV to 'development'
@@ -25,4 +26,6 @@ main() async {
     expect(angel.properties['hello'], equals('goodbye'));
     expect(angel.properties['foo']['version'], equals('baz'));
   });
+
+  group("transformer", transformer.main);
 }
