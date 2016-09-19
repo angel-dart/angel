@@ -2,8 +2,6 @@
 
 * `service`
     * Add tests
-* `schema`
-* `migrate`
-* `build`
+* `migration`
 * `deploy`
-* `test`
+* Call these from Grinder script :)
