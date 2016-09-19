@@ -29,6 +29,7 @@ typedef Future AngelConfigurer(AngelBase app);
 class Angel extends AngelBase {
   var _afterProcessed = new StreamController<HttpRequest>.broadcast();
   var _beforeProcessed = new StreamController<HttpRequest>.broadcast();
+  var _fatalErrorStream = new StreamController<Map>.broadcast();
   var _onController = new StreamController<Controller>.broadcast();
   ServerGenerator _serverGenerator =
       (address, port) async => await HttpServer.bind(address, port);
@@ -38,6 +39,9 @@ class Angel extends AngelBase {
 
   /// Fired before a request is processed. Always runs.
   Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
+
+  /// Fired on fatal errors.
+  Stream<Map> get fatalErrorStream => _fatalErrorStream.stream;
 
   /// Fired whenever a controller is added to this instance.
   ///
@@ -312,6 +316,10 @@ class Angel extends AngelBase {
   _onError(e, [StackTrace stackTrace]) {
     stderr.write(e.toString());
     if (stackTrace != null) stderr.write(stackTrace.toString());
+    _fatalErrorStream.add({
+      "error": e,
+      "stack": stackTrace
+    });
   }
 
   Angel() : super() {
