@@ -40,6 +40,15 @@ override `$ANGEL_ENV` by specifying a specific configuration name to look for (i
 You can easily load configuration values within your client-side app,
 and they will be automatically replaced by a Barback transformer.
 
+In your `pubspec.yaml`:
+
+```yaml
+transformers:
+- angel_configuration
+```
+
+In your app:
+
 ```dart
 import 'package:angel_configuration/browser.dart';
 
