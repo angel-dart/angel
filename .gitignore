@@ -116,3 +116,5 @@ packages
 bin/packages
 
 .idea
+
+logs/**/*.txt
