@@ -1,5 +1,3 @@
-library angel.migrations;
-
 import 'dart:async';
 import 'dart:io';
 import 'package:angel_configuration/angel_configuration.dart';
@@ -10,7 +8,7 @@ import 'package:sqljocky/sqljocky.dart';
 Future<ConnectionPool> createPool() async {
   var app = new Angel();
   await app.configure(loadConfigurationFile());
-  Map config = app.properties["furlong"];
+  Map config = app.properties["db"]["migrate"];
 
   if (config == null)
     throw new Exception(

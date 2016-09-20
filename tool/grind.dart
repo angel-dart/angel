@@ -1,9 +1,10 @@
-import 'package:angel/migrations/migrations.dart';
+import 'package:angel/src/migrations/migrations.dart';
 import 'package:furlong/furlong.dart';
 import 'package:grinder/grinder.dart';
 
 final List<Migration> migrations = [
   // Your migrations here!
+  new UsersMigration()
 ];
 
 main(args) => grind(args);
