@@ -3,8 +3,8 @@ import 'package:angel_mongo/angel_mongo.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:validate/validate.dart';
-import '../../models/user.dart';
-export '../../models/user.dart';
+import '../models/user.dart';
+export '../models/user.dart';
 
 configureServer(Db db) {
   return (Angel app) async {
@@ -49,6 +49,7 @@ class UserService extends Service {
 
     try {
       Validate.isKeyInMap("username", data);
+      Validate.isKeyInMap("password", data);
       Validate.isEmail(data["email"]);
       data["password"] = hashPassword(data["password"]);
     } catch (e) {

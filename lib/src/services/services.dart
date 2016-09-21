@@ -4,7 +4,7 @@ library angel.services;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
-import 'user/user.dart' as User;
+import 'user.dart' as User;
 
 configureServer(Angel app) async {
   Db db = new Db(app.properties["mongo_db"]);

@@ -30,7 +30,7 @@ class User extends Model {
       "email": email,
       "username": username,
       "password": password,
-      roles: roles
+      "roles": roles
     };
   }
 }
