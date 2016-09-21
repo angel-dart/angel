@@ -3,21 +3,8 @@ import 'package:angel_mongo/angel_mongo.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:validate/validate.dart';
+import '../../models/user.dart';
 
-class User extends Model {
-  String email;
-  String username;
-  String password;
-  List<String> roles;
-
-  User(
-      {String this.email,
-      String this.username,
-      String this.password,
-      List<String> roles}) {
-    this.roles = roles ?? [];
-  }
-}
 
 hashPassword(HookedServiceEvent event) {
   if (event.data.password != null) {

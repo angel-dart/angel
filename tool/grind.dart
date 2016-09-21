@@ -1,11 +1,4 @@
-import 'package:angel/src/migrations/migrations.dart';
-import 'package:furlong/furlong.dart';
 import 'package:grinder/grinder.dart';
-
-final List<Migration> migrations = [
-  // Your migrations here!
-  new UsersMigration()
-];
 
 main(args) => grind(args);
 
@@ -20,18 +13,3 @@ build() {
 
 @Task()
 clean() => defaultClean();
-
-@Task("Generates classes from your Furlong migrations.")
-generate() async {}
-
-@Task("Reverts the database state to before any Furlong migrations were run.")
-down() => migrateDown(migrations);
-
-@Task("Undoes and re-runs all Furlong migrations.")
-reset() => migrateReset(migrations);
-
-@Task("Undoes the last batch of Furlong migrations run.")
-revert() => migrateRevert(migrations);
-
-@Task("Runs any outstanding Furlong migrations.")
-up() => migrateUp(migrations);

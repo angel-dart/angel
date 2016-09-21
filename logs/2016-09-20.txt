@@ -1,0 +1,3 @@
+INFO: 2016-09-20 00:52:14.862305: Server listening at http://127.0.0.1:3000
+CONFIG: 2016-09-20 00:52:14.864663: Starting server with given configuration: {mongo_db: mongodb://localhost:27017/angel, db: {web: {database: angel, password: password, username: username}, migrate: {database: angel, password: password, username: root}}, host: 127.0.0.1, port: 3000}
+INFO: 2016-09-20 00:52:20.711300: 200 GET / (69 ms)
