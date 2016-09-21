@@ -317,8 +317,6 @@ class Angel extends AngelBase {
 
   /// Handles a server error.
   _onError(e, [StackTrace stackTrace]) {
-    stderr.write(e.toString());
-    if (stackTrace != null) stderr.write(stackTrace.toString());
     _fatalErrorStream.add({
       "error": e,
       "stack": stackTrace
