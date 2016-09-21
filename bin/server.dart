@@ -10,13 +10,13 @@ main() async {
 }
 
 startServer() async {
-  Angel app = await createServer();
-  DateFormat dateFormat = new DateFormat("y-MM-dd");
-  InternetAddress host = new InternetAddress(app.properties['host']);
-  int port = app.properties['port'];
-  var now = new DateTime.now();
+  var app = await createServer();
+  var dateFormat = new DateFormat("y-MM-dd");
+  var logFile = new File("logs/${dateFormat.format(new DateTime.now())}.txt");
+  var host = new InternetAddress(app.properties['host']);
+  var port = app.properties['port'];
 
-  await new DiagnosticsServer(app, new File("logs/${dateFormat.format(now)}.txt")).startServer(host, port);
+  await new DiagnosticsServer(app, logFile).startServer(host, port);
 }
 
 onError(error, [StackTrace stackTrace]) {
