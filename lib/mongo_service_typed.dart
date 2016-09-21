@@ -1,4 +1,4 @@
-part of angel_mongo;
+part of angel_mongo.services;
 
 /// Manipulates data from MongoDB by serializing BSON from and deserializing BSON to a target class.
 class MongoTypedService<T> extends Service {

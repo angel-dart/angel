@@ -19,20 +19,21 @@ This library exposes three main classes: `Model`, `MongoService` and `MongoTyped
 `Model` is class with no real functionality; however, it represents a basic MongoDB document, and your services should host inherited classes.
 
 ```dart
-@Hooked()
 class User extends Model {
   String username;
   String password;
 }
 
-Db db = new Db('mongodb://localhost:27017/local');
-await db.open();
-
-app.use('/api/users', new MongoTypedService<User>(db.collection("users")));
-
-app.service('api/users').afterCreated.listen((HookedServiceEvent event) {
-	print("New user: ${event.result}");
-});
+main() async {
+    Db db = new Db('mongodb://localhost:27017/local');
+    await db.open();
+    
+    app.use('/api/users', new MongoTypedService<User>(db.collection("users")));
+    
+    app.service('api/users').afterCreated.listen((event) {
+        print("New user: ${event.result}");
+    });
+}
 ```
 
 ## MongoService

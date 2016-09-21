@@ -1,4 +1,4 @@
-part of angel_mongo;
+part of angel_mongo.services;
 
 /// Manipulates data from MongoDB as Maps.
 class MongoService extends Service {
