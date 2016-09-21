@@ -62,6 +62,9 @@ class Angel extends AngelBase {
     res.end();
   };
 
+  /// The handler currently configured to run on [AngelHttpException]s.
+  AngelErrorHandler get errorHandler => _errorHandler;
+
   /// [RequestMiddleware] to be run before all requests.
   List before = [];
 
