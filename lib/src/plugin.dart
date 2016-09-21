@@ -1,29 +1,76 @@
+import 'dart:async';
+import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math' as Math;
 import 'package:angel_framework/angel_framework.dart';
+import 'package:crypto/crypto.dart';
 import 'middleware/require_auth.dart';
+import 'auth_token.dart';
 import 'defs.dart';
 import 'options.dart';
 import 'strategy.dart';
 
 class AngelAuth extends AngelPlugin {
-  RequireAuthorizationMiddleware _requireAuth = new RequireAuthorizationMiddleware();
+  Hmac _hs256;
+  num _jwtLifeSpan;
+  Math.Random _random = new Math.Random.secure();
+  final RegExp _rgxBearer = new RegExp(r"^Bearer");
+  RequireAuthorizationMiddleware _requireAuth =
+      new RequireAuthorizationMiddleware();
+  bool enforceIp;
   List<AuthStrategy> strategies = [];
   UserSerializer serializer;
   UserDeserializer deserializer;
 
+  String _randomString({int length: 32, String validChars: "ABCDEFHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"}) {
+    var chars = <int>[];
+
+    while (chars.length < length) chars.add(_random.nextInt(validChars.length));
+
+    return new String.fromCharCodes(chars);
+  }
+
+  AngelAuth({String jwtKey, num jwtLifeSpan, this.enforceIp}) : super() {
+    _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
+    _jwtLifeSpan = jwtLifeSpan ?? -1;
+  }
+
   @override
   call(Angel app) async {
     app.container.singleton(this);
+    if (runtimeType != AngelAuth) app.container.singleton(this, as: AngelAuth);
 
-    if (runtimeType != AngelAuth)
-      app.container.singleton(this, as: AngelAuth);
-
+    app.before.add(_decodeJwt);
     app.registerMiddleware('auth', _requireAuth);
-    app.before.add(_serializationMiddleware);
   }
 
-  _serializationMiddleware(RequestContext req, ResponseContext res) async {
-    if (await _requireAuth(req, res, throwError: false)) {
-      req.properties['user'] = await deserializer(req.session['userId']);
+  _decodeJwt(RequestContext req, ResponseContext res) async {
+    String jwt = null;
+    if (req.headers.value("Authorization") != null) {
+      var jwt =
+          req.headers.value("Authorization").replaceAll(_rgxBearer, "").trim();
+    } else if (req.cookies.any((cookie) => cookie.name == "token")) {
+      jwt = req.cookies.firstWhere((cookie) => cookie.name == "token").value;
+    }
+
+    if (jwt != null) {
+      var token = new AuthToken.validate(jwt, _hs256);
+
+      if (enforceIp) {
+        if (req.ip != token.ipAddress)
+          throw new AngelHttpException.Forbidden(
+              message: "JWT cannot be accessed from this IP address.");
+      }
+
+      if (token.lifeSpan > -1) {
+        token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
+
+        if (!token.issuedAt.isAfter(new DateTime.now()))
+          throw new AngelHttpException.Forbidden(message: "Expired JWT.");
+      }
+
+      req.properties["user"] = await deserializer(token.userId);
     }
 
     return true;
@@ -32,17 +79,37 @@ class AngelAuth extends AngelPlugin {
   authenticate(String type, [AngelAuthOptions options]) {
     return (RequestContext req, ResponseContext res) async {
       AuthStrategy strategy =
-      strategies.firstWhere((AuthStrategy x) => x.name == type);
+          strategies.firstWhere((AuthStrategy x) => x.name == type);
       var result = await strategy.authenticate(req, res, options);
       if (result == true)
         return result;
       else if (result != false) {
-        req.session['userId'] = await serializer(result);
+        var userId = await serializer(result);
+
+        // Create JWT
+        var jwt = new AuthToken(userId: userId, lifeSpan: _jwtLifeSpan)
+            .serialize(_hs256);
+        req.cookies.add(new Cookie("token", jwt));
+
+        if (req.headers.value("accept") != null &&
+            (req.headers.value("accept").contains("application/json") ||
+                req.headers.value("accept").contains("*/*") ||
+                req.headers.value("accept").contains("application/*"))) {
+          return {"data": result, "token": jwt};
+        } else if (options != null && options.successRedirect != null &&
+            options.successRedirect.isNotEmpty) {
+          return res.redirect(options.successRedirect, code: HttpStatus.OK);
+        }
+
         return true;
       } else {
-        throw new AngelHttpException.NotAuthenticated();
+        await authenticationFailure(req, res);
       }
     };
+  }
+
+  Future authenticationFailure(RequestContext req, ResponseContext res) async {
+    throw new AngelHttpException.NotAuthenticated();
   }
 
   logout([AngelAuthOptions options]) {
@@ -59,7 +126,7 @@ class AngelAuth extends AngelPlugin {
         }
       }
 
-      req.session.remove('userId');
+      req.cookies.removeWhere((cookie) => cookie.name == "token");
 
       if (options != null &&
           options.successRedirect != null &&

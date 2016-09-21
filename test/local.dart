@@ -23,7 +23,7 @@ wireAuth(Angel app) async {
   Auth.serializer = (user) async => 1337;
   Auth.deserializer = (id) async => sampleUser;
 
-  Auth.strategies.add(new LocalAuthStrategy(Auth, verifier));
+  Auth.strategies.add(new LocalAuthStrategy(verifier));
   await app.configure(Auth);
 }
 
@@ -79,28 +79,29 @@ main() async {
       var response = await client.post("$url/login",
           body: JSON.encode(postData),
           headers: {HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType});
-      expect(response.statusCode, equals(403));
+      print("Login response: ${response.body}");
       expect(response.headers[HttpHeaders.LOCATION], equals('/failure'));
+      expect(response.statusCode, equals(401));
     });
 
     test('allow basic', () async {
       String authString = BASE64.encode("username:password".runes.toList());
-      Map auth = {HttpHeaders.AUTHORIZATION: 'Basic $authString'};
-      var response =
-          await client.get("$url/hello", headers: mergeMap([auth, headers]));
+      var response = await client.get("$url/hello",
+          headers: {HttpHeaders.AUTHORIZATION: 'Basic $authString'});
       expect(response.body, equals('"Woo auth"'));
     });
 
     test('allow basic via URL encoding', () async {
-      var response = await client.get("$basicAuthUrl/hello", headers: headers);
+      var response = await client.get("$basicAuthUrl/hello");
       expect(response.body, equals('"Woo auth"'));
     });
 
     test('force basic', () async {
       Auth.strategies.clear();
-      Auth.strategies.add(new LocalAuthStrategy(Auth, verifier,
+      Auth.strategies.add(new LocalAuthStrategy(verifier,
           forceBasic: true, realm: 'test'));
       var response = await client.get("$url/hello", headers: headers);
+      print(response.headers);
       expect(response.headers[HttpHeaders.WWW_AUTHENTICATE],
           equals('Basic realm="test"'));
     });

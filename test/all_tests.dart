@@ -3,6 +3,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
+import 'auth_token.dart' as authToken;
 import 'local.dart' as local;
 
 wireAuth(Angel app) async {
@@ -30,6 +31,7 @@ main() async {
       url = null;
     });
 
+    group("JWT (de)serialization", authToken.main);
     group("local", local.main);
 
     test('can use login as middleware', () async {

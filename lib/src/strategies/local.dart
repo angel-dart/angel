@@ -12,7 +12,6 @@ bool _validateString(String str) => str != null && str.isNotEmpty;
 typedef Future LocalAuthVerifier(String username, String password);
 
 class LocalAuthStrategy extends AuthStrategy {
-  AngelAuth _plugin;
   RegExp _rgxBasic = new RegExp(r'^Basic (.+)$', caseSensitive: false);
   RegExp _rgxUsrPass = new RegExp(r'^([^:]+):(.+)$');
 
@@ -26,11 +25,11 @@ class LocalAuthStrategy extends AuthStrategy {
   bool forceBasic;
   String realm;
 
-  LocalAuthStrategy(AngelAuth this._plugin, LocalAuthVerifier this.verifier,
+  LocalAuthStrategy(LocalAuthVerifier this.verifier,
       {String this.usernameField: 'username',
       String this.passwordField: 'password',
       String this.invalidMessage:
-      'Please provide a valid username and password.',
+          'Please provide a valid username and password.',
       bool this.allowBasic: true,
       bool this.forceBasic: false,
       String this.realm: 'Authentication is required.'}) {}
@@ -41,7 +40,7 @@ class LocalAuthStrategy extends AuthStrategy {
   }
 
   @override
-  Future<bool> authenticate(RequestContext req, ResponseContext res,
+  Future authenticate(RequestContext req, ResponseContext res,
       [AngelAuthOptions options_]) async {
     AngelAuthOptions options = options_ ?? new AngelAuthOptions();
     var verificationResult;
@@ -50,14 +49,14 @@ class LocalAuthStrategy extends AuthStrategy {
       String authHeader = req.headers.value(HttpHeaders.AUTHORIZATION) ?? "";
       if (_rgxBasic.hasMatch(authHeader)) {
         String base64AuthString = _rgxBasic.firstMatch(authHeader).group(1);
-        String authString = new String.fromCharCodes(
-            BASE64.decode(base64AuthString));
+        String authString =
+            new String.fromCharCodes(BASE64.decode(base64AuthString));
         if (_rgxUsrPass.hasMatch(authString)) {
           Match usrPassMatch = _rgxUsrPass.firstMatch(authString);
           verificationResult =
-          await verifier(usrPassMatch.group(1), usrPassMatch.group(2));
-        } else throw new AngelHttpException.BadRequest(
-            errors: [invalidMessage]);
+              await verifier(usrPassMatch.group(1), usrPassMatch.group(2));
+        } else
+          throw new AngelHttpException.BadRequest(errors: [invalidMessage]);
       }
     }
 
@@ -65,15 +64,15 @@ class LocalAuthStrategy extends AuthStrategy {
       if (_validateString(req.body[usernameField]) &&
           _validateString(req.body[passwordField])) {
         verificationResult =
-        await verifier(req.body[usernameField], req.body[passwordField]);
+            await verifier(req.body[usernameField], req.body[passwordField]);
       }
     }
 
     if (verificationResult == false || verificationResult == null) {
       if (options.failureRedirect != null &&
           options.failureRedirect.isNotEmpty) {
-        return res.redirect(
-            options.failureRedirect, code: HttpStatus.FORBIDDEN);
+        res.redirect(options.failureRedirect, code: HttpStatus.UNAUTHORIZED);
+        return false;
       }
 
       if (forceBasic) {
@@ -82,17 +81,10 @@ class LocalAuthStrategy extends AuthStrategy {
           ..header(HttpHeaders.WWW_AUTHENTICATE, 'Basic realm="$realm"')
           ..end();
         return false;
-      } else return false;
-    }
-
-    else if (verificationResult != null && verificationResult != false) {
-      req.session['userId'] = await _plugin.serializer(verificationResult);
-      if (options.successRedirect != null &&
-          options.successRedirect.isNotEmpty) {
-        return res.redirect(options.successRedirect, code: HttpStatus.OK);
-      }
-
-      return true;
+      } else
+        return false;
+    } else if (verificationResult != null && verificationResult != false) {
+      return verificationResult;
     } else {
       throw new AngelHttpException.NotAuthenticated();
     }
