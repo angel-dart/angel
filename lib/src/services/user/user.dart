@@ -15,6 +15,10 @@ configureServer(Db db) {
   };
 }
 
+/// SHA-256 hash any string, particularly a password.
+String hashPassword(String password) =>
+    sha256.convert(password.codeUnits).toString();
+
 /// Manages users.
 ///
 /// Here, we extended the base service class. This allows to only expose
@@ -22,7 +26,7 @@ configureServer(Db db) {
 class UserService extends Service {
   MongoTypedService<User> _inner;
 
-  UserService(DbCollection collection):super() {
+  UserService(DbCollection collection) : super() {
     _inner = new MongoTypedService<User>(collection);
   }
 
@@ -46,9 +50,10 @@ class UserService extends Service {
     try {
       Validate.isKeyInMap("username", data);
       Validate.isEmail(data["email"]);
-      data["password"] = sha256.convert(data["password"].codeUnits).toString();
-    } catch(e) {
-      throw new AngelHttpException.BadRequest(message: "User must have a username, e-mail address and password.");
+      data["password"] = hashPassword(data["password"]);
+    } catch (e) {
+      throw new AngelHttpException.BadRequest(
+          message: "User must have a username, e-mail address and password.");
     }
 
     return _inner.create(data, params);

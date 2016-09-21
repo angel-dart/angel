@@ -15,9 +15,9 @@ configureRoutes(Angel app) async {
 
 configureAfter(Angel app) async {
   // 404 handler
-  app.after.add((req, res) async => res
-    ..status(404)
-    ..render("404", {"path": req.path}));
+  app.after.add((req, ResponseContext res) async {
+    throw new AngelHttpException.NotFound();
+  });
 
   // Default error handler
   app.onError(
