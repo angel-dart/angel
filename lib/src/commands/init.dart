@@ -23,7 +23,7 @@ class InitCommand extends Command {
     await _cloneRepo(projectDir);_pen.green();
     _pen("${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
     _pen();
-    await _pubGet();
+    await _pubGet(projectDir);
   }
 
   _cloneRepo(Directory projectDir) async {
@@ -66,8 +66,8 @@ class InitCommand extends Command {
     }
   }
 
-  _pubGet() async {
-    var pub = await Process.start("pub", ["get"]);
+  _pubGet(Directory projectDir) async {
+    var pub = await Process.start("pub", ["get"], workingDirectory: projectDir.absolute.path);
     pub.stdout.pipe(stdout);
     pub.stderr.pipe(stderr);
     var code = await pub.exitCode;
