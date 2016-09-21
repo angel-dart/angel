@@ -1,9 +1,18 @@
-part of angel_auth;
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:angel_framework/angel_framework.dart';
+import '../options.dart';
+import '../plugin.dart';
+import '../strategy.dart';
+
+bool _validateString(String str) => str != null && str.isNotEmpty;
 
 /// Determines the validity of an incoming username and password.
 typedef Future LocalAuthVerifier(String username, String password);
 
 class LocalAuthStrategy extends AuthStrategy {
+  AngelAuth _plugin;
   RegExp _rgxBasic = new RegExp(r'^Basic (.+)$', caseSensitive: false);
   RegExp _rgxUsrPass = new RegExp(r'^([^:]+):(.+)$');
 
@@ -17,7 +26,7 @@ class LocalAuthStrategy extends AuthStrategy {
   bool forceBasic;
   String realm;
 
-  LocalAuthStrategy(LocalAuthVerifier this.verifier,
+  LocalAuthStrategy(AngelAuth this._plugin, LocalAuthVerifier this.verifier,
       {String this.usernameField: 'username',
       String this.passwordField: 'password',
       String this.invalidMessage:
@@ -64,7 +73,7 @@ class LocalAuthStrategy extends AuthStrategy {
       if (options.failureRedirect != null &&
           options.failureRedirect.isNotEmpty) {
         return res.redirect(
-            options.failureRedirect, code: HttpStatus.UNAUTHORIZED);
+            options.failureRedirect, code: HttpStatus.FORBIDDEN);
       }
 
       if (forceBasic) {
@@ -77,7 +86,7 @@ class LocalAuthStrategy extends AuthStrategy {
     }
 
     else if (verificationResult != null && verificationResult != false) {
-      req.session['userId'] = await Auth.serializer(verificationResult);
+      req.session['userId'] = await _plugin.serializer(verificationResult);
       if (options.successRedirect != null &&
           options.successRedirect.isNotEmpty) {
         return res.redirect(options.successRedirect, code: HttpStatus.OK);

@@ -1,4 +1,6 @@
-part of angel_auth;
+import 'dart:async';
+import 'package:angel_framework/angel_framework.dart';
+import 'options.dart';
 
 /// A function that handles login and signup for an Angel application.
 abstract class AuthStrategy {

@@ -1,5 +1,8 @@
-part of angel_auth;
-
+import 'dart:async';
+import 'package:angel_framework/angel_framework.dart';
+import 'package:oauth2/oauth2.dart' as Oauth2;
+import '../options.dart';
+import '../strategy.dart';
 /// Logs a user in based on an incoming OAuth access and refresh token.
 typedef Future OAuth2AuthVerifier(String accessToken, String refreshToken,
     Map profile);

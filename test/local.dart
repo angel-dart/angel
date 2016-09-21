@@ -6,30 +6,29 @@ import 'package:http/http.dart' as http;
 import 'package:merge_map/merge_map.dart';
 import 'package:test/test.dart';
 
+final AngelAuth Auth = new AngelAuth();
 Map headers = {HttpHeaders.ACCEPT: ContentType.JSON.mimeType};
 AngelAuthOptions localOpts = new AngelAuthOptions(
-    failureRedirect: '/failure',
-    successRedirect: '/success'
-);
+    failureRedirect: '/failure', successRedirect: '/success');
 Map sampleUser = {'hello': 'world'};
 
 verifier(username, password) async {
   if (username == 'username' && password == 'password') {
     return sampleUser;
-  } else return false;
+  } else
+    return false;
 }
 
 wireAuth(Angel app) async {
   Auth.serializer = (user) async => 1337;
   Auth.deserializer = (id) async => sampleUser;
 
-  Auth.strategies.add(new LocalAuthStrategy(verifier));
-  await app.configure(AngelAuth);
+  Auth.strategies.add(new LocalAuthStrategy(Auth, verifier));
+  await app.configure(Auth);
 }
 
 main() async {
-  group
-      ('local', () {
+  group('local', () {
     Angel app;
     http.Client client;
     String url;
@@ -45,11 +44,11 @@ main() async {
       app.get('/success', "yep", middleware: ['auth']);
       app.get('/failure', "nope");
 
-      HttpServer server = await app.startServer(
-          InternetAddress.LOOPBACK_IP_V4, 0);
+      HttpServer server =
+          await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
       url = "http://${server.address.host}:${server.port}";
       basicAuthUrl =
-      "http://username:password@${server.address.host}:${server.port}";
+          "http://username:password@${server.address.host}:${server.port}";
     });
 
     tearDown(() async {
@@ -59,42 +58,36 @@ main() async {
       basicAuthUrl = null;
     });
 
-    test('can use login as middleware', () async {
-      var response = await client.get(
-          "$url/success", headers: {'Accept': 'application/json'});
+    test('can use "auth" as middleware', () async {
+      var response = await client
+          .get("$url/success", headers: {'Accept': 'application/json'});
       print(response.body);
-      expect(response.statusCode, equals(401));
+      expect(response.statusCode, equals(403));
     });
 
     test('successRedirect', () async {
-      Map postData = {
-        'username': 'username',
-        'password': 'password'
-      };
-      var response = await client.post(
-          "$url/login", body: JSON.encode(postData),
+      Map postData = {'username': 'username', 'password': 'password'};
+      var response = await client.post("$url/login",
+          body: JSON.encode(postData),
           headers: {HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType});
       expect(response.statusCode, equals(200));
       expect(response.headers[HttpHeaders.LOCATION], equals('/success'));
     });
 
     test('failureRedirect', () async {
-      Map postData = {
-        'username': 'password',
-        'password': 'username'
-      };
-      var response = await client.post(
-          "$url/login", body: JSON.encode(postData),
+      Map postData = {'username': 'password', 'password': 'username'};
+      var response = await client.post("$url/login",
+          body: JSON.encode(postData),
           headers: {HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType});
-      expect(response.statusCode, equals(401));
+      expect(response.statusCode, equals(403));
       expect(response.headers[HttpHeaders.LOCATION], equals('/failure'));
     });
 
     test('allow basic', () async {
       String authString = BASE64.encode("username:password".runes.toList());
       Map auth = {HttpHeaders.AUTHORIZATION: 'Basic $authString'};
-      var response = await client.get(
-          "$url/hello", headers: mergeMap([auth, headers]));
+      var response =
+          await client.get("$url/hello", headers: mergeMap([auth, headers]));
       expect(response.body, equals('"Woo auth"'));
     });
 
@@ -105,8 +98,8 @@ main() async {
 
     test('force basic', () async {
       Auth.strategies.clear();
-      Auth.strategies.add(new LocalAuthStrategy(
-          verifier, forceBasic: true, realm: 'test'));
+      Auth.strategies.add(new LocalAuthStrategy(Auth, verifier,
+          forceBasic: true, realm: 'test'));
       var response = await client.get("$url/hello", headers: headers);
       expect(response.headers[HttpHeaders.WWW_AUTHENTICATE],
           equals('Basic realm="test"'));
