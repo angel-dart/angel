@@ -30,7 +30,7 @@ class AuthController extends Controller {
     _auth.serializer = _serializer;
     _auth.deserializer = _deserializer;
     _auth.strategies.add(new LocalAuthStrategy(
-        _auth, _verifier(app.container.make(UserService)),
+        _verifier(app.container.make(UserService)),
         forceBasic: true));
 
     await super.call(app);
