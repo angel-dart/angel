@@ -19,6 +19,7 @@ class AngelAuth extends AngelPlugin {
   RequireAuthorizationMiddleware _requireAuth =
       new RequireAuthorizationMiddleware();
   bool enforceIp;
+  String reviveTokenEndpoint;
   List<AuthStrategy> strategies = [];
   UserSerializer serializer;
   UserDeserializer deserializer;
@@ -31,7 +32,7 @@ class AngelAuth extends AngelPlugin {
     return new String.fromCharCodes(chars);
   }
 
-  AngelAuth({String jwtKey, num jwtLifeSpan, this.enforceIp}) : super() {
+  AngelAuth({String jwtKey, num jwtLifeSpan, this.enforceIp, this.reviveTokenEndpoint: "/auth/token"}) : super() {
     _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
     _jwtLifeSpan = jwtLifeSpan ?? -1;
   }
@@ -43,16 +44,19 @@ class AngelAuth extends AngelPlugin {
 
     app.before.add(_decodeJwt);
     app.registerMiddleware('auth', _requireAuth);
+
+    if (reviveTokenEndpoint != null) {
+      app.post(reviveTokenEndpoint, _reviveJwt);
+    }
   }
 
   _decodeJwt(RequestContext req, ResponseContext res) async {
-    String jwt = null;
-    if (req.headers.value("Authorization") != null) {
-      var jwt =
-          req.headers.value("Authorization").replaceAll(_rgxBearer, "").trim();
-    } else if (req.cookies.any((cookie) => cookie.name == "token")) {
-      jwt = req.cookies.firstWhere((cookie) => cookie.name == "token").value;
+    if (req.path == reviveTokenEndpoint) {
+      // Shouldn't block invalid JWT if we are reviving it
+      return true;
     }
+
+    String jwt = _getJwt(req);
 
     if (jwt != null) {
       var token = new AuthToken.validate(jwt, _hs256);
@@ -74,6 +78,50 @@ class AngelAuth extends AngelPlugin {
     }
 
     return true;
+  }
+
+
+  _getJwt(RequestContext req) {
+    if (req.headers.value("Authorization") != null) {
+      return req.headers.value("Authorization").replaceAll(_rgxBearer, "").trim();
+    } else if (req.cookies.any((cookie) => cookie.name == "token")) {
+      return req.cookies.firstWhere((cookie) => cookie.name == "token").value;
+    }
+
+    return null;
+  }
+
+  _reviveJwt(RequestContext req, ResponseContext res) async {
+    try {
+      var jwt = _getJwt(req);
+
+      if (jwt == null) {
+        throw new AngelHttpException.Forbidden(message: "No JWT provided");
+      } else {
+        var token = new AuthToken.validate(jwt, _hs256);
+
+        if (enforceIp) {
+          if (req.ip != token.ipAddress)
+            throw new AngelHttpException.Forbidden(
+                message: "JWT cannot be accessed from this IP address.");
+        }
+
+        if (token.lifeSpan > -1) {
+          token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
+
+          if (!token.issuedAt.isAfter(new DateTime.now())) {
+            // Extend its lifespan by changing iat
+            token.issuedAt = new DateTime.now();
+          }
+        }
+
+        return token.toJson();
+      }
+    } catch(e) {
+      if (e is AngelHttpException)
+        rethrow;
+      throw new AngelHttpException.BadRequest(message: "Malformed JWT");
+    }
   }
 
   authenticate(String type, [AngelAuthOptions options]) {
