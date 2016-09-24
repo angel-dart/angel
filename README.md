@@ -56,7 +56,6 @@ to build structured JSON/REST APIs. Add validation and you've got an instant bac
 
 ```dart
 MyClass create(HttpRequest request) async {
-    God god = new God();
     return god.deserialize(await parseBody(request).body, MyClass);
 }
 ```
