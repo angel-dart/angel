@@ -1,3 +1,5 @@
+#!/usr/bin/env dart
+
 import 'dart:async';
 import 'dart:io';
 import 'package:angel/angel.dart';
