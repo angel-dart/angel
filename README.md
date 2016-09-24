@@ -1,5 +1,5 @@
 # Body Parser
-![version 1.0.0-dev](https://img.shields.io/badge/version-1.0.0--dev-red.svg)
+![version 1.0.0-dev+1](https://img.shields.io/badge/version-1.0.0--dev-red.svg)
 
 **NOT YET PRODUCTION READY**
 
@@ -68,6 +68,4 @@ Thank you for using this library. I hope you like it.
 
 Feel free to follow me on Twitter:
 
-[@thosakwe](http://twitter.com/thosakwe)
-or
-[@regios_tech](http://twitter.com/regios_tech)
+[@_wapaa_](http://twitter.com/_wapaa_)
