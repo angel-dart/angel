@@ -1,5 +1,3 @@
-part of body_parser;
-
 /// Represents a file uploaded to the server.
 class FileUploadInfo {
   /// The MIME type of the uploaded file.
