@@ -227,10 +227,10 @@ class Angel extends AngelBase {
 
   _finalizeResponse(HttpRequest request, ResponseContext res) async {
     try {
+      _afterProcessed.add(request);
       if (!res.willCloseItself) {
         res.responseData.forEach((blob) => request.response.add(blob));
         await request.response.close();
-        _afterProcessed.add(request);
       }
     } catch (e) {
       failSilently(request, res);
