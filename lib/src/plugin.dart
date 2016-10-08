@@ -18,13 +18,18 @@ class AngelAuth extends AngelPlugin {
   final RegExp _rgxBearer = new RegExp(r"^Bearer");
   RequireAuthorizationMiddleware _requireAuth =
       new RequireAuthorizationMiddleware();
+  String middlewareName;
+  bool debug;
   bool enforceIp;
   String reviveTokenEndpoint;
   List<AuthStrategy> strategies = [];
   UserSerializer serializer;
   UserDeserializer deserializer;
 
-  String _randomString({int length: 32, String validChars: "ABCDEFHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"}) {
+  String _randomString(
+      {int length: 32,
+      String validChars:
+          "ABCDEFHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"}) {
     var chars = <int>[];
 
     while (chars.length < length) chars.add(_random.nextInt(validChars.length));
@@ -32,7 +37,14 @@ class AngelAuth extends AngelPlugin {
     return new String.fromCharCodes(chars);
   }
 
-  AngelAuth({String jwtKey, num jwtLifeSpan, this.enforceIp, this.reviveTokenEndpoint: "/auth/token"}) : super() {
+  AngelAuth(
+      {String jwtKey,
+      num jwtLifeSpan,
+      this.debug: false,
+      this.enforceIp: true,
+      this.middlewareName: 'auth',
+      this.reviveTokenEndpoint: "/auth/token"})
+      : super() {
     _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
     _jwtLifeSpan = jwtLifeSpan ?? -1;
   }
@@ -43,7 +55,7 @@ class AngelAuth extends AngelPlugin {
     if (runtimeType != AngelAuth) app.container.singleton(this, as: AngelAuth);
 
     app.before.add(_decodeJwt);
-    app.registerMiddleware('auth', _requireAuth);
+    app.registerMiddleware(middlewareName, _requireAuth);
 
     if (reviveTokenEndpoint != null) {
       app.post(reviveTokenEndpoint, _reviveJwt);
@@ -51,9 +63,13 @@ class AngelAuth extends AngelPlugin {
   }
 
   _decodeJwt(RequestContext req, ResponseContext res) async {
-    if (req.path == reviveTokenEndpoint) {
+    if (req.method == "POST" && req.path == reviveTokenEndpoint) {
       // Shouldn't block invalid JWT if we are reviving it
-      return true;
+
+      if (debug)
+        print('Token revival endpoint accessed.');
+
+      return await _reviveJwt(req, res);
     }
 
     String jwt = _getJwt(req);
@@ -80,11 +96,22 @@ class AngelAuth extends AngelPlugin {
     return true;
   }
 
-
   _getJwt(RequestContext req) {
+    if (debug) {
+      print('Attempting to parse JWT');
+    }
+
     if (req.headers.value("Authorization") != null) {
-      return req.headers.value("Authorization").replaceAll(_rgxBearer, "").trim();
+      if (debug) {
+        print('Found Auth header');
+      }
+
+      return req.headers
+          .value("Authorization")
+          .replaceAll(_rgxBearer, "")
+          .trim();
     } else if (req.cookies.any((cookie) => cookie.name == "token")) {
+      print('Request has "token" cookie...');
       return req.cookies.firstWhere((cookie) => cookie.name == "token").value;
     }
 
@@ -93,33 +120,64 @@ class AngelAuth extends AngelPlugin {
 
   _reviveJwt(RequestContext req, ResponseContext res) async {
     try {
+      if (debug)
+      print('Attempting to revive JWT...');
+
       var jwt = _getJwt(req);
+
+      if (debug)
+      print('Found JWT: $jwt');
 
       if (jwt == null) {
         throw new AngelHttpException.Forbidden(message: "No JWT provided");
       } else {
         var token = new AuthToken.validate(jwt, _hs256);
 
+        if (debug)
+        print('Validated and deserialized: $token');
+
         if (enforceIp) {
+          if (debug)
+          print('Token IP: ${token.ipAddress}. Current request sent from: ${req.ip}');
+
           if (req.ip != token.ipAddress)
             throw new AngelHttpException.Forbidden(
                 message: "JWT cannot be accessed from this IP address.");
         }
 
         if (token.lifeSpan > -1) {
+          if (debug) {
+            print('Checking if token has expired... Life span is ${token.lifeSpan}');
+          }
+
           token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
 
           if (!token.issuedAt.isAfter(new DateTime.now())) {
+            print('Token has indeed expired! Resetting assignment date to current timestamp...');
             // Extend its lifespan by changing iat
             token.issuedAt = new DateTime.now();
+          } else if (debug) {
+            print('Token has not expired yet.');
           }
+        } else if(debug) {
+          print('This token never expires, so it is still valid.');
         }
 
+        if (debug) {
+          print('Final, valid token: ${token.toJson()}');
+        }
+
+        res.cookies.add(new Cookie('token', token.serialize(_hs256)));
         return token.toJson();
       }
-    } catch(e) {
-      if (e is AngelHttpException)
-        rethrow;
+    } catch (e, st) {
+      if (debug) {
+        print('An error occurred while reviving this token.');
+        print(e);
+        print(st);
+      }
+
+      if (e is AngelHttpException) rethrow;
       throw new AngelHttpException.BadRequest(message: "Malformed JWT");
     }
   }
@@ -144,7 +202,8 @@ class AngelAuth extends AngelPlugin {
                 req.headers.value("accept").contains("*/*") ||
                 req.headers.value("accept").contains("application/*"))) {
           return {"data": result, "token": jwt};
-        } else if (options != null && options.successRedirect != null &&
+        } else if (options != null &&
+            options.successRedirect != null &&
             options.successRedirect.isNotEmpty) {
           return res.redirect(options.successRedirect, code: HttpStatus.OK);
         }
