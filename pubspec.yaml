@@ -1,0 +1,7 @@
+name: angel_route
+description: Advanced routing API, supports both server and browser.
+version: 1.0.0-dev
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/angel_route
+dev_dependencies:
+  test: ">=0.12.15 <0.13.0"
