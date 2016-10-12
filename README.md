@@ -102,12 +102,6 @@ Supports both hashed routes and pushState. The `BrowserRouter` interface exposes
 a `Stream<Route> onRoute`, which can be listened to for changes. It will fire `null`
 whenever no route is matched.
 
-```dart
-main() {
-  
-}
-```
-
 `angel_route` will also automatically intercept `<a>` elements and redirect them to
 your routes.
 
