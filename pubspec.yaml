@@ -1,7 +1,8 @@
 name: angel_route
-description: Advanced routing API, supports both server and browser.
+description: A powerful, isomorphic routing library for Dart.
 version: 1.0.0-dev
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_route
 dev_dependencies:
+  browser: ">=0.10.0 < 0.11.0"
   test: ">=0.12.15 <0.13.0"

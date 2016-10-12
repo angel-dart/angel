@@ -1,8 +1,8 @@
-import '../lib/angel_route.dart';
+import 'package:test/test.dart';
+import 'route/all_tests.dart' as route;
+import 'router/all_tests.dart' as router;
 
 main() {
-  final foo = new Route('/foo');
-  final bar = foo.child('/bar');
-  print(foo.path);
-  print(bar.path);
+  group('route', route.main);
+  group('router', router.main);
 }
