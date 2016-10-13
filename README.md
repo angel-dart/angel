@@ -38,9 +38,10 @@ main() {
   
   router.post('/users/:id/timeline', (String id) {});
   
-  router.get('/square_root/:id([0-9]+)', (String id) {
-    final n = num.parse(id);
-    return {'result': pow(n, 2) };
+  // Numbers automatically parsed
+  
+  router.get('/square_root/:id([0-9]+)', (n) { 
+    return { 'result': pow(n, 0.5) };
   });
   
   router.group('/show/:id', (router) {
@@ -128,4 +129,4 @@ main() {
 
 # Route Parameters
 Routes can have parameters, as seen in the above examples.
-If a parameter is a numeber, then it will automatically be parsed.
+If a parameter is a number, then it will automatically be parsed.
