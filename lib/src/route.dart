@@ -185,9 +185,10 @@ class Route {
   Map parseParameters(String requestPath) {
     Map result = {};
 
-    Iterable<String> values = _parseParameters(requestPath.replaceAll(_straySlashes, ''));
-    Iterable<Match> matches = _param.allMatches(
-        _pathified.replaceAll(new RegExp('\/'), r'\/'));
+    Iterable<String> values =
+        _parseParameters(requestPath.replaceAll(_straySlashes, ''));
+    Iterable<Match> matches =
+        _param.allMatches(_pathified.replaceAll(new RegExp('\/'), r'\/'));
     for (int i = 0; i < matches.length; i++) {
       Match match = matches.elementAt(i);
       String paramName = match.group(1);
@@ -204,14 +205,13 @@ class Route {
 
   _parseParameters(String requestPath) sync* {
     Match routeMatch = matcher.firstMatch(requestPath);
-    for (int i = 1; i <= routeMatch.groupCount; i++)
-      yield routeMatch.group(i);
+    for (int i = 1; i <= routeMatch.groupCount; i++) yield routeMatch.group(i);
   }
 
   Route resolve(String path, [bool filter(Route route)]) {
     final _filter = filter ?? (_) => true;
 
-    if (path.isEmpty || path == '.' && _filter(this)) {
+    if ((path.isEmpty || path == '.') && _filter(this)) {
       return this;
     } else if (path.replaceAll(_straySlashes, '').isEmpty) {
       for (Route route in children) {
@@ -234,18 +234,24 @@ class Route {
         path[1] != '/' &&
         absoluteParent != null) {
       return absoluteParent.resolve(path.substring(1), _filter);
+    } else if (matcher.hasMatch(path.replaceAll(_straySlashes, '')) ||
+        _resolver.hasMatch(path.replaceAll(_straySlashes, ''))) {
+      return this;
     } else {
-      final segments = path.split('/');
+      final segments = path.split('/').where((str) => str.isNotEmpty).toList();
 
       if (segments[0] == '..') {
         if (parent != null)
           return parent.resolve(segments.skip(1).join('/'), _filter);
         else
           throw new RoutingException.orphan();
+      } else if (segments[0] == '.') {
+        return resolve(segments.skip(1).join('/'), _filter);
       }
 
       for (Route route in children) {
         final subPath = '${this.path}/${segments[0]}';
+        print('Subpath for $path on ${this.path} = $subPath');
 
         if (route.match(subPath) != null ||
             route._resolver.firstMatch(subPath) != null) {
@@ -259,6 +265,8 @@ class Route {
 
       // Try to match the whole route, if nothing else works
       for (Route route in children) {
+        print(
+            'Full path is $path, path is ${route.path}, matcher: ${route.matcher.pattern}, resolver: ${route._resolver.pattern}');
         if ((route.match(path) != null ||
                 route._resolver.firstMatch(path) != null) &&
             _filter(route))

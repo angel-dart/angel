@@ -112,8 +112,6 @@ To prevent this for a given anchor, do any of the following:
   * Set `rel="external"`
   
 # Route State
-Routes can have state via the `Extensible` class, which is a simple proxy over a `Map`.
-This does not require reflection, and can be used in all Dart environments.
 
 ```dart
 main() {
@@ -122,7 +120,7 @@ main() {
   router.onRoute.listen((route) {
     if (route == null)
       throw 404;
-    else route.state.foo = 'bar';
+    else route.state['foo'] = 'bar';
   });
 }
 ```

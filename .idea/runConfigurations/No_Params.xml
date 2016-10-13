@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="No Params" type="DartTestRunConfigurationType" factoryName="Dart Test" folderName="Route Tests" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/route/no_params.dart" />
+    <method />
+  </configuration>
+</component>

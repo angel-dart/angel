@@ -1,5 +1,6 @@
 import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
+import 'fallback.dart' as fallback;
 
 final ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -21,9 +22,11 @@ main() {
   router.dumpTree();
 
   test('extensible', () {
-    router.two = 2;
-    expect(router.properties['two'], equals(2));
+    router['two'] = 2;
+    expect(router.two, equals(2));
   });
+
+  group('fallback', fallback.main);
 
   test('hierarchy', () {
     expect(lower.absoluteParent, equals(router.root));
