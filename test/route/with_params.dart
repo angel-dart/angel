@@ -2,10 +2,10 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  final base = new Route('foo');
-  final foo = base.child(':id([0-9]+)', handlers: ['bar']);
+  final foo = new Route.build('/foo/:id([0-9]+)', handlers: ['bar']);
   final bar = foo.child('/bar');
   final baz = bar.child('//////baz//////', handlers: ['hello', 'world']);
+  new Router(foo).dumpTree();
 
   test('matching', () {
     expect(foo.children.length, equals(1));

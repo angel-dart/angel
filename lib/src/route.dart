@@ -48,6 +48,7 @@ class Route {
   final List<Route> _children = [];
   final List _handlers = [];
   RegExp _matcher;
+  String _method;
   String _name;
   Route _parent;
   String _path;
@@ -56,7 +57,7 @@ class Route {
   List<Route> get children => new List.unmodifiable(_children);
   List get handlers => new List.unmodifiable(_handlers);
   RegExp get matcher => _matcher;
-  final String method;
+  String get method => _method;
   String get name => _name;
   Route get parent => _parent;
   String get path => _path;
@@ -94,10 +95,11 @@ class Route {
   Route(Pattern path,
       {Iterable<Route> children: const [],
       Iterable handlers: const [],
-      this.method: "GET",
+      method: "GET",
       String name: null}) {
     if (children != null) _children.addAll(children);
     if (handlers != null) _handlers.addAll(handlers);
+    _method = method;
     _name = name;
 
     if (path is RegExp) {
@@ -111,6 +113,43 @@ class Route {
           path.toString().replaceAll(_straySlashes, ''),
           expand: false));
     }
+  }
+
+  /// Splits a route path into a list of segments, and then
+  /// builds a hierarchy of off that.
+  ///
+  /// This should generally be used instead of the original
+  /// Route constructor.
+  ///
+  /// All children and handlers, as well as the method, will be
+  /// assigned to the last child route created.
+  ///
+  /// The final child route is returned.
+  factory Route.build(Pattern path,
+      {Iterable<Route> children: const [],
+      Iterable handlers: const [],
+      method: "GET",
+      String name: null}) {
+    final segments = path.toString().split('/').where((str) => str.isNotEmpty);
+    print('Seg: $segments');
+    Route result;
+
+    for (String segment in segments) {
+      print('SEGGG: $segment');
+      if (result == null)
+        result = new Route(segment);
+      else
+        result = result.child(segment);
+    }
+
+    print('result: ${result.path}');
+
+    result._children.addAll(children);
+    result._handlers.addAll(handlers);
+    result._method = method;
+    result._name = name;
+
+    return result;
   }
 
   factory Route.join(Route parent, Route child) {
@@ -137,9 +176,11 @@ class Route {
 
     String separator = (pattern1.isEmpty || pattern1 == '^') ? '' : '\\/';
 
-    return route
+    parent._children.add(route
       .._matcher = new RegExp('$pattern1$separator$pattern2')
-      .._parent = parent;
+      .._parent = parent);
+
+    return route;
   }
 
   List<Route> addAll(Iterable<Route> routes, {bool join: true}) {
@@ -160,7 +201,7 @@ class Route {
       Iterable handlers: const [],
       String method: "GET",
       String name: null}) {
-    final route = new Route(path,
+    final route = new Route.build(path,
         children: children, handlers: handlers, method: method, name: name);
     return addChild(route);
   }

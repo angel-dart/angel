@@ -2,7 +2,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  final foo = new Route('/foo', handlers: ['bar']);
+  final foo = new Route.build('/foo', handlers: ['bar']);
   final bar = foo.child('/bar');
   final baz = bar.child('//////baz//////', handlers: ['hello', 'world']);
 
