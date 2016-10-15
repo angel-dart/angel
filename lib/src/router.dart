@@ -100,7 +100,7 @@ class Router extends Extensible {
   /// You can pass an additional filter to determine which
   /// routes count as matches.
   Route resolve(String path, [bool filter(Route route)]) =>
-      root.resolve(path, filter);
+      root.resolve(path, filter: filter);
 
   /// Incorporates another [Router]'s routes into this one's.
   ///

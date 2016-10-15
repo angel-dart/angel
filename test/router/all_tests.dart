@@ -19,6 +19,8 @@ main() {
         .child('/upper', handlers: [(String id) => id.toUpperCase()[0]]);
   });
 
+  final fizz = router.post('/user/fizz', null);
+
   router.dumpTree();
 
   test('extensible', () {
@@ -33,6 +35,7 @@ main() {
     expect(lower.parent.path, equals('letter/:id'));
     expect(lower.resolve('../upper').path, equals('letter/:id/upper'));
     expect(lower.resolve('/user/34/detail'), equals(userById));
+    expect(userById.resolve('../fizz'), equals(fizz));
   });
 
   test('resolve', () {
