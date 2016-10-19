@@ -54,7 +54,7 @@ main() {
       return someQuery(id).reviews.firstWhere(
         (r) => r.id == reviewId);
     });
-  }, before: [put, middleware, here]);
+  }, middleware: [put, middleware, here]);
 }
 ```
 

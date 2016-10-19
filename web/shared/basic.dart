@@ -23,6 +23,7 @@ basic(BrowserRouter router) {
   router.get('a', 'a handler');
 
   router.group('b', (router) {
+    print(router.root);
     router.get('a', 'b/a handler');
     router.get('b', 'b/b handler', middleware: ['b/b middleware']);
   }, middleware: ['b middleware']);

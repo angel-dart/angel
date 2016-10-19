@@ -1,13 +1,16 @@
 import 'dart:async' show Stream, StreamController;
-import 'dart:convert' show JSON;
 import 'dart:html' show AnchorElement, window;
 import 'angel_route.dart';
 
 final RegExp _hash = new RegExp(r'^#/');
 
+/// A variation of the [Router] support both hash routing and push state.
 abstract class BrowserRouter extends Router {
+  /// Fires whenever the active route changes. Fires `null` if none is selected (404).
   Stream<Route> get onRoute;
 
+  /// Set `hash` to true to use hash routing instead of push state.
+  /// `listen` as `true` will call `listen` after initialization.
   factory BrowserRouter({bool hash: false, bool listen: true, Route root}) {
     return hash
         ? new _HashRouter(listen: listen, root: root)
@@ -16,8 +19,13 @@ abstract class BrowserRouter extends Router {
 
   BrowserRouter._([Route root]) : super(root);
 
+  /// Calls `goTo` on the [Route] matching `path`.
   void go(String path, [Map params]);
+
+  /// Navigates to the given route.
   void goTo(Route route, [Map params]);
+
+  /// Begins listen for location changes.
   void listen();
 }
 

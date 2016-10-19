@@ -1,16 +1,28 @@
 import 'extensible.dart';
 import 'route.dart';
+import 'routing_exception.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
+/// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
 class Router extends Extensible {
+  /// Set to `true` to print verbose debug output when interacting with this route.
+  bool debug = false;
+
   /// Additional filters to be run on designated requests.
   Map<String, dynamic> requestMiddleware = {};
 
   /// The single [Route] that serves as the root of the hierarchy.
   final Route root;
 
+  /// Provide a `root` to make this Router revolve around a pre-defined route.
+  /// Not recommended.
   Router([Route root]) : this.root = root ?? new Route('/', name: '<root>');
+
+  void _printDebug(msg) {
+    if (debug)
+      _printDebug(msg);
+  }
 
   /// Adds a route that responds to the given path
   /// for requests with the given method (case-insensitive).
@@ -23,7 +35,62 @@ class Router extends Extensible {
       ..addAll(middleware ?? [])
       ..add(handler);
 
-    return root.child(path, handlers: handlers, method: method);
+    if (path is RegExp) {
+      return root.child(path, handlers: handlers, method: method);
+    } else if (path.toString().replaceAll(_straySlashes, '').isEmpty) {
+      return root.child(path.toString(), handlers: handlers, method: method);
+    } else {
+      var segments = path
+          .toString()
+          .split('/')
+          .where((str) => str.isNotEmpty)
+          .toList(growable: false);
+      Route result;
+
+      if (segments.isEmpty) {
+        return new Route('/', handlers: handlers, method: method);
+      } else {
+        _printDebug('Want ${segments[0]}');
+        result = resolve(segments[0]);
+
+        if (result != null) {
+          if (segments.length > 1) {
+            _printDebug('Resolved: ${result} for "${segments[0]}"');
+            segments = segments.skip(1).toList(growable: false);
+
+            Route existing;
+
+            do {
+              existing = result.resolve(segments[0]);
+
+              if (existing != null) {
+                result = existing;
+              }
+            } while (existing != null);
+          } else throw new RoutingException("Cannot overwrite existing route '${segments[0]}'.");
+        }
+      }
+
+      for (int i = 0; i < segments.length; i++) {
+        final segment = segments[i];
+
+        if (i == segments.length - 1) {
+          if (result == null) {
+            result = root.child(segment, handlers: handlers, method: method);
+          } else {
+            result = result.child(segment, handlers: handlers, method: method);
+          }
+        } else {
+          if (result == null) {
+            result = root.child(segment, method: "*");
+          } else {
+            result = result.child(segment, method: "*");
+          }
+        }
+      }
+
+      return result;
+    }
   }
 
   /// Creates a visual representation of the route hierarchy and
@@ -45,10 +112,8 @@ class Router extends Extensible {
       else
         buf.write("'${p.replaceAll(_straySlashes, '')}'");
 
-      buf.write(' => ');
-
       if (route.handlers.isNotEmpty)
-        buf.writeln('${route.handlers.length} handler(s)');
+        buf.writeln(' => ${route.handlers.length} handler(s)');
       else
         buf.writeln();
 
@@ -60,7 +125,7 @@ class Router extends Extensible {
     if (header != null && header.isNotEmpty) buf.writeln(header);
 
     dumpRoute(root);
-    (callback ?? print)(buf);
+    (callback ?? print)(buf.toString());
   }
 
   /// Creates a route, and allows you to add child routes to it
