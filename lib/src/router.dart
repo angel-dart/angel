@@ -17,7 +17,7 @@ class Router extends Extensible {
 
   /// Provide a `root` to make this Router revolve around a pre-defined route.
   /// Not recommended.
-  Router([Route root]) : this.root = root ?? new Route('/', name: '<root>');
+  Router([Route root]) : this.root = root ?? new _RootRoute();
 
   void _printDebug(msg) {
     if (debug)
@@ -89,7 +89,7 @@ class Router extends Extensible {
         }
       }
 
-      return result;
+      return result..debug = debug;
     }
   }
 
@@ -102,7 +102,10 @@ class Router extends Extensible {
 
     void dumpRoute(Route route, {String replace: null}) {
       for (var i = 0; i < tabs; i++) buf.write(tab);
-      buf.write('- ${route.method} ');
+
+      if (route == root)
+        buf.write('(root) ${route.method} ');
+      else buf.write('- ${route.method} ');
 
       final p =
           replace != null ? route.path.replaceAll(replace, '') : route.path;
@@ -188,7 +191,7 @@ class Router extends Extensible {
           copiedMiddleware[middlewareName];
     }
 
-    root.addChild(router.root);
+    root.child(path).addChild(router.root);
   }
 
   /// Adds a route that responds to any request matching the given path.
@@ -230,4 +233,12 @@ class Router extends Extensible {
   Route put(Pattern path, Object handler, {List middleware}) {
     return addRoute('PUT', path, handler, middleware: middleware);
   }
+}
+
+class _RootRoute extends Route {
+  _RootRoute():super("/", name: "<root>");
+
+
+  @override
+  String toString() => "ROOT";
 }

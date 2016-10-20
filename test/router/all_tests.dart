@@ -1,6 +1,7 @@
 import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 import 'fallback.dart' as fallback;
+import 'use.dart' as use;
 
 final ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -44,4 +45,7 @@ main() {
     expect(router.resolve('letter/a/lower'), equals(lower));
     expect(router.resolve('letter/2/lower'), isNull);
   });
+
+
+  test('use', use.main);
 }

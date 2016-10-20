@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Use" type="DartTestRunConfigurationType" factoryName="Dart Test" folderName="Router Tests" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/router/use.dart" />
+    <method />
+  </configuration>
+</component>

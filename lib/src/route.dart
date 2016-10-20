@@ -217,6 +217,7 @@ class Route {
 
     final route = new Route('$path1/$path2',
         children: child.children,
+        debug: parent.debug || child.debug,
         handlers: child.handlers,
         method: child.method,
         name: child.name);
@@ -241,7 +242,7 @@ class Route {
   /// Adds the given route as a hierarchical child of this one.
   Route addChild(Route route, {bool join: true}) {
     Route created = join ? new Route.join(this, route) : route.._parent = this;
-    return created;
+    return created..debug = debug;
   }
 
   /// Assigns a name to this route.
