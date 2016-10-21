@@ -6,6 +6,8 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
 class Router extends Extensible {
+  Route _root;
+
   /// Set to `true` to print verbose debug output when interacting with this route.
   bool debug = false;
 
@@ -13,15 +15,16 @@ class Router extends Extensible {
   Map<String, dynamic> requestMiddleware = {};
 
   /// The single [Route] that serves as the root of the hierarchy.
-  final Route root;
+  Route get root => _root;
 
   /// Provide a `root` to make this Router revolve around a pre-defined route.
   /// Not recommended.
-  Router([Route root]) : this.root = root ?? new _RootRoute();
+  Router({this.debug: false, Route root}) {
+    _root = (_root = root ?? new _RootRoute())..debug = debug;
+  }
 
   void _printDebug(msg) {
-    if (debug)
-      _printDebug(msg);
+    if (debug) print(msg);
   }
 
   /// Adds a route that responds to the given path
@@ -36,9 +39,10 @@ class Router extends Extensible {
       ..add(handler);
 
     if (path is RegExp) {
-      return root.child(path, handlers: handlers, method: method);
+      return root.child(path, debug: debug, handlers: handlers, method: method);
     } else if (path.toString().replaceAll(_straySlashes, '').isEmpty) {
-      return root.child(path.toString(), handlers: handlers, method: method);
+      return root.child(path.toString(),
+          debug: debug, handlers: handlers, method: method);
     } else {
       var segments = path
           .toString()
@@ -48,9 +52,9 @@ class Router extends Extensible {
       Route result;
 
       if (segments.isEmpty) {
-        return new Route('/', handlers: handlers, method: method);
+        return new Route('/', debug: debug, handlers: handlers, method: method)
+          ..debug = debug;
       } else {
-        _printDebug('Want ${segments[0]}');
         result = resolve(segments[0]);
 
         if (result != null) {
@@ -67,7 +71,9 @@ class Router extends Extensible {
                 result = existing;
               }
             } while (existing != null);
-          } else throw new RoutingException("Cannot overwrite existing route '${segments[0]}'.");
+          } else
+            throw new RoutingException(
+                "Cannot overwrite existing route '${segments[0]}'.");
         }
       }
 
@@ -76,15 +82,17 @@ class Router extends Extensible {
 
         if (i == segments.length - 1) {
           if (result == null) {
-            result = root.child(segment, handlers: handlers, method: method);
+            result = root.child(segment,
+                debug: debug, handlers: handlers, method: method);
           } else {
-            result = result.child(segment, handlers: handlers, method: method);
+            result = result.child(segment,
+                debug: debug, handlers: handlers, method: method);
           }
         } else {
           if (result == null) {
-            result = root.child(segment, method: "*");
+            result = root.child(segment, debug: debug, method: "*");
           } else {
-            result = result.child(segment, method: "*");
+            result = result.child(segment, debug: debug, method: "*");
           }
         }
       }
@@ -105,7 +113,8 @@ class Router extends Extensible {
 
       if (route == root)
         buf.write('(root) ${route.method} ');
-      else buf.write('- ${route.method} ');
+      else
+        buf.write('- ${route.method} ');
 
       final p =
           replace != null ? route.path.replaceAll(replace, '') : route.path;
@@ -143,7 +152,7 @@ class Router extends Extensible {
       String namespace: null}) {
     final route =
         root.child(path, handlers: middleware, method: method, name: name);
-    final router = new Router(route);
+    final router = new Router(root: route);
     callback(router);
 
     // Let's copy middleware, heeding the optional middleware namespace.
@@ -191,7 +200,7 @@ class Router extends Extensible {
           copiedMiddleware[middlewareName];
     }
 
-    root.child(path).addChild(router.root);
+    root.child(path, debug: debug).addChild(router.root);
   }
 
   /// Adds a route that responds to any request matching the given path.
@@ -236,8 +245,7 @@ class Router extends Extensible {
 }
 
 class _RootRoute extends Route {
-  _RootRoute():super("/", name: "<root>");
-
+  _RootRoute() : super("/", name: "<root>");
 
   @override
   String toString() => "ROOT";

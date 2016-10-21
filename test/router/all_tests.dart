@@ -9,7 +9,8 @@ main() {
   final router = new Router();
   final indexRoute = router.get('/', () => ':)');
   final fizz = router.post('/user/fizz', null);
-  final deleteUserById = router.delete('/user/:id/detail', (id) => num.parse(id));
+  final deleteUserById =
+      router.delete('/user/:id/detail', (id) => num.parse(id));
 
   Route lower;
   final letters = router.group('/letter///', (router) {
@@ -29,6 +30,7 @@ main() {
   });
 
   group('fallback', fallback.main);
+  test('group & use', use.main);
 
   test('hierarchy', () {
     expect(lower.absoluteParent, equals(router.root));
@@ -45,7 +47,4 @@ main() {
     expect(router.resolve('letter/a/lower'), equals(lower));
     expect(router.resolve('letter/2/lower'), isNull);
   });
-
-
-  test('use', use.main);
 }

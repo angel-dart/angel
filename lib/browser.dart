@@ -17,7 +17,7 @@ abstract class BrowserRouter extends Router {
         : new _PushStateRouter(listen: listen, root: root);
   }
 
-  BrowserRouter._([Route root]) : super(root);
+  BrowserRouter._([Route root]) : super(root: root);
 
   /// Calls `goTo` on the [Route] matching `path`.
   void go(String path, [Map params]);
@@ -37,7 +37,7 @@ class _BrowserRouterImpl extends Router implements BrowserRouter {
   @override
   Stream<Route> get onRoute => _onRoute.stream;
 
-  _BrowserRouterImpl({bool listen, Route root}) : super(root) {
+  _BrowserRouterImpl({bool listen, Route root}) : super(root: root) {
     if (listen) this.listen();
     prepareAnchors();
   }

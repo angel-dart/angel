@@ -7,7 +7,7 @@ main() {
   final bar = fooById.child('bar');
   final baz = bar.child('//////baz//////', handlers: ['hello', 'world']);
   final bazById = baz.child(':bazId([A-Za-z]+)');
-  new Router(foo).dumpTree();
+  new Router(root: foo).dumpTree();
 
   test('matching', () {
     expect(fooById.children.length, equals(1));
@@ -54,7 +54,7 @@ main() {
 
     expect(bar.resolve('..'), equals(fooById));
 
-    new Router(bar.parent).dumpTree(header: "POOP");
+    new Router(root: bar.parent).dumpTree(header: "POOP");
     expect(bar.parent.resolve('bar/baz'), equals(baz));
     expect(bar.resolve('/2/bar/baz'), equals(baz));
     expect(bar.resolve('../bar'), equals(bar));

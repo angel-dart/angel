@@ -5,4 +5,5 @@ author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_route
 dev_dependencies:
   browser: ">=0.10.0 < 0.11.0"
+  http: ">=0.11.3 <0.12.0"
   test: ">=0.12.15 <0.13.0"
