@@ -6,7 +6,7 @@ main() {
   final fooById = foo.child(':id((?!bar)[0-9]+)', handlers: ['bar']);
   final bar = fooById.child('bar');
   final baz = bar.child('//////baz//////', handlers: ['hello', 'world']);
-  final bazById = baz.child(':bazId([A-Za-z]+)');
+  final bazById = baz.child(':bazId([A-Za-z]+)?');
   new Router(root: foo).dumpTree();
 
   test('matching', () {

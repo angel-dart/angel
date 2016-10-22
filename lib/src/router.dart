@@ -189,7 +189,7 @@ class Router extends Extensible {
   /// For example, if the [Router] has a middleware 'y', and the `namespace`
   /// is 'x', then that middleware will be available as 'x.y' in the main router.
   /// These namespaces can be nested.
-  void use(Pattern path, Router router,
+  void mount(Pattern path, Router router,
       {bool hooked: true, String namespace: null}) {
     // Let's copy middleware, heeding the optional middleware namespace.
     String middlewarePrefix = namespace != null ? "$namespace." : "";

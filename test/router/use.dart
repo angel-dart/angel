@@ -17,7 +17,7 @@ main() {
     c = router.post('c', 'Hello nested');
   });
 
-  parent.use('child', child);
+  parent.mount('child', child);
   parent.dumpTree(header: tattleAll([parent, child, a]));
 
   group('no params', () {
