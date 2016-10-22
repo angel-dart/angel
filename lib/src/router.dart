@@ -55,7 +55,7 @@ class Router extends Extensible {
         return new Route('/', debug: debug, handlers: handlers, method: method)
           ..debug = debug;
       } else {
-        result = resolve(segments[0], (route) => route.method == method);
+        result = resolve(segments[0], (route) => route.method == method || route.method == '*');
 
         if (result != null) {
           if (segments.length > 1) {
@@ -65,7 +65,7 @@ class Router extends Extensible {
             Route existing;
 
             do {
-              existing = result.resolve(segments[0], filter: (route) => route.method == method);
+              existing = result.resolve(segments[0], filter: (route) => route.method == method || route.method == '*');
 
               if (existing != null) {
                 result = existing;
