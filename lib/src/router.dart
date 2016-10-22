@@ -71,9 +71,7 @@ class Router extends Extensible {
                 result = existing;
               }
             } while (existing != null);
-          } else
-            throw new RoutingException(
-                "Cannot overwrite existing route '${segments[0]}'.");
+          }
         }
       }
 
