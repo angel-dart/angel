@@ -65,7 +65,7 @@ class Router extends Extensible {
             Route existing;
 
             do {
-              existing = result.resolve(segments[0]);
+              existing = result.resolve(segments[0], filter: (route) => route.method == method);
 
               if (existing != null) {
                 result = existing;
