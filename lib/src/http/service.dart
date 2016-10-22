@@ -2,13 +2,11 @@ library angel_framework.http.service;
 
 import 'dart:async';
 import 'package:merge_map/merge_map.dart';
-import '../defs.dart';
 import '../util.dart';
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'metadata.dart';
 import 'routable.dart';
-import 'route.dart';
 
 /// Indicates how the service was accessed.
 ///
@@ -72,19 +70,24 @@ class Service extends Routable {
 
     // Add global middleware if declared on the instance itself
     Middleware before = getAnnotation(this, Middleware);
-    if (before != null) {
-      routes.add(new Route("*", "*", before.handlers));
-    }
+    final handlers = [];
+
+    if (before != null) handlers.add(before.handlers);
 
     Middleware indexMiddleware = getAnnotation(this.index, Middleware);
     get('/', (req, res) async {
       return await this.index(mergeMap([req.query, restProvider]));
-    }, middleware: (indexMiddleware == null) ? [] : indexMiddleware.handlers);
+    },
+        middleware: []
+          ..addAll(handlers)
+          ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(this.create, Middleware);
     post('/', (req, res) async => await this.create(req.body, restProvider),
-        middleware:
-            (createMiddleware == null) ? [] : createMiddleware.handlers);
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (createMiddleware == null) ? [] : createMiddleware.handlers));
 
     Middleware readMiddleware = getAnnotation(this.read, Middleware);
 
@@ -92,30 +95,38 @@ class Service extends Routable {
         '/:id',
         (req, res) async => await this
             .read(req.params['id'], mergeMap([req.query, restProvider])),
-        middleware: (readMiddleware == null) ? [] : readMiddleware.handlers);
+        middleware: []
+          ..addAll(handlers)
+          ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
 
     Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
     patch(
         '/:id',
         (req, res) async =>
             await this.modify(req.params['id'], req.body, restProvider),
-        middleware:
-            (modifyMiddleware == null) ? [] : modifyMiddleware.handlers);
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (modifyMiddleware == null) ? [] : modifyMiddleware.handlers));
 
     Middleware updateMiddleware = getAnnotation(this.update, Middleware);
     post(
         '/:id',
         (req, res) async =>
             await this.update(req.params['id'], req.body, restProvider),
-        middleware:
-            (updateMiddleware == null) ? [] : updateMiddleware.handlers);
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware = getAnnotation(this.remove, Middleware);
     delete(
         '/:id',
         (req, res) async => await this
             .remove(req.params['id'], mergeMap([req.query, restProvider])),
-        middleware:
-            (removeMiddleware == null) ? [] : removeMiddleware.handlers);
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (removeMiddleware == null) ? [] : removeMiddleware.handlers));
   }
 }

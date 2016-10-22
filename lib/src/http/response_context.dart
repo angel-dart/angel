@@ -3,33 +3,35 @@ library angel_framework.http.response_context;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
 import '../extensible.dart';
 import 'angel_base.dart';
 import 'controller.dart';
-import 'route.dart';
 
 /// A convenience wrapper around an outgoing HTTP request.
 class ResponseContext extends Extensible {
+  bool _isOpen = true;
+
   /// The [Angel] instance that is sending a response.
   AngelBase app;
 
   /// Can we still write to this response?
-  bool isOpen = true;
+  bool get isOpen => _isOpen;
 
   /// A set of UTF-8 encoded bytes that will be written to the response.
-  List<List<int>> responseData = [];
+  final BytesBuilder buffer = new BytesBuilder();
 
   /// Sets the status code to be sent with this response.
-  status(int code) {
+  void status(int code) {
     underlyingResponse.statusCode = code;
   }
 
   /// The underlying [HttpResponse] under this instance.
-  HttpResponse underlyingResponse;
+  final HttpResponse underlyingResponse;
 
-  ResponseContext(this.underlyingResponse);
+  ResponseContext(this.underlyingResponse, this.app);
 
   /// Any and all cookies to be sent to the user.
   List<Cookie> get cookies => underlyingResponse.cookies;
@@ -38,31 +40,37 @@ class ResponseContext extends Extensible {
   bool willCloseItself = false;
 
   /// Sends a download as a response.
-  download(File file, {String filename}) {
-    header("Content-Disposition", 'attachment; filename="${filename ?? file.path}"');
+  download(File file, {String filename}) async {
+    header("Content-Disposition",
+        'attachment; filename="${filename ?? file.path}"');
     header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path));
     header(HttpHeaders.CONTENT_LENGTH, file.lengthSync().toString());
-    responseData.add(file.readAsBytesSync());
+    buffer.add(await file.readAsBytes());
+    end();
   }
 
   /// Prevents more data from being written to the response.
-  end() => isOpen = false;
+  void end() {
+    _isOpen = false;
+  }
 
   /// Sets a response header to the given value, or retrieves its value.
   header(String key, [String value]) {
-    if (value == null) return underlyingResponse.headers[key];
-    else underlyingResponse.headers.set(key, value);
+    if (value == null)
+      return underlyingResponse.headers[key];
+    else
+      underlyingResponse.headers.set(key, value);
   }
 
   /// Serializes JSON to the response.
-  json(value) {
+  void json(value) {
     write(god.serialize(value));
     header(HttpHeaders.CONTENT_TYPE, ContentType.JSON.toString());
     end();
   }
 
   /// Returns a JSONP response.
-  jsonp(value, {String callbackName: "callback"}) {
+  void jsonp(value, {String callbackName: "callback"}) {
     write("$callbackName(${god.serialize(value)})");
     header(HttpHeaders.CONTENT_TYPE, "application/javascript");
     end();
@@ -76,7 +84,7 @@ class ResponseContext extends Extensible {
   }
 
   /// Redirects to user to the given URL.
-  redirect(String url, {int code: 301}) {
+  void redirect(String url, {int code: 301}) {
     header(HttpHeaders.LOCATION, url);
     status(code ?? 301);
     write('''
@@ -100,22 +108,26 @@ class ResponseContext extends Extensible {
   }
 
   /// Redirects to the given named [Route].
-  redirectTo(String name, [Map params, int code]) {
+  void redirectTo(String name, [Map params, int code]) {
+    // Todo: Need to recurse route hierarchy, but also efficiently  :)
     Route matched = app.routes.firstWhere((Route route) => route.name == name);
     if (matched != null) {
-      return redirect(matched.makeUri(params), code: code);
+      redirect(matched.makeUri(params), code: code);
+      return;
     }
 
     throw new ArgumentError.notNull('Route to redirect to ($name)');
   }
 
   /// Redirects to the given [Controller] action.
-  redirectToAction(String action, [Map params, int code]) {
+  void redirectToAction(String action, [Map params, int code]) {
     // UserController@show
     List<String> split = action.split("@");
 
+    // Todo: AngelResponseException
     if (split.length < 2)
-      throw new Exception("Controller redirects must take the form of 'Controller@action'. You gave: $action");
+      throw new Exception(
+          "Controller redirects must take the form of 'Controller@action'. You gave: $action");
 
     Controller controller = app.controller(split[0]);
 
@@ -125,38 +137,30 @@ class ResponseContext extends Extensible {
     Route matched = controller.routeMappings[split[1]];
 
     if (matched == null)
-      throw new Exception("Controller '${split[0]}' does not contain any action named '${split[1]}'");
+      throw new Exception(
+          "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
-    return redirect(matched.makeUri(params), code: code);
+    redirect(matched.makeUri(params), code: code);
   }
 
   /// Streams a file to this response as chunked data.
   ///
   /// Useful for video sites.
-  streamFile(File file,
+  Future streamFile(File file,
       {int chunkSize, int sleepMs: 0, bool resumable: true}) async {
     if (!isOpen) return;
 
     header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path));
     willCloseItself = true;
     await file.openRead().pipe(underlyingResponse);
-    /*await chunked(file.openRead(), chunkSize: chunkSize,
-        sleepMs: sleepMs,
-        resumable: resumable);*/
   }
 
   /// Writes data to the response.
-  write(value) {
-    if (isOpen)
-      responseData.add(UTF8.encode(value.toString()));
-  }
-
-  /// Magically transforms an [HttpResponse] object into a ResponseContext.
-  static Future<ResponseContext> from
-      (HttpResponse response, AngelBase app) async
-  {
-    ResponseContext context = new ResponseContext(response);
-    context.app = app;
-    return context;
+  void write(value, {Encoding encoding: UTF8}) {
+    if (isOpen) {
+      if (value is List<int>)
+        buffer.add(value);
+      else buffer.add(encoding.encode(value.toString()));
+    }
   }
 }

@@ -11,9 +11,10 @@ import 'controller.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
-import 'route.dart';
 import 'service.dart';
 export 'package:container/container.dart';
+
+final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A function that binds an [Angel] server to an Internet address and port.
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
@@ -31,6 +32,7 @@ class Angel extends AngelBase {
   var _beforeProcessed = new StreamController<HttpRequest>.broadcast();
   var _fatalErrorStream = new StreamController<Map>.broadcast();
   var _onController = new StreamController<Controller>.broadcast();
+  final Random _rand = new Random.secure();
   ServerGenerator _serverGenerator =
       (address, port) async => await HttpServer.bind(address, port);
 
@@ -74,6 +76,23 @@ class Angel extends AngelBase {
   /// The native HttpServer running this instancce.
   HttpServer httpServer;
 
+  /// Handles a server error.
+  _onError(e, [StackTrace stackTrace]) {
+    _fatalErrorStream.add({"error": e, "stack": stackTrace});
+  }
+
+  void _printDebug(x) {
+    if (debug) print(x);
+  }
+
+  String _randomString(int length) {
+    var codeUnits = new List.generate(length, (index) {
+      return _rand.nextInt(33) + 89;
+    });
+
+    return new String.fromCharCodes(codeUnits);
+  }
+
   /// Starts the server.
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
@@ -81,10 +100,7 @@ class Angel extends AngelBase {
     var server = await _serverGenerator(
         address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0);
     this.httpServer = server;
-
-    server.listen(handleRequest);
-
-    return server;
+    return server..listen(handleRequest);
   }
 
   /// Loads some base dependencies into the service container.
@@ -95,75 +111,7 @@ class Angel extends AngelBase {
     if (runtimeType != Angel) container.singleton(this, as: Angel);
   }
 
-  Future handleRequest(HttpRequest request) async {
-    _beforeProcessed.add(request);
-
-    String requestedUrl = request.uri
-        .toString()
-        .replaceAll("?" + request.uri.query, "")
-        .replaceAll(new RegExp(r'\/+$'), '');
-
-    if (requestedUrl.isEmpty) requestedUrl = '/';
-
-    RequestContext req = await RequestContext.from(request, {}, this, null);
-    ResponseContext res = await ResponseContext.from(request.response, this);
-
-    bool canContinue = true;
-
-    executeHandler(handler, req) async {
-      if (canContinue) {
-        try {
-          canContinue = await _applyHandler(handler, req, res);
-        } catch (e, stackTrace) {
-          if (e is AngelHttpException) {
-            // Special handling for AngelHttpExceptions :)
-            try {
-              res.status(e.statusCode);
-              String accept = request.headers.value(HttpHeaders.ACCEPT);
-              if (accept == "*/*" ||
-                  accept.contains(ContentType.JSON.mimeType) ||
-                  accept.contains("application/javascript")) {
-                res.json(e.toMap());
-              } else {
-                await _errorHandler(e, req, res);
-              }
-              _finalizeResponse(request, res);
-            } catch (_) {}
-          }
-          _onError(e, stackTrace);
-          canContinue = false;
-          return false;
-        }
-      } else
-        return false;
-    }
-
-    for (var handler in before) {
-      await executeHandler(handler, req);
-    }
-
-    for (Route route in routes) {
-      if (!canContinue) break;
-
-      if (route.matcher.hasMatch(requestedUrl) &&
-          (request.method == route.method || route.method == '*')) {
-        req.params = route.parseParameters(requestedUrl);
-        req.route = route;
-
-        for (var handler in route.handlers) {
-          await executeHandler(handler, req);
-        }
-      }
-    }
-
-    for (var handler in after) {
-      await executeHandler(handler, req);
-    }
-
-    _finalizeResponse(request, res);
-  }
-
-  Future<bool> _applyHandler(
+  Future<bool> executeHandler(
       handler, RequestContext req, ResponseContext res) async {
     if (handler is RequestMiddleware) {
       var result = await handler(req, res);
@@ -216,7 +164,7 @@ class Angel extends AngelBase {
     }
 
     if (requestMiddleware.containsKey(handler)) {
-      return await _applyHandler(requestMiddleware[handler], req, res);
+      return await executeHandler(requestMiddleware[handler], req, res);
     }
 
     res.willCloseItself = true;
@@ -225,25 +173,81 @@ class Angel extends AngelBase {
     return false;
   }
 
-  _finalizeResponse(HttpRequest request, ResponseContext res) async {
+  Future handleRequest(HttpRequest request) async {
+    _beforeProcessed.add(request);
+
+    final req = await RequestContext.from(request, this);
+    final res = new ResponseContext(request.response, this);
+    String requestedUrl = request.uri
+        .toString()
+        .replaceAll("?" + request.uri.query, "")
+        .replaceAll(_straySlashes, '');
+
+    if (requestedUrl.isEmpty) requestedUrl = '/';
+
+    final route = resolve(requestedUrl,
+        (route) => route.method == request.method || route.method == '*');
+    print('Resolve ${requestedUrl} -> $route');
+    req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
+
+    final handlerSequence = []..addAll(before);
+    if (route != null) handlerSequence.addAll(route.handlerSequence);
+    handlerSequence.addAll(after);
+
+    _printDebug('Handler sequence on $requestedUrl: $handlerSequence');
+
+    for (final handler in handlerSequence) {
+      try {
+        _printDebug('Executing handler: $handler');
+        final result = await executeHandler(handler, req, res);
+        _printDebug('Result: $result');
+
+        if (!result) {
+          _printDebug('Last executed handler: $handler');
+          break;
+        } else {
+          _printDebug(
+              'Handler completed successfully, did not terminate response: $handler');
+        }
+      } catch (e, st) {
+        _printDebug('Caught error in handler $handler: $e');
+        _printDebug(st);
+
+        if (e is AngelHttpException) {
+          // Special handling for AngelHttpExceptions :)
+          try {
+            res.status(e.statusCode);
+            String accept = request.headers.value(HttpHeaders.ACCEPT);
+            if (accept == "*/*" ||
+                accept.contains(ContentType.JSON.mimeType) ||
+                accept.contains("application/javascript")) {
+              res.json(e.toMap());
+            } else {
+              await _errorHandler(e, req, res);
+            }
+            _finalizeResponse(request, res);
+          } catch (_) {
+            // Todo: This exception needs to be caught as well.
+          }
+        } else {
+          // Todo: Uncaught exceptions need to be... Caught.
+        }
+
+        _onError(e, st);
+        break;
+      }
+    }
+
     try {
       _afterProcessed.add(request);
+
       if (!res.willCloseItself) {
-        res.responseData.forEach((blob) => request.response.add(blob));
+        request.response.add(res.buffer.takeBytes());
         await request.response.close();
       }
     } catch (e) {
       failSilently(request, res);
     }
-  }
-
-  String _randomString(int length) {
-    var rand = new Random();
-    var codeUnits = new List.generate(length, (index) {
-      return rand.nextInt(33) + 89;
-    });
-
-    return new String.fromCharCodes(codeUnits);
   }
 
   // Run a function after injecting from service container
@@ -302,12 +306,12 @@ class Angel extends AngelBase {
 
   @override
   use(Pattern path, Routable routable,
-      {bool hooked: true, String middlewareNamespace: null}) {
+      {bool hooked: true, String namespace: null}) {
     if (routable is Service) {
       routable.app = this;
     }
-    return super.use(path, routable,
-        hooked: hooked, middlewareNamespace: middlewareNamespace);
+
+    return super.use(path, routable, hooked: hooked, namespace: namespace);
   }
 
   /// Registers a callback to run upon errors.
@@ -315,15 +319,7 @@ class Angel extends AngelBase {
     _errorHandler = handler;
   }
 
-  /// Handles a server error.
-  _onError(e, [StackTrace stackTrace]) {
-    _fatalErrorStream.add({
-      "error": e,
-      "stack": stackTrace
-    });
-  }
-
-  Angel() : super() {
+  Angel({bool debug: false}) : super(debug: debug) {
     bootstrapContainer();
   }
 
@@ -332,8 +328,8 @@ class Angel extends AngelBase {
   /// If no password is provided, a random one will be generated upon running
   /// the server.
   Angel.secure(String certificateChainPath, String serverKeyPath,
-      {String password})
-      : super() {
+      {bool debug: false, String password})
+      : super(debug: debug) {
     bootstrapContainer();
     _serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =

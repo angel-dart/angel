@@ -8,7 +8,10 @@ import 'routable.dart';
 typedef Future<String> ViewGenerator(String path, [Map data]);
 
 class AngelBase extends Routable {
+  AngelBase({bool debug: false}):super(debug: debug);
+
   Container _container = new Container();
+
   /// A [Container] used to inject dependencies.
   Container get container => _container;
 

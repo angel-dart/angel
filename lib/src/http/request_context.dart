@@ -1,13 +1,18 @@
 library angel_framework.http.request_context;
+
 import 'dart:async';
 import 'dart:io';
+import 'package:angel_route/src/extensible.dart';
 import 'package:body_parser/body_parser.dart';
-import '../../src/extensible.dart';
 import 'angel_base.dart';
-import 'route.dart';
 
 /// A convenience wrapper around an incoming HTTP request.
 class RequestContext extends Extensible {
+  BodyParseResult _body;
+  ContentType _contentType;
+  String _path;
+  HttpRequest _underlyingRequest;
+
   /// The [Angel] instance that is responding to this request.
   AngelBase app;
 
@@ -27,59 +32,58 @@ class RequestContext extends Extensible {
   String get method => underlyingRequest.method;
 
   /// All post data submitted to the server.
-  Map body = {};
+  Map get body => _body.body;
 
   /// The content type of an incoming request.
-  ContentType contentType;
+  ContentType get contentType => _contentType;
 
   /// Any and all files sent to the server with this request.
-  List<FileUploadInfo> files = [];
+  List<FileUploadInfo> get files => _body.files;
 
   /// The URL parameters extracted from the request URI.
   Map params = {};
 
   /// The requested path.
-  String path;
+  String get path => _path;
 
   /// The parsed request query string.
-  Map query = {};
+  Map get query => _body.query;
 
   /// The remote address requesting this resource.
-  InternetAddress remoteAddress;
-
-  /// The route that matched this request.
-  Route route;
+  InternetAddress get remoteAddress =>
+      underlyingRequest.connectionInfo.remoteAddress;
 
   /// The user's HTTP session.
-  HttpSession session;
+  HttpSession get session => underlyingRequest.session;
+
+  /// The [Uri] instance representing the path this request is responding to.
+  Uri get uri => underlyingRequest.uri;
 
   /// Is this an **XMLHttpRequest**?
-  bool get xhr => underlyingRequest.headers.value("X-Requested-With")
-      ?.trim()
-      ?.toLowerCase() == 'xmlhttprequest';
+  bool get xhr =>
+      underlyingRequest.headers
+          .value("X-Requested-With")
+          ?.trim()
+          ?.toLowerCase() ==
+      'xmlhttprequest';
 
   /// The underlying [HttpRequest] instance underneath this context.
-  HttpRequest underlyingRequest;
+  HttpRequest get underlyingRequest => _underlyingRequest;
 
-  /// Magically transforms an [HttpRequest] into a RequestContext.
-  static Future<RequestContext> from(HttpRequest request,
-      Map parameters, AngelBase app, Route sourceRoute) async {
-    RequestContext context = new RequestContext();
+  /// Magically transforms an [HttpRequest] into a [RequestContext].
+  static Future<RequestContext> from(HttpRequest request, AngelBase app) async {
+    RequestContext ctx = new RequestContext();
 
-    context.app = app;
-    context.contentType = request.headers.contentType;
-    context.remoteAddress = request.connectionInfo.remoteAddress;
-    context.params = parameters;
-    context.path = request.uri.toString().replaceAll("?" + request.uri.query, "").replaceAll(new RegExp(r'\/+$'), '');
-    context.route = sourceRoute;
-    context.session = request.session;
-    context.underlyingRequest = request;
+    ctx.app = app;
+    ctx._contentType = request.headers.contentType;
+    ctx._path = request.uri
+        .toString()
+        .replaceAll("?" + request.uri.query, "")
+        .replaceAll(new RegExp(r'/+$'), '');
+    ctx._underlyingRequest = request;
 
-    BodyParseResult bodyParseResult = await parseBody(request);
-    context.query = bodyParseResult.query;
-    context.body = bodyParseResult.body;
-    context.files = bodyParseResult.files;
+    ctx._body = await parseBody(request);
 
-    return context;
+    return ctx;
   }
 }

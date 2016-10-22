@@ -26,32 +26,43 @@ main() {
   http.Client client;
 
   setUp(() async {
-    angel = new Angel();
-    nested = new Angel();
-    todos = new Angel();
+    final debug = false;
+    angel = new Angel(debug: debug);
+    nested = new Angel(debug: debug);
+    todos = new Angel(debug: debug);
 
-    angel..registerMiddleware('interceptor', (req, res) async {
-      res.write('Middleware');
-      return false;
-    })..registerMiddleware('intercept_service',
-        (RequestContext req, res) async {
-      print("Intercepting a service!");
-      return true;
-    });
+    angel
+      ..registerMiddleware('interceptor', (req, res) async {
+        res.write('Middleware');
+        return false;
+      })
+      ..registerMiddleware('intercept_service',
+          (RequestContext req, res) async {
+        print("Intercepting a service!");
+        return true;
+      });
 
     todos.get('/action/:action', (req, res) => res.json(req.params));
-    nested.post('/ted/:route', (req, res) => res.json(req.params));
+
+    Route ted;
+
+    ted = nested.post('/ted/:route', (RequestContext req, res) {
+      print('Params: ${req.params}');
+      print('Path: ${ted.path}, matcher: ${ted.matcher.pattern}, uri: ${req.path}');
+      return req.params;
+    });
+
+    angel.use('/nes', nested);
     angel.get('/meta', testMiddlewareMetadata);
     angel.get('/intercepted', 'This should not be shown',
         middleware: ['interceptor']);
     angel.get('/hello', 'world');
     angel.get('/name/:first/last/:last', (req, res) => req.params);
     angel.post('/lambda', (req, res) => req.body);
-    angel.use('/nes', nested);
     angel.use('/todos/:id', todos);
     angel
         .get('/greet/:name',
-        (RequestContext req, res) async => "Hello ${req.params['name']}")
+            (RequestContext req, res) async => "Hello ${req.params['name']}")
         .as('Named routes');
     angel.get('/named', (req, ResponseContext res) async {
       res.redirectTo('Named routes', {'name': 'tests'});
@@ -60,13 +71,11 @@ main() {
       print("Query: ${req.query}");
       return "Logged";
     });
+
     angel.use('/query', new QueryService());
     angel.get('*', 'MJ');
 
-    print("DUMPING ROUTES: ");
-    for (Route route in angel.routes) {
-      print("${route.method} ${route.path} - ${route.handlers}");
-    }
+    angel.dumpTree(header: "DUMPING ROUTES:");
 
     client = new http.Client();
     await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
@@ -90,6 +99,7 @@ main() {
 
   test('Can match url with multiple parameters', () async {
     var response = await client.get('$url/name/HELLO/last/WORLD');
+    print(response.body);
     var json = god.deserialize(response.body);
     expect(json['first'], equals('HELLO'));
     expect(json['last'], equals('WORLD'));
@@ -104,6 +114,7 @@ main() {
   test('Can parse parameters from a nested Angel instance', () async {
     var response = await client.get('$url/todos/1337/action/test');
     var json = god.deserialize(response.body);
+    print('JSON: $json');
     expect(json['id'], equals(1337));
     expect(json['action'], equals('test'));
   });
@@ -123,7 +134,7 @@ main() {
     Map headers = {'Content-Type': 'application/json'};
     String postData = god.serialize({'it': 'works'});
     var response =
-    await client.post("$url/lambda", headers: headers, body: postData);
+        await client.post("$url/lambda", headers: headers, body: postData);
     expect(god.deserialize(response.body)['it'], equals('works'));
   });
 
@@ -133,10 +144,11 @@ main() {
   });
 
   test('Can name routes', () {
-    Route foo = angel.get('/framework/:id', 'Angel').as('frm');
+    Route foo = new Route('/framework/:id', name: 'frm');
+    print('Foo: $foo');
     String uri = foo.makeUri({'id': 'angel'});
     print(uri);
-    expect(uri, equals('/framework/angel'));
+    expect(uri, equals('framework/angel'));
   });
 
   test('Redirect to named routes', () async {
@@ -147,7 +159,7 @@ main() {
 
   test('Match routes, even with query params', () async {
     var response =
-    await client.get("$url/log?foo=bar&bar=baz&baz.foo=bar&baz.bar=foo");
+        await client.get("$url/log?foo=bar&bar=baz&baz.foo=bar&baz.bar=foo");
     print(response.body);
     expect(god.deserialize(response.body), equals('Logged'));
 
