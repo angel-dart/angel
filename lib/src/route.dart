@@ -170,36 +170,41 @@ class Route {
       Iterable handlers: const [],
       method: "GET",
       String name: null}) {
-    final segments = path
-        .toString()
-        .split('/')
-        .where((str) => str.isNotEmpty)
-        .toList(growable: false);
     Route result;
 
-    if (segments.isEmpty) {
-      return new Route('/',
-          children: children,
-          debug: debug,
-          handlers: handlers,
-          method: method,
-          name: name);
-    }
+    if (path is RegExp) {
+      result = new Route(path, debug: debug);
+    } else {
+      final segments = path
+          .toString()
+          .split('/')
+          .where((str) => str.isNotEmpty)
+          .toList(growable: false);
 
-    for (int i = 0; i < segments.length; i++) {
-      final segment = segments[i];
+      if (segments.isEmpty) {
+        return new Route('/',
+            children: children,
+            debug: debug,
+            handlers: handlers,
+            method: method,
+            name: name);
+      }
 
-      if (i == segments.length - 1) {
-        if (result == null) {
-          result = new Route(segment, debug: debug);
+      for (int i = 0; i < segments.length; i++) {
+        final segment = segments[i];
+
+        if (i == segments.length - 1) {
+          if (result == null) {
+            result = new Route(segment, debug: debug);
+          } else {
+            result = result.child(segment, debug: debug);
+          }
         } else {
-          result = result.child(segment, debug: debug);
-        }
-      } else {
-        if (result == null) {
-          result = new Route(segment, debug: debug, method: "*");
-        } else {
-          result = result.child(segment, debug: debug, method: "*");
+          if (result == null) {
+            result = new Route(segment, debug: debug, method: "*");
+          } else {
+            result = result.child(segment, debug: debug, method: "*");
+          }
         }
       }
     }
@@ -354,6 +359,8 @@ class Route {
   ///
   /// Can be used to navigate a route hierarchy like a file system.
   Route resolve(String path, {bool filter(Route route), String fullPath}) {
+    _printDebug(
+        'Path to resolve: "/${path.replaceAll(_straySlashes, '')}", our matcher: ${matcher.pattern}');
     bool _filter(route) {
       if (filter == null) {
         _printDebug('No filter provided, returning true for $route');
@@ -484,15 +491,15 @@ class Route {
             'Trying to match full $_fullPath for ${route.path} on ${this.path}');
         if ((route.match(_fullPath) != null ||
                 route._resolver.firstMatch(_fullPath) != null) &&
-            _filter(route))
+            _filter(route)) {
+          _printDebug('Matched full path!');
           return route.resolve('');
-        else if ((route.match(_fullPath) != null ||
-                route._resolver.firstMatch(_fullPath) != null) &&
-            _filter(route))
-          return route.resolve('');
-        else if ((route.match('/$_fullPath') != null ||
+        } else if ((route.match('/$_fullPath') != null ||
                 route._resolver.firstMatch('/$_fullPath') != null) &&
-            _filter(route)) return route.resolve('');
+            _filter(route)) {
+          _printDebug('Matched full path (with a leading slash!)');
+          return route.resolve('');
+        }
       }
 
       // Lastly, check to see if we have an index route to resolve with

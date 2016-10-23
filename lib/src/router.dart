@@ -55,7 +55,8 @@ class Router extends Extensible {
         return new Route('/', debug: debug, handlers: handlers, method: method)
           ..debug = debug;
       } else {
-        result = resolve(segments[0], (route) => route.method == method || route.method == '*');
+        result = resolve(segments[0],
+            (route) => route.method == method || route.method == '*');
 
         if (result != null) {
           if (segments.length > 1) {
@@ -65,7 +66,9 @@ class Router extends Extensible {
             Route existing;
 
             do {
-              existing = result.resolve(segments[0], filter: (route) => route.method == method || route.method == '*');
+              existing = result.resolve(segments[0],
+                  filter: (route) =>
+                      route.method == method || route.method == '*');
 
               if (existing != null) {
                 result = existing;
@@ -106,29 +109,31 @@ class Router extends Extensible {
     var tabs = 0;
     final buf = new StringBuffer();
 
-    void dumpRoute(Route route, {String replace: null}) {
+    void dumpRoute(Route route, {Pattern replace: null}) {
       for (var i = 0; i < tabs; i++) buf.write(tab);
 
       if (route == root)
-        buf.write('(root) ${route.method} ');
-      else
+        buf.write('(root)');
+      else {
         buf.write('- ${route.method} ');
 
-      final p =
-          replace != null ? route.path.replaceAll(replace, '') : route.path;
+        final p =
+            replace != null ? route.path.replaceAll(replace, '') : route.path;
 
-      if (p.isEmpty)
-        buf.write("'/'");
-      else
-        buf.write("'${p.replaceAll(_straySlashes, '')}'");
+        if (p.isEmpty)
+          buf.write("'/'");
+        else
+          buf.write("'${p.replaceAll(_straySlashes, '')}'");
 
-      if (route.handlers.isNotEmpty)
-        buf.writeln(' => ${route.handlers.length} handler(s)');
-      else
-        buf.writeln();
+        if (route.handlers.isNotEmpty)
+          buf.writeln(' => ${route.handlers.length} handler(s)');
+        else
+          buf.writeln();
+      }
 
       tabs++;
-      route.children.forEach((r) => dumpRoute(r, replace: route.path));
+      route.children
+          .forEach((r) => dumpRoute(r, replace: new RegExp("^${route.path}")));
       tabs--;
     }
 
