@@ -97,10 +97,9 @@ class Angel extends AngelBase {
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
-    var server = await _serverGenerator(
-        address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0);
-    this.httpServer = server;
-    return server..listen(handleRequest);
+    final host = address ?? InternetAddress.LOOPBACK_IP_V4;
+    final server = await _serverGenerator(host, port ?? 0);
+    return this.httpServer = server..listen(handleRequest);
   }
 
   /// Loads some base dependencies into the service container.
@@ -185,8 +184,7 @@ class Angel extends AngelBase {
 
     if (requestedUrl.isEmpty) requestedUrl = '/';
 
-    final route = resolve(requestedUrl,
-        (route) => route.method == request.method || route.method == '*');
+    final route = resolve(requestedUrl, method: request.method);
     print('Resolve ${requestedUrl} -> $route');
     req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
 

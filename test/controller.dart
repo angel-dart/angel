@@ -52,7 +52,7 @@ main() {
   });
 
   tearDown(() async {
-    await server.close(force: true);
+    await (server ?? app.httpServer).close(force: true);
     client.close();
     client = null;
   });
