@@ -52,6 +52,11 @@ class _BrowserRouterImpl extends Router implements BrowserRouter {
       throw new RoutingException.noSuchRoute(path);
   }
 
+  @override
+  void listen() {
+    normalize();
+  }
+
   void prepareAnchors() {
     final anchors = window.document.querySelectorAll('a:not([dynamic])');
 
@@ -85,9 +90,10 @@ class _HashRouter extends _BrowserRouterImpl {
 
   @override
   void listen() {
+    super.listen();
     window.onHashChange.listen((_) {
       final path = window.location.hash.replaceAll(_hash, '');
-      final resolved = resolve(path);
+      final resolved = resolveOnRoot(path);
 
       if (resolved == null || (path.isEmpty && resolved == root)) {
         _onRoute.add(_current = null);
@@ -115,6 +121,7 @@ class _PushStateRouter extends _BrowserRouterImpl {
 
   @override
   void listen() {
+    super.listen();
     window.onPopState.listen((e) {
       if (e.state is Map && e.state.containsKey('path')) {
         final resolved = resolve(e.state['path']);

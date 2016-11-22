@@ -1,7 +1,15 @@
+library angel_route.src.router;
+
 import 'extensible.dart';
-import 'route.dart';
 import 'routing_exception.dart';
 
+part 'route.dart';
+
+final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
+final RegExp _rgxEnd = new RegExp(r'\$+$');
+final RegExp _rgxStart = new RegExp(r'^\^+');
+final RegExp _rgxStraySlashes = new RegExp(r'(^((\\/)|(/))+)|(((\\/)|(/))+$)');
+final RegExp _slashDollar = new RegExp(r'/+\$');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
@@ -20,7 +28,8 @@ class Router extends Extensible {
   /// Provide a `root` to make this Router revolve around a pre-defined route.
   /// Not recommended.
   Router({this.debug: false, Route root}) {
-    _root = (_root = root ?? new _RootRoute())..debug = debug;
+    _root = (_root = root ?? new _RootRoute())
+      ..debug = debug;
   }
 
   void _printDebug(msg) {
@@ -40,7 +49,10 @@ class Router extends Extensible {
 
     if (path is RegExp) {
       return root.child(path, debug: debug, handlers: handlers, method: method);
-    } else if (path.toString().replaceAll(_straySlashes, '').isEmpty) {
+    } else if (path
+        .toString()
+        .replaceAll(_straySlashes, '')
+        .isEmpty) {
       return root.child(path.toString(),
           debug: debug, handlers: handlers, method: method);
     } else {
@@ -55,8 +67,8 @@ class Router extends Extensible {
         return new Route('/', debug: debug, handlers: handlers, method: method)
           ..debug = debug;
       } else {
-        result = resolve(segments[0],
-            (route) => route.method == method || route.method == '*');
+        result = resolveOnRoot(segments[0],
+            filter: (route) => route.method == method || route.method == '*');
 
         if (result != null) {
           if (segments.length > 1) {
@@ -68,7 +80,7 @@ class Router extends Extensible {
             do {
               existing = result.resolve(segments[0],
                   filter: (route) =>
-                      route.method == method || route.method == '*');
+                  route.method == method || route.method == '*');
 
               if (existing != null) {
                 result = existing;
@@ -110,15 +122,17 @@ class Router extends Extensible {
     final buf = new StringBuffer();
 
     void dumpRoute(Route route, {Pattern replace: null}) {
-      for (var i = 0; i < tabs; i++) buf.write(tab);
+      for (var i = 0; i < tabs; i++)
+        buf.write(tab);
 
       if (route == root)
-        buf.write('(root)');
+        buf.writeln('(root)');
       else {
         buf.write('- ${route.method} ');
 
-        final p =
-            replace != null ? route.path.replaceAll(replace, '') : route.path;
+        var p =
+        replace != null ? route.path.replaceAll(replace, '') : route.path;
+        p = p.replaceAll(_straySlashes, '');
 
         if (p.isEmpty)
           buf.write("'/'");
@@ -154,7 +168,7 @@ class Router extends Extensible {
       String name: null,
       String namespace: null}) {
     final route =
-        root.child(path, handlers: middleware, method: method, name: name);
+    root.child(path, handlers: middleware, method: method, name: name);
     final router = new Router(root: route);
     callback(router);
 
@@ -164,7 +178,7 @@ class Router extends Extensible {
     Map copiedMiddleware = new Map.from(router.requestMiddleware);
     for (String middlewareName in copiedMiddleware.keys) {
       requestMiddleware["$middlewarePrefix$middlewareName"] =
-          copiedMiddleware[middlewareName];
+      copiedMiddleware[middlewareName];
     }
 
     return route;
@@ -179,8 +193,129 @@ class Router extends Extensible {
   ///
   /// You can pass an additional filter to determine which
   /// routes count as matches.
-  Route resolve(String path, [bool filter(Route route)]) =>
+  Route resolveOnRoot(String path, {bool filter(Route route)}) =>
       root.resolve(path, filter: filter);
+
+  /// Finds the first [Route] that matches the given path,
+  /// with the given method.
+  Route resolve(String path, {String method: 'GET'}) {
+    final String _path = path.replaceAll(_straySlashes, '');
+    final segments = _path.split('/').where((str) => str.isNotEmpty);
+    _printDebug('Segments: $segments');
+    return _resolve(root, _path, method, segments.first, segments.skip(1));
+  }
+
+  _validHead(RegExp rgx) {
+    return !rgx.hasMatch('');
+  }
+
+  _resolve(Route ref, String fullPath, String method, String head,
+      Iterable<String> tail) {
+    _printDebug(
+        '$method on $ref: path: $fullPath, head: $head, tail: ${tail.join(
+            '/')}');
+
+    // Does the index route match?
+    if (ref.matcher.hasMatch(fullPath)) {
+      final index = ref.indexRoute;
+
+      for (Route child in ref.allIndices) {
+        _printDebug('Possible index: $child');
+
+        if (child == child.indexRoute && ['*', method].contains(child.method)) {
+          _printDebug('Possible index was exact match: $child');
+          return child;
+        }
+
+        final resolved = _resolve(child, fullPath, method, head, tail);
+
+        if (resolved != null) {
+          _printDebug('Resolved from possible index: $resolved');
+          return resolved;
+        } else
+          _printDebug('Possible index returned null: $child');
+      }
+
+      if (['*', method].contains(index.method)) {
+        return index;
+      }
+    } else {
+      // Try to match children by full path
+      for (Route child in ref.children) {
+        if (child.matcher.hasMatch(fullPath)) {
+          final resolved = _resolve(child, fullPath, method, head, tail);
+
+          if (resolved != null) {
+            return resolved;
+          }
+        }
+      }
+
+      // Now, let's check if any route's head matches the
+      // given head. If so, we try to resolve with that
+      // route, using a head corresponding to the one we
+      // matched.
+      for (Route child in ref.children) {
+        if (child._head != null &&
+            child._head.hasMatch(fullPath) &&
+            _validHead(child._head)) {
+          final newHead = child._head
+              .firstMatch(fullPath)
+              .group(0)
+              .replaceAll(_straySlashes, '');
+          final newTail = fullPath
+              .replaceAll(child._head, '')
+              .replaceAll(_straySlashes, '')
+              .split('/')
+              .where((str) => str.isNotEmpty);
+          final resolved = _resolve(child, fullPath, method, newHead, newTail);
+
+          if (resolved != null) {
+            _printDebug(
+                'Head match: $resolved from head: ${child._head.pattern}');
+            return resolved;
+          }
+        } else if (child._head != null) {
+          _printDebug(
+              'Head ${child._head
+                  .pattern} on $child failed to match $fullPath');
+        }
+      }
+    }
+
+    if (tail.isEmpty)
+      return null;
+    else {
+      return _resolve(
+          ref, fullPath, method, head + '/' + tail.first, tail.skip(1));
+    }
+  }
+
+  /// Returns a new Router in which the route tree has been
+  /// flattened into a linear list.
+  Router flatten() {
+    final router = new Router();
+
+    _flatten(Route route) {
+      // if (route.children.isNotEmpty && route.method == '*') return;
+
+      final r = new Route._base();
+
+      r
+        .._handlers.addAll(route.handlerSequence)
+        .._head = route._head
+        .._matcher = route.matcher
+        .._method = route.method
+        .._parent = router.root
+        .._path = route.path;
+
+      router.root._children.add(r);
+      route.children.forEach(_flatten);
+    }
+
+    root._children.forEach(_flatten);
+    return router..debug = debug;
+  }
 
   /// Incorporates another [Router]'s routes into this one's.
   ///
@@ -200,10 +335,67 @@ class Router extends Extensible {
     Map copiedMiddleware = new Map.from(router.requestMiddleware);
     for (String middlewareName in copiedMiddleware.keys) {
       requestMiddleware["$middlewarePrefix$middlewareName"] =
-          copiedMiddleware[middlewareName];
+      copiedMiddleware[middlewareName];
     }
 
-    root.child(path, debug: debug).addChild(router.root);
+    // final route = root.addChild(router.root, join: false);
+    final route = root.child(path, debug: debug).addChild(router.root);
+    route.debug = debug;
+
+    if (path is! RegExp) {
+      final _path = path.toString().replaceAll(_straySlashes, '');
+
+      _migrateRoute(Route r) {
+        r._path = '$_path/${r.path}'.replaceAll(_straySlashes, '');
+        var stripped = r.matcher.pattern
+            .replaceAll(_rgxStart, '')
+            .replaceAll(_rgxEnd, '')
+            .replaceAll(_rgxStraySlashes, '')
+            .replaceAll(_straySlashes, '');
+        stripped = '$_path/$stripped'.replaceAll(_straySlashes, '');
+        r._matcher = new RegExp('^$stripped\$');
+
+        if (r._head != null) {
+          final head = r._head.pattern
+              .replaceAll(_rgxStart, '')
+              .replaceAll(_rgxEnd, '')
+              .replaceAll(_rgxStraySlashes, '')
+              .replaceAll('\\/', '/')
+              .replaceAll(_straySlashes, '');
+          r._head = new RegExp(_matcherify('$_path/$head').replaceAll(_rgxEnd, ''));
+          _printDebug('Head of migrated route: ${r._head.pattern}');
+        }
+
+        r.children.forEach(_migrateRoute);
+      }
+
+      route.children.forEach(_migrateRoute);
+    }
+  }
+
+  /// Removes empty routes that could complicate route resolution.
+  void normalize() {
+    _printDebug('Normalizing route tree...');
+
+    _normalize(Route route) {
+      route.children.forEach(_normalize);
+
+      if (route.path
+          .replaceAll(_straySlashes, '')
+          .isEmpty &&
+          route.children.isNotEmpty) {
+        _printDebug('Erasing this route: $route');
+        route.parent._handlers.addAll(route.handlers);
+
+        for (Route child in route.children) {
+          route.parent._children.add(child.._parent = route.parent);
+        }
+
+        route.parent._children.remove(route);
+      }
+    }
+
+    root.children.forEach(_normalize);
   }
 
   /// Adds a route that responds to any request matching the given path.
@@ -248,7 +440,7 @@ class Router extends Extensible {
 }
 
 class _RootRoute extends Route {
-  _RootRoute() : super("/", name: "<root>");
+  _RootRoute() : super("/", method: '*', name: "<root>");
 
   @override
   String toString() => "ROOT";

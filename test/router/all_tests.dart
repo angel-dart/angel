@@ -1,7 +1,6 @@
 import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 import 'fallback.dart' as fallback;
-import 'use.dart' as use;
 
 final ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -13,7 +12,8 @@ main() {
       router.delete('/user/:id/detail', (id) => num.parse(id));
 
   Route lower;
-  final letters = router.group('/letter///', (router) {
+
+  router.group('/letter///', (router) {
     lower = router
         .get('/:id([A-Za-z])', (id) => ABC.indexOf(id[0]))
         .child('////lower', handlers: [(String id) => id.toLowerCase()[0]]);
@@ -30,7 +30,6 @@ main() {
   });
 
   group('fallback', fallback.main);
-  test('group & use', use.main);
 
   test('hierarchy', () {
     expect(lower.absoluteParent, equals(router.root));
@@ -41,10 +40,10 @@ main() {
   });
 
   test('resolve', () {
-    expect(router.resolve('/'), equals(indexRoute));
-    expect(router.resolve('user/1337/detail'), equals(deleteUserById));
-    expect(router.resolve('/user/1337/detail'), equals(deleteUserById));
-    expect(router.resolve('letter/a/lower'), equals(lower));
-    expect(router.resolve('letter/2/lower'), isNull);
+    expect(router.resolveOnRoot('/'), equals(indexRoute));
+    expect(router.resolveOnRoot('user/1337/detail'), equals(deleteUserById));
+    expect(router.resolveOnRoot('/user/1337/detail'), equals(deleteUserById));
+    expect(router.resolveOnRoot('letter/a/lower'), equals(lower));
+    expect(router.resolveOnRoot('letter/2/lower'), isNull);
   });
 }

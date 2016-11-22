@@ -13,8 +13,8 @@ main() {
   final fallback = router.get('*', () => 'fallback');
 
   test('resolve', () {
-    expect(router.resolve('/foo'), equals(fallback));
-    expect(router.resolve('/user/:id'), equals(userById));
-    expect(router.resolve('/user/:id', checkPost), isNull);
+    expect(router.resolveOnRoot('/foo'), equals(fallback));
+    expect(router.resolveOnRoot('/user/:id'), equals(userById));
+    expect(router.resolveOnRoot('/user/:id', filter: checkPost), isNull);
   });
 }

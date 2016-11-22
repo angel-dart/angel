@@ -22,14 +22,14 @@ main() {
 
   group('no params', () {
     test('resolve', () {
-      expect(child.resolve('a'), equals(a));
-      expect(child.resolve('b'), equals(b));
-      expect(child.resolve('b/c'), equals(c));
+      expect(child.resolveOnRoot('a'), equals(a));
+      expect(child.resolveOnRoot('b'), equals(b));
+      expect(child.resolveOnRoot('b/c'), equals(c));
 
-      expect(parent.resolve('child/a'), equals(a));
-      expect(parent.resolve('a'), isNull);
-      expect(parent.resolve('child/b'), equals(b));
-      expect(parent.resolve('child/b/c'), equals(c));
+      expect(parent.resolveOnRoot('child/a'), equals(a));
+      expect(parent.resolveOnRoot('a'), isNull);
+      expect(parent.resolveOnRoot('child/b'), equals(b));
+      expect(parent.resolveOnRoot('child/b/c'), equals(c));
     });
   });
 }

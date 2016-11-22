@@ -1,11 +1,4 @@
-import 'extensible.dart';
-import 'routing_exception.dart';
-
-final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
-final RegExp _rgxEnd = new RegExp(r'\$+$');
-final RegExp _rgxStart = new RegExp(r'^\^+');
-final RegExp _rgxStraySlashes = new RegExp(r'(^((\\/)|(/))+)|(((\\/)|(/))+$)');
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+part of angel_route.src.router;
 
 String _matcherify(String path, {bool expand: true}) {
   var p = path.replaceAll(new RegExp(r'/\*$'), "*").replaceAll('/', r'\/');
@@ -48,6 +41,7 @@ String _pathify(String path) {
 class Route {
   final List<Route> _children = [];
   final List _handlers = [];
+  RegExp _head;
   RegExp _matcher;
   String _method;
   String _name;
@@ -94,6 +88,14 @@ class Route {
     return result;
   }
 
+  /// Returns the [Route] instances that will respond to requests
+  /// to the index of this instance's path.
+  ///
+  /// May return `this`.
+  Iterable<Route> get allIndices {
+    return children.where((r) => r.path.replaceAll(path, '').isEmpty);
+  }
+
   /// Backtracks up the hierarchy, and builds
   /// a sequential list of all handlers from both
   /// this route, and every found parent route.
@@ -127,6 +129,8 @@ class Route {
   void _printDebug(msg) {
     if (debug) print(msg);
   }
+
+  Route._base();
 
   Route(Pattern path,
       {Iterable<Route> children: const [],
@@ -190,8 +194,11 @@ class Route {
             name: name);
       }
 
+      var head = '';
+
       for (int i = 0; i < segments.length; i++) {
         final segment = segments[i];
+        head = (head + '/$segment').replaceAll(_straySlashes, '');
 
         if (i == segments.length - 1) {
           if (result == null) {
@@ -206,6 +213,8 @@ class Route {
             result = result.child(segment, debug: debug, method: "*");
           }
         }
+
+        result._head = new RegExp(_matcherify(head).replaceAll(_rgxEnd, ''));
       }
     }
 
@@ -244,31 +253,14 @@ class Route {
 
     parent._children.add(route
       .._matcher = new RegExp('$pattern1$separator$pattern2')
+      .._head = new RegExp(_matcherify('$path1/$path2'.replaceAll(_straySlashes, '')).replaceAll(_rgxEnd, ''))
       .._parent = parent
       .._stub = child.matcher);
 
     parent._printDebug(
-        "Joined '/$path1' and '/$path2', created stub: ${route._stub.pattern}");
+        "Joined '/$path1' and '/$path2', created head: ${route._head.pattern} and stub: ${route._stub.pattern}");
 
     return route..debug = parent.debug || child.debug || debug;
-  }
-
-  Route _inherit(Route route) {
-    /*
-    final List<Route> _children = [];
-  final List _handlers = [];
-  RegExp _matcher;
-  String _method;
-  String _name;
-  Route _parent;
-  RegExp _parentResolver;
-  String _path;
-  String _pathified;
-  RegExp _resolver;
-  RegExp _stub;
-
-     */
-    return route.._parent = this;
   }
 
   /// Calls [addChild] on all given routes.

@@ -22,7 +22,7 @@ main() {
     url = 'http://${server.address.address}:${server.port}';
 
     server.listen((request) async {
-      final resolved = router.resolve(request.uri.toString(), (route) {
+      final resolved = router.resolveOnRoot(request.uri.toString(), filter: (route) {
         print(
             '$route matches ${request.method} ${request.uri}? ${route.method == request.method || route.method == '*'}');
         return route.method == request.method || route.method == '*';
