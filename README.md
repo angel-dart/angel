@@ -1,4 +1,8 @@
 # Angel Configuration
+
+![version 1.0.1+6](https://img.shields.io/badge/version-1.0.1+6-red.svg)
+![build status](https://travis-ci.org/angel-dart/configuration.svg)
+
 Isomorphic YAML configuration loader for Angel.
 
 # About
@@ -28,6 +32,10 @@ import 'package:angel_configuration/angel_configuration.dart';
 main() async {
     Angel angel = new Angel();
     angel.configure(loadConfigurationFile()); // It's that easy!
+    
+    app.get('/foo', (Configuration config) {
+      return config.some_key;
+    });
 }
 ```
 
