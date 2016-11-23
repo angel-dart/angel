@@ -152,7 +152,7 @@ class Router extends Extensible {
 
       tabs++;
       route.children
-          .forEach((r) => dumpRoute(r, replace: new RegExp("^${route.path}")));
+          .forEach((r) => dumpRoute(r, replace: route.path));
       tabs--;
     }
 
