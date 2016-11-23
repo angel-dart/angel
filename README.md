@@ -40,7 +40,7 @@ main() async {
 The `VirtualDirectory` API accepts a few named parameters:
 - **source**: A `Directory` containing the files to be served. If left null, then Angel will serve either from `web` (in development) or
     `build/web` (in production), depending on your `ANGEL_ENV`.
-- **indexFileNames**: A `List<String` of filenames that should be served as index pages. Default is `['index.html']`.
+- **indexFileNames**: A `List<String>` of filenames that should be served as index pages. Default is `['index.html']`.
 - **publicPath**: To serve index files, you need to specify the virtual path under which
     angel_static is serving your files. If you are not serving static files at the site root,
     please include this.
