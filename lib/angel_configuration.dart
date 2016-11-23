@@ -8,6 +8,7 @@ import 'package:yaml/yaml.dart';
 final RegExp _equ = new RegExp(r'=$');
 final RegExp _sym = new RegExp(r'Symbol\("([^"]+)"\)');
 
+@proxy
 class Configuration {
   final Angel app;
   Configuration(this.app);
