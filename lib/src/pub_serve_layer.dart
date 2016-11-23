@@ -17,5 +17,7 @@ class PubServeLayer extends ProxyLayer {
       // Auto-deactivate in production ;)
       return;
     }
+
+    super.serve(router);
   }
 }
