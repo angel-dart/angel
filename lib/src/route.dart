@@ -127,7 +127,7 @@ class Route {
   }
 
   void _printDebug(msg) {
-    if (debug) print(msg);
+    if (debug == true) print(msg);
   }
 
   Route._base();

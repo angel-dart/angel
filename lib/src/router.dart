@@ -33,7 +33,7 @@ class Router extends Extensible {
   }
 
   void _printDebug(msg) {
-    if (debug) print(msg);
+    if (debug == true) print(msg);
   }
 
   /// Adds a route that responds to the given path
