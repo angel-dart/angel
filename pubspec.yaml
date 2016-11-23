@@ -11,6 +11,7 @@ dependencies:
   angel_framework: ^1.0.0-dev
   angel_mongo: ^1.0.0-dev
   angel_mustache: ^1.0.0-dev
+  angel_proxy: ^1.0.0-dev
   angel_static: ^1.1.0-dev
   json_god: ^2.0.0-beta
   mailer: ^1.1.0+4
