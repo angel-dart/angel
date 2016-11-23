@@ -11,34 +11,31 @@ main() {
   Client client = new Client();
 
   setUp(() async {
-    app = new Angel();
+    app = new Angel(debug: true);
 
-    app.mount(
-        '/virtual',
-        new VirtualDirectory(
-            debug: true,
-            source: testDir,
-            publicPath: '/virtual',
-            indexFileNames: ['index.txt']));
+    await app.configure(new VirtualDirectory(
+        debug: true,
+        source: testDir,
+        publicPath: '/virtual',
+        indexFileNames: ['index.txt']));
 
-    app.mount(
-        '/',
-        new VirtualDirectory(
-            debug: true,
-            source: testDir,
-            indexFileNames: ['index.php', 'index.txt']));
+    await app.configure(new VirtualDirectory(
+        debug: true,
+        source: testDir,
+        indexFileNames: ['index.php', 'index.txt']));
 
     app.get('*', 'Fallback');
+
     app
       ..normalize()
-      ..dumpTree();
+      ..dumpTree(showMatchers: true);
 
     await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
   });
 
   tearDown(() async {
-    await app.httpServer.close(force: true);
+    if (app.httpServer != null) await app.httpServer.close(force: true);
   });
 
   test('can serve files, with correct Content-Type', () async {

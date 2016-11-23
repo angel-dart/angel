@@ -25,13 +25,7 @@ import 'package:angel_static/angel_static.dart';
 
 main() async {
   final app = new Angel();
-  
-  app.mount('/virtual', new VirtualDirectory(
-      source: new Directory('./foo/bar'),
-      publicPath: '/virtual'));
-
-  app.mount('/', new VirtualDirectory(source: new Directory('./public')));
-  
+  await app.configure(new VirtualDirectory(source: new Directory('./public')));
   await app.startServer();
 }
 ```
