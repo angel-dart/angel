@@ -1,4 +1,8 @@
 # angel_static
+
+![version 1.0.1](https://img.shields.io/badge/version-1.0.1-green.svg)
+![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)
+
 Static server middleware for Angel.
 
 # Installation
