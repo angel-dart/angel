@@ -22,12 +22,12 @@ main() {
     app.container.singleton(new Todo(text: TEXT, over: OVER));
 
     app.get("/errands", (Todo singleton) => singleton);
-    app.get("/errands3", (Errand singleton, Todo foo, RequestContext req) => singleton.text);
+    app.get("/errands3",
+        (Errand singleton, Todo foo, RequestContext req) => singleton.text);
     await app.configure(new SingletonController());
     await app.configure(new ErrandController());
 
     server = await app.startServer();
-    print('server: $server, httpServer: ${app.httpServer}');
     url = "http://${server.address.host}:${server.port}";
   });
 
@@ -77,7 +77,11 @@ class SingletonController extends Controller {
 @Expose("/errands4")
 class ErrandController extends Controller {
   @Expose("/")
-  errand(Errand errand) => errand.text;
+  errand(Errand errand, Match match) {
+    expect(match, isNotNull);
+    print('Match: ${match.group(0)}');
+    return errand.text;
+  }
 }
 
 class Errand {

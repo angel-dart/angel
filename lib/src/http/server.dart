@@ -105,6 +105,8 @@ class Angel extends AngelBase {
   /// Loads some base dependencies into the service container.
   void bootstrapContainer() {
     container.singleton(this, as: AngelBase);
+    container.singleton(this, as: Routable);
+    container.singleton(this, as: Router);
     container.singleton(this);
 
     if (runtimeType != Angel) container.singleton(this, as: Angel);
@@ -130,7 +132,7 @@ class Angel extends AngelBase {
     }
 
     if (handler is RawRequestHandler) {
-      var result = await handler(req.underlyingRequest);
+      var result = await handler(req.io);
       if (result is bool)
         return result == true;
       else if (result != null) {
@@ -167,8 +169,8 @@ class Angel extends AngelBase {
     }
 
     res.willCloseItself = true;
-    res.underlyingResponse.write(god.serialize(handler));
-    await res.underlyingResponse.close();
+    res.io.write(god.serialize(handler));
+    await res.io.close();
     return false;
   }
 
@@ -177,23 +179,34 @@ class Angel extends AngelBase {
 
     final req = await RequestContext.from(request, this);
     final res = new ResponseContext(request.response, this);
-    String requestedUrl = request.uri
-        .path
-        .replaceAll(_straySlashes, '');
+    String requestedUrl = request.uri.path.replaceAll(_straySlashes, '');
 
     if (requestedUrl.isEmpty) requestedUrl = '/';
 
-    final route = resolve(requestedUrl, method: request.method);
-    _printDebug('Resolved ${requestedUrl} -> $route');
-    req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
+    final resolved = [];
 
-    final handlerSequence = []..addAll(before);
-    if (route != null) handlerSequence.addAll(route.handlerSequence);
-    handlerSequence.addAll(after);
+    if (requestedUrl == '/') {
+      resolved.add(root.indexRoute);
+    } else {
+      resolved.addAll(resolveAll(requestedUrl, method: request.method));
+      final route = resolved.first;
+      req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
+      req.inject(Match, route.match(requestedUrl));
+    }
 
-    _printDebug('Handler sequence on $requestedUrl: $handlerSequence');
+    final pipeline = []..addAll(before);
 
-    for (final handler in handlerSequence) {
+    if (resolved.isNotEmpty) {
+      for (final route in resolved) {
+        pipeline.addAll(route.handlerSequence);
+      }
+    }
+
+    pipeline.addAll(after);
+
+    _printDebug('Handler sequence on $requestedUrl: $pipeline');
+
+    for (final handler in pipeline) {
       try {
         _printDebug('Executing handler: $handler');
         final result = await executeHandler(handler, req, res);
@@ -249,8 +262,7 @@ class Angel extends AngelBase {
 
   // Run a function after injecting from service container
   Future runContained(Function handler, RequestContext req, ResponseContext res,
-      {Map<String, dynamic> namedParameters,
-      Map<Type, dynamic> injecting}) async {
+      {Map<String, dynamic> namedParameters}) async {
     ClosureMirror closureMirror = reflect(handler);
     List args = [];
 
@@ -261,9 +273,9 @@ class Angel extends AngelBase {
         args.add(res);
       else {
         // First, search to see if we can map this to a type
-        if (parameter.type.reflectedType != dynamic) {
-          args.add(container.make(parameter.type.reflectedType,
-              namedParameters: namedParameters, injecting: injecting));
+        if (req.injections.containsKey(parameter.type.reflectedType)) {
+          args.add(req.injections[parameter.type.reflectedType]);
+          continue;
         } else {
           String name = MirrorSystem.getName(parameter.simpleName);
 
@@ -273,7 +285,12 @@ class Angel extends AngelBase {
             args.add(req);
           else if (name == "res")
             args.add(res);
-          else {
+          else if (req.injections.containsKey(name))
+            args.add(req.injections[name]);
+          else if (parameter.type.reflectedType != dynamic) {
+            args.add(container.make(parameter.type.reflectedType,
+                injecting: req.injections));
+          } else {
             throw new Exception(
                 "Cannot resolve parameter '$name' within handler.");
           }
@@ -324,20 +341,22 @@ class Angel extends AngelBase {
   /// Provide paths to a certificate chain and server key (both .pem).
   /// If no password is provided, a random one will be generated upon running
   /// the server.
-  Angel.secure(String certificateChainPath, String serverKeyPath,
-      {bool debug: false, String password})
-      : super(debug: debug) {
-    bootstrapContainer();
-    _serverGenerator = (InternetAddress address, int port) async {
+  factory Angel.secure(String certificateChainPath, String serverKeyPath,
+      {bool debug: false, String password}) {
+    final app = new Angel(debug: debug);
+
+    app._serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
           Platform.script.resolve(certificateChainPath).toFilePath();
       var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
       var serverContext = new SecurityContext();
       serverContext.useCertificateChain(certificateChain);
       serverContext.usePrivateKey(serverKey,
-          password: password ?? _randomString(8));
+          password: password ?? app._randomString(8));
 
       return await HttpServer.bindSecure(address, port, serverContext);
     };
+
+    return app;
   }
 }

@@ -73,19 +73,30 @@ class Controller {
                 var arg = req.params[name];
 
                 if (arg == null) {
-                  if (parameter.type.reflectedType != dynamic) {
+                  if (req.injections.containsKey(name)) {
+                    args.add(req.injections[name]);
+                    continue;
+                  }
+
+                  final type = parameter.type.reflectedType;
+
+                  if (req.injections.containsKey(type)) {
+                    args.add(req.injections[type]);
+                    continue;
+                  }
+
+                  if (type != dynamic) {
                     try {
-                      arg = app.container.make(parameter.type.reflectedType);
-                      if (arg != null) {
-                        args.add(arg);
-                        continue;
-                      }
+                      args.add(app.container.make(type));
+                      continue;
                     } catch (e) {
                       //
+                      print(e);
+                      print(req.injections);
                     }
                   }
 
-                  if (!exposeMirror.reflectee.allowNull.contain(name))
+                  if (!exposeMirror.reflectee.allowNull.contains(name))
                     throw new AngelHttpException.BadRequest(
                         message: "Missing parameter '$name'");
                 } else

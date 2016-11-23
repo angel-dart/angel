@@ -10,26 +10,32 @@ import 'angel_base.dart';
 class RequestContext extends Extensible {
   BodyParseResult _body;
   ContentType _contentType;
+  HttpRequest _io;
   String _path;
-  HttpRequest _underlyingRequest;
 
   /// The [Angel] instance that is responding to this request.
   AngelBase app;
 
   /// Any cookies sent with this request.
-  List<Cookie> get cookies => underlyingRequest.cookies;
+  List<Cookie> get cookies => io.cookies;
 
   /// All HTTP headers sent with this request.
-  HttpHeaders get headers => underlyingRequest.headers;
+  HttpHeaders get headers => io.headers;
 
   /// The requested hostname.
-  String get hostname => underlyingRequest.headers.value(HttpHeaders.HOST);
+  String get hostname => io.headers.value(HttpHeaders.HOST);
+
+  /// A [Map] of values that should be DI'd.
+  final Map injections = {};
+
+  /// The underlying [HttpRequest] instance underneath this context.
+  HttpRequest get io => _io;
 
   /// The user's IP.
   String get ip => remoteAddress.address;
 
   /// This request's HTTP method.
-  String get method => underlyingRequest.method;
+  String get method => io.method;
 
   /// All post data submitted to the server.
   Map get body => _body.body;
@@ -51,24 +57,27 @@ class RequestContext extends Extensible {
 
   /// The remote address requesting this resource.
   InternetAddress get remoteAddress =>
-      underlyingRequest.connectionInfo.remoteAddress;
+      io.connectionInfo.remoteAddress;
 
   /// The user's HTTP session.
-  HttpSession get session => underlyingRequest.session;
+  HttpSession get session => io.session;
 
   /// The [Uri] instance representing the path this request is responding to.
-  Uri get uri => underlyingRequest.uri;
+  Uri get uri => io.uri;
 
   /// Is this an **XMLHttpRequest**?
   bool get xhr =>
-      underlyingRequest.headers
+      io.headers
           .value("X-Requested-With")
           ?.trim()
           ?.toLowerCase() ==
       'xmlhttprequest';
 
-  /// The underlying [HttpRequest] instance underneath this context.
-  HttpRequest get underlyingRequest => _underlyingRequest;
+  @deprecated
+  HttpRequest get underlyingRequest {
+    throw new Exception(
+        '`RequestContext#underlyingRequest` is deprecated. Please update your application to use the newer `RequestContext#io`.');
+  }
 
   /// Magically transforms an [HttpRequest] into a [RequestContext].
   static Future<RequestContext> from(HttpRequest request, AngelBase app) async {
@@ -80,10 +89,14 @@ class RequestContext extends Extensible {
         .toString()
         .replaceAll("?" + request.uri.query, "")
         .replaceAll(new RegExp(r'/+$'), '');
-    ctx._underlyingRequest = request;
+    ctx._io = request;
 
     ctx._body = await parseBody(request);
 
     return ctx;
+  }
+
+  void inject(Type type, value) {
+    injections[type] = value;
   }
 }

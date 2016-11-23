@@ -25,16 +25,22 @@ class ResponseContext extends Extensible {
 
   /// Sets the status code to be sent with this response.
   void status(int code) {
-    underlyingResponse.statusCode = code;
+    io.statusCode = code;
   }
 
   /// The underlying [HttpResponse] under this instance.
-  final HttpResponse underlyingResponse;
+  final HttpResponse io;
 
-  ResponseContext(this.underlyingResponse, this.app);
+  @deprecated
+  HttpResponse get underlyingRequest {
+    throw new Exception(
+        '`ResponseContext#underlyingResponse` is deprecated. Please update your application to use the newer `ResponseContext#io`.');
+  }
+
+  ResponseContext(this.io, this.app);
 
   /// Any and all cookies to be sent to the user.
-  List<Cookie> get cookies => underlyingResponse.cookies;
+  List<Cookie> get cookies => io.cookies;
 
   /// Set this to true if you will manually close the response.
   bool willCloseItself = false;
@@ -57,9 +63,9 @@ class ResponseContext extends Extensible {
   /// Sets a response header to the given value, or retrieves its value.
   header(String key, [String value]) {
     if (value == null)
-      return underlyingResponse.headers[key];
+      return io.headers[key];
     else
-      underlyingResponse.headers.set(key, value);
+      io.headers.set(key, value);
   }
 
   /// Serializes JSON to the response.
@@ -163,7 +169,7 @@ class ResponseContext extends Extensible {
 
     header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path));
     willCloseItself = true;
-    await file.openRead().pipe(underlyingResponse);
+    await file.openRead().pipe(io);
   }
 
   /// Writes data to the response.
