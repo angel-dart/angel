@@ -33,12 +33,10 @@ class Routable extends Router {
   final Map<String, RequestMiddleware> requestMiddleware = {};
 
   /// A set of [Service] objects that have been mapped into routes.
-  Map<Pattern, Service> get services =>
-      new Map<Pattern, Service>.unmodifiable(_services);
+  Map<Pattern, Service> get services => _services;
 
   /// A set of [Controller] objects that have been loaded into the application.
-  Map<String, Controller> get controllers =>
-      new Map<String, Controller>.unmodifiable(_controllers);
+  Map<String, Controller> get controllers => _controllers;
 
   StreamController<Service> _onService =
       new StreamController<Service>.broadcast();
@@ -61,7 +59,7 @@ class Routable extends Router {
 
   @override
   Route addRoute(String method, Pattern path, Object handler,
-      {List middleware}) {
+      {List middleware: const []}) {
     final List handlers = [];
     // Merge @Middleware declaration, if any
     Middleware middlewareDeclaration = getAnnotation(handler, Middleware);
@@ -69,8 +67,11 @@ class Routable extends Router {
       handlers.addAll(middlewareDeclaration.handlers);
     }
 
-    return super.addRoute(method, path, handler,
-        middleware: []..addAll(middleware ?? [])..addAll(handlers));
+    final List handlerSequence = [];
+    handlerSequence.addAll(middleware ?? []);
+    handlerSequence.addAll(handlers);
+
+    return super.addRoute(method, path, handler, middleware: handlerSequence);
   }
 
   void use(Pattern path, Router router,
@@ -89,9 +90,11 @@ class Routable extends Router {
           .toString()
           .trim()
           .replaceAll(new RegExp(r'(^/+)|(/+$)'), '')] = service;
+      service.addRoutes();
     }
 
     final handlers = [];
+
     if (_router is AngelBase) {
       handlers.add((RequestContext req, ResponseContext res) async {
         req.app = _router;
@@ -109,9 +112,9 @@ class Routable extends Router {
           copiedMiddleware[middlewareName];
     }
 
-    root.child(path, debug: debug, handlers: handlers).addChild(router.root);
-
-    _router.dumpTree(header: 'Mounting on "$path":');
+    // _router.dumpTree(header: 'Mounting on "$path":');
+    // root.child(path, debug: debug, handlers: handlers).addChild(router.root);
+    mount(path, _router);
 
     if (router is Routable) {
       // Copy services, too. :)

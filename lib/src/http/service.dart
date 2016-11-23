@@ -65,14 +65,14 @@ class Service extends Routable {
     throw new AngelHttpException.MethodNotAllowed();
   }
 
-  Service() : super() {
+  void addRoutes() {
     Map restProvider = {'provider': Providers.REST};
 
     // Add global middleware if declared on the instance itself
     Middleware before = getAnnotation(this, Middleware);
     final handlers = [];
 
-    if (before != null) handlers.add(before.handlers);
+    if (before != null) handlers.addAll(before.handlers);
 
     Middleware indexMiddleware = getAnnotation(this.index, Middleware);
     get('/', (req, res) async {
@@ -94,7 +94,7 @@ class Service extends Routable {
     get(
         '/:id',
         (req, res) async => await this
-            .read(req.params['id'], mergeMap([req.query, restProvider])),
+        .read(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -103,7 +103,7 @@ class Service extends Routable {
     patch(
         '/:id',
         (req, res) async =>
-            await this.modify(req.params['id'], req.body, restProvider),
+    await this.modify(req.params['id'], req.body, restProvider),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -113,7 +113,7 @@ class Service extends Routable {
     post(
         '/:id',
         (req, res) async =>
-            await this.update(req.params['id'], req.body, restProvider),
+    await this.update(req.params['id'], req.body, restProvider),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -123,10 +123,12 @@ class Service extends Routable {
     delete(
         '/:id',
         (req, res) async => await this
-            .remove(req.params['id'], mergeMap([req.query, restProvider])),
+        .remove(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
+
+    normalize();
   }
 }

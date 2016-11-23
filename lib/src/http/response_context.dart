@@ -109,8 +109,19 @@ class ResponseContext extends Extensible {
 
   /// Redirects to the given named [Route].
   void redirectTo(String name, [Map params, int code]) {
-    // Todo: Need to recurse route hierarchy, but also efficiently  :)
-    Route matched = app.routes.firstWhere((Route route) => route.name == name);
+    _findRoute(Route route) {
+      for (Route child in route.children) {
+        final resolved = _findRoute(child);
+
+        if (resolved != null) return resolved;
+      }
+
+      return route.children
+          .firstWhere((r) => r.name == name, orElse: () => null);
+    }
+
+    Route matched = _findRoute(app.root);
+
     if (matched != null) {
       redirect(matched.makeUri(params), code: code);
       return;
@@ -160,7 +171,8 @@ class ResponseContext extends Extensible {
     if (isOpen) {
       if (value is List<int>)
         buffer.add(value);
-      else buffer.add(encoding.encode(value.toString()));
+      else
+        buffer.add(encoding.encode(value.toString()));
     }
   }
 }

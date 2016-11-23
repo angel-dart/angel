@@ -18,19 +18,6 @@ class Controller {
 
   Future call(AngelBase app) async {
     this.app = app;
-    app.use(exposeDecl.path, generateRoutable());
-
-    TypeMirror typeMirror = reflectType(this.runtimeType);
-    String name = exposeDecl.as;
-
-    if (name == null || name.isEmpty)
-      name = MirrorSystem.getName(typeMirror.simpleName);
-
-    app.controllers[name] = this;
-  }
-
-  Routable generateRoutable() {
-    final routable = new Routable();
 
     // Load global expose decl
     ClassMirror classMirror = reflectClass(this.runtimeType);
@@ -47,11 +34,18 @@ class Controller {
           "All controllers must carry an @Expose() declaration.");
     }
 
-    final handlers = []..addAll(exposeDecl.middleware)..addAll(middleware);
+    app.use(exposeDecl.path, generateRoutable(classMirror));
+    TypeMirror typeMirror = reflectType(this.runtimeType);
+    String name = exposeDecl.as;
 
-    InstanceMirror instanceMirror = reflect(this);
-    classMirror.instanceMembers
-        .forEach((Symbol key, MethodMirror methodMirror) {
+    if (name == null || name.isEmpty)
+      name = MirrorSystem.getName(typeMirror.simpleName);
+
+    app.controllers[name] = this;
+  }
+
+  _callback(InstanceMirror instanceMirror, Routable routable, List handlers) {
+    return (Symbol key, MethodMirror methodMirror) {
       if (methodMirror.isRegularMethod &&
           key != #toString &&
           key != #noSuchMethod &&
@@ -102,11 +96,13 @@ class Controller {
             return await instanceMirror.invoke(key, args).reflectee;
           };
 
+          final middleware = []
+            ..addAll(handlers)
+            ..addAll(exposeMirror.reflectee.middleware);
+
           final route = routable.addRoute(exposeMirror.reflectee.method,
               exposeMirror.reflectee.path, handler,
-              middleware: []
-                ..addAll(handlers)
-                ..addAll(exposeMirror.reflectee.middleware));
+              middleware: middleware);
 
           String name = exposeMirror.reflectee.as;
 
@@ -115,7 +111,16 @@ class Controller {
           routeMappings[name] = route;
         }
       }
-    });
+    };
+  }
+
+  Routable generateRoutable(ClassMirror classMirror) {
+    final routable = new Routable(debug: true);
+    final handlers = []..addAll(exposeDecl.middleware)..addAll(middleware);
+
+    InstanceMirror instanceMirror = reflect(this);
+    final callback = _callback(instanceMirror, routable, handlers);
+    classMirror.instanceMembers.forEach(callback);
 
     return routable;
   }

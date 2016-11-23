@@ -10,23 +10,23 @@ import 'common.dart';
 class TodoController extends Controller {
   List<Todo> todos = [new Todo(text: "Hello", over: "world")];
 
-  @Expose("/:id", middleware: const["bar"])
-  Future<Todo> fetchTodo(int id, RequestContext req,
-      ResponseContext res) async {
+  @Expose("/:id", middleware: const ["bar"])
+  Future<Todo> fetchTodo(
+      int id, RequestContext req, ResponseContext res) async {
     expect(req, isNotNull);
     expect(res, isNotNull);
     return todos[id];
   }
 
   @Expose("/namedRoute/:foo", as: "foo")
-  Future<String> someRandomRoute(RequestContext req,
-      ResponseContext res) async {
+  Future<String> someRandomRoute(
+      RequestContext req, ResponseContext res) async {
     return "${req.params['foo']}!";
   }
 }
 
 main() {
-  Angel app = new Angel();
+  Angel app;
   HttpServer server;
   InternetAddress host = InternetAddress.LOOPBACK_IP_V4;
   int port = 3000;
@@ -34,25 +34,25 @@ main() {
   String url = "http://${host.address}:$port";
 
   setUp(() async {
+    app = new Angel();
     app.registerMiddleware("foo", (req, res) async => res.write("Hello, "));
     app.registerMiddleware("bar", (req, res) async => res.write("world!"));
-    app.get("/redirect", (req, ResponseContext res) async =>
-        res.redirectToAction("TodoController@foo", {"foo": "world"}));
+    app.get(
+        "/redirect",
+        (req, ResponseContext res) async =>
+            res.redirectToAction("TodoController@foo", {"foo": "world"}));
     await app.configure(new TodoController());
 
     print(app.controllers);
-    print("\nDUMPING ROUTES:");
-    app.routes.forEach((Route route) {
-      print("\t${route.method} ${route.path} -> ${route.handlers}");
-    });
-    print("\n");
+    app.dumpTree();
 
     server = await app.startServer(host, port);
     client = new http.Client();
   });
 
   tearDown(() async {
-    await (server ?? app.httpServer).close(force: true);
+    await server.close(force: true);
+    app = null;
     client.close();
     client = null;
   });
@@ -62,7 +62,7 @@ main() {
     var response = await client.get("$url/todos/0");
     print(response.body);
 
-    expect(response.body.indexOf("Hello, "), equals(0));
+    expect(rgx.firstMatch(response.body).start, equals(0));
 
     Map todo = JSON.decode(response.body.replaceAll(rgx, ""));
     print("Todo: $todo");

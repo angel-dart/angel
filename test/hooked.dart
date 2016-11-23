@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
@@ -6,74 +7,86 @@ import 'common.dart';
 
 main() {
   Map headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
-    Angel app;
-    String url;
-    http.Client client;
-    HookedService Todos;
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  };
 
-    setUp(() async {
-      app = new Angel();
-      client = new http.Client();
-      app.use('/todos', new MemoryService<Todo>());
-      Todos = app.service("todos");
+  Angel app;
+  HttpServer server;
+  String url;
+  http.Client client;
+  HookedService Todos;
 
-      await app.startServer(null, 0);
-      url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
-    });
+  setUp(() async {
+    app = new Angel(debug: true);
+    client = new http.Client();
+    app.use('/todos', new MemoryService<Todo>());
+    Todos = app.service("todos");
 
-    tearDown(() async {
-      app = null;
-      url = null;
-      client.close();
-      client = null;
-      Todos = null;
-    });
+    app
+      ..normalize()
+      ..dumpTree(showMatchers: true);
 
-    test("listen before and after", () async {
-      int count = 0;
+    server = await app.startServer();
+    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
+  });
 
-      Todos
-        ..beforeIndexed.listen((_) {
-          count++;
-        })
-        ..afterIndexed.listen((_) {
-          count++;
-        });
+  tearDown(() async {
+    await server.close(force: true);
+    app = null;
+    url = null;
+    client.close();
+    client = null;
+    Todos = null;
+  });
 
-      var response = await client.get("$url/todos");
-      print(response.body);
-      expect(count, equals(2));
-    });
+  test("listen before and after", () async {
+    int count = 0;
 
-    test("cancel before", () async {
-      Todos.beforeCreated..listen((HookedServiceEvent event) {
+    Todos
+      ..beforeIndexed.listen((_) {
+        count++;
+      })
+      ..afterIndexed.listen((_) {
+        count++;
+      });
+
+    var response = await client.get("$url/todos");
+    print(response.body);
+    expect(count, equals(2));
+  });
+
+  test("cancel before", () async {
+    Todos.beforeCreated
+      ..listen((HookedServiceEvent event) {
         event.cancel({"hello": "hooked world"});
-      })..listen((HookedServiceEvent event) {
+      })
+      ..listen((HookedServiceEvent event) {
         event.cancel({"this_hook": "should never run"});
       });
 
-      var response = await client.post(
-          "$url/todos", body: god.serialize({"arbitrary": "data"}),
-          headers: headers);
-      print(response.body);
-      Map result = god.deserialize(response.body);
-      expect(result["hello"], equals("hooked world"));
-    });
+    var response = await client.post("$url/todos",
+        body: god.serialize({"arbitrary": "data"}), headers: headers);
+    print(response.body);
+    Map result = god.deserialize(response.body);
+    expect(result["hello"], equals("hooked world"));
+  });
 
-    test("cancel after", () async {
-      Todos.afterIndexed..listen((HookedServiceEvent event) async {
+  test("cancel after", () async {
+    Todos.afterIndexed
+      ..listen((HookedServiceEvent event) async {
         // Hooks can be Futures ;)
-        event.cancel([{"angel": "framework"}]);
-      })..listen((HookedServiceEvent event) {
+        event.cancel([
+          {"angel": "framework"}
+        ]);
+      })
+      ..listen((HookedServiceEvent event) {
         event.cancel({"this_hook": "should never run either"});
       });
 
-      var response = await client.get("$url/todos");
-      print(response.body);
-      List result = god.deserialize(response.body);
-      expect(result[0]["angel"], equals("framework"));
-    });
+    var response = await client.get("$url/todos");
+    print(response.body);
+    List result = god.deserialize(response.body);
+    expect(result[0]["angel"], equals("framework"));
+  });
 }

@@ -26,7 +26,7 @@ main() {
   http.Client client;
 
   setUp(() async {
-    final debug = false;
+    final debug = true;
     angel = new Angel(debug: debug);
     nested = new Angel(debug: debug);
     todos = new Angel(debug: debug);
@@ -38,7 +38,7 @@ main() {
       })
       ..registerMiddleware('intercept_service',
           (RequestContext req, res) async {
-        print("Intercepting a service!");
+        res.write("Service with ");
         return true;
       });
 
@@ -48,7 +48,8 @@ main() {
 
     ted = nested.post('/ted/:route', (RequestContext req, res) {
       print('Params: ${req.params}');
-      print('Path: ${ted.path}, matcher: ${ted.matcher.pattern}, uri: ${req.path}');
+      print(
+          'Path: ${ted.path}, matcher: ${ted.matcher.pattern}, uri: ${req.path}');
       return req.params;
     });
 
@@ -75,7 +76,9 @@ main() {
     angel.use('/query', new QueryService());
     angel.get('*', 'MJ');
 
-    angel.dumpTree(header: "DUMPING ROUTES:");
+    angel
+      ..normalize()
+      ..dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
     client = new http.Client();
     await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
@@ -101,6 +104,7 @@ main() {
     var response = await client.get('$url/name/HELLO/last/WORLD');
     print(response.body);
     var json = god.deserialize(response.body);
+    expect(json, new isInstanceOf<Map<String, String>>());
     expect(json['first'], equals('HELLO'));
     expect(json['last'], equals('WORLD'));
   });
@@ -165,6 +169,6 @@ main() {
 
     response = await client.get("$url/query/foo?bar=baz");
     print(response.body);
-    expect(response.body, equals("Middleware"));
+    expect(response.body, equals("Service with Middleware"));
   });
 }

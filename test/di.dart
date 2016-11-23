@@ -15,7 +15,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel();
+    app = new Angel(debug: true);
     client = new http.Client();
 
     // Inject some todos
@@ -27,6 +27,7 @@ main() {
     await app.configure(new ErrandController());
 
     server = await app.startServer();
+    print('server: $server, httpServer: ${app.httpServer}');
     url = "http://${server.address.host}:${server.port}";
   });
 

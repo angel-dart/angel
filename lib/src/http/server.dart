@@ -98,8 +98,8 @@ class Angel extends AngelBase {
   /// Returns false on failure; otherwise, returns the HttpServer.
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
     final host = address ?? InternetAddress.LOOPBACK_IP_V4;
-    final server = await _serverGenerator(host, port ?? 0);
-    return this.httpServer = server..listen(handleRequest);
+    this.httpServer = await _serverGenerator(host, port ?? 0);
+    return httpServer..listen(handleRequest);
   }
 
   /// Loads some base dependencies into the service container.
@@ -178,14 +178,13 @@ class Angel extends AngelBase {
     final req = await RequestContext.from(request, this);
     final res = new ResponseContext(request.response, this);
     String requestedUrl = request.uri
-        .toString()
-        .replaceAll("?" + request.uri.query, "")
+        .path
         .replaceAll(_straySlashes, '');
 
     if (requestedUrl.isEmpty) requestedUrl = '/';
 
     final route = resolve(requestedUrl, method: request.method);
-    print('Resolve ${requestedUrl} -> $route');
+    _printDebug('Resolved ${requestedUrl} -> $route');
     req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
 
     final handlerSequence = []..addAll(before);
@@ -331,8 +330,8 @@ class Angel extends AngelBase {
     bootstrapContainer();
     _serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
-          Platform.script.resolve('server_chain.pem').toFilePath();
-      var serverKey = Platform.script.resolve('server_key.pem').toFilePath();
+          Platform.script.resolve(certificateChainPath).toFilePath();
+      var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
       var serverContext = new SecurityContext();
       serverContext.useCertificateChain(certificateChain);
       serverContext.usePrivateKey(serverKey,
