@@ -177,7 +177,7 @@ class Route {
     Route result;
 
     if (path is RegExp) {
-      result = new Route(path, debug: debug);
+      result = new Route(path, debug: debug, handlers: handlers, method: method, name: name);
     } else {
       final segments = path
           .toString()
@@ -302,7 +302,7 @@ class Route {
 
   /// Generates a URI to this route with the given parameters.
   String makeUri([Map<String, dynamic> params]) {
-    String result = _pathified;
+    String result = _pathify(path);
     if (params != null) {
       for (String key in (params.keys)) {
         result = result.replaceAll(
@@ -323,8 +323,14 @@ class Route {
 
     Iterable<String> values =
         _parseParameters(requestPath.replaceAll(_straySlashes, ''));
+
+    _printDebug('Searched request path $requestPath and found these values: $values');
+
+    final pathString = _pathify(path).replaceAll(new RegExp('\/'), r'\/');
     Iterable<Match> matches =
-        _param.allMatches(_pathified.replaceAll(new RegExp('\/'), r'\/'));
+        _param.allMatches(pathString);
+    _printDebug('All param names parsed in $pathString: ${matches.map((m) => m.group(0))}');
+
     for (int i = 0; i < matches.length && i < values.length; i++) {
       Match match = matches.elementAt(i);
       String paramName = match.group(1);

@@ -8,7 +8,8 @@ part 'route.dart';
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _rgxEnd = new RegExp(r'\$+$');
 final RegExp _rgxStart = new RegExp(r'^\^+');
-final RegExp _rgxStraySlashes = new RegExp(r'(^((\\/)|(/))+)|(((\\/)|(/))+$)');
+final RegExp _rgxStraySlashes =
+    new RegExp(r'(^((\\+/)|(/))+)|(((\\+/)|(/))+$)');
 final RegExp _slashDollar = new RegExp(r'/+\$');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -28,8 +29,7 @@ class Router extends Extensible {
   /// Provide a `root` to make this Router revolve around a pre-defined route.
   /// Not recommended.
   Router({this.debug: false, Route root}) {
-    _root = (_root = root ?? new _RootRoute())
-      ..debug = debug;
+    _root = (_root = root ?? new _RootRoute())..debug = debug;
   }
 
   void _printDebug(msg) {
@@ -49,13 +49,12 @@ class Router extends Extensible {
 
     if (path is RegExp) {
       return root.child(path, debug: debug, handlers: handlers, method: method);
-    } else if (path
-        .toString()
-        .replaceAll(_straySlashes, '')
-        .isEmpty) {
+    } else {
+      // if (path.toString().replaceAll(_straySlashes, '').isEmpty || true) {
       return root.child(path.toString(),
           debug: debug, handlers: handlers, method: method);
-    } else {
+    }
+    /* else {
       var segments = path
           .toString()
           .split('/')
@@ -80,7 +79,7 @@ class Router extends Extensible {
             do {
               existing = result.resolve(segments[0],
                   filter: (route) =>
-                  route.method == method || route.method == '*');
+                      route.method == method || route.method == '*');
 
               if (existing != null) {
                 result = existing;
@@ -111,19 +110,21 @@ class Router extends Extensible {
       }
 
       return result..debug = debug;
-    }
+    } */
   }
 
   /// Creates a visual representation of the route hierarchy and
   /// passes it to a callback. If none is provided, `print` is called.
   void dumpTree(
-      {callback(String tree), header: 'Dumping route tree:', tab: '  '}) {
+      {callback(String tree),
+      header: 'Dumping route tree:',
+      tab: '  ',
+      showMatchers: false}) {
     var tabs = 0;
     final buf = new StringBuffer();
 
     void dumpRoute(Route route, {Pattern replace: null}) {
-      for (var i = 0; i < tabs; i++)
-        buf.write(tab);
+      for (var i = 0; i < tabs; i++) buf.write(tab);
 
       if (route == root)
         buf.writeln('(root)');
@@ -131,13 +132,17 @@ class Router extends Extensible {
         buf.write('- ${route.method} ');
 
         var p =
-        replace != null ? route.path.replaceAll(replace, '') : route.path;
+            replace != null ? route.path.replaceAll(replace, '') : route.path;
         p = p.replaceAll(_straySlashes, '');
 
         if (p.isEmpty)
           buf.write("'/'");
         else
           buf.write("'${p.replaceAll(_straySlashes, '')}'");
+
+        if (showMatchers) {
+          buf.write(' (matcher: ${route.matcher.pattern})');
+        }
 
         if (route.handlers.isNotEmpty)
           buf.writeln(' => ${route.handlers.length} handler(s)');
@@ -168,7 +173,7 @@ class Router extends Extensible {
       String name: null,
       String namespace: null}) {
     final route =
-    root.child(path, handlers: middleware, method: method, name: name);
+        root.child(path, handlers: middleware, method: method, name: name);
     final router = new Router(root: route);
     callback(router);
 
@@ -178,7 +183,7 @@ class Router extends Extensible {
     Map copiedMiddleware = new Map.from(router.requestMiddleware);
     for (String middlewareName in copiedMiddleware.keys) {
       requestMiddleware["$middlewarePrefix$middlewareName"] =
-      copiedMiddleware[middlewareName];
+          copiedMiddleware[middlewareName];
     }
 
     return route;
@@ -211,8 +216,7 @@ class Router extends Extensible {
 
   _resolve(Route ref, String fullPath, String method, String head,
       Iterable<String> tail) {
-    _printDebug(
-        '$method on $ref: path: $fullPath, head: $head, tail: ${tail.join(
+    _printDebug('$method $fullPath on $ref: head: $head, tail: ${tail.join(
             '/')}');
 
     // Does the index route match?
@@ -240,18 +244,8 @@ class Router extends Extensible {
         return index;
       }
     } else {
-      // Try to match children by full path
-      for (Route child in ref.children) {
-        if (child.matcher.hasMatch(fullPath)) {
-          final resolved = _resolve(child, fullPath, method, head, tail);
-
-          if (resolved != null) {
-            return resolved;
-          }
-        }
-      }
-
       // Now, let's check if any route's head matches the
+      // given head. If so, we try to resolve with that
       // given head. If so, we try to resolve with that
       // route, using a head corresponding to the one we
       // matched.
@@ -277,8 +271,21 @@ class Router extends Extensible {
           }
         } else if (child._head != null) {
           _printDebug(
-              'Head ${child._head
-                  .pattern} on $child failed to match $fullPath');
+              'Head ${child._head.pattern} on $child failed to match $fullPath');
+        }
+      }
+
+      // Try to match children by full path
+      for (Route child in ref.children) {
+        if (child.matcher.hasMatch(fullPath)) {
+          final resolved = _resolve(child, fullPath, method, head, tail);
+
+          if (resolved != null) {
+            return resolved;
+          }
+        } else {
+          _printDebug(
+              'Could not match full path $fullPath to matcher ${child.matcher.pattern}.');
         }
       }
     }
@@ -291,12 +298,12 @@ class Router extends Extensible {
     }
   }
 
-  /// Returns a new Router in which the route tree has been
-  /// flattened into a linear list.
-  Router flatten() {
-    final router = new Router();
+  /// Flattens the route tree into a linear list.
+  void flatten() {
+    final router = new Router(debug: debug);
+    normalize();
 
-    _flatten(Route route) {
+    _flatten(Route parent, Route route) {
       // if (route.children.isNotEmpty && route.method == '*') return;
 
       final r = new Route._base();
@@ -306,15 +313,34 @@ class Router extends Extensible {
         .._head = route._head
         .._matcher = route.matcher
         .._method = route.method
-        .._parent = router.root
-        .._path = route.path;
+        .._name = route.name
+        .._parent = route.parent // router.root
+        .._path = route
+            .path; //'${parent.path}/${route.path}'.replaceAll(_straySlashes, '');
+
+      // New matcher
+      final part1 = parent.matcher.pattern
+          .replaceAll(_rgxStart, '')
+          .replaceAll(_rgxEnd, '')
+          .replaceAll(_rgxStraySlashes, '')
+          .replaceAll(_straySlashes, '');
+      final part2 = route.matcher.pattern
+          .replaceAll(_rgxStart, '')
+          .replaceAll(_rgxEnd, '')
+          .replaceAll(_rgxStraySlashes, '')
+          .replaceAll(_straySlashes, '');
+
+      final m = '$part1\\/$part2'.replaceAll(_rgxStraySlashes, '');
+
+      //  r._matcher = new RegExp('^$m\$');
+      _printDebug('Matcher of flattened route: ${r.matcher.pattern}');
 
       router.root._children.add(r);
-      route.children.forEach(_flatten);
+      route.children.forEach((child) => _flatten(route, child));
     }
 
-    root._children.forEach(_flatten);
-    return router..debug = debug;
+    root._children.forEach((child) => _flatten(root, child));
+    _root = router.root;
   }
 
   /// Incorporates another [Router]'s routes into this one's.
@@ -335,7 +361,7 @@ class Router extends Extensible {
     Map copiedMiddleware = new Map.from(router.requestMiddleware);
     for (String middlewareName in copiedMiddleware.keys) {
       requestMiddleware["$middlewarePrefix$middlewareName"] =
-      copiedMiddleware[middlewareName];
+          copiedMiddleware[middlewareName];
     }
 
     // final route = root.addChild(router.root, join: false);
@@ -343,17 +369,36 @@ class Router extends Extensible {
     route.debug = debug;
 
     if (path is! RegExp) {
+      // Correct mounted path manually...
+      final clean = route.matcher.pattern
+          .replaceAll(_rgxStart, '')
+          .replaceAll(_rgxEnd, '')
+          .replaceAll(_rgxStraySlashes, '');
+      route._matcher = new RegExp('^$clean\$');
+
       final _path = path.toString().replaceAll(_straySlashes, '');
 
       _migrateRoute(Route r) {
         r._path = '$_path/${r.path}'.replaceAll(_straySlashes, '');
-        var stripped = r.matcher.pattern
+        var m = r.matcher.pattern
             .replaceAll(_rgxStart, '')
             .replaceAll(_rgxEnd, '')
             .replaceAll(_rgxStraySlashes, '')
             .replaceAll(_straySlashes, '');
-        stripped = '$_path/$stripped'.replaceAll(_straySlashes, '');
-        r._matcher = new RegExp('^$stripped\$');
+
+        final m1 = _matcherify(_path)
+            .replaceAll(_rgxStart, '')
+            .replaceAll(_rgxEnd, '')
+            .replaceAll(_rgxStraySlashes, '')
+            .replaceAll(_straySlashes, '');
+
+        m = '$m1/$m'
+            .replaceAll(_rgxStraySlashes, '')
+            .replaceAll(_straySlashes, '');
+
+        r._matcher = new RegExp('^$m\$');
+        _printDebug(
+            'New matcher on route in mounted router: ${r.matcher.pattern}');
 
         if (r._head != null) {
           final head = r._head.pattern
@@ -362,7 +407,9 @@ class Router extends Extensible {
               .replaceAll(_rgxStraySlashes, '')
               .replaceAll('\\/', '/')
               .replaceAll(_straySlashes, '');
-          r._head = new RegExp(_matcherify('$_path/$head').replaceAll(_rgxEnd, ''));
+          r._head = new RegExp(_matcherify('$_path/$head')
+              .replaceAll(_rgxEnd, '')
+              .replaceAll(_rgxStraySlashes, ''));
           _printDebug('Head of migrated route: ${r._head.pattern}');
         }
 
@@ -377,25 +424,30 @@ class Router extends Extensible {
   void normalize() {
     _printDebug('Normalizing route tree...');
 
-    _normalize(Route route) {
-      route.children.forEach(_normalize);
+    _normalize(Route route, int index) {
+      var merge = route.path.replaceAll(_straySlashes, '').isEmpty &&
+          route.children.isNotEmpty;
+      merge = merge || route.children.length == 1;
 
-      if (route.path
-          .replaceAll(_straySlashes, '')
-          .isEmpty &&
-          route.children.isNotEmpty) {
+      if (merge) {
         _printDebug('Erasing this route: $route');
         route.parent._handlers.addAll(route.handlers);
 
         for (Route child in route.children) {
-          route.parent._children.add(child.._parent = route.parent);
+          route.parent._children.insert(index, child.._parent = route.parent);
         }
 
         route.parent._children.remove(route);
       }
+
+      for (int i = 0; i < route.children.length; i++) {
+        _normalize(route.children[i], i);
+      }
     }
 
-    root.children.forEach(_normalize);
+    for (int i = 0; i < root.children.length; i++) {
+      _normalize(root.children[i], i);
+    }
   }
 
   /// Adds a route that responds to any request matching the given path.
