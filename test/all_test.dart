@@ -5,50 +5,60 @@ import 'package:http/http.dart' show Client;
 import 'package:test/test.dart';
 
 main() {
-  group('angel_static', () {
-    Angel angel;
-    String url;
-    Client client = new Client();
+  Angel app;
+  Directory testDir = new Directory('test');
+  String url;
+  Client client = new Client();
 
-    setUp(() async {
-      angel = new Angel();
-      angel.registerMiddleware(
-          "static", serveStatic(sourceDirectory: new Directory("test"),
-          indexFileNames: ['index.php', 'index.txt']));
-      angel.get('/virtual/*', "Fallback",
-          middleware: [serveStatic(sourceDirectory: new Directory("test"),
-              virtualRoot: '/virtual',
-              indexFileNames: ['index.txt'])
-          ]);
-      angel.get("*", "Fallback", middleware: ["static"]);
+  setUp(() async {
+    app = new Angel();
 
-      await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
-      url = "http://${angel.httpServer.address.host}:${angel.httpServer.port}";
-    });
+    app.mount(
+        '/virtual',
+        new VirtualDirectory(
+            debug: true,
+            source: testDir,
+            publicPath: '/virtual',
+            indexFileNames: ['index.txt']));
 
-    tearDown(() async {
-      await angel.httpServer.close(force: true);
-    });
+    app.mount(
+        '/',
+        new VirtualDirectory(
+            debug: true,
+            source: testDir,
+            indexFileNames: ['index.php', 'index.txt']));
 
-    test('can serve files, with correct Content-Type', () async {
-      var response = await client.get("$url/sample.txt");
-      expect(response.body, equals("Hello world"));
-      expect(response.headers[HttpHeaders.CONTENT_TYPE], equals("text/plain"));
-    });
+    app.get('*', 'Fallback');
+    app
+      ..normalize()
+      ..dumpTree();
 
-    test('non-existent files are skipped', () async {
-      var response = await client.get("$url/nonexist.ent");
-      expect(response.body, equals('"Fallback"'));
-    });
+    await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
+  });
 
-    test('can match index files', () async {
-      var response = await client.get(url);
-      expect(response.body, equals("index!"));
-    });
+  tearDown(() async {
+    await app.httpServer.close(force: true);
+  });
 
-    test('virtualRoots can match index', () async {
-      var response = await client.get("$url/virtual");
-      expect(response.body, equals("index!"));
-    });
+  test('can serve files, with correct Content-Type', () async {
+    var response = await client.get("$url/sample.txt");
+    expect(response.body, equals("Hello world"));
+    expect(response.headers[HttpHeaders.CONTENT_TYPE], equals("text/plain"));
+  });
+
+  test('non-existent files are skipped', () async {
+    var response = await client.get("$url/nonexist.ent");
+    expect(response.body, equals('"Fallback"'));
+  });
+
+  test('can match index files', () async {
+    var response = await client.get(url);
+    expect(response.body, equals("index!"));
+  });
+
+  test('virtualRoots can match index', () async {
+    var response = await client.get("$url/virtual");
+    expect(response.body, equals("index!"));
   });
 }
