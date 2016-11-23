@@ -177,7 +177,8 @@ class Route {
     Route result;
 
     if (path is RegExp) {
-      result = new Route(path, debug: debug, handlers: handlers, method: method, name: name);
+      result = new Route(path,
+          debug: debug, handlers: handlers, method: method, name: name);
     } else {
       final segments = path
           .toString()
@@ -253,7 +254,9 @@ class Route {
 
     parent._children.add(route
       .._matcher = new RegExp('$pattern1$separator$pattern2')
-      .._head = new RegExp(_matcherify('$path1/$path2'.replaceAll(_straySlashes, '')).replaceAll(_rgxEnd, ''))
+      .._head = new RegExp(
+          _matcherify('$path1/$path2'.replaceAll(_straySlashes, ''))
+              .replaceAll(_rgxEnd, ''))
       .._parent = parent
       .._stub = child.matcher);
 
@@ -300,6 +303,24 @@ class Route {
     return addChild(route);
   }
 
+  Route clone() {
+    final Route route = new Route('');
+
+    return route
+      .._children.addAll(children)
+      .._handlers.addAll(handlers)
+      .._head = _head
+      .._matcher = _matcher
+      .._method = _method
+      .._name = name
+      .._parent = _parent
+      .._parentResolver = _parentResolver
+      .._pathified = _pathified
+      .._resolver = _resolver
+      .._stub = _stub
+      ..state.properties.addAll(state.properties);
+  }
+
   /// Generates a URI to this route with the given parameters.
   String makeUri([Map<String, dynamic> params]) {
     String result = _pathify(path);
@@ -324,12 +345,13 @@ class Route {
     Iterable<String> values =
         _parseParameters(requestPath.replaceAll(_straySlashes, ''));
 
-    _printDebug('Searched request path $requestPath and found these values: $values');
+    _printDebug(
+        'Searched request path $requestPath and found these values: $values');
 
     final pathString = _pathify(path).replaceAll(new RegExp('\/'), r'\/');
-    Iterable<Match> matches =
-        _param.allMatches(pathString);
-    _printDebug('All param names parsed in $pathString: ${matches.map((m) => m.group(0))}');
+    Iterable<Match> matches = _param.allMatches(pathString);
+    _printDebug(
+        'All param names parsed in $pathString: ${matches.map((m) => m.group(0))}');
 
     for (int i = 0; i < matches.length && i < values.length; i++) {
       Match match = matches.elementAt(i);

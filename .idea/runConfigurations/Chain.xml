@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Chain" type="DartTestRunConfigurationType" factoryName="Dart Test" folderName="Router Tests" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/chain/all_test.dart" />
+    <method />
+  </configuration>
+</component>

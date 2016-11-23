@@ -113,6 +113,24 @@ class Router extends Extensible {
     } */
   }
 
+  /// Returns a [Router] with a duplicated version of this tree.
+  Router clone({bool normalize: true}) {
+    final router = new Router(debug: debug);
+
+    _copy(Route route, Route parent) {
+      final r = route.clone();
+      parent._children.add(r.._parent = parent);
+
+      route.children.forEach((child) => _copy(child, r));
+    }
+
+    root.children.forEach((child) => _copy(child, router.root));
+
+    if (normalize) router.normalize();
+
+    return router;
+  }
+
   /// Creates a visual representation of the route hierarchy and
   /// passes it to a callback. If none is provided, `print` is called.
   void dumpTree(
@@ -151,8 +169,7 @@ class Router extends Extensible {
       }
 
       tabs++;
-      route.children
-          .forEach((r) => dumpRoute(r, replace: route.path));
+      route.children.forEach((r) => dumpRoute(r, replace: route.path));
       tabs--;
     }
 
@@ -208,6 +225,30 @@ class Router extends Extensible {
     final segments = _path.split('/').where((str) => str.isNotEmpty);
     _printDebug('Segments: $segments');
     return _resolve(root, _path, method, segments.first, segments.skip(1));
+  }
+
+  /// Finds every possible [Route] that matches the given path,
+  /// with the given method.
+  ///
+  /// This is preferable to [resolve].
+  /// Keep in mind that this function uses either a [linearClone] or a [clone], and thus
+  /// will not return the same exact routes from the original tree.
+  Iterable<Route> resolveAll(String path,
+      {bool linear: true, String method: 'GET', bool normalizeClone: true}) {
+    final router = linear
+        ? linearClone(normalize: normalizeClone)
+        : clone(normalize: normalizeClone);
+    final routes = [];
+    var resolved = router.resolve(path, method: method);
+
+    while (resolved != null) {
+      routes.add(resolved);
+      router.root._children.remove(resolved);
+
+      resolved = router.resolve(path, method: method);
+    }
+
+    return routes.where((route) => route != null);
   }
 
   _validHead(RegExp rgx) {
@@ -298,10 +339,16 @@ class Router extends Extensible {
     }
   }
 
-  /// Flattens the route tree into a linear list.
+  /// Flattens the route tree into a linear list, in-place.
   void flatten() {
+    _root = linearClone().root;
+  }
+
+  /// Returns a [Router] with a linear version of this tree.
+  Router linearClone({bool normalize: true}) {
     final router = new Router(debug: debug);
-    normalize();
+
+    if (normalize) this.normalize();
 
     _flatten(Route parent, Route route) {
       // if (route.children.isNotEmpty && route.method == '*') return;
@@ -315,8 +362,7 @@ class Router extends Extensible {
         .._method = route.method
         .._name = route.name
         .._parent = route.parent // router.root
-        .._path = route
-            .path; //'${parent.path}/${route.path}'.replaceAll(_straySlashes, '');
+        .._path = route.path;
 
       // New matcher
       final part1 = parent.matcher.pattern
@@ -340,7 +386,7 @@ class Router extends Extensible {
     }
 
     root._children.forEach((child) => _flatten(root, child));
-    _root = router.root;
+    return router;
   }
 
   /// Incorporates another [Router]'s routes into this one's.
@@ -431,10 +477,11 @@ class Router extends Extensible {
 
       if (merge) {
         _printDebug('Erasing this route: $route');
-        route.parent._handlers.addAll(route.handlers);
+        // route.parent._handlers.addAll(route.handlers);
 
         for (Route child in route.children) {
           route.parent._children.insert(index, child.._parent = route.parent);
+          child._handlers.insertAll(0, route.handlers);
         }
 
         route.parent._children.remove(route);
