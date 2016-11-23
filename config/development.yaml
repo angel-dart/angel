@@ -1,2 +1,2 @@
 # Development-only server configuration.
-port: 3000
+debug: true

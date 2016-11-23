@@ -1,2 +1,2 @@
 # Production-only server configuration
-port: 80
+debug: false

@@ -10,7 +10,7 @@ configureBefore(Angel app) async {}
 /// Put your app routes here!
 configureRoutes(Angel app) async {
   app.get('/', (req, ResponseContext res) => res.render('hello'));
-  app.all('*', serveStatic());
+  app.all('*', new VirtualDirectory());
 }
 
 configureAfter(Angel app) async {

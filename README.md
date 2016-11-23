@@ -3,7 +3,7 @@ An easily-extensible web server framework in Dart.
 
 [Wiki](https://github.com/angel-dart/angel/wiki)
 
-[API Documentation](http://www.dartdocs.org/documentation/angel_framework/1.0.0-dev)
+[API Documentation](http://www.dartdocs.org/documentation/angel_framework/latest)
 
 # About
 
@@ -25,18 +25,20 @@ Thus, the third, and perhaps most important goal of the Angel framework is to be
 
 Angel also prioritizes tooling. The app boilerplate is pre-fitted with all the plugins and configuration you need to launch an MVP in a matter of days. There is also Swagger code generator in the works. The rest is just implementation detail for you. No need to worry about the following:
 
-* Mustache
-* MongoDB
-* Seeding
+* [Mustache](https://github.com/angel-dart/mustache)
+* [MongoDB](https://github.com/angel-dart/mongo)
+* [Seeding](https://github.com/angel-dart/seeder)
 * Angular2 Client
-* Static File Server
-* Load Balancing
-* Authentication
-* REST and WebSockets (client and server)
-* Server daemon
-* Command-line code generators
-* Diagnostics and Logging
-* Configuration (client and server)
+* [Static File Server](https://github.com/angel-dart/static)
+* [Proxy Forwarding](https://github.com/angel-dart/proxy)
+* [Load Balancing](https://github.com/angel-dart/multiserver)
+* [Authentication](https://github.com/angel-dart/auth)
+* [REST](https://github.com/angel-dart/client) (client and server)
+* [WebSockets](https://github.com/angel-dart/websocket) (client and server)
+* [Server daemon](https://github.com/angel-dart/dartd)
+* [Command-line code generators](https://github.com/angel-dart/cli)
+* [Diagnostics and Logging](https://github.com/angel-dart/diagnostics)
+* [Configuration](https://github.com/angel-dart/configuration) (client and server)
 
 It's all taken care of for you.
 
@@ -56,6 +58,6 @@ Thank you for using this library. I hope you like it. I have put months of effor
 into Angel.
 
 Feel free to follow me on Twitter:
-[@thosakwe](http://twitter.com/thosakwe)
+[@_wapaa_](http://twitter.com/_wapaa_)
 
-Or, check out [my blog](http://blog.thosakwe.com)
+Or, check out [my blog](http://blog.thosakwe.com).
