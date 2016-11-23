@@ -7,7 +7,7 @@ class PubServeLayer extends ProxyLayer {
       {bool debug: false,
       String host: 'localhost',
       String mapTo: '/',
-      int port: 8888,
+      int port: 8080,
       String publicPath: '/'})
       : super(host, port, debug: debug, mapTo: mapTo, publicPath: publicPath);
 
