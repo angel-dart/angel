@@ -260,8 +260,8 @@ class Route {
       .._parent = parent
       .._stub = child.matcher);
 
-    parent._printDebug(
-        "Joined '/$path1' and '/$path2', created head: ${route._head.pattern} and stub: ${route._stub.pattern}");
+    /*parent._printDebug(
+        "Joined '/$path1' and '/$path2', created head: ${route._head.pattern} and stub: ${route._stub.pattern}");*/
 
     return route..debug = parent.debug || child.debug || debug;
   }
