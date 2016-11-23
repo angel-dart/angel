@@ -37,7 +37,7 @@ main() {
     expect(lower.resolve('../upper').path, equals('letter/:id/upper'));
     expect(lower.resolve('/user/34/detail'), equals(deleteUserById));
     expect(deleteUserById.resolve('../../fizz'), equals(fizz));
-  });
+  }, skip: 'Hierarchy is deprecated.');
 
   test('resolve', () {
     expect(router.resolveOnRoot('/'), equals(indexRoute));

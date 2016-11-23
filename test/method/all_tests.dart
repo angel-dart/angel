@@ -114,7 +114,7 @@ main() {
 
   test('flatten', () {
     router.dumpTree(header: 'BEFORE FLATTENING:');
-    final flat = router.flatten();
+    final flat = router..flatten();
 
     for (Route route in flat.root.children) {
       print('${route.method} ${route.path} => ${route.matcher.pattern}');
