@@ -21,8 +21,8 @@ class LocalAuthStrategy extends AuthStrategy {
   String usernameField;
   String passwordField;
   String invalidMessage;
-  bool allowBasic;
-  bool forceBasic;
+  final bool allowBasic;
+  final bool forceBasic;
   String realm;
 
   LocalAuthStrategy(LocalAuthVerifier this.verifier,
@@ -32,7 +32,8 @@ class LocalAuthStrategy extends AuthStrategy {
           'Please provide a valid username and password.',
       bool this.allowBasic: true,
       bool this.forceBasic: false,
-      String this.realm: 'Authentication is required.'}) {}
+      String this.realm: 'Authentication is required.'}) {
+  }
 
   @override
   Future<bool> canLogout(RequestContext req, ResponseContext res) async {
@@ -47,6 +48,7 @@ class LocalAuthStrategy extends AuthStrategy {
 
     if (allowBasic) {
       String authHeader = req.headers.value(HttpHeaders.AUTHORIZATION) ?? "";
+
       if (_rgxBasic.hasMatch(authHeader)) {
         String base64AuthString = _rgxBasic.firstMatch(authHeader).group(1);
         String authString =

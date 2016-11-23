@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 
@@ -16,7 +15,7 @@ class RequireAuthorizationMiddleware extends BaseMiddleware {
         return false;
     }
 
-    if (req.properties.containsKey('user'))
+    if (req.properties.containsKey('user') || req.method == 'OPTIONS')
       return true;
     else
       return _reject(res);

@@ -18,6 +18,8 @@ class AngelAuth extends AngelPlugin {
   final RegExp _rgxBearer = new RegExp(r"^Bearer");
   RequireAuthorizationMiddleware _requireAuth =
       new RequireAuthorizationMiddleware();
+  final bool allowCookie;
+  final bool allowTokenInQuery;
   String middlewareName;
   bool debug;
   bool enforceIp;
@@ -40,6 +42,8 @@ class AngelAuth extends AngelPlugin {
   AngelAuth(
       {String jwtKey,
       num jwtLifeSpan,
+      this.allowCookie: true,
+      this.allowTokenInQuery: true,
       this.debug: false,
       this.enforceIp: true,
       this.middlewareName: 'auth',
@@ -54,49 +58,74 @@ class AngelAuth extends AngelPlugin {
     app.container.singleton(this);
     if (runtimeType != AngelAuth) app.container.singleton(this, as: AngelAuth);
 
-    app.before.add(_decodeJwt);
+    app.before.add(decodeJwt);
     app.registerMiddleware(middlewareName, _requireAuth);
 
     if (reviveTokenEndpoint != null) {
-      app.post(reviveTokenEndpoint, _reviveJwt);
+      app.post(reviveTokenEndpoint, reviveJwt);
     }
   }
 
-  _decodeJwt(RequestContext req, ResponseContext res) async {
+  decodeJwt(RequestContext req, ResponseContext res) async {
     if (req.method == "POST" && req.path == reviveTokenEndpoint) {
       // Shouldn't block invalid JWT if we are reviving it
-
-      if (debug)
-        print('Token revival endpoint accessed.');
-
-      return await _reviveJwt(req, res);
+      if (debug) print('Token revival endpoint accessed.');
+      return await reviveJwt(req, res);
     }
 
-    String jwt = _getJwt(req);
+    if (debug) {
+      print('Enforcing JWT authentication...');
+    }
+
+    String jwt = getJwt(req);
+
+    if (debug) {
+      print('Found JWT: $jwt');
+    }
 
     if (jwt != null) {
       var token = new AuthToken.validate(jwt, _hs256);
 
+      if (debug) {
+        print('Decoded auth token: ${token.toJson()}');
+      }
+
       if (enforceIp) {
-        if (req.ip != token.ipAddress)
+        if (debug) {
+          print(
+              'Token IP: ${token.ipAddress}. Current request sent from: ${req.ip}');
+        }
+
+        if (req.ip != null && req.ip != token.ipAddress)
           throw new AngelHttpException.Forbidden(
               message: "JWT cannot be accessed from this IP address.");
       }
 
       if (token.lifeSpan > -1) {
+        if (debug) {
+          print("Making sure this token hasn't already expired...");
+        }
+
         token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
 
         if (!token.issuedAt.isAfter(new DateTime.now()))
           throw new AngelHttpException.Forbidden(message: "Expired JWT.");
+      } else if (debug) {
+        print('This token has an infinite life span.');
       }
 
+      if (debug) {
+        print('Now deserializing from this userId: ${token.userId}');
+      }
+
+      req.inject(AuthToken, req.properties['token'] = token);
       req.properties["user"] = await deserializer(token.userId);
     }
 
     return true;
   }
 
-  _getJwt(RequestContext req) {
+  getJwt(RequestContext req) {
     if (debug) {
       print('Attempting to parse JWT');
     }
@@ -106,39 +135,40 @@ class AngelAuth extends AngelPlugin {
         print('Found Auth header');
       }
 
-      return req.headers
-          .value("Authorization")
-          .replaceAll(_rgxBearer, "")
-          .trim();
+      final authHeader = req.headers.value("Authorization");
+
+      // Allow Basic auth to fall through
+      if (_rgxBearer.hasMatch(authHeader))
+        return authHeader.replaceAll(_rgxBearer, "").trim();
     } else if (req.cookies.any((cookie) => cookie.name == "token")) {
       print('Request has "token" cookie...');
       return req.cookies.firstWhere((cookie) => cookie.name == "token").value;
+    } else if (allowTokenInQuery && req.query['token'] is String) {
+      return req.query['token'];
     }
 
     return null;
   }
 
-  _reviveJwt(RequestContext req, ResponseContext res) async {
+  reviveJwt(RequestContext req, ResponseContext res) async {
     try {
-      if (debug)
-      print('Attempting to revive JWT...');
+      if (debug) print('Attempting to revive JWT...');
 
-      var jwt = _getJwt(req);
+      var jwt = getJwt(req);
 
-      if (debug)
-      print('Found JWT: $jwt');
+      if (debug) print('Found JWT: $jwt');
 
       if (jwt == null) {
         throw new AngelHttpException.Forbidden(message: "No JWT provided");
       } else {
         var token = new AuthToken.validate(jwt, _hs256);
 
-        if (debug)
-        print('Validated and deserialized: $token');
+        if (debug) print('Validated and deserialized: $token');
 
         if (enforceIp) {
           if (debug)
-          print('Token IP: ${token.ipAddress}. Current request sent from: ${req.ip}');
+            print(
+                'Token IP: ${token.ipAddress}. Current request sent from: ${req.ip}');
 
           if (req.ip != token.ipAddress)
             throw new AngelHttpException.Forbidden(
@@ -147,19 +177,21 @@ class AngelAuth extends AngelPlugin {
 
         if (token.lifeSpan > -1) {
           if (debug) {
-            print('Checking if token has expired... Life span is ${token.lifeSpan}');
+            print(
+                'Checking if token has expired... Life span is ${token.lifeSpan}');
           }
 
           token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
 
           if (!token.issuedAt.isAfter(new DateTime.now())) {
-            print('Token has indeed expired! Resetting assignment date to current timestamp...');
+            print(
+                'Token has indeed expired! Resetting assignment date to current timestamp...');
             // Extend its lifespan by changing iat
             token.issuedAt = new DateTime.now();
           } else if (debug) {
             print('Token has not expired yet.');
           }
-        } else if(debug) {
+        } else if (debug) {
           print('This token never expires, so it is still valid.');
         }
 
@@ -193,9 +225,12 @@ class AngelAuth extends AngelPlugin {
         var userId = await serializer(result);
 
         // Create JWT
-        var jwt = new AuthToken(userId: userId, lifeSpan: _jwtLifeSpan)
+        var jwt = new AuthToken(
+                userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip)
             .serialize(_hs256);
-        req.cookies.add(new Cookie("token", jwt));
+        req.inject(AuthToken, jwt);
+
+        if (allowCookie) req.cookies.add(new Cookie("token", jwt));
 
         if (req.headers.value("accept") != null &&
             (req.headers.value("accept").contains("application/json") ||
