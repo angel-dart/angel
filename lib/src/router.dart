@@ -242,10 +242,14 @@ class Router extends Extensible {
     var resolved = router.resolve(path, method: method);
 
     while (resolved != null) {
-      routes.add(resolved);
-      router.root._children.remove(resolved);
+      try {
+        routes.add(resolved);
+        router.root._children.remove(resolved);
 
-      resolved = router.resolve(path, method: method);
+        resolved = router.resolve(path, method: method);
+      } catch (e) {
+        break;
+      }
     }
 
     return routes.where((route) => route != null);

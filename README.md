@@ -1,6 +1,6 @@
 # angel_route
 
-![version 1.0.0-dev+10](https://img.shields.io/badge/version-1.0.0--dev+10-red.svg)
+![version 1.0.0-dev+11](https://img.shields.io/badge/version-1.0.0--dev+11-red.svg)
 ![build status](https://travis-ci.org/angel-dart/route.svg)
 
 A powerful, isomorphic routing library for Dart.
