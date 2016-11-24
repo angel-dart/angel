@@ -224,7 +224,7 @@ class Router extends Extensible {
     final String _path = path.replaceAll(_straySlashes, '');
     final segments = _path.split('/').where((str) => str.isNotEmpty);
     _printDebug('Segments: $segments');
-    return _resolve(root, _path, method, segments.first, segments.skip(1));
+    return _resolve(root, _path, method, segments.isNotEmpty ? segments.first : '', segments.skip(1));
   }
 
   /// Finds every possible [Route] that matches the given path,
