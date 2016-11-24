@@ -58,8 +58,6 @@ class ServiceCommand extends Command {
     var servicesDir = new Directory("lib/src/services");
     var serviceFile =
         new File.fromUri(servicesDir.uri.resolve("${name.toLowerCase()}.dart"));
-    var serviceLibrary =
-        new File.fromUri(servicesDir.uri.resolve("services.dart"));
     var testDir = new Directory("test/services");
     var testFile = new File.fromUri(
         testDir.uri.resolve("${name.toLowerCase()}_test.dart"));
@@ -69,8 +67,13 @@ class ServiceCommand extends Command {
     if (!await testDir.exists()) await testDir.create(recursive: true);
 
     await serviceFile.writeAsString(serviceSource);
-    await serviceLibrary.writeAsString("\nexport '${name.toLowerCase()}.dart';",
-        mode: FileMode.APPEND);
+
+    if (type == MONGO_TYPED) {
+      var serviceLibrary = new File("lib/src/models/models.dart");
+      await serviceLibrary.writeAsString(
+          "\nexport '${name.toLowerCase()}.dart';",
+          mode: FileMode.APPEND);
+    }
 
     await testFile.writeAsString(_generateTests(name, type));
 
