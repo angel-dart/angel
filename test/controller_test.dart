@@ -28,10 +28,8 @@ class TodoController extends Controller {
 main() {
   Angel app;
   HttpServer server;
-  InternetAddress host = InternetAddress.LOOPBACK_IP_V4;
-  int port = 3000;
-  http.Client client;
-  String url = "http://${host.address}:$port";
+  http.Client client = new http.Client();
+  String url;
 
   setUp(() async {
     app = new Angel();
@@ -46,15 +44,14 @@ main() {
     print(app.controllers);
     app.dumpTree();
 
-    server = await app.startServer(host, port);
-    client = new http.Client();
+    server = await app.startServer();
+    url = 'http://${server.address.address}:${server.port}';
   });
 
   tearDown(() async {
     await server.close(force: true);
     app = null;
-    client.close();
-    client = null;
+    url = null;
   });
 
   test("middleware", () async {

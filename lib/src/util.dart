@@ -21,6 +21,4 @@ getAnnotation(obj, Type T) {
     ClassMirror classMirror = reflectClass(obj.runtimeType);
     return matchingAnnotation(classMirror.metadata, T);
   }
-
-  return null;
 }

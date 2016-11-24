@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math' show Random;
 import 'dart:mirrors';
 import 'package:json_god/json_god.dart' as god;
+import 'package:shelf/shelf.dart' as shelf;
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
@@ -13,6 +14,7 @@ import 'response_context.dart';
 import 'routable.dart';
 import 'service.dart';
 export 'package:container/container.dart';
+part 'server_shelved.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -33,8 +35,8 @@ class Angel extends AngelBase {
   var _fatalErrorStream = new StreamController<Map>.broadcast();
   var _onController = new StreamController<Controller>.broadcast();
   final Random _rand = new Random.secure();
-  ServerGenerator _serverGenerator =
-      (address, port) async => await HttpServer.bind(address, port);
+
+  ServerGenerator _serverGenerator = HttpServer.bind;
 
   /// Fired after a request is processed. Always runs.
   Stream<HttpRequest> get afterProcessed => _afterProcessed.stream;
@@ -183,12 +185,9 @@ class Angel extends AngelBase {
 
     if (requestedUrl.isEmpty) requestedUrl = '/';
 
-    final resolved = [];
+    final resolved = resolveAll(requestedUrl, method: request.method);
 
-    if (requestedUrl == '/') {
-      resolved.add(root.indexRoute);
-    } else {
-      resolved.addAll(resolveAll(requestedUrl, method: request.method));
+    if (resolved.isNotEmpty) {
       final route = resolved.first;
       req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
       req.inject(Match, route.match(requestedUrl));
