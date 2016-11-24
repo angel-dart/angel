@@ -11,10 +11,11 @@ class ServiceCommand extends Command {
   final String TRESTLE = "Trestle";
   final TextPen _pen = new TextPen();
 
-  @override String get name => "service";
+  @override
+  String get name => "service";
 
-  @override String get description =>
-      "Creates a new service within the given project.";
+  @override
+  String get description => "Creates a new service within the given project.";
 
   @override
   run() async {
@@ -34,9 +35,9 @@ class ServiceCommand extends Command {
     if (type == MONGO) {
       serviceSource = _generateMongoService(name);
     } else if (type == MONGO_TYPED) {
-      _pen.blue();
-      _pen("${Icon.STAR} To create a typed Mongo service, please create a schema using 'angel schema'.");
-      _pen();
+      serviceSource = _generateMongoTypedService(name);
+
+      await _generateMongoModel(name);
     } else if (type == MEMORY) {
       serviceSource = _generateMemoryService(name);
     } else if (type == CUSTOM) {
@@ -50,31 +51,35 @@ class ServiceCommand extends Command {
     }
 
     if (serviceSource.isEmpty) {
-      if (type == MONGO_TYPED)
-        return;
-
       fail();
       throw new Exception("Empty generated service code.");
     }
 
     var servicesDir = new Directory("lib/src/services");
-    var serviceFile = new File.fromUri(servicesDir.uri.resolve("${name.toLowerCase()}.dart"));
-    var serviceLibrary = new File.fromUri(
-        servicesDir.uri.resolve("services.dart"));
+    var serviceFile =
+        new File.fromUri(servicesDir.uri.resolve("${name.toLowerCase()}.dart"));
+    var serviceLibrary =
+        new File.fromUri(servicesDir.uri.resolve("services.dart"));
     var testDir = new Directory("test/services");
-    var testFile = new File.fromUri(testDir.uri.resolve("${name.toLowerCase()}.dart"));
+    var testFile = new File.fromUri(
+        testDir.uri.resolve("${name.toLowerCase()}_test.dart"));
 
-    if (!await servicesDir.exists())
-      await servicesDir.create(recursive: true);
+    if (!await servicesDir.exists()) await servicesDir.create(recursive: true);
 
-    if (!await testDir.exists())
-      await testDir.create(recursive: true);
+    if (!await testDir.exists()) await testDir.create(recursive: true);
 
     await serviceFile.writeAsString(serviceSource);
-    await serviceLibrary.writeAsString(
-        "\nexport '${name.toLowerCase()}.dart';", mode: FileMode.APPEND);
+    await serviceLibrary.writeAsString("\nexport '${name.toLowerCase()}.dart';",
+        mode: FileMode.APPEND);
 
     await testFile.writeAsString(_generateTests(name, type));
+
+    final runConfig = new File('./.idea/runConfigurations/${name}_tests.xml');
+
+    if (!await runConfig.exists()) {
+      await runConfig.create(recursive: true);
+      await runConfig.writeAsString(_generateRunConfiguration(name));
+    }
 
     _pen.green();
     _pen("${Icon.CHECKMARK} Successfully generated service $name.");
@@ -90,7 +95,8 @@ class ${name}Service extends Service {
     // Your logic here!
   }
 }
-    '''.trim();
+    '''
+        .trim();
   }
 
   _generateMemoryService(String name) {
@@ -108,19 +114,112 @@ class ${name}Service extends MemoryService<$name> {
     // Your logic here!
   }
 }
-    '''.trim();
+    '''
+        .trim();
+  }
+
+  _generateMongoModel(String name) async {
+    final lower = name.toLowerCase();
+    final file = new File('lib/src/models/$lower.dart');
+
+    if (!await file.exists()) await file.createSync(recursive: true);
+
+    await file.writeAsString('''
+library angel.models.$lower;
+
+import 'dart:convert';
+import 'package:angel_mongo/model.dart';
+
+class $name extends Model {
+  String name, desc;
+
+  $name({this.name, this.desc});
+
+  factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
+
+  factory $name.fromMap(Map data) => new $name(
+      name: data["name"],
+      desc: data["desc"]);
+
+  Map toJson() {
+    return {
+      "name": name,
+      "desc": desc
+    };
+  }
+}
+    '''
+        .trim());
   }
 
   _generateMongoService(String name) {
-    return '''
-import 'package:angel_mongo/angel_mongo.dart';
+    final lower = name.toLowerCase();
 
+    return '''
+import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_mongo/angel_mongo.dart';
+import 'package:mongo_dart/mongo_dart.dart';
+
+configureServer(Db db) {
+  return (Angel app) async {
+    app.use("/api/${lower}s", new ${name}Service(db.collection("${lower}s")));
+
+    HookedService service = app.service("api/${lower}s");
+    app.container.singleton(service.inner);
+  };
+}
+
+/// Manages [$name] in the database.
 class ${name}Service extends MongoService {
   ${name}Service(collection):super(collection) {
     // Your logic here!
   }
 }
-    '''.trim();
+    '''
+        .trim();
+  }
+
+  _generateMongoTypedService(String name) {
+    final lower = name.toLowerCase();
+
+    return '''
+import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_mongo/angel_mongo.dart';
+import 'package:mongo_dart/mongo_dart.dart';
+import '../models/$lower.dart';
+export '../models/$lower.dart';
+
+configureServer(Db db) {
+  return (Angel app) async {
+    app.use("/api/${lower}s", new ${name}Service(db.collection("${lower}s")));
+
+    HookedService service = app.service("api/${lower}s");
+    app.container.singleton(service.inner);
+  };
+}
+
+/// Manages [$name] in the database.
+class ${name}Service extends MongoTypedService<$name> {
+  ${name}Service(collection):super(collection) {
+    // Your logic here!
+  }
+}
+    '''
+        .trim();
+  }
+
+  _generateRunConfiguration(String name) {
+    final lower = name.toLowerCase();
+
+    return '''
+    <component name="ProjectRunConfigurationManager">
+      <configuration default="false" name="$name Tests" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true">
+        <option name="filePath" value="\$PROJECT_DIR\$/test/services/${lower}_test.dart" />
+        <method />
+      </configuration>
+    </component>
+'''
+        .trim();
   }
 
   _generateTests(String name, String type) {
@@ -169,7 +268,8 @@ main() {
     });
   });
 }
-    '''.trim();
+    '''
+        .trim();
   }
 
   _createDb(String type) {
