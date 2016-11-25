@@ -343,7 +343,7 @@ class Route {
     Map result = {};
 
     Iterable<String> values =
-        _parseParameters(requestPath.replaceAll(_straySlashes, ''));
+    _parseParameters(requestPath.replaceAll(_straySlashes, ''));
 
     _printDebug(
         'Searched request path $requestPath and found these values: $values');
@@ -351,7 +351,7 @@ class Route {
     final pathString = _pathify(path).replaceAll(new RegExp('\/'), r'\/');
     Iterable<Match> matches = _param.allMatches(pathString);
     _printDebug(
-        'All param names parsed in $pathString: ${matches.map((m) => m.group(0))}');
+        'All param names parsed in "$pathString": ${matches.map((m) => m.group(0))}');
 
     for (int i = 0; i < matches.length && i < values.length; i++) {
       Match match = matches.elementAt(i);
@@ -487,7 +487,7 @@ class Route {
 
         if (match != null) {
           final subPath =
-              path.replaceFirst(match[0], '').replaceAll(_straySlashes, '');
+          path.replaceFirst(match[0], '').replaceAll(_straySlashes, '');
           _printDebug("Subdir path: $subPath");
 
           for (Route child in route.children) {
@@ -510,12 +510,12 @@ class Route {
         _printDebug(
             'Trying to match full $_fullPath for ${route.path} on ${this.path}');
         if ((route.match(_fullPath) != null ||
-                route._resolver.firstMatch(_fullPath) != null) &&
+            route._resolver.firstMatch(_fullPath) != null) &&
             _filter(route)) {
           _printDebug('Matched full path!');
           return route.resolve('');
         } else if ((route.match('/$_fullPath') != null ||
-                route._resolver.firstMatch('/$_fullPath') != null) &&
+            route._resolver.firstMatch('/$_fullPath') != null) &&
             _filter(route)) {
           _printDebug('Matched full path (with a leading slash!)');
           return route.resolve('');

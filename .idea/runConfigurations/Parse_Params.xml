@@ -1,6 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Parse Params" type="DartTestRunConfigurationType" factoryName="Dart Test" folderName="Route Tests" singleton="true">
-    <option name="filePath" value="$PROJECT_DIR$/test/route/parse_params.dart" />
-    <method />
-  </configuration>
-</component>
