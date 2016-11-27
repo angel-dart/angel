@@ -7,12 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
-      <excludeFolder url="file://$MODULE_DIR$/test/chain/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/test/method/packages" />
       <excludeFolder url="file://$MODULE_DIR$/test/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/test/route/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/test/router/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/test/server/packages" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/web/hash/packages" />
       <excludeFolder url="file://$MODULE_DIR$/web/packages" />

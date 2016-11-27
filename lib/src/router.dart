@@ -138,8 +138,8 @@ class Router extends Extensible {
       {Iterable middleware: const [],
       String name: null,
       String namespace: null}) {
-    final router = new Router(debug: debug).._middleware.addAll(middleware);
-    callback(router);
+    final router = new Router().._middleware.addAll(middleware);
+    callback(router..debug = debug);
 
     return mount(path, router, namespace: namespace).._name = name;
   }
@@ -257,29 +257,35 @@ class Router extends Extensible {
 
     for (Route route in routes) {
       if (route is SymlinkRoute && route._head != null && segments.isNotEmpty) {
-        final match = route._head.firstMatch(segments.first);
+        final s = [];
 
-        if (match != null) {
-          final cleaned = segments.first.replaceFirst(match[0], '');
-          final tail = cleanRelative
-              .replaceAll(route._head, '')
-              .replaceAll(_straySlashes, '');
+        for (String seg in segments) {
+          s.add(seg);
+          final match = route._head.firstMatch(s.join('/'));
 
-          if (cleaned.isEmpty) {
-            _printDebug('Matched relative "$cleanRelative" to head ${route._head
-                    .pattern} on $route. Tail: "$tail"');
-            route.router.debug = route.router.debug || debug;
-            final nested =
-                route.router.resolve(cleanAbsolute, tail, method: method);
-            return _dumpResult(
-                cleanRelative,
-                new RoutingResult(
-                    match: match,
-                    nested: nested,
-                    params: route.parseParameters(cleanRelative),
-                    shallowRoute: route,
-                    shallowRouter: this,
-                    tail: tail));
+          if (match != null) {
+            final cleaned = s.join('/').replaceFirst(match[0], '');
+            final tail = cleanRelative
+                .replaceAll(route._head, '')
+                .replaceAll(_straySlashes, '');
+
+            if (cleaned.isEmpty) {
+              _printDebug(
+                  'Matched relative "$cleanRelative" to head ${route._head
+                  .pattern} on $route. Tail: "$tail"');
+              route.router.debug = route.router.debug || debug;
+              final nested =
+                  route.router.resolve(cleanAbsolute, tail, method: method);
+              return _dumpResult(
+                  cleanRelative,
+                  new RoutingResult(
+                      match: match,
+                      nested: nested,
+                      params: route.parseParameters(match[0]),
+                      shallowRoute: route,
+                      shallowRouter: this,
+                      tail: tail));
+            }
           }
         }
       }
@@ -317,11 +323,7 @@ class Router extends Extensible {
     var result = router.resolve(absolute, relative, method: method);
 
     while (result != null) {
-      if (!results.contains(result))
-        results.add(result);
-      else
-        break;
-
+      results.add(result);
       result.router._routes.remove(result.route);
       result = router.resolve(absolute, relative, method: method);
     }
@@ -352,7 +354,8 @@ class Router extends Extensible {
           copiedMiddleware[middlewareName];
     }
 
-    final route = new SymlinkRoute(path, path, router);
+    final route =
+        new SymlinkRoute(path, path, router..debug = debug || router.debug);
     _mounted[route.path] = router;
     _routes.add(route);
     route._head = new RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));

@@ -1,6 +1,6 @@
 # angel_route
 
-![version 1.0.0-dev+14](https://img.shields.io/badge/version-1.0.0--dev+14-red.svg)
+![version 1.0.0-dev+15](https://img.shields.io/badge/version-1.0.0--dev+15-red.svg)
 ![build status](https://travis-ci.org/angel-dart/route.svg)
 
 A powerful, isomorphic routing library for Dart.
@@ -42,10 +42,8 @@ main() {
   
   router.post('/users/:id/timeline', (String id) {});
   
-  // Numbers automatically parsed
-  
   router.get('/square_root/:id([0-9]+)', (n) { 
-    return { 'result': pow(n, 0.5) };
+    return { 'result': pow(int.parse(n), 0.5) };
   });
   
   router.group('/show/:id', (router) {

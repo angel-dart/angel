@@ -35,6 +35,18 @@ class RoutingResult {
     return handlers;
   }
 
+  Map<String, dynamic> get allParams {
+    final params = {};
+    var search = this;
+
+    while (search != null) {
+      params.addAll(search.params);
+      search = search.nested;
+    }
+
+    return params;
+  }
+
   RoutingResult(
       {this.match,
       Map<String, dynamic> params: const {},

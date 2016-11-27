@@ -304,7 +304,7 @@ class Route {
   }
 
   Route clone() {
-    final Route route = new Route('');
+    final Route route = new Route('', debug: debug);
 
     return route
       .._children.addAll(children)
@@ -315,6 +315,7 @@ class Route {
       .._name = name
       .._parent = _parent
       .._parentResolver = _parentResolver
+      .._path = _path
       .._pathified = _pathified
       .._resolver = _resolver
       .._stub = _stub
@@ -347,21 +348,19 @@ class Route {
 
     _printDebug(
         'Searched request path $requestPath and found these values: $values');
+    _printDebug('This route\'s path is "$path".');
 
     final pathString = _pathify(path).replaceAll(new RegExp('\/'), r'\/');
     Iterable<Match> matches = _param.allMatches(pathString);
     _printDebug(
-        'All param names parsed in "$pathString": ${matches.map((m) => m.group(0))}');
+        'All param names parsed in "$pathString": ${matches.map((m) => m[1])}');
 
     for (int i = 0; i < matches.length && i < values.length; i++) {
       Match match = matches.elementAt(i);
       String paramName = match.group(1);
       String value = values.elementAt(i);
-      num numValue = num.parse(value, (_) => double.NAN);
-      if (!numValue.isNaN)
-        result[paramName] = numValue;
-      else
-        result[paramName] = value;
+      _printDebug('Setting param "$paramName" to "$value"...');
+      result[paramName] = value;
     }
 
     return result;
