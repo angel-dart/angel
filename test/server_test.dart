@@ -149,10 +149,40 @@ main() {
   group('mount', () {
     group('path', () {
       test('top-level', () async {
-        final res = await client.get('$url/beatles/spinal_clacker');
+        final res = await client.post('$url/beatles/spinal_clacker');
         print('Response: ${res.body}');
         expect(res.body, equals('come together'));
       });
+
+      test('fallback', () async {
+        final res = await client.patch('$url/beatles/muddy_water');
+        print('Response: ${res.body}');
+        expect(res.body, equals('together'));
+      });
     });
+
+    test('deep nested', () async {
+      final res = await client.get('$url/beatles/big/yellow/submarine');
+      print('Response: ${res.body}');
+      expect(res.body, equals('we all live in a'));
+    });
+
+    group('fallback', () {});
+  });
+
+  group('404', () {
+    expect404(r) => r.then((res) {
+          print('Response (${res.statusCode}): ${res.body}');
+          expect(res.statusCode, equals(404));
+        });
+
+    test('path', () async {
+      await expect404(client.get('$url/foo'));
+      await expect404(client.get('$url/bye'));
+      await expect404(client.get('$url/people/0/age'));
+      await expect404(client.get('$url/beatles2'));
+    });
+
+    test('method', () async {});
   });
 }

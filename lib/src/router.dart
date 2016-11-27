@@ -54,7 +54,7 @@ class Router {
     final route =
         new Route(path, debug: debug, method: method, handlers: handlers);
     _routes.add(route);
-    return route;
+    return route.._path = _pathify(path);
   }
 
   /// Returns a [Router] with a duplicated version of this tree.
@@ -240,60 +240,62 @@ class Router {
 
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
-  RoutingResult resolve(String fullPath, String path, {String method: 'GET'}) {
-    final cleanFullPath = fullPath.replaceAll(_straySlashes, '');
-    final cleanPath = path.replaceAll(_straySlashes, '');
+  RoutingResult resolve(String absolute, String relative, {String method: 'GET'}) {
+    final cleanAbsolute = absolute.replaceAll(_straySlashes, '');
+    final cleanRelative = relative.replaceAll(_straySlashes, '');
+    final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
     _printDebug(
-        'Now resolving $method "/$cleanPath", fullPath: $cleanFullPath');
+        'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
+    _printDebug('Path segments: ${segments.toList()}');
 
     for (Route route in routes) {
-      if (route is SymlinkRoute && route._head != null) {
-        final match = route._head.firstMatch(cleanPath);
+      if (route is SymlinkRoute && route._head != null && segments.isNotEmpty) {
+        final match = route._head.firstMatch(segments.first);
 
         if (match != null) {
-          final tail = cleanPath
+          final tail = cleanRelative
               .replaceAll(route._head, '')
               .replaceAll(_straySlashes, '');
           _printDebug('Matched head "${match[0]}" to $route. Tail: "$tail"');
           route.router.debug = route.router.debug || debug;
           final nested =
-              route.router.resolve(cleanFullPath, tail, method: method);
+              route.router.resolve(cleanAbsolute, tail, method: method);
           return _dumpResult(
-              cleanPath,
+              cleanRelative,
               new RoutingResult(
                   match: match,
                   nested: nested,
-                  params: route.parseParameters(cleanPath),
+                  params: route.parseParameters(cleanRelative),
                   sourceRoute: route,
                   sourceRouter: this,
                   tail: tail));
         }
       } else if (route.method == '*' || route.method == method) {
-        final match = route.match(cleanPath);
+        final match = route.match(cleanRelative);
 
         if (match != null) {
           return _dumpResult(
-              cleanPath,
+              cleanRelative,
               new RoutingResult(
                   match: match,
-                  params: route.parseParameters(cleanPath),
+                  params: route.parseParameters(cleanRelative),
                   sourceRoute: route,
                   sourceRouter: this));
         }
       }
     }
 
-    _printDebug('Could not resolve path "/$cleanPath".');
+    _printDebug('Could not resolve path "/$cleanRelative".');
     return null;
   }
 
   /// Finds every possible [Route] that matches the given path,
   /// with the given method.
-  Iterable<RoutingResult> resolveAll(String fullPath, String path,
+  Iterable<RoutingResult> resolveAll(String absolute, String relative,
       {String method: 'GET'}) {
     final router = clone();
     final List<RoutingResult> results = [];
-    var result = router.resolve(fullPath, path, method: method);
+    var result = router.resolve(absolute, relative, method: method);
 
     while (result != null) {
       if (!results.contains(result))
@@ -302,16 +304,12 @@ class Router {
         break;
 
       result.deepestRouter._routes.remove(result.deepestRoute);
-      result = router.resolve(fullPath, path, method: method);
+      result = router.resolve(absolute, relative, method: method);
     }
 
     _printDebug(
-        'Results of $method "/${fullPath.replaceAll(_straySlashes, '')}": ${results.map((r) => r.deepestRoute).toList()}');
+        'Results of $method "/${absolute.replaceAll(_straySlashes, '')}": ${results.map((r) => r.deepestRoute).toList()}');
     return results;
-  }
-
-  _validHead(RegExp rgx) {
-    return !rgx.hasMatch('');
   }
 
   /// Incorporates another [Router]'s routes into this one's.
