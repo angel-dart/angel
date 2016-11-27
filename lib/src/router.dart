@@ -66,8 +66,11 @@ class Router {
       if (route is! SymlinkRoute) {
         router._routes.add(route.clone());
       } else if (route is SymlinkRoute) {
-        router._routes.add(new SymlinkRoute(route.path, route.pattern,
-            newMounted[route.pattern] = route.router.clone()));
+        final newRouter = route.router.clone();
+        newMounted[route.path] = newRouter;
+        final symlink = new SymlinkRoute(route.path, route.pattern, newRouter)
+          .._head = route._head;
+        router._routes.add(symlink);
       }
     }
 
@@ -88,13 +91,14 @@ class Router {
       buf.writeln(header);
     }
 
+    buf.writeln('<root>');
+
     indent() {
       for (int i = 0; i < tabs; i++) buf.write(tab);
     }
 
     dumpRouter(Router router) {
       indent();
-      buf.writeln('- <root>');
       tabs++;
 
       for (Route route in router.routes) {
@@ -103,9 +107,7 @@ class Router {
 
         if (route is SymlinkRoute) {
           buf.writeln();
-          tabs++;
           dumpRouter(route.router);
-          tabs--;
         } else {
           if (showMatchers) buf.write(' (${route.matcher.pattern})');
 
@@ -231,44 +233,57 @@ class Router {
     requestMiddleware[name] = middleware;
   }
 
+  RoutingResult _dumpResult(String path, RoutingResult result) {
+    _printDebug('Resolved "/$path" to ${result.deepestRoute}');
+    return result;
+  }
+
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
   RoutingResult resolve(String fullPath, String path, {String method: 'GET'}) {
     final cleanFullPath = fullPath.replaceAll(_straySlashes, '');
     final cleanPath = path.replaceAll(_straySlashes, '');
+    _printDebug(
+        'Now resolving $method "/$cleanPath", fullPath: $cleanFullPath');
 
     for (Route route in routes) {
       if (route is SymlinkRoute && route._head != null) {
-        final match = route._head.firstMatch(cleanFullPath);
+        final match = route._head.firstMatch(cleanPath);
 
         if (match != null) {
           final tail = cleanPath
-              .replaceFirst(match[0], '')
+              .replaceAll(route._head, '')
               .replaceAll(_straySlashes, '');
           _printDebug('Matched head "${match[0]}" to $route. Tail: "$tail"');
+          route.router.debug = route.router.debug || debug;
           final nested =
               route.router.resolve(cleanFullPath, tail, method: method);
-          return new RoutingResult(
-              match: match,
-              nested: nested,
-              params: route.parseParameters(cleanPath),
-              sourceRoute: route,
-              sourceRouter: this,
-              tail: tail);
+          return _dumpResult(
+              cleanPath,
+              new RoutingResult(
+                  match: match,
+                  nested: nested,
+                  params: route.parseParameters(cleanPath),
+                  sourceRoute: route,
+                  sourceRouter: this,
+                  tail: tail));
         }
       } else if (route.method == '*' || route.method == method) {
         final match = route.match(cleanPath);
 
         if (match != null) {
-          return new RoutingResult(
-              match: match,
-              params: route.parseParameters(cleanPath),
-              sourceRoute: route,
-              sourceRouter: this);
+          return _dumpResult(
+              cleanPath,
+              new RoutingResult(
+                  match: match,
+                  params: route.parseParameters(cleanPath),
+                  sourceRoute: route,
+                  sourceRouter: this));
         }
       }
     }
 
+    _printDebug('Could not resolve path "/$cleanPath".');
     return null;
   }
 
@@ -281,11 +296,17 @@ class Router {
     var result = router.resolve(fullPath, path, method: method);
 
     while (result != null) {
-      results.add(result);
+      if (!results.contains(result))
+        results.add(result);
+      else
+        break;
+
       result.deepestRouter._routes.remove(result.deepestRoute);
       result = router.resolve(fullPath, path, method: method);
     }
 
+    _printDebug(
+        'Results of $method "/${fullPath.replaceAll(_straySlashes, '')}": ${results.map((r) => r.deepestRoute).toList()}');
     return results;
   }
 
@@ -314,7 +335,8 @@ class Router {
           copiedMiddleware[middlewareName];
     }
 
-    final route = new SymlinkRoute(path, path, _mounted[path] = router);
+    final route = new SymlinkRoute(path, path, router);
+    _mounted[route.path] = router;
     _routes.add(route);
     route._head = new RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));
 

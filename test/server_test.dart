@@ -46,6 +46,30 @@ main() {
     });
   });
 
+  final beatles = new Router();
+
+  beatles.post('/spinal_clacker', (req, res) {
+    res.write('come ');
+    return true;
+  });
+
+  final yellow = new Router()
+    ..get('/submarine', (req, res) {
+      res.write('we all live in a');
+      return false;
+    });
+
+  beatles.group('/big', (router) {
+    router.mount('/yellow', yellow);
+  });
+
+  beatles.all('*', (req, res) {
+    res.write('together');
+    return false;
+  });
+
+  router.mount('/beatles', beatles);
+
   setUp(() async {
     client = new http.Client();
 
@@ -122,5 +146,13 @@ main() {
     });
   });
 
-  group('use', () {});
+  group('mount', () {
+    group('path', () {
+      test('top-level', () async {
+        final res = await client.get('$url/beatles/spinal_clacker');
+        print('Response: ${res.body}');
+        expect(res.body, equals('come together'));
+      });
+    });
+  });
 }
