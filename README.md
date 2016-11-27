@@ -1,6 +1,6 @@
 # angel_route
 
-![version 1.0.0-dev+13](https://img.shields.io/badge/version-1.0.0--dev+13-red.svg)
+![version 1.0.0-dev+14](https://img.shields.io/badge/version-1.0.0--dev+14-red.svg)
 ![build status](https://travis-ci.org/angel-dart/route.svg)
 
 A powerful, isomorphic routing library for Dart.
@@ -91,6 +91,13 @@ main() {
 main() {
   final router = new Router();
   
+  router
+    .chain('middleware1')
+    .chain('other_middleware')
+    .get('/hello', () {
+      print('world');
+    });
+  
   router.group('/user/:id', (router) {
     router.get('/balance', (id) async {
       final user = await someQuery(id);
@@ -104,7 +111,7 @@ See [the tests](test/route/no_params.dart) for good examples.
 
 # In the Browser
 Supports both hashed routes and pushState. The `BrowserRouter` interface exposes
-a `Stream<Route> onRoute`, which can be listened to for changes. It will fire `null`
+a `Stream<RoutingResult> onRoute`, which can be listened to for changes. It will fire `null`
 whenever no route is matched.
 
 `angel_route` will also automatically intercept `<a>` elements and redirect them to
@@ -128,6 +135,9 @@ main() {
   });
 }
 ```
+
+For applications where you need to access a chain of handlers, consider using
+`onResolve` instead. You can see an example in `web/shared/basic.dart`.
 
 # Route Parameters
 Routes can have parameters, as seen in the above examples.

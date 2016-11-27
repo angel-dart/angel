@@ -15,7 +15,7 @@ final RegExp _slashDollar = new RegExp(r'/+\$');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
-class Router {
+class Router extends Extensible {
   final List _middleware = [];
   final Map<Pattern, Router> _mounted = {};
   final List<Route> _routes = [];
@@ -56,6 +56,12 @@ class Router {
     _routes.add(route);
     return route.._path = _pathify(path);
   }
+
+  /// Prepends the given middleware to any routes created
+  /// by the resulting router.
+  ///
+  /// The resulting router can be chained, too.
+  _ChainedRouter chain(middleware) => new _ChainedRouter(this, middleware);
 
   /// Returns a [Router] with a duplicated version of this tree.
   Router clone() {
@@ -165,7 +171,7 @@ class Router {
   /// ```dart
   /// router.navigate(['users/:id', {'id': '1337'}, 'profile']);
   /// ```
-  String navigate(List linkParams, {bool absolute: true}) {
+  String navigate(Iterable linkParams, {bool absolute: true}) {
     final List<String> segments = [];
     Router search = this;
     Route lastRoute;
@@ -234,13 +240,14 @@ class Router {
   }
 
   RoutingResult _dumpResult(String path, RoutingResult result) {
-    _printDebug('Resolved "/$path" to ${result.deepestRoute}');
+    _printDebug('Resolved "/$path" to ${result.route}');
     return result;
   }
 
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
-  RoutingResult resolve(String absolute, String relative, {String method: 'GET'}) {
+  RoutingResult resolve(String absolute, String relative,
+      {String method: 'GET'}) {
     final cleanAbsolute = absolute.replaceAll(_straySlashes, '');
     final cleanRelative = relative.replaceAll(_straySlashes, '');
     final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
@@ -253,24 +260,31 @@ class Router {
         final match = route._head.firstMatch(segments.first);
 
         if (match != null) {
+          final cleaned = segments.first.replaceFirst(match[0], '');
           final tail = cleanRelative
               .replaceAll(route._head, '')
               .replaceAll(_straySlashes, '');
-          _printDebug('Matched head "${match[0]}" to $route. Tail: "$tail"');
-          route.router.debug = route.router.debug || debug;
-          final nested =
-              route.router.resolve(cleanAbsolute, tail, method: method);
-          return _dumpResult(
-              cleanRelative,
-              new RoutingResult(
-                  match: match,
-                  nested: nested,
-                  params: route.parseParameters(cleanRelative),
-                  sourceRoute: route,
-                  sourceRouter: this,
-                  tail: tail));
+
+          if (cleaned.isEmpty) {
+            _printDebug('Matched relative "$cleanRelative" to head ${route._head
+                    .pattern} on $route. Tail: "$tail"');
+            route.router.debug = route.router.debug || debug;
+            final nested =
+                route.router.resolve(cleanAbsolute, tail, method: method);
+            return _dumpResult(
+                cleanRelative,
+                new RoutingResult(
+                    match: match,
+                    nested: nested,
+                    params: route.parseParameters(cleanRelative),
+                    shallowRoute: route,
+                    shallowRouter: this,
+                    tail: tail));
+          }
         }
-      } else if (route.method == '*' || route.method == method) {
+      }
+
+      if (route.method == '*' || route.method == method) {
         final match = route.match(cleanRelative);
 
         if (match != null) {
@@ -279,8 +293,8 @@ class Router {
               new RoutingResult(
                   match: match,
                   params: route.parseParameters(cleanRelative),
-                  sourceRoute: route,
-                  sourceRouter: this));
+                  shallowRoute: route,
+                  shallowRouter: this));
         }
       }
     }
@@ -288,6 +302,11 @@ class Router {
     _printDebug('Could not resolve path "/$cleanRelative".');
     return null;
   }
+
+  /// Returns the result of [resolve] with [path] passed as
+  /// both `absolute` and `relative`.
+  RoutingResult resolveAbsolute(String path, {String method: 'GET'}) =>
+      resolve(path, path, method: method);
 
   /// Finds every possible [Route] that matches the given path,
   /// with the given method.
@@ -303,12 +322,12 @@ class Router {
       else
         break;
 
-      result.deepestRouter._routes.remove(result.deepestRoute);
+      result.router._routes.remove(result.route);
       result = router.resolve(absolute, relative, method: method);
     }
 
     _printDebug(
-        'Results of $method "/${absolute.replaceAll(_straySlashes, '')}": ${results.map((r) => r.deepestRoute).toList()}');
+        'Results of $method "/${absolute.replaceAll(_straySlashes, '')}": ${results.map((r) => r.route).toList()}');
     return results;
   }
 
@@ -379,5 +398,42 @@ class Router {
   /// Adds a route that responds to a PUT request.
   Route put(Pattern path, Object handler, {List middleware}) {
     return addRoute('PUT', path, handler, middleware: middleware);
+  }
+}
+
+class _ChainedRouter extends Router {
+  final List _handlers = [];
+  Router _root;
+
+  _ChainedRouter.empty();
+
+  _ChainedRouter(Router root, middleware) {
+    this._root = root;
+    _handlers.add(middleware);
+  }
+
+  @override
+  Route addRoute(String method, Pattern path, handler,
+      {List middleware: const []}) {
+    return _root.addRoute(method, path, handler,
+        middleware: []..addAll(_handlers)..addAll(middleware ?? []));
+  }
+
+  @override
+  SymlinkRoute mount(Pattern path, Router router,
+      {bool hooked: true, String namespace: null}) {
+    final route =
+        super.mount(path, router, hooked: hooked, namespace: namespace);
+    route.router._middleware.insertAll(0, _handlers);
+    return route;
+  }
+
+  @override
+  _ChainedRouter chain(middleware) {
+    final piped = new _ChainedRouter.empty().._root = _root;
+    piped._handlers.addAll([]
+      ..addAll(_handlers)
+      ..add(middleware));
+    return piped;
   }
 }

@@ -4,8 +4,8 @@ class RoutingResult {
   final Match match;
   final RoutingResult nested;
   final Map<String, dynamic> params = {};
-  final Route sourceRoute;
-  final Router sourceRouter;
+  final Route shallowRoute;
+  final Router shallowRouter;
   final String tail;
 
   RoutingResult get deepest {
@@ -16,11 +16,11 @@ class RoutingResult {
     return search;
   }
 
-  Route get deepestRoute => deepest.sourceRoute;
-  Router get deepestRouter => deepest.sourceRouter;
+  Route get route => deepest.shallowRoute;
+  Router get router => deepest.shallowRouter;
 
   List get handlers {
-    return []..addAll(sourceRouter.middleware)..addAll(sourceRoute.handlers);
+    return []..addAll(shallowRouter.middleware)..addAll(shallowRoute.handlers);
   }
 
   List get allHandlers {
@@ -39,8 +39,8 @@ class RoutingResult {
       {this.match,
       Map<String, dynamic> params: const {},
       this.nested,
-      this.sourceRoute,
-      this.sourceRouter,
+      this.shallowRoute,
+      this.shallowRouter,
       this.tail}) {
     this.params.addAll(params ?? {});
   }

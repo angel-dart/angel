@@ -159,6 +159,12 @@ main() {
         print('Response: ${res.body}');
         expect(res.body, equals('together'));
       });
+
+      test('fallback', () async {
+        final res = await client.patch('$url/beatles/spanil_clakcer');
+        print('Response: ${res.body}');
+        expect(res.body, equals('together'));
+      });
     });
 
     test('deep nested', () async {
@@ -183,6 +189,11 @@ main() {
       await expect404(client.get('$url/beatles2'));
     });
 
-    test('method', () async {});
+    test('method', () async {
+      await expect404(client.head(url));
+      await expect404(client.patch('$url/people'));
+      await expect404(client.post('$url/people/0'));
+      await expect404(client.delete('$url/beatles2/spinal_clacker'));
+    });
   });
 }
