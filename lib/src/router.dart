@@ -49,7 +49,7 @@ class Router extends Extensible {
     // Check if any mounted routers can match this
     final handlers = [handler];
 
-    if (middleware != null) handlers.addAll(middleware);
+    if (middleware != null) handlers.insertAll(0, middleware);
 
     final route =
         new Route(path, debug: debug, method: method, handlers: handlers);
