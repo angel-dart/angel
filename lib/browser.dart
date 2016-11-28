@@ -31,7 +31,10 @@ _send(HttpRequest request, [data]) {
       }
     });
 
-  request.send(data);
+  if (data == null)
+    request.send();
+  else
+    request.send(JSON.encode(data));
   return completer.future;
 }
 

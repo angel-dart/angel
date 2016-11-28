@@ -1,4 +1,4 @@
-import "package:angel_framework/defs.dart";
+import "package:angel_framework/src/defs.dart";
 
 class Postcard extends MemoryModel {
   int id;
