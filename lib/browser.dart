@@ -89,7 +89,10 @@ class Rest extends Angel {
           }
         });
 
-      request.send(credentials);
+      if (credentials == null)
+        request.send();
+      else
+        request.send(JSON.encode(credentials));
 
       return completer.future;
     } else {
