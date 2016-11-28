@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' show Random;
 import 'dart:mirrors';
+import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:shelf/shelf.dart' as shelf;
 import 'angel_base.dart';
@@ -185,23 +186,18 @@ class Angel extends AngelBase {
 
     if (requestedUrl.isEmpty) requestedUrl = '/';
 
-    final resolved = resolveAll(requestedUrl, method: request.method);
+    final resolved =
+        resolveAll(requestedUrl, requestedUrl, method: request.method);
+
+    for (final result in resolved) req.params.addAll(result.allParams);
 
     if (resolved.isNotEmpty) {
-      final route = resolved.first;
-      req.params.addAll(route?.parseParameters(requestedUrl) ?? {});
+      final route = resolved.first.route;
       req.inject(Match, route.match(requestedUrl));
     }
 
-    final pipeline = []..addAll(before);
-
-    if (resolved.isNotEmpty) {
-      for (final route in resolved) {
-        pipeline.addAll(route.handlerSequence);
-      }
-    }
-
-    pipeline.addAll(after);
+    final m = new MiddlewarePipeline(resolved);
+    final pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
 
     _printDebug('Handler sequence on $requestedUrl: $pipeline');
 
@@ -304,7 +300,8 @@ class Angel extends AngelBase {
   Future configure(AngelConfigurer configurer) async {
     await configurer(this);
 
-    if (configurer is Controller) _onController.add(configurer);
+    if (configurer is Controller)
+      _onController.add(controllers[configurer.exposeDecl.path] = configurer);
   }
 
   /// Fallback when an error is thrown while handling a request.
@@ -320,6 +317,15 @@ class Angel extends AngelBase {
   @override
   use(Pattern path, Routable routable,
       {bool hooked: true, String namespace: null}) {
+    if (routable is Angel) {
+      final head = path.toString().replaceAll(_straySlashes, '');
+
+      routable.controllers.forEach((k, v) {
+        final tail = k.toString().replaceAll(_straySlashes, '');
+        controllers['$head/$tail'.replaceAll(_straySlashes, '')] = v;
+      });
+    }
+
     if (routable is Service) {
       routable.app = this;
     }

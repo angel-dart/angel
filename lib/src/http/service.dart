@@ -128,7 +128,5 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
-
-    normalize();
   }
 }

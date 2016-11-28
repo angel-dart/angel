@@ -12,10 +12,10 @@ class TodoController extends Controller {
 
   @Expose("/:id", middleware: const ["bar"])
   Future<Todo> fetchTodo(
-      int id, RequestContext req, ResponseContext res) async {
+      String id, RequestContext req, ResponseContext res) async {
     expect(req, isNotNull);
     expect(res, isNotNull);
-    return todos[id];
+    return todos[int.parse(id)];
   }
 
   @Expose("/namedRoute/:foo", as: "foo")
@@ -32,7 +32,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel();
+    app = new Angel(debug: true);
     app.registerMiddleware("foo", (req, res) async => res.write("Hello, "));
     app.registerMiddleware("bar", (req, res) async => res.write("world!"));
     app.get(
@@ -57,7 +57,7 @@ main() {
   test("middleware", () async {
     var rgx = new RegExp("^Hello, world!");
     var response = await client.get("$url/todos/0");
-    print(response.body);
+    print('Response: ${response.body}');
 
     expect(rgx.firstMatch(response.body).start, equals(0));
 
@@ -70,8 +70,7 @@ main() {
 
   test("named actions", () async {
     var response = await client.get("$url/redirect");
-    print(response.body);
-
+    print('Response: ${response.body}');
     expect(response.body, equals("Hello, \"world!\""));
   });
 }

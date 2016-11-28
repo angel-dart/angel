@@ -10,6 +10,8 @@ import '../extensible.dart';
 import 'angel_base.dart';
 import 'controller.dart';
 
+final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+
 /// A convenience wrapper around an outgoing HTTP request.
 class ResponseContext extends Extensible {
   bool _isOpen = true;
@@ -90,8 +92,15 @@ class ResponseContext extends Extensible {
   }
 
   /// Redirects to user to the given URL.
-  void redirect(String url, {int code: 301}) {
-    header(HttpHeaders.LOCATION, url);
+  ///
+  /// [url] can be a `String`, or a `List`.
+  /// If it is a `List`, a URI will be constructed
+  /// based on the provided params.
+  ///
+  /// See [Router]#navigate for more. :)
+  void redirect(url, {bool absolute: true, int code: 301}) {
+    header(HttpHeaders.LOCATION,
+        url is String ? url : app.navigate(url, absolute: absolute));
     status(code ?? 301);
     write('''
     <!DOCTYPE html>
@@ -115,18 +124,19 @@ class ResponseContext extends Extensible {
 
   /// Redirects to the given named [Route].
   void redirectTo(String name, [Map params, int code]) {
-    _findRoute(Route route) {
-      for (Route child in route.children) {
-        final resolved = _findRoute(child);
+    Route _findRoute(Router r) {
+      for (Route route in r.routes) {
+        if (route is SymlinkRoute) {
+          final m = _findRoute(route.router);
 
-        if (resolved != null) return resolved;
+          if (m != null) return m;
+        } else if (route.name == name) return route;
       }
 
-      return route.children
-          .firstWhere((r) => r.name == name, orElse: () => null);
+      return null;
     }
 
-    Route matched = _findRoute(app.root);
+    Route matched = _findRoute(app);
 
     if (matched != null) {
       redirect(matched.makeUri(params), code: code);
@@ -146,7 +156,8 @@ class ResponseContext extends Extensible {
       throw new Exception(
           "Controller redirects must take the form of 'Controller@action'. You gave: $action");
 
-    Controller controller = app.controller(split[0]);
+    Controller controller =
+        app.controller(split[0].replaceAll(_straySlashes, ''));
 
     if (controller == null)
       throw new Exception("Could not find a controller named '${split[0]}'");
@@ -157,7 +168,11 @@ class ResponseContext extends Extensible {
       throw new Exception(
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
-    redirect(matched.makeUri(params), code: code);
+    final head =
+        controller.exposeDecl.path.toString().replaceAll(_straySlashes, '');
+    final tail = matched.makeUri(params).replaceAll(_straySlashes, '');
+
+    redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
   }
 
   /// Streams a file to this response as chunked data.

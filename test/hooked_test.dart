@@ -23,9 +23,7 @@ main() {
     app.use('/todos', new MemoryService<Todo>());
     Todos = app.service("todos");
 
-    app
-      ..normalize()
-      ..dumpTree(showMatchers: true);
+    app.dumpTree(showMatchers: true);
 
     server = await app.startServer();
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";

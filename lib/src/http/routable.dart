@@ -11,6 +11,7 @@ import 'metadata.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'service.dart';
+final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A function that intercepts a request and determines whether handling of it should continue.
 typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
@@ -23,7 +24,7 @@ typedef Future RawRequestHandler(HttpRequest request);
 
 /// A routable server that can handle dynamic requests.
 class Routable extends Router {
-  final Map<String, Controller> _controllers = {};
+  final Map<Pattern, Controller> _controllers = {};
   final Map<Pattern, Service> _services = {};
 
   Routable({bool debug: false}) : super(debug: debug);
@@ -36,7 +37,7 @@ class Routable extends Router {
   Map<Pattern, Service> get services => _services;
 
   /// A set of [Controller] objects that have been loaded into the application.
-  Map<String, Controller> get controllers => _controllers;
+  Map<Pattern, Controller> get controllers => _controllers;
 
   StreamController<Service> _onService =
       new StreamController<Service>.broadcast();

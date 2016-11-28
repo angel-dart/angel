@@ -19,7 +19,7 @@ class QueryService extends Service {
 }
 
 main() {
-  Angel angel;
+  Angel app;
   Angel nested;
   Angel todos;
   String url;
@@ -27,11 +27,11 @@ main() {
 
   setUp(() async {
     final debug = true;
-    angel = new Angel(debug: debug);
+    app = new Angel(debug: debug);
     nested = new Angel(debug: debug);
     todos = new Angel(debug: debug);
 
-    angel
+    app
       ..registerMiddleware('interceptor', (req, res) async {
         res.write('Middleware');
         return false;
@@ -53,41 +53,39 @@ main() {
       return req.params;
     });
 
-    angel.use('/nes', nested);
-    angel.get('/meta', testMiddlewareMetadata);
-    angel.get('/intercepted', 'This should not be shown',
+    app.use('/nes', nested);
+    app.get('/meta', testMiddlewareMetadata);
+    app.get('/intercepted', 'This should not be shown',
         middleware: ['interceptor']);
-    angel.get('/hello', 'world');
-    angel.get('/name/:first/last/:last', (req, res) => req.params);
-    angel.post('/lambda', (req, res) => req.body);
-    angel.use('/todos/:id', todos);
-    angel
+    app.get('/hello', 'world');
+    app.get('/name/:first/last/:last', (req, res) => req.params);
+    app.post('/lambda', (req, res) => req.body);
+    app.use('/todos/:id', todos);
+    app
         .get('/greet/:name',
             (RequestContext req, res) async => "Hello ${req.params['name']}")
         .as('Named routes');
-    angel.get('/named', (req, ResponseContext res) async {
+    app.get('/named', (req, ResponseContext res) async {
       res.redirectTo('Named routes', {'name': 'tests'});
     });
-    angel.get('/log', (RequestContext req, res) async {
+    app.get('/log', (RequestContext req, res) async {
       print("Query: ${req.query}");
       return "Logged";
     });
 
-    angel.use('/query', new QueryService());
-    angel.get('*', 'MJ');
+    app.use('/query', new QueryService());
+    app.get('*', 'MJ');
 
-    angel
-      ..normalize()
-      ..dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
+    app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
     client = new http.Client();
-    await angel.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
-    url = "http://${angel.httpServer.address.host}:${angel.httpServer.port}";
+    await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
   });
 
   tearDown(() async {
-    await angel.httpServer.close(force: true);
-    angel = null;
+    await app.httpServer.close(force: true);
+    app = null;
     nested = null;
     todos = null;
     client.close();
@@ -102,7 +100,7 @@ main() {
 
   test('Can match url with multiple parameters', () async {
     var response = await client.get('$url/name/HELLO/last/WORLD');
-    print(response.body);
+    print('Response: ${response.body}');
     var json = god.deserialize(response.body);
     expect(json, new isInstanceOf<Map<String, String>>());
     expect(json['first'], equals('HELLO'));
@@ -119,7 +117,7 @@ main() {
     var response = await client.get('$url/todos/1337/action/test');
     var json = god.deserialize(response.body);
     print('JSON: $json');
-    expect(json['id'], equals(1337));
+    expect(json['id'], equals('1337'));
     expect(json['action'], equals('test'));
   });
 
