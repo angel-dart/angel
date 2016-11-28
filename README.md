@@ -11,7 +11,7 @@ In `pubspec.yaml`:
 ```yaml
 dependencies:
     angel_framework: ^1.0.0-dev
-    angel_static: ^1.1.0-dev
+    angel_static: ^1.1.0-dev+1
 ```
 
 # Usage

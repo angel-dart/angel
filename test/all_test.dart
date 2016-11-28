@@ -26,9 +26,7 @@ main() {
 
     app.get('*', 'Fallback');
 
-    app
-      ..normalize()
-      ..dumpTree(showMatchers: true);
+    app.dumpTree(showMatchers: true);
 
     await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";

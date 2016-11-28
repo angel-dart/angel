@@ -76,7 +76,6 @@ class VirtualDirectory {
     }
 
     router.get('$publicPath/*', handler);
-    router.get(publicPath, (req, res) => serveFile('', res));
   }
 
   serveFile(String path, ResponseContext res) async {
