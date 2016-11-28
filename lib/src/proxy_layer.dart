@@ -54,7 +54,6 @@ class ProxyLayer {
     }
 
     router.get('$publicPath/*', handler);
-    router.get(publicPath, (req, res) => serveFile('', req, res));
   }
 
   serveFile(String path, RequestContext req, ResponseContext res) async {
