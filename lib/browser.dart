@@ -3,7 +3,7 @@ library angel_client.browser;
 
 import 'dart:async' show Completer, Future;
 import 'dart:convert' show JSON;
-import 'dart:html' show HttpRequest;
+import 'dart:html' show HttpRequest, window;
 import 'angel_client.dart';
 import 'auth_types.dart' as auth_types;
 export 'angel_client.dart';
@@ -46,6 +46,19 @@ class Rest extends Angel {
       {String type: auth_types.LOCAL,
       credentials,
       String authEndpoint: '/auth'}) async {
+    if (type == null) {
+      if (window.localStorage.containsKey('user') &&
+          window.localStorage.containsKey('token')) {
+        final result = new _AngelAuthResultImpl(
+            token: JSON.decode(window.localStorage['token']),
+            data: JSON.decode(window.localStorage['user']));
+        _authToken = result.token;
+        return result;
+      } else {
+        throw new Exception('Failed to authenticate via localStorage.');
+      }
+    }
+
     final url = '$authEndpoint/$type';
 
     if (type == auth_types.LOCAL) {
@@ -58,8 +71,11 @@ class Rest extends Angel {
 
       request
         ..onLoadEnd.listen((_) {
-          completer
-              .complete(new _AngelAuthResultImpl.fromMap(request.response));
+          final result = new _AngelAuthResultImpl.fromMap(request.response);
+          _authToken = result.token;
+          window.localStorage['token'] = JSON.encode(result.token);
+          window.localStorage['user'] = JSON.encode(result.data);
+          completer.complete(result);
         })
         ..onError.listen((_) {
           try {
