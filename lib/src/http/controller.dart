@@ -34,7 +34,11 @@ class Controller {
           "All controllers must carry an @Expose() declaration.");
     }
 
-    app.use(exposeDecl.path, generateRoutable(classMirror));
+
+    final routable = new Routable(debug: true);
+    configureRoutes(routable);
+
+    app.use(exposeDecl.path, routable);
     TypeMirror typeMirror = reflectType(this.runtimeType);
     String name = exposeDecl.as;
 
@@ -125,14 +129,11 @@ class Controller {
     };
   }
 
-  Routable generateRoutable(ClassMirror classMirror) {
-    final routable = new Routable(debug: true);
-    final handlers = []..addAll(exposeDecl.middleware)..addAll(middleware);
-
+  void configureRoutes(Routable routable) {
+    ClassMirror classMirror = reflectClass(this.runtimeType);
     InstanceMirror instanceMirror = reflect(this);
+    final handlers = []..addAll(exposeDecl.middleware)..addAll(middleware);
     final callback = _callback(instanceMirror, routable, handlers);
     classMirror.instanceMembers.forEach(callback);
-
-    return routable;
   }
 }
