@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:angel_client/cli.dart' as client;
+import 'package:angel_client/io.dart' as client;
 import 'package:angel_framework/angel_framework.dart' as server;
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;

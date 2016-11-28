@@ -2,6 +2,7 @@
 library angel_client;
 
 import 'dart:async';
+import 'auth_types.dart' as auth_types;
 
 /// A function that configures an [Angel] client in some way.
 typedef Future AngelConfigurer(Angel app);
@@ -12,6 +13,8 @@ abstract class Angel {
 
   Angel(String this.basePath);
 
+  Future<AngelAuthResult> authenticate({String type: auth_types.LOCAL, credentials, String authEndpoint: '/auth'});
+
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) async {
     await configurer(this);
@@ -20,10 +23,16 @@ abstract class Angel {
   Service service(Pattern path, {Type type});
 }
 
+/// Represents the result of authentication with an Angel server.
+abstract class AngelAuthResult {
+  Map<String, dynamic> get data;
+  String get token;
+}
+
 /// Queries a service on an Angel server, with the same API.
 abstract class Service {
   /// The Angel instance powering this service.
-  Angel app;
+  Angel get app;
 
   /// Retrieves all resources.
   Future<List> index([Map params]);
