@@ -1,6 +1,10 @@
 class AngelAuthOptions {
+  bool canRespondWithJson;
   String successRedirect;
   String failureRedirect;
 
-  AngelAuthOptions({String this.successRedirect, String this.failureRedirect});
+  AngelAuthOptions(
+      {this.canRespondWithJson: true,
+      this.successRedirect,
+      String this.failureRedirect});
 }
