@@ -60,5 +60,6 @@ loadConfigurationFile(
         sourceDirectory.absolute.uri.resolve(configFilePath));
 
     await _loadYamlFile(app, configFile);
+    app.container.singleton(new Configuration(app));
   };
 }

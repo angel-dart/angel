@@ -1,6 +1,6 @@
 # Angel Configuration
 
-![version 1.0.1+7](https://img.shields.io/badge/version-1.0.1+7-red.svg)
+![version 1.0.1+8](https://img.shields.io/badge/version-1.0.1+8-red.svg)
 ![build status](https://travis-ci.org/angel-dart/configuration.svg)
 
 Isomorphic YAML configuration loader for Angel.
