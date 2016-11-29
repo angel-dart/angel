@@ -13,7 +13,11 @@ abstract class Angel {
 
   Angel(String this.basePath);
 
-  Future<AngelAuthResult> authenticate({String type: auth_types.LOCAL, credentials, String authEndpoint: '/auth'});
+  Future<AngelAuthResult> authenticate(
+      {String type: auth_types.LOCAL,
+      credentials,
+      String authEndpoint: '/auth',
+      String reviveEndpoint: '/auth/token'});
 
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) async {

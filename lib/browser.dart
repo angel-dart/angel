@@ -48,21 +48,39 @@ class Rest extends Angel {
   Future<AngelAuthResult> authenticate(
       {String type: auth_types.LOCAL,
       credentials,
-      String authEndpoint: '/auth'}) async {
+      String authEndpoint: '/auth',
+      String reviveEndpoint: '/auth/token'}) async {
     if (type == null) {
-      if (window.localStorage.containsKey('user') &&
-          window.localStorage.containsKey('token')) {
-        final result = new _AngelAuthResultImpl(
-            token: JSON.decode(window.localStorage['token']),
-            data: JSON.decode(window.localStorage['user']));
-        _authToken = result.token;
-        return result;
-      } else {
-        throw new Exception('Failed to authenticate via localStorage.');
-      }
+      final result = new _AngelAuthResultImpl(
+          token: JSON.decode(window.localStorage['token']),
+          data: JSON.decode(window.localStorage['user']));
+      final completer = new Completer();
+      final request = new HttpRequest();
+      request.open('POST', '$basePath$reviveEndpoint');
+      request.setRequestHeader('Authorization', 'Bearer ${result.token}');
+
+      request
+        ..onLoadEnd.listen((_) {
+          final result = new _AngelAuthResultImpl.fromMap(request.response);
+          _authToken = result.token;
+          window.localStorage['token'] = JSON.encode(result.token);
+          window.localStorage['user'] = JSON.encode(result.data);
+          completer.complete(result);
+        })
+        ..onError.listen((_) {
+          try {
+            throw new Exception(
+                'Request failed with status code ${request.status}.');
+          } catch (e, st) {
+            completer.completeError(e, st);
+          }
+        });
+
+      request.send();
+      return completer.future;
     }
 
-    final url = '$authEndpoint/$type';
+    final url = '$basePath$authEndpoint/$type';
 
     if (type == auth_types.LOCAL) {
       final completer = new Completer();
