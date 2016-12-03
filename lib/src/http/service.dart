@@ -83,7 +83,7 @@ class Service extends Routable {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(this.create, Middleware);
-    post('/', (req, res) async => await this.create(req.body, restProvider),
+    post('/', (req, res) async => await this.create(req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -103,7 +103,7 @@ class Service extends Routable {
     patch(
         '/:id',
         (req, res) async =>
-    await this.modify(req.params['id'], req.body, restProvider),
+    await this.modify(req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -113,7 +113,7 @@ class Service extends Routable {
     post(
         '/:id',
         (req, res) async =>
-    await this.update(req.params['id'], req.body, restProvider),
+    await this.update(req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(

@@ -59,7 +59,7 @@ class HookedService extends Service {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(inner.create, Middleware);
-    post('/', (req, res) async => await this.create(req.body, restProvider),
+    post('/', (req, res) async => await this.create(req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -79,7 +79,7 @@ class HookedService extends Service {
     patch(
         '/:id',
         (req, res) async =>
-    await this.modify(req.params['id'], req.body, restProvider),
+    await this.modify(req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -89,7 +89,7 @@ class HookedService extends Service {
     post(
         '/:id',
         (req, res) async =>
-    await this.update(req.params['id'], req.body, restProvider),
+    await this.update(req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
