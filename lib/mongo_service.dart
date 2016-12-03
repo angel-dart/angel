@@ -92,7 +92,7 @@ class MongoService extends Service {
       result['id'] = id;
       return result;
     } catch (e, st) {
-      log(e, st);
+      log(e, st, 'UPDATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
