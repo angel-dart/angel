@@ -92,8 +92,8 @@ class AngelAuth extends AngelPlugin {
 
       if (enforceIp) {
         if (debug) {
-          print(
-              'Token IP: ${token.ipAddress}. Current request sent from: ${req.ip}');
+          print('Token IP: ${token.ipAddress}. Current request sent from: ${req
+                  .ip}');
         }
 
         if (req.ip != null && req.ip != token.ipAddress)
@@ -140,8 +140,9 @@ class AngelAuth extends AngelPlugin {
       // Allow Basic auth to fall through
       if (_rgxBearer.hasMatch(authHeader))
         return authHeader.replaceAll(_rgxBearer, "").trim();
-    } else if (req.cookies.any((cookie) => cookie.name == "token")) {
-      print('Request has "token" cookie...');
+    } else if (allowCookie &&
+        req.cookies.any((cookie) => cookie.name == "token")) {
+      if (debug) print('Request has "token" cookie...');
       return req.cookies.firstWhere((cookie) => cookie.name == "token").value;
     } else if (allowTokenInQuery && req.query['token'] is String) {
       return req.query['token'];
@@ -168,7 +169,8 @@ class AngelAuth extends AngelPlugin {
         if (enforceIp) {
           if (debug)
             print(
-                'Token IP: ${token.ipAddress}. Current request sent from: ${req.ip}');
+                'Token IP: ${token.ipAddress}. Current request sent from: ${req
+                    .ip}');
 
           if (req.ip != token.ipAddress)
             throw new AngelHttpException.Forbidden(
@@ -177,8 +179,8 @@ class AngelAuth extends AngelPlugin {
 
         if (token.lifeSpan > -1) {
           if (debug) {
-            print(
-                'Checking if token has expired... Life span is ${token.lifeSpan}');
+            print('Checking if token has expired... Life span is ${token
+                    .lifeSpan}');
           }
 
           token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
@@ -199,8 +201,11 @@ class AngelAuth extends AngelPlugin {
           print('Final, valid token: ${token.toJson()}');
         }
 
-        res.cookies.add(new Cookie('token', token.serialize(_hs256)));
-        return token.toJson();
+        if (allowCookie)
+          res.cookies.add(new Cookie('token', token.serialize(_hs256)));
+
+        final data = await deserializer(token.userId);
+        return {'data': data, 'token': token.serialize(_hs256)};
       }
     } catch (e, st) {
       if (debug) {
