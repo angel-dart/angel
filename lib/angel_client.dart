@@ -14,7 +14,7 @@ abstract class Angel {
   Angel(String this.basePath);
 
   Future<AngelAuthResult> authenticate(
-      {String type: auth_types.LOCAL,
+      {String type,
       credentials,
       String authEndpoint: '/auth',
       String reviveEndpoint: '/auth/token'});
@@ -31,6 +31,8 @@ abstract class Angel {
 abstract class AngelAuthResult {
   Map<String, dynamic> get data;
   String get token;
+
+  Map<String, dynamic> toJson();
 }
 
 /// Queries a service on an Angel server, with the same API.

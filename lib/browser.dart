@@ -33,6 +33,8 @@ _send(HttpRequest request, [data]) {
 
   if (data == null)
     request.send();
+  else if (data is String)
+    request.send(data);
   else
     request.send(JSON.encode(data));
   return completer.future;
@@ -45,18 +47,25 @@ class Rest extends Angel {
   Rest(String basePath) : super(basePath);
 
   @override
-  Future<AngelAuthResult> authenticate(
-      {String type: auth_types.LOCAL,
+  Future authenticate(
+      {String type,
       credentials,
       String authEndpoint: '/auth',
       String reviveEndpoint: '/auth/token'}) async {
     if (type == null) {
+      if (!window.localStorage.containsKey('token')) {
+        throw new Exception(
+            'Cannot revive token from localStorage - there is none.');
+      }
+
       final result = new _AngelAuthResultImpl(
           token: JSON.decode(window.localStorage['token']),
           data: JSON.decode(window.localStorage['user']));
       final completer = new Completer();
-      final request = new HttpRequest();
+      final request = new HttpRequest()..responseType = 'json';
       request.open('POST', '$basePath$reviveEndpoint');
+      request.setRequestHeader('Accept', 'application/json');
+      request.setRequestHeader('Content-Type', 'application/json');
       request.setRequestHeader('Authorization', 'Bearer ${result.token}');
 
       request
@@ -76,7 +85,7 @@ class Rest extends Angel {
           }
         });
 
-      request.send();
+      request.send(JSON.encode(result));
       return completer.future;
     }
 
@@ -130,15 +139,31 @@ abstract class RestService extends Service {
 }
 
 class _AngelAuthResultImpl implements AngelAuthResult {
+  String _token;
   final Map<String, dynamic> data = {};
-  final String token;
+  String get token => _token;
 
-  _AngelAuthResultImpl({this.token, Map<String, dynamic> data: const {}}) {
+  _AngelAuthResultImpl({token, Map<String, dynamic> data: const {}}) {
+    if (token is String) _token = token;
+
     this.data.addAll(data ?? {});
   }
 
-  factory _AngelAuthResultImpl.fromMap(Map data) =>
-      new _AngelAuthResultImpl(token: data['token'], data: data['data']);
+  factory _AngelAuthResultImpl.fromMap(Map data) {
+    final result = new _AngelAuthResultImpl();
+
+    if (data is Map && data.containsKey('token') && data['token'] is String)
+      result._token = data['token'];
+
+    if (data is Map) result.data.addAll(data['data'] ?? {});
+
+    return result;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {'token': token, 'data': data};
+  }
 }
 
 /// Queries an Angel service via REST.
