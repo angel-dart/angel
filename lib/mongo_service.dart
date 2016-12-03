@@ -3,8 +3,9 @@ part of angel_mongo.services;
 /// Manipulates data from MongoDB as Maps.
 class MongoService extends Service {
   DbCollection collection;
+  bool debug;
 
-  MongoService(DbCollection this.collection) : super();
+  MongoService(DbCollection this.collection, {this.debug: true}) : super();
 
   _jsonify(Map doc, [Map params]) {
     Map result = {};
@@ -16,6 +17,13 @@ class MongoService extends Service {
     }
 
     return _transformId(result);
+  }
+
+  void log(e, st, msg) {
+    if (debug) {
+      stderr.writeln('$msg ERROR: $e');
+      stderr.writeln(st);
+    }
   }
 
   @override
@@ -35,6 +43,7 @@ class MongoService extends Service {
       await collection.insert(item);
       return await _lastItem(collection, _jsonify, params);
     } catch (e, st) {
+      log(e, st, 'CREATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -64,6 +73,7 @@ class MongoService extends Service {
       result['id'] = id;
       return result;
     } catch (e, st) {
+      log(e, st, 'MODIFY');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -82,6 +92,7 @@ class MongoService extends Service {
       result['id'] = id;
       return result;
     } catch (e, st) {
+      log(e, st);
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -94,6 +105,7 @@ class MongoService extends Service {
       await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
       return result;
     } catch (e, st) {
+      log(e, st, 'REMOVE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }

@@ -1,6 +1,7 @@
 # angel_mongo
 
-![version 1.0.0-dev](https://img.shields.io/badge/version-1.0.0--dev-red.svg)
+![version 1.0.0-dev+4](https://img.shields.io/badge/version-1.0.0--dev+4-red.svg)
+![build status](https://travis-ci.org/angel-dart/mongo.svg?branch=master)
 
 MongoDB-enabled services for the Angel framework.
 

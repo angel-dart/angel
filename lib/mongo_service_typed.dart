@@ -3,8 +3,9 @@ part of angel_mongo.services;
 /// Manipulates data from MongoDB by serializing BSON from and deserializing BSON to a target class.
 class MongoTypedService<T> extends Service {
   DbCollection collection;
+  bool debug;
 
-  MongoTypedService(DbCollection this.collection) : super() {
+  MongoTypedService(DbCollection this.collection, {this.debug: true}) : super() {
     if (!reflectType(T).isAssignableTo(reflectType(Model)))
       throw new Exception(
           "If you specify a type for MongoService, it must be dynamic, Map, or extend from Model.");
@@ -33,6 +34,13 @@ class MongoTypedService<T> extends Service {
     }
   }
 
+  void log(e, st, msg) {
+    if (debug) {
+      stderr.writeln('$msg ERROR: $e');
+      stderr.writeln(st);
+    }
+  }
+
   @override
   Future<List> index([Map params]) async {
     return await (await collection.find(_makeQuery(params)))
@@ -54,8 +62,7 @@ class MongoTypedService<T> extends Service {
       await collection.insert(item);
       return await _lastItem(collection, _jsonify, params);
     } catch (e, st) {
-      print(e);
-      print(st);
+      log(e, st, 'CREATE');
       throw new AngelHttpException.BadRequest();
     }
   }
@@ -93,6 +100,7 @@ class MongoTypedService<T> extends Service {
       await collection.update(where.id(_id), result);
       return await read(_id, params);
     } catch (e, st) {
+      log(e, st, 'MODIFY');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -117,6 +125,7 @@ class MongoTypedService<T> extends Service {
       }
       return result;
     } catch (e, st) {
+      log(e, st, 'UPDATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -129,6 +138,7 @@ class MongoTypedService<T> extends Service {
       await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
       return result;
     } catch (e, st) {
+      log(e, st, 'REMOVE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
