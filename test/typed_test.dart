@@ -151,8 +151,10 @@ main() {
           await Greetings.create(new Greeting(to: "Bernie Sanders"));
       lastCount = (await Greetings.index()).length;
 
+      print('b');
       await Greetings.remove(bernie.id);
       expect((await Greetings.index()).length, equals(lastCount - 1));
+      print('c');
     });
 
     test('\$sort and query parameters', () async {

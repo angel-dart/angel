@@ -132,7 +132,7 @@ class MongoTypedService<T> extends Service {
 
   @override
   Future remove(id, [Map params]) async {
-    Map result = await read(id, params);
+    var result = await read(id, params);
 
     try {
       await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
