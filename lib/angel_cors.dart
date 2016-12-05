@@ -26,6 +26,15 @@ bool _isOriginAllowed(String origin, allowedOrigin) {
 RequestMiddleware cors([CorsOptions options]) {
   final opts = options ?? new CorsOptions();
 
+  /*
+  print(opts.credentials);
+  print(opts.allowedHeaders);
+  print(opts.methods);
+  print(opts.exposedHeaders);
+  print(opts.maxAge);
+  print(opts.origin);
+  */
+
   return (RequestContext req, ResponseContext res) async {
     // Access-Control-Allow-Credentials
     if (opts.credentials == true) {
@@ -35,6 +44,9 @@ RequestMiddleware cors([CorsOptions options]) {
     // Access-Control-Allow-Headers
     if (opts.allowedHeaders.isNotEmpty) {
       res.header('Access-Control-Allow-Headers', opts.allowedHeaders.join(','));
+    } else {
+      res.header('Access-Control-Allow-Headers',
+          req.headers.value('Access-Control-Allow-Headers'));
     }
 
     // Access-Control-Expose-Headers

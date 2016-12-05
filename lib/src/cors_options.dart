@@ -55,7 +55,7 @@ class CorsOptions {
         'PUT',
         'PATCH',
         'POST',
-        'DELETE˝'
+        'DELETE'
       ],
       this.origin: '*',
       this.preflightContinue: false,

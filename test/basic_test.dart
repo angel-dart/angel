@@ -14,9 +14,11 @@ main() {
     app = new Angel()
       ..before.add(cors())
       ..post('/', (req, res) async {
-        return res
-          ..write('hello world')
-          ..end();
+        res.write('hello world');
+        return false;
+      })
+      ..all('*', () {
+        throw new AngelHttpException.NotFound();
       });
 
     server = await app.startServer();
@@ -34,6 +36,8 @@ main() {
   test('POST works', () async {
     final response = await client.post(url);
     expect(response.statusCode, equals(200));
+    print('Response: ${response.body}');
+    print('Headers: ${response.headers}');
     expect(response.headers['access-control-allow-origin'], equals('*'));
   });
 }
