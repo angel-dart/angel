@@ -13,7 +13,6 @@ main() async {
 
 startServer() async {
   var app = await createServer();
-  app.normalize();
   var dateFormat = new DateFormat("y-MM-dd");
   var logFile = new File("logs/${dateFormat.format(new DateTime.now())}.txt");
   var host = new InternetAddress(app.properties['host']);
