@@ -1,12 +1,15 @@
 /// This app's route configuration.
 library angel.routes;
 
+import 'package:angel_cors/angel_cors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_proxy/angel_proxy.dart';
 import 'package:angel_static/angel_static.dart';
 import 'controllers/controllers.dart' as Controllers;
 
-configureBefore(Angel app) async {}
+configureBefore(Angel app) async {
+  app.before.add(cors());
+}
 
 /// Put your app routes here!
 configureRoutes(Angel app) async {
