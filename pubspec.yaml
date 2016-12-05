@@ -1,0 +1,10 @@
+author: "Tobe O <thosakwe@gmail.com>"
+description: "Angel CORS middleware."
+homepage: "https://github.com/angel-dart/cors.git"
+name: "angel_cors"
+version: "1.0.0-dev"
+dependencies: 
+  angel_framework: "^1.0.0-dev.28"
+dev_dependencies: 
+  http: "^0.11.3+9"
+  test: "^0.12.17"
