@@ -10,16 +10,19 @@ class User extends Model {
   List<String> roles;
 
   User(
-      {String this.email,
+      {String id,
+      String this.email,
       String this.username,
       String this.password,
       List<String> roles}) {
+    this.id = id;
     this.roles = roles ?? [];
   }
 
   factory User.fromJson(String json) => new User.fromMap(JSON.decode(json));
 
   factory User.fromMap(Map data) => new User(
+      id: data['id'],
       email: data["email"],
       username: data["username"],
       password: data["password"],
@@ -27,6 +30,7 @@ class User extends Model {
 
   Map toJson() {
     return {
+      "id": id,
       "email": email,
       "username": username,
       "password": password,
