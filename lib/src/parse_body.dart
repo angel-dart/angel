@@ -17,42 +17,48 @@ import 'map_from_uri.dart';
 Future<BodyParseResult> parseBody(HttpRequest request) async {
   var result = new BodyParseResult();
 
-  if (request.headers.contentType != null) {
-    if (request.headers.contentType.primaryType == 'multipart' &&
-        request.headers.contentType.parameters.containsKey('boundary')) {
-      var parts = request
-          .transform(new MimeMultipartTransformer(
-              request.headers.contentType.parameters['boundary']))
-          .map((part) =>
-              HttpMultipartFormData.parse(part, defaultEncoding: UTF8));
+  try {
+    if (request.headers.contentType != null) {
+      if (request.headers.contentType.primaryType == 'multipart' &&
+          request.headers.contentType.parameters.containsKey('boundary')) {
+        var parts = request
+            .transform(new MimeMultipartTransformer(
+                request.headers.contentType.parameters['boundary']))
+            .map((part) =>
+                HttpMultipartFormData.parse(part, defaultEncoding: UTF8));
 
-      await for (HttpMultipartFormData part in parts) {
-        if (part.isBinary || part.contentDisposition.parameters.containsKey("filename")) {
-          BytesBuilder builder = await part.fold(new BytesBuilder(), (BytesBuilder b,  d) => b..add(d is! String ? d : d.codeUnits));
-          var upload = new FileUploadInfo(
-              mimeType: part.contentType.mimeType,
-              name: part.contentDisposition.parameters['name'],
-              filename: part.contentDisposition.parameters['filename'] ?? 'file',
-              data: builder.takeBytes());
-          result.files.add(upload);
-        } else if (part.isText) {
-          var text = await part.join();
-          buildMapFromUri(result.body, '${part.contentDisposition.parameters["name"]}=$text');
-        }  else {
-          print("Found something else : ${part.contentDisposition}");
+        await for (HttpMultipartFormData part in parts) {
+          if (part.isBinary ||
+              part.contentDisposition.parameters.containsKey("filename")) {
+            BytesBuilder builder = await part.fold(new BytesBuilder(),
+                (BytesBuilder b, d) => b..add(d is! String ? d : d.codeUnits));
+            var upload = new FileUploadInfo(
+                mimeType: part.contentType.mimeType,
+                name: part.contentDisposition.parameters['name'],
+                filename:
+                    part.contentDisposition.parameters['filename'] ?? 'file',
+                data: builder.takeBytes());
+            result.files.add(upload);
+          } else if (part.isText) {
+            var text = await part.join();
+            buildMapFromUri(result.body,
+                '${part.contentDisposition.parameters["name"]}=$text');
+          }
         }
+      } else if (request.headers.contentType.mimeType ==
+          ContentType.JSON.mimeType) {
+        result.body
+            .addAll(JSON.decode(await request.transform(UTF8.decoder).join()));
+      } else if (request.headers.contentType.mimeType ==
+          'application/x-www-form-urlencoded') {
+        String body = await request.transform(UTF8.decoder).join();
+        buildMapFromUri(result.body, body);
       }
-    } else if (request.headers.contentType.mimeType ==
-        ContentType.JSON.mimeType) {
-      result.body
-          .addAll(JSON.decode(await request.transform(UTF8.decoder).join()));
-    } else if (request.headers.contentType.mimeType ==
-        'application/x-www-form-urlencoded') {
-      String body = await request.transform(UTF8.decoder).join();
-      buildMapFromUri(result.body, body);
+    } else if (request.uri.hasQuery) {
+      buildMapFromUri(result.query, request.uri.query);
     }
-  } else if (request.uri.hasQuery) {
-    buildMapFromUri(result.query, request.uri.query);
+  } catch (e) {
+    //
   }
 
   return result;
