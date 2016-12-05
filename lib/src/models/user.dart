@@ -7,16 +7,19 @@ class User extends Model {
   String email;
   String username;
   String password;
-  List<String> roles;
+  final List<String> roles = [];
 
   User(
       {String id,
-      String this.email,
-      String this.username,
-      String this.password,
-      List<String> roles}) {
+      this.email,
+      this.username,
+      this.password,
+      List<String> roles: const []}) {
     this.id = id;
-    this.roles = roles ?? [];
+    
+    if (roles != null) {
+      this.roles.addAll(roles);
+    }
   }
 
   factory User.fromJson(String json) => new User.fromMap(JSON.decode(json));
