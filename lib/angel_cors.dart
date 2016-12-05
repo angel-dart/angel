@@ -42,9 +42,9 @@ RequestMiddleware cors([CorsOptions options]) {
     }
 
     // Access-Control-Allow-Headers
-    if (opts.allowedHeaders.isNotEmpty) {
+    if (req.method == 'OPTIONS' && opts.allowedHeaders.isNotEmpty) {
       res.header('Access-Control-Allow-Headers', opts.allowedHeaders.join(','));
-    } else {
+    } else if (req.method == 'OPTIONS') {
       res.header('Access-Control-Allow-Headers',
           req.headers.value('Access-Control-Allow-Headers'));
     }
@@ -56,12 +56,12 @@ RequestMiddleware cors([CorsOptions options]) {
     }
 
     // Access-Control-Allow-Methods
-    if (opts.methods.isNotEmpty) {
+    if (req.method == 'OPTIONS' && opts.methods.isNotEmpty) {
       res.header('Access-Control-Allow-Methods', opts.methods.join(','));
     }
 
     // Access-Control-Max-Age
-    if (opts.maxAge != null) {
+    if (req.method == 'OPTIONS' && opts.maxAge != null) {
       res.header('Access-Control-Max-Age', opts.maxAge.toString());
     }
 
@@ -84,6 +84,6 @@ RequestMiddleware cors([CorsOptions options]) {
       }
     }
 
-    return true;
+    return req.method != 'OPTIONS' || opts.preflightContinue;
   };
 }
