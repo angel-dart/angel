@@ -1,5 +1,7 @@
 author: "Tobe O <thosakwe@gmail.com>"
 description: "Angel CORS middleware."
+environment:
+  sdk: ">=1.19.0"
 homepage: "https://github.com/angel-dart/cors.git"
 name: "angel_cors"
 version: "1.0.0-dev"
