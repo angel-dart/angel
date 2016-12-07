@@ -237,6 +237,10 @@ class AngelAuth extends AngelPlugin {
 
         if (allowCookie) req.cookies.add(new Cookie("token", jwt));
 
+        if (options?.callback != null) {
+          return await options.callback(req, res, jwt);
+        }
+
         if (options?.canRespondWithJson != false &&
             req.headers.value("accept") != null &&
             (req.headers.value("accept").contains("application/json") ||

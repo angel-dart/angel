@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:http/http.dart' as http;
-import 'package:merge_map/merge_map.dart';
 import 'package:test/test.dart';
 
 final AngelAuth Auth = new AngelAuth();
@@ -42,10 +41,6 @@ main() async {
         middleware: [Auth.authenticate('local', localOpts)]);
     app.get('/success', "yep", middleware: ['auth']);
     app.get('/failure', "nope");
-
-    app
-      ..normalize()
-      ..dumpTree();
 
     HttpServer server =
         await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
