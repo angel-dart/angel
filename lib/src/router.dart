@@ -251,9 +251,9 @@ class Router extends Extensible {
     final cleanAbsolute = absolute.replaceAll(_straySlashes, '');
     final cleanRelative = relative.replaceAll(_straySlashes, '');
     final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
-    _printDebug(
-        'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
-    _printDebug('Path segments: ${segments.toList()}');
+    //_printDebug(
+    //   'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
+    // _printDebug('Path segments: ${segments.toList()}');
 
     for (Route route in routes) {
       if (route is SymlinkRoute && route._head != null && segments.isNotEmpty) {
@@ -305,7 +305,7 @@ class Router extends Extensible {
       }
     }
 
-    _printDebug('Could not resolve path "/$cleanRelative".');
+    // _printDebug('Could not resolve path "/$cleanRelative".');
     return null;
   }
 
