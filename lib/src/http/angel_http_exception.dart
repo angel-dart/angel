@@ -1,21 +1,30 @@
 library angel_framework.http.angel_http_exception;
 
-class _AngelHttpExceptionBase implements Exception {
-  /// An HTTP status code this exception will throw.
-  int statusCode;
+/// Basically the same as
+/// [feathers-errors](https://github.com/feathersjs/feathers-errors).
+class AngelHttpException {
+  var error;
+
+  /// A list of errors that occurred when this exception was thrown.
+  final List<String> errors = [];
+
   /// The cause of this exception.
   String message;
-  /// A list of errors that occurred when this exception was thrown.
-  List<String> errors;
 
-  _AngelHttpExceptionBase.base() {}
+  /// The [StackTrace] associated with this error.
+  StackTrace stackTrace;
 
-  _AngelHttpExceptionBase(this.statusCode, this.message,
-      {List<String> this.errors: const []});
+  /// An HTTP status code this exception will throw.
+  int statusCode;
 
-  @override
-  String toString() {
-    return "$statusCode: $message";
+  AngelHttpException(this.error,
+      {this.message: '500 Internal Server Error',
+      this.stackTrace,
+      this.statusCode: 500,
+      List<String> errors: const []}) {
+    if (errors != null) {
+      this.errors.addAll(errors);
+    }
   }
 
   Map toJson() {
@@ -28,74 +37,76 @@ class _AngelHttpExceptionBase implements Exception {
   }
 
   Map toMap() => toJson();
-}
 
-/// Basically the same as
-/// [feathers-errors](https://github.com/feathersjs/feathers-errors).
-class AngelHttpException extends _AngelHttpExceptionBase {
-  /// Throws a 500 Internal Server Error.
-  /// Set includeRealException to true to print include the actual exception along with
-  /// this error. Useful flag for development vs. production.
-  AngelHttpException(error,
-      {bool includeRealError: false, StackTrace stackTrace}) :super.base() {
-    statusCode = 500;
-    message = "500 Internal Server Error";
-    if (includeRealError) {
-      errors.add(error.toString());
-      if (stackTrace != null) {
-        errors.add(stackTrace.toString());
-      }
-    }
+  @override
+  String toString() {
+    return "$statusCode: $message";
   }
+
+  factory AngelHttpException.fromMap(Map data) {
+    return new AngelHttpException(null,
+        statusCode: data['statusCode'],
+        message: data['message'],
+        errors: data['errors']);
+  }
+
+  factory AngelHttpException.fromJson(String json) =>
+      new AngelHttpException.fromMap(JSON.decode(json));
 
   /// Throws a 400 Bad Request error, including an optional arrray of (validation?)
   /// errors you specify.
-  AngelHttpException.BadRequest(
-      {String message: '400 Bad Request', List<String> errors: const[]})
-      : super(400, message, errors: errors);
+  factory AngelHttpException.BadRequest(
+          {String message: '400 Bad Request', List<String> errors: const []}) =>
+      new AngelHttpException(null,
+          message: message, errors: errors, statusCode: 400);
 
   /// Throws a 401 Not Authenticated error.
-  AngelHttpException.NotAuthenticated({String message: '401 Not Authenticated'})
-      : super(401, message);
+  factory AngelHttpException.NotAuthenticated(
+          {String message: '401 Not Authenticated'}) =>
+      new AngelHttpException(null, message: message, statusCode: 401);
 
   /// Throws a 402 Payment Required error.
-  AngelHttpException.PaymentRequired({String message: '402 Payment Required'})
-      : super(402, message);
+  factory AngelHttpException.PaymentRequired(
+          {String message: '402 Payment Required'}) =>
+      new AngelHttpException(null, message: message, statusCode: 402);
 
   /// Throws a 403 Forbidden error.
-  AngelHttpException.Forbidden({String message: '403 Forbidden'})
-      : super(403, message);
+  factory AngelHttpException.Forbidden({String message: '403 Forbidden'}) =>
+      new AngelHttpException(null, message: message, statusCode: 403);
 
   /// Throws a 404 Not Found error.
-  AngelHttpException.NotFound({String message: '404 Not Found'})
-      : super(404, message);
+  factory AngelHttpException.NotFound({String message: '404 Not Found'}) =>
+      new AngelHttpException(null, message: message, statusCode: 404);
 
   /// Throws a 405 Method Not Allowed error.
-  AngelHttpException.MethodNotAllowed(
-      {String message: '405 Method Not Allowed'})
-      : super(405, message);
+  factory AngelHttpException.MethodNotAllowed(
+          {String message: '405 Method Not Allowed'}) =>
+      new AngelHttpException(null, message: message, statusCode: 405);
 
   /// Throws a 406 Not Acceptable error.
-  AngelHttpException.NotAcceptable({String message: '406 Not Acceptable'})
-      : super(406, message);
+  factory AngelHttpException.NotAcceptable(
+          {String message: '406 Not Acceptable'}) =>
+      new AngelHttpException(null, message: message, statusCode: 406);
 
   /// Throws a 408 Timeout error.
-  AngelHttpException.MethodTimeout({String message: '408 Timeout'})
-      : super(408, message);
+  factory AngelHttpException.MethodTimeout({String message: '408 Timeout'}) =>
+      new AngelHttpException(null, message: message, statusCode: 408);
 
   /// Throws a 409 Conflict error.
-  AngelHttpException.Conflict({String message: '409 Conflict'})
-      : super(409, message);
+  factory AngelHttpException.Conflict({String message: '409 Conflict'}) =>
+      new AngelHttpException(null, message: message, statusCode: 409);
 
   /// Throws a 422 Not Processable error.
-  AngelHttpException.NotProcessable({String message: '422 Not Processable'})
-      : super(422, message);
+  factory AngelHttpException.NotProcessable(
+          {String message: '422 Not Processable'}) =>
+      new AngelHttpException(null, message: message, statusCode: 422);
 
   /// Throws a 501 Not Implemented error.
-  AngelHttpException.NotImplemented({String message: '501 Not Implemented'})
-      : super(501, message);
+  factory AngelHttpException.NotImplemented(
+          {String message: '501 Not Implemented'}) =>
+      new AngelHttpException(null, message: message, statusCode: 501);
 
   /// Throws a 503 Unavailable error.
-  AngelHttpException.Unavailable({String message: '503 Unavailable'})
-      : super(503, message);
+  factory AngelHttpException.Unavailable({String message: '503 Unavailable'}) =>
+      new AngelHttpException(null, message: message, statusCode: 503);
 }

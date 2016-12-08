@@ -1,6 +1,6 @@
 # angel_framework
 
-![version 1.0.0-dev.28](https://img.shields.io/badge/version-1.0.0--dev.28-red.svg)
+[![pub 1.0.0-dev.29](https://img.shields.io/badge/pub-1.0.0--dev.29-red.svg)](https://pub.dartlang.org/packages/angel_framework)
 ![build status](https://travis-ci.org/angel-dart/framework.svg)
 
 Core libraries for the Angel Framework.
