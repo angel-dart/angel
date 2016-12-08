@@ -1,8 +1,10 @@
 library angel_framework.http.angel_http_exception;
 
+import 'dart:convert';
+
 /// Basically the same as
 /// [feathers-errors](https://github.com/feathersjs/feathers-errors).
-class AngelHttpException {
+class AngelHttpException implements Exception {
   var error;
 
   /// A list of errors that occurred when this exception was thrown.
