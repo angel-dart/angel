@@ -22,7 +22,7 @@ main() {
       serverApp.use("/postcards", new server.MemoryService<Postcard>());
       serverPostcards = serverApp.service("postcards");
 
-      clientApp = new client.Rest(url, new http.Client());
+      clientApp = new client.Rest(url);
       clientPostcards = clientApp.service("postcards");
       clientTypedPostcards = clientApp.service("postcards", type: Postcard);
     });

@@ -2,109 +2,68 @@
 library angel_client.cli;
 
 import 'dart:async';
-import 'dart:convert' show JSON;
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
 import 'angel_client.dart';
+import 'base_angel_client.dart';
 export 'angel_client.dart';
 
-_buildQuery(Map params) {
-  if (params == null || params == {})
-    return "";
-
-  String result = "";
-  return result;
-}
-
-const Map _readHeaders = const {
-  "Accept": "application/json"
-};
-
-const Map _writeHeaders = const {
-  "Accept": "application/json",
-  "Content-Type": "application/json"
-};
-
 /// Queries an Angel server via REST.
-class Rest extends Angel {
-  BaseClient client;
-
-  Rest(String path, BaseClient this.client) :super(path);
+class Rest extends BaseAngelClient {
+  Rest(String path) : super(new http.Client(), path);
 
   @override
-  RestService service(String path, {Type type}) {
-    String uri = path.replaceAll(new RegExp(r"(^\/)|(\/+$)"), "");
-    return new RestService._base("$basePath/$uri", client, type)
-      ..app = this;
+  Service service(String path, {Type type}) {
+    String uri = path.replaceAll(new RegExp(r"(^/)|(/+$)"), "");
+    return new RestService(client, this, "$basePath/$uri", type);
   }
 }
 
 /// Queries an Angel service via REST.
-class RestService extends Service {
-  String basePath;
-  BaseClient client;
-  Type outputType;
+class RestService extends BaseAngelService {
+  final Type type;
 
-  RestService._base(Pattern path, BaseClient this.client,
-      Type this.outputType) {
-    this.basePath = (path is RegExp) ? path.pattern : path;
+  RestService(http.BaseClient client, Angel app, String url, this.type)
+      : super(client, app, url);
+
+  deserialize(x) {
+    if (type != null) {
+      return god.deserializeDatum(x, outputType: type);
+    }
+
+    return x;
   }
 
-  _makeBody(data) {
-    if (outputType == null)
-      return JSON.encode(data);
-    else return god.serialize(data);
+  @override
+  makeBody(x) {
+    if (type != null) {
+      return super.makeBody(god.serializeObject(x));
+    }
+
+    return super.makeBody(x);
   }
 
   @override
   Future<List> index([Map params]) async {
-    var response = await client.get(
-        "$basePath/${_buildQuery(params)}", headers: _readHeaders);
-
-    if (outputType == null)
-      return god.deserialize(response.body);
-
-    else {
-      return JSON.decode(response.body).map((x) =>
-          god.deserializeDatum(x, outputType: outputType)).toList();
-    }
+    final items = await super.index(params);
+    return items.map(deserialize).toList();
   }
 
   @override
-  Future read(id, [Map params]) async {
-    var response = await client.get(
-        "$basePath/$id${_buildQuery(params)}", headers: _readHeaders);
-    return god.deserialize(response.body, outputType: outputType);
-  }
+  Future read(id, [Map params]) => super.read(id, params).then(deserialize);
 
   @override
-  Future create(data, [Map params]) async {
-    var response = await client.post(
-        "$basePath/${_buildQuery(params)}", body: _makeBody(data),
-        headers: _writeHeaders);
-    return god.deserialize(response.body, outputType: outputType);
-  }
+  Future create(data, [Map params]) =>
+      super.create(data, params).then(deserialize);
 
   @override
-  Future modify(id, data, [Map params]) async {
-    var response = await client.patch(
-        "$basePath/$id${_buildQuery(params)}", body: _makeBody(data),
-        headers: _writeHeaders);
-    return god.deserialize(response.body, outputType: outputType);
-  }
+  Future modify(id, data, [Map params]) =>
+      super.modify(id, data, params).then(deserialize);
 
   @override
-  Future update(id, data, [Map params]) async {
-    var response = await client.patch(
-        "$basePath/$id${_buildQuery(params)}", body: _makeBody(data),
-        headers: _writeHeaders);
-    return god.deserialize(response.body, outputType: outputType);
-  }
+  Future update(id, data, [Map params]) =>
+      super.update(id, data, params).then(deserialize);
 
   @override
-  Future remove(id, [Map params]) async {
-    var response = await client.delete(
-        "$basePath/$id${_buildQuery(params)}", headers: _readHeaders);
-    return god.deserialize(response.body, outputType: outputType);
-  }
+  Future remove(id, [Map params]) => super.remove(id, params).then(deserialize);
 }

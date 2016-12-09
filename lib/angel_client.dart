@@ -2,13 +2,15 @@
 library angel_client;
 
 import 'dart:async';
-import 'auth_types.dart' as auth_types;
+import 'dart:convert';
+export 'package:angel_framework/src/http/angel_http_exception.dart';
 
 /// A function that configures an [Angel] client in some way.
 typedef Future AngelConfigurer(Angel app);
 
 /// Represents an Angel server that we are querying.
 abstract class Angel {
+  String get authToken;
   String basePath;
 
   Angel(String this.basePath);
@@ -28,11 +30,33 @@ abstract class Angel {
 }
 
 /// Represents the result of authentication with an Angel server.
-abstract class AngelAuthResult {
-  Map<String, dynamic> get data;
-  String get token;
+class AngelAuthResult {
+  String _token;
+  final Map<String, dynamic> data = {};
+  String get token => _token;
 
-  Map<String, dynamic> toJson();
+  AngelAuthResult({String token, Map<String, dynamic> data: const {}}) {
+    _token = token;
+    this.data.addAll(data ?? {});
+  }
+
+  factory AngelAuthResult.fromMap(Map data) {
+    final result = new AngelAuthResult();
+
+    if (data is Map && data.containsKey('token') && data['token'] is String)
+      result._token = data['token'];
+
+    if (data is Map) result.data.addAll(data['data'] ?? {});
+
+    return result;
+  }
+
+  factory AngelAuthResult.fromJson(String json) =>
+      new AngelAuthResult.fromMap(JSON.decode(json));
+
+  Map<String, dynamic> toJson() {
+    return {'token': token, 'data': data};
+  }
 }
 
 /// Queries a service on an Angel server, with the same API.
