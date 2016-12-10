@@ -21,6 +21,8 @@ abstract class Angel {
       String authEndpoint: '/auth',
       String reviveEndpoint: '/auth/token'});
 
+  Future close();
+
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) async {
     await configurer(this);

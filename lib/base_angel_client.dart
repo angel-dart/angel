@@ -124,6 +124,10 @@ abstract class BaseAngelClient extends Angel {
     }
   }
 
+  Future close() async {
+    client.close();
+  }
+
   @override
   Service service<T>(String path, {Type type}) {
     String uri = path.replaceAll(straySlashes, "");
@@ -171,10 +175,6 @@ class BaseAngelService extends Service {
     final head = basePath.replaceAll(new RegExp(r'/+$'), '');
     final tail = basePath.replaceAll(straySlashes, '');
     return '$head/$tail';
-  }
-
-  Future close() async {
-    client.close();
   }
 
   Future<http.StreamedResponse> send(http.BaseRequest request) {
