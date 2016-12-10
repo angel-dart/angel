@@ -9,12 +9,14 @@ class Postcard extends MemoryModel {
 
   @override
   bool operator ==(other) {
-    if (!(other is Postcard))
-      return false;
+    if (!(other is Postcard)) return false;
 
-    return id == other.id && location == other.location &&
+    return id == other.id &&
+        location == other.location &&
         message == other.message;
   }
 
-
+  Map toJson() {
+    return {'id': id, 'location': location, 'message': message};
+  }
 }

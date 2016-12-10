@@ -136,7 +136,7 @@ abstract class BaseAngelClient extends Angel {
 
   String _join(url) {
     final head = basePath.replaceAll(new RegExp(r'/+$'), '');
-    final tail = basePath.replaceAll(straySlashes, '');
+    final tail = url.replaceAll(straySlashes, '');
     return '$head/$tail';
   }
 

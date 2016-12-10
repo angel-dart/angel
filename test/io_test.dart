@@ -30,9 +30,15 @@ main() {
       await httpServer.close(force: true);
     });
 
+    test('plain requests', () async {
+      final response = await clientApp.get('/foo');
+      print(response.body);
+    });
+
     test("index", () async {
       Postcard niagaraFalls = await serverPostcards.create(
           new Postcard(location: "Niagara Falls", message: "Missing you!"));
+      print('Niagra Falls: ${niagaraFalls.toJson()}');
       List<Map> indexed = await clientPostcards.index();
       print(indexed);
 
