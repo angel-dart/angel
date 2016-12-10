@@ -11,6 +11,7 @@ import 'metadata.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'service.dart';
+
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A function that intercepts a request and determines whether handling of it should continue.

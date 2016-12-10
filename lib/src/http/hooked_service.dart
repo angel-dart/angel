@@ -39,6 +39,41 @@ class HookedService extends Service {
     if (inner.app != null) this.app = inner.app;
   }
 
+  void addHooks() {
+    Hooks hooks = getAnnotation(inner, Hooks);
+    final before = [];
+    final after = [];
+
+    if (hooks != null) {
+      before.addAll(hooks.before);
+      after.addAll(hooks.after);
+    }
+
+    void applyListeners(Function fn, HookedServiceEventDispatcher dispatcher,
+        [bool isAfter]) {
+      Hooks hooks = getAnnotation(fn, Hooks);
+      final listeners = []..addAll(isAfter == true ? after : before);
+
+      if (hooks != null)
+        listeners.addAll(isAfter == true ? hooks.after : hooks.before);
+
+      listeners.forEach(dispatcher.listen);
+    }
+
+    applyListeners(inner.index, beforeIndexed);
+    applyListeners(inner.read, beforeRead);
+    applyListeners(inner.created, beforeCreated);
+    applyListeners(inner.modify, beforeModified);
+    applyListeners(inner.updated, beforeUpdated);
+    applyListeners(inner.removed, beforeRemoved);
+    applyListeners(inner.index, afterIndexed, true);
+    applyListeners(inner.read, afterRead, true);
+    applyListeners(inner.created, afterCreated, true);
+    applyListeners(inner.modify, afterModified, true);
+    applyListeners(inner.updated, afterUpdated, true);
+    applyListeners(inner.removed, afterRemoved, true);
+  }
+
   @override
   void addRoutes() {
     // Set up our routes. We still need to copy middleware from inner service
@@ -59,7 +94,10 @@ class HookedService extends Service {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(inner.create, Middleware);
-    post('/', (req, res) async => await this.create(req.body, mergeMap([req.query, restProvider])),
+    post(
+        '/',
+        (req, res) async =>
+            await this.create(req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -70,7 +108,7 @@ class HookedService extends Service {
     get(
         '/:id',
         (req, res) async => await this
-        .read(req.params['id'], mergeMap([req.query, restProvider])),
+            .read(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -78,8 +116,8 @@ class HookedService extends Service {
     Middleware modifyMiddleware = getAnnotation(inner.modify, Middleware);
     patch(
         '/:id',
-        (req, res) async =>
-    await this.modify(req.params['id'], req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.modify(
+            req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -88,8 +126,8 @@ class HookedService extends Service {
     Middleware updateMiddleware = getAnnotation(inner.update, Middleware);
     post(
         '/:id',
-        (req, res) async =>
-    await this.update(req.params['id'], req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.update(
+            req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -99,11 +137,13 @@ class HookedService extends Service {
     delete(
         '/:id',
         (req, res) async => await this
-        .remove(req.params['id'], mergeMap([req.query, restProvider])),
+            .remove(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
+
+    addHooks();
   }
 
   @override

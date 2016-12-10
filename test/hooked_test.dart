@@ -18,12 +18,12 @@ main() {
   HookedService Todos;
 
   setUp(() async {
-    app = new Angel(debug: true);
+    app = new Angel();
     client = new http.Client();
     app.use('/todos', new MemoryService<Todo>());
     Todos = app.service("todos");
 
-    app.dumpTree(showMatchers: true);
+    // app.dumpTree(showMatchers: true);
 
     server = await app.startServer();
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
@@ -86,5 +86,13 @@ main() {
     print(response.body);
     List result = god.deserialize(response.body);
     expect(result[0]["angel"], equals("framework"));
+  });
+
+  test('metadata', () async {
+    final service = new HookedService(new IncrementService())..addHooks();
+    expect(service.inner, isNot(new isInstanceOf<MemoryService>()));
+    IncrementService.TIMES = 0;
+    await service.index();
+    expect(IncrementService.TIMES, equals(2));
   });
 }
