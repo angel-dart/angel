@@ -14,6 +14,7 @@ dependencies:
   angel_mustache: ^1.0.0-dev
   angel_proxy: ^1.0.0-dev
   angel_static: ^1.1.0-dev
+  angel_test: ^1.0.0-dev
   mailer: ^1.1.0+4
   validate: ^1.5.2
 dev_dependencies:

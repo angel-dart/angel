@@ -26,7 +26,7 @@ configureAfter(Angel app) async {
 
   // Default error handler
   app.onError(
-      (e, req, res) async => res.render("error", {"message": e.message}));
+      (e, req, res) async => res.render('error', {'message': e.message}));
 }
 
 configureServer(Angel app) async {

@@ -26,18 +26,18 @@ class User extends Model {
 
   factory User.fromMap(Map data) => new User(
       id: data['id'],
-      email: data["email"],
-      username: data["username"],
-      password: data["password"],
-      roles: data["roles"]);
+      email: data['email'],
+      username: data['username'],
+      password: data['password'],
+      roles: data['roles']);
 
   Map toJson() {
     return {
-      "id": id,
-      "email": email,
-      "username": username,
-      "password": password,
-      "roles": roles
+      'id': id,
+      'email': email,
+      'username': username,
+      'password': password,
+      'roles': roles
     };
   }
 }

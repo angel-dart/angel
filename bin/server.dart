@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel/angel.dart';
 import 'package:angel_diagnostics/angel_diagnostics.dart';
-import 'package:angel_framework/angel_framework.dart';
 import 'package:intl/intl.dart';
 
 main() async {

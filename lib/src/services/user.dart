@@ -8,9 +8,9 @@ export '../models/user.dart';
 
 configureServer(Db db) {
   return (Angel app) async {
-    app.use("/api/users", new UserService(db.collection("users")));
+    app.use('/api/users', new UserService(db.collection('users')));
 
-    HookedService service = app.service("api/users");
+    HookedService service = app.service('api/users');
     app.container.singleton(service.inner);
   };
 }
@@ -32,7 +32,7 @@ class UserService extends Service {
 
   @override
   index([Map params]) {
-    if (params != null && params.containsKey("provider")) {
+    if (params != null && params.containsKey('provider')) {
       // Nobody needs to see the entire user list except for the server.
       throw new AngelHttpException.Forbidden();
     }
@@ -42,19 +42,19 @@ class UserService extends Service {
 
   @override
   create(data, [Map params]) {
-    if (params != null && params.containsKey("provider")) {
+    if (params != null && params.containsKey('provider')) {
       // Deny creating users to the public - this should be done by the server only.
       throw new AngelHttpException.Forbidden();
     }
 
     try {
-      Validate.isKeyInMap("username", data);
-      Validate.isKeyInMap("password", data);
-      Validate.isEmail(data["email"]);
-      data["password"] = hashPassword(data["password"]);
+      Validate.isKeyInMap('username', data);
+      Validate.isKeyInMap('password', data);
+      Validate.isEmail(data['email']);
+      data['password'] = hashPassword(data['password']);
     } catch (e) {
       throw new AngelHttpException.BadRequest(
-          message: "User must have a username, e-mail address and password.");
+          message: 'User must have a username, e-mail address and password.');
     }
 
     return _inner.create(data, params);
