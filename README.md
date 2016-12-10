@@ -1,6 +1,6 @@
 # angel_client
 
-[![pub 1.0.0-dev+16](https://img.shields.io/badge/pub-1.0.0--dev+16-red.svg)](https://pub.dartlang.org/packages/angel_client)
+[![pub 1.0.0-dev+17](https://img.shields.io/badge/pub-1.0.0--dev+17-red.svg)](https://pub.dartlang.org/packages/angel_client)
 ![build status](https://travis-ci.org/angel-dart/client.svg)
 
 Client library for the Angel framework.
@@ -44,6 +44,8 @@ class Todo extends Model {
 }
 
 bar() async {
+  // By the next release, this will just be:
+  // app.service<Todo>("todos")
   Service Todos = app.service("todos", type: Todo);
   List<Todo> todos = await Todos.index();
 

@@ -11,6 +11,7 @@ import 'package:merge_map/merge_map.dart';
 import 'angel_client.dart';
 import 'auth_types.dart' as auth_types;
 
+final RegExp straySlashes = new RegExp(r"(^/)|(/+$)");
 const Map<String, String> _readHeaders = const {'Accept': 'application/json'};
 final Map<String, String> _writeHeaders = mergeMap([
   _readHeaders,
@@ -23,7 +24,7 @@ _buildQuery(Map params) {
   List<String> query = [];
 
   params.forEach((k, v) {
-    query.add('$k=$v');
+    query.add('$k=${Uri.encodeQueryComponent(v.toString())}');
   });
 
   return '?' + query.join('&');
@@ -124,8 +125,8 @@ abstract class BaseAngelClient extends Angel {
   }
 
   @override
-  Service service(String path, {Type type}) {
-    String uri = path.replaceAll(new RegExp(r"(^/)|(/+$)"), "");
+  Service service<T>(String path, {Type type}) {
+    String uri = path.replaceAll(straySlashes, "");
     return new BaseAngelService(client, this, '$basePath/$uri');
   }
 }
@@ -166,12 +167,50 @@ class BaseAngelService extends Service {
     return http.Response.fromStream(await client.send(request));
   }
 
+  String _join(url) {
+    final head = basePath.replaceAll(new RegExp(r'/+$'), '');
+    final tail = basePath.replaceAll(straySlashes, '');
+    return '$head/$tail';
+  }
+
+  Future close() async {
+    client.close();
+  }
+
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     if (app.authToken != null && app.authToken.isNotEmpty) {
       request.headers['Authorization'] = 'Bearer ${app.authToken}';
     }
 
     return client.send(request);
+  }
+
+  Future<http.Response> delete(String url,
+      {Map<String, String> headers}) async {
+    return client.delete(_join(url), headers: headers);
+  }
+
+  Future<http.Response> get(String url, {Map<String, String> headers}) async {
+    return client.get(_join(url), headers: headers);
+  }
+
+  Future<http.Response> head(String url, {Map<String, String> headers}) async {
+    return client.head(_join(url), headers: headers);
+  }
+
+  Future<http.Response> patch(String url,
+      {body, Map<String, String> headers}) async {
+    return client.patch(_join(url), body: body, headers: headers);
+  }
+
+  Future<http.Response> post(String url,
+      {body, Map<String, String> headers}) async {
+    return client.post(_join(url), body: body, headers: headers);
+  }
+
+  Future<http.Response> put(String url,
+      {body, Map<String, String> headers}) async {
+    return client.put(_join(url), body: body, headers: headers);
   }
 
   @override
@@ -214,8 +253,8 @@ class BaseAngelService extends Service {
 
   @override
   Future create(data, [Map params]) async {
-    final response = await sendUnstreamed(
-        'POST', '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
+    final response = await sendUnstreamed('POST',
+        '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
       if (response.statusCode != 200) {
@@ -230,8 +269,8 @@ class BaseAngelService extends Service {
 
   @override
   Future modify(id, data, [Map params]) async {
-    final response = await sendUnstreamed(
-        'PATCH', '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
+    final response = await sendUnstreamed('PATCH',
+        '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
       if (response.statusCode != 200) {
@@ -246,8 +285,8 @@ class BaseAngelService extends Service {
 
   @override
   Future update(id, data, [Map params]) async {
-    final response = await sendUnstreamed(
-        'POST', '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
+    final response = await sendUnstreamed('POST',
+        '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
       if (response.statusCode != 200) {

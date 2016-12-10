@@ -26,7 +26,7 @@ abstract class Angel {
     await configurer(this);
   }
 
-  Service service(Pattern path, {Type type});
+  Service service<T>(Pattern path, {Type type});
 }
 
 /// Represents the result of authentication with an Angel server.
