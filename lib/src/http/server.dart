@@ -235,11 +235,12 @@ class Angel extends AngelBase {
             }
             _finalizeResponse(request, res);
           } catch (e, st) {
-            _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
+            _fatalErrorStream.add(new AngelFatalError(request: request, error: e, stack: st));
           }
+        } else {
+          _fatalErrorStream.add(new AngelFatalError(request: request, error: e, stack: st));
         }
 
-        _onError(e, st);
         break;
       }
     }
