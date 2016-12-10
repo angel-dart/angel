@@ -11,9 +11,12 @@ main(List<String> args) {
   var runner =
       new CommandRunner("angel", "Command-line tools for the Angel framework.");
 
-  runner.addCommand(new DoctorCommand());
-  runner.addCommand(new ServiceCommand());
-  runner.addCommand(new InitCommand());
+  runner
+    ..addCommand(new DoctorCommand())
+    ..addCommand(new ServiceCommand())
+    ..addCommand(new InitCommand())
+    ..addCommand(new TestCommand())
+    ..addCommand(new PluginCommand());
 
   return runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");

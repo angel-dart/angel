@@ -1,7 +1,6 @@
 import "dart:io";
 import "package:args/command_runner.dart";
 import "package:console/console.dart";
-import "package:mustache4dart/mustache4dart.dart";
 
 class ServiceCommand extends Command {
   final String CUSTOM = "Custom";
@@ -228,82 +227,36 @@ class ${name}Service extends MongoTypedService<$name> {
   _generateTests(String name, String type) {
     return '''
 import 'dart:io';
-import 'package:angel/src/services/${name.toLowerCase()}.dart';
+import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart' as god;${_includeMongo(type)}
+import 'package:angel_test/angel_test.dart';
 import 'package:test/test.dart';
 
-main() {
-  group('$name', () {
-    Angel app;
-    http.Client client;
-    HttpServer server;
-    String url;
-    HookedService ${name}s;${_createDb(type)}
+main() async {
+  Angel app;
+  TestClient client;
 
-    setUp(() async {
-      app = new Angel();
-      client = new http.Client();${_openDb(type)}
-      app.use('/${name.toLowerCase()}s', new ${name}Service(${_dbCollection(name, type)}));
-      ${name}s = app.service("${name.toLowerCase()}s");
+  setUp(() async {
+    app = await createServer();
+    client = await connectTo(app, saveSession: false);
+  });
 
-      server = await app.startServer(null, 0);
-      url = "http://\${server.address.host}:\${server.port}";
-    });
+  tearDown(() async {
+    await client.close();
+    app = null;
+  });
 
-    tearDown(() async {
-      app = null;
-      url = null;
-      client.close();
-      client = null;
-      ${name}s = null;
-      await server.close(force: true);
-    });
+  test('index via REST', () async {
+    final response = await client.get('/api/${name.toLowerCase()}');
+    expect(response, hasStatus(HttpStatus.OK));
+  });
 
-    test('Index ${name.toLowerCase()}s', () async {
-      var indexed${name}s = await ${name}s.index();
-    });
-
-    test('Index via REST', () async {
-      var response = await client.get('\$url/${name.toLowerCase()}s');
-      print(god.deserialize(response.body));
-    });
+  test('Index ${name.toLowerCase()}s', () async {
+    final ${name.toLowerCase()}s = await client.service('api/${name.toLowerCase()}').index();
+    print(${name.toLowerCase()}s);
   });
 }
-    '''
-        .trim();
-  }
 
-  _createDb(String type) {
-    if (type == MONGO || type == MONGO_TYPED) {
-      return "\n    Db db;";
-    }
-
-    return "";
-  }
-
-  _dbCollection(String name, String type) {
-    if (type == MONGO || type == MONGO_TYPED) {
-      return "db.collection('${name.toLowerCase()}s')";
-    }
-
-    return "";
-  }
-
-  _includeMongo(String type) {
-    if (type == MONGO || type == MONGO_TYPED) {
-      return "\nimport 'package:mongo_dart/mongo_dart.dart';";
-    }
-
-    return "";
-  }
-
-  _openDb(String type) {
-    if (type == MONGO || type == MONGO_TYPED) {
-      return "\n    await db.open();";
-    }
-
-    return "";
+    '''.trim();
   }
 }

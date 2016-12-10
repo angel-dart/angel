@@ -1,5 +1,5 @@
 name: angel_cli
-version: 1.0.0-dev+4
+version: 1.0.0-dev+5
 description: Command-line tools for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_cli
@@ -9,5 +9,4 @@ dependencies:
   analyzer: ">=0.28.1 <1.0.0"
   args: ">=0.3.4 <1.0.0"
   console: ">=2.2.3 <3.0.0"
-  mustache4dart: ">=1.0.0 <3.0.0"
   yaml: ">=2.0.0 <3.0.0"
