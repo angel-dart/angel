@@ -6,16 +6,15 @@ import 'dart:math' show Random;
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
-import 'package:shelf/shelf.dart' as shelf;
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
+import 'fatal_error.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
 import 'service.dart';
 export 'package:container/container.dart';
-part 'server_shelved.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -31,10 +30,14 @@ typedef Future AngelConfigurer(AngelBase app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
-  var _afterProcessed = new StreamController<HttpRequest>.broadcast();
-  var _beforeProcessed = new StreamController<HttpRequest>.broadcast();
-  var _fatalErrorStream = new StreamController<Map>.broadcast();
-  var _onController = new StreamController<Controller>.broadcast();
+  StreamController<HttpRequest> _afterProcessed =
+      new StreamController<HttpRequest>.broadcast();
+  StreamController<HttpRequest> _beforeProcessed =
+      new StreamController<HttpRequest>.broadcast();
+  StreamController<AngelFatalError> _fatalErrorStream =
+      new StreamController<AngelFatalError>.broadcast();
+  StreamController<Controller> _onController =
+      new StreamController<Controller>.broadcast();
   final Random _rand = new Random.secure();
 
   ServerGenerator _serverGenerator = HttpServer.bind;
@@ -46,7 +49,7 @@ class Angel extends AngelBase {
   Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
 
   /// Fired on fatal errors.
-  Stream<Map> get fatalErrorStream => _fatalErrorStream.stream;
+  Stream<AngelFatalError> get fatalErrorStream => _fatalErrorStream.stream;
 
   /// Fired whenever a controller is added to this instance.
   ///
@@ -80,8 +83,8 @@ class Angel extends AngelBase {
   HttpServer httpServer;
 
   /// Handles a server error.
-  _onError(e, [StackTrace stackTrace]) {
-    _fatalErrorStream.add({"error": e, "stack": stackTrace});
+  _onError(e, [StackTrace st]) {
+    _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
   }
 
   void _printDebug(x) {
@@ -231,11 +234,9 @@ class Angel extends AngelBase {
               await _errorHandler(e, req, res);
             }
             _finalizeResponse(request, res);
-          } catch (_) {
-            // Todo: This exception needs to be caught as well.
+          } catch (e, st) {
+            _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
           }
-        } else {
-          // Todo: Uncaught exceptions need to be... Caught.
         }
 
         _onError(e, st);

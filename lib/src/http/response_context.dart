@@ -151,7 +151,6 @@ class ResponseContext extends Extensible {
     // UserController@show
     List<String> split = action.split("@");
 
-    // Todo: AngelResponseException
     if (split.length < 2)
       throw new Exception(
           "Controller redirects must take the form of 'Controller@action'. You gave: $action");
