@@ -133,6 +133,46 @@ abstract class BaseAngelClient extends Angel {
     String uri = path.replaceAll(straySlashes, "");
     return new BaseAngelService(client, this, '$basePath/$uri');
   }
+
+  String _join(url) {
+    final head = basePath.replaceAll(new RegExp(r'/+$'), '');
+    final tail = basePath.replaceAll(straySlashes, '');
+    return '$head/$tail';
+  }
+
+  @override
+  Future<http.Response> delete(String url,
+      {Map<String, String> headers}) async {
+    return client.delete(_join(url), headers: headers);
+  }
+
+  @override
+  Future<http.Response> get(String url, {Map<String, String> headers}) async {
+    return client.get(_join(url), headers: headers);
+  }
+
+  @override
+  Future<http.Response> head(String url, {Map<String, String> headers}) async {
+    return client.head(_join(url), headers: headers);
+  }
+
+  @override
+  Future<http.Response> patch(String url,
+      {body, Map<String, String> headers}) async {
+    return client.patch(_join(url), body: body, headers: headers);
+  }
+
+  @override
+  Future<http.Response> post(String url,
+      {body, Map<String, String> headers}) async {
+    return client.post(_join(url), body: body, headers: headers);
+  }
+
+  @override
+  Future<http.Response> put(String url,
+      {body, Map<String, String> headers}) async {
+    return client.put(_join(url), body: body, headers: headers);
+  }
 }
 
 class BaseAngelService extends Service {
@@ -171,46 +211,12 @@ class BaseAngelService extends Service {
     return http.Response.fromStream(await client.send(request));
   }
 
-  String _join(url) {
-    final head = basePath.replaceAll(new RegExp(r'/+$'), '');
-    final tail = basePath.replaceAll(straySlashes, '');
-    return '$head/$tail';
-  }
-
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     if (app.authToken != null && app.authToken.isNotEmpty) {
       request.headers['Authorization'] = 'Bearer ${app.authToken}';
     }
 
     return client.send(request);
-  }
-
-  Future<http.Response> delete(String url,
-      {Map<String, String> headers}) async {
-    return client.delete(_join(url), headers: headers);
-  }
-
-  Future<http.Response> get(String url, {Map<String, String> headers}) async {
-    return client.get(_join(url), headers: headers);
-  }
-
-  Future<http.Response> head(String url, {Map<String, String> headers}) async {
-    return client.head(_join(url), headers: headers);
-  }
-
-  Future<http.Response> patch(String url,
-      {body, Map<String, String> headers}) async {
-    return client.patch(_join(url), body: body, headers: headers);
-  }
-
-  Future<http.Response> post(String url,
-      {body, Map<String, String> headers}) async {
-    return client.post(_join(url), body: body, headers: headers);
-  }
-
-  Future<http.Response> put(String url,
-      {body, Map<String, String> headers}) async {
-    return client.put(_join(url), body: body, headers: headers);
   }
 
   @override

@@ -3,6 +3,7 @@ library angel_client;
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/src/response.dart' as http;
 export 'package:angel_framework/src/http/angel_http_exception.dart';
 
 /// A function that configures an [Angel] client in some way.
@@ -29,6 +30,22 @@ abstract class Angel {
   }
 
   Service service<T>(Pattern path, {Type type});
+
+  Future<http.Response> delete(String url,
+      {Map<String, String> headers});
+
+  Future<http.Response> get(String url, {Map<String, String> headers});
+
+  Future<http.Response> head(String url, {Map<String, String> headers});
+
+  Future<http.Response> patch(String url,
+      {body, Map<String, String> headers});
+
+  Future<http.Response> post(String url,
+      {body, Map<String, String> headers});
+
+  Future<http.Response> put(String url,
+      {body, Map<String, String> headers});
 }
 
 /// Represents the result of authentication with an Angel server.
