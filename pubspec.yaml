@@ -9,6 +9,7 @@ dependencies:
   angel_configuration: ^1.0.0-dev
   angel_cors: ^1.0.0-dev
   angel_diagnostics: ^1.0.0-dev
+  angel_errors: ^1.0.0-dev
   angel_framework: ^1.0.0-dev
   angel_mongo: ^1.0.0-dev
   angel_mustache: ^1.0.0-dev
