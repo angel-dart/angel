@@ -1,0 +1,9 @@
+name: angel_user_agent
+version: 1.0.0
+description: Middleware to inject a User Agent object into requests.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/user_agent
+environment:
+  sdk: ">=1.19.0"
+dependencies:
+  user_agent: ^1.0.0
