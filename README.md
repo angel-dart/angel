@@ -1,2 +1,2 @@
 # user_agent
-User agent parser, with special Angel support.
+Middleware to inject a User Agent object into requests.
