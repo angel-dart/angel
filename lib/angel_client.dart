@@ -9,6 +9,12 @@ export 'package:angel_framework/src/http/angel_http_exception.dart';
 /// A function that configures an [Angel] client in some way.
 typedef Future AngelConfigurer(Angel app);
 
+/// A function that deserializes data received from the server.
+///
+/// This is only really necessary in the browser, where `json_god`
+/// doesn't work.
+typedef AngelDeserializer(x);
+
 /// Represents an Angel server that we are querying.
 abstract class Angel {
   String get authToken;
@@ -29,7 +35,7 @@ abstract class Angel {
     await configurer(this);
   }
 
-  Service service<T>(String path, {Type type});
+  Service service<T>(String path, {Type type, AngelDeserializer deserializer});
 
   Future<http.Response> delete(String url,
       {Map<String, String> headers});

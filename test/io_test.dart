@@ -23,7 +23,7 @@ main() {
 
       clientApp = new client.Rest(url);
       clientPostcards = clientApp.service("postcards");
-      clientTypedPostcards = clientApp.service<Postcard>("postcards", type: Postcard);
+      clientTypedPostcards = clientApp.service("postcards", type: Postcard);
     });
 
     tearDown(() async {

@@ -1,5 +1,5 @@
 name: angel_client
-version: 1.0.0-dev+20
+version: 1.0.0-dev+21
 description: Client library for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_client

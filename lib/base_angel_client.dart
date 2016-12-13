@@ -128,9 +128,10 @@ abstract class BaseAngelClient extends Angel {
   }
 
   @override
-  Service service<T>(String path, {Type type}) {
+  Service service<T>(String path, {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(straySlashes, "");
-    return new BaseAngelService(client, this, '$basePath/$uri');
+    return new BaseAngelService(client, this, '$basePath/$uri',
+        deserializer: deserializer);
   }
 
   String _join(url) {
@@ -179,8 +180,13 @@ class BaseAngelService extends Service {
   final Angel app;
   final String basePath;
   final http.BaseClient client;
+  final AngelDeserializer deserializer;
 
-  BaseAngelService(this.client, this.app, this.basePath);
+  BaseAngelService(this.client, this.app, this.basePath, {this.deserializer});
+
+  deserialize(x) {
+    return deserializer != null ? deserializer(x) : x;
+  }
 
   makeBody(x) {
     return JSON.encode(x);
@@ -234,7 +240,7 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return json;
+      return json.map(deserialize).toList();
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -250,7 +256,7 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return JSON.decode(response.body);
+      return deserialize(JSON.decode(response.body));
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -266,7 +272,7 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return JSON.decode(response.body);
+      return deserialize(JSON.decode(response.body));
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -282,7 +288,7 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return JSON.decode(response.body);
+      return deserialize(JSON.decode(response.body));
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -298,7 +304,7 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return JSON.decode(response.body);
+      return deserialize(JSON.decode(response.body));
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -314,7 +320,7 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return JSON.decode(response.body);
+      return deserialize(JSON.decode(response.body));
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }

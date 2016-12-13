@@ -13,7 +13,7 @@ class Rest extends BaseAngelClient {
   Rest(String path) : super(new http.Client(), path);
 
   @override
-  Service service<T>(String path, {Type type}) {
+  Service service<T>(String path, {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(straySlashes, "");
     return new RestService(
         client, this, "$basePath/$uri", T != dynamic ? T : type);
