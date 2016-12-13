@@ -118,8 +118,11 @@ class AngelAuth extends AngelPlugin {
         print('Now deserializing from this userId: ${token.userId}');
       }
 
-      req.inject(AuthToken, req.properties['token'] = token);
-      req.properties["user"] = await deserializer(token.userId);
+      final user = await deserializer(token.userId);
+
+      req
+        ..inject(AuthToken, req.properties['token'] = token)
+        ..inject(user.runtimeType, req.properties["user"] = user);
     }
 
     return true;
