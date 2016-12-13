@@ -4,4 +4,5 @@ export "doctor.dart";
 export "init.dart";
 export "plugin.dart";
 export "service.dart";
+export "start.dart";
 export "test.dart";

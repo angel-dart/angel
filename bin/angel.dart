@@ -16,7 +16,8 @@ main(List<String> args) {
     ..addCommand(new ServiceCommand())
     ..addCommand(new InitCommand())
     ..addCommand(new TestCommand())
-    ..addCommand(new PluginCommand());
+    ..addCommand(new PluginCommand())
+    ..addCommand(new StartCommand());
 
   return runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");

@@ -1,5 +1,5 @@
 name: angel_cli
-version: 1.0.0-dev+5
+version: 1.0.0-dev+6
 description: Command-line tools for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_cli
