@@ -7,16 +7,15 @@ import 'package:http/src/base_request.dart' as http;
 import 'package:http/src/request.dart' as http;
 import 'package:http/src/response.dart' as http;
 import 'package:http/src/streamed_response.dart' as http;
-import 'package:merge_map/merge_map.dart';
 import 'angel_client.dart';
 import 'auth_types.dart' as auth_types;
 
 final RegExp straySlashes = new RegExp(r"(^/)|(/+$)");
 const Map<String, String> _readHeaders = const {'Accept': 'application/json'};
-final Map<String, String> _writeHeaders = mergeMap([
-  _readHeaders,
-  const {'Content-Type': 'application/json'}
-]);
+const Map<String, String> _writeHeaders = const {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json'
+};
 
 _buildQuery(Map params) {
   if (params == null || params.isEmpty) return "";
@@ -66,11 +65,11 @@ abstract class BaseAngelClient extends Angel {
       String reviveEndpoint: '/auth/token'}) async {
     if (type == null) {
       final url = '$basePath$reviveEndpoint';
-      final response = await client.post(url,
-          headers: mergeMap([
-            _writeHeaders,
-            {'Authorization': 'Bearer ${credentials['token']}'}
-          ]));
+      final response = await client.post(url, headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${credentials['token']}'
+      });
 
       try {
         if (response.statusCode != 200) {
@@ -130,7 +129,7 @@ abstract class BaseAngelClient extends Angel {
 
   @override
   Service service<T>(String path, {Type type}) {
-    String uri = path.replaceAll(straySlashes, "");
+    String uri = path.toString().replaceAll(straySlashes, "");
     return new BaseAngelService(client, this, '$basePath/$uri');
   }
 

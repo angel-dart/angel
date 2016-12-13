@@ -29,7 +29,7 @@ abstract class Angel {
     await configurer(this);
   }
 
-  Service service<T>(Pattern path, {Type type});
+  Service service<T>(String path, {Type type});
 
   Future<http.Response> delete(String url,
       {Map<String, String> headers});

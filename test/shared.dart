@@ -1,7 +1,6 @@
 import "package:angel_framework/src/defs.dart";
 
 class Postcard extends MemoryModel {
-  int id;
   String location;
   String message;
 
