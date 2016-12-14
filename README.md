@@ -139,4 +139,3 @@ For applications where you need to access a chain of handlers, consider using
 
 # Route Parameters
 Routes can have parameters, as seen in the above examples.
-If a parameter is a number, then it will automatically be parsed.
