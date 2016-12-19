@@ -8,7 +8,7 @@ import 'package:uuid/uuid.dart';
 final Uuid _uuid = new Uuid();
 
 Future<TestClient> connectTo(Angel app,
-    {Map initialSession, bool saveSession: true}) async {
+    {Map initialSession, bool saveSession: false}) async {
   TestClient client;
   var path = '/${_uuid.v1()}/${_uuid.v1()}/${_uuid.v1()}';
 

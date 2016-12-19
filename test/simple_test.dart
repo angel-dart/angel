@@ -35,19 +35,20 @@ main() {
 
   group('session', () {
     test('initial session', () async {
-      final TestClient client =
-          await connectTo(app, initialSession: {'foo': 'bar'});
+      final TestClient client = await connectTo(app,
+          initialSession: {'foo': 'bar'}, saveSession: true);
       expect(client.session['foo'], equals('bar'));
     });
 
     test('add to session', () async {
-      final TestClient client = await connectTo(app);
+      final TestClient client = await connectTo(app, saveSession: true);
       await client.addToSession({'michael': 'jackson'});
       expect(client.session['michael'], equals('jackson'));
     });
 
     test('remove from session', () async {
-      final TestClient client = await connectTo(app, initialSession: {'angel': 'framework'});
+      final TestClient client = await connectTo(app,
+          initialSession: {'angel': 'framework'}, saveSession: true);
       await client.removeFromSession(['angel']);
       expect(client.session.containsKey('angel'), isFalse);
     });
