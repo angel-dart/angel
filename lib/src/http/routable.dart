@@ -1,7 +1,6 @@
 library angel_framework.http.routable;
 
 import 'dart:async';
-import 'dart:io';
 import 'package:angel_route/angel_route.dart';
 import '../util.dart';
 import 'angel_base.dart';
@@ -19,9 +18,6 @@ typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
 
 /// A function that receives an incoming [RequestContext] and responds to it.
 typedef Future RequestHandler(RequestContext req, ResponseContext res);
-
-/// A function that handles an [HttpRequest].
-typedef Future RawRequestHandler(HttpRequest request);
 
 /// A routable server that can handle dynamic requests.
 class Routable extends Router {

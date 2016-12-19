@@ -7,6 +7,7 @@ export 'angel_http_exception.dart';
 export 'base_middleware.dart';
 export 'base_plugin.dart';
 export 'controller.dart';
+export 'fatal_error.dart';
 export 'hooked_service.dart';
 export 'metadata.dart';
 export 'memory_service.dart';

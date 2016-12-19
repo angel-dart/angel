@@ -19,6 +19,15 @@ class ResponseContext extends Extensible {
   /// The [Angel] instance that is sending a response.
   AngelBase app;
 
+  /// Any and all cookies to be sent to the user.
+  final List<Cookie> cookies = [];
+
+  /// Headers that will be sent to the user.
+  final Map<String, String> headers = {};
+
+  /// This response's status code.
+  int statusCode = 200;
+
   /// Can we still write to this response?
   bool get isOpen => _isOpen;
 
@@ -26,8 +35,9 @@ class ResponseContext extends Extensible {
   final BytesBuilder buffer = new BytesBuilder();
 
   /// Sets the status code to be sent with this response.
+  @Deprecated('Please use `statusCode=` instead.')
   void status(int code) {
-    io.statusCode = code;
+    statusCode = code;
   }
 
   /// The underlying [HttpResponse] under this instance.
@@ -41,18 +51,15 @@ class ResponseContext extends Extensible {
 
   ResponseContext(this.io, this.app);
 
-  /// Any and all cookies to be sent to the user.
-  List<Cookie> get cookies => io.cookies;
-
   /// Set this to true if you will manually close the response.
   bool willCloseItself = false;
 
   /// Sends a download as a response.
   download(File file, {String filename}) async {
-    header("Content-Disposition",
-        'attachment; filename="${filename ?? file.path}"');
-    header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path));
-    header(HttpHeaders.CONTENT_LENGTH, file.lengthSync().toString());
+    headers["Content-Disposition"] =
+        'attachment; filename="${filename ?? file.path}"';
+    headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
+    headers[HttpHeaders.CONTENT_LENGTH] = file.lengthSync().toString();
     buffer.add(await file.readAsBytes());
     end();
   }
@@ -63,31 +70,32 @@ class ResponseContext extends Extensible {
   }
 
   /// Sets a response header to the given value, or retrieves its value.
+  @Deprecated('Please use `headers` instead.')
   header(String key, [String value]) {
     if (value == null)
-      return io.headers[key];
+      return headers[key];
     else
-      io.headers.set(key, value);
+      headers[key] = value;
   }
 
   /// Serializes JSON to the response.
   void json(value) {
     write(god.serialize(value));
-    header(HttpHeaders.CONTENT_TYPE, ContentType.JSON.toString());
+    headers[HttpHeaders.CONTENT_TYPE] = ContentType.JSON.toString();
     end();
   }
 
   /// Returns a JSONP response.
   void jsonp(value, {String callbackName: "callback"}) {
     write("$callbackName(${god.serialize(value)})");
-    header(HttpHeaders.CONTENT_TYPE, "application/javascript");
+    headers[HttpHeaders.CONTENT_TYPE] = "application/javascript";
     end();
   }
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) async {
     write(await app.viewGenerator(view, data));
-    header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
+    headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     end();
   }
 
@@ -99,9 +107,9 @@ class ResponseContext extends Extensible {
   ///
   /// See [Router]#navigate for more. :)
   void redirect(url, {bool absolute: true, int code: 301}) {
-    header(HttpHeaders.LOCATION,
-        url is String ? url : app.navigate(url, absolute: absolute));
-    status(code ?? 301);
+    headers[HttpHeaders.LOCATION] =
+        url is String ? url : app.navigate(url, absolute: absolute);
+    statusCode = code ?? 301;
     write('''
     <!DOCTYPE html>
     <html>
@@ -175,15 +183,13 @@ class ResponseContext extends Extensible {
   }
 
   /// Streams a file to this response as chunked data.
-  ///
-  /// Useful for video sites.
   Future streamFile(File file,
       {int chunkSize, int sleepMs: 0, bool resumable: true}) async {
     if (!isOpen) return;
 
-    header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path));
-    willCloseItself = true;
-    await file.openRead().pipe(io);
+    headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
+    end();
+    buffer.add(await file.readAsBytes());
   }
 
   /// Writes data to the response.

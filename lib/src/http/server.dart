@@ -56,11 +56,16 @@ class Angel extends AngelBase {
   /// **NOTE**: This is a broadcast stream.
   Stream<Controller> get onController => _onController.stream;
 
+  /// Always run before responses are sent.
+  ///
+  /// These will only not run if an [AngelFatalError] occurs.
+  final List<RequestHandler> responseFinalizers = [];
+
   /// Default error handler, show HTML error page
   AngelErrorHandler _errorHandler =
       (AngelHttpException e, req, ResponseContext res) {
-    res.header(HttpHeaders.CONTENT_TYPE, ContentType.HTML.toString());
-    res.status(e.statusCode);
+    res.heades[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
+    res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
     for (String error in e.errors) {
@@ -137,17 +142,6 @@ class Angel extends AngelBase {
       return res.isOpen;
     }
 
-    if (handler is RawRequestHandler) {
-      var result = await handler(req.io);
-      if (result is bool)
-        return result == true;
-      else if (result != null) {
-        res.json(result);
-        return false;
-      } else
-        return true;
-    }
-
     if (handler is Future) {
       var result = await handler;
       if (result is bool)
@@ -200,6 +194,8 @@ class Angel extends AngelBase {
     }
 
     final m = new MiddlewarePipeline(resolved);
+    req.inject(MiddlewarePipeline, m);
+
     final pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
 
     _printDebug('Handler sequence on $requestedUrl: $pipeline');
@@ -224,7 +220,7 @@ class Angel extends AngelBase {
         if (e is AngelHttpException) {
           // Special handling for AngelHttpExceptions :)
           try {
-            res.status(e.statusCode);
+            res.statusCode = e.statusCode;
             String accept = request.headers.value(HttpHeaders.ACCEPT);
             if (accept == "*/*" ||
                 accept.contains(ContentType.JSON.mimeType) ||
@@ -233,12 +229,14 @@ class Angel extends AngelBase {
             } else {
               await _errorHandler(e, req, res);
             }
-            _finalizeResponse(request, res);
+            // _finalizeResponse(request, res);
           } catch (e, st) {
-            _fatalErrorStream.add(new AngelFatalError(request: request, error: e, stack: st));
+            _fatalErrorStream.add(
+                new AngelFatalError(request: request, error: e, stack: st));
           }
         } else {
-          _fatalErrorStream.add(new AngelFatalError(request: request, error: e, stack: st));
+          _fatalErrorStream
+              .add(new AngelFatalError(request: request, error: e, stack: st));
         }
 
         break;
@@ -249,7 +247,18 @@ class Angel extends AngelBase {
       _afterProcessed.add(request);
 
       if (!res.willCloseItself) {
-        request.response.add(res.buffer.takeBytes());
+        for (var finalizer in responseFinalizers) {
+          await finalizer(req, res);
+        }
+
+        for (var key in res.headers.keys) {
+          request.response.headers.set(key, res.headers[key]);
+        }
+
+        request.response
+          ..statusCode = res.statusCode
+          ..cookies.addAll(res.cookies)
+          ..add(res.buffer.takeBytes());
         await request.response.close();
       }
     } catch (e) {
