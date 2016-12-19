@@ -168,9 +168,9 @@ class Angel extends AngelBase {
       return await executeHandler(requestMiddleware[handler], req, res);
     }
 
-    res.willCloseItself = true;
-    res.io.write(god.serialize(handler));
-    await res.io.close();
+    // res.willCloseItself = true;
+    res.write(god.serialize(handler));
+    // await res.io.close();
     return false;
   }
 
