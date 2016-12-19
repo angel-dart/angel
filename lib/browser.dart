@@ -52,12 +52,12 @@ class _BrowserRouterImpl extends Router implements BrowserRouter {
   Stream<Route> get onRoute => _onRoute.stream;
 
   _BrowserRouterImpl({bool listen}) : super() {
-    if (listen) this.listen();
+    if (listen != false) this.listen();
     prepareAnchors();
   }
 
   @override
-  void go(List linkParams) => _goTo(navigate(linkParams));
+  void go(Iterable linkParams) => _goTo(navigate(linkParams));
 
   void prepareAnchors() {
     final anchors = window.document.querySelectorAll('a:not([dynamic])');
