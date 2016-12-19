@@ -19,6 +19,9 @@ class ResponseContext extends Extensible {
   /// The [Angel] instance that is sending a response.
   AngelBase app;
 
+  /// Is `Transfer-Encoding` chunked?
+  bool chunked;
+
   /// Any and all cookies to be sent to the user.
   final List<Cookie> cookies = [];
 

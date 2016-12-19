@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_route/angel_route.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 import 'common.dart';
@@ -77,9 +78,8 @@ class SingletonController extends Controller {
 @Expose("/errands4")
 class ErrandController extends Controller {
   @Expose("/")
-  errand(Errand errand, Match match) {
-    expect(match, isNotNull);
-    print('Match: ${match.group(0)}');
+  errand(Errand errand, MiddlewarePipeline pipeline) {
+    expect(pipeline, isNotNull);
     return errand.text;
   }
 }

@@ -254,6 +254,8 @@ class Angel extends AngelBase {
         for (var key in res.headers.keys) {
           request.response.headers.set(key, res.headers[key]);
         }
+        
+        request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
 
         request.response
           ..statusCode = res.statusCode
