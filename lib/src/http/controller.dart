@@ -34,7 +34,6 @@ class Controller {
           "All controllers must carry an @Expose() declaration.");
     }
 
-
     final routable = new Routable(debug: true);
     configureRoutes(routable);
 
@@ -79,6 +78,12 @@ class Controller {
                 if (arg == null) {
                   if (req.injections.containsKey(name)) {
                     args.add(req.injections[name]);
+                    continue;
+                  } else if (name == "req") {
+                    args.add(req);
+                    continue;
+                  } else if (name == "res") {
+                    args.add(res);
                     continue;
                   }
 
