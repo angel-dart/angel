@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
+import 'package:id/id.dart';
 
 class ServiceCommand extends Command {
   final String CUSTOM = 'Custom';
@@ -15,6 +16,8 @@ class ServiceCommand extends Command {
 
   @override
   String get description => 'Creates a new service within the given project.';
+
+  String _snake(name) => idFromString(name).snake;
 
   @override
   run() async {
@@ -54,12 +57,11 @@ class ServiceCommand extends Command {
       throw new Exception('Empty generated service code.');
     }
 
+    var lower = _snake(name);
     var servicesDir = new Directory('lib/src/services');
-    var serviceFile =
-        new File.fromUri(servicesDir.uri.resolve('${name.toLowerCase()}.dart'));
+    var serviceFile = new File.fromUri(servicesDir.uri.resolve('$lower.dart'));
     var testDir = new Directory('test/services');
-    var testFile = new File.fromUri(
-        testDir.uri.resolve('${name.toLowerCase()}_test.dart'));
+    var testFile = new File.fromUri(testDir.uri.resolve('${lower}_test.dart'));
 
     if (!await servicesDir.exists()) await servicesDir.create(recursive: true);
 
@@ -69,14 +71,13 @@ class ServiceCommand extends Command {
 
     if (type == MONGO_TYPED || type == MEMORY) {
       var serviceLibrary = new File('lib/src/models/models.dart');
-      await serviceLibrary.writeAsString(
-          '\nexport "${name.toLowerCase()}.dart";',
+      await serviceLibrary.writeAsString("\nexport '$lower.dart';",
           mode: FileMode.APPEND);
     }
 
     await testFile.writeAsString(_generateTests(name, type));
 
-    final runConfig = new File('./.idea/runConfigurations/${name}_tests.xml');
+    var runConfig = new File('./.idea/runConfigurations/${name}_Tests.xml');
 
     if (!await runConfig.exists()) {
       await runConfig.create(recursive: true);
@@ -102,8 +103,8 @@ class ${name}Service extends Service {
   }
 
   _generateMemoryModel(String name) async {
-    final lower = name.toLowerCase();
-    final file = new File('lib/src/models/$lower.dart');
+    var lower = _snake(name);
+    var file = new File('lib/src/models/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
 
@@ -179,8 +180,8 @@ class ${name}Service extends MemoryService<$name> {
   }
 
   _generateMongoModel(String name) async {
-    final lower = name.toLowerCase();
-    final file = new File('lib/src/models/$lower.dart');
+    var lower = _snake(name);
+    var file = new File('lib/src/models/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
 
@@ -217,7 +218,7 @@ class $name extends Model {
   }
 
   _generateMongoService(String name) {
-    final lower = name.toLowerCase();
+    var lower = _snake(name);
 
     return '''
 import 'package:angel_framework/angel_framework.dart';
@@ -244,7 +245,7 @@ class ${name}Service extends MongoService {
   }
 
   _generateMongoTypedService(String name) {
-    final lower = name.toLowerCase();
+    var lower = _snake(name);
 
     return '''
 import 'package:angel_framework/angel_framework.dart';
@@ -273,7 +274,7 @@ class ${name}Service extends MongoTypedService<$name> {
   }
 
   _generateRunConfiguration(String name) {
-    final lower = name.toLowerCase();
+    var lower = _snake(name);
 
     return '''
     <component name="ProjectRunConfigurationManager">
@@ -287,6 +288,8 @@ class ${name}Service extends MongoTypedService<$name> {
   }
 
   _generateTests(String name, String type) {
+    var lower = _snake(name);
+
     return '''
 import 'dart:io';
 import 'package:angel/angel.dart';
@@ -309,13 +312,13 @@ main() async {
   });
 
   test('index via REST', () async {
-    final response = await client.get('/api/${name.toLowerCase()}');
+    var response = await client.get('/api/${lower}s');
     expect(response, hasStatus(HttpStatus.OK));
   });
 
-  test('Index ${name.toLowerCase()}s', () async {
-    final ${name.toLowerCase()}s = await client.service('api/${name.toLowerCase()}').index();
-    print(${name.toLowerCase()}s);
+  test('Index ${lower}s', () async {
+    var ${lower}s = await client.service('api/${lower}s').index();
+    print(${lower}s);
   });
 }
 
