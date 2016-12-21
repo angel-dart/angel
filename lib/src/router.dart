@@ -38,7 +38,7 @@ class Router extends Extensible {
   Router({this.debug: false});
 
   void _printDebug(msg) {
-    if (debug == true) print(msg);
+    // if (debug == true) print(msg);
   }
 
   /// Adds a route that responds to the given path
@@ -66,7 +66,7 @@ class Router extends Extensible {
   /// Returns a [Router] with a duplicated version of this tree.
   Router clone() {
     final router = new Router(debug: debug);
-    final newMounted = new Map.from(mounted);
+    final newMounted = new Map<Pattern, Router>.from(mounted);
 
     for (Route route in routes) {
       if (route is! SymlinkRoute) {

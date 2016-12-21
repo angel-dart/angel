@@ -59,7 +59,7 @@ class RoutingResult {
 
   /// All parameters on this sub-path and its children.
   Map<String, dynamic> get allParams {
-    final params = {};
+    final Map<String, dynamic> params = {};
     var search = this;
 
     while (search != null) {

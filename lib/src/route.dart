@@ -127,7 +127,7 @@ class Route {
   }
 
   void _printDebug(msg) {
-    if (debug == true) print(msg);
+    // if (debug == true) print(msg);
   }
 
   Route._base();
@@ -340,8 +340,8 @@ class Route {
       matcher.firstMatch(path.replaceAll(_straySlashes, ''));
 
   /// Extracts route parameters from a given path.
-  Map parseParameters(String requestPath) {
-    Map result = {};
+  Map<String, String> parseParameters(String requestPath) {
+    Map<String, String> result = {};
 
     Iterable<String> values =
     _parseParameters(requestPath.replaceAll(_straySlashes, ''));
