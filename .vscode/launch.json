@@ -8,8 +8,7 @@
             "cwd": "${workspaceRoot}",
             "debugSettings": "${command.debugSettings}",
             "program": "${workspaceRoot}/bin/server.dart",
-            "args": [],
-            "preLaunchTask": "pub:serve"
+            "args": []
         }
     ]
 }
