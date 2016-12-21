@@ -5,7 +5,7 @@ An easily-extensible web server framework in Dart.
 
 [Wiki](https://github.com/angel-dart/angel/wiki)
 
-[API Documentation](http://www.dartdocs.org/documentation/angel_framework/latest)
+[API Documentation](http://www.dartdocs.org/documentation/angel_common/latest)
 
 [Roadmap](https://github.com/angel-dart/roadmap/blob/master/ROADMAP.md)
 
