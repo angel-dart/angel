@@ -81,4 +81,4 @@ fabric.properties
 !.vscode/launch.json
 !.vscode/extensions.json
 
-logs/**/*.txt
+logs/
