@@ -124,7 +124,7 @@ class $name extends MemoryModel {
   factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
 
   factory $name.fromMap(Map data) => new $name(
-      id: data['id']
+      id: data['id'],
       name: data['name'],
       desc: data['desc']);
 
@@ -141,33 +141,13 @@ class $name extends MemoryModel {
   }
 
   _generateMemoryService(String name) {
+    var lower = _snake(name);
+
     return '''
 import 'package:angel_framework/defs.dart';
 import 'package:angel_framework/angel_framework.dart';
-
-/// Store in-memory instances of this class.
-class $name extends MemoryModel {
-  String name, desc;
-
-  $name({String id, this.name, this.desc}) {
-    this.id = id;
-  }
-
-  factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
-
-  factory $name.fromMap(Map data) => new $name(
-      id: data['id']
-      name: data['name'],
-      desc: data['desc']);
-
-  Map toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'desc': desc
-    };
-  }
-}
+import '../models/$lower.dart';
+export '../models/$lower.dart';
 
 /// Manages [$name] in-memory.
 class ${name}Service extends MemoryService<$name> {
@@ -201,7 +181,7 @@ class $name extends Model {
   factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
 
   factory $name.fromMap(Map data) => new $name(
-      id: data['id']
+      id: data['id'],
       name: data['name'],
       desc: data['desc']);
 
