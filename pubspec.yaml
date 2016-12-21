@@ -4,9 +4,9 @@ environment:
   sdk: ">=1.19.0"
 homepage: "https://github.com/angel-dart/cors.git"
 name: "angel_cors"
-version: "1.0.0-dev+1"
+version: "1.0.0-dev+2"
 dependencies: 
-  angel_framework: "^1.0.0-dev.28"
+  angel_framework: "^1.0.0-dev"
 dev_dependencies: 
   http: "^0.11.3+9"
   test: "^0.12.17"

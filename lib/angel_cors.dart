@@ -26,61 +26,53 @@ bool _isOriginAllowed(String origin, allowedOrigin) {
 RequestMiddleware cors([CorsOptions options]) {
   final opts = options ?? new CorsOptions();
 
-  /*
-  print(opts.credentials);
-  print(opts.allowedHeaders);
-  print(opts.methods);
-  print(opts.exposedHeaders);
-  print(opts.maxAge);
-  print(opts.origin);
-  */
-
   return (RequestContext req, ResponseContext res) async {
     // Access-Control-Allow-Credentials
     if (opts.credentials == true) {
-      res.header('Access-Control-Allow-Credentials', 'true');
+      res.heades['Access-Control-Allow-Credentials'] = 'true';
     }
 
     // Access-Control-Allow-Headers
     if (req.method == 'OPTIONS' && opts.allowedHeaders.isNotEmpty) {
-      res.header('Access-Control-Allow-Headers', opts.allowedHeaders.join(','));
+      res.headers['Access-Control-Allow-Headers'] =
+          opts.allowedHeaders.join(',');
     } else if (req.method == 'OPTIONS') {
-      res.header('Access-Control-Allow-Headers',
-          req.headers.value('Access-Control-Allow-Headers'));
+      res.headers['Access-Control-Allow-Headers'] =
+          req.headers.value('Access-Control-Allow-Headers');
     }
 
     // Access-Control-Expose-Headers
     if (opts.exposedHeaders.isNotEmpty) {
-      res.header(
-          'Access-Control-Expose-Headers', opts.exposedHeaders.join(','));
+      res.headers['Access-Control-Expose-Headers'] =
+          opts.exposedHeaders.join(',');
     }
 
     // Access-Control-Allow-Methods
     if (req.method == 'OPTIONS' && opts.methods.isNotEmpty) {
-      res.header('Access-Control-Allow-Methods', opts.methods.join(','));
+      res.headers['Access-Control-Allow-Methods'] = opts.methods.join(',');
     }
 
     // Access-Control-Max-Age
     if (req.method == 'OPTIONS' && opts.maxAge != null) {
-      res.header('Access-Control-Max-Age', opts.maxAge.toString());
+      res.headers['Access-Control-Max-Age'] = opts.maxAge.toString();
     }
 
     // Access-Control-Allow-Origin
     if (opts.origin == false || opts.origin == '*') {
-      res.header('Access-Control-Allow-Origin', '*');
+      res.headers['Access-Control-Allow-Origin'] = '*';
     } else if (opts.origin is String) {
       res
-        ..header('Access-Control-Allow-Origin', opts.origin)
-        ..header('Vary', 'Origin');
+        ..headers['Access-Control-Allow-Origin'] = opts.origin
+        ..headers['Vary'] = 'Origin';
     } else {
       bool isAllowed =
           _isOriginAllowed(req.headers.value('Origin'), opts.origin);
 
-      res.header('Access-Control-Allow-Origin',
-          isAllowed ? req.headers.value('Origin') : false.toString());
+      res.headers['Access-Control-Allow-Origin'] =
+          isAllowed ? req.headers.value('Origin') : false.toString();
 
       if (isAllowed) {
-        res.header('Vary', 'Origin');
+        res.headers['Vary'] = 'Origin';
       }
     }
 
