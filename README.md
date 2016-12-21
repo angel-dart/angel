@@ -1,6 +1,6 @@
 # angel_static
 
-![version 1.1.0-dev](https://img.shields.io/badge/version-1.1.0--dev-red.svg)
+![version 1.1.0-dev+2](https://img.shields.io/badge/version-1.1.0--dev+2-red.svg)
 ![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)
 
 Static server middleware for Angel.
@@ -11,7 +11,7 @@ In `pubspec.yaml`:
 ```yaml
 dependencies:
     angel_framework: ^1.0.0-dev
-    angel_static: ^1.1.0-dev+1
+    angel_static: ^1.1.0-dev
 ```
 
 # Usage

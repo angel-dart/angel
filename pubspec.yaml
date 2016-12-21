@@ -1,11 +1,12 @@
 name: angel_static
 description: Static server middleware for Angel.
+environment:
+  sdk: ">=1.19.0"
 homepage: https://github.com/angel-dart/angel_static
 author: thosakwe <thosakwe@gmail.com>
-version: 1.1.0-dev+1
+version: 1.1.0-dev+2
 dependencies:
-  angel_framework: ">=1.0.0-dev < 2.0.0"
-  mime: ">= 0.9.3 < 0.10.0"
+  angel_framework: ^1.0.0-dev
 dev_dependencies:
-  http: ">= 0.11.3 < 0.12.0"
-  test: ">= 0.12.13 < 0.13.0"
+  http: ^0.11.3
+  test: ^0.12.13

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_route/angel_route.dart';
-import 'package:mime/mime.dart' show lookupMimeType;
 
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
@@ -56,12 +55,8 @@ class VirtualDirectory {
 
   Future<bool> sendFile(File file, ResponseContext res) async {
     _printDebug('Streaming file ${file.absolute.path}...');
-    res
-      ..willCloseItself = true
-      ..header(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path))
-      ..status(200);
+    res.statusCode = 200;
     await res.streamFile(file);
-    await res.io.close();
     return false;
   }
 
