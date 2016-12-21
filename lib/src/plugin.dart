@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as Math;
 import 'package:angel_framework/angel_framework.dart';
@@ -233,10 +231,12 @@ class AngelAuth extends AngelPlugin {
         var userId = await serializer(result);
 
         // Create JWT
-        var jwt = new AuthToken(
-                userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip)
-            .serialize(_hs256);
-        req.inject(AuthToken, jwt);
+        var token = new AuthToken(
+            userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
+        var jwt = token.serialize(_hs256);
+        req
+          ..inject(AuthToken, req.properties['token'] = token)
+          ..inject(result.runtimeType, req.properties["user"] = result);
 
         if (allowCookie) req.cookies.add(new Cookie("token", jwt));
 

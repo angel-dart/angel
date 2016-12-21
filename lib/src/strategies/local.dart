@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import '../options.dart';
-import '../plugin.dart';
 import '../strategy.dart';
 
 bool _validateString(String str) => str != null && str.isNotEmpty;
@@ -32,8 +31,7 @@ class LocalAuthStrategy extends AuthStrategy {
           'Please provide a valid username and password.',
       bool this.allowBasic: true,
       bool this.forceBasic: false,
-      String this.realm: 'Authentication is required.'}) {
-  }
+      String this.realm: 'Authentication is required.'}) {}
 
   @override
   Future<bool> canLogout(RequestContext req, ResponseContext res) async {
@@ -79,8 +77,8 @@ class LocalAuthStrategy extends AuthStrategy {
 
       if (forceBasic) {
         res
-          ..status(401)
-          ..header(HttpHeaders.WWW_AUTHENTICATE, 'Basic realm="$realm"')
+          ..statusCode = 401
+          ..headers[HttpHeaders.WWW_AUTHENTICATE] = 'Basic realm="$realm"'
           ..end();
         return false;
       } else

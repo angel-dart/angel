@@ -33,7 +33,7 @@ class AuthToken {
     if (split.length != 3)
       throw new AngelHttpException.NotAuthenticated(message: "Invalid JWT.");
 
-    var headerString = new String.fromCharCodes(BASE64URL.decode(split[0]));
+    // var headerString = new String.fromCharCodes(BASE64URL.decode(split[0]));
     var payloadString = new String.fromCharCodes(BASE64URL.decode(split[1]));
     var data = split[0] + "." + split[1];
     var signature = BASE64URL.encode(hmac.convert(data.codeUnits).bytes);

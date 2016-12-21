@@ -1,8 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
-import 'auth_token.dart';
 
 typedef AngelAuthCallback(
-    RequestContext req, ResponseContext res, AuthToken token);
+    RequestContext req, ResponseContext res, String token);
 
 class AngelAuthOptions {
   AngelAuthCallback callback;
