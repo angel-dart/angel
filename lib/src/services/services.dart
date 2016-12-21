@@ -1,7 +1,7 @@
 /// Declare services here!
 library angel.services;
 
-import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_common/angel_common.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import 'user.dart' as User;

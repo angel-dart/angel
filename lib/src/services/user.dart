@@ -1,5 +1,4 @@
-import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_mongo/angel_mongo.dart';
+import 'package:angel_common/angel_common.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:validate/validate.dart';

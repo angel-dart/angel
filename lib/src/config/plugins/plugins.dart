@@ -2,7 +2,7 @@
 library angel.config.plugins;
 
 import 'dart:async';
-import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_common/angel_common.dart';
 
 Future configureServer(Angel app) async {
   // Include any plugins you have made here.

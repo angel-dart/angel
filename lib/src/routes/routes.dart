@@ -1,12 +1,7 @@
 /// This app's route configuration.
 library angel.routes;
 
-import 'package:angel_compress/angel_compress.dart';
-import 'package:angel_cors/angel_cors.dart';
-import 'package:angel_errors/angel_errors.dart';
-import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_proxy/angel_proxy.dart';
-import 'package:angel_static/angel_static.dart';
+import 'package:angel_common/angel_common.dart';
 import 'controllers/controllers.dart' as Controllers;
 
 configureBefore(Angel app) async {
