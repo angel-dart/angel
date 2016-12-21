@@ -79,6 +79,8 @@ class ResponseContext extends Extensible {
   ResponseContext(this.io, this.app);
 
   /// Set this to true if you will manually close the response.
+  /// 
+  /// If `true`, all response finalizers will be skipped.
   bool willCloseItself = false;
 
   /// Sends a download as a response.
@@ -209,14 +211,34 @@ class ResponseContext extends Extensible {
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
   }
 
-  /// Streams a file to this response as chunked data.
-  Future streamFile(File file,
+  /// Copies a file's contents into the response buffer.
+  Future sendFile(File file,
       {int chunkSize, int sleepMs: 0, bool resumable: true}) async {
     if (!isOpen) return;
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-    end();
     buffer.add(await file.readAsBytes());
+    end();
+  }
+
+  /// Streams a file to this response.
+  ///
+  /// You can optionally transform the file stream with a [codec].
+  Future streamFile(File file,
+      {int chunkSize,
+      int sleepMs: 0,
+      bool resumable: true,
+      Codec<List<int>, List<int>> codec}) async {
+    if (!isOpen) return;
+
+    headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
+    end();
+    willCloseItself = true;
+
+    var stream = codec != null
+        ? file.openRead().transform(codec.encoder)
+        : file.openRead();
+    await stream.pipe(io);
   }
 
   /// Writes data to the response.

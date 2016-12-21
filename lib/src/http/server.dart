@@ -38,6 +38,8 @@ class Angel extends AngelBase {
       new StreamController<AngelFatalError>.broadcast();
   StreamController<Controller> _onController =
       new StreamController<Controller>.broadcast();
+  final List<Angel> _children = [];
+  Angel _parent;
   final Random _rand = new Random.secure();
 
   ServerGenerator _serverGenerator = HttpServer.bind;
@@ -48,13 +50,25 @@ class Angel extends AngelBase {
   /// Fired before a request is processed. Always runs.
   Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
 
+  /// All child application mounted on this instance.
+  List<Angel> get children => new List<Angel>.unmodifiable(_children);
+
   /// Fired on fatal errors.
   Stream<AngelFatalError> get fatalErrorStream => _fatalErrorStream.stream;
+
+  /// Indicates whether the application is running in a production environment.
+  ///
+  /// The criteria for this is the `ANGEL_ENV` environment variable being set to
+  /// `'production'`.
+  bool get isProduction => Platform.environment['ANGEL_ENV'] == 'production';
 
   /// Fired whenever a controller is added to this instance.
   ///
   /// **NOTE**: This is a broadcast stream.
   Stream<Controller> get onController => _onController.stream;
+
+  /// Returns the parent instance of this application, if any.
+  Angel get parent => _parent;
 
   /// Always run before responses are sent.
   ///
@@ -79,10 +93,10 @@ class Angel extends AngelBase {
   AngelErrorHandler get errorHandler => _errorHandler;
 
   /// [RequestMiddleware] to be run before all requests.
-  List before = [];
+  final List before = [];
 
   /// [RequestMiddleware] to be run after all requests.
-  List after = [];
+  final List after = [];
 
   /// The native HttpServer running this instancce.
   HttpServer httpServer;
@@ -254,7 +268,7 @@ class Angel extends AngelBase {
         for (var key in res.headers.keys) {
           request.response.headers.set(key, res.headers[key]);
         }
-        
+
         request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
 
         request.response
@@ -327,15 +341,54 @@ class Angel extends AngelBase {
     }, onError: _onError);
   }
 
+  /// Mounts the child on this router.
+  ///
+  /// If the router is an [Angel] instance, all controllers
+  /// will be copied, as well as services and response finalizers.
+  ///
+  /// [before] and [after] will be preserved.
+  /// 
+  /// NOTE: The above will not be properly copied if [path] is
+  /// a [RegExp].
   @override
   use(Pattern path, Routable routable,
       {bool hooked: true, String namespace: null}) {
+    final head = path.toString().replaceAll(_straySlashes, '');
+
     if (routable is Angel) {
-      final head = path.toString().replaceAll(_straySlashes, '');
+      _children.add(routable.._parent = this);
+
+      if (routable.before.isNotEmpty) {
+        all(path, (req, res) {
+          return true;
+        }, middleware: routable.before);
+      }
+
+      if (routable.after.isNotEmpty) {
+        all(path, (req, res) {
+          return true;
+        }, middleware: routable.after);
+      }
+
+      if (routable.responseFinalizers.isNotEmpty) {
+        responseFinalizers.add((req, res) async {
+          if (req.path.replaceAll(_straySlashes, '').startsWith(head)) {
+            for (var finalizer in routable.responseFinalizers)
+              await finalizer(req, res);
+          }
+
+          return true;
+        });
+      }
 
       routable.controllers.forEach((k, v) {
         final tail = k.toString().replaceAll(_straySlashes, '');
         controllers['$head/$tail'.replaceAll(_straySlashes, '')] = v;
+      });
+
+      routable.services.forEach((k, v) {
+        final tail = k.toString().replaceAll(_straySlashes, '');
+        services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
       });
     }
 
