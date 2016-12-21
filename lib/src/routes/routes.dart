@@ -1,6 +1,7 @@
 /// This app's route configuration.
 library angel.routes;
 
+import 'package:angel_compress/angel_compress.dart';
 import 'package:angel_cors/angel_cors.dart';
 import 'package:angel_errors/angel_errors.dart';
 import 'package:angel_framework/angel_framework.dart';
@@ -46,6 +47,9 @@ configureAfter(Angel app) async {
 
   // Pass AngelHttpExceptions through handler as well
   await app.configure(errors);
+
+  // Compress via GZIP
+  app.responseFinalizers.add(gzip());
 }
 
 configureServer(Angel app) async {
