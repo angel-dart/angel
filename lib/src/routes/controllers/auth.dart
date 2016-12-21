@@ -35,8 +35,6 @@ class AuthController extends Controller {
     await app.configure(auth);
   }
 
-  bool loggedIn(RequestContext req) => req.session['userId'] != null;
-
   @Expose('/login', method: 'POST')
   login(RequestContext req) async {
     // Include log-in logic here...
