@@ -78,7 +78,7 @@ class Angel extends AngelBase {
   /// Default error handler, show HTML error page
   AngelErrorHandler _errorHandler =
       (AngelHttpException e, req, ResponseContext res) {
-    res.heades[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
+    res.headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
