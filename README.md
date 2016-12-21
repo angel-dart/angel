@@ -1,4 +1,6 @@
 # Angel
+[![version: v1.0.0-alpha](https://img.shields.io/badge/pub-v1.0.0--alpha-blue.svg)](https://pub.dartlang.org/packages/angel_common)
+
 An easily-extensible web server framework in Dart.
 
 [Wiki](https://github.com/angel-dart/angel/wiki)
