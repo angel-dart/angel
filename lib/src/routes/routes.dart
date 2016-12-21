@@ -11,11 +11,13 @@ configureBefore(Angel app) async {
 /// Put your app routes here!
 configureRoutes(Angel app) async {
   app.get('/', (req, ResponseContext res) => res.render('hello'));
-  await app.configure(new PubServeLayer());
-  await app.configure(new VirtualDirectory());
 }
 
 configureAfter(Angel app) async {
+  // Static server, and pub serve while in development
+  await app.configure(new PubServeLayer());
+  await app.configure(new VirtualDirectory());
+  
   // Set our application up to handle different errors.
   var errors = new ErrorHandler(handlers: {
     404: (req, res) async =>
