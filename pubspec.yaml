@@ -1,26 +1,27 @@
-name: angel
-description: An easily-extensible web server framework in Dart.
-version: 1.0.0-dev
-author: Tobe O
-homepage: https://github.com/angel-dart/angel
-publish_to: none
-dependencies:
-  angel_auth: ^1.0.0-dev
-  angel_configuration: ^1.0.0-dev
-  angel_cors: ^1.0.0-dev
-  angel_diagnostics: ^1.0.0-dev
-  angel_errors: ^1.0.0-dev
-  angel_framework: ^1.0.0-dev
-  angel_mongo: ^1.0.0-dev
-  angel_mustache: ^1.0.0-dev
-  angel_proxy: ^1.0.0-dev
-  angel_static: ^1.1.0-dev
-  angel_test: ^1.0.0-dev
-  mailer: ^1.1.0+4
-  validate: ^1.5.2
-dev_dependencies:
-  http: ^0.11.3
-  grinder: ^0.8.0+2
-  test: ^0.12.13
-transformers:
-- angel_configuration
+author: "Tobe O"
+description: "An easily-extensible web server framework in Dart."
+homepage: "https://github.com/angel-dart/angel"
+name: "angel"
+publish_to: "none"
+version: "1.0.0-dev"
+dependencies: 
+  angel_auth: "^1.0.0-dev"
+  angel_compress: "^1.0.0"
+  angel_configuration: "^1.0.0-dev"
+  angel_cors: "^1.0.0-dev"
+  angel_diagnostics: "^1.0.0-dev"
+  angel_errors: "^1.0.0-dev"
+  angel_framework: "^1.0.0-dev"
+  angel_mongo: "^1.0.0-dev"
+  angel_mustache: "^1.0.0-dev"
+  angel_proxy: "^1.0.0-dev"
+  angel_static: "^1.1.0-dev"
+  angel_test: "^1.0.0-dev"
+  mailer: "^1.1.0+4"
+  validate: "^1.5.2"
+dev_dependencies: 
+  grinder: "^0.8.0+2"
+  http: "^0.11.3"
+  test: "^0.12.13"
+transformers: 
+  - "angel_configuration"
