@@ -27,22 +27,18 @@ class StartCommand extends Command {
       final scriptsNode = doc.contents['scripts'];
 
       if (scriptsNode != null && scriptsNode.containsKey('start')) {
-        final scripts = scriptsNode['start'] is List
-            ? scriptsNode['start']
-            : [scriptsNode['start']];
-
-        for (String script in scripts) {
-          final split = script.split(' ');
-          final result = await Process.run(split.first, split.skip(1).toList(),
-              stdoutEncoding: null, stderrEncoding: null);
-          final code = result.exitCode;
-
-          stdout.add(result.stdout);
-          stderr.add(result.stderr);
+        try {
+          var scripts =
+              await Process.start('pub', ['global', 'run', 'scripts', 'start']);
+          scripts.stdout.pipe(stdout);
+          scripts.stderr.pipe(stderr);
+          int code = await scripts.exitCode;
 
           if (code != 0) {
-            throw new Exception("Command '$script' exited with code $code.");
+            throw new Exception('`scripts start` failed with exit code $code.');
           }
+        } catch (e) {
+          // No scripts? No problem...
         }
       }
     }

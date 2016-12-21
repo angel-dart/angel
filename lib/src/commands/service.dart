@@ -1,41 +1,41 @@
-import "dart:io";
-import "package:args/command_runner.dart";
-import "package:console/console.dart";
+import 'dart:io';
+import 'package:args/command_runner.dart';
+import 'package:console/console.dart';
 
 class ServiceCommand extends Command {
-  final String CUSTOM = "Custom";
-  final String MEMORY = "In-Memory";
-  final String MONGO = "MongoDB";
-  final String MONGO_TYPED = "MongoDB (typed)";
-  final String TRESTLE = "Trestle";
+  final String CUSTOM = 'Custom';
+  final String MEMORY = 'In-Memory';
+  final String MONGO = 'MongoDB';
+  final String MONGO_TYPED = 'MongoDB (typed)';
+  final String TRESTLE = 'Trestle';
   final TextPen _pen = new TextPen();
 
   @override
-  String get name => "service";
+  String get name => 'service';
 
   @override
-  String get description => "Creates a new service within the given project.";
+  String get description => 'Creates a new service within the given project.';
 
   @override
   run() async {
-    var name = await readInput("Name of Service (not plural): ");
+    var name = await readInput('Name of Service (not plural): ');
     var chooser = new Chooser([TRESTLE, MONGO, MONGO_TYPED, MEMORY, CUSTOM],
-        message: "What type of service would you like to create? ");
+        message: 'What type of service would you like to create? ');
     var type = await chooser.choose();
 
     fail() {
       _pen.red();
-      _pen("Could not successfully create service $name.");
+      _pen('Could not successfully create service $name.');
       _pen();
     }
 
-    String serviceSource = "";
+    String serviceSource = '';
 
     if (type == MONGO) {
       serviceSource = _generateMongoService(name);
+      await _generateMemoryModel(name);
     } else if (type == MONGO_TYPED) {
       serviceSource = _generateMongoTypedService(name);
-
       await _generateMongoModel(name);
     } else if (type == MEMORY) {
       serviceSource = _generateMemoryService(name);
@@ -43,23 +43,23 @@ class ServiceCommand extends Command {
       serviceSource = _generateCustomService(name);
     } else if (type == TRESTLE) {
       _pen.blue();
-      _pen("${Icon.STAR} Trestle services are not yet implemented. :(");
+      _pen('${Icon.STAR} Trestle services are not yet implemented. :(');
       _pen();
     } else {
-      print("Code to generate a $type service is not yet written.");
+      print('Code to generate a $type service is not yet written.');
     }
 
     if (serviceSource.isEmpty) {
       fail();
-      throw new Exception("Empty generated service code.");
+      throw new Exception('Empty generated service code.');
     }
 
-    var servicesDir = new Directory("lib/src/services");
+    var servicesDir = new Directory('lib/src/services');
     var serviceFile =
-        new File.fromUri(servicesDir.uri.resolve("${name.toLowerCase()}.dart"));
-    var testDir = new Directory("test/services");
+        new File.fromUri(servicesDir.uri.resolve('${name.toLowerCase()}.dart'));
+    var testDir = new Directory('test/services');
     var testFile = new File.fromUri(
-        testDir.uri.resolve("${name.toLowerCase()}_test.dart"));
+        testDir.uri.resolve('${name.toLowerCase()}_test.dart'));
 
     if (!await servicesDir.exists()) await servicesDir.create(recursive: true);
 
@@ -67,10 +67,10 @@ class ServiceCommand extends Command {
 
     await serviceFile.writeAsString(serviceSource);
 
-    if (type == MONGO_TYPED) {
-      var serviceLibrary = new File("lib/src/models/models.dart");
+    if (type == MONGO_TYPED || type == MEMORY) {
+      var serviceLibrary = new File('lib/src/models/models.dart');
       await serviceLibrary.writeAsString(
-          "\nexport '${name.toLowerCase()}.dart';",
+          '\nexport "${name.toLowerCase()}.dart";',
           mode: FileMode.APPEND);
     }
 
@@ -84,7 +84,7 @@ class ServiceCommand extends Command {
     }
 
     _pen.green();
-    _pen("${Icon.CHECKMARK} Successfully generated service $name.");
+    _pen('${Icon.CHECKMARK} Successfully generated service $name.');
     _pen();
   }
 
@@ -101,6 +101,44 @@ class ${name}Service extends Service {
         .trim();
   }
 
+  _generateMemoryModel(String name) async {
+    final lower = name.toLowerCase();
+    final file = new File('lib/src/models/$lower.dart');
+
+    if (!await file.exists()) await file.createSync(recursive: true);
+
+    await file.writeAsString('''
+library angel.models.$lower;
+
+import 'dart:convert';
+import 'package:angel_framework/angel_framework.dart';
+
+class $name extends MemoryModel {
+  String name, desc;
+
+  $name({String id, this.name, this.desc}) {
+    this.id = id;
+  }
+
+  factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
+
+  factory $name.fromMap(Map data) => new $name(
+      id: data['id']
+      name: data['name'],
+      desc: data['desc']);
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'desc': desc
+    };
+  }
+}
+    '''
+        .trim());
+  }
+
   _generateMemoryService(String name) {
     return '''
 import 'package:angel_framework/defs.dart';
@@ -108,6 +146,26 @@ import 'package:angel_framework/angel_framework.dart';
 
 /// Store in-memory instances of this class.
 class $name extends MemoryModel {
+  String name, desc;
+
+  $name({String id, this.name, this.desc}) {
+    this.id = id;
+  }
+
+  factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
+
+  factory $name.fromMap(Map data) => new $name(
+      id: data['id']
+      name: data['name'],
+      desc: data['desc']);
+
+  Map toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'desc': desc
+    };
+  }
 }
 
 /// Manages [$name] in-memory.
@@ -135,18 +193,22 @@ import 'package:angel_mongo/model.dart';
 class $name extends Model {
   String name, desc;
 
-  $name({this.name, this.desc});
+  $name({String id, this.name, this.desc}) {
+    this.id = id;
+  }
 
   factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
 
   factory $name.fromMap(Map data) => new $name(
-      name: data["name"],
-      desc: data["desc"]);
+      id: data['id']
+      name: data['name'],
+      desc: data['desc']);
 
   Map toJson() {
     return {
-      "name": name,
-      "desc": desc
+      'id': id,
+      'name': name,
+      'desc': desc
     };
   }
 }
@@ -164,9 +226,9 @@ import 'package:mongo_dart/mongo_dart.dart';
 
 configureServer(Db db) {
   return (Angel app) async {
-    app.use("/api/${lower}s", new ${name}Service(db.collection("${lower}s")));
+    app.use('/api/${lower}s', new ${name}Service(db.collection('${lower}s')));
 
-    HookedService service = app.service("api/${lower}s");
+    HookedService service = app.service('api/${lower}s');
     app.container.singleton(service.inner);
   };
 }
@@ -193,9 +255,9 @@ export '../models/$lower.dart';
 
 configureServer(Db db) {
   return (Angel app) async {
-    app.use("/api/${lower}s", new ${name}Service(db.collection("${lower}s")));
+    app.use('/api/${lower}s', new ${name}Service(db.collection('${lower}s')));
 
-    HookedService service = app.service("api/${lower}s");
+    HookedService service = app.service('api/${lower}s');
     app.container.singleton(service.inner);
   };
 }
@@ -257,6 +319,7 @@ main() async {
   });
 }
 
-    '''.trim();
+    '''
+        .trim();
   }
 }

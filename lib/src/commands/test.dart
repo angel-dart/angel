@@ -63,7 +63,7 @@ main() async {
 
   setUp(() async {
     app = await createServer();
-    client = await connectTo(app, saveSession: false);
+    client = await connectTo(app);
   });
 
   tearDown(() async {
