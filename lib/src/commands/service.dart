@@ -144,7 +144,6 @@ class $name extends MemoryModel {
     var lower = _snake(name);
 
     return '''
-import 'package:angel_framework/defs.dart';
 import 'package:angel_framework/angel_framework.dart';
 import '../models/$lower.dart';
 export '../models/$lower.dart';
