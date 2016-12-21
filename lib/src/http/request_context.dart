@@ -56,8 +56,7 @@ class RequestContext extends Extensible {
   Map get query => _body.query;
 
   /// The remote address requesting this resource.
-  InternetAddress get remoteAddress =>
-      io.connectionInfo.remoteAddress;
+  InternetAddress get remoteAddress => io.connectionInfo.remoteAddress;
 
   /// The user's HTTP session.
   HttpSession get session => io.session;
@@ -67,10 +66,7 @@ class RequestContext extends Extensible {
 
   /// Is this an **XMLHttpRequest**?
   bool get xhr =>
-      io.headers
-          .value("X-Requested-With")
-          ?.trim()
-          ?.toLowerCase() ==
+      io.headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
       'xmlhttprequest';
 
   @deprecated
@@ -91,7 +87,7 @@ class RequestContext extends Extensible {
         .replaceAll(new RegExp(r'/+$'), '');
     ctx._io = request;
 
-    ctx._body = await parseBody(request);
+    ctx._body = (await parseBody(request)) ?? {};
 
     return ctx;
   }

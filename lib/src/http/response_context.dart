@@ -10,6 +10,9 @@ import '../extensible.dart';
 import 'angel_base.dart';
 import 'controller.dart';
 
+final RegExp _contentType =
+    new RegExp(r'([^/\n]+)\/\s*([^;\n]+)\s*(;\s*charset=([^$;\n]+))?');
+
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A convenience wrapper around an outgoing HTTP request.
@@ -50,6 +53,27 @@ class ResponseContext extends Extensible {
   HttpResponse get underlyingRequest {
     throw new Exception(
         '`ResponseContext#underlyingResponse` is deprecated. Please update your application to use the newer `ResponseContext#io`.');
+  }
+
+  /// Gets the Content-Type header.
+  ContentType get contentType {
+    if (!headers.containsKey(HttpHeaders.CONTENT_TYPE)) return null;
+
+    var header = headers[HttpHeaders.CONTENT_TYPE];
+    var match = _contentType.firstMatch(header);
+
+    if (match == null)
+      throw new Exception('Malformed Content-Type response header: "$header".');
+
+    if (match[4]?.isNotEmpty != true)
+      return new ContentType(match[1], match[2]);
+    else
+      return new ContentType(match[1], match[2], charset: match[4]);
+  }
+
+  /// Sets the Content-Type header.
+  void set contentType(ContentType contentType) {
+    headers[HttpHeaders.CONTENT_TYPE] = contentType.toString();
   }
 
   ResponseContext(this.io, this.app);
