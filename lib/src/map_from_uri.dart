@@ -8,9 +8,11 @@ buildMapFromUri(Map map, String body) {
 
   for (String keyValuePair in body.split('&')) {
     if (keyValuePair.contains('=')) {
-      List<String> split = keyValuePair.split('=');
-      String key = Uri.decodeQueryComponent(split[0]);
-      String value = Uri.decodeQueryComponent(split[1]);
+      var equals = keyValuePair.indexOf('=');
+      String key = Uri.decodeQueryComponent(keyValuePair.substring(0, equals));
+      String value = keyValuePair.substring(equals + 1); //Uri.decodeQueryComponent(split[1]);
+      print('Key: $key');
+      print('Value: $value');
 
       if (parseArrayRgx.hasMatch(key)) {
         Match queryMatch = parseArrayRgx.firstMatch(key);

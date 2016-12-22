@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';
 
+const TOKEN =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIxMjcuMC4wLjEiLCJleHAiOi0xLCJpYXQiOiIyMDE2LTEyLTIyVDEyOjQ5OjUwLjM2MTQ0NiIsImlzcyI6ImFuZ2VsX2F1dGgiLCJzdWIiOiIxMDY2OTQ4Mzk2MDIwMjg5ODM2NTYifQ==.PYw7yUb-cFWD7N0sSLztP7eeRvO44nu1J2OgDNyT060=';
+
 main() {
   HttpServer server;
   String url;
@@ -49,6 +52,15 @@ main() {
       expect(query['map'] is Map, equals(true));
       expect(query['map']['foo'], equals({'bar': 'baz'}));
     });
+
+    test('JWT', () async {
+      var postData = 'token=$TOKEN';
+      print('Body: $postData');
+      var response = await client.get('$url/?$postData');
+      print('Response: ${response.body}');
+      var query = god.deserialize(response.body)['query'];
+      expect(query['token'], equals(TOKEN));
+    });
   });
 
   group('urlencoded', () {
@@ -73,6 +85,13 @@ main() {
       expect(body['nums'][2], equals(2));
       expect(body['map'] is Map, equals(true));
       expect(body['map']['foo'], equals({'bar': 'baz'}));
+    });
+
+    test('JWT', () async {
+      var postData = 'token=$TOKEN';
+      var response = await client.post(url, headers: headers, body: postData);
+      var body = god.deserialize(response.body)['body'];
+      expect(body['token'], equals(TOKEN));
     });
   });
 

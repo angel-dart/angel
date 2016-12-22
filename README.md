@@ -1,5 +1,5 @@
 # Body Parser
-![version 1.0.0-dev+2](https://img.shields.io/badge/version-1.0.0--dev+2-red.svg)
+![version 1.0.0-dev+3](https://img.shields.io/badge/version-1.0.0--dev+3-red.svg)
 ![build status](https://travis-ci.org/thosakwe/body_parser.svg)
 
 **NOT YET PRODUCTION READY**
