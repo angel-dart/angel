@@ -238,22 +238,20 @@ class AngelAuth extends AngelPlugin {
           ..inject(AuthToken, req.properties['token'] = token)
           ..inject(result.runtimeType, req.properties["user"] = result);
 
-        if (allowCookie) req.cookies.add(new Cookie("token", jwt));
+        if (allowCookie) res.cookies.add(new Cookie("token", jwt));
 
         if (options?.callback != null) {
           return await options.callback(req, res, jwt);
         }
 
-        if (options?.canRespondWithJson != false &&
+        if (options?.successRedirect?.isNotEmpty == true) {
+          return res.redirect(options.successRedirect, code: HttpStatus.OK);
+        } else if (options?.canRespondWithJson != false &&
             req.headers.value("accept") != null &&
             (req.headers.value("accept").contains("application/json") ||
                 req.headers.value("accept").contains("*/*") ||
                 req.headers.value("accept").contains("application/*"))) {
           return {"data": result, "token": jwt};
-        } else if (options != null &&
-            options.successRedirect != null &&
-            options.successRedirect.isNotEmpty) {
-          return res.redirect(options.successRedirect, code: HttpStatus.OK);
         }
 
         return true;
@@ -281,7 +279,7 @@ class AngelAuth extends AngelPlugin {
         }
       }
 
-      req.cookies.removeWhere((cookie) => cookie.name == "token");
+      res.cookies.removeWhere((cookie) => cookie.name == "token");
 
       if (options != null &&
           options.successRedirect != null &&
