@@ -1,3 +1,4 @@
+/// Server-side support for WebSockets.
 library angel_websocket.server;
 
 import 'dart:async';
@@ -13,22 +14,38 @@ export 'angel_websocket.dart';
 part 'websocket_context.dart';
 part 'websocket_controller.dart';
 
+/// Broadcasts events from [HookedService]s, and handles incoming [WebSocketAction]s.
 class AngelWebSocket extends AngelPlugin {
   Angel _app;
   List<WebSocket> _clients = [];
-  StreamController<WebSocketContext> _onConnection =
-      new StreamController<WebSocketContext>();
-  StreamController<WebSocketContext> _onDisconnect =
-      new StreamController<WebSocketContext>();
   final List<String> _servicesAlreadyWired = [];
+
+  final StreamController<WebSocketAction> _onAction =
+      new StreamController<WebSocketAction>();
+  final StreamController _onData = new StreamController();
+  final StreamController<WebSocketContext> _onConnection =
+      new StreamController<WebSocketContext>.broadcast();
+  final StreamController<WebSocketContext> _onDisconnect =
+      new StreamController<WebSocketContext>.broadcast();
+
+  /// Include debug information, and send error information across WebSockets.
+  final bool debug;
 
   /// A list of clients currently connected to this server via WebSockets.
   List<WebSocket> get clients => new List.unmodifiable(_clients);
 
   /// Services that have already been hooked to fire socket events.
-  List<String> get servicesAlreadyWired => new List.unmodifiable(_servicesAlreadyWired);
+  List<String> get servicesAlreadyWired =>
+      new List.unmodifiable(_servicesAlreadyWired);
 
+  /// The endpoint that users should connect a WebSocket to.
   final String endpoint;
+
+  /// Fired on any [WebSocketAction].
+  Stream<WebSocketAction> get onAction => _onAction.stream;
+
+  /// Fired whenever a WebSocket sends data.
+  Stream get onData => _onData.stream;
 
   /// Fired on incoming connections.
   Stream<WebSocketContext> get onConnection => _onConnection.stream;
@@ -36,7 +53,7 @@ class AngelWebSocket extends AngelPlugin {
   /// Fired when a user disconnects.
   Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
-  AngelWebSocket(String this.endpoint);
+  AngelWebSocket({this.endpoint: '/ws', this.debug: false});
 
   _batchEvent(String path) {
     return (HookedServiceEvent e) async {
@@ -46,6 +63,7 @@ class AngelWebSocket extends AngelPlugin {
     };
   }
 
+  /// Slates an event to be dispatched.
   Future batchEvent(WebSocketEvent event) async {
     // Default implementation will just immediately fire events
     _clients.forEach((client) {
@@ -53,8 +71,10 @@ class AngelWebSocket extends AngelPlugin {
     });
   }
 
+  /// Returns a list of events yet to be sent.
   Future<List<WebSocketEvent>> getBatchedEvents() async => [];
 
+  /// Responds to an incoming action on a WebSocket.
   Future handleAction(WebSocketAction action, WebSocketContext socket) async {
     var split = action.eventName.split("::");
 
@@ -67,7 +87,7 @@ class AngelWebSocket extends AngelPlugin {
       return socket.sendError(new AngelHttpException.NotFound(
           message: "No service \"${split[0]}\" exists."));
 
-    var eventName = split[1];
+    var actionName = split[1];
 
     var params = mergeMap([
       god.deserializeDatum(action.params),
@@ -75,39 +95,44 @@ class AngelWebSocket extends AngelPlugin {
     ]);
 
     try {
-      if (eventName == "index") {
-        return socket.send("${split[0]}::" + HookedServiceEvent.INDEXED,
-            await service.index(params));
-      } else if (eventName == "read") {
-        return socket.send("${split[0]}::" + HookedServiceEvent.READ,
+      if (actionName == ACTION_INDEX) {
+        return socket.send(
+            "${split[0]}::" + EVENT_INDEXED, await service.index(params));
+      } else if (actionName == ACTION_READ) {
+        return socket.send("${split[0]}::" + EVENT_READ,
             await service.read(action.id, params));
-      } else if (eventName == "create") {
+      } else if (actionName == ACTION_CREATE) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + HookedServiceEvent.CREATED,
+            eventName: "${split[0]}::" + EVENT_CREATED,
             data: await service.create(action.data, params));
-      } else if (eventName == "modify") {
+      } else if (actionName == ACTION_MODIFY) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + HookedServiceEvent.MODIFIED,
+            eventName: "${split[0]}::" + EVENT_MODIFIED,
             data: await service.modify(action.id, action.data, params));
-      } else if (eventName == "update") {
+      } else if (actionName == ACTION_UPDATE) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + HookedServiceEvent.UPDATED,
+            eventName: "${split[0]}::" + EVENT_UPDATED,
             data: await service.update(action.id, action.data, params));
-      } else if (eventName == "remove") {
+      } else if (actionName == ACTION_REMOVE) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + HookedServiceEvent.REMOVED,
+            eventName: "${split[0]}::" + EVENT_REMOVED,
             data: await service.remove(action.id, params));
       } else {
         return socket.sendError(new AngelHttpException.MethodNotAllowed(
-            message: "Method Not Allowed: \"$eventName\""));
+            message: "Method Not Allowed: \"$actionName\""));
       }
-    } catch (e) {
-      if (e is AngelHttpException) return socket.sendError(e);
-
-      return socket.sendError(new AngelHttpException(e));
+    } catch (e, st) {
+      if (e is AngelHttpException)
+        return socket.sendError(e);
+      else if (debug == true)
+        socket.sendError(new AngelHttpException(e,
+            message: e.toString(), stackTrace: st, errors: [st.toString()]));
+      else
+        socket.sendError(new AngelHttpException(e));
     }
   }
 
+  /// Hooks a service up to have its events broadcasted.
   hookupService(Pattern _path, HookedService service) {
     String path = _path.toString();
     var batch = _batchEvent(path);
@@ -121,17 +146,16 @@ class AngelWebSocket extends AngelPlugin {
     _servicesAlreadyWired.add(path);
   }
 
-  Future onConnect(WebSocketContext socket) async {}
+  /// Runs before firing [onConnection].
+  Future handleConnect(WebSocketContext socket) async {}
 
-  onData(WebSocketContext socket, data) async {
+  /// Handles incoming data from a WebSocket.
+  handleData(WebSocketContext socket, data) async {
     try {
       socket._onData.add(data);
       var fromJson = JSON.decode(data);
-      var action = new WebSocketAction(
-          id: fromJson['id'],
-          eventName: fromJson['eventName'],
-          data: fromJson['data'],
-          params: fromJson['params']);
+      var action = new WebSocketAction.fromJson(fromJson);
+      _onAction.add(action);
 
       if (action.eventName == null ||
           action.eventName is! String ||
@@ -140,22 +164,17 @@ class AngelWebSocket extends AngelPlugin {
       }
 
       if (fromJson is Map && fromJson.containsKey("eventName")) {
-        socket._onAll.add(fromJson);
-        socket.on._getStreamForEvent(fromJson["eventName"].toString()).add(fromJson["data"]);
+        socket._onAction.add(new WebSocketAction.fromJson(fromJson));
+        socket.on
+            ._getStreamForEvent(fromJson["eventName"].toString())
+            .add(fromJson["data"]);
       }
 
       if (action.eventName.contains("::")) {
         var split = action.eventName.split("::");
 
         if (split.length >= 2) {
-          if ([
-            "index",
-            "read",
-            "create",
-            "modify",
-            "update",
-            "remove"
-          ].contains(split[1])) {
+          if (ACTIONS.contains(split[1])) {
             var event = handleAction(action, socket);
             if (event is Future) event = await event;
 
@@ -165,19 +184,24 @@ class AngelWebSocket extends AngelPlugin {
           }
         }
       }
-    } catch (e) {
+    } catch (e, st) {
       // Send an error
       if (e is AngelHttpException)
         socket.sendError(e);
+      else if (debug == true)
+        socket.sendError(new AngelHttpException(e,
+            message: e.toString(), stackTrace: st, errors: [st.toString()]));
       else
         socket.sendError(new AngelHttpException(e));
     }
   }
 
+  /// Transforms a [HookedServiceEvent], so that it can be broadcasted.
   Future<WebSocketEvent> transformEvent(HookedServiceEvent event) async {
     return new WebSocketEvent(eventName: event.eventName, data: event.result);
   }
 
+  /// Hooks any [HookedService]s that are not being broadcasted yet.
   wireAllServices(Angel app) {
     for (Pattern key in app.services.keys.where((x) {
       return !_servicesAlreadyWired.contains(x) &&
@@ -189,7 +213,7 @@ class AngelWebSocket extends AngelPlugin {
 
   @override
   Future call(Angel app) async {
-    this._app = app..container.singleton(this);
+    _app = app..container.singleton(this);
 
     if (runtimeType != AngelWebSocket)
       app.container.singleton(this, as: AngelWebSocket);
@@ -202,24 +226,25 @@ class AngelWebSocket extends AngelPlugin {
     });
 
     app.get(endpoint, (RequestContext req, ResponseContext res) async {
-      if (!WebSocketTransformer.isUpgradeRequest(req.underlyingRequest))
+      if (!WebSocketTransformer.isUpgradeRequest(req.io))
         throw new AngelHttpException.BadRequest();
 
       res
         ..willCloseItself = true
         ..end();
 
-      var ws = await WebSocketTransformer.upgrade(req.underlyingRequest);
+      var ws = await WebSocketTransformer.upgrade(req.io);
       _clients.add(ws);
 
       var socket = new WebSocketContext(ws, req, res);
-      await onConnect(socket);
+      await handleConnect(socket);
 
       _onConnection.add(socket);
-      req.params['socket'] = socket;
+      req.properties['socket'] = socket;
 
       ws.listen((data) {
-        onData(socket, data);
+        _onData.add(data);
+        handleData(socket, data);
       }, onDone: () {
         _onDisconnect.add(socket);
         _clients.remove(ws);

@@ -9,17 +9,27 @@ class ExposeWs {
 class WebSocketController extends Controller {
   Map<String, MethodMirror> _handlers = {};
   Map<String, Symbol> _handlerSymbols = {};
-  InstanceMirror _instanceMirror;
   AngelWebSocket ws;
 
-  WebSocketController():super() {
-    _instanceMirror = reflect(this);
+  WebSocketController() : super();
+
+  void broadcast(String eventName, data) {
+    ws.batchEvent(new WebSocketEvent(eventName: eventName, data: data));
   }
+
+  onConnect(WebSocketContext socket) {}
+
+  onDisconnect(WebSocketContext socket) {}
+
+  onAction(WebSocketAction action, WebSocketContext socket) async {}
+
+  onData(data, WebSocketContext socket) {}
 
   @override
   Future call(Angel app) async {
     await super.call(app);
 
+    InstanceMirror instanceMirror = reflect(this);
     ClassMirror classMirror = reflectClass(this.runtimeType);
     classMirror.instanceMembers.forEach((sym, mirror) {
       if (mirror.isRegularMethod) {
@@ -38,51 +48,32 @@ class WebSocketController extends Controller {
     AngelWebSocket ws = app.container.make(AngelWebSocket);
 
     ws.onConnection.listen((socket) async {
+      socket.request
+        ..inject('socket', socket)
+        ..inject(WebSocketContext, socket);
+
       await onConnect(socket);
 
-      socket.onData.listen(onData);
+      socket.onData.listen((data) => onData(data, socket));
 
-      socket.onAll.listen((Map data) async {
-        await onAllEvents(data);
+      socket.onAction.listen((WebSocketAction action) async {
+        await onAction(action, socket);
 
-        if (_handlers.containsKey(data["eventName"])) {
-          var methodMirror = _handlers[data["eventName"]];
+        if (_handlers.containsKey(action.eventName)) {
           try {
-            // Load parameters, and execute
-            List args = [];
+            var methodMirror = _handlers[action.eventName];
+            var fn = instanceMirror.getField(methodMirror.simpleName).reflectee;
 
-            for (int i = 0; i < methodMirror.parameters.length; i++) {
-              ParameterMirror parameter = methodMirror.parameters[i];
-              String name = MirrorSystem.getName(parameter.simpleName);
-
-              if (parameter.type.reflectedType == RequestContext ||
-                  name == "req")
-                args.add(socket.requestContext);
-              else if (parameter.type.reflectedType == ResponseContext ||
-                  name == "res")
-                args.add(socket.responseContext);
-              else if (parameter.type == AngelWebSocket)
-                args.add(socket);
-              else {
-                if (socket.requestContext.params.containsKey(name)) {
-                  args.add(socket.requestContext.params[name]);
-                } else {
-                  try {
-                    args.add(app.container.make(parameter.type.reflectedType));
-                    continue;
-                  } catch (e) {
-                    throw new AngelHttpException.BadRequest(
-                        message: "Missing parameter '$name'");
-                  }
-                }
-              }
-            }
-
-            await _instanceMirror.invoke(_handlerSymbols[data["eventName"]], args);
-          } catch (e) {
+            return app.runContained(fn, socket.request, socket.response);
+          } catch (e, st) {
             // Send an error
             if (e is AngelHttpException)
               socket.sendError(e);
+            else if (ws.debug == true)
+              socket.sendError(new AngelHttpException(e,
+                  message: e.toString(),
+                  stackTrace: st,
+                  errors: [st.toString()]));
             else
               socket.sendError(new AngelHttpException(e));
           }
@@ -92,16 +83,4 @@ class WebSocketController extends Controller {
 
     ws.onDisconnection.listen(onDisconnect);
   }
-
-  void broadcast(String eventName, data) {
-    ws.batchEvent(new WebSocketEvent(eventName: eventName, data: data));
-  }
-
-  Future onConnect(WebSocketContext socket) async {}
-
-  Future onDisconnect(WebSocketContext socket) async {}
-
-  Future onAllEvents(Map data) async {}
-
-  void onData(data) {}
 }
