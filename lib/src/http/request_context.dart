@@ -92,7 +92,7 @@ class RequestContext extends Extensible {
     return ctx;
   }
 
-  void inject(Type type, value) {
+  void inject(type, value) {
     injections[type] = value;
   }
 }
