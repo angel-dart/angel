@@ -135,10 +135,10 @@ class ResponseContext extends Extensible {
   /// based on the provided params.
   ///
   /// See [Router]#navigate for more. :)
-  void redirect(url, {bool absolute: true, int code: 301}) {
+  void redirect(url, {bool absolute: true, int code: 302}) {
     headers[HttpHeaders.LOCATION] =
         url is String ? url : app.navigate(url, absolute: absolute);
-    statusCode = code ?? 301;
+    statusCode = code ?? 302;
     write('''
     <!DOCTYPE html>
     <html>
