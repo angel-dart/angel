@@ -17,13 +17,23 @@ class AngelWebSocket extends AngelPlugin {
   Angel _app;
   List<WebSocket> _clients = [];
   StreamController<WebSocketContext> _onConnection =
-      new StreamController<WebSocketContext>.broadcast();
+      new StreamController<WebSocketContext>();
   StreamController<WebSocketContext> _onDisconnect =
-      new StreamController<WebSocketContext>.broadcast();
-  List<WebSocket> get clients => new List.from(_clients, growable: false);
-  List<String> servicesAlreadyWired = [];
-  String endpoint;
+      new StreamController<WebSocketContext>();
+  final List<String> _servicesAlreadyWired = [];
+
+  /// A list of clients currently connected to this server via WebSockets.
+  List<WebSocket> get clients => new List.unmodifiable(_clients);
+
+  /// Services that have already been hooked to fire socket events.
+  List<String> get servicesAlreadyWired => new List.unmodifiable(_servicesAlreadyWired);
+
+  final String endpoint;
+
+  /// Fired on incoming connections.
   Stream<WebSocketContext> get onConnection => _onConnection.stream;
+
+  /// Fired when a user disconnects.
   Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
   AngelWebSocket(String this.endpoint);
@@ -108,7 +118,7 @@ class AngelWebSocket extends AngelPlugin {
       ..afterUpdated.listen(batch)
       ..afterRemoved.listen(batch);
 
-    servicesAlreadyWired.add(path);
+    _servicesAlreadyWired.add(path);
   }
 
   Future onConnect(WebSocketContext socket) async {}
@@ -170,7 +180,7 @@ class AngelWebSocket extends AngelPlugin {
 
   wireAllServices(Angel app) {
     for (Pattern key in app.services.keys.where((x) {
-      return !servicesAlreadyWired.contains(x) &&
+      return !_servicesAlreadyWired.contains(x) &&
           app.services[x] is HookedService;
     })) {
       hookupService(key, app.services[key]);

@@ -18,7 +18,7 @@ class WebSocketContext {
         god.serialize(new WebSocketEvent(eventName: eventName, data: data)));
   }
 
-  sendError(AngelHttpException error) => send("error", error);
+  sendError(AngelHttpException error) => send("error", error.toJson());
 }
 
 class _WebSocketEventTable {
