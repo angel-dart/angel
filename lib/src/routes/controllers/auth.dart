@@ -28,9 +28,9 @@ class AuthController extends Controller {
     // Wire up local authentication, connected to our User service
     auth = new AngelAuth(jwtKey: app.jwt_secret)
       ..serializer = serializer
-      ..deserializer = deserializer;
-      ..strategies
-        .add(new LocalAuthStrategy(verifier(app.container.make(UserService))));
+      ..deserializer = deserializer
+      ..strategies.add(
+          new LocalAuthStrategy(verifier(app.container.make(UserService))));
 
     await super.call(app);
     await app.configure(auth);
