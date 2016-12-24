@@ -2,8 +2,11 @@ import "dart:convert";
 import "dart:io";
 import "package:args/command_runner.dart";
 import "package:console/console.dart";
+import 'package:random_string/random_string.dart' as rs;
+import 'key.dart';
 
 class InitCommand extends Command {
+  final KeyCommand _key = new KeyCommand();
   final TextPen _pen = new TextPen();
 
   @override
@@ -20,10 +23,20 @@ class InitCommand extends Command {
     Directory projectDir = new Directory(
         argResults.arguments.isEmpty ? "." : argResults.arguments[0]);
     print("Creating new Angel project in ${projectDir.absolute.path}...");
-    await _cloneRepo(projectDir);_pen.green();
-    _pen("${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
+    await _cloneRepo(projectDir);
+    _pen.green();
+    _pen(
+        "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
     _pen();
     await _pubGet(projectDir);
+    var secret = rs.randomAlphaNumeric(32);
+    print('Generated new JWT secret: $secret');
+    await _key.changeSecret(
+        new File.fromUri(projectDir.uri.resolve('config/default.yaml')),
+        secret);
+    await _key.changeSecret(
+        new File.fromUri(projectDir.uri.resolve('config/production.yaml')),
+        secret);
   }
 
   _cloneRepo(Directory projectDir) async {
@@ -55,8 +68,7 @@ class InitCommand extends Command {
 
       var gitDir = new Directory.fromUri(projectDir.uri.resolve(".git"));
 
-      if (await gitDir.exists())
-        await gitDir.delete(recursive: true);
+      if (await gitDir.exists()) await gitDir.delete(recursive: true);
     } catch (e) {
       print(e);
       _pen.red();
@@ -67,7 +79,8 @@ class InitCommand extends Command {
   }
 
   _pubGet(Directory projectDir) async {
-    var pub = await Process.start("pub", ["get"], workingDirectory: projectDir.absolute.path);
+    var pub = await Process.start("pub", ["get"],
+        workingDirectory: projectDir.absolute.path);
     pub.stdout.pipe(stdout);
     pub.stderr.pipe(stderr);
     var code = await pub.exitCode;

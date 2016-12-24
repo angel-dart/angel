@@ -13,6 +13,7 @@ main(List<String> args) {
 
   runner
     ..addCommand(new DoctorCommand())
+    ..addCommand(new KeyCommand())
     ..addCommand(new ServiceCommand())
     ..addCommand(new InitCommand())
     ..addCommand(new TestCommand())
