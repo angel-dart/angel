@@ -5,7 +5,7 @@ import '../../services/user.dart';
 
 @Expose('/api/auth')
 class AuthController extends Controller {
-  final AngelAuth auth = new AngelAuth();
+  AngelAuth auth;
 
   deserializer(String id) async => app.service('api/users').read(id);
   serializer(User user) async => user.id;
@@ -26,9 +26,10 @@ class AuthController extends Controller {
   @override
   call(Angel app) async {
     // Wire up local authentication, connected to our User service
-    auth.serializer = serializer;
-    auth.deserializer = deserializer;
-    auth.strategies
+    auth = new AngelAuth(jwtKey: app.jwt_secret)
+      ..serializer = serializer
+      ..deserializer = deserializer;
+      ..strategies
         .add(new LocalAuthStrategy(verifier(app.container.make(UserService))));
 
     await super.call(app);
