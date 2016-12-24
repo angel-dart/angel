@@ -4,8 +4,8 @@ import 'package:angel/angel.dart';
 import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:intl/intl.dart';
 
-startServer({bool clustered: false}) {
-  return (args, [SendPort sendPort]) async {
+startServer(args, {bool clustered: false, SendPort sendPort}) {
+  return () async {
     var app = await createServer();
     var dateFormat = new DateFormat("y-MM-dd");
     var logFile = new File("logs/${dateFormat.format(new DateTime.now())}.txt");

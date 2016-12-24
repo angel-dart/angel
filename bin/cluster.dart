@@ -4,8 +4,9 @@ library angel.cluster;
 
 import 'dart:async';
 import 'common.dart';
+import 'dart:isolate';
 
-main() async {
-  runZoned(startServer(clustered: true), onError: onError);
+main(args, SendPort sendPort) async {
+  runZoned(startServer(args, clustered: true, sendPort: sendPort),
+      onError: onError);
 }
-

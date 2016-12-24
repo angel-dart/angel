@@ -2,6 +2,6 @@
 import 'dart:async';
 import 'common.dart';
 
-main() async {
-  runZoned(startServer(), onError: onError);
+main(args) async {
+  runZoned(startServer(args), onError: onError);
 }
