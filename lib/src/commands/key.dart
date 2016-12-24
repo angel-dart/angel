@@ -21,7 +21,7 @@ class KeyCommand extends Command {
   changeSecret(File file, String secret) async {
     if (await file.exists()) {
       bool foundSecret = false;
-      var sink = await file.openWrite();
+      var sink = await file.openWrite(mode: FileMode.APPEND);
 
       await for (var chunk in await file.openRead().transform(UTF8.decoder)) {
         var lines = chunk.split('\n');
