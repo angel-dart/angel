@@ -1,5 +1,5 @@
 name: angel_cli
-version: 1.0.0-dev+12
+version: 1.0.0-dev+13
 description: Command-line tools for the Angel framework.
 environment:
   sdk: ">=1.19.0"

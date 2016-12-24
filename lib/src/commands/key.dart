@@ -20,18 +20,23 @@ class KeyCommand extends Command {
 
   changeSecret(File file, String secret) async {
     if (await file.exists()) {
+      bool foundSecret = false;
       var sink = await file.openWrite();
 
-      await for (var chunk
-          in await file.openRead().transform(UTF8.decoder)) {
+      await for (var chunk in await file.openRead().transform(UTF8.decoder)) {
         var lines = chunk.split('\n');
 
         for (String line in lines) {
           if (line.contains('jwt_secret:')) {
+            foundSecret = true;
             sink.writeln('jwt_secret: $secret');
-          } else sink.writeln(line);
+          } else
+            sink.writeln(line);
         }
       }
+
+      if (!foundSecret) sink.writeln('jwt:secret: $secret');
+      await sink.close();
     }
   }
 }
