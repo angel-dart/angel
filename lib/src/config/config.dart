@@ -11,6 +11,7 @@ import 'plugins/plugins.dart' as plugins;
 configureServer(Angel app) async {
   var db = new Db(app.mongo_db);
   await db.open();
+  app.container.singleton(db);
 
   // Uncomment this to enable session synchronization across instances.
   // This will add the overhead of querying a database at the beginning
