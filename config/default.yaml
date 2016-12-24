@@ -1,4 +1,5 @@
 # Default server configuration.
+jwt_secret: INSECURE_DEFAULT_SECRET
 db:
   migrate:
     database: angel
