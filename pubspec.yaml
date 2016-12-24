@@ -7,6 +7,7 @@ homepage: https://github.com/angel-dart/angel
 dependencies: 
   angel_common: ^1.0.0-alpha
   angel_configuration: ^1.0.0
+  angel_multiserver: ^1.0.0-dev
   mailer: ^1.1.0+4
   validate: ^1.5.2
 dev_dependencies: 
