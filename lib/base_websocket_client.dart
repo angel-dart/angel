@@ -15,7 +15,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   WebSocketChannel _socket;
 
   final StreamController _onData = new StreamController();
-  final StreamController<WebSocketEvent> _onMessage =
+  final StreamController<WebSocketEvent> _onAllEvents =
       new StreamController<WebSocketEvent>();
   final StreamController<AngelHttpException> _onError =
       new StreamController<AngelHttpException>();
@@ -25,6 +25,13 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
       _onWebSocketChannelException =
       new StreamController<WebSocketChannelException>();
 
+  /// Use this to handle events that are not standard.
+  final WebSocketExtraneousEventHandler on =
+      new WebSocketExtraneousEventHandler();
+
+  /// Fired on all events.
+  Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
+
   /// A broadcast stream of data coming from the [socket].
   ///
   /// Mostly just for internal use.
@@ -32,9 +39,6 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   /// Fired on errors.
   Stream<AngelHttpException> get onError => _onError.stream;
-
-  /// Fired on all events.
-  Stream<WebSocketEvent> get onMessage => _onMessage.stream;
 
   /// Fired whenever an event is fired by a service.
   Stream<Map<String, WebSocketEvent>> get onServiceEvent =>
@@ -85,7 +89,11 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
         if (json is Map) {
           var event = new WebSocketEvent.fromJson(json);
-          _onMessage.add(event);
+
+          if (event.eventName?.isNotEmpty == true) {
+            _onAllEvents.add(event);
+            on._getStream(event.eventName).add(event);
+          }
 
           if (event.eventName == EVENT_ERROR) {
             var error = new AngelHttpException.fromMap(event.data ?? {});
@@ -149,10 +157,6 @@ class BaseWebSocketService extends Service {
   final StreamController<WebSocketEvent> _onRemoved =
       new StreamController<WebSocketEvent>();
 
-  /// Use this to handle events that are not standard.
-  final WebSocketExtraneousEventHandler on =
-      new WebSocketExtraneousEventHandler();
-
   /// Fired on all events.
   Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
 
@@ -199,7 +203,6 @@ class BaseWebSocketService extends Service {
         var transformed = transformEvent(event);
 
         _onAllEvents.add(event);
-        on._getStream(event.eventName).add(event);
 
         switch (event.eventName) {
           case EVENT_INDEXED:
@@ -284,7 +287,7 @@ class WebSocketExtraneousEventHandler {
     return _events[index];
   }
 
-  operator [](String index) {
+  Stream<WebSocketEvent> operator [](String index) {
     if (_events[index] == null)
       _events[index] = new StreamController<WebSocketEvent>();
 

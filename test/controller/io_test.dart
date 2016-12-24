@@ -55,8 +55,9 @@ main() {
   group('controller.io', () {
     test('search', () async {
       client.send('search', new ws.WebSocketAction());
-      var search = await client.onData.first;
-      print('First: $search');
+      var search = await client.on['searched'].first;
+      print('Searched: ${search.data}');
+      expect(new Game.fromJson(search.data), equals(JOHN_VS_BOB));
     });
   });
 }

@@ -1,13 +1,15 @@
 # angel_websocket
+[![1.0.0-dev+6](https://img.shields.io/badge/version-1.0.0--dev+6-red.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
+
 WebSocket plugin for Angel.
 
 This plugin broadcasts events from hooked services via WebSockets. 
 
-In addition,
-it adds itself to the app's IoC container as `AngelWebSocket`, so that it can be used
+In addition, it adds itself to the app's IoC container as `AngelWebSocket`, so that it can be used
 in controllers as well.
 
-WebSocket contexts are add to `req.params` as `'socket'`.
+WebSocket contexts are add to `req.properties` as `'socket'`.
 
 
 # Usage
@@ -55,13 +57,22 @@ class MyController extends WebSocketController {
 import "package:angel_websocket/browser.dart";
 
 main() async {
-  Angel app = new WebSocketClient("/ws");
+  Angel app = new WebSockets("/ws");
+  await app.connect();
+
   var Cars = app.service("api/cars");
 
   Cars.onCreated.listen((e) => print("New car: ${e.data}"));
 
   // Happens asynchronously
   Cars.create({"brand": "Toyota"});
+
+  // Listen for arbitrary events
+  app.on['custom_event'].listen((event) {
+    // For example, this might be sent by a
+    // WebSocketController.
+    print('Hi!');
+  });
 }
 ```
 
@@ -69,7 +80,7 @@ main() async {
 
 ```dart
 import "package:angel_framework/angel_framework" as srv;
-import "package:angel_websocket/browser.dart";
+import "package:angel_websocket/io.dart";
 
 // You can include these in a shared file and access on both client and server
 class Car extends srv.Model {
@@ -82,9 +93,11 @@ class Car extends srv.Model {
 }
 
 main() async {
-  Angel app = new WebSocketClient("/ws");
+  Angel app = new WebSockets("/ws");
+
   // Wait for WebSocket connection...
   await app.connect();
+
   var Cars = app.service("api/cars", type: Car);
 
   Cars.onCreated.listen((e) {
