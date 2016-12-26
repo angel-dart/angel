@@ -2,7 +2,7 @@
 [![version 0.0.0](https://img.shields.io/badge/pub-v0.0.0-red.svg)](https://pub.dartlang.org/packages/angel_validate)
 [![build status](https://travis-ci.org/angel-dart/validate.svg)](https://travis-ci.org/angel-dart/validate)
 
-(Not yet production ready, still missing several tests and a few matchers)
+(Not yet production ready, still missing several tests)
 
 Validation library based on the `matcher` library, with Angel support.
 Why re-invent the wheel, when you can use the same validators you already
