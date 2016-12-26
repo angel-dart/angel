@@ -2,7 +2,7 @@ import 'package:angel_validate/angel_validate.dart';
 import 'package:test/test.dart';
 
 final Validator emailSchema = new Validator({
-  'to': [isNum, isPositive]
+  'to': isEmail
 }, customErrorMessages: {
   'to': 'Hello, world!'
 });
