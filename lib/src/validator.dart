@@ -149,8 +149,6 @@ class Validator extends Matcher {
 
         _schema[fieldName] = schema[key];
       }
-
-      return child;
     } else {
       for (var key in schema.keys) {
         var fieldName = key.replaceAll(_asterisk, '').replaceAll(_optional, '');

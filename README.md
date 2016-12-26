@@ -154,7 +154,7 @@ var ageIsOptional = userValidator.extend({
 });
 ```
 
-Note that by default, new validation rules are simply prepended to
+Note that by default, new validation rules are simply appended to
 the existing list. To completely overwrite existing rules, set the
 `overwrite` flag to `true`.
 
