@@ -5,6 +5,22 @@ import 'package:angel_framework/angel_framework.dart';
 import 'angel_validate.dart';
 export 'angel_validate.dart';
 
+/// Auto-parses numbers in `req.body`.
+RequestMiddleware autoParseBody(List<String> fields) {
+  return (RequestContext req, res) async {
+    req.body.addAll(autoParse(req.body, fields));
+    return true;
+  };
+}
+
+/// Auto-parses numbers in `req.query`.
+RequestMiddleware autoParseQuery(List<String> fields) {
+  return (RequestContext req, res) async {
+    req.query.addAll(autoParse(req.query, fields));
+    return true;
+  };
+}
+
 /// Validates the data in `req.body`, and sets the body to
 /// filtered data before continuing the response.
 RequestMiddleware validate(Validator validator,

@@ -1,6 +1,7 @@
 import 'package:matcher/matcher.dart';
 
 final RegExp _asterisk = new RegExp(r'\*$');
+final RegExp _forbidden = new RegExp(r'\!$');
 final RegExp _optional = new RegExp(r'\?$');
 
 /// Returns a value based the result of a computation.
@@ -9,10 +10,36 @@ typedef DefaultValueFunction();
 /// Determines if a value is valid.
 typedef bool Filter(value);
 
+/// Converts the desired fields to their numeric representations, if present.
+Map<String, dynamic> autoParse(Map inputData, List<String> fields) {
+  Map<String, dynamic> data = {};
+
+  for (var key in inputData.keys) {
+    if (!fields.contains(key)) {
+      data[key] = inputData[key];
+    } else {
+      try {
+        var n = num.parse(inputData[key].toString());
+        data[key] = n == n.toInt() ? n.toInt() : n;
+      } catch (e) {
+        // Invalid number, don't pass it
+      }
+    }
+  }
+
+  return data;
+}
+
 /// Enforces the validity of input data, according to [Matcher]s.
 class Validator extends Matcher {
+  /// Pre-defined error messages for certain fields.
+  final Map<String, String> customErrorMessages = {};
+
   /// Values that will be filled for fields if they are not present.
   final Map<String, dynamic> defaultValues = {};
+
+  /// Fields that cannot be present in valid data.
+  final List<String> forbiddenFields = [];
 
   /// Conditions that must be met for input data to be considered valid.
   final Map<String, List<Matcher>> rules = {};
@@ -22,10 +49,16 @@ class Validator extends Matcher {
 
   void _importSchema(Map<String, dynamic> schema) {
     for (var key in schema.keys) {
-      var fieldName = key.replaceAll(_asterisk, '');
-      var isRequired = _asterisk.hasMatch(key);
+      var fieldName = key
+          .replaceAll(_asterisk, '')
+          .replaceAll(_forbidden, '')
+          .replaceAll(_optional, '');
+      var isForbidden = _forbidden.hasMatch(key),
+          isRequired = _asterisk.hasMatch(key);
 
-      if (isRequired) {
+      if (isForbidden) {
+        forbiddenFields.add(fieldName);
+      } else if (isRequired) {
         requiredFields.add(fieldName);
       }
 
@@ -47,8 +80,10 @@ class Validator extends Matcher {
   Validator.empty();
 
   Validator(Map<String, dynamic> schema,
-      {Map<String, dynamic> defaultValues: const {}}) {
+      {Map<String, dynamic> defaultValues: const {},
+      Map<String, dynamic> customErrorMessages: const {}}) {
     this.defaultValues.addAll(defaultValues ?? {});
+    this.customErrorMessages.addAll(customErrorMessages ?? {});
     _importSchema(schema);
   }
 
@@ -65,9 +100,21 @@ class Validator extends Matcher {
       }
     }
 
+    for (String field in forbiddenFields) {
+      if (input.containsKey(field)) {
+        if (!customErrorMessages.containsKey(field))
+          errors.add("'$field' is forbidden.");
+        else
+          errors.add(customErrorMessages[field]);
+      }
+    }
+
     for (String field in requiredFields) {
       if (!input.containsKey(field)) {
-        errors.add("'$field' is required.");
+        if (!customErrorMessages.containsKey(field))
+          errors.add("'$field' is required.");
+        else
+          errors.add(customErrorMessages[field]);
       }
     }
 
@@ -88,7 +135,8 @@ class Validator extends Matcher {
               }
             } else {
               if (!matcher.matches(value, {})) {
-                errors.add(matcher.describe(description).toString().trim());
+                if (!customErrorMessages.containsKey(key))
+                  errors.add(matcher.describe(description).toString().trim());
                 valid = false;
               }
             }
@@ -100,6 +148,8 @@ class Validator extends Matcher {
 
         if (valid) {
           data[key] = value;
+        } else if (customErrorMessages.containsKey(key)) {
+          errors.add(customErrorMessages[key]);
         }
       }
     }
@@ -110,6 +160,10 @@ class Validator extends Matcher {
 
     return new ValidationResult().._data = data;
   }
+
+  /// Validates, and filters input data after running [autoParse].
+  ValidationResult checkParsed(Map inputData, List<String> fields) =>
+      check(autoParse(inputData, fields));
 
   /// Validates input data, and throws an error if it is invalid.
   ///
@@ -127,40 +181,46 @@ class Validator extends Matcher {
 
   /// Creates a copy with additional validation rules.
   Validator extend(Map<String, dynamic> schema,
-      {Map<String, dynamic> defaultValues: const {}, bool overwrite: false}) {
+      {Map<String, dynamic> defaultValues: const {},
+      Map<String, String> customErrorMessages: const {},
+      bool overwrite: false}) {
     Map<String, dynamic> _schema = {};
     var child = new Validator.empty()
       ..defaultValues.addAll(this.defaultValues)
       ..defaultValues.addAll(defaultValues ?? {})
+      ..customErrorMessages.addAll(this.customErrorMessages)
+      ..customErrorMessages.addAll(customErrorMessages ?? {})
       ..requiredFields.addAll(requiredFields)
       ..rules.addAll(rules);
 
-    if (overwrite) {
-      for (var key in schema.keys) {
-        var fieldName = key.replaceAll(_asterisk, '').replaceAll(_optional, '');
-        var isOptional = _optional.hasMatch(key);
-        var isRequired = _asterisk.hasMatch(key);
+    for (var key in schema.keys) {
+      var fieldName = key
+          .replaceAll(_asterisk, '')
+          .replaceAll(_forbidden, '')
+          .replaceAll(_optional, '');
+      var isForbidden = _forbidden.hasMatch(key);
+      var isOptional = _optional.hasMatch(key);
+      var isRequired = _asterisk.hasMatch(key);
 
-        if (isOptional)
-          child.requiredFields.remove(fieldName);
-        else if (isRequired) child.requiredFields.add(fieldName);
-
-        if (child.rules.containsKey(key)) child.rules.remove(key);
-
-        _schema[fieldName] = schema[key];
+      if (isForbidden) {
+        child
+          ..requiredFields.remove(fieldName)
+          ..forbiddenFields.add(fieldName);
+      } else if (isOptional) {
+        child
+          ..forbiddenFields.remove(fieldName)
+          ..requiredFields.remove(fieldName);
+      } else if (isRequired) {
+        child
+          ..forbiddenFields.remove(fieldName)
+          ..requiredFields.add(fieldName);
       }
-    } else {
-      for (var key in schema.keys) {
-        var fieldName = key.replaceAll(_asterisk, '').replaceAll(_optional, '');
-        var isOptional = _optional.hasMatch(key);
-        var isRequired = _asterisk.hasMatch(key);
 
-        if (isOptional)
-          child.requiredFields.remove(fieldName);
-        else if (isRequired) child.requiredFields.add(fieldName);
-
-        _schema[fieldName] = schema[key];
+      if (overwrite) {
+        if (child.rules.containsKey(fieldName)) child.rules.remove(fieldName);
       }
+
+      _schema[fieldName] = schema[key];
     }
 
     return child.._importSchema(_schema);

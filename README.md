@@ -17,8 +17,11 @@ For convenience's sake, this library also exports `matcher`.
   * [Creating a Validator](#creating-a-validator)
   * [Validating Data](#validating-data)
   * [Required Fields](#required-fields)
+  * [Forbidden Fields](#forbidden-fields)
   * [Default Values](#default-values)
   * [Custom Validator Functions](#custom-validator-functions)
+* [Auto-parsing Numbers](#autoparse)
+* [Custom Error Messages](#custom-error-messages)
 * [Extending Validators](#extending-validators)
 * [Bundled Matchers](#bundled-matchers)
 * [Nested Validators](#nested-validators)
@@ -88,6 +91,10 @@ main() {
 }
 ```
 
+## Forbidden Fields
+To prevent a field from showing up in valid data, suffix it
+with a `'!'`.
+
 
 ## Default values
 
@@ -127,10 +134,39 @@ main() {
 }
 ```
 
+# Custom Error Messages
+If these are not present, `angel_validate` will *attempt* to generate
+a coherent error message on its own.
+
+```dart
+new Validator({
+    'age': [greaterThanOrEqualTo(18)]
+}, customErrorMessages: {
+    'age': 'You must be an adult to see this page.'
+});
+```
+
+# autoParse
+Oftentimes, fields that we want to validate as numbers are passed as strings.
+Calling `autoParse` will correct this before validation.
+
+```dart
+main() {
+    var parsed = autoParse({
+        'age': '34',
+        'weight': '135.6'
+    }, ['age', 'weight']);
+
+    validator.enforce(parsed);
+}
+```
+
+You can also call `checkParsed` or `enforceParsed` as a shorthand.
+
 # Extending Validators
 You can add situation-specific rules within a child validator.
-You can also use `extend` to mark fields as required that originally
-were not. Default value extension is also supported.
+You can also use `extend` to mark fields as required or forbidden that originally
+were not. Default value and custom error message extension is also supported.
 
 ```dart
 final Validator userValidator = new Validator({
@@ -170,12 +206,12 @@ register(Map userData) {
 This library includes some `Matcher`s for common validations,
 including:
 
-* `isAlphaDash`: Asserts a `String` matches the Regular Expression ```/^[A-Za-z0-9_-]$/```.
-* `isAlphaNum`: Asserts a `String` matches the Regular Expression ```/^[A-Za-z0-9]$/```
+* `isAlphaDash`: Asserts that a `String` is alphanumeric, but also lets it contain dashes or underscores.
+* `isAlphaNum`: Asserts that a `String` is alphanumeric.
 * `isBool`: Asserts that a value either equals `true` or `false`.
-* `isEmail`: Asserts a `String` complies to the RFC 5322 e-mail standard.
-* `isInt`: Asserts a value is an `int`.
-* `isNum`: Asserts a value is a `num`.
+* `isEmail`: Asserts that a `String` complies to the RFC 5322 e-mail standard.
+* `isInt`: Asserts that a value is an `int`.
+* `isNum`: Asserts that a value is a `num`.
 * `isString`: Asserts that a value is a `String`.
 
 The remaining functionality is
@@ -218,10 +254,12 @@ main() {
 
 # Use with Angel
 
-`server.dart` exposes three helper middleware:
+`server.dart` exposes five helper middleware:
 * `validate(validator)`: Validates and filters `req.body`, and throws an `AngelHttpException.BadRequest` if data is invalid.
 * `validateEvent(validator)`: Sets `e.data` to the result of validation on a service event.
-* `validateQuery(validator)`: Same as `validate`, but operates `req.query`.
+* `validateQuery(validator)`: Same as `validate`, but operates on `req.query`.
+* `autoParseBody(fields)`: Auto-parses numbers in `req.body`.
+* `autoParseQuery(fields)`: Same as `autoParseBody`, but operates on `req.query`.
 
 ```dart
 import 'package:angel_framework/angel_framework.dart';
