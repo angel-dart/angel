@@ -179,6 +179,12 @@ class Validator extends Matcher {
     return result.data;
   }
 
+  /// Validates, and filters input data after running [autoParse], and throws an error if it is invalid.
+  ///
+  /// Otherwise, the filtered data is returned.
+  Map<String, dynamic> enforceParsed(Map inputData, List<String> fields) =>
+      enforce(autoParse(inputData, fields));
+
   /// Creates a copy with additional validation rules.
   Validator extend(Map<String, dynamic> schema,
       {Map<String, dynamic> defaultValues: const {},
