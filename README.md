@@ -2,12 +2,27 @@
 [![version 0.0.0](https://img.shields.io/badge/pub-v0.0.0-red.svg)](https://pub.dartlang.org/packages/angel_validate)
 [![build status](https://travis-ci.org/angel-dart/validate.svg)](https://travis-ci.org/angel-dart/validate)
 
+(Not yet production ready, still missing several tests and a few matchers)
+
 Validation library based on the `matcher` library, with Angel support.
 Why re-invent the wheel, when you can use the same validators you already
 use for tests?
 
 This library runs both on the server, and on the client. Thus, you can use
 the same validation rules for forms on the server, and on the frontend.
+
+For convenience's sake, this library also exports `matcher`.
+
+* [Examples](#examples)
+  * [Creating a Validator](#creating-a-validator)
+  * [Validating Data](#validating-data)
+  * [Required Fields](#required-fields)
+  * [Default Values](#default-values)
+  * [Custom Validator Functions](#custom-validator-functions)
+* [Extending Validators](#extending-validators)
+* [Bundled Matchers](#bundled-matchers)
+* [Nested Validators](#nested-validators)
+* [Use with Angel](#use-with-angel)
 
 # Examples
 
@@ -160,9 +175,7 @@ including:
 * `isBool`: Asserts that a value either equals `true` or `false`.
 * `isEmail`: Asserts a `String` complies to the RFC 5322 e-mail standard.
 * `isInt`: Asserts a value is an `int`.
-* `isNegative`: Asserts a `num` is less than `0`.
 * `isNum`: Asserts a value is a `num`.
-* `isPositive`: Asserts a `num` is greater than `0`.
 * `isString`: Asserts that a value is a `String`.
 
 The remaining functionality is
@@ -170,11 +183,8 @@ The remaining functionality is
 
 # Nested Validators
 Very often, the data we validate contains other data within. You can pass
-a `Validator` instance to the constructor, and it will be wrapped within
-a `Matcher` instance.
-
-The class also exposes a `toMatcher()` method that creates a Matcher that
-validates data using the instance.
+a `Validator` instance to the constructor, because it extends the
+`Matcher` class.
 
 ```dart
 main() {
@@ -198,7 +208,7 @@ main() {
         'bio*': bio,
         'books*': [
             isList,
-            everyElement(book.toMatcher())
+            everyElement(book)
         ]
     }, defaultValues: {
         'books': []
