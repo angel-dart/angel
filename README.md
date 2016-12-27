@@ -1,5 +1,5 @@
 # validate
-[![version 0.0.2](https://img.shields.io/badge/pub-v0.0.2-red.svg)](https://pub.dartlang.org/packages/angel_validate)
+[![version 1.0.0-beta](https://img.shields.io/badge/pub-v1.0.0--beta-red.svg)](https://pub.dartlang.org/packages/angel_validate)
 [![build status](https://travis-ci.org/angel-dart/validate.svg)](https://travis-ci.org/angel-dart/validate)
 
 (Still missing several tests)
