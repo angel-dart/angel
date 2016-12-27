@@ -5,8 +5,8 @@
 .packages
 .project
 .pub/
-build/
-**/packages/
+# build/
+# **/packages/
 
 # Files created by dart2js
 # (Most Dart developers will use pub build to compile Dart, use/modify these 
