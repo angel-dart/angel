@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>angel_validate</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <style>
+        #errors li {
+            color: red;
+        }
+
+        #errors li.success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+<h1>Passport Registration</h1>
+<i>Validation Example</i>
+<ul id="errors"></ul>
+<form id="form">
+    <input placeholder="First Name*" name="firstName" type="text">
+    <input placeholder="Last Name*" name="lastName" type="text">
+    <br><br>
+    <input placeholder="Age*" name="age" type="number">
+    <br><br>
+    <input placeholder="Family Size" name="familySize" type="number">
+    <br><br>
+    <input placeholder="LEAVE THIS BLANK" name="blank">
+    <br><br>
+    <input type="submit" value="Submit">
+</form>
+<script src="main.dart" type="application/dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>
