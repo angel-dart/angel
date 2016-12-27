@@ -179,7 +179,7 @@ class Validator extends Matcher {
     var msg = customErrorMessages[key];
 
     if (msg is String)
-      return msg.replaceAll('{{value}}', value);
+      return msg.replaceAll('{{value}}', value.toString());
     else if (msg is CustomErrorMessageFunction) {
       return msg(value);
     }
