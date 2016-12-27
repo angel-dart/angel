@@ -1,7 +1,8 @@
-# Angel
+[![The Angel Framework](https://angel-dart.github.io/images/logo.png)](https://angel-dart.github.io)
+
 [![version: v1.0.0-alpha](https://img.shields.io/badge/pub-v1.0.0--alpha-blue.svg)](https://pub.dartlang.org/packages/angel_common)
 
-An easily-extensible web server framework in Dart.
+**The Dart server framework that's ready for showtime.**
 
 [Wiki](https://github.com/angel-dart/angel/wiki)
 
