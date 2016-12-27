@@ -1,11 +1,14 @@
 import 'package:matcher/matcher.dart';
 
 final RegExp _asterisk = new RegExp(r'\*$');
-final RegExp _forbidden = new RegExp(r'\!$');
+final RegExp _forbidden = new RegExp(r'!$');
 final RegExp _optional = new RegExp(r'\?$');
 
 /// Returns a value based the result of a computation.
 typedef DefaultValueFunction();
+
+/// Generates an error message based on the given input.
+typedef String CustomErrorMessageFunction(item);
 
 /// Determines if a value is valid.
 typedef bool Filter(value);
@@ -33,7 +36,7 @@ Map<String, dynamic> autoParse(Map inputData, List<String> fields) {
 /// Enforces the validity of input data, according to [Matcher]s.
 class Validator extends Matcher {
   /// Pre-defined error messages for certain fields.
-  final Map<String, String> customErrorMessages = {};
+  final Map<String, dynamic> customErrorMessages = {};
 
   /// Values that will be filled for fields if they are not present.
   final Map<String, dynamic> defaultValues = {};
@@ -105,7 +108,7 @@ class Validator extends Matcher {
         if (!customErrorMessages.containsKey(field))
           errors.add("'$field' is forbidden.");
         else
-          errors.add(customErrorMessages[field]);
+          errors.add(customError(field, input[field]));
       }
     }
 
@@ -114,7 +117,7 @@ class Validator extends Matcher {
         if (!customErrorMessages.containsKey(field))
           errors.add("'$field' is required.");
         else
-          errors.add(customErrorMessages[field]);
+          errors.add(customError(field, 'none'));
       }
     }
 
@@ -122,7 +125,7 @@ class Validator extends Matcher {
       if (key is String && rules.containsKey(key)) {
         var valid = true;
         var value = input[key];
-        var description = new StringDescription("Field '$key': expected ");
+        var description = new StringDescription("'$key': expected ");
 
         for (Matcher matcher in rules[key]) {
           try {
@@ -132,24 +135,27 @@ class Validator extends Matcher {
               if (result.errors.isNotEmpty) {
                 errors.addAll(result.errors);
                 valid = false;
+                break;
               }
             } else {
               if (!matcher.matches(value, {})) {
                 if (!customErrorMessages.containsKey(key))
                   errors.add(matcher.describe(description).toString().trim());
                 valid = false;
+                break;
               }
             }
           } catch (e) {
             errors.add(e.toString());
             valid = false;
+            break;
           }
         }
 
         if (valid) {
           data[key] = value;
         } else if (customErrorMessages.containsKey(key)) {
-          errors.add(customErrorMessages[key]);
+          errors.add(customError(key, input[key]));
         }
       }
     }
@@ -164,6 +170,22 @@ class Validator extends Matcher {
   /// Validates, and filters input data after running [autoParse].
   ValidationResult checkParsed(Map inputData, List<String> fields) =>
       check(autoParse(inputData, fields));
+
+  /// Renders the given custom error.
+  String customError(String key, value) {
+    if (!customErrorMessages.containsKey(key))
+      throw new ArgumentError("No custom error message registered for '$key'.");
+
+    var msg = customErrorMessages[key];
+
+    if (msg is String)
+      return msg.replaceAll('{{value}}', value);
+    else if (msg is CustomErrorMessageFunction) {
+      return msg(value);
+    }
+
+    throw new ArgumentError("Invalid custom error message '$key': $msg");
+  }
 
   /// Validates input data, and throws an error if it is invalid.
   ///
@@ -188,7 +210,7 @@ class Validator extends Matcher {
   /// Creates a copy with additional validation rules.
   Validator extend(Map<String, dynamic> schema,
       {Map<String, dynamic> defaultValues: const {},
-      Map<String, String> customErrorMessages: const {},
+      Map<String, dynamic> customErrorMessages: const {},
       bool overwrite: false}) {
     Map<String, dynamic> _schema = {};
     var child = new Validator.empty()

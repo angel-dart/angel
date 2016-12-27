@@ -145,6 +145,7 @@ new Validator({
     'age': 'You must be an adult to see this page.'
 });
 ```
+The string `{{value}}` will be replaced inside your error message automatically.
 
 # autoParse
 Oftentimes, fields that we want to validate as numbers are passed as strings.
