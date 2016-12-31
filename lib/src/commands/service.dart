@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
 import 'package:id/id.dart';
+import 'init.dart' show preBuild;
 
 class ServiceCommand extends Command {
   final String CUSTOM = 'Custom';
@@ -73,6 +74,7 @@ class ServiceCommand extends Command {
       var serviceLibrary = new File('lib/src/models/models.dart');
       await serviceLibrary.writeAsString("\nexport '$lower.dart';",
           mode: FileMode.APPEND);
+      await preBuild(Directory.current);
     }
 
     await testFile.writeAsString(_generateTests(name, type));
@@ -119,6 +121,10 @@ part '$lower.g.dart';
 
 @JsonSerializable()
 class $name extends MemoryModel with _\$${name}SerializerMixin {
+  @JsonKey('id')
+  @override
+  String id;
+
   @JsonKey('name')
   String name;
   
@@ -170,6 +176,10 @@ part '$lower.g.dart';
 
 @JsonSerializable()
 class $name extends Model with _\$${name}SerializerMixin {
+  @JsonKey('id')
+  @override
+  String id;
+
   @JsonKey('name')
   String name;
   
@@ -193,6 +203,7 @@ class $name extends Model with _\$${name}SerializerMixin {
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mongo/angel_mongo.dart';
 import 'package:angel_validate/angel_validate.dart';
+import 'package:angel_validate/server.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 final Validator ${lower}Schema = new Validator({

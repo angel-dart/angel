@@ -1,4 +1,3 @@
-import "dart:convert";
 import "dart:io";
 import "package:args/command_runner.dart";
 import "package:console/console.dart";
@@ -29,7 +28,7 @@ class InitCommand extends Command {
         "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
     _pen();
     await _pubGet(projectDir);
-    await _preBuild(projectDir);
+    await preBuild(projectDir);
     var secret = rs.randomAlphaNumeric(32);
     print('Generated new JWT secret: $secret');
     await _key.changeSecret(
@@ -79,19 +78,6 @@ class InitCommand extends Command {
     }
   }
 
-  _preBuild(Directory projectDir) async {
-    // Run build
-    var build = await Process.start(Platform.executable, ['tool/build.dart'],
-        workingDirectory: projectDir.absolute.path);
-
-    stdout.addStream(build.stdout);
-    stderr.addStream(build.stderr);
-
-    var buildCode = await build.exitCode;
-
-    if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
-  }
-
   _pubGet(Directory projectDir) async {
     var pub = await Process.start("pub", ["get"],
         workingDirectory: projectDir.absolute.path);
@@ -100,4 +86,19 @@ class InitCommand extends Command {
     var code = await pub.exitCode;
     print("Pub process exited with code $code");
   }
+}
+
+preBuild(Directory projectDir) async {
+  // Run build
+  print('Pre-building resources...');
+  
+  var build = await Process.start(Platform.executable, ['tool/build.dart'],
+      workingDirectory: projectDir.absolute.path);
+
+  stdout.addStream(build.stdout);
+  stderr.addStream(build.stderr);
+
+  var buildCode = await build.exitCode;
+
+  if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
 }
