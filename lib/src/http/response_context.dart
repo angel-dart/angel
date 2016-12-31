@@ -210,7 +210,7 @@ class ResponseContext extends Extensible {
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
     final head =
-        controller.exposeDecl.path.toString().replaceAll(_straySlashes, '');
+        controller.findExpose().path.toString().replaceAll(_straySlashes, '');
     final tail = matched.makeUri(params).replaceAll(_straySlashes, '');
 
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
