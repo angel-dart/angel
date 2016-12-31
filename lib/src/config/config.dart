@@ -3,7 +3,7 @@ library angel.config;
 
 import 'dart:io';
 import 'package:angel_common/angel_common.dart';
-import 'package:angel_multiserver/angel_multiserver.dart';
+// import 'package:angel_multiserver/angel_multiserver.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'plugins/plugins.dart' as plugins;
 
