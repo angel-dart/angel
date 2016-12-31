@@ -36,12 +36,12 @@ class ServiceCommand extends Command {
 
     if (type == MONGO) {
       serviceSource = _generateMongoService(name);
-      await _generateMemoryModel(name);
     } else if (type == MONGO_TYPED) {
       serviceSource = _generateMongoTypedService(name);
       await _generateMongoModel(name);
     } else if (type == MEMORY) {
       serviceSource = _generateMemoryService(name);
+      await _generateMemoryModel(name);
     } else if (type == CUSTOM) {
       serviceSource = _generateCustomService(name);
     } else if (type == TRESTLE) {
@@ -113,27 +113,22 @@ library angel.models.$lower;
 
 import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:source_gen/generators/json_serializable.dart';
 
-class $name extends MemoryModel {
-  String name, desc;
+part '$lower.g.dart';
+
+@JsonSerializable()
+class $name extends MemoryModel with _\$${name}SerializerMixin {
+  @JsonKey('name')
+  String name;
+  
+  @JsonKey('desc')
+  String desc;
+
+  factory $name.fromJson(Map json) => _\$${name}fromJson(json);
 
   $name({String id, this.name, this.desc}) {
     this.id = id;
-  }
-
-  factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
-
-  factory $name.fromMap(Map data) => new $name(
-      id: data['id'],
-      name: data['name'],
-      desc: data['desc']);
-
-  Map toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'desc': desc
-    };
   }
 }
     '''
@@ -169,27 +164,22 @@ library angel.models.$lower;
 
 import 'dart:convert';
 import 'package:angel_mongo/model.dart';
+import 'package:source_gen/generators/json_serializable.dart';
 
-class $name extends Model {
-  String name, desc;
+part '$lower.g.dart';
+
+@JsonSerializable()
+class $name extends Model with _\$${name}SerializerMixin {
+  @JsonKey('name')
+  String name;
+  
+  @JsonKey('desc')
+  String desc;
+
+  factory $name.fromJson(Map json) => _\$${name}fromJson(json);
 
   $name({String id, this.name, this.desc}) {
     this.id = id;
-  }
-
-  factory $name.fromJson(String json) => new $name.fromMap(JSON.decode(json));
-
-  factory $name.fromMap(Map data) => new $name(
-      id: data['id'],
-      name: data['name'],
-      desc: data['desc']);
-
-  Map toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'desc': desc
-    };
   }
 }
     '''
@@ -202,7 +192,13 @@ class $name extends Model {
     return '''
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mongo/angel_mongo.dart';
+import 'package:angel_validate/angel_validate.dart';
 import 'package:mongo_dart/mongo_dart.dart';
+
+final Validator ${lower}Schema = new Validator({
+  'name*': [isString, isNotEmpty],
+  'desc*': [isString, isNotEmpty]
+});
 
 configureServer(Db db) {
   return (Angel app) async {
@@ -210,6 +206,10 @@ configureServer(Db db) {
 
     HookedService service = app.service('api/${lower}s');
     app.container.singleton(service.inner);
+
+    service
+      ..beforeCreate.listen(validateEvent(${lower}Schema))
+      ..beforeUpdate.listen(validateEvent(${lower}Schema));
   };
 }
 
@@ -282,7 +282,7 @@ main() async {
 
   setUp(() async {
     app = await createServer();
-    client = await connectTo(app;
+    client = await connectTo(app);
   });
 
   tearDown(() async {

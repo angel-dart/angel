@@ -29,6 +29,7 @@ class InitCommand extends Command {
         "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
     _pen();
     await _pubGet(projectDir);
+    await _preBuild(projectDir);
     var secret = rs.randomAlphaNumeric(32);
     print('Generated new JWT secret: $secret');
     await _key.changeSecret(
@@ -59,8 +60,8 @@ class InitCommand extends Command {
         projectDir.absolute.path
       ]);
 
-      git.stdout.transform(UTF8.decoder).listen(stdout.write);
-      git.stderr.transform(UTF8.decoder).listen(stderr.write);
+      stdout.addStream(git.stdout);
+      stderr.addStream(git.stderr);
 
       if (await git.exitCode != 0) {
         throw new Exception("Could not clone repo.");
@@ -78,11 +79,24 @@ class InitCommand extends Command {
     }
   }
 
+  _preBuild(Directory projectDir) async {
+    // Run build
+    var build = await Process.start(Platform.executable, ['tool/build.dart'],
+        workingDirectory: projectDir.absolute.path);
+
+    stdout.addStream(build.stdout);
+    stderr.addStream(build.stderr);
+
+    var buildCode = await build.exitCode;
+
+    if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
+  }
+
   _pubGet(Directory projectDir) async {
     var pub = await Process.start("pub", ["get"],
         workingDirectory: projectDir.absolute.path);
-    pub.stdout.pipe(stdout);
-    pub.stderr.pipe(stderr);
+    stdout.addStream(pub.stdout);
+    stderr.addStream(pub.stderr);
     var code = await pub.exitCode;
     print("Pub process exited with code $code");
   }
