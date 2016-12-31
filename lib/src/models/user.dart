@@ -1,13 +1,25 @@
 library angel.models.user;
 
-import 'dart:convert';
 import 'package:angel_mongo/model.dart';
+import 'package:source_gen/generators/json_serializable.dart';
 
-class User extends Model {
+part 'user.g.dart';
+
+@JsonSerializable()
+class User extends Model with _$UserSerializerMixin {
+  @JsonKey('email')
   String email;
+
+  @JsonKey('username')
   String username;
+
+  @JsonKey('password')
   String password;
+
+  @JsonKey('roles')
   final List<String> roles = [];
+
+  factory User.fromJson(Map json) => _$UserFromJson(json);
 
   User(
       {String id,
@@ -16,28 +28,9 @@ class User extends Model {
       this.password,
       List<String> roles: const []}) {
     this.id = id;
-    
+
     if (roles != null) {
       this.roles.addAll(roles);
     }
-  }
-
-  factory User.fromJson(String json) => new User.fromMap(JSON.decode(json));
-
-  factory User.fromMap(Map data) => new User(
-      id: data['id'],
-      email: data['email'],
-      username: data['username'],
-      password: data['password'],
-      roles: data['roles']);
-
-  Map toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'username': username,
-      'password': password,
-      'roles': roles
-    };
   }
 }

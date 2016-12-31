@@ -2,6 +2,9 @@
 ### Dart template
 # See https://www.dartlang.org/tools/private-files.html
 
+# source_gen
+*.g.dart
+
 # Files and directories created by pub
 .buildlog
 .packages
