@@ -113,7 +113,6 @@ class ${name}Service extends Service {
     await file.writeAsString('''
 library angel.models.$lower;
 
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:source_gen/generators/json_serializable.dart';
 
@@ -131,7 +130,7 @@ class $name extends MemoryModel with _\$${name}SerializerMixin {
   @JsonKey('desc')
   String desc;
 
-  factory $name.fromJson(Map json) => _\$${name}fromJson(json);
+  factory $name.fromJson(Map json) => _\$${name}FromJson(json);
 
   $name({String id, this.name, this.desc}) {
     this.id = id;
@@ -168,7 +167,6 @@ class ${name}Service extends MemoryService<$name> {
     await file.writeAsString('''
 library angel.models.$lower;
 
-import 'dart:convert';
 import 'package:angel_mongo/model.dart';
 import 'package:source_gen/generators/json_serializable.dart';
 
@@ -186,7 +184,7 @@ class $name extends Model with _\$${name}SerializerMixin {
   @JsonKey('desc')
   String desc;
 
-  factory $name.fromJson(Map json) => _\$${name}fromJson(json);
+  factory $name.fromJson(Map json) => _\$${name}FromJson(json);
 
   $name({String id, this.name, this.desc}) {
     this.id = id;
