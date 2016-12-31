@@ -30,10 +30,13 @@ class InitCommand extends Command {
     await _pubGet(projectDir);
     await preBuild(projectDir);
     var secret = rs.randomAlphaNumeric(32);
-    print('Generated new JWT secret: $secret');
+    print('Generated new development JWT secret: $secret');
     await _key.changeSecret(
         new File.fromUri(projectDir.uri.resolve('config/default.yaml')),
         secret);
+
+    secret = rs.randomAlphaNumeric(32);
+    print('Generated new production JWT secret: $secret');
     await _key.changeSecret(
         new File.fromUri(projectDir.uri.resolve('config/production.yaml')),
         secret);
@@ -91,7 +94,7 @@ class InitCommand extends Command {
 preBuild(Directory projectDir) async {
   // Run build
   print('Pre-building resources...');
-  
+
   var build = await Process.start(Platform.executable, ['tool/build.dart'],
       workingDirectory: projectDir.absolute.path);
 

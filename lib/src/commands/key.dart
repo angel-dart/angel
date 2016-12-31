@@ -12,8 +12,11 @@ class KeyCommand extends Command {
   @override
   run() async {
     var secret = rs.randomAlphaNumeric(32);
-    print('Generated new JWT secret: $secret');
+    print('Generated new development JWT secret: $secret');
     await changeSecret(new File('config/default.yaml'), secret);
+
+    secret = rs.randomAlphaNumeric(32);
+    print('Generated new production JWT secret: $secret');
     await changeSecret(new File('config/production.yaml'), secret);
   }
 
