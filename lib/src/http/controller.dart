@@ -3,12 +3,11 @@ library angel_framework.http.controller;
 import 'dart:async';
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
-import 'angel_http_exception.dart';
 import 'metadata.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
-import 'server.dart' show Angel;
+import 'server.dart' show Angel, preInject;
 
 /// Contains a list of the data required for a DI-enabled method to run.
 ///
@@ -30,7 +29,6 @@ class Controller {
   final bool debug;
   List middleware = [];
   Map<String, Route> routeMappings = {};
-  Expose exposeDecl;
 
   Controller({this.debug: false});
 
@@ -39,9 +37,7 @@ class Controller {
 
     // Load global expose decl
     ClassMirror classMirror = reflectClass(this.runtimeType);
-    Expose exposeDecl = classMirror.metadata
-        .map((m) => m.reflectee)
-        .firstWhere((r) => r is Expose, orElse: () => null);
+    Expose exposeDecl = findExpose();
 
     if (exposeDecl == null) {
       throw new Exception(
@@ -83,7 +79,6 @@ class Controller {
 
         var reflectedMethod = instanceMirror.getField(methodName).reflectee;
         var middleware = []..addAll(handlers)..addAll(exposeDecl.middleware);
-        var injection = new InjectionRequest();
 
         // Check if normal
         if (method.parameters.length == 2 &&
@@ -95,26 +90,8 @@ class Controller {
           return;
         }
 
-        // Load parameters
-        for (var parameter in method.parameters) {
-          var name = MirrorSystem.getName(parameter.simpleName);
-          var type = parameter.type.reflectedType;
-
-          if (type == RequestContext || type == ResponseContext) {
-            injection.required.add(type);
-          } else if (name == 'req') {
-            injection.required.add(RequestContext);
-          } else if (name == 'res') {
-            injection.required.add(ResponseContext);
-          } else if (type == dynamic) {
-            injection.required.add(name);
-          } else {
-            injection.required.add([name, type]);
-          }
-        }
-
         routable.addRoute(exposeDecl.method, exposeDecl.path,
-            handleContained(reflectedMethod, injection),
+            handleContained(reflectedMethod, preInject(reflectedMethod)),
             middleware: middleware);
       }
     };
@@ -122,6 +99,12 @@ class Controller {
 
   /// Used to add additional routes to the router from within a [Controller].
   void configureRoutes(Routable routable) {}
+
+  /// Finds the [Expose] declaration for this class.
+  Expose findExpose() => reflectClass(runtimeType)
+      .metadata
+      .map((m) => m.reflectee)
+      .firstWhere((r) => r is Expose, orElse: () => null);
 }
 
 /// Handles a request with a DI-enabled handler.
@@ -140,7 +123,7 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
               .containsKey(requirement))
             args.add(req.injections[requirement]);
           else {
-            throw new Exception(
+            throw new ArgumentError(
                 "Cannot resolve parameter '$requirement' within handler.");
           }
           args.add(req.params[requirement]);

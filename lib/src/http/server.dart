@@ -126,6 +126,7 @@ class Angel extends AngelBase {
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
     final host = address ?? InternetAddress.LOOPBACK_IP_V4;
     this.httpServer = await _serverGenerator(host, port ?? 0);
+    preprocessRoutes();
     return httpServer..listen(handleRequest);
   }
 
@@ -284,6 +285,27 @@ class Angel extends AngelBase {
     }
   }
 
+  /// Preprocesses all routes, and eliminates the burden of reflecting handlers
+  /// at run-time.
+  void preprocessRoutes() {
+    _add(v) {
+      if (v is Function && !_preContained.containsKey(v)) {
+        _preContained[v] = preInject(v);
+      }
+    }
+
+    void _walk(Router router) {
+      router.requestMiddleware.forEach((k, v) => _add(v));
+      router.middleware.forEach(_add);
+      router.routes
+          .where((r) => r is SymlinkRoute)
+          .map((SymlinkRoute r) => r.router)
+          .forEach(_walk);
+    }
+
+    _walk(this);
+  }
+
   /// Run a function after injecting from service container.
   /// If this function has been reflected before, then
   /// the execution will be faster, as the injection requirements were stored beforehand.
@@ -299,26 +321,7 @@ class Angel extends AngelBase {
   /// Runs with DI, and *always* reflects. Prefer [runContained].
   Future runReflected(
       Function handler, RequestContext req, ResponseContext res) async {
-    ClosureMirror closureMirror = reflect(handler);
-    var injection = new InjectionRequest();
-
-    // Load parameters
-    for (var parameter in closureMirror.function.parameters) {
-      var name = MirrorSystem.getName(parameter.simpleName);
-      var type = parameter.type.reflectedType;
-
-      if (type == RequestContext || type == ResponseContext) {
-        injection.required.add(type);
-      } else if (name == 'req') {
-        injection.required.add(RequestContext);
-      } else if (name == 'res') {
-        injection.required.add(ResponseContext);
-      } else if (type == dynamic) {
-        injection.required.add(name);
-      } else {
-        injection.required.add([name, type]);
-      }
-    }
+    var injection = preInjection(handler);
 
     _preContained[handler] = injection;
     return handleContained(handler, injection);
@@ -330,13 +333,13 @@ class Angel extends AngelBase {
     await configurer(this);
 
     if (configurer is Controller)
-      _onController.add(controllers[configurer.exposeDecl.path] = configurer);
+      _onController.add(controllers[configurer.findExpose().path] = configurer);
   }
 
   /// Fallback when an error is thrown while handling a request.
   void failSilently(HttpRequest request, ResponseContext res) {}
 
-  /// Starts the server.
+  /// Starts the server, wrapped in a [runZoned] call.
   void listen({InternetAddress address, int port: 3000}) {
     runZoned(() async {
       await startServer(address, port);
@@ -432,4 +435,30 @@ class Angel extends AngelBase {
 
     return app;
   }
+}
+
+/// Predetermines what needs to be injected for a handler to run.
+InjectionRequest preInject(Function handler) {
+  ClosureMirror closureMirror = reflect(handler);
+  var injection = new InjectionRequest();
+
+  // Load parameters
+  for (var parameter in closureMirror.function.parameters) {
+    var name = MirrorSystem.getName(parameter.simpleName);
+    var type = parameter.type.reflectedType;
+
+    if (type == RequestContext || type == ResponseContext) {
+      injection.required.add(type);
+    } else if (name == 'req') {
+      injection.required.add(RequestContext);
+    } else if (name == 'res') {
+      injection.required.add(ResponseContext);
+    } else if (type == dynamic) {
+      injection.required.add(name);
+    } else {
+      injection.required.add([name, type]);
+    }
+  }
+
+  return injection;
 }
