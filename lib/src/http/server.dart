@@ -5,7 +5,6 @@ import 'dart:io';
 import 'dart:math' show Random;
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
-import 'package:json_god/json_god.dart' as god;
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
@@ -41,8 +40,9 @@ class Angel extends AngelBase {
   final List<Angel> _children = [];
   Angel _parent;
   final Random _rand = new Random.secure();
-
   ServerGenerator _serverGenerator = HttpServer.bind;
+
+  final Map<dynamic, InjectionRequest> _preContained = {};
 
   /// Fired after a request is processed. Always runs.
   Stream<HttpRequest> get afterProcessed => _afterProcessed.stream;
@@ -82,9 +82,11 @@ class Angel extends AngelBase {
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
+
     for (String error in e.errors) {
       res.write("<li>$error</li>");
     }
+
     res.write("</ul></body></html>");
     res.end();
   };
@@ -145,7 +147,7 @@ class Angel extends AngelBase {
       if (result is bool)
         return result == true;
       else if (result != null) {
-        res.json(result);
+        res.serialize(result);
         return false;
       } else
         return res.isOpen;
@@ -161,7 +163,7 @@ class Angel extends AngelBase {
       if (result is bool)
         return result == true;
       else if (result != null) {
-        res.json(result);
+        res.serialize(result);
         return false;
       } else
         return true;
@@ -172,7 +174,7 @@ class Angel extends AngelBase {
       if (result is bool)
         return result == true;
       else if (result != null) {
-        res.json(result);
+        res.serialize(result);
         return false;
       } else
         return true;
@@ -182,9 +184,7 @@ class Angel extends AngelBase {
       return await executeHandler(requestMiddleware[handler], req, res);
     }
 
-    // res.willCloseItself = true;
-    res.write(god.serialize(handler));
-    // await res.io.close();
+    res.serialize(handler);
     return false;
   }
 
@@ -235,11 +235,13 @@ class Angel extends AngelBase {
           // Special handling for AngelHttpExceptions :)
           try {
             res.statusCode = e.statusCode;
-            String accept = request.headers.value(HttpHeaders.ACCEPT);
-            if (accept == "*/*" ||
+            List<String> accept =
+                request.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
+            if (accept.isEmpty ||
+                accept.contains('*/*') ||
                 accept.contains(ContentType.JSON.mimeType) ||
                 accept.contains("application/javascript")) {
-              res.json(e.toMap());
+              res.serialize(e.toMap());
             } else {
               await _errorHandler(e, req, res);
             }
@@ -282,45 +284,45 @@ class Angel extends AngelBase {
     }
   }
 
-  // Run a function after injecting from service container
-  Future runContained(Function handler, RequestContext req, ResponseContext res,
-      {Map<String, dynamic> namedParameters}) async {
+  /// Run a function after injecting from service container.
+  /// If this function has been reflected before, then
+  /// the execution will be faster, as the injection requirements were stored beforehand.
+  Future runContained(
+      Function handler, RequestContext req, ResponseContext res) {
+    if (_preContained.containsKey(handler)) {
+      return handleContained(handler, _preContained[handler])(req, res);
+    }
+
+    return runReflected(handler, req, res);
+  }
+
+  /// Runs with DI, and *always* reflects. Prefer [runContained].
+  Future runReflected(
+      Function handler, RequestContext req, ResponseContext res) async {
     ClosureMirror closureMirror = reflect(handler);
-    List args = [];
+    var injection = new InjectionRequest();
 
-    for (ParameterMirror parameter in closureMirror.function.parameters) {
-      if (parameter.type.reflectedType == RequestContext)
-        args.add(req);
-      else if (parameter.type.reflectedType == ResponseContext)
-        args.add(res);
-      else {
-        // First, search to see if we can map this to a type
-        if (req.injections.containsKey(parameter.type.reflectedType)) {
-          args.add(req.injections[parameter.type.reflectedType]);
-          continue;
-        } else {
-          String name = MirrorSystem.getName(parameter.simpleName);
+    // Load parameters
+    for (var parameter in closureMirror.function.parameters) {
+      var name = MirrorSystem.getName(parameter.simpleName);
+      var type = parameter.type.reflectedType;
 
-          if (req.params.containsKey(name))
-            args.add(req.params[name]);
-          else if (name == "req")
-            args.add(req);
-          else if (name == "res")
-            args.add(res);
-          else if (req.injections.containsKey(name))
-            args.add(req.injections[name]);
-          else if (parameter.type.reflectedType != dynamic) {
-            args.add(container.make(parameter.type.reflectedType,
-                injecting: req.injections));
-          } else {
-            throw new Exception(
-                "Cannot resolve parameter '$name' within handler.");
-          }
-        }
+      if (type == RequestContext || type == ResponseContext) {
+        injection.required.add(type);
+      } else if (name == 'req') {
+        injection.required.add(RequestContext);
+      } else if (name == 'res') {
+        injection.required.add(ResponseContext);
+      } else if (type == dynamic) {
+        injection.required.add(name);
+      } else {
+        injection.required.add([name, type]);
       }
     }
 
-    return await closureMirror.apply(args).reflectee;
+    _preContained[handler] = injection;
+    return handleContained(handler, injection);
+    // return await closureMirror.apply(args).reflectee;
   }
 
   /// Applies an [AngelConfigurer] to this instance.
@@ -347,7 +349,7 @@ class Angel extends AngelBase {
   /// will be copied, as well as services and response finalizers.
   ///
   /// [before] and [after] will be preserved.
-  /// 
+  ///
   /// NOTE: The above will not be properly copied if [path] is
   /// a [RegExp].
   @override

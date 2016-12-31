@@ -7,6 +7,7 @@ import 'routable.dart';
 /// A function that asynchronously generates a view from the given path and data.
 typedef Future<String> ViewGenerator(String path, [Map data]);
 
+/// Base class for Angel servers. Do not bother extending this.
 class AngelBase extends Routable {
   AngelBase({bool debug: false}):super(debug: debug);
 

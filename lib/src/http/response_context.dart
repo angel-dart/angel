@@ -15,6 +15,9 @@ final RegExp _contentType =
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
+/// Serializes response data into a String.
+typedef String ResponseSerializer(data);
+
 /// A convenience wrapper around an outgoing HTTP request.
 class ResponseContext extends Extensible {
   bool _isOpen = true;
@@ -30,6 +33,11 @@ class ResponseContext extends Extensible {
 
   /// Headers that will be sent to the user.
   final Map<String, String> headers = {};
+
+  /// Serializes response data into a String.
+  ///
+  /// The default is conversion into JSON.
+  ResponseSerializer serializer = god.serialize;
 
   /// This response's status code.
   int statusCode = 200;
@@ -79,7 +87,7 @@ class ResponseContext extends Extensible {
   ResponseContext(this.io, this.app);
 
   /// Set this to true if you will manually close the response.
-  /// 
+  ///
   /// If `true`, all response finalizers will be skipped.
   bool willCloseItself = false;
 
@@ -108,11 +116,8 @@ class ResponseContext extends Extensible {
   }
 
   /// Serializes JSON to the response.
-  void json(value) {
-    write(god.serialize(value));
-    headers[HttpHeaders.CONTENT_TYPE] = ContentType.JSON.toString();
-    end();
-  }
+  @Deprecated('Please use `serialize` instead.')
+  void json(value) => serialize(value, contentType: ContentType.JSON);
 
   /// Returns a JSONP response.
   void jsonp(value, {String callbackName: "callback"}) {
@@ -218,6 +223,19 @@ class ResponseContext extends Extensible {
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     buffer.add(await file.readAsBytes());
+    end();
+  }
+
+  /// Serializes data to the response.
+  ///
+  /// [contentType] can be either a [String], or a [ContentType].
+  void serialize(value, {contentType}) {
+    write(serializer(value));
+
+    if (contentType is String)
+      headers[HttpHeaders.CONTENT_TYPE] = contentType;
+    else if (contentType is ContentType) this.contentType = contentType;
+
     end();
   }
 
