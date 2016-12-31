@@ -90,7 +90,13 @@ class Controller {
           return;
         }
 
-        routable.addRoute(exposeDecl.method, exposeDecl.path,
+        String name = exposeDecl.as?.isNotEmpty == true
+            ? exposeDecl.as
+            : MirrorSystem.getName(methodName);
+
+        routeMappings[name] = routable.addRoute(
+            exposeDecl.method,
+            exposeDecl.path,
             handleContained(reflectedMethod, preInject(reflectedMethod)),
             middleware: middleware);
       }

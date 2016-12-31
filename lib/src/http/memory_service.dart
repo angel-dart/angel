@@ -36,8 +36,8 @@ class MemoryService<T> extends Service {
       MemoryModel found = items[desiredId];
       if (found != null) {
         return _makeJson(desiredId, found);
-      } else throw new AngelHttpException.NotFound();
-    } else throw new AngelHttpException.NotFound();
+      } else throw new AngelHttpException.notFound();
+    } else throw new AngelHttpException.notFound();
   }
 
   Future create(data, [Map params]) async {
@@ -63,9 +63,9 @@ class MemoryService<T> extends Service {
         (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
         return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
-        throw new AngelHttpException.BadRequest(message: 'Invalid data.');
+        throw new AngelHttpException.badRequest(message: 'Invalid data.');
       }
-    } else throw new AngelHttpException.NotFound();
+    } else throw new AngelHttpException.notFound();
   }
 
   Future update(id, data, [Map params]) async {
@@ -76,9 +76,9 @@ class MemoryService<T> extends Service {
         (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
         return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
-        throw new AngelHttpException.BadRequest(message: 'Invalid data.');
+        throw new AngelHttpException.badRequest(message: 'Invalid data.');
       }
-    } else throw new AngelHttpException.NotFound();
+    } else throw new AngelHttpException.notFound();
   }
 
   Future remove(id, [Map params]) async {
@@ -87,6 +87,6 @@ class MemoryService<T> extends Service {
       MemoryModel item = items[desiredId];
       items[desiredId] = null;
       return _makeJson(desiredId, item);
-    } else throw new AngelHttpException.NotFound();
+    } else throw new AngelHttpException.notFound();
   }
 }
