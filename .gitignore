@@ -3,6 +3,7 @@
 # See https://www.dartlang.org/tools/private-files.html
 
 # source_gen
+.dart_tool
 *.g.dart
 
 # Files and directories created by pub
