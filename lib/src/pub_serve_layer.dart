@@ -8,8 +8,13 @@ class PubServeLayer extends ProxyLayer {
       String host: 'localhost',
       String mapTo: '/',
       int port: 8080,
+      String protocol: 'http',
       String publicPath: '/'})
-      : super(host, port, debug: debug, mapTo: mapTo, publicPath: publicPath);
+      : super(host, port,
+            debug: debug,
+            mapTo: mapTo,
+            protocol: protocol,
+            publicPath: publicPath);
 
   @override
   void serve(Router router) {

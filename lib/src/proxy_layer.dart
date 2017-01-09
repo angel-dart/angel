@@ -20,17 +20,37 @@ String _pathify(String path) {
   return p;
 }
 
+/// Copies HTTP headers ;)
+void copyHeaders(HttpHeaders from, HttpHeaders to) {
+  to
+    ..chunkedTransferEncoding = from.chunkedTransferEncoding
+    ..contentLength = from.contentLength
+    ..contentType = from.contentType
+    ..date = from.date
+    ..expires = from.expires
+    ..host = from.host
+    ..ifModifiedSince = from.ifModifiedSince
+    ..persistentConnection = from.persistentConnection
+    ..port = from.port;
+
+  from.forEach((header, values) {
+    to.set(header, values);
+  });
+}
+
 class ProxyLayer {
   HttpClient _client;
   String _prefix;
   final bool debug;
   final String host, mapTo, publicPath;
   final int port;
+  final String protocol;
 
   ProxyLayer(this.host, this.port,
       {this.debug: false,
       this.mapTo: '/',
       this.publicPath: '/',
+      this.protocol: 'http',
       SecurityContext securityContext}) {
     _client = new HttpClient(context: securityContext);
     _prefix = publicPath.replaceAll(_straySlashes, '');
@@ -70,6 +90,24 @@ class ProxyLayer {
     // Create mapping
     final mapping = '$mapTo/$_path'.replaceAll(_straySlashes, '');
     final rq = await _client.open(req.method, host, port, mapping);
+
+    if (req.headers.contentType != null)
+      rq.headers.contentType = req.headers.contentType;
+
+    rq.cookies.addAll(req.cookies);
+    copyHeaders(req.headers, rq.headers);
+
+    if (req.headers[HttpHeaders.ACCEPT] == null) {
+      req.headers.set(HttpHeaders.ACCEPT, '*/*');
+    }
+
+    rq.headers
+      ..add('X-Forwarded-For', req.connectionInfo.remoteAddress.address)
+      ..add('X-Forwarded-Port', req.connectionInfo.remotePort.toString())
+      ..add('X-Forwarded-Host',
+          req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
+      ..add('X-Forwarded-Proto', protocol);
+
     await rq.addStream(req.io);
     final HttpClientResponse rs = await rq.close();
     final HttpResponse r = res.io;
