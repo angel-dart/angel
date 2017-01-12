@@ -1,0 +1,13 @@
+name: angel_auth_oauth2
+description: angel_auth strategy for OAuth2 login, i.e. Facebook.
+version: 0.0.0
+author: Tobe O <thosakwe@gmail.com>
+environment:
+    sdk: ">=1.19.0"
+homepage: https://github.com/angel-dart/auth_oauth2.git
+dependencies:
+    angel_auth: ^1.0.0-dev
+    angel_validate: ^1.0.0-beta
+    oauth2: ^1.0.0
+dev_dependencies:
+    angel_diagnostics: ^1.0.0-dev
