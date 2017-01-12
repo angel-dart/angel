@@ -59,6 +59,8 @@ class Router extends Extensible {
 
   /// Prepends the given middleware to any routes created
   /// by the resulting router.
+  /// 
+  /// [middleware] can be either an `Iterable`, or a single object.
   ///
   /// The resulting router can be chained, too.
   _ChainedRouter chain(middleware) => new _ChainedRouter(this, middleware);
@@ -412,7 +414,7 @@ class _ChainedRouter extends Router {
 
   _ChainedRouter(Router root, middleware) {
     this._root = root;
-    _handlers.add(middleware);
+    _handlers.addAll(middleware is Iterable ? middleware : [middleware]);
   }
 
   @override
@@ -436,7 +438,7 @@ class _ChainedRouter extends Router {
     final piped = new _ChainedRouter.empty().._root = _root;
     piped._handlers.addAll([]
       ..addAll(_handlers)
-      ..add(middleware));
+      ..addAll(middleware is Iterable ? middleware : [middleware]));
     return piped;
   }
 }
