@@ -15,10 +15,10 @@ main() {
     app = new Angel();
 
     testServer = await testApp().startServer();
-    
+
     await app.configure(new ProxyLayer(
         testServer.address.address, testServer.port,
-        publicPath: '/proxy', debug: true));
+        publicPath: '/proxy'));
     await app.configure(new ProxyLayer(
         testServer.address.address, testServer.port,
         mapTo: '/foo'));

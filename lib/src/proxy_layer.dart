@@ -22,8 +22,9 @@ String _pathify(String path) {
 
 /// Copies HTTP headers ;)
 void copyHeaders(HttpHeaders from, HttpHeaders to) {
-  from.forEach(to.add);
-  to
+  from.forEach(to.set);
+
+  /*to
     ..chunkedTransferEncoding = from.chunkedTransferEncoding
     ..contentLength = from.contentLength
     ..contentType = from.contentType
@@ -32,7 +33,7 @@ void copyHeaders(HttpHeaders from, HttpHeaders to) {
     ..host = from.host
     ..ifModifiedSince = from.ifModifiedSince
     ..persistentConnection = from.persistentConnection
-    ..port = from.port;
+    ..port = from.port;*/
 }
 
 class ProxyLayer {
@@ -91,17 +92,18 @@ class ProxyLayer {
     final rq = await _client.open(req.method, host, port, mapping);
     _printDebug('Opened client request');
 
-    rq.headers
-      ..set('X-Forwarded-For', req.connectionInfo.remoteAddress.address)
-      ..set('X-Forwarded-Port', req.connectionInfo.remotePort.toString())
-      ..set('X-Forwarded-Host',
-          req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
-      ..set('X-Forwarded-Proto', protocol);
-    _printDebug('Added X-Forwarded headers');
     copyHeaders(req.headers, rq.headers);
     _printDebug('Copied headers');
     rq.cookies.addAll(req.cookies ?? []);
     _printDebug('Added cookies');
+    rq.headers
+        .set('X-Forwarded-For', req.io.connectionInfo.remoteAddress.address);
+    rq.headers
+      ..set('X-Forwarded-Port', req.io.connectionInfo.remotePort.toString())
+      ..set('X-Forwarded-Host',
+          req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
+      ..set('X-Forwarded-Proto', protocol);
+    _printDebug('Added X-Forwarded headers');
 
     await rq.addStream(req.io);
     final HttpClientResponse rs = await rq.close();
