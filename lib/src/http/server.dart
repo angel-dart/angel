@@ -321,10 +321,9 @@ class Angel extends AngelBase {
   /// Runs with DI, and *always* reflects. Prefer [runContained].
   Future runReflected(
       Function handler, RequestContext req, ResponseContext res) async {
-    var injection = preInjection(handler);
-
-    _preContained[handler] = injection;
-    return handleContained(handler, injection);
+    var h =
+        handleContained(handler, _preContained[handler] = preInject(handler));
+    return await h(req, res);
     // return await closureMirror.apply(args).reflectee;
   }
 

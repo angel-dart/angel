@@ -45,7 +45,6 @@ class Controller {
     }
 
     var routable = new Routable(debug: debug);
-
     app.use(exposeDecl.path, routable);
     TypeMirror typeMirror = reflectType(this.runtimeType);
     String name = exposeDecl.as?.isNotEmpty == true
@@ -79,20 +78,22 @@ class Controller {
 
         var reflectedMethod = instanceMirror.getField(methodName).reflectee;
         var middleware = []..addAll(handlers)..addAll(exposeDecl.middleware);
+        String name = exposeDecl.as?.isNotEmpty == true
+            ? exposeDecl.as
+            : MirrorSystem.getName(methodName);
 
         // Check if normal
         if (method.parameters.length == 2 &&
             method.parameters[0].type.reflectedType == RequestContext &&
             method.parameters[1].type.reflectedType == ResponseContext) {
           // Create a regular route
-          routable.addRoute(exposeDecl.method, exposeDecl.path, reflectedMethod,
-              middleware: middleware);
+          routeMappings[name] = routable
+              .addRoute(exposeDecl.method, exposeDecl.path, (req, res) async {
+            var result = await reflectedMethod(req, res);
+            return result is RequestHandler ? await result(req, res) : result;
+          }, middleware: middleware);
           return;
         }
-
-        String name = exposeDecl.as?.isNotEmpty == true
-            ? exposeDecl.as
-            : MirrorSystem.getName(methodName);
 
         routeMappings[name] = routable.addRoute(
             exposeDecl.method,
@@ -119,40 +120,43 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
     List args = [];
 
     void inject(requirement) {
-      for (var requirement in injection.required) {
-        if (requirement == RequestContext) {
-          args.add(req);
-        } else if (requirement == ResponseContext) {
-          args.add(res);
-        } else if (requirement is String) {
-          if (req.params.containsKey(requirement)) {} else if (req.injections
-              .containsKey(requirement))
-            args.add(req.injections[requirement]);
-          else {
-            throw new ArgumentError(
-                "Cannot resolve parameter '$requirement' within handler.");
-          }
+      if (requirement == RequestContext) {
+        args.add(req);
+      } else if (requirement == ResponseContext) {
+        args.add(res);
+      } else if (requirement is String) {
+        if (req.params.containsKey(requirement)) {
           args.add(req.params[requirement]);
-        } else if (requirement is List) {
-          for (var child in requirement) {
-            try {
-              inject(child);
-              break;
-            } catch (e) {
-              rethrow;
-            }
-          }
-        } else if (requirement is Type && requirement != dynamic) {
-          args.add(
-              req.app.container.make(requirement, injecting: req.injections));
-        } else {
+        } else if (req.injections.containsKey(requirement))
+          args.add(req.injections[requirement]);
+        else {
           throw new ArgumentError(
-              '$requirement cannot be injected into a request handler.');
+              "Cannot resolve parameter '$requirement' within handler.");
         }
+      } else if (requirement is List &&
+          requirement.length == 2 &&
+          requirement.first is String &&
+          requirement.last is Type) {
+        String key = requirement.first;
+        Type type = requirement.last;
+
+        if (req.params.containsKey(key) || req.injections.containsKey(key)) {
+          inject(key);
+        } else
+          inject(type);
+      } else if (requirement is Type && requirement != dynamic) {
+        if (req.injections.containsKey(requirement))
+          args.add(req.injections[requirement]);
+        else
+          args.add(req.app.container.make(requirement));
+      } else {
+        throw new ArgumentError(
+            '$requirement cannot be injected into a request handler.');
       }
     }
 
     injection.required.forEach(inject);
-    return Function.apply(handler, args);
+    var result = Function.apply(handler, args);
+    return result is Future ? await result : result;
   };
 }
