@@ -22,6 +22,7 @@ String _pathify(String path) {
 
 /// Copies HTTP headers ;)
 void copyHeaders(HttpHeaders from, HttpHeaders to) {
+  from.forEach(to.add);
   to
     ..chunkedTransferEncoding = from.chunkedTransferEncoding
     ..contentLength = from.contentLength
@@ -32,10 +33,6 @@ void copyHeaders(HttpHeaders from, HttpHeaders to) {
     ..ifModifiedSince = from.ifModifiedSince
     ..persistentConnection = from.persistentConnection
     ..port = from.port;
-
-  from.forEach((header, values) {
-    to.set(header, values);
-  });
 }
 
 class ProxyLayer {
@@ -88,31 +85,32 @@ class ProxyLayer {
       ..end();
 
     // Create mapping
+    _printDebug('Serving path $_path via proxy');
     final mapping = '$mapTo/$_path'.replaceAll(_straySlashes, '');
+    _printDebug('Mapped path $_path to path $mapping on proxy $host:$port');
     final rq = await _client.open(req.method, host, port, mapping);
-
-    if (req.headers.contentType != null)
-      rq.headers.contentType = req.headers.contentType;
-
-    rq.cookies.addAll(req.cookies);
-    copyHeaders(req.headers, rq.headers);
-
-    if (req.headers[HttpHeaders.ACCEPT] == null) {
-      req.headers.set(HttpHeaders.ACCEPT, '*/*');
-    }
+    _printDebug('Opened client request');
 
     rq.headers
-      ..add('X-Forwarded-For', req.connectionInfo.remoteAddress.address)
-      ..add('X-Forwarded-Port', req.connectionInfo.remotePort.toString())
-      ..add('X-Forwarded-Host',
+      ..set('X-Forwarded-For', req.connectionInfo.remoteAddress.address)
+      ..set('X-Forwarded-Port', req.connectionInfo.remotePort.toString())
+      ..set('X-Forwarded-Host',
           req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
-      ..add('X-Forwarded-Proto', protocol);
+      ..set('X-Forwarded-Proto', protocol);
+    _printDebug('Added X-Forwarded headers');
+    copyHeaders(req.headers, rq.headers);
+    _printDebug('Copied headers');
+    rq.cookies.addAll(req.cookies ?? []);
+    _printDebug('Added cookies');
 
     await rq.addStream(req.io);
     final HttpClientResponse rs = await rq.close();
     final HttpResponse r = res.io;
+    _printDebug(
+        'Proxy responded to $mapping with status code ${rs.statusCode}');
     r.statusCode = rs.statusCode;
     r.headers.contentType = rs.headers.contentType;
+    copyHeaders(rs.headers, r.headers);
     await r.addStream(rs);
     await r.flush();
     await r.close();
