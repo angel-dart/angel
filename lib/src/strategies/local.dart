@@ -56,7 +56,7 @@ class LocalAuthStrategy extends AuthStrategy {
           verificationResult =
               await verifier(usrPassMatch.group(1), usrPassMatch.group(2));
         } else
-          throw new AngelHttpException.BadRequest(errors: [invalidMessage]);
+          throw new AngelHttpException.badRequest(errors: [invalidMessage]);
       }
     }
 
@@ -86,7 +86,7 @@ class LocalAuthStrategy extends AuthStrategy {
     } else if (verificationResult != null && verificationResult != false) {
       return verificationResult;
     } else {
-      throw new AngelHttpException.NotAuthenticated();
+      throw new AngelHttpException.notAuthenticated();
     }
   }
 }

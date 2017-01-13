@@ -43,7 +43,7 @@ main() {
         '/login',
         auth.authenticate('local',
             new AngelAuthOptions(callback: (req, res, token) {
-          return res
+          res
             ..write('Hello!')
             ..end();
         })));

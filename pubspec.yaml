@@ -1,11 +1,13 @@
 name: angel_auth
 description: A complete authentication plugin for Angel.
-version: 1.0.0-dev+16
+version: 1.0.0-dev+17
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_auth
+environment:
+  sdk: ">=1.19.0"
 dependencies:
-  angel_framework: ">=1.0.0-dev <2.0.0"
-  crypto: ">=2.0.0 <3.0.0"
+  angel_framework: ^1.0.0-dev
+  crypto: ^2.0.0
 dev_dependencies:
-  http: ">= 0.11.3 < 0.12.0"
-  test: ">= 0.12.13 < 0.13.0"
+  http: ^0.11.0
+  test: ^0.12.0

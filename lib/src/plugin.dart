@@ -95,7 +95,7 @@ class AngelAuth extends AngelPlugin {
         }
 
         if (req.ip != null && req.ip != token.ipAddress)
-          throw new AngelHttpException.Forbidden(
+          throw new AngelHttpException.forbidden(
               message: "JWT cannot be accessed from this IP address.");
       }
 
@@ -107,7 +107,7 @@ class AngelAuth extends AngelPlugin {
         token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
 
         if (!token.issuedAt.isAfter(new DateTime.now()))
-          throw new AngelHttpException.Forbidden(message: "Expired JWT.");
+          throw new AngelHttpException.forbidden(message: "Expired JWT.");
       } else if (debug) {
         print('This token has an infinite life span.');
       }
@@ -161,7 +161,7 @@ class AngelAuth extends AngelPlugin {
       if (debug) print('Found JWT: $jwt');
 
       if (jwt == null) {
-        throw new AngelHttpException.Forbidden(message: "No JWT provided");
+        throw new AngelHttpException.forbidden(message: "No JWT provided");
       } else {
         var token = new AuthToken.validate(jwt, _hs256);
 
@@ -174,7 +174,7 @@ class AngelAuth extends AngelPlugin {
                     .ip}');
 
           if (req.ip != token.ipAddress)
-            throw new AngelHttpException.Forbidden(
+            throw new AngelHttpException.forbidden(
                 message: "JWT cannot be accessed from this IP address.");
         }
 
@@ -216,7 +216,7 @@ class AngelAuth extends AngelPlugin {
       }
 
       if (e is AngelHttpException) rethrow;
-      throw new AngelHttpException.BadRequest(message: "Malformed JWT");
+      throw new AngelHttpException.badRequest(message: "Malformed JWT");
     }
   }
 
@@ -262,7 +262,7 @@ class AngelAuth extends AngelPlugin {
   }
 
   Future authenticationFailure(RequestContext req, ResponseContext res) async {
-    throw new AngelHttpException.NotAuthenticated();
+    throw new AngelHttpException.notAuthenticated();
   }
 
   logout([AngelAuthOptions options]) {

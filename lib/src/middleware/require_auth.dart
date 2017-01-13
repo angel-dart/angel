@@ -10,7 +10,7 @@ class RequireAuthorizationMiddleware extends AngelMiddleware {
     bool _reject(ResponseContext res) {
       if (throwError) {
         res.statusCode = HttpStatus.FORBIDDEN;
-        throw new AngelHttpException.Forbidden();
+        throw new AngelHttpException.forbidden();
       } else
         return false;
     }

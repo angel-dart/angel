@@ -12,5 +12,24 @@ main() async {
 
     var parsed = new AuthToken.validate(jwt, hmac);
     print(parsed.toJson());
+    expect(parsed.toJson()['aud'], equals(token.ipAddress));
+    expect(parsed.toJson()['sub'], equals(token.userId));
+  });
+
+  test('custom payload', () {
+    var token =
+        new AuthToken(ipAddress: "localhost", userId: "thosakwe", payload: {
+      "foo": "bar",
+      "baz": {
+        "one": 1,
+        "franken": ["stein"]
+      }
+    });
+    var jwt = token.serialize(hmac);
+    print(jwt);
+
+    var parsed = new AuthToken.validate(jwt, hmac);
+    print(parsed.toJson());
+    expect(parsed.toJson()['pld'], equals(token.payload));
   });
 }
