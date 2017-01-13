@@ -1,4 +1,7 @@
 # shelf
+[![version 1.0.0](https://img.shields.io/badge/pub-v1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_shelf)
+[![build status](https://travis-ci.org/angel-dart/shelf.svg)](https://travis-ci.org/angel-dart/shelf)
+
 Shelf interop with Angel. Will be deprecated by v2.0.0.
 
 By version 2 of Angel, I will migrate the server to run on top of `shelf`.
@@ -23,8 +26,8 @@ main() async {
   
   // Re-route all other traffic to an
   // existing shelf/Redstone application.
-  app.mount('/', embedShelf(
-    shelf.Pipeline()
+  app.after.add(embedShelf(
+    new shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
       .addHandler(_echoRequest)
   ));
