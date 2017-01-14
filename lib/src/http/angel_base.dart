@@ -13,6 +13,10 @@ class AngelBase extends Routable {
 
   Container _container = new Container();
 
+  /// When set to true, the original body bytes will be stored
+  /// on requests. `false` by default.
+  bool storeOriginalBuffer = false;
+
   /// A [Container] used to inject dependencies.
   Container get container => _container;
 

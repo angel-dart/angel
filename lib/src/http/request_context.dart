@@ -87,7 +87,9 @@ class RequestContext extends Extensible {
         .replaceAll(new RegExp(r'/+$'), '');
     ctx._io = request;
 
-    ctx._body = (await parseBody(request)) ?? {};
+    ctx._body = (await parseBody(request,
+            storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
+        {};
 
     return ctx;
   }
