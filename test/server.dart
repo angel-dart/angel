@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:body_parser/body_parser.dart';
 import 'package:http/http.dart' as http;
@@ -16,7 +17,8 @@ main() {
     server = await HttpServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
     server.listen((HttpRequest request) async {
       //Server will simply return a JSON representation of the parsed body
-      request.response.write(god.serialize(await parseBody(request)));
+      request.response.write(
+          god.serialize(await parseBody(request, storeOriginalBuffer: true)));
       await request.response.close();
     });
     url = 'http://localhost:${server.port}';
@@ -36,8 +38,11 @@ main() {
       print('GET $url/?hello=world');
       var response = await client.get('$url/?hello=world');
       print('Response: ${response.body}');
-      expect(response.body,
-          equals('{"body":{},"query":{"hello":"world"},"files":[]}'));
+      var result = JSON.decode(response.body);
+      expect(result['body'], equals({}));
+      expect(result['query'], equals({'hello': 'world'}));
+      expect(result['files'], equals([]));
+      expect(result['originalBuffer'], isNull);
     });
 
     test('GET Complex', () async {
@@ -72,8 +77,12 @@ main() {
       var response =
           await client.post(url, headers: headers, body: 'hello=world');
       print('Response: ${response.body}');
-      expect(response.body,
-          equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
+      var result = JSON.decode(response.body);
+      expect(result['query'], equals({}));
+      expect(result['body'], equals({'hello': 'world'}));
+      expect(result['files'], equals([]));
+      expect(result['originalBuffer'], isList);
+      expect(result['originalBuffer'], isNotEmpty);
     });
 
     test('Post Complex', () async {
@@ -104,8 +113,11 @@ main() {
       print('Body: $postData');
       var response = await client.post(url, headers: headers, body: postData);
       print('Response: ${response.body}');
-      expect(response.body,
-          equals('{"body":{"hello":"world"},"query":{},"files":[]}'));
+      var result = JSON.decode(response.body);
+      expect(result['body'], equals({'hello': 'world'}));
+      expect(result['query'], equals({}));
+      expect(result['files'], equals([]));
+      expect(result['originalBuffer'], allOf(isList, isNotEmpty));
     });
 
     test('Post Complex', () async {

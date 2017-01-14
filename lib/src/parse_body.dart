@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:http_server/http_server.dart';
 import 'package:mime/mime.dart';
 import 'body_parse_result.dart';
-import 'chunk.dart';
 import 'file_upload_info.dart';
 import 'map_from_uri.dart';
 
@@ -14,14 +13,41 @@ import 'map_from_uri.dart';
 /// On a file upload request, only fields with the name **'file'** are processed
 /// as files. Anything else is put in the body. You can change the upload file name
 /// via the *fileUploadName* parameter. :)
-Future<BodyParseResult> parseBody(HttpRequest request) async {
-  var result = new BodyParseResult();
+///
+/// Use [storeOriginalBuffer] to add  the original request bytes to the result.
+Future<BodyParseResult> parseBody(HttpRequest request,
+    {bool storeOriginalBuffer: false}) async {
+  var result = new _BodyParseResultImpl();
+
+  Future<List<int>> getBytes() async {
+    return await request.fold(<int>[], (a, b) => a..addAll(b));
+  }
+
+  Future<String> getBody() async {
+    if (storeOriginalBuffer) {
+      List<int> bytes = await getBytes();
+      return UTF8.decode(result.originalBuffer = bytes);
+    } else
+      return await request.transform(UTF8.decoder).join();
+  }
 
   try {
     if (request.headers.contentType != null) {
       if (request.headers.contentType.primaryType == 'multipart' &&
           request.headers.contentType.parameters.containsKey('boundary')) {
-        var parts = request
+        Stream<List<int>> stream;
+
+        if (storeOriginalBuffer) {
+          var bytes = result.originalBuffer = await getBytes();
+          var ctrl = new StreamController<List<int>>()
+            ..add(bytes)
+            ..close();
+          stream = ctrl.stream;
+        } else {
+          stream = request;
+        }
+
+        var parts = stream
             .transform(new MimeMultipartTransformer(
                 request.headers.contentType.parameters['boundary']))
             .map((part) =>
@@ -47,11 +73,10 @@ Future<BodyParseResult> parseBody(HttpRequest request) async {
         }
       } else if (request.headers.contentType.mimeType ==
           ContentType.JSON.mimeType) {
-        result.body
-            .addAll(JSON.decode(await request.transform(UTF8.decoder).join()));
+        result.body.addAll(JSON.decode(await getBody()));
       } else if (request.headers.contentType.mimeType ==
           'application/x-www-form-urlencoded') {
-        String body = await request.transform(UTF8.decoder).join();
+        String body = await getBody();
         buildMapFromUri(result.body, body);
       }
     } else if (request.uri.hasQuery) {
@@ -62,4 +87,18 @@ Future<BodyParseResult> parseBody(HttpRequest request) async {
   }
 
   return result;
+}
+
+class _BodyParseResultImpl implements BodyParseResult {
+  @override
+  Map<String, dynamic> body = {};
+
+  @override
+  List<FileUploadInfo> files = [];
+
+  @override
+  List<int> originalBuffer;
+
+  @override
+  Map<String, dynamic> query = {};
 }
