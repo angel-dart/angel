@@ -66,6 +66,7 @@ Throws a `429` error if the given rate limit is exceeded.
 ```dart
 // Example: 5 requests per minute
 app.before.add(throttleRequests(5, new Duration(minutes: 1)));
+```
 
 # Helmet
 `security` includes a port of [`helmetjs`](https://github.com/helmetjs/helmet).
