@@ -190,98 +190,105 @@ class Angel extends AngelBase {
   }
 
   Future handleRequest(HttpRequest request) async {
-    _beforeProcessed.add(request);
+    try {
+      _beforeProcessed.add(request);
 
-    final req = await RequestContext.from(request, this);
-    final res = new ResponseContext(request.response, this);
-    String requestedUrl = request.uri.path.replaceAll(_straySlashes, '');
+      final req = await RequestContext.from(request, this);
+      final res = new ResponseContext(request.response, this);
+      String requestedUrl = request.uri.path.replaceAll(_straySlashes, '');
 
-    if (requestedUrl.isEmpty) requestedUrl = '/';
+      if (requestedUrl.isEmpty) requestedUrl = '/';
 
-    final resolved =
-        resolveAll(requestedUrl, requestedUrl, method: request.method);
+      final resolved =
+          resolveAll(requestedUrl, requestedUrl, method: request.method);
 
-    for (final result in resolved) req.params.addAll(result.allParams);
+      for (final result in resolved) req.params.addAll(result.allParams);
 
-    if (resolved.isNotEmpty) {
-      final route = resolved.first.route;
-      req.inject(Match, route.match(requestedUrl));
-    }
+      if (resolved.isNotEmpty) {
+        final route = resolved.first.route;
+        req.inject(Match, route.match(requestedUrl));
+      }
 
-    final m = new MiddlewarePipeline(resolved);
-    req.inject(MiddlewarePipeline, m);
+      final m = new MiddlewarePipeline(resolved);
+      req.inject(MiddlewarePipeline, m);
 
-    final pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
+      final pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
 
-    _printDebug('Handler sequence on $requestedUrl: $pipeline');
+      _printDebug('Handler sequence on $requestedUrl: $pipeline');
 
-    for (final handler in pipeline) {
-      try {
-        _printDebug('Executing handler: $handler');
-        final result = await executeHandler(handler, req, res);
-        _printDebug('Result: $result');
+      for (final handler in pipeline) {
+        try {
+          _printDebug('Executing handler: $handler');
+          final result = await executeHandler(handler, req, res);
+          _printDebug('Result: $result');
 
-        if (!result) {
-          _printDebug('Last executed handler: $handler');
-          break;
-        } else {
-          _printDebug(
-              'Handler completed successfully, did not terminate response: $handler');
-        }
-      } catch (e, st) {
-        _printDebug('Caught error in handler $handler: $e');
-        _printDebug(st);
+          if (!result) {
+            _printDebug('Last executed handler: $handler');
+            break;
+          } else {
+            _printDebug(
+                'Handler completed successfully, did not terminate response: $handler');
+          }
+        } catch (e, st) {
+          _printDebug('Caught error in handler $handler: $e');
+          _printDebug(st);
 
-        if (e is AngelHttpException) {
-          // Special handling for AngelHttpExceptions :)
-          try {
-            res.statusCode = e.statusCode;
-            List<String> accept =
-                request.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
-            if (accept.isEmpty ||
-                accept.contains('*/*') ||
-                accept.contains(ContentType.JSON.mimeType) ||
-                accept.contains("application/javascript")) {
-              res.serialize(e.toMap());
-            } else {
-              await _errorHandler(e, req, res);
+          if (e is AngelHttpException) {
+            // Special handling for AngelHttpExceptions :)
+            try {
+              res.statusCode = e.statusCode;
+              List<String> accept =
+                  request.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
+              if (accept.isEmpty ||
+                  accept.contains('*/*') ||
+                  accept.contains(ContentType.JSON.mimeType) ||
+                  accept.contains("application/javascript")) {
+                res.serialize(e.toMap());
+              } else {
+                await _errorHandler(e, req, res);
+              }
+              // _finalizeResponse(request, res);
+            } catch (e, st) {
+              _fatalErrorStream.add(
+                  new AngelFatalError(request: request, error: e, stack: st));
             }
-            // _finalizeResponse(request, res);
-          } catch (e, st) {
+          } else {
             _fatalErrorStream.add(
                 new AngelFatalError(request: request, error: e, stack: st));
           }
-        } else {
-          _fatalErrorStream
-              .add(new AngelFatalError(request: request, error: e, stack: st));
-        }
 
-        break;
+          break;
+        }
       }
-    }
 
-    try {
-      _afterProcessed.add(request);
+      try {
+        _afterProcessed.add(request);
 
-      if (!res.willCloseItself) {
-        for (var finalizer in responseFinalizers) {
-          await finalizer(req, res);
+        if (!res.willCloseItself) {
+          for (var finalizer in responseFinalizers) {
+            await finalizer(req, res);
+          }
+
+          for (var key in res.headers.keys) {
+            request.response.headers.set(key, res.headers[key]);
+          }
+
+          request.response.headers.chunkedTransferEncoding =
+              res.chunked ?? true;
+
+          request.response
+            ..statusCode = res.statusCode
+            ..cookies.addAll(res.cookies)
+            ..add(res.buffer.takeBytes());
+          await request.response.close();
         }
-
-        for (var key in res.headers.keys) {
-          request.response.headers.set(key, res.headers[key]);
-        }
-
-        request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
-
-        request.response
-          ..statusCode = res.statusCode
-          ..cookies.addAll(res.cookies)
-          ..add(res.buffer.takeBytes());
-        await request.response.close();
+      } catch (e, st) {
+        _fatalErrorStream
+            .add(new AngelFatalError(request: request, error: e, stack: st));
       }
-    } catch (e) {
-      failSilently(request, res);
+    } catch (e, st) {
+      _fatalErrorStream
+          .add(new AngelFatalError(request: request, error: e, stack: st));
     }
   }
 
@@ -334,9 +341,6 @@ class Angel extends AngelBase {
     if (configurer is Controller)
       _onController.add(controllers[configurer.findExpose().path] = configurer);
   }
-
-  /// Fallback when an error is thrown while handling a request.
-  void failSilently(HttpRequest request, ResponseContext res) {}
 
   /// Starts the server, wrapped in a [runZoned] call.
   void listen({InternetAddress address, int port: 3000}) {
