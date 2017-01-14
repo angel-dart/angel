@@ -6,4 +6,5 @@ homepage: https://github.com/angel-dart/user_agent
 environment:
   sdk: ">=1.19.0"
 dependencies:
-  ua_parser: ^1.0.0
+  angel_framework: ^1.0.0-dev
+  user_agent: ^1.0.0-beta

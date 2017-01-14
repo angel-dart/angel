@@ -1,22 +1,24 @@
 import 'package:angel_framework/angel_framework.dart';
-import 'package:ua_parser/ua_parser.dart' as ua;
+import 'package:user_agent/user_agent.dart';
+export 'package:user_agent/user_agent.dart';
 
-/// Injects a [ua.Client] and [ua.UserAgent] into requests.
-/// 
-/// If [strict] is `true`, then an invalid
-/// `User-Agent` header will throw a `400 Bad Request`.
+/// Injects a [UserAgent] into requests.
+///
+/// If [strict] is `true`, then requests without a user agent will be rejected.
 RequestMiddleware parseUserAgent({bool strict: true}) {
-  return (req, res) async {
-    try {
-      final client = ua.parse(req.headers.value('User-Agent'));
-      req
-        ..inject(ua.Client, client)
-        ..inject(ua.UserAgent, client.userAgent);
-    } catch (e) {
-      throw strict ?
-        new AngelHttpException.BadRequest(message: 'Invalid user agent.') : e;
+  return (RequestContext req, res) async {
+    var agentString = req.headers.value('user-agent');
+
+    if (agentString == null) {
+      throw new AngelHttpException.badRequest(
+          message: 'User-Agent header is required.');
+    } else if (agentString != null) {
+      Map<String, List<String>> map = {};
+      req.headers.forEach((k, v) => map[k] = v);
+
+      req.inject(UserAgent, new UserAgent(agentString, headers: map));
     }
-    
+
     return true;
   };
 }
