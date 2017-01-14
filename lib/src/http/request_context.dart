@@ -46,6 +46,9 @@ class RequestContext extends Extensible {
   /// Any and all files sent to the server with this request.
   List<FileUploadInfo> get files => _body.files;
 
+  /// The original body bytes sent with this request. May be empty.
+  List<int> get originalBuffer => _body.originalBuffer ?? [];
+
   /// The URL parameters extracted from the request URI.
   Map params = {};
 
