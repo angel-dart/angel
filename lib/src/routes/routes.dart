@@ -46,7 +46,10 @@ configureAfter(Angel app) async {
   await app.configure(errors);
 
   // Compress via GZIP
-  app.responseFinalizers.add(gzip());
+  // Ideally you'll run this on a `multiserver` instance, but if not,
+  // feel free to knock yourself out!
+  //
+  // app.responseFinalizers.add(gzip());
 }
 
 configureServer(Angel app) async {

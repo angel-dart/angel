@@ -20,9 +20,13 @@ startServer(args, {bool clustered: false, SendPort sendPort}) {
       port = 0;
     }
 
-    var server =
-        await new DiagnosticsServer(app, logFile).startServer(host, port);
-    sendPort?.send([server.address.address, server.port]);
+    await app.configure(logRequests(logFile));
+    var server = await app.startServer(host, port);
+
+    if (sendPort == null) {
+      print('Listening at http://${server.address.address}:${server.port}');
+    } else
+      sendPort?.send([server.address.address, server.port]);
   };
 }
 

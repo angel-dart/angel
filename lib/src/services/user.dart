@@ -33,7 +33,7 @@ class UserService extends Service {
   index([Map params]) {
     if (params != null && params.containsKey('provider')) {
       // Nobody needs to see the entire user list except for the server.
-      throw new AngelHttpException.Forbidden();
+      throw new AngelHttpException.forbidden();
     }
 
     return _inner.index(params);
@@ -43,7 +43,7 @@ class UserService extends Service {
   create(data, [Map params]) {
     if (params != null && params.containsKey('provider')) {
       // Deny creating users to the public - this should be done by the server only.
-      throw new AngelHttpException.Forbidden();
+      throw new AngelHttpException.forbidden();
     }
 
     try {
@@ -52,7 +52,7 @@ class UserService extends Service {
       Validate.isEmail(data['email']);
       data['password'] = hashPassword(data['password']);
     } catch (e) {
-      throw new AngelHttpException.BadRequest(
+      throw new AngelHttpException.badRequest(
           message: 'User must have a username, e-mail address and password.');
     }
 
