@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 MAINTAINER Tobe O <thosakwe@gmail.com>
 
-# Install Dart SDK 1.21.0
+# Install Dart SDK 1.20.0
 RUN sudo apt-get update
 RUN sudo apt-get install -y apt-transport-https
 RUN sudo apt-get install -y curl
