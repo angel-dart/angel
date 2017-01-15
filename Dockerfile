@@ -16,9 +16,8 @@ ADD bin/ bin/
 ADD config/ config/
 ADD lib/ lib/
 ADD tool/ tool/
-ADD views/ view/
+ADD views/ views/
 ADD web/ web/
-ADD pubspec.lock pubspec.lock
 ADD pubspec.yaml pubspec.yaml
 
 # Install dependencies, pre-build
