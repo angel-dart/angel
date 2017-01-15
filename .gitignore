@@ -86,3 +86,4 @@ fabric.properties
 !.vscode/extensions.json
 
 logs/
+*.pem
