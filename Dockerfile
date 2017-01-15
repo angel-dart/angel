@@ -21,12 +21,12 @@ ADD web/ web/
 ADD pubspec.yaml pubspec.yaml
 
 # Install dependencies, pre-build
-RUN pub get
-RUN dart tool/build.dart
-RUN pub build
+RUN /usr/lib/dart/bin/pub get
+RUN /usr/lib/dart/bin/dart tool/build.dart
+RUN /usr/lib/dart/bin/pub build
 
 # Set environment, start multi-server :)
 ENV ANGEL_ENV=production
 EXPOSE 3000
-ENTRYPOINT ["dart"]
+ENTRYPOINT ["/usr/lib/dart/bin/dart"]
 CMD ["bin/multi_server.dart"]
