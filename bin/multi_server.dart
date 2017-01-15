@@ -30,7 +30,7 @@ main() async {
   });
 
   var host = InternetAddress.ANY_IP_V4;
-  var port = 80;
+  var port = 3000;
   var server = await app.startServer(host, port);
   print('Listening at http://${server.address.address}:${server.port}');
 }

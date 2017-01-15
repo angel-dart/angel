@@ -27,5 +27,6 @@ RUN pub build
 
 # Set environment, start multi-server :)
 ENV ANGEL_ENV=production
-EXPOSE 80
-RUN dart bin/multi_server.dart
+EXPOSE 3000
+ENTRYPOINT ["dart"]
+CMD ["bin/multi_server.dart"]
