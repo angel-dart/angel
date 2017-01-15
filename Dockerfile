@@ -8,7 +8,7 @@ RUN sudo apt-get install -y curl
 RUN sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
 RUN sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
 RUN sudo apt-get update
-RUN sudo apt-get install -y dart=1.21.0
+RUN sudo apt-get install -y dart=1.20.*
 RUN export PATH="/usr/lib/dart/bin:$PATH"
 
 # Copy necessary files
