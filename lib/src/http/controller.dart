@@ -19,6 +19,9 @@ import 'server.dart' show Angel, preInject;
 class InjectionRequest {
   /// A list of the data required for a DI-enabled method to run.
   final List required = [];
+
+  /// A list of the data that can be null in a DI-enabled method.
+  final List optional = [];
 }
 
 /// Supports grouping routes with shared functionality.
@@ -95,10 +98,13 @@ class Controller {
           return;
         }
 
-        routeMappings[name] = routable.addRoute(
-            exposeDecl.method,
-            exposeDecl.path,
-            handleContained(reflectedMethod, preInject(reflectedMethod)),
+        var injection = preInject(reflectedMethod);
+
+        if (exposeDecl?.allowNull?.isNotEmpty == true)
+          injection.optional?.addAll(exposeDecl.allowNull);
+
+        routeMappings[name] = routable.addRoute(exposeDecl.method,
+            exposeDecl.path, handleContained(reflectedMethod, injection),
             middleware: middleware);
       }
     };
@@ -112,6 +118,16 @@ class Controller {
       .metadata
       .map((m) => m.reflectee)
       .firstWhere((r) => r is Expose, orElse: () => null);
+}
+
+/// Shortcut for calling [preInject], and then [handleContained].
+/// 
+/// Use this to instantly create a request handler for a DI-enabled method.
+RequestHandler createDynamicHandler(handler,
+    {Iterable<String> optional: const []}) {
+  var injection = preInject(handler);
+  injection.optional.addAll(optional ?? []);
+  return handleContained(handler, injection);
 }
 
 /// Handles a request with a DI-enabled handler.
@@ -129,6 +145,8 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
           args.add(req.params[requirement]);
         } else if (req.injections.containsKey(requirement))
           args.add(req.injections[requirement]);
+        else if (injection.optional.contains(requirement))
+          args.add(null);
         else {
           throw new ArgumentError(
               "Cannot resolve parameter '$requirement' within handler.");

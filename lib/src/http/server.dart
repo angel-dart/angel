@@ -302,6 +302,10 @@ class Angel extends AngelBase {
     }
 
     void _walk(Router router) {
+      if (router is Angel) {
+        router..before.forEach(_add)..after.forEach(_add);
+      }
+
       router.requestMiddleware.forEach((k, v) => _add(v));
       router.middleware.forEach(_add);
       router.routes
@@ -365,6 +369,7 @@ class Angel extends AngelBase {
 
     if (routable is Angel) {
       _children.add(routable.._parent = this);
+      _preContained.addAll(routable._preContained);
 
       if (routable.before.isNotEmpty) {
         all(path, (req, res) {

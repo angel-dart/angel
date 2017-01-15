@@ -32,7 +32,7 @@ class ResponseContext extends Extensible {
   final List<Cookie> cookies = [];
 
   /// Headers that will be sent to the user.
-  final Map<String, String> headers = {};
+  final Map<String, String> headers = {HttpHeaders.SERVER: 'angel'};
 
   /// Serializes response data into a String.
   ///
@@ -230,7 +230,9 @@ class ResponseContext extends Extensible {
   ///
   /// [contentType] can be either a [String], or a [ContentType].
   void serialize(value, {contentType}) {
-    write(serializer(value));
+    var text = serializer(value);
+    write(text);
+    headers[HttpHeaders.CONTENT_LENGTH] = text.length.toString();
 
     if (contentType is String)
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
