@@ -81,7 +81,7 @@ abstract class BaseAngelClient extends Angel {
         if (json is! Map ||
             !json.containsKey('data') ||
             !json.containsKey('token')) {
-          throw new AngelHttpException.NotAuthenticated(
+          throw new AngelHttpException.notAuthenticated(
               message:
                   "Auth endpoint '$url' did not return a proper response.");
         }
@@ -200,6 +200,10 @@ class BaseAngelService extends Service {
     var request = new http.Request(method, url);
 
     if (headers != null) request.headers.addAll(headers);
+
+    if (app.authToken?.isNotEmpty == true)
+      request.headers['Authorization'] = 'Bearer ${app.authToken}';
+
     if (encoding != null) request.encoding = encoding;
     if (body != null) {
       if (body is String) {
