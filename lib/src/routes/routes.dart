@@ -17,7 +17,7 @@ configureAfter(Angel app) async {
   // Static server, and pub serve while in development
   await app.configure(new PubServeLayer());
   await app.configure(new VirtualDirectory());
-  
+
   // Set our application up to handle different errors.
   var errors = new ErrorHandler(handlers: {
     404: (req, res) async =>
@@ -26,12 +26,13 @@ configureAfter(Angel app) async {
   });
 
   errors.fatalErrorHandler = (AngelFatalError e) async {
-    e.request.response
-      ..statusCode = 500
-      ..writeln('500 Internal Server Error: ${e.error}')
-      ..writeln(e.stack);
-    await e.request.response.close();
+    var req = await RequestContext.from(e.request, app);
+    var res = new ResponseContext(e.request.response, app);
+    res.render('error', {'message': 'Internal Server Error: ${e.error}'});
+    await app.sendRequest(e.request, req, res);
   };
+
+  app.get('/trump', () => throw new Exception('MAGA'));
 
   // Throw a 404 if no route matched the request
   app.after.add(errors.throwError());
