@@ -124,7 +124,7 @@ class Angel extends AngelBase {
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
-    final host = address ?? InternetAddress.LOOPBACK_IP_V4;
+    var host = address ?? InternetAddress.LOOPBACK_IP_V4;
     this.httpServer = await _serverGenerator(host, port ?? 0);
     preprocessRoutes();
     return httpServer..listen(handleRequest);
@@ -188,38 +188,44 @@ class Angel extends AngelBase {
     return false;
   }
 
+  Future<RequestContext> createRequestContext(HttpRequest request) {
+    _beforeProcessed.add(request);
+    return RequestContext.from(request, this);
+  }
+
+  Future<ResponseContext> createResponseContext(HttpResponse response) async =>
+      new ResponseContext(response, this);
+
   /// Handles a single request.
   Future handleRequest(HttpRequest request) async {
     try {
-      _beforeProcessed.add(request);
-
-      final req = await RequestContext.from(request, this);
-      final res = new ResponseContext(request.response, this);
+      var req = await createRequestContext(request);
+      var res = await createResponseContext(request.response);
       String requestedUrl = request.uri.path.replaceAll(_straySlashes, '');
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      final resolved =
+      var resolved =
           resolveAll(requestedUrl, requestedUrl, method: request.method);
 
-      for (final result in resolved) req.params.addAll(result.allParams);
+      for (var result in resolved) req.params.addAll(result.allParams);
 
       if (resolved.isNotEmpty) {
-        final route = resolved.first.route;
+        var route = resolved.first.route;
         req.inject(Match, route.match(requestedUrl));
       }
 
-      final m = new MiddlewarePipeline(resolved);
+      var m = new MiddlewarePipeline(resolved);
       req.inject(MiddlewarePipeline, m);
 
-      final pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
+      var pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
 
       _printDebug('Handler sequence on $requestedUrl: $pipeline');
 
-      for (final handler in pipeline) {
+      for (var handler in pipeline) {
         try {
           _printDebug('Executing handler: $handler');
-          final result = await executeHandler(handler, req, res);
+          var result = await executeHandler(handler, req, res);
           _printDebug('Result: $result');
 
           if (!result) {
@@ -262,27 +268,7 @@ class Angel extends AngelBase {
       }
 
       try {
-        _afterProcessed.add(request);
-
-        if (!res.willCloseItself) {
-          for (var finalizer in responseFinalizers) {
-            await finalizer(req, res);
-          }
-
-          for (var key in res.headers.keys) {
-            request.response.headers.add(key, res.headers[key]);
-          }
-
-          request.response.headers
-            ..chunkedTransferEncoding = res.chunked ?? true
-            ..set(HttpHeaders.CONTENT_LENGTH, res.buffer.length);
-
-          request.response
-            ..statusCode = res.statusCode
-            ..cookies.addAll(res.cookies)
-            ..add(res.buffer.takeBytes());
-          await request.response.close();
-        }
+        await sendRequest(request, req, res);
       } catch (e, st) {
         _fatalErrorStream
             .add(new AngelFatalError(request: request, error: e, stack: st));
@@ -339,6 +325,32 @@ class Angel extends AngelBase {
     // return await closureMirror.apply(args).reflectee;
   }
 
+  /// Sends a response.
+  Future sendRequest(
+      HttpRequest request, RequestContext req, ResponseContext res) async {
+    _afterProcessed.add(request);
+
+    if (!res.willCloseItself) {
+      for (var finalizer in responseFinalizers) {
+        await finalizer(req, res);
+      }
+
+      for (var key in res.headers.keys) {
+        request.response.headers.add(key, res.headers[key]);
+      }
+
+      request.response.headers
+        ..chunkedTransferEncoding = res.chunked ?? true
+        ..set(HttpHeaders.CONTENT_LENGTH, res.buffer.length);
+
+      request.response
+        ..statusCode = res.statusCode
+        ..cookies.addAll(res.cookies)
+        ..add(res.buffer.takeBytes());
+      await request.response.close();
+    }
+  }
+
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) async {
     await configurer(this);
@@ -366,7 +378,7 @@ class Angel extends AngelBase {
   @override
   use(Pattern path, Routable routable,
       {bool hooked: true, String namespace: null}) {
-    final head = path.toString().replaceAll(_straySlashes, '');
+    var head = path.toString().replaceAll(_straySlashes, '');
 
     if (routable is Angel) {
       _children.add(routable.._parent = this);
@@ -396,12 +408,12 @@ class Angel extends AngelBase {
       }
 
       routable.controllers.forEach((k, v) {
-        final tail = k.toString().replaceAll(_straySlashes, '');
+        var tail = k.toString().replaceAll(_straySlashes, '');
         controllers['$head/$tail'.replaceAll(_straySlashes, '')] = v;
       });
 
       routable.services.forEach((k, v) {
-        final tail = k.toString().replaceAll(_straySlashes, '');
+        var tail = k.toString().replaceAll(_straySlashes, '');
         services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
       });
     }
@@ -434,7 +446,7 @@ class Angel extends AngelBase {
   /// the server.
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
       {bool debug: false, String password}) {
-    final app = new Angel(debug: debug == true);
+    var app = new Angel(debug: debug == true);
 
     app._serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
