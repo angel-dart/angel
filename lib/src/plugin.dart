@@ -26,6 +26,8 @@ class AngelAuth extends AngelPlugin {
   UserSerializer serializer;
   UserDeserializer deserializer;
 
+  Hmac get hmac => _hs256;
+
   String _randomString(
       {int length: 32,
       String validChars:
@@ -234,6 +236,13 @@ class AngelAuth extends AngelPlugin {
         var token = new AuthToken(
             userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
         var jwt = token.serialize(_hs256);
+
+        if (options?.tokenCallback != null) {
+          var r = await options.tokenCallback(
+              req, res, token, req.properties["user"] = result);
+          if (r != null) return r;
+        }
+
         req
           ..inject(AuthToken, req.properties['token'] = token)
           ..inject(result.runtimeType, req.properties["user"] = result);
@@ -263,6 +272,32 @@ class AngelAuth extends AngelPlugin {
 
   Future authenticationFailure(RequestContext req, ResponseContext res) async {
     throw new AngelHttpException.notAuthenticated();
+  }
+
+  /// Log a user in on-demand.
+  Future login(AuthToken token, RequestContext req, ResponseContext res) async {
+    var user = await deserializer(token.userId);
+
+    req
+      ..inject(AuthToken, req.properties['token'] = token)
+      ..inject(user.runtimeType, req.properties["user"] = user);
+
+    if (allowCookie)
+      res.cookies.add(new Cookie('token', token.serialize(_hs256)));
+  }
+
+  /// Log a user in on-demand.
+  Future loginById(userId, RequestContext req, ResponseContext res) async {
+    var user = await deserializer(userId);
+    var token = new AuthToken(
+        userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
+
+    req
+      ..inject(AuthToken, req.properties['token'] = token)
+      ..inject(user.runtimeType, req.properties["user"] = user);
+
+    if (allowCookie)
+      res.cookies.add(new Cookie('token', token.serialize(_hs256)));
   }
 
   logout([AngelAuthOptions options]) {

@@ -3,6 +3,27 @@ import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
 
+/// Calls [BASE64URL], but also works for strings with lengths
+/// that are *not* multiples of 4.
+String decodeBase64(String str) {
+  var output = str.replaceAll('-', '+').replaceAll('_', '/');
+
+  switch (output.length % 4) {
+    case 0:
+      break;
+    case 2:
+      output += '==';
+      break;
+    case 3:
+      output += '=';
+      break;
+    default:
+      throw 'Illegal base64url string!"';
+  }
+
+  return UTF8.decode(BASE64URL.decode(output));
+}
+
 class AuthToken {
   final SplayTreeMap<String, String> _header =
       new SplayTreeMap.from({"alg": "HS256", "typ": "JWT"});
@@ -35,14 +56,24 @@ class AuthToken {
         payload: data["pld"] ?? {});
   }
 
+  factory AuthToken.parse(String jwt) {
+    var split = jwt.split(".");
+
+    if (split.length != 3)
+      throw new AngelHttpException.notAuthenticated(message: "Invalid JWT.");
+
+    var payloadString = decodeBase64(split[1]);
+    return new AuthToken.fromMap(JSON.decode(payloadString));
+  }
+
   factory AuthToken.validate(String jwt, Hmac hmac) {
     var split = jwt.split(".");
 
     if (split.length != 3)
       throw new AngelHttpException.notAuthenticated(message: "Invalid JWT.");
 
-    // var headerString = new String.fromCharCodes(BASE64URL.decode(split[0]));
-    var payloadString = new String.fromCharCodes(BASE64URL.decode(split[1]));
+    // var headerString = decodeBase64(split[0]);
+    var payloadString = decodeBase64(split[1]);
     var data = split[0] + "." + split[1];
     var signature = BASE64URL.encode(hmac.convert(data.codeUnits).bytes);
 
