@@ -116,7 +116,6 @@ class ResponseContext extends Extensible {
   }
 
   /// Serializes JSON to the response.
-  @Deprecated('Please use `serialize` instead.')
   void json(value) => serialize(value, contentType: ContentType.JSON);
 
   /// Returns a JSONP response.
@@ -232,8 +231,7 @@ class ResponseContext extends Extensible {
   void serialize(value, {contentType}) {
     var text = serializer(value);
     write(text);
-    headers[HttpHeaders.CONTENT_LENGTH] = text.length.toString();
-
+    
     if (contentType is String)
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     else if (contentType is ContentType) this.contentType = contentType;

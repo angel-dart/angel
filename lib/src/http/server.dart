@@ -132,12 +132,11 @@ class Angel extends AngelBase {
 
   /// Loads some base dependencies into the service container.
   void bootstrapContainer() {
+    if (runtimeType != Angel) container.singleton(this, as: Angel);
     container.singleton(this, as: AngelBase);
     container.singleton(this, as: Routable);
     container.singleton(this, as: Router);
     container.singleton(this);
-
-    if (runtimeType != Angel) container.singleton(this, as: Angel);
   }
 
   Future<bool> executeHandler(
@@ -189,6 +188,7 @@ class Angel extends AngelBase {
     return false;
   }
 
+  /// Handles a single request.
   Future handleRequest(HttpRequest request) async {
     try {
       _beforeProcessed.add(request);
@@ -270,11 +270,12 @@ class Angel extends AngelBase {
           }
 
           for (var key in res.headers.keys) {
-            request.response.headers.set(key, res.headers[key]);
+            request.response.headers.add(key, res.headers[key]);
           }
 
-          request.response.headers.chunkedTransferEncoding =
-              res.chunked ?? true;
+          request.response.headers
+            ..chunkedTransferEncoding = res.chunked ?? true
+            ..set(HttpHeaders.CONTENT_LENGTH, res.buffer.length);
 
           request.response
             ..statusCode = res.statusCode
@@ -417,17 +418,23 @@ class Angel extends AngelBase {
     _errorHandler = handler;
   }
 
-  Angel({bool debug: false}) : super(debug: debug) {
+  /// Default constructor. ;)
+  Angel({bool debug: false}) : super(debug: debug == true) {
     bootstrapContainer();
   }
 
+  /// An instance mounted on a server started by the [serverGenerator].
+  factory Angel.custom(ServerGenerator serverGenerator, {bool debug: false}) =>
+      new Angel(debug: debug == true).._serverGenerator = serverGenerator;
+
   /// Creates an HTTPS server.
+  ///
   /// Provide paths to a certificate chain and server key (both .pem).
   /// If no password is provided, a random one will be generated upon running
   /// the server.
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
       {bool debug: false, String password}) {
-    final app = new Angel(debug: debug);
+    final app = new Angel(debug: debug == true);
 
     app._serverGenerator = (InternetAddress address, int port) async {
       var certificateChain =
@@ -455,16 +462,22 @@ InjectionRequest preInject(Function handler) {
     var name = MirrorSystem.getName(parameter.simpleName);
     var type = parameter.type.reflectedType;
 
-    if (type == RequestContext || type == ResponseContext) {
-      injection.required.add(type);
-    } else if (name == 'req') {
-      injection.required.add(RequestContext);
-    } else if (name == 'res') {
-      injection.required.add(ResponseContext);
-    } else if (type == dynamic) {
-      injection.required.add(name);
+    if (!parameter.isNamed) {
+      if (parameter.isOptional) injection.optional.add(name);
+
+      if (type == RequestContext || type == ResponseContext) {
+        injection.required.add(type);
+      } else if (name == 'req') {
+        injection.required.add(RequestContext);
+      } else if (name == 'res') {
+        injection.required.add(ResponseContext);
+      } else if (type == dynamic) {
+        injection.required.add(name);
+      } else {
+        injection.required.add([name, type]);
+      }
     } else {
-      injection.required.add([name, type]);
+      injection.named[name] = type;
     }
   }
 

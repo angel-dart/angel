@@ -24,7 +24,7 @@ main() {
 
     app.get("/errands", (Todo singleton) => singleton);
     app.get("/errands3",
-        (Errand singleton, Todo foo, RequestContext req) => singleton.text);
+        ({Errand singleton, Todo foo, RequestContext req}) => singleton.text);
     await app.configure(new SingletonController());
     await app.configure(new ErrandController());
 

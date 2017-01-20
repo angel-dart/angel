@@ -17,11 +17,14 @@ import 'server.dart' show Angel, preInject;
 /// Regular request handlers can also skip DI entirely, lowering response time
 /// and memory use.
 class InjectionRequest {
-  /// A list of the data required for a DI-enabled method to run.
+  /// Optional, typed data that can be passed to a DI-enabled method.
+  Map<String, Type> named = {};
+
+  /// A list of the arguments required for a DI-enabled method to run.
   final List required = [];
 
-  /// A list of the data that can be null in a DI-enabled method.
-  final List optional = [];
+  /// A list of the arguments that can be null in a DI-enabled method.
+  final List<String> optional = [];
 }
 
 /// Supports grouping routes with shared functionality.
@@ -121,7 +124,7 @@ class Controller {
 }
 
 /// Shortcut for calling [preInject], and then [handleContained].
-/// 
+///
 /// Use this to instantly create a request handler for a DI-enabled method.
 RequestHandler createDynamicHandler(handler,
     {Iterable<String> optional: const []}) {
@@ -173,8 +176,27 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
       }
     }
 
+    Map<Symbol, dynamic> named = {};
     injection.required.forEach(inject);
-    var result = Function.apply(handler, args);
+
+    injection.named.forEach((k, v) {
+      var name = new Symbol(k);
+      if (req.params.containsKey(k))
+        named[name] = v;
+      else if (req.injections.containsKey(k))
+        named[name] = v;
+      else if (req.injections.containsKey(v) && v != dynamic)
+        named[name] = v;
+      else {
+        try {
+          named[name] = req.app.container.make(v);
+        } catch (e) {
+          named[name] = null;
+        }
+      }
+    });
+
+    var result = Function.apply(handler, args, named);
     return result is Future ? await result : result;
   };
 }
