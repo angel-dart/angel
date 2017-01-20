@@ -1,7 +1,6 @@
 import 'package:angel_common/angel_common.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:mongo_dart/mongo_dart.dart';
-import 'package:validate/validate.dart';
 import '../models/user.dart';
 export '../models/user.dart';
 
@@ -11,6 +10,19 @@ configureServer(Db db) {
 
     HookedService service = app.service('api/users');
     app.container.singleton(service.inner);
+
+    service.beforeCreated
+      ..listen(validateEvent(
+          new Validator({
+            'username*': [isString, isNotEmpty],
+            'password*': [isString, isNotEmpty],
+            'email*': [isString, isNotEmpty, isEmail],
+          }),
+          errorMessage:
+              'User must have a username, e-mail address and password.'))
+      ..listen((e) {
+        e.data['password'] = hashPassword(e.data['password']);
+      });
   };
 }
 
@@ -44,16 +56,6 @@ class UserService extends Service {
     if (params != null && params.containsKey('provider')) {
       // Deny creating users to the public - this should be done by the server only.
       throw new AngelHttpException.forbidden();
-    }
-
-    try {
-      Validate.isKeyInMap('username', data);
-      Validate.isKeyInMap('password', data);
-      Validate.isEmail(data['email']);
-      data['password'] = hashPassword(data['password']);
-    } catch (e) {
-      throw new AngelHttpException.badRequest(
-          message: 'User must have a username, e-mail address and password.');
     }
 
     return _inner.create(data, params);
