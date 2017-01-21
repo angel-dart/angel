@@ -13,20 +13,22 @@ class Permission {
   HookedServiceEventListener toHook(
       {String message, String userKey, getRoles(user)}) {
     return (HookedServiceEvent e) async {
-      var user = e.request.grab(userKey ?? 'user');
+      if (e.params.containsKey('provider')) {
+        var user = e.request.grab(userKey ?? 'user');
 
-      if (user == null)
-        throw new AngelHttpException.forbidden(
-            message: message ??
-                'You have insufficient permissions to perform this action.');
+        if (user == null)
+          throw new AngelHttpException.forbidden(
+              message: message ??
+                  'You have insufficient permissions to perform this action.');
 
-      var roleFinder = getRoles ?? (user) async => user.roles ?? [];
-      List<String> roles = (await roleFinder(user)).toList();
+        var roleFinder = getRoles ?? (user) async => user.roles ?? [];
+        List<String> roles = (await roleFinder(user)).toList();
 
-      if (!roles.any(verify))
-        throw new AngelHttpException.forbidden(
-            message: message ??
-                'You have insufficient permissions to perform this action.');
+        if (!roles.any(verify))
+          throw new AngelHttpException.forbidden(
+              message: message ??
+                  'You have insufficient permissions to perform this action.');
+      }
     };
   }
 
