@@ -1,5 +1,5 @@
 # security
-[![version 0.0.0-alpha+2](https://img.shields.io/badge/pub-v0.0.0--alpha+2-red.svg)](https://pub.dartlang.org/packages/angel_security)
+[![version 0.0.0-alpha+3](https://img.shields.io/badge/pub-v0.0.0--alpha+3-red.svg)](https://pub.dartlang.org/packages/angel_security)
 [![build status](https://travis-ci.org/angel-dart/security.svg)](https://travis-ci.org/angel-dart/security)
 
 Angel middleware designed to enhance application security by patching common Web security
@@ -15,6 +15,7 @@ Currently unfinished, with incomplete code coverage - **USE AT YOUR OWN RISK!!!*
     * [Throttling Requests](#throttling-requests)
 * [Helmet Port](#helmet)
 * [Service Hooks](#service-hooks)
+* [Permissions](#permissions)
 
 ## Sanitizing HTML
 
@@ -84,3 +85,6 @@ Also included are a set of service hooks, [ported from FeathersJS](https://githu
 ```dart
 import 'package:angel_security/hooks.dart';
 ```
+
+# Permissions
+See the tests. 
