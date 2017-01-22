@@ -1,2 +1,2 @@
-# graphql
-Generates services and models from GraphQL.
+# graphql_parser
+Parses GraphQL queries and schemas.

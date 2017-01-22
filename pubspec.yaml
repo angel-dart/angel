@@ -1,0 +1,8 @@
+author: "Tobe O"
+description: "Parses GraphQL queries and schemas."
+homepage: "https://github.com/thosakwe/graphql_parser"
+name: "graphql_parser"
+version: "0.0.0"
+dependencies: 
+  source_span: "^1.3.1"
+  string_scanner: "^1.0.1"
