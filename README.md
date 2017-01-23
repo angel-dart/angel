@@ -25,7 +25,7 @@ main() async {
   await app.configure(new ApiController());
   
   // Re-route all other traffic to an
-  // existing shelf/Redstone application.
+  // existing application.
   app.after.add(embedShelf(
     new shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
