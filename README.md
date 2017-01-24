@@ -1,2 +1,2 @@
-# oauth2_server
-Server-side Dart implementation of the OAuth2 protocol.
+# auth_oauth2_server
+angel_auth strategy for in-house OAuth2.
