@@ -111,7 +111,7 @@ abstract class BaseAngelClient extends Angel {
         if (json is! Map ||
             !json.containsKey('data') ||
             !json.containsKey('token')) {
-          throw new AngelHttpException.NotAuthenticated(
+          throw new AngelHttpException.notAuthenticated(
               message:
                   "Auth endpoint '$url' did not return a proper response.");
         }
@@ -125,6 +125,34 @@ abstract class BaseAngelClient extends Angel {
 
   Future close() async {
     client.close();
+  }
+
+  /// Sends a non-streaming [Request] and returns a non-streaming [Response].
+  Future<http.Response> sendUnstreamed(
+      String method, url, Map<String, String> headers,
+      [body, Encoding encoding]) async {
+    if (url is String) url = Uri.parse(url);
+    var request = new http.Request(method, url);
+
+    if (headers != null) request.headers.addAll(headers);
+
+    if (authToken?.isNotEmpty == true)
+      request.headers['Authorization'] = 'Bearer $authToken';
+
+    if (encoding != null) request.encoding = encoding;
+    if (body != null) {
+      if (body is String) {
+        request.body = body;
+      } else if (body is List) {
+        request.bodyBytes = DelegatingList.typed(body);
+      } else if (body is Map) {
+        request.bodyFields = DelegatingMap.typed(body);
+      } else {
+        throw new ArgumentError('Invalid request body "$body".');
+      }
+    }
+
+    return http.Response.fromStream(await client.send(request));
   }
 
   @override
@@ -143,41 +171,41 @@ abstract class BaseAngelClient extends Angel {
   @override
   Future<http.Response> delete(String url,
       {Map<String, String> headers}) async {
-    return client.delete(_join(url), headers: headers);
+    return sendUnstreamed('DELETE', _join(url), headers);
   }
 
   @override
   Future<http.Response> get(String url, {Map<String, String> headers}) async {
-    return client.get(_join(url), headers: headers);
+    return sendUnstreamed('GET', _join(url), headers);
   }
 
   @override
   Future<http.Response> head(String url, {Map<String, String> headers}) async {
-    return client.head(_join(url), headers: headers);
+    return sendUnstreamed('HEAD', _join(url), headers);
   }
 
   @override
   Future<http.Response> patch(String url,
       {body, Map<String, String> headers}) async {
-    return client.patch(_join(url), body: body, headers: headers);
+    return sendUnstreamed('PATCH', _join(url), headers, body);
   }
 
   @override
   Future<http.Response> post(String url,
       {body, Map<String, String> headers}) async {
-    return client.post(_join(url), body: body, headers: headers);
+    return sendUnstreamed('POST', _join(url), headers, body);
   }
 
   @override
   Future<http.Response> put(String url,
       {body, Map<String, String> headers}) async {
-    return client.put(_join(url), body: body, headers: headers);
+    return sendUnstreamed('PUT', _join(url), headers, body);
   }
 }
 
 class BaseAngelService extends Service {
   @override
-  final Angel app;
+  final BaseAngelClient app;
   final String basePath;
   final http.BaseClient client;
   final AngelDeserializer deserializer;
@@ -192,34 +220,6 @@ class BaseAngelService extends Service {
     return JSON.encode(x);
   }
 
-  /// Sends a non-streaming [Request] and returns a non-streaming [Response].
-  Future<http.Response> sendUnstreamed(
-      String method, url, Map<String, String> headers,
-      [body, Encoding encoding]) async {
-    if (url is String) url = Uri.parse(url);
-    var request = new http.Request(method, url);
-
-    if (headers != null) request.headers.addAll(headers);
-
-    if (app.authToken?.isNotEmpty == true)
-      request.headers['Authorization'] = 'Bearer ${app.authToken}';
-
-    if (encoding != null) request.encoding = encoding;
-    if (body != null) {
-      if (body is String) {
-        request.body = body;
-      } else if (body is List) {
-        request.bodyBytes = DelegatingList.typed(body);
-      } else if (body is Map) {
-        request.bodyFields = DelegatingMap.typed(body);
-      } else {
-        throw new ArgumentError('Invalid request body "$body".');
-      }
-    }
-
-    return http.Response.fromStream(await client.send(request));
-  }
-
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     if (app.authToken != null && app.authToken.isNotEmpty) {
       request.headers['Authorization'] = 'Bearer ${app.authToken}';
@@ -230,7 +230,7 @@ class BaseAngelService extends Service {
 
   @override
   Future<List> index([Map params]) async {
-    final response = await sendUnstreamed(
+    final response = await app.sendUnstreamed(
         'GET', '$basePath/${_buildQuery(params)}', _readHeaders);
 
     try {
@@ -252,7 +252,7 @@ class BaseAngelService extends Service {
 
   @override
   Future read(id, [Map params]) async {
-    final response = await sendUnstreamed(
+    final response = await app.sendUnstreamed(
         'GET', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
     try {
@@ -268,7 +268,7 @@ class BaseAngelService extends Service {
 
   @override
   Future create(data, [Map params]) async {
-    final response = await sendUnstreamed('POST',
+    final response = await app.sendUnstreamed('POST',
         '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
@@ -284,7 +284,7 @@ class BaseAngelService extends Service {
 
   @override
   Future modify(id, data, [Map params]) async {
-    final response = await sendUnstreamed('PATCH',
+    final response = await app.sendUnstreamed('PATCH',
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
@@ -300,7 +300,7 @@ class BaseAngelService extends Service {
 
   @override
   Future update(id, data, [Map params]) async {
-    final response = await sendUnstreamed('POST',
+    final response = await app.sendUnstreamed('POST',
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
@@ -316,7 +316,7 @@ class BaseAngelService extends Service {
 
   @override
   Future remove(id, [Map params]) async {
-    final response = await sendUnstreamed(
+    final response = await app.sendUnstreamed(
         'DELETE', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
     try {

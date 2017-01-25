@@ -29,7 +29,9 @@ class RestService extends BaseAngelService {
 
   deserialize(x) {
     if (type != null) {
-      return god.deserializeDatum(x, outputType: type);
+      return x.runtimeType == type
+          ? x
+          : god.deserializeDatum(x, outputType: type);
     }
 
     return x;
