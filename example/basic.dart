@@ -8,10 +8,14 @@ Stream<String> input() async* {
     tagline
   }
 }
-  '''.trim();
+  '''
+      .trim();
 }
 
 main() async {
   var lexer = new Lexer(), parser = new Parser();
-  await input().transform(lexer).forEach(print);
+  var stream = input().transform(lexer).asBroadcastStream();
+  await stream.forEach(print);
+  stream.pipe(parser);
+  await parser.onNode.forEach(print);
 }
