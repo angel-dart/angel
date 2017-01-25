@@ -9,7 +9,7 @@ RequestMiddleware parseUserAgent({bool strict: true}) {
   return (RequestContext req, res) async {
     var agentString = req.headers.value('user-agent');
 
-    if (agentString == null) {
+    if (agentString == null && strict) {
       throw new AngelHttpException.badRequest(
           message: 'User-Agent header is required.');
     } else if (agentString != null) {
@@ -17,7 +17,8 @@ RequestMiddleware parseUserAgent({bool strict: true}) {
       req.headers.forEach((k, v) => map[k] = v);
 
       req.inject(UserAgent, new UserAgent(agentString, headers: map));
-    }
+    } else
+      req.inject(UserAgent, null);
 
     return true;
   };
