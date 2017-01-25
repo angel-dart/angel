@@ -1,6 +1,6 @@
 # angel_static
 
-![version 1.1.0-dev+2](https://img.shields.io/badge/version-1.1.0--dev+2-red.svg)
+![version 1.1.1](https://img.shields.io/badge/version-1.1.1-red.svg)
 ![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)
 
 Static server middleware for Angel.
@@ -39,3 +39,5 @@ The `VirtualDirectory` API accepts a few named parameters:
     angel_static is serving your files. If you are not serving static files at the site root,
     please include this.
 - **debug**: Print verbose debug output.
+- **callback**: Runs before sending a file to a client. Use this to set headers, etc. If it returns anything other than `null` or `true`,
+then the callback's result will be sent to the user, instead of the file contents.

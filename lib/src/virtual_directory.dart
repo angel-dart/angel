@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_route/angel_route.dart';
 
+typedef StaticFileCallback(File file, RequestContext req, ResponseContext res);
+
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -27,6 +29,7 @@ class VirtualDirectory {
   String _prefix;
   Directory _source;
   Directory get source => _source;
+  final StaticFileCallback callback;
   final List<String> indexFileNames;
   final String publicPath;
 
@@ -34,7 +37,8 @@ class VirtualDirectory {
       {Directory source,
       this.debug: false,
       this.indexFileNames: const ['index.html'],
-      this.publicPath: '/'}) {
+      this.publicPath: '/',
+      this.callback}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
 
     if (source != null) {
@@ -53,9 +57,17 @@ class VirtualDirectory {
 
   call(AngelBase app) async => serve(app);
 
-  Future<bool> sendFile(File file, ResponseContext res) async {
-    _printDebug('Streaming file ${file.absolute.path}...');
+  Future<bool> sendFile(
+      File file, RequestContext req, ResponseContext res) async {
+    _printDebug('Sending file ${file.absolute.path}...');
     res.statusCode = 200;
+
+    if (callback != null) {
+      var r = callback(file, req, res);
+      r = r is Future ? await r : r;
+      if (r != null && r != true) return r;
+    }
+
     await res.streamFile(file);
     return false;
   }
@@ -63,17 +75,14 @@ class VirtualDirectory {
   void serve(Router router) {
     _printDebug('Source directory: ${source.absolute.path}');
     _printDebug('Public path prefix: "$_prefix"');
-
-    handler(RequestContext req, ResponseContext res) async {
+    router.get('$publicPath/*',
+        (RequestContext req, ResponseContext res) async {
       var path = req.path.replaceAll(_straySlashes, '');
-
-      return serveFile(path, res);
-    }
-
-    router.get('$publicPath/*', handler);
+      return serveFile(path, req, res);
+    });
   }
 
-  serveFile(String path, ResponseContext res) async {
+  serveFile(String path, RequestContext req, ResponseContext res) async {
     if (_prefix.isNotEmpty) {
       path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
     }
@@ -82,7 +91,7 @@ class VirtualDirectory {
     _printDebug('Attempting to statically serve file: ${file.absolute.path}');
 
     if (await file.exists()) {
-      return sendFile(file, res);
+      return sendFile(file, req, res);
     } else {
       // Try to resolve index
       if (path.isEmpty) {
@@ -90,7 +99,7 @@ class VirtualDirectory {
           final index =
               new File.fromUri(source.absolute.uri.resolve(indexFileName));
           if (await index.exists()) {
-            return await sendFile(index, res);
+            return await sendFile(index, req, res);
           }
         }
       } else {
