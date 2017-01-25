@@ -21,6 +21,28 @@ RequestMiddleware autoParseQuery(List<String> fields) {
   };
 }
 
+/// Filters unwanted data out of `req.body`.
+RequestMiddleware filterBody(Iterable<String> only) {
+  return (RequestContext req, res) async {
+    var filtered = filter(req.body, only);
+    req.body
+      ..clear()
+      ..addAll(filtered);
+    return true;
+  };
+}
+
+/// Filters unwanted data out of `req.query`.
+RequestMiddleware filterQuery(Iterable<String> only) {
+  return (RequestContext req, res) async {
+    var filtered = filter(req.query, only);
+    req.query
+      ..clear()
+      ..addAll(filtered);
+    return true;
+  };
+}
+
 /// Validates the data in `req.body`, and sets the body to
 /// filtered data before continuing the response.
 RequestMiddleware validate(Validator validator,

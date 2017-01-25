@@ -1,5 +1,5 @@
 # validate
-[![version 1.0.0-beta](https://img.shields.io/badge/pub-v1.0.0--beta-red.svg)](https://pub.dartlang.org/packages/angel_validate)
+[![version 1.0.0](https://img.shields.io/badge/pub-v1.0.0-red.svg)](https://pub.dartlang.org/packages/angel_validate)
 [![build status](https://travis-ci.org/angel-dart/validate.svg)](https://travis-ci.org/angel-dart/validate)
 
 (Still missing several tests)
@@ -23,6 +23,7 @@ For convenience's sake, this library also exports `matcher`.
   * [Default Values](#default-values)
   * [Custom Validator Functions](#custom-validator-functions)
 * [Auto-parsing Numbers](#autoparse)
+* [Filtering Maps](#filter)
 * [Custom Error Messages](#custom-error-messages)
 * [Extending Validators](#extending-validators)
 * [Bundled Matchers](#bundled-matchers)
@@ -166,6 +167,16 @@ main() {
 
 You can also call `checkParsed` or `enforceParsed` as a shorthand.
 
+# filter
+This is a helper function to extract only the desired keys from a `Map`.
+
+```dart
+var inputData = {'foo': 'bar', 'a': 'b', '1': 2};
+var only = filter(inputData, ['foo']);
+
+print(only); // { foo: bar }
+```
+
 # Extending Validators
 You can add situation-specific rules within a child validator.
 You can also use `extend` to mark fields as required or forbidden that originally
@@ -257,12 +268,14 @@ main() {
 
 # Use with Angel
 
-`server.dart` exposes five helper middleware:
+`server.dart` exposes seven helper middleware:
 * `validate(validator)`: Validates and filters `req.body`, and throws an `AngelHttpException.BadRequest` if data is invalid.
 * `validateEvent(validator)`: Sets `e.data` to the result of validation on a service event.
 * `validateQuery(validator)`: Same as `validate`, but operates on `req.query`.
 * `autoParseBody(fields)`: Auto-parses numbers in `req.body`.
 * `autoParseQuery(fields)`: Same as `autoParseBody`, but operates on `req.query`.
+* `filterBody(only)`: Filters unwanted data out of `req.body`.
+* `filterQuery(only)`: Same as `filterBody`, but operates on `req.query`.
 
 ```dart
 import 'package:angel_framework/angel_framework.dart';

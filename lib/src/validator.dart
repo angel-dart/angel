@@ -14,7 +14,7 @@ typedef String CustomErrorMessageFunction(item);
 typedef bool Filter(value);
 
 /// Converts the desired fields to their numeric representations, if present.
-Map<String, dynamic> autoParse(Map inputData, List<String> fields) {
+Map<String, dynamic> autoParse(Map inputData, Iterable<String> fields) {
   Map<String, dynamic> data = {};
 
   for (var key in inputData.keys) {
@@ -31,6 +31,14 @@ Map<String, dynamic> autoParse(Map inputData, List<String> fields) {
   }
 
   return data;
+}
+
+/// Removes undesired fields from a `Map`.
+Map<String, dynamic> filter(Map inputData, Iterable<String> only) {
+  return inputData.keys.fold(<String, dynamic>{}, (map, key) {
+    if (only.contains(key)) map[key] = inputData[key];
+    return map;
+  });
 }
 
 /// Enforces the validity of input data, according to [Matcher]s.

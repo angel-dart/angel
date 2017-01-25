@@ -1,11 +1,8 @@
 import 'package:angel_validate/angel_validate.dart';
 import 'package:test/test.dart';
 
-final Validator emailSchema = new Validator({
-  'to': isEmail
-}, customErrorMessages: {
-  'to': 'Hello, world!'
-});
+final Validator emailSchema = new Validator({'to': isEmail},
+    customErrorMessages: {'to': 'Hello, world!'});
 
 final Validator todoSchema = new Validator({
   'id': [isInt, isPositive],
@@ -29,5 +26,11 @@ main() {
       todoSchema
           .enforce({'id': 'fool', 'text': 'Hello, world!', 'completed': 4});
     }, throwsA(new isInstanceOf<ValidationException>()));
+  });
+
+  test('filter', () {
+    var inputData = {'foo': 'bar', 'a': 'b', '1': 2};
+    var only = filter(inputData, ['foo']);
+    expect(only, equals({'foo': 'bar'}));
   });
 }
