@@ -22,7 +22,9 @@ String _pathify(String path) {
 
 /// Copies HTTP headers ;)
 void copyHeaders(HttpHeaders from, HttpHeaders to) {
-  from.forEach(to.set);
+  from.forEach((k, v) {
+    if (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip')) to.set(k, v);
+  });
 
   /*to
     ..chunkedTransferEncoding = from.chunkedTransferEncoding
