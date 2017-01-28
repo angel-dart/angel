@@ -438,9 +438,9 @@ class HookedServiceEvent {
   static const String REMOVED = "removed";
 
   /// Use this to end processing of an event.
-  void cancel(result) {
+  void cancel([result]) {
     _canceled = true;
-    _result = result;
+    this.result = result ?? this.result;
   }
 
   bool _canceled = false;
@@ -449,9 +449,9 @@ class HookedServiceEvent {
   bool _isAfter;
   var data;
   Map _params;
-  var _result;
   RequestContext _request;
   ResponseContext _response;
+  var result;
 
   String get eventName => _eventName;
 
@@ -467,17 +467,14 @@ class HookedServiceEvent {
 
   ResponseContext get response => _response;
 
-  get result => _result;
-
   /// The inner service whose method was hooked.
   Service service;
 
   HookedServiceEvent._base(this._isAfter, this._request, this._response,
       Service this.service, String this._eventName,
-      {id, this.data, Map params, result}) {
+      {id, this.data, Map params, this.result}) {
     _id = id;
     _params = params ?? {};
-    _result = result;
   }
 }
 
