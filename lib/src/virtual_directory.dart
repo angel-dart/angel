@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_route/angel_route.dart';
+import 'package:mime/mime.dart';
 
 typedef StaticFileCallback(File file, RequestContext req, ResponseContext res);
 
@@ -60,6 +61,7 @@ class VirtualDirectory {
   Future<bool> sendFile(
       File file, RequestContext req, ResponseContext res) async {
     _printDebug('Sending file ${file.absolute.path}...');
+    _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path)}');
     res.statusCode = 200;
 
     if (callback != null) {
@@ -68,6 +70,7 @@ class VirtualDirectory {
       if (r != null && r != true) return r;
     }
 
+    res.headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     await res.streamFile(file);
     return false;
   }
