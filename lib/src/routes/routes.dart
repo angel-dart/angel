@@ -32,8 +32,6 @@ configureAfter(Angel app) async {
     await app.sendRequest(e.request, req, res);
   };
 
-  app.get('/trump', () => throw new Exception('MAGA'));
-
   // Throw a 404 if no route matched the request
   app.after.add(errors.throwError());
 
