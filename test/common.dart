@@ -9,6 +9,17 @@ class Todo extends MemoryModel {
   Todo({String this.text, String this.over});
 }
 
+class BookService extends Service {
+  @override
+  index([params]) async {
+    print('Book params: $params');
+    
+    return [
+      {'foo': 'bar'}
+    ];
+  }
+}
+
 incrementTodoTimes(e) {
   IncrementService.TIMES++;
 }

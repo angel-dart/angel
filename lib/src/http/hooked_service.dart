@@ -55,7 +55,9 @@ class HookedService extends Service {
     if (params == null)
       return params;
     else
-      return params..remove('__requestctx')..remove('__responsectx');
+      return params.keys
+          .where((key) => key != '__requestctx' && key != '__responsectx')
+          .fold({}, (map, key) => map..[key] = params[key]);
   }
 
   /// Adds hooks to this instance.
@@ -102,17 +104,20 @@ class HookedService extends Service {
 
     // Add global middleware if declared on the instance itself
     Middleware before = getAnnotation(inner, Middleware);
-    final handlers = [];
+    final handlers = [
+      (RequestContext req, ResponseContext res) async {
+        req.query
+          ..['__requestctx'] = req
+          ..['__responsectx'] = res;
+        return true;
+      }
+    ];
 
     if (before != null) handlers.addAll(before.handlers);
 
     Middleware indexMiddleware = getAnnotation(inner.index, Middleware);
     get('/', (req, res) async {
-      return await this.index(mergeMap([
-        req.query,
-        restProvider,
-        {'__requestctx': req, '__responsectx': res}
-      ]));
+      return await this.index(mergeMap([req.query, restProvider]));
     },
         middleware: []
           ..addAll(handlers)
@@ -121,13 +126,8 @@ class HookedService extends Service {
     Middleware createMiddleware = getAnnotation(inner.create, Middleware);
     post(
         '/',
-        (req, res) async => await this.create(
-            req.body,
-            mergeMap([
-              req.query,
-              restProvider,
-              {'__requestctx': req, '__responsectx': res}
-            ])),
+        (req, res) async =>
+            await this.create(req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -137,13 +137,8 @@ class HookedService extends Service {
 
     get(
         '/:id',
-        (req, res) async => await this.read(
-            req.params['id'],
-            mergeMap([
-              req.query,
-              restProvider,
-              {'__requestctx': req, '__responsectx': res}
-            ])),
+        (req, res) async => await this
+            .read(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -152,13 +147,7 @@ class HookedService extends Service {
     patch(
         '/:id',
         (req, res) async => await this.modify(
-            req.params['id'],
-            req.body,
-            mergeMap([
-              req.query,
-              restProvider,
-              {'__requestctx': req, '__responsectx': res}
-            ])),
+            req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -168,13 +157,7 @@ class HookedService extends Service {
     post(
         '/:id',
         (req, res) async => await this.update(
-            req.params['id'],
-            req.body,
-            mergeMap([
-              req.query,
-              restProvider,
-              {'__requestctx': req, '__responsectx': res}
-            ])),
+            req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -183,19 +166,41 @@ class HookedService extends Service {
     Middleware removeMiddleware = getAnnotation(inner.remove, Middleware);
     delete(
         '/:id',
-        (req, res) async => await this.remove(
-            req.params['id'],
-            mergeMap([
-              req.query,
-              restProvider,
-              {'__requestctx': req, '__responsectx': res}
-            ])),
+        (req, res) async => await this
+            .remove(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
 
     addHooks();
+  }
+
+  /// Runs the [listener] before every service method;
+  void beforeAll(HookedServiceEventListener listener) {
+    beforeIndexed.listen(listener);
+    beforeRead.listen(listener);
+    beforeCreated.listen(listener);
+    beforeModified.listen(listener);
+    beforeUpdated.listen(listener);
+    beforeRemoved.listen(listener);
+  }
+
+  /// Runs the [listener] after every service method.
+  void afterAll(HookedServiceEventListener listener) {
+    afterIndexed.listen(listener);
+    afterRead.listen(listener);
+    afterCreated.listen(listener);
+    afterModified.listen(listener);
+    afterUpdated.listen(listener);
+    afterRemoved.listen(listener);
+  }
+
+  /// Runs the [listener] before [create], [modify] and [update].
+  void beforeModify(HookedServiceEventListener listener) {
+    beforeCreated.listen(listener);
+    beforeModified.listen(listener);
+    beforeUpdated.listen(listener);
   }
 
   @override
@@ -415,7 +420,7 @@ class HookedServiceEvent {
   /// The inner service whose method was hooked.
   Service service;
 
-  HookedServiceEvent._base(this._result, this._response, Service this.service,
+  HookedServiceEvent._base(this._request, this._response, Service this.service,
       String this._eventName,
       {id, this.data, Map params, result}) {
     _id = id;

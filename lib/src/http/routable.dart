@@ -70,7 +70,9 @@ class Routable extends Router {
       super.registerMiddleware(name, middleware);
 
   /// Retrieves the service assigned to the given path.
-  Service service(Pattern path) => _services[path];
+  Service service(Pattern path) =>
+      _services[path] ??
+      _services[path.toString().replaceAll(_straySlashes, '')];
 
   /// Retrieves the controller with the given name.
   Controller controller(String name) => controllers[name];

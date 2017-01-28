@@ -26,6 +26,9 @@ class Providers {
 
   /// Represents a request over WebSockets.
   static final Providers WEBSOCKET = const Providers(VIA_WEBSOCKET);
+
+  @override
+  bool operator ==(other) => other is Providers && other.via == via;
 }
 
 /// A front-facing interface that can present data to and operate on data on behalf of the user.
@@ -83,7 +86,10 @@ class Service extends Routable {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(this.create, Middleware);
-    post('/', (req, res) async => await this.create(req.body, mergeMap([req.query, restProvider])),
+    post(
+        '/',
+        (req, res) async =>
+            await this.create(req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -94,7 +100,7 @@ class Service extends Routable {
     get(
         '/:id',
         (req, res) async => await this
-        .read(req.params['id'], mergeMap([req.query, restProvider])),
+            .read(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -102,8 +108,8 @@ class Service extends Routable {
     Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
     patch(
         '/:id',
-        (req, res) async =>
-    await this.modify(req.params['id'], req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.modify(
+            req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -112,8 +118,8 @@ class Service extends Routable {
     Middleware updateMiddleware = getAnnotation(this.update, Middleware);
     post(
         '/:id',
-        (req, res) async =>
-    await this.update(req.params['id'], req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.update(
+            req.params['id'], req.body, mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -123,7 +129,7 @@ class Service extends Routable {
     delete(
         '/:id',
         (req, res) async => await this
-        .remove(req.params['id'], mergeMap([req.query, restProvider])),
+            .remove(req.params['id'], mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(

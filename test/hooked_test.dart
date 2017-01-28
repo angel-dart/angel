@@ -21,9 +21,10 @@ main() {
     app = new Angel();
     client = new http.Client();
     app.use('/todos', new MemoryService<Todo>());
+    app.use('/books', new BookService());
     Todos = app.service("todos");
 
-    // app.dumpTree(showMatchers: true);
+    app.fatalErrorStream.listen((e) => throw e.error);
 
     server = await app.startServer();
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
@@ -94,5 +95,22 @@ main() {
     IncrementService.TIMES = 0;
     await service.index();
     expect(IncrementService.TIMES, equals(2));
+  });
+
+  test('inject request + response', () async {
+    HookedService books = app.service('books');
+
+    books.beforeIndexed.listen((e) {
+      expect([e.request, e.response], everyElement(isNotNull));
+      print('Indexing books at path: ${e.request.path}');
+    });
+
+    var response = await client.get('$url/books');
+    print(response.body);
+
+    var result = god.deserialize(response.body);
+    expect(result, isList);
+    expect(result, isNotEmpty);
+    expect(result[0], equals({'foo': 'bar'}));
   });
 }
