@@ -58,18 +58,18 @@ class AngelHttpException implements Exception {
   /// Throws a 400 Bad Request error, including an optional arrray of (validation?)
   /// errors you specify.
   factory AngelHttpException.badRequest(
-      {String message: '400 Bad Request', List<String> errors: const []}) =>
+          {String message: '400 Bad Request', List<String> errors: const []}) =>
       new AngelHttpException(null,
           message: message, errors: errors, statusCode: 400);
 
   /// Throws a 401 Not Authenticated error.
   factory AngelHttpException.notAuthenticated(
-      {String message: '401 Not Authenticated'}) =>
+          {String message: '401 Not Authenticated'}) =>
       new AngelHttpException(null, message: message, statusCode: 401);
 
   /// Throws a 402 Payment Required error.
   factory AngelHttpException.paymentRequired(
-      {String message: '402 Payment Required'}) =>
+          {String message: '402 Payment Required'}) =>
       new AngelHttpException(null, message: message, statusCode: 402);
 
   /// Throws a 403 Forbidden error.
@@ -82,12 +82,12 @@ class AngelHttpException implements Exception {
 
   /// Throws a 405 Method Not Allowed error.
   factory AngelHttpException.methodNotAllowed(
-      {String message: '405 Method Not Allowed'}) =>
+          {String message: '405 Method Not Allowed'}) =>
       new AngelHttpException(null, message: message, statusCode: 405);
 
   /// Throws a 406 Not Acceptable error.
   factory AngelHttpException.notAcceptable(
-      {String message: '406 Not Acceptable'}) =>
+          {String message: '406 Not Acceptable'}) =>
       new AngelHttpException(null, message: message, statusCode: 406);
 
   /// Throws a 408 Timeout error.
@@ -100,83 +100,84 @@ class AngelHttpException implements Exception {
 
   /// Throws a 422 Not Processable error.
   factory AngelHttpException.notProcessable(
-      {String message: '422 Not Processable'}) =>
+          {String message: '422 Not Processable'}) =>
       new AngelHttpException(null, message: message, statusCode: 422);
 
   /// Throws a 501 Not Implemented error.
   factory AngelHttpException.notImplemented(
-      {String message: '501 Not Implemented'}) =>
+          {String message: '501 Not Implemented'}) =>
       new AngelHttpException(null, message: message, statusCode: 501);
 
   /// Throws a 503 Unavailable error.
   factory AngelHttpException.unavailable({String message: '503 Unavailable'}) =>
       new AngelHttpException(null, message: message, statusCode: 503);
 
-  /// Throws a 400 Bad Request error, including an optional arrray of (validation?)
-  /// errors you specify.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.BadRequest(
           {String message: '400 Bad Request', List<String> errors: const []}) =>
       new AngelHttpException(null,
           message: message, errors: errors, statusCode: 400);
 
-  /// Throws a 401 Not Authenticated error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.NotAuthenticated(
           {String message: '401 Not Authenticated'}) =>
       new AngelHttpException(null, message: message, statusCode: 401);
 
-  /// Throws a 402 Payment Required error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.PaymentRequired(
           {String message: '402 Payment Required'}) =>
       new AngelHttpException(null, message: message, statusCode: 402);
 
-  /// Throws a 403 Forbidden error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.Forbidden({String message: '403 Forbidden'}) =>
       new AngelHttpException(null, message: message, statusCode: 403);
 
-  /// Throws a 404 Not Found error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.NotFound({String message: '404 Not Found'}) =>
       new AngelHttpException(null, message: message, statusCode: 404);
 
-  /// Throws a 405 Method Not Allowed error.
+  @deprecated
+
+  /// DEPRECATED: Use lowercase constructor instead.
   factory AngelHttpException.MethodNotAllowed(
           {String message: '405 Method Not Allowed'}) =>
       new AngelHttpException(null, message: message, statusCode: 405);
 
-  /// Throws a 406 Not Acceptable error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.NotAcceptable(
           {String message: '406 Not Acceptable'}) =>
       new AngelHttpException(null, message: message, statusCode: 406);
 
-  /// Throws a 408 Timeout error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.MethodTimeout({String message: '408 Timeout'}) =>
       new AngelHttpException(null, message: message, statusCode: 408);
 
-  /// Throws a 409 Conflict error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.Conflict({String message: '409 Conflict'}) =>
       new AngelHttpException(null, message: message, statusCode: 409);
 
-  /// Throws a 422 Not Processable error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.NotProcessable(
           {String message: '422 Not Processable'}) =>
       new AngelHttpException(null, message: message, statusCode: 422);
 
-  /// Throws a 501 Not Implemented error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.NotImplemented(
           {String message: '501 Not Implemented'}) =>
       new AngelHttpException(null, message: message, statusCode: 501);
 
-  /// Throws a 503 Unavailable error.
-  @Deprecated('Use lowercase constructor instead')
+  /// DEPRECATED: Use lowercase constructor instead.
+  @deprecated
   factory AngelHttpException.Unavailable({String message: '503 Unavailable'}) =>
       new AngelHttpException(null, message: message, statusCode: 503);
 }

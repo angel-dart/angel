@@ -40,32 +40,32 @@ class Service extends Routable {
 
   /// Retrieves all resources.
   Future<List> index([Map params]) {
-    throw new AngelHttpException.MethodNotAllowed();
+    throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Retrieves the desired resource.
   Future read(id, [Map params]) {
-    throw new AngelHttpException.MethodNotAllowed();
+    throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Creates a resource.
   Future create(data, [Map params]) {
-    throw new AngelHttpException.MethodNotAllowed();
+    throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Modifies a resource.
   Future modify(id, data, [Map params]) {
-    throw new AngelHttpException.MethodNotAllowed();
+    throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Overwrites a resource.
   Future update(id, data, [Map params]) {
-    throw new AngelHttpException.MethodNotAllowed();
+    throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Removes the given resource.
   Future remove(id, [Map params]) {
-    throw new AngelHttpException.MethodNotAllowed();
+    throw new AngelHttpException.methodNotAllowed();
   }
 
   void addRoutes() {

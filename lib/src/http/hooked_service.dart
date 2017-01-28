@@ -176,7 +176,54 @@ class HookedService extends Service {
     addHooks();
   }
 
-  /// Runs the [listener] before every service method;
+  /// Runs the [listener] before every service method specified.
+  void before(
+      Iterable<String> eventNames, HookedServiceEventListener listener) {
+    eventNames.map((name) {
+      switch (name) {
+        case HookedServiceEvent.INDEXED:
+          return beforeIndexed;
+        case HookedServiceEvent.READ:
+          return beforeRead;
+        case HookedServiceEvent.CREATED:
+          return beforeCreated;
+        case HookedServiceEvent.MODIFIED:
+          return beforeModified;
+        case HookedServiceEvent.UPDATED:
+          return beforeUpdated;
+        case HookedServiceEvent.REMOVED:
+          return beforeRemoved;
+        default:
+          throw new ArgumentError('Invalid service method: ${name}');
+      }
+    }).forEach((HookedServiceEventDispatcher dispatcher) =>
+        dispatcher.listen(listener));
+  }
+
+  /// Runs the [listener] after every service method specified.
+  void after(Iterable<String> eventNames, HookedServiceEventListener listener) {
+    eventNames.map((name) {
+      switch (name) {
+        case HookedServiceEvent.INDEXED:
+          return afterIndexed;
+        case HookedServiceEvent.READ:
+          return afterRead;
+        case HookedServiceEvent.CREATED:
+          return afterCreated;
+        case HookedServiceEvent.MODIFIED:
+          return afterModified;
+        case HookedServiceEvent.UPDATED:
+          return afterUpdated;
+        case HookedServiceEvent.REMOVED:
+          return afterRemoved;
+        default:
+          throw new ArgumentError('Invalid service method: ${name}');
+      }
+    }).forEach((HookedServiceEventDispatcher dispatcher) =>
+        dispatcher.listen(listener));
+  }
+
+  /// Runs the [listener] before every service method.
   void beforeAll(HookedServiceEventListener listener) {
     beforeIndexed.listen(listener);
     beforeRead.listen(listener);
@@ -207,12 +254,12 @@ class HookedService extends Service {
   Future<List> index([Map _params]) async {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeIndexed._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.INDEXED,
             params: params));
     if (before._canceled) {
       HookedServiceEvent after = await beforeIndexed._emit(
-          new HookedServiceEvent._base(_getRequest(_params),
+          new HookedServiceEvent._base(true, _getRequest(_params),
               _getResponse(_params), inner, HookedServiceEvent.INDEXED,
               params: params, result: before.result));
       return after.result;
@@ -220,7 +267,7 @@ class HookedService extends Service {
 
     List result = await inner.index(params);
     HookedServiceEvent after = await afterIndexed._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(true, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.INDEXED,
             params: params, result: result));
     return after.result;
@@ -230,13 +277,13 @@ class HookedService extends Service {
   Future read(id, [Map _params]) async {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeRead._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.READ,
             id: id, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterRead._emit(
-          new HookedServiceEvent._base(_getRequest(_params),
+          new HookedServiceEvent._base(true, _getRequest(_params),
               _getResponse(_params), inner, HookedServiceEvent.READ,
               id: id, params: params, result: before.result));
       return after.result;
@@ -244,7 +291,7 @@ class HookedService extends Service {
 
     var result = await inner.read(id, params);
     HookedServiceEvent after = await afterRead._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(true, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.READ,
             id: id, params: params, result: result));
     return after.result;
@@ -254,13 +301,13 @@ class HookedService extends Service {
   Future create(data, [Map _params]) async {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeCreated._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.CREATED,
             data: data, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterCreated._emit(
-          new HookedServiceEvent._base(_getRequest(_params),
+          new HookedServiceEvent._base(true, _getRequest(_params),
               _getResponse(_params), inner, HookedServiceEvent.CREATED,
               data: data, params: params, result: before.result));
       return after.result;
@@ -268,7 +315,7 @@ class HookedService extends Service {
 
     var result = await inner.create(data, params);
     HookedServiceEvent after = await afterCreated._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(true, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.CREATED,
             data: data, params: params, result: result));
     return after.result;
@@ -278,13 +325,13 @@ class HookedService extends Service {
   Future modify(id, data, [Map _params]) async {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeModified._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.MODIFIED,
             id: id, data: data, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterModified._emit(
-          new HookedServiceEvent._base(_getRequest(_params),
+          new HookedServiceEvent._base(true, _getRequest(_params),
               _getResponse(_params), inner, HookedServiceEvent.MODIFIED,
               id: id, data: data, params: params, result: before.result));
       return after.result;
@@ -292,7 +339,7 @@ class HookedService extends Service {
 
     var result = await inner.modify(id, data, params);
     HookedServiceEvent after = await afterModified._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(true, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.MODIFIED,
             id: id, data: data, params: params, result: result));
     return after.result;
@@ -302,13 +349,13 @@ class HookedService extends Service {
   Future update(id, data, [Map _params]) async {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeUpdated._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.UPDATED,
             id: id, data: data, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterUpdated._emit(
-          new HookedServiceEvent._base(_getRequest(_params),
+          new HookedServiceEvent._base(true, _getRequest(_params),
               _getResponse(_params), inner, HookedServiceEvent.UPDATED,
               id: id, data: data, params: params, result: before.result));
       return after.result;
@@ -316,7 +363,7 @@ class HookedService extends Service {
 
     var result = await inner.update(id, data, params);
     HookedServiceEvent after = await afterUpdated._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(true, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.UPDATED,
             id: id, data: data, params: params, result: result));
     return after.result;
@@ -326,13 +373,13 @@ class HookedService extends Service {
   Future remove(id, [Map _params]) async {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeRemoved._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.REMOVED,
             id: id, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterRemoved._emit(
-          new HookedServiceEvent._base(_getRequest(_params),
+          new HookedServiceEvent._base(true, _getRequest(_params),
               _getResponse(_params), inner, HookedServiceEvent.REMOVED,
               id: id, params: params, result: before.result));
       return after.result;
@@ -340,7 +387,7 @@ class HookedService extends Service {
 
     var result = await inner.remove(id, params);
     HookedServiceEvent after = await afterRemoved._emit(
-        new HookedServiceEvent._base(_getRequest(_params),
+        new HookedServiceEvent._base(true, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.REMOVED,
             id: id, params: params, result: result));
     return after.result;
@@ -375,7 +422,7 @@ class HookedService extends Service {
         throw new ArgumentError("Invalid service event name: '$eventName'");
     }
 
-    var ev = new HookedServiceEvent._base(null, null, this, eventName);
+    var ev = new HookedServiceEvent._base(true, null, null, this, eventName);
     if (callback != null) await callback(ev);
     return await dispatcher._emit(ev);
   }
@@ -399,6 +446,7 @@ class HookedServiceEvent {
   bool _canceled = false;
   String _eventName;
   var _id;
+  bool _isAfter;
   var data;
   Map _params;
   var _result;
@@ -408,6 +456,10 @@ class HookedServiceEvent {
   String get eventName => _eventName;
 
   get id => _id;
+
+  bool get isAfter => _isAfter == true;
+
+  bool get isBefore => !isAfter;
 
   Map get params => _params;
 
@@ -420,8 +472,8 @@ class HookedServiceEvent {
   /// The inner service whose method was hooked.
   Service service;
 
-  HookedServiceEvent._base(this._request, this._response, Service this.service,
-      String this._eventName,
+  HookedServiceEvent._base(this._isAfter, this._request, this._response,
+      Service this.service, String this._eventName,
       {id, this.data, Map params, result}) {
     _id = id;
     _params = params ?? {};
