@@ -1,5 +1,5 @@
 # security
-[![version 0.0.0-alpha+4](https://img.shields.io/badge/pub-v0.0.0--alpha+4-red.svg)](https://pub.dartlang.org/packages/angel_security)
+[![version 0.0.5](https://img.shields.io/badge/pub-v0.0.5-red.svg)](https://pub.dartlang.org/packages/angel_security)
 [![build status](https://travis-ci.org/angel-dart/security.svg)](https://travis-ci.org/angel-dart/security)
 
 Angel middleware designed to enhance application security by patching common Web security
@@ -80,11 +80,53 @@ import 'package:angel_security/helmet.dart';
 ```
 
 # Service Hooks
-Also included are a set of service hooks, [ported from FeathersJS](https://github.com/feathersjs/feathers-legacy-authentication-hooks).
+Also included are a set of service hooks, some [ported from FeathersJS](https://github.com/feathersjs/feathers-legacy-authentication-hooks).
+Others are created just for Angel.
 
 ```dart
-import 'package:angel_security/hooks.dart';
+import 'package:angel_security/hooks.dart' as hooks;
 ```
 
+Included:
+* `addUserToParams`
+* `associateCurrentUser`,
+* `hashPassword`
+* `queryWithCurrentUser`
+* `restrictToAuthenticated`
+* `restrictToOwner`
+* `variantPermission`
+
+Also exported is the helper function `isServerSide`. Use this to determine
+whether a service method is being called by the server, or by a client.
+
 # Permissions
-See the tests. 
+Permissions are a great way to restrict access to resources.
+
+They take the form of:
+* `service:foo`
+* `service:create:*`
+* `some:arbitrary:permission:*:with:*:a:wild:*card`
+
+The specifics are up to you.
+
+```dart
+var permission = new Permission('admin | users:find');
+
+// Or:
+// PermissionBuilders support + and | operators. Operands can be Strings, Permissions or PermissionBuilders.
+var permission = (new PermissionBuilder('admin') | (new PermissionBuilder('users') + 'find')).toPermission();
+
+// Transform into middleware
+app.chain(permission.toMiddleware()).get('/protected', ...);
+
+// Or as a service hook
+app.service('protected').beforeModify(permission.toHook());
+
+// Dynamically create a permission hook.
+// This helps in situations where the resources you need to protect are dynamic.
+//
+// `variantPermission` is included in the `package:angel_security/hooks.dart` library.
+app.service('posts').beforeModify(variantPermission((e) {
+    return new PermissionBuilder('posts:modify:${e.id}');
+}));
+```
