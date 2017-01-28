@@ -1,14 +1,5 @@
 # Default server configuration.
 jwt_secret: INSECURE_DEFAULT_SECRET
-db:
-  migrate:
-    database: angel
-    username: root
-    password: password
-  web:
-    database: angel
-    username: username
-    password: password
 host: 127.0.0.1
 mongo_db: mongodb://localhost:27017/angel
 port: 3000
