@@ -16,7 +16,7 @@ class _IsJson extends Matcher {
 
   @override
   Description describe(Description description) {
-    return description.add(' should equal the desired JSON response: $value');
+    return description.add('should equal the desired JSON response: $value');
   }
 
   @override
@@ -31,7 +31,7 @@ class _HasStatus extends Matcher {
 
   @override
   Description describe(Description description) {
-    return description.add(' should have statuc code $status');
+    return description.add('should have status code $status');
   }
 
   @override
