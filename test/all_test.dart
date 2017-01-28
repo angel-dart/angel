@@ -39,7 +39,7 @@ main() {
   test('can serve files, with correct Content-Type', () async {
     var response = await client.get("$url/sample.txt");
     expect(response.body, equals("Hello world"));
-    expect(response.headers[HttpHeaders.CONTENT_TYPE], equals("text/plain"));
+    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
   });
 
   test('non-existent files are skipped', () async {
