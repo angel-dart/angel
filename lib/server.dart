@@ -14,6 +14,9 @@ export 'angel_websocket.dart';
 part 'websocket_context.dart';
 part 'websocket_controller.dart';
 
+/// Used to assign routes to a given handler.
+typedef AngelWebSocketRegisterer(Angel app, RequestHandler handler);
+
 /// Broadcasts events from [HookedService]s, and handles incoming [WebSocketAction]s.
 class AngelWebSocket extends AngelPlugin {
   Angel _app;
@@ -30,6 +33,9 @@ class AngelWebSocket extends AngelPlugin {
 
   /// Include debug information, and send error information across WebSockets.
   final bool debug;
+
+  /// Registers this instance as a route on the server.
+  final AngelWebSocketRegisterer register;
 
   /// A list of clients currently connected to this server via WebSockets.
   List<WebSocket> get clients => new List.unmodifiable(_clients);
@@ -53,7 +59,7 @@ class AngelWebSocket extends AngelPlugin {
   /// Fired when a user disconnects.
   Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
-  AngelWebSocket({this.endpoint: '/ws', this.debug: false});
+  AngelWebSocket({this.endpoint: '/ws', this.debug: false, this.register});
 
   _batchEvent(String path) {
     return (HookedServiceEvent e) async {
@@ -79,12 +85,12 @@ class AngelWebSocket extends AngelPlugin {
     var split = action.eventName.split("::");
 
     if (split.length < 2)
-      return socket.sendError(new AngelHttpException.BadRequest());
+      return socket.sendError(new AngelHttpException.badRequest());
 
     var service = _app.service(split[0]);
 
     if (service == null)
-      return socket.sendError(new AngelHttpException.NotFound(
+      return socket.sendError(new AngelHttpException.notFound(
           message: "No service \"${split[0]}\" exists."));
 
     var actionName = split[1];
@@ -118,7 +124,7 @@ class AngelWebSocket extends AngelPlugin {
             eventName: "${split[0]}::" + EVENT_REMOVED,
             data: await service.remove(action.id, params));
       } else {
-        return socket.sendError(new AngelHttpException.MethodNotAllowed(
+        return socket.sendError(new AngelHttpException.methodNotAllowed(
             message: "Method Not Allowed: \"$actionName\""));
       }
     } catch (e, st) {
@@ -160,7 +166,7 @@ class AngelWebSocket extends AngelPlugin {
       if (action.eventName == null ||
           action.eventName is! String ||
           action.eventName.isEmpty) {
-        throw new AngelHttpException.BadRequest();
+        throw new AngelHttpException.badRequest();
       }
 
       if (fromJson is Map && fromJson.containsKey("eventName")) {
@@ -225,9 +231,9 @@ class AngelWebSocket extends AngelPlugin {
       wireAllServices(app);
     });
 
-    app.get(endpoint, (RequestContext req, ResponseContext res) async {
+    handler(RequestContext req, ResponseContext res) async {
       if (!WebSocketTransformer.isUpgradeRequest(req.io))
-        throw new AngelHttpException.BadRequest();
+        throw new AngelHttpException.badRequest();
 
       res
         ..willCloseItself = true
@@ -252,6 +258,15 @@ class AngelWebSocket extends AngelPlugin {
         _onDisconnect.add(socket);
         _clients.remove(ws);
       }, cancelOnError: true);
-    });
+    }
+
+    _register() {
+      if (register != null)
+        return register(app, handler);
+      else
+        app.get(endpoint, handler);
+    }
+
+    await _register();
   }
 }
