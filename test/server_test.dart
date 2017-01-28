@@ -4,11 +4,13 @@ import 'package:angel_route/angel_route.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
+const List<Map<String, String>> people = const [
+  const {'name': 'John Smith'}
+];
+
 main() {
   http.Client client;
-  final people = [
-    {'name': 'John Smith'}
-  ];
+
   final Router router = new Router(debug: true);
   HttpServer server;
   String url;
