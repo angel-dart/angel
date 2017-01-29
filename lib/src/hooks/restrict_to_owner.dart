@@ -1,10 +1,16 @@
+import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'errors.dart';
 import 'is_server_side.dart';
 
 /// Restricts users to accessing only their own resources.
 HookedServiceEventListener restrictToOwner(
-    {String userKey, String errorMessage, getId(user), getOwner(obj)}) {
+    {String idField,
+    String ownerField,
+    String userKey,
+    String errorMessage,
+    getId(user),
+    getOwner(obj)}) {
   return (HookedServiceEvent e) async {
     if (!isServerSide(e)) {
       var user = e.request?.grab(userKey ?? 'user');
@@ -18,9 +24,13 @@ HookedServiceEventListener restrictToOwner(
         if (getId != null)
           return getId(user);
         else if (user is Map)
-          return user['id'];
-        else
+          return user[idField ?? 'id'];
+        else if (user is Extensible)
+          return user.properties[idField ?? 'id'];
+        else if (idField == null || idField == 'id')
           return user.id;
+        else
+          return reflect(user).getField(new Symbol(idField ?? 'id')).reflectee;
       }
 
       var id = await _getId(user);
@@ -38,9 +48,15 @@ HookedServiceEventListener restrictToOwner(
           if (getOwner != null)
             return getOwner(obj);
           else if (obj is Map)
-            return obj['userId'];
-          else
+            return obj[ownerField ?? 'userId'];
+          else if (obj is Extensible)
+            return obj.properties[ownerField ?? 'userId'];
+          else if (ownerField == null || ownerField == 'userId')
             return obj.userId;
+          else
+            return reflect(obj)
+                .getField(new Symbol(ownerField ?? 'userId'))
+                .reflectee;
         }
 
         var ownerId = await _getOwner(resource);

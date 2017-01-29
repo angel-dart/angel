@@ -18,9 +18,11 @@ class Permission {
   /// permission, or if they are the resource [owner].
   ///
   /// [getId] and [getOwner] are passed to [restrictToOwner], along with
-  /// [userKey] and [errorMessage].
+  /// [idField], [ownerField], [userKey] and [errorMessage].
   HookedServiceEventListener toHook(
       {String errorMessage,
+      String idField,
+      String ownerField,
       String userKey,
       bool owner: false,
       getRoles(user),
@@ -41,6 +43,8 @@ class Permission {
           // Try owner if the roles are not in-place
           if (owner == true) {
             var listener = restrictToOwner(
+                idField: idField,
+                ownerField: ownerField,
                 userKey: userKey,
                 errorMessage: errorMessage,
                 getId: getId,

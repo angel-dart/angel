@@ -1,5 +1,5 @@
 name: angel_security
-version: 0.0.5
+version: 0.0.6
 description: Angel middleware designed to enhance application security by patching common Web security holes.
 author: Tobe O <thosakwe@gmail.com>
 environment:

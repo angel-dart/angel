@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:mirrors';
 import 'package:crypto/crypto.dart';
 import 'package:angel_framework/angel_framework.dart';
 
@@ -19,8 +20,12 @@ HookedServiceEventListener hashPassword(
         return getPassword(user);
       else if (user is Map)
         return user[passwordField ?? 'password'];
-      else
+      else if (user is Extensible)
+        return user.properties[passwordField ?? 'password'];
+      else if (passwordField == 'password')
         return user?.password;
+      else
+        return reflect(user).getField(new Symbol(passwordField ?? 'password')).reflectee;
     }
 
     _setPassword(password, user) {
@@ -28,8 +33,11 @@ HookedServiceEventListener hashPassword(
         return setPassword(password, user);
       else if (user is Map)
         user[passwordField ?? 'password'] = password;
+      else if (user is Extensible)
+        user.properties[passwordField ?? password] = password;
       else
-        user?.password = password;
+        reflect(user)
+            .setField(new Symbol(passwordField ?? 'password'), password);
     }
 
     if (e.data != null) {

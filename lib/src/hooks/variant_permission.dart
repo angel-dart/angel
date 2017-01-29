@@ -16,6 +16,8 @@ HookedServiceEventListener variantPermission(
   return (HookedServiceEvent e) async {
     var permission = await createPermission(e);
 
+    if (permission is PermissionBuilder) permission = permission.toPermission();
+
     if (permission is! Permission)
       throw new ArgumentError(
           'createPermission must generate a Permission, whether synchronously or asynchronously.');
