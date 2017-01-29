@@ -20,7 +20,7 @@ typedef AngelWebSocketRegisterer(Angel app, RequestHandler handler);
 /// Broadcasts events from [HookedService]s, and handles incoming [WebSocketAction]s.
 class AngelWebSocket extends AngelPlugin {
   Angel _app;
-  List<WebSocket> _clients = [];
+  List<WebSocketContext> _clients = [];
   final List<String> _servicesAlreadyWired = [];
 
   final StreamController<WebSocketAction> _onAction =
@@ -38,7 +38,7 @@ class AngelWebSocket extends AngelPlugin {
   final AngelWebSocketRegisterer register;
 
   /// A list of clients currently connected to this server via WebSockets.
-  List<WebSocket> get clients => new List.unmodifiable(_clients);
+  List<WebSocketContext> get clients => new List.unmodifiable(_clients);
 
   /// Services that have already been hooked to fire socket events.
   List<String> get servicesAlreadyWired =>
@@ -65,15 +65,26 @@ class AngelWebSocket extends AngelPlugin {
     return (HookedServiceEvent e) async {
       var event = await transformEvent(e);
       event.eventName = "$path::${event.eventName}";
-      await batchEvent(event);
+
+      _filter(WebSocketContext socket) {
+        if (e.service.properties.containsKey('ws:filter'))
+          return e.service.properties['ws:filter'](socket);
+        else
+          return true;
+      }
+
+      await batchEvent(event, filter: _filter);
     };
   }
 
   /// Slates an event to be dispatched.
-  Future batchEvent(WebSocketEvent event) async {
+  Future batchEvent(WebSocketEvent event,
+      {filter(WebSocketContext socket)}) async {
     // Default implementation will just immediately fire events
-    _clients.forEach((client) {
-      client.add(god.serialize(event));
+    _clients.forEach((client) async {
+      var result = true;
+      if (filter != null) result = await filter(client);
+      if (result == true) client.io.add(god.serialize(event));
     });
   }
 
@@ -240,13 +251,15 @@ class AngelWebSocket extends AngelPlugin {
         ..end();
 
       var ws = await WebSocketTransformer.upgrade(req.io);
-      _clients.add(ws);
-
       var socket = new WebSocketContext(ws, req, res);
+      _clients.add(socket);
       await handleConnect(socket);
 
       _onConnection.add(socket);
-      req.properties['socket'] = socket;
+
+      req
+        ..properties['socket'] = socket
+        ..inject(WebSocketContext, socket);
 
       ws.listen((data) {
         _onData.add(data);

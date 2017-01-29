@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:angel_diagnostics/angel_diagnostics.dart' as srv;
+import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart' as srv;
 import 'package:angel_websocket/io.dart' as ws;
 import 'package:angel_websocket/server.dart' as srv;
@@ -23,9 +23,9 @@ main() {
 
     await app.configure(websockets);
     await app.configure(new GameController());
+    await app.configure(logRequests(new File('log.txt')));
 
-    server =
-        await new srv.DiagnosticsServer(app, new File('log.txt')).startServer();
+    server = await app.startServer();
     url = 'ws://${server.address.address}:${server.port}/ws';
 
     client = new ws.WebSockets(url);

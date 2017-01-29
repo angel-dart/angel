@@ -1,28 +1,38 @@
 part of angel_websocket.server;
 
+/// Marks a method as available to WebSockets.
 class ExposeWs {
   final String eventName;
 
   const ExposeWs(this.eventName);
 }
 
+/// A special controller that also supports WebSockets.
 class WebSocketController extends Controller {
   Map<String, MethodMirror> _handlers = {};
   Map<String, Symbol> _handlerSymbols = {};
-  AngelWebSocket ws;
+
+  /// The plug-in instance powering this controller.
+  AngelWebSocket plugin;
 
   WebSocketController() : super();
 
-  void broadcast(String eventName, data) {
-    ws.batchEvent(new WebSocketEvent(eventName: eventName, data: data));
+  /// Sends an event to all clients.
+  void broadcast(String eventName, data, {filter(WebSocketContext socket)}) {
+    plugin.batchEvent(new WebSocketEvent(eventName: eventName, data: data),
+        filter: filter);
   }
 
+  /// Fired on new connections.
   onConnect(WebSocketContext socket) {}
 
+  /// Fired on disconnections.
   onDisconnect(WebSocketContext socket) {}
 
+  /// Fired on all incoming actions.
   onAction(WebSocketAction action, WebSocketContext socket) async {}
 
+  /// Fired on arbitrary incoming data.
   onData(data, WebSocketContext socket) {}
 
   @override

@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.0-dev+7](https://img.shields.io/badge/version-1.0.0--dev+7-red.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![1.0.0-dev+8](https://img.shields.io/badge/pub-1.0.0--dev+8-red.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
@@ -27,6 +27,15 @@ main() async {
 
 ```
 
+Filtering events is easy with services. Just return a `bool`, whether
+synchronously or asynchronously.
+
+```dart
+myService.properties['ws:filter'] = (WebSocketContext socket) async {
+  return true;
+}
+```
+
 **Adding Handlers within a Controller**
 
 `WebSocketController` extends a normal `Controller`, but also listens to WebSockets.
@@ -47,6 +56,12 @@ class MyController extends WebSocketController {
   @ExposeWs("read_message")
   void sendMessage(WebSocketContext socket, Db db) async {
     socket.send("found_message", db.collection("messages").findOne(where.id("...")));
+  }
+
+  // Event filtering
+  @ExposeWs("foo")
+  void foo() {
+    broadcast(new WebSocketEvent(...), filter: (socket) async => ...);
   }
 }
 ```
