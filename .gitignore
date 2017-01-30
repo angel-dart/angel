@@ -5,6 +5,7 @@
 .packages
 .project
 .pub/
+.scripts-bin/
 build/
 **/packages/
 
