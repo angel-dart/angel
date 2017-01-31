@@ -1,6 +1,6 @@
 [![The Angel Framework](https://angel-dart.github.io/images/logo.png)](https://angel-dart.github.io)
 
-[![version: v1.0.0-alpha](https://img.shields.io/badge/pub-v1.0.0--alpha-blue.svg)](https://pub.dartlang.org/packages/angel_common)
+[![version: v1.0.0-beta](https://img.shields.io/badge/pub-v1.0.0--beta-blue.svg)](https://pub.dartlang.org/packages/angel_common)
 
 **The Dart server framework that's ready for showtime.**
 
