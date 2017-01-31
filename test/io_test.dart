@@ -39,7 +39,7 @@ main() {
     test("index", () async {
       Postcard niagaraFalls = await serverPostcards.create(
           new Postcard(location: "Niagara Falls", message: "Missing you!"));
-      print('Niagra Falls: ${niagaraFalls.toJson()}');
+      print('Niagara Falls: ${niagaraFalls.toJson()}');
 
       List indexed = await clientPostcards.index();
       print(indexed);
@@ -53,7 +53,7 @@ main() {
       Postcard louvre = await serverPostcards.create(new Postcard(
           location: "The Louvre", message: "The Mona Lisa was watching me!"));
       print(god.serialize(louvre));
-      List<Postcard> typedIndexed = await clientTypedPostcards.index();
+      List typedIndexed = await clientTypedPostcards.index();
       expect(typedIndexed.length, equals(2));
       expect(typedIndexed[1], equals(louvre));
     },
@@ -92,7 +92,8 @@ main() {
     });
 
     test("modify/update", () async {
-      server.MemoryService<Postcard> innerPostcards = serverPostcards.inner;
+      var innerPostcards =
+          serverPostcards.inner as server.MemoryService<Postcard>;
       print(innerPostcards.items);
       Postcard mecca = await clientTypedPostcards
           .create(new Postcard(location: "Mecca", message: "Pilgrimage"));
