@@ -4,6 +4,7 @@ library angel_framework.http;
 export 'package:angel_route/angel_route.dart';
 export 'angel_base.dart';
 export 'angel_http_exception.dart';
+export 'anonymous_service.dart';
 export 'base_middleware.dart';
 export 'base_plugin.dart';
 export 'controller.dart';

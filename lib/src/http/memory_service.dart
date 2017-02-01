@@ -8,11 +8,25 @@ import '../defs.dart';
 import 'angel_http_exception.dart';
 import 'service.dart';
 
+int _getId(id) {
+  try {
+    return int.parse(id.toString());
+  } catch (e) {
+    throw new AngelHttpException.badRequest(message: 'Invalid ID.');
+  }
+}
+
 /// An in-memory [Service].
 class MemoryService<T> extends Service {
-  Map <int, MemoryModel> items = {};
+  /// If set to `true`, clients can remove all items by passing a `null` `id` to `remove`.
+  ///
+  /// `false` by default.
+  final bool allowRemoveAll;
 
-  MemoryService() :super() {
+  //// The data contained in this service.
+  final Map<int, MemoryModel> items = {};
+
+  MemoryService({this.allowRemoveAll: false}) : super() {
     if (!reflectType(T).isAssignableTo(reflectType(MemoryModel))) {
       throw new Exception(
           "MemoryServices only support classes that inherit from MemoryModel.");
@@ -31,19 +45,22 @@ class MemoryService<T> extends Service {
   }
 
   Future read(id, [Map params]) async {
-    int desiredId = int.parse(id.toString());
+    int desiredId = _getId(id);
     if (items.containsKey(desiredId)) {
       MemoryModel found = items[desiredId];
       if (found != null) {
         return _makeJson(desiredId, found);
-      } else throw new AngelHttpException.notFound();
-    } else throw new AngelHttpException.notFound();
+      } else
+        throw new AngelHttpException.notFound();
+    } else
+      throw new AngelHttpException.notFound();
   }
 
   Future create(data, [Map params]) async {
     //try {
-    MemoryModel created = (data is MemoryModel) ? data : god.deserializeDatum(
-        data, outputType: T);
+    MemoryModel created = (data is MemoryModel)
+        ? data
+        : god.deserializeDatum(data, outputType: T);
 
     created.id = items.length;
     items[created.id] = created;
@@ -54,39 +71,50 @@ class MemoryService<T> extends Service {
   }
 
   Future modify(id, data, [Map params]) async {
-    int desiredId = int.parse(id.toString());
+    int desiredId = _getId(id);
     if (items.containsKey(desiredId)) {
       try {
         Map existing = god.serializeObject(items[desiredId]);
         data = mergeMap([existing, data]);
         items[desiredId] =
-        (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
+            (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
         return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.badRequest(message: 'Invalid data.');
       }
-    } else throw new AngelHttpException.notFound();
+    } else
+      throw new AngelHttpException.notFound();
   }
 
   Future update(id, data, [Map params]) async {
-    int desiredId = int.parse(id.toString());
+    int desiredId = _getId(id);
     if (items.containsKey(desiredId)) {
       try {
         items[desiredId] =
-        (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
+            (data is Map) ? god.deserializeDatum(data, outputType: T) : data;
         return _makeJson(desiredId, items[desiredId]);
       } catch (e) {
         throw new AngelHttpException.badRequest(message: 'Invalid data.');
       }
-    } else throw new AngelHttpException.notFound();
+    } else
+      throw new AngelHttpException.notFound();
   }
 
   Future remove(id, [Map params]) async {
-    int desiredId = int.parse(id.toString());
+    if (id == null ||
+        id == 'null' &&
+            (allowRemoveAll == true ||
+                params?.containsKey('provider') != true)) {
+      items.clear();
+      return {};
+    }
+
+    int desiredId = _getId(id);
     if (items.containsKey(desiredId)) {
       MemoryModel item = items[desiredId];
       items[desiredId] = null;
       return _makeJson(desiredId, item);
-    } else throw new AngelHttpException.notFound();
+    } else
+      throw new AngelHttpException.notFound();
   }
 }

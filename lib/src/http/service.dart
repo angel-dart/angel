@@ -68,6 +68,15 @@ class Service extends Routable {
     throw new AngelHttpException.methodNotAllowed();
   }
 
+  /// Transforms an [id] string into one acceptable by a service.
+  toId(String id) {
+    if (id == 'null' || id == null)
+      return null;
+    else
+      return id;
+  }
+
+  /// Generates RESTful routes pointing to this class's methods.
   void addRoutes() {
     Map restProvider = {'provider': Providers.REST};
 
@@ -100,7 +109,7 @@ class Service extends Routable {
     get(
         '/:id',
         (req, res) async => await this
-            .read(req.params['id'], mergeMap([req.query, restProvider])),
+            .read(toId(req.params['id']), mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -108,8 +117,8 @@ class Service extends Routable {
     Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
     patch(
         '/:id',
-        (req, res) async => await this.modify(
-            req.params['id'], req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.modify(toId(req.params['id']), req.body,
+            mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -118,8 +127,8 @@ class Service extends Routable {
     Middleware updateMiddleware = getAnnotation(this.update, Middleware);
     post(
         '/:id',
-        (req, res) async => await this.update(
-            req.params['id'], req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.update(toId(req.params['id']), req.body,
+            mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -128,8 +137,8 @@ class Service extends Routable {
     Middleware removeMiddleware = getAnnotation(this.remove, Middleware);
     delete(
         '/:id',
-        (req, res) async => await this
-            .remove(req.params['id'], mergeMap([req.query, restProvider])),
+        (req, res) async => await this.remove(
+            toId(req.params['id']), mergeMap([req.query, restProvider])),
         middleware: []
           ..addAll(handlers)
           ..addAll(

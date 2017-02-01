@@ -70,6 +70,11 @@ class Angel extends AngelBase {
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
 
+  /// Plug-ins to be called right before server startup.
+  ///
+  /// If the server is never started, they will never be called.
+  final List<AngelConfigurer> justBeforeStart = [];
+
   /// Always run before responses are sent.
   ///
   /// These will only not run if an [AngelFatalError] occurs.
@@ -126,6 +131,7 @@ class Angel extends AngelBase {
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
     var host = address ?? InternetAddress.LOOPBACK_IP_V4;
     this.httpServer = await _serverGenerator(host, port ?? 0);
+    await Future.wait(justBeforeStart.map(configure));
     preprocessRoutes();
     return httpServer..listen(handleRequest);
   }
@@ -139,6 +145,7 @@ class Angel extends AngelBase {
     container.singleton(this);
   }
 
+  /// Runs some [handler]. Returns `true` if request execution should continue.
   Future<bool> executeHandler(
       handler, RequestContext req, ResponseContext res) async {
     if (handler is RequestMiddleware) {
