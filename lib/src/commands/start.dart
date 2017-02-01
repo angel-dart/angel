@@ -104,7 +104,7 @@ class StartCommand extends Command {
 
     if (!isNew) {
       print(
-          '${new DateTime.now().toIso8601String()}Successfully restarted server.');
+          '${new DateTime.now().toIso8601String()}: Successfully restarted server.');
     }
 
     exitCode = await server.exitCode;
