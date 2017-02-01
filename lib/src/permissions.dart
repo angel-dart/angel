@@ -30,7 +30,7 @@ class Permission {
       getOwner(obj)}) {
     return (HookedServiceEvent e) async {
       if (e.params.containsKey('provider')) {
-        var user = e.request.grab(userKey ?? 'user');
+        var user = e.request?.grab(userKey ?? 'user');
 
         if (user == null)
           throw new AngelHttpException.forbidden(
