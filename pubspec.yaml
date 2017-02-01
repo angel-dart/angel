@@ -5,7 +5,7 @@ environment:
   sdk: ">=1.19.0"
 homepage: https://github.com/angel-dart/angel
 dependencies: 
-  angel_common: ^1.0.0-alpha
+  angel_common: ^1.0.0-beta
   angel_configuration: ^1.0.0
   angel_multiserver: ^1.0.0-dev
   mailer: ^1.1.0+4
