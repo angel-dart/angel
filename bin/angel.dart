@@ -1,5 +1,5 @@
 #!/usr/bin/env dart
-library angel_cli.tool;
+library demon.tool;
 
 import "dart:io";
 import "package:args/command_runner.dart";
@@ -18,7 +18,8 @@ main(List<String> args) {
     ..addCommand(new InitCommand())
     ..addCommand(new TestCommand())
     ..addCommand(new PluginCommand())
-    ..addCommand(new StartCommand());
+    ..addCommand(new StartCommand())
+    ..addCommand(new RenameCommand());
 
   return runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");

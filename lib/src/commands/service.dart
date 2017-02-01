@@ -132,9 +132,7 @@ class $name extends MemoryModel with _\$${name}SerializerMixin {
 
   factory $name.fromJson(Map json) => _\$${name}FromJson(json);
 
-  $name({String id, this.name, this.desc}) {
-    this.id = id;
-  }
+  $name({this.id, this.name, this.desc});
 }
     '''
         .trim());
@@ -186,9 +184,7 @@ class $name extends Model with _\$${name}SerializerMixin {
 
   factory $name.fromJson(Map json) => _\$${name}FromJson(json);
 
-  $name({String id, this.name, this.desc}) {
-    this.id = id;
-  }
+  $name({this.id, this.name, this.desc});
 }
     '''
         .trim());

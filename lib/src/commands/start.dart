@@ -16,6 +16,10 @@ class StartCommand extends Command {
 
   StartCommand() : super() {
     argParser
+      ..addFlag('multi',
+          help: 'Starts bin/multi_server.dart, instead of the standard server.',
+          negatable: false,
+          defaultsTo: false)
       ..addFlag('production',
           help: 'Starts the server in production mode.',
           negatable: false,
@@ -58,8 +62,8 @@ class StartCommand extends Command {
         try {
           var scripts =
               await Process.start('pub', ['global', 'run', 'scripts', 'start']);
-          scripts.stdout.pipe(stdout);
-          scripts.stderr.pipe(stderr);
+          stdout.addStream(scripts.stdout);
+          stderr.addStream(scripts.stderr);
           int code = await scripts.exitCode;
 
           if (code != 0) {
@@ -80,20 +84,27 @@ class StartCommand extends Command {
 
     if (argResults['production']) env['ANGEL_ENV'] = 'production';
 
-    server = await Process.start(Platform.executable, ['bin/server.dart'],
+    server = await Process.start(
+        Platform.executable,
+        [
+          argResults['multi'] == true
+              ? 'bin/multi_server.dart'
+              : 'bin/server.dart'
+        ],
         environment: env);
 
     try {
       if (isNew) {
-        server.stdout.pipe(stdout);
-        server.stderr.pipe(stderr);
+        stdout.addStream(server.stdout);
+        stderr.addStream(server.stderr);
       }
     } catch (e) {
       print(e);
     }
 
     if (!isNew) {
-      print('Successfully restarted server.');
+      print(
+          '${new DateTime.now().toIso8601String()}Successfully restarted server.');
     }
 
     exitCode = await server.exitCode;

@@ -1,3 +1,3 @@
-library angel_cli;
+library demon;
 
 export 'src/commands/commands.dart';

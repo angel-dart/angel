@@ -24,7 +24,7 @@ class KeyCommand extends Command {
     if (await file.exists()) {
       var contents = await file.readAsString();
       contents = contents.replaceAll(new RegExp(r'jwt_secret:[^\n]+\n?'), '');
-      await file.writeAsString(contents.trim() + '\njwt_secret: $secret');
+      await file.writeAsString(contents.trim() + '\njwt_secret: "$secret"');
     }
   }
 }
