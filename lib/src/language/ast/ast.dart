@@ -1,6 +1,7 @@
 library graphql_parser.language.ast;
 
 export 'alias.dart';
+export 'array_value.dart';
 export 'argument.dart';
 export 'boolean_value.dart';
 export 'default_value.dart';

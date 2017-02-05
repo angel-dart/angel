@@ -12,10 +12,11 @@ Stream<String> input() async* {
       .trim();
 }
 
-main() async {
+main() {
   var lexer = new Lexer(), parser = new Parser();
   var stream = input().transform(lexer).asBroadcastStream();
-  await stream.forEach(print);
-  stream.pipe(parser);
-  await parser.onNode.forEach(print);
+  stream
+    ..forEach(print)
+    ..pipe(parser);
+  parser.onNode.forEach(print);
 }
