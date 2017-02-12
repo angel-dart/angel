@@ -4,7 +4,7 @@ library angel_websocket.browser;
 import 'dart:async';
 import 'dart:html';
 import 'package:angel_client/angel_client.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/browser_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/html.dart';
 import 'base_websocket_client.dart';
@@ -15,7 +15,7 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
 /// Queries an Angel server via WebSockets.
 class WebSockets extends BaseWebSocketClient {
-  WebSockets(String path) : super(new http.Client(), path);
+  WebSockets(String path) : super(new http.BrowserClient(), path);
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() {
