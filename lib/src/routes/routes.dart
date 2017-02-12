@@ -14,8 +14,10 @@ configureRoutes(Angel app) async {
 }
 
 configureAfter(Angel app) async {
-  // Static server, and pub serve while in development
-  await app.configure(new PubServeLayer());
+  // Uncomment this to proxy over pub serve while in development:
+  // await app.configure(new PubServeLayer());
+  
+  // Static server at /web or /build/web, depending on if in production
   await app.configure(new VirtualDirectory());
 
   // Set our application up to handle different errors.
