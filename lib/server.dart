@@ -77,6 +77,10 @@ class AngelWebSocket extends AngelPlugin {
     };
   }
 
+  void _printDebug(String msg) {
+    if (debug == true) print(msg);
+  }
+
   /// Slates an event to be dispatched.
   Future batchEvent(WebSocketEvent event,
       {filter(WebSocketContext socket)}) async {
@@ -84,7 +88,12 @@ class AngelWebSocket extends AngelPlugin {
     _clients.forEach((client) async {
       var result = true;
       if (filter != null) result = await filter(client);
-      if (result == true) client.io.add(god.serialize(event));
+      if (result == true) {
+        var serialized = event.toJson();
+        _printDebug('Batching this event: $serialized');
+        print('Serialized: ' + JSON.encode(serialized));
+        client.io.add(god.serialize(event.toJson()));
+      }
     });
   }
 
