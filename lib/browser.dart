@@ -38,7 +38,7 @@ class WebSockets extends BaseWebSocketClient {
   WebSocketsService service<T>(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new WebSocketsService(socket, this, uri, T != dynamic ? T : type);
+    return new WebSocketsService(socket, this, uri, null);
   }
 }
 

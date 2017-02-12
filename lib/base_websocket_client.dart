@@ -242,36 +242,44 @@ class BaseWebSocketService extends Service {
 
   @override
   Future read(id, [Map params]) async {
-    socket.sink
-        .add(serialize(new WebSocketAction(id: id, params: params ?? {})));
+    socket.sink.add(serialize(new WebSocketAction(
+        eventName: '$path::${ACTION_READ}', id: id, params: params ?? {})));
     return null;
   }
 
   @override
   Future create(data, [Map params]) async {
-    socket.sink
-        .add(serialize(new WebSocketAction(data: data, params: params ?? {})));
+    socket.sink.add(serialize(new WebSocketAction(
+        eventName: '$path::${ACTION_CREATE}',
+        data: data,
+        params: params ?? {})));
     return null;
   }
 
   @override
   Future modify(id, data, [Map params]) async {
-    socket.sink.add(serialize(
-        new WebSocketAction(id: id, data: data, params: params ?? {})));
+    socket.sink.add(serialize(new WebSocketAction(
+        eventName: '$path::${ACTION_MODIFY}',
+        id: id,
+        data: data,
+        params: params ?? {})));
     return null;
   }
 
   @override
   Future update(id, data, [Map params]) async {
-    socket.sink.add(serialize(
-        new WebSocketAction(id: id, data: data, params: params ?? {})));
+    socket.sink.add(serialize(new WebSocketAction(
+        eventName: '$path::${ACTION_UPDATE}',
+        id: id,
+        data: data,
+        params: params ?? {})));
     return null;
   }
 
   @override
   Future remove(id, [Map params]) async {
-    socket.sink
-        .add(serialize(new WebSocketAction(id: id, params: params ?? {})));
+    socket.sink.add(serialize(new WebSocketAction(
+        eventName: '$path::${ACTION_REMOVE}', id: id, params: params ?? {})));
     return null;
   }
 }
