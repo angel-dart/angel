@@ -91,7 +91,7 @@ class AngelWebSocket extends AngelPlugin {
       if (result == true) {
         var serialized = event.toJson();
         _printDebug('Batching this event: $serialized');
-        print('Serialized: ' + JSON.encode(serialized));
+        // print('Serialized: ' + JSON.encode(serialized));
         client.io.add(god.serialize(event.toJson()));
       }
     });
@@ -117,7 +117,11 @@ class AngelWebSocket extends AngelPlugin {
 
     var params = mergeMap([
       god.deserializeDatum(action.params),
-      {"provider": Providers.WEBSOCKET}
+      {
+        "provider": Providers.WEBSOCKET,
+        '__requestctx': socket.request,
+        '__responsectx': socket.response
+      }
     ]);
 
     try {

@@ -234,7 +234,7 @@ class BaseWebSocketService extends Service {
   }
 
   @override
-  Future<List> index([Map params]) async {
+  Future index([Map params]) async {
     socket.sink.add(serialize(new WebSocketAction(
         eventName: '$path::${ACTION_INDEX}', params: params ?? {})));
     return null;

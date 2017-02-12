@@ -38,13 +38,14 @@ class WebSockets extends BaseWebSocketClient {
   WebSocketsService service<T>(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new WebSocketsService(socket, this, uri, null);
+    return new WebSocketsService(socket, this, uri, deserializer: deserializer);
   }
 }
 
 class WebSocketsService extends BaseWebSocketService {
   final Type type;
 
-  WebSocketsService(WebSocketChannel socket, Angel app, String uri, this.type)
-      : super(socket, app, uri);
+  WebSocketsService(WebSocketChannel socket, Angel app, String uri,
+      {this.type, AngelDeserializer deserializer})
+      : super(socket, app, uri, deserializer: deserializer);
 }
