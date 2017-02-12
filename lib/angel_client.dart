@@ -90,7 +90,7 @@ abstract class Service {
   Angel get app;
 
   /// Retrieves all resources.
-  Future<List> index([Map params]);
+  Future index([Map params]);
 
   /// Retrieves the desired resource.
   Future read(id, [Map params]);

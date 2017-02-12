@@ -47,8 +47,9 @@ class RestService extends BaseAngelService {
   }
 
   @override
-  Future<List> index([Map params]) async {
+  Future index([Map params]) async {
     final items = await super.index(params);
+    if (items is! List) return items;
     return items.map(deserialize).toList();
   }
 

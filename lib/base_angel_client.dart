@@ -229,7 +229,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future<List> index([Map params]) async {
+  Future index([Map params]) async {
     final response = await app.sendUnstreamed(
         'GET', '$basePath/${_buildQuery(params)}', _readHeaders);
 
@@ -239,11 +239,7 @@ class BaseAngelService extends Service {
       }
 
       final json = JSON.decode(response.body);
-
-      if (json is! List) {
-        throw failure(response);
-      }
-
+      if (json is! List) return json;
       return json.map(deserialize).toList();
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
