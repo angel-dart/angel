@@ -48,11 +48,7 @@ You can query these services as follows:
 
     /path/to/service?foo=bar
 
-The above will query the database to find records where 'foo' equals 'bar'. Thanks to body_parser, this
-also works with numbers, and even Maps.
-
-	/path/to/service?$sort=createdAt
-	/path/to/service?$sort.createdAt=1
+The above will query the database to find records where 'foo' equals 'bar'.
 
 The former will sort result in ascending order of creation, and so will the latter. 
 

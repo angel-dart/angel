@@ -3,23 +3,26 @@ part of angel_mongo.services;
 /// Manipulates data from MongoDB as Maps.
 class MongoService extends Service {
   DbCollection collection;
-  bool debug;
+  final bool debug;
 
   MongoService(DbCollection this.collection, {this.debug: true}) : super();
 
   _jsonify(Map doc, [Map params]) {
     Map result = {};
+
     for (var key in doc.keys) {
-      if (doc[key] is ObjectId) {
-        result[key] = doc[key].toHexString();
-      } else
-        result[key] = doc[key];
+      var value = doc[key];
+      if (value is ObjectId) {
+        result[key] = value.toHexString();
+      } else if (value is! RequestContext && value is! ResponseContext) {
+        result[key] = value;
+      }
     }
 
     return _transformId(result);
   }
 
-  void log(e, st, msg) {
+  void printDebug(e, st, msg) {
     if (debug) {
       stderr.writeln('$msg ERROR: $e');
       stderr.writeln(st);
@@ -34,7 +37,7 @@ class MongoService extends Service {
   }
 
   @override
-  Future create(Map data, [Map params]) async {
+  Future create(data, [Map params]) async {
     Map item = (data is Map) ? data : god.serializeObject(data);
     item = _removeSensitive(item);
 
@@ -43,7 +46,7 @@ class MongoService extends Service {
       await collection.insert(item);
       return await _lastItem(collection, _jsonify, params);
     } catch (e, st) {
-      log(e, st, 'CREATE');
+      printDebug(e, st, 'CREATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -54,7 +57,7 @@ class MongoService extends Service {
     Map found = await collection.findOne(where.id(_id).and(_makeQuery(params)));
 
     if (found == null) {
-      throw new AngelHttpException.NotFound(
+      throw new AngelHttpException.notFound(
           message: 'No record found for ID ${_id.toHexString()}');
     }
 
@@ -62,9 +65,12 @@ class MongoService extends Service {
   }
 
   @override
-  Future modify(id, Map data, [Map params]) async {
-    Map target = await read(id, params);
-    Map result = mergeMap([target, _removeSensitive(data)]);
+  Future modify(id, data, [Map params]) async {
+    var target = await read(id, params);
+    Map result = mergeMap([
+      target is Map ? target : god.serializeObject(target),
+      _removeSensitive(data)
+    ]);
     result['updatedAt'] = new DateTime.now();
 
     try {
@@ -73,17 +79,17 @@ class MongoService extends Service {
       result['id'] = id;
       return result;
     } catch (e, st) {
-      log(e, st, 'MODIFY');
+      printDebug(e, st, 'MODIFY');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
 
   @override
   Future update(id, data, [Map params]) async {
-    Map target = await read(id, params);
+    var target = await read(id, params);
     Map result = _removeSensitive(data);
     result['_id'] = _makeId(id);
-    result['createdAt'] = target['createdAt'];
+    result['createdAt'] = target is Map ? ['createdAt'] : target.createdAt;
     result['updatedAt'] = new DateTime.now();
 
     try {
@@ -92,7 +98,7 @@ class MongoService extends Service {
       result['id'] = id;
       return result;
     } catch (e, st) {
-      log(e, st, 'UPDATE');
+      printDebug(e, st, 'UPDATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -105,7 +111,7 @@ class MongoService extends Service {
       await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
       return result;
     } catch (e, st) {
-      log(e, st, 'REMOVE');
+      printDebug(e, st, 'REMOVE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }

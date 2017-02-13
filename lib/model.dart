@@ -1,6 +1,7 @@
 library angel_mongo.model;
 
-/// A data type that can be serialized to MongoDB.
+/// Use the `Model` class defined in `package:angel_framework/common.dart` instead.
+@deprecated
 class Model {
   /// This instance's ID.
   String id;

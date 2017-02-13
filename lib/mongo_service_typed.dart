@@ -1,145 +1,61 @@
 part of angel_mongo.services;
 
-/// Manipulates data from MongoDB by serializing BSON from and deserializing BSON to a target class.
-class MongoTypedService<T> extends Service {
-  DbCollection collection;
-  bool debug;
-
-  MongoTypedService(DbCollection this.collection, {this.debug: true}) : super() {
+class MongoTypedService<T> extends MongoService {
+  MongoTypedService(DbCollection collection, {bool debug})
+      : super(collection, debug: debug == true) {
     if (!reflectType(T).isAssignableTo(reflectType(Model)))
       throw new Exception(
-          "If you specify a type for MongoService, it must be dynamic, Map, or extend from Model.");
+          "If you specify a type for MongoService, it must extend Model.");
   }
 
-  _jsonify(Map doc, [Map params]) {
-    Map result = {};
-    for (var key in doc.keys) {
-      if (doc[key] is ObjectId) {
-        result[key] = doc[key].toHexString();
-      } else
-        result[key] = doc[key];
-    }
+  _deserialize(x) {
+    if (x == dynamic || x == Object || x is T)
+      return x;
+    else if (x is Map) {
+      Map data = x.keys.fold({}, (map, key) {
+        var value = x[key];
 
-    result = _transformId(result);
+        if ((key == 'createdAt' || key == 'updatedAt') && value is String) {
+          return map..[key] = '44'; // DateTime.parse(value).toIso8601String();
+        } else
+          return map..[key] = value;
+      });
 
-    // Clients will always receive JSON.
-    if ((params != null && params['provider'] != null)) {
-      return result;
-    } else {
-      // However, when we run server-side, we should return a T, not a Map.
-      Model typedResult = god.deserializeDatum(result, outputType: T);
-      typedResult.createdAt = result['createdAt'];
-      typedResult.updatedAt = result['updatedAt'];
-      return typedResult;
-    }
+      print('x: $x\ndata: $data');
+      return god.deserializeDatum(data, outputType: T);
+    } else
+      return x;
   }
 
-  void log(e, st, msg) {
-    if (debug) {
-      stderr.writeln('$msg ERROR: $e');
-      stderr.writeln(st);
-    }
+  _serialize(x) {
+    if (x is Model)
+      return god.serializeObject(x);
+    else
+      return x;
   }
 
   @override
   Future<List> index([Map params]) async {
-    return await (await collection.find(_makeQuery(params)))
-        .map((x) => _jsonify(x, params))
-        .toList();
+    var result = await super.index(params);
+    return result.map(_deserialize).toList();
   }
 
   @override
-  Future create(data, [Map params]) async {
-    Map item;
-
-    try {
-      Model target =
-          (data is T) ? data : god.deserializeDatum(data, outputType: T);
-      item = god.serializeObject(target);
-      item = _removeSensitive(item);
-
-      item['createdAt'] = new DateTime.now();
-      await collection.insert(item);
-      return await _lastItem(collection, _jsonify, params);
-    } catch (e, st) {
-      log(e, st, 'CREATE');
-      throw new AngelHttpException.BadRequest();
-    }
-  }
+  Future create(data, [Map params]) =>
+      super.create(_serialize(data), params).then(_deserialize);
 
   @override
-  Future read(id, [Map params]) async {
-    ObjectId _id = _makeId(id);
-
-    Map found = await collection.findOne(where.id(_id).and(_makeQuery(params)));
-
-    if (found == null) {
-      throw new AngelHttpException.NotFound(
-          message: 'No record found for ID ${_id.toHexString()}');
-    }
-
-    return _jsonify(found, params);
-  }
+  Future read(id, [Map params]) => super.read(id, params).then(_deserialize);
 
   @override
-  Future modify(id, Map data, [Map params]) async {
-    ObjectId _id = _makeId(id);
-    try {
-      Map result =
-          await collection.findOne(where.id(_id).and(_makeQuery(params)));
-
-      if (result == null) {
-        throw new AngelHttpException.NotFound(
-            message: 'No record found for ID ${_id.toHexString()}');
-      }
-
-      result = mergeMap([result, _removeSensitive(data)]);
-      result['_id'] = _id;
-      result['updatedAt'] = new DateTime.now();
-
-      await collection.update(where.id(_id), result);
-      return await read(_id, params);
-    } catch (e, st) {
-      log(e, st, 'MODIFY');
-      throw new AngelHttpException(e, stackTrace: st);
-    }
-  }
+  Future modify(id, data, [Map params]) =>
+      super.modify(id, _serialize(data), params).then(_deserialize);
 
   @override
-  Future update(id, _data, [Map params]) async {
-    try {
-      Model data =
-          (_data is T) ? _data : god.deserializeDatum(_data, outputType: T);
-      ObjectId _id = _makeId(id);
-      Map rawData = _removeSensitive(god.serializeObject(data));
-      rawData['_id'] = _id;
-      rawData['createdAt'] = data.createdAt;
-      rawData['updatedAt'] = new DateTime.now();
-
-      await collection.update(where.id(_id).and(_makeQuery(params)), rawData);
-      var result = _jsonify(rawData, params);
-
-      if (result is T) {
-        result.createdAt = data.createdAt;
-        result.updatedAt = rawData['updatedAt'];
-      }
-      return result;
-    } catch (e, st) {
-      log(e, st, 'UPDATE');
-      throw new AngelHttpException(e, stackTrace: st);
-    }
-  }
+  Future update(id, data, [Map params]) =>
+      super.update(id, _serialize(data), params).then(_deserialize);
 
   @override
-  Future remove(id, [Map params]) async {
-    var result = await read(id, params);
-
-    try {
-      await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
-      return result;
-    } catch (e, st) {
-      log(e, st, 'REMOVE');
-      throw new AngelHttpException(e, stackTrace: st);
-    }
-  }
+  Future remove(id, [Map params]) =>
+      super.remove(id, params).then(_deserialize);
 }
