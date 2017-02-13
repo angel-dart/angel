@@ -1,6 +1,9 @@
 library angel_framework.defs;
+import '../common.dart';
+export '../common.dart';
 
-/// Represents data that can be serialized into a MemoryService;
+/// Use [Model] instead.
+@deprecated
 class MemoryModel {
   int id;
 }

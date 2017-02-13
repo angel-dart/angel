@@ -275,7 +275,7 @@ class Angel extends AngelBase {
       }
 
       try {
-        await sendRequest(request, req, res);
+        await sendResponse(request, req, res);
       } catch (e, st) {
         _fatalErrorStream
             .add(new AngelFatalError(request: request, error: e, stack: st));
@@ -332,8 +332,14 @@ class Angel extends AngelBase {
     // return await closureMirror.apply(args).reflectee;
   }
 
-  /// Sends a response.
+  /// Use [sendResponse] instead.
+  @deprecated
   Future sendRequest(
+          HttpRequest request, RequestContext req, ResponseContext res) =>
+      sendResponse(request, req, res);
+
+  /// Sends a response.
+  Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res) async {
     _afterProcessed.add(request);
 

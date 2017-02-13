@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';
 
-class Todo extends MemoryModel {
+class Todo extends Model {
   String text;
   String over;
 }

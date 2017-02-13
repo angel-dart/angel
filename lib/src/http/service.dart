@@ -39,7 +39,7 @@ class Service extends Routable {
   AngelBase app;
 
   /// Retrieves all resources.
-  Future<List> index([Map params]) {
+  Future index([Map params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
@@ -88,7 +88,10 @@ class Service extends Routable {
 
     Middleware indexMiddleware = getAnnotation(this.index, Middleware);
     get('/', (req, res) async {
-      return await this.index(mergeMap([req.query, restProvider]));
+      return await this.index(mergeMap([
+        {'query': req.query},
+        restProvider
+      ]));
     },
         middleware: []
           ..addAll(handlers)
@@ -97,8 +100,12 @@ class Service extends Routable {
     Middleware createMiddleware = getAnnotation(this.create, Middleware);
     post(
         '/',
-        (req, res) async =>
-            await this.create(req.body, mergeMap([req.query, restProvider])),
+        (req, res) async => await this.create(
+            req.body,
+            mergeMap([
+              {'query': req.query},
+              restProvider
+            ])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -108,8 +115,12 @@ class Service extends Routable {
 
     get(
         '/:id',
-        (req, res) async => await this
-            .read(toId(req.params['id']), mergeMap([req.query, restProvider])),
+        (req, res) async => await this.read(
+            toId(req.params['id']),
+            mergeMap([
+              {'query': req.query},
+              restProvider
+            ])),
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -117,8 +128,13 @@ class Service extends Routable {
     Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
     patch(
         '/:id',
-        (req, res) async => await this.modify(toId(req.params['id']), req.body,
-            mergeMap([req.query, restProvider])),
+        (req, res) async => await this.modify(
+            toId(req.params['id']),
+            req.body,
+            mergeMap([
+              {'query': req.query},
+              restProvider
+            ])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -127,8 +143,13 @@ class Service extends Routable {
     Middleware updateMiddleware = getAnnotation(this.update, Middleware);
     post(
         '/:id',
-        (req, res) async => await this.update(toId(req.params['id']), req.body,
-            mergeMap([req.query, restProvider])),
+        (req, res) async => await this.update(
+            toId(req.params['id']),
+            req.body,
+            mergeMap([
+              {'query': req.query},
+              restProvider
+            ])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -138,7 +159,11 @@ class Service extends Routable {
     delete(
         '/:id',
         (req, res) async => await this.remove(
-            toId(req.params['id']), mergeMap([req.query, restProvider])),
+            toId(req.params['id']),
+            mergeMap([
+              {'query': req.query},
+              restProvider
+            ])),
         middleware: []
           ..addAll(handlers)
           ..addAll(

@@ -2,7 +2,7 @@ library angel_framework.test.common;
 
 import 'package:angel_framework/angel_framework.dart';
 
-class Todo extends MemoryModel {
+class Todo extends Model {
   String text;
   String over;
 

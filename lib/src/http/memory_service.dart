@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:mirrors';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
-import '../defs.dart';
+import '../../common.dart';
 import 'angel_http_exception.dart';
 import 'service.dart';
 
@@ -24,17 +24,17 @@ class MemoryService<T> extends Service {
   final bool allowRemoveAll;
 
   //// The data contained in this service.
-  final Map<int, MemoryModel> items = {};
+  final Map<int, Model> items = {};
 
   MemoryService({this.allowRemoveAll: false}) : super() {
-    if (!reflectType(T).isAssignableTo(reflectType(MemoryModel))) {
+    if (!reflectType(T).isAssignableTo(reflectType(Model))) {
       throw new Exception(
-          "MemoryServices only support classes that inherit from MemoryModel.");
+          "MemoryServices only support classes that inherit from Model.");
     }
   }
 
-  _makeJson(int index, MemoryModel t) {
-    return t..id = index;
+  _makeJson(int index, Model t) {
+    return t..id = index.toString();
   }
 
   Future<List> index([Map params]) async {
@@ -47,7 +47,7 @@ class MemoryService<T> extends Service {
   Future read(id, [Map params]) async {
     int desiredId = _getId(id);
     if (items.containsKey(desiredId)) {
-      MemoryModel found = items[desiredId];
+      Model found = items[desiredId];
       if (found != null) {
         return _makeJson(desiredId, found);
       } else
@@ -58,12 +58,12 @@ class MemoryService<T> extends Service {
 
   Future create(data, [Map params]) async {
     //try {
-    MemoryModel created = (data is MemoryModel)
-        ? data
-        : god.deserializeDatum(data, outputType: T);
+    Model created =
+        (data is Model) ? data : god.deserializeDatum(data, outputType: T);
 
-    created.id = items.length;
-    items[created.id] = created;
+    int size = items.length;
+    created.id = size.toString();
+    items[size] = created;
     return created;
     /*} catch (e) {
       throw new AngelHttpException.BadRequest(message: 'Invalid data.');
@@ -111,7 +111,7 @@ class MemoryService<T> extends Service {
 
     int desiredId = _getId(id);
     if (items.containsKey(desiredId)) {
-      MemoryModel item = items[desiredId];
+      Model item = items[desiredId];
       items[desiredId] = null;
       return _makeJson(desiredId, item);
     } else

@@ -36,10 +36,14 @@ AngelConfigurer hookAllServices(callback(Service service)) {
 HookedServiceEventListener toJson() {
   return (HookedServiceEvent e) {
     normalize(obj) {
-      if (obj != null && obj is! Map) obj = god.serializeObject(obj);
+      if (obj != null && obj is! Map) return god.serializeObject(obj);
+      return obj;
     }
 
-    normalize(e.isBefore ? e.data : e.result);
+    if (e.isBefore) {
+      return e.data = normalize(e.data);
+    } else
+      e.result = normalize(e.result);
   };
 }
 
@@ -49,10 +53,14 @@ HookedServiceEventListener toType(Type type) {
   return (HookedServiceEvent e) {
     normalize(obj) {
       if (obj != null && obj.runtimeType != type)
-        obj = god.deserializeDatum(obj, outputType: type);
+        return god.deserializeDatum(obj, outputType: type);
+      return obj;
     }
 
-    normalize(e.isBefore ? e.data : e.result);
+    if (e.isBefore) {
+      return e.data = normalize(e.data);
+    } else
+      e.result = normalize(e.result);
   };
 }
 
