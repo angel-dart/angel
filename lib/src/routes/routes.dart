@@ -2,7 +2,7 @@
 library angel.routes;
 
 import 'package:angel_common/angel_common.dart';
-import 'controllers/controllers.dart' as Controllers;
+import 'controllers/controllers.dart' as controllers;
 
 configureBefore(Angel app) async {
   app.before.add(cors());
@@ -56,6 +56,6 @@ configureAfter(Angel app) async {
 configureServer(Angel app) async {
   await configureBefore(app);
   await configureRoutes(app);
-  await app.configure(Controllers.configureServer);
+  await app.configure(controllers.configureServer);
   await configureAfter(app);
 }
