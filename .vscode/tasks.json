@@ -17,6 +17,7 @@
         {
             "taskName": "pub:serve",
             "suppressTaskName": true,
+            "isBackground": true,
             "args": [
                 "serve"
             ]
