@@ -26,11 +26,8 @@ class User extends Model with _$UserSerializerMixin {
       this.email,
       this.username,
       this.password,
-      List<String> roles: const []}) {
+      Iterable<String> roles: const []}) {
     this.id = id;
-
-    if (roles != null) {
-      this.roles.addAll(roles);
-    }
+    this.roles.addAll(roles ?? []);
   }
 }
