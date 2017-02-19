@@ -2,13 +2,17 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
 import 'package:id/id.dart';
+import 'package:recase/recase.dart';
 import 'init.dart' show preBuild;
 
 class ServiceCommand extends Command {
   final String CUSTOM = 'Custom';
   final String MEMORY = 'In-Memory';
+  final String MEMORY_JSON = 'In-Memory (serialized via `source_gen`)';
   final String MONGO = 'MongoDB';
   final String MONGO_TYPED = 'MongoDB (typed)';
+  final String MONGO_TYPED_JSON =
+      'MongoDB (typed, serialized via `source_gen`)';
   final String TRESTLE = 'Trestle';
   final TextPen _pen = new TextPen();
 
@@ -23,7 +27,7 @@ class ServiceCommand extends Command {
   @override
   run() async {
     var name = await readInput('Name of Service (not plural): ');
-    var chooser = new Chooser([TRESTLE, MONGO, MONGO_TYPED, MEMORY, CUSTOM],
+    var chooser = new Chooser([MONGO, MONGO_TYPED, MEMORY, CUSTOM],
         message: 'What type of service would you like to create? ');
     var type = await chooser.choose();
 
@@ -40,9 +44,19 @@ class ServiceCommand extends Command {
     } else if (type == MONGO_TYPED) {
       serviceSource = _generateMongoTypedService(name);
       await _generateMongoModel(name);
+      await _generateValidator(name);
+    } else if (type == MONGO_TYPED_JSON) {
+      serviceSource = _generateMongoTypedService(name);
+      await _generateMongoModelJson(name);
+      await _generateValidator(name);
     } else if (type == MEMORY) {
       serviceSource = _generateMemoryService(name);
       await _generateMemoryModel(name);
+      await _generateValidator(name);
+    } else if (type == MEMORY_JSON) {
+      serviceSource = _generateMemoryService(name);
+      await _generateMemoryModelJson(name);
+      await _generateValidator(name);
     } else if (type == CUSTOM) {
       serviceSource = _generateCustomService(name);
     } else if (type == TRESTLE) {
@@ -91,6 +105,21 @@ class ServiceCommand extends Command {
     _pen();
   }
 
+  _generateValidator(String name) async {
+    var rc = new ReCase(name);
+    var file = new File('lib/src/validators/${rc.snakeCase}.dart');
+
+    if (!await file.exists()) await file.createSync(recursive: true);
+
+    await file.writeAsString('''
+import 'package:angel_validate/angel_validate.dart';
+
+final Validator CREATE_${rc.constantCase} =
+    new Validator({'name*': isString, 'desc*': isString});
+    '''
+        .trim());
+  }
+
   _generateCustomService(String name) {
     return '''
 import 'package:angel_framework/angel_framework.dart';
@@ -113,13 +142,35 @@ class ${name}Service extends Service {
     await file.writeAsString('''
 library angel.models.$lower;
 
-import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/common.dart';
+
+class $name extends Model {
+  String name, desc;
+
+  $name({String id, this.name, this.desc}) {
+    this.id = id;
+  }
+}
+    '''
+        .trim());
+  }
+
+  _generateMemoryModelJson(String name) async {
+    var lower = _snake(name);
+    var file = new File('lib/src/models/$lower.dart');
+
+    if (!await file.exists()) await file.createSync(recursive: true);
+
+    await file.writeAsString('''
+library angel.models.$lower;
+
+import 'package:angel_framework/common.dart';
 import 'package:source_gen/generators/json_serializable.dart';
 
 part '$lower.g.dart';
 
 @JsonSerializable()
-class $name extends MemoryModel with _\$${name}SerializerMixin {
+class $name extends Model with _\$${name}SerializerMixin {
   @JsonKey('id')
   @override
   String id;
@@ -139,7 +190,8 @@ class $name extends MemoryModel with _\$${name}SerializerMixin {
   }
 
   _generateMemoryService(String name) {
-    var lower = _snake(name);
+    var rc = new ReCase(name);
+    var lower = rc.snakeCase;
 
     return '''
 import 'package:angel_framework/angel_framework.dart';
@@ -166,6 +218,40 @@ class ${name}Service extends MemoryService<$name> {
 library angel.models.$lower;
 
 import 'package:angel_mongo/model.dart';
+import 'package:source_gen/generators/json_serializable.dart';
+
+part '$lower.g.dart';
+
+@JsonSerializable()
+class $name extends Model with _\$${name}SerializerMixin {
+  @JsonKey('id')
+  @override
+  String id;
+
+  @JsonKey('name')
+  String name;
+  
+  @JsonKey('desc')
+  String desc;
+
+  factory $name.fromJson(Map json) => _\$${name}FromJson(json);
+
+  $name({this.id, this.name, this.desc});
+}
+    '''
+        .trim());
+  }
+
+  _generateMongoModelJson(String name) async {
+    var lower = _snake(name);
+    var file = new File('lib/src/models/$lower.dart');
+
+    if (!await file.exists()) await file.createSync(recursive: true);
+
+    await file.writeAsString('''
+library angel.models.$lower;
+
+import 'package:angel_framework/common.dart';
 import 'package:source_gen/generators/json_serializable.dart';
 
 part '$lower.g.dart';
