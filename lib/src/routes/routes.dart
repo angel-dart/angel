@@ -31,7 +31,7 @@ configureAfter(Angel app) async {
     var req = await RequestContext.from(e.request, app);
     var res = new ResponseContext(e.request.response, app);
     res.render('error', {'message': 'Internal Server Error: ${e.error}'});
-    await app.sendRequest(e.request, req, res);
+    await app.sendResponse(e.request, req, res);
   };
 
   // Throw a 404 if no route matched the request
