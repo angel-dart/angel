@@ -42,7 +42,7 @@ class MongoService extends Service {
     item = _removeSensitive(item);
 
     try {
-      item['createdAt'] = new DateTime.now();
+      item['createdAt'] = new DateTime.now().toIso8601String();
       await collection.insert(item);
       return await _lastItem(collection, _jsonify, params);
     } catch (e, st) {
@@ -71,7 +71,7 @@ class MongoService extends Service {
       target is Map ? target : god.serializeObject(target),
       _removeSensitive(data)
     ]);
-    result['updatedAt'] = new DateTime.now();
+    result['updatedAt'] = new DateTime.now().toIso8601String();
 
     try {
       await collection.update(where.id(_makeId(id)), result);
@@ -89,8 +89,13 @@ class MongoService extends Service {
     var target = await read(id, params);
     Map result = _removeSensitive(data);
     result['_id'] = _makeId(id);
-    result['createdAt'] = target is Map ? ['createdAt'] : target.createdAt;
-    result['updatedAt'] = new DateTime.now();
+    result['createdAt'] =
+        target is Map ? target['createdAt'] : target.createdAt;
+
+    if (result['createdAt'] is DateTime)
+      result['createdAt'] = result['createdAt'].toIso8601String();
+
+    result['updatedAt'] = new DateTime.now().toIso8601String();
 
     try {
       await collection.update(where.id(_makeId(id)), result);
@@ -105,7 +110,7 @@ class MongoService extends Service {
 
   @override
   Future remove(id, [Map params]) async {
-    Map result = await read(id, params);
+    var result = await read(id, params);
 
     try {
       await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));

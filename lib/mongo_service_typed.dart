@@ -9,6 +9,7 @@ class MongoTypedService<T> extends MongoService {
   }
 
   _deserialize(x) {
+    // print('DESERIALIZE: $x (${x.runtimeType})');
     if (x == dynamic || x == Object || x is T)
       return x;
     else if (x is Map) {
@@ -16,13 +17,30 @@ class MongoTypedService<T> extends MongoService {
         var value = x[key];
 
         if ((key == 'createdAt' || key == 'updatedAt') && value is String) {
-          return map..[key] = '44'; // DateTime.parse(value).toIso8601String();
-        } else
+          return map..[key] = DateTime.parse(value).toIso8601String();
+        } else if (value is DateTime) {
+          return map..[key] = value.toIso8601String();
+        } else {
           return map..[key] = value;
+        }
       });
 
-      print('x: $x\ndata: $data');
-      return god.deserializeDatum(data, outputType: T);
+      Model result = god.deserializeDatum(data, outputType: T);
+
+      if (x['createdAt'] is String) {
+        result.createdAt = DateTime.parse(x['createdAt']);
+      } else if (x['createdAt'] is DateTime) {
+        result.createdAt = x['createdAt'];
+      }
+
+      if (x['updatedAt'] is String) {
+        result.updatedAt = DateTime.parse(x['updatedAt']);
+      } else if (x['updatedAt'] is DateTime) {
+        result.updatedAt = x['updatedAt'];
+      }
+
+      // print('x: $x\nresult: $result');
+      return result;
     } else
       return x;
   }
@@ -30,8 +48,10 @@ class MongoTypedService<T> extends MongoService {
   _serialize(x) {
     if (x is Model)
       return god.serializeObject(x);
-    else
+    else if (x is Map)
       return x;
+    else
+      throw new ArgumentError('Cannot serialize ${x.runtimeType}');
   }
 
   @override

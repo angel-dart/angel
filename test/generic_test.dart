@@ -149,8 +149,7 @@ main() {
       expect(queried[0].keys.length, equals(3));
       expect(queried[0]["id"], equals(world["id"]));
       expect(queried[0]["to"], equals(world["to"]));
-      expect(queried[0]["createdAt"],
-          equals(world["createdAt"].toIso8601String()));
+      expect(queried[0]["createdAt"], equals(world["createdAt"]));
 
       /*response = await client.get("$url/api?\$sort.createdAt=-1");
       print(response.body);
