@@ -1,25 +1,10 @@
 library angel.models.user;
 
-import 'package:angel_mongo/model.dart';
-import 'package:source_gen/generators/json_serializable.dart';
+import 'package:angel_framework/common.dart';
 
-part 'user.g.dart';
-
-@JsonSerializable()
-class User extends Model with _$UserSerializerMixin {
-  @JsonKey('email')
-  String email;
-
-  @JsonKey('username')
-  String username;
-
-  @JsonKey('password')
-  String password;
-
-  @JsonKey('roles')
+class User extends Model {
+  String email, username, password;
   final List<String> roles = [];
-
-  factory User.fromJson(Map json) => _$UserFromJson(json);
 
   User(
       {String id,
