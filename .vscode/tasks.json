@@ -16,6 +16,7 @@
         },
         {
             "taskName": "pub:serve",
+            "showOutput": "silent",
             "suppressTaskName": true,
             "isBackground": true,
             "args": [
