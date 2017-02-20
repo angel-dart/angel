@@ -1,6 +1,6 @@
 # angel_mongo
 
-[![version 1.1.0](https://img.shields.io/badge/pub-1.1.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_mongo)
+[![version 1.1.1](https://img.shields.io/badge/pub-1.1.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_mongo)
 [![build status](https://travis-ci.org/angel-dart/mongo.svg?branch=master)](https://travis-ci.org/angel-dart/mongo)
 
 MongoDB-enabled services for the Angel framework.
@@ -10,14 +10,15 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  angel_mongo: ^1.0.0-dev
+  angel_mongo: ^1.0.0
 ```
 
 # Usage
-This library exposes three main classes: `Model`, `MongoService` and `MongoTypedService<T>`.
+This library exposes two main classes: `MongoService` and `MongoTypedService<T>`.
 
 ## Model
-`Model` is class with no real functionality; however, it represents a basic MongoDB document, and your services should host inherited classes.
+`Model` is class with no real functionality; however, it represents a basic document, and your services should host inherited classes.
+Other Angel service providers host `Model` as well, so you will easily be able to modify your application if you ever switch databases.
 
 ```dart
 class User extends Model {

@@ -3,9 +3,16 @@ part of angel_mongo.services;
 /// Manipulates data from MongoDB as Maps.
 class MongoService extends Service {
   DbCollection collection;
+
+  /// If set to `true`, clients can remove all items by passing a `null` `id` to `remove`.
+  ///
+  /// `false` by default.
+  final bool allowRemoveAll;
   final bool debug;
 
-  MongoService(DbCollection this.collection, {this.debug: true}) : super();
+  MongoService(DbCollection this.collection,
+      {this.allowRemoveAll: false, this.debug: true})
+      : super();
 
   _jsonify(Map doc, [Map params]) {
     Map result = {};
@@ -110,6 +117,14 @@ class MongoService extends Service {
 
   @override
   Future remove(id, [Map params]) async {
+    if (id == null ||
+        id == 'null' &&
+            (allowRemoveAll == true ||
+                params?.containsKey('provider') != true)) {
+      await collection.remove(null);
+      return {};
+    }
+
     var result = await read(id, params);
 
     try {
