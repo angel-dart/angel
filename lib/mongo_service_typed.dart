@@ -1,8 +1,9 @@
 part of angel_mongo.services;
 
 class MongoTypedService<T> extends MongoService {
-  MongoTypedService(DbCollection collection, {bool debug})
-      : super(collection, debug: debug == true) {
+  MongoTypedService(DbCollection collection, {bool allowRemoveAll, bool debug})
+      : super(collection,
+            allowRemoveAll: allowRemoveAll == true, debug: debug == true) {
     if (!reflectType(T).isAssignableTo(reflectType(Model)))
       throw new Exception(
           "If you specify a type for MongoService, it must extend Model.");
