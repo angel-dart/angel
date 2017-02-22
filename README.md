@@ -14,7 +14,7 @@ dependencies:
 ```
 
 # Usage
-This library exposes one main class: `RethinkService`. By default, these services will even
+This library exposes one class: `RethinkService`. By default, these services will even
 listen to [changefeeds](https://www.rethinkdb.com/docs/changefeeds/ruby/) from the database,
 which makes them very suitable for WebSocket use.
 
