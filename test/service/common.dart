@@ -1,9 +1,9 @@
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/src/defs.dart';
+import 'package:angel_framework/common.dart';
 import 'package:angel_websocket/base_websocket_client.dart';
 import 'package:test/test.dart';
 
-class Todo extends MemoryModel {
+class Todo extends Model {
   String text;
   String when;
 

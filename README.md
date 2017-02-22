@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.0](https://img.shields.io/badge/pub-1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![1.0.1](https://img.shields.io/badge/pub-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
@@ -22,7 +22,9 @@ import "package:angel_websocket/server.dart";
 
 main() async {
   var app = new Angel();
-  await app.configure(new AngelWebSocket("/ws"));
+
+  // Ensure this runs after all our services are in-place
+  app.justBeforeStart.add(new AngelWebSocket("/ws"));
 }
 
 ```

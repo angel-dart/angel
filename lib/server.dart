@@ -31,6 +31,10 @@ class AngelWebSocket extends AngelPlugin {
   final StreamController<WebSocketContext> _onDisconnect =
       new StreamController<WebSocketContext>.broadcast();
 
+  /// If this is not `true`, then all client-side service parameters will be
+  /// discarded, other than `params['query']`.
+  final bool allowClientParams;
+
   /// Include debug information, and send error information across WebSockets.
   final bool debug;
 
@@ -59,10 +63,16 @@ class AngelWebSocket extends AngelPlugin {
   /// Fired when a user disconnects.
   Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
-  AngelWebSocket({this.endpoint: '/ws', this.debug: false, this.register});
+  AngelWebSocket(
+      {this.endpoint: '/ws',
+      this.debug: false,
+      this.allowClientParams: false,
+      this.register});
 
-  _batchEvent(String path) {
+  serviceHook(String path) {
     return (HookedServiceEvent e) async {
+      if (e.params != null && e.params['broadcast'] == false) return;
+
       var event = await transformEvent(e);
       event.eventName = "$path::${event.eventName}";
 
@@ -115,6 +125,15 @@ class AngelWebSocket extends AngelPlugin {
 
     var actionName = split[1];
 
+    if (action.params is! Map) action.params = {};
+
+    if (allowClientParams != true) {
+      if (action.params['query'] is Map)
+        action.params = {'query': action.params['query']};
+      else
+        action.params = {};
+    }
+
     var params = mergeMap([
       god.deserializeDatum(action.params),
       {
@@ -165,7 +184,7 @@ class AngelWebSocket extends AngelPlugin {
   /// Hooks a service up to have its events broadcasted.
   hookupService(Pattern _path, HookedService service) {
     String path = _path.toString();
-    var batch = _batchEvent(path);
+    var batch = serviceHook(path);
 
     service
       ..afterCreated.listen(batch)
@@ -207,10 +226,6 @@ class AngelWebSocket extends AngelPlugin {
           if (ACTIONS.contains(split[1])) {
             var event = handleAction(action, socket);
             if (event is Future) event = await event;
-
-            if (event is WebSocketEvent) {
-              batchEvent(event);
-            }
           }
         }
       }
