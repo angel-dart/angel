@@ -37,8 +37,10 @@ main() {
     });
 
     test("index", () async {
-      Postcard niagaraFalls = await serverPostcards.create(
+      Map niagara = await clientPostcards.create(
           new Postcard(location: "Niagara Falls", message: "Missing you!"));
+      Postcard niagaraFalls = new Postcard.fromJson(niagara);
+
       print('Niagara Falls: ${niagaraFalls.toJson()}');
 
       List indexed = await clientPostcards.index();
@@ -50,15 +52,14 @@ main() {
       expect(indexed[0]['location'], equals(niagaraFalls.location));
       expect(indexed[0]['message'], equals(niagaraFalls.message));
 
-      Postcard louvre = await serverPostcards.create(new Postcard(
+      Map l = await clientPostcards.create(new Postcard(
           location: "The Louvre", message: "The Mona Lisa was watching me!"));
+      Postcard louvre = new Postcard.fromJson(l);
       print(god.serialize(louvre));
       List typedIndexed = await clientTypedPostcards.index();
       expect(typedIndexed.length, equals(2));
       expect(typedIndexed[1], equals(louvre));
-    },
-        skip:
-            'Index tests fails for some unknown reason, although it works in production.');
+    });
 
     test("create/read", () async {
       Map opry = {"location": "Grand Ole Opry", "message": "Yeehaw!"};

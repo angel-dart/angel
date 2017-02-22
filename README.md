@@ -1,15 +1,14 @@
 # angel_client
 
-[![pub 1.0.0-dev+23](https://img.shields.io/badge/pub-1.0.0--dev+23-red.svg)](https://pub.dartlang.org/packages/angel_client)
+[![pub 1.0.0](https://img.shields.io/badge/pub-1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_client)
 ![build status](https://travis-ci.org/angel-dart/client.svg)
 
 Client library for the Angel framework.
-
-# Isomorphic
-The REST client can run in the browser or on the command-line.
+This library provides virtually the same API as an Angel server.
+The client can run in the browser or on the command-line.
+In addition, the client supports `angel_auth` authentication.
 
 # Usage
-This library provides the same API as an Angel server.
 
 ```dart
 // Choose one or the other, depending on platform

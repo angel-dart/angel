@@ -18,11 +18,11 @@ const Map<String, String> _writeHeaders = const {
 };
 
 _buildQuery(Map params) {
-  if (params == null || params.isEmpty) return "";
+  if (params == null || params.isEmpty || params['query'] is! Map) return "";
 
   List<String> query = [];
 
-  params.forEach((k, v) {
+  params['query'].forEach((k, v) {
     query.add('$k=${Uri.encodeQueryComponent(v.toString())}');
   });
 
@@ -231,7 +231,7 @@ class BaseAngelService extends Service {
   @override
   Future index([Map params]) async {
     final response = await app.sendUnstreamed(
-        'GET', '$basePath/${_buildQuery(params)}', _readHeaders);
+        'GET', '$basePath${_buildQuery(params)}', _readHeaders);
 
     try {
       if (response.statusCode != 200) {
