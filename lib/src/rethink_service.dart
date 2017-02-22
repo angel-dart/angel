@@ -38,17 +38,18 @@ class RethinkService extends Service {
       this.listenForChanges: true})
       : super() {}
 
-  RqlQuery _getQuery(RqlQuery query, Map params) {
+  RqlQuery buildQuery(RqlQuery initialQuery, Map params) {
     if (params != null)
-      params['broadcast'] =
-          params.containsKey('broadcast') ? params['broadcast'] : false;
+      params['broadcast'] = params.containsKey('broadcast')
+          ? params['broadcast']
+          : (listenForChanges != true);
 
-    var q = _getQueryInner(query, params);
+    var q = _getQueryInner(initialQuery, params);
 
     if (params?.containsKey('reql') == true && params['reql'] is QueryCallback)
       q = params['reql'](q);
 
-    return q ?? query;
+    return q ?? initialQuery;
   }
 
   RqlQuery _getQueryInner(RqlQuery query, Map params) {
@@ -93,15 +94,22 @@ class RethinkService extends Service {
       return result;
   }
 
-  Map _serialize(data) {
+  _serialize(data) {
     if (data is Map)
       return data;
+    else if (data is Iterable)
+      return data.map(_serialize).toList();
     else
       return god.serializeObject(data);
   }
 
-  Map _squeeze(Map data) {
-    return data.keys.fold<Map>({}, (map, k) => map..[k.toString()] = data[k]);
+  _squeeze(data) {
+    if (data is Map)
+      return data.keys.fold<Map>({}, (map, k) => map..[k.toString()] = data[k]);
+    else if (data is Iterable)
+      return data.map(_squeeze).toList();
+    else
+      return data;
   }
 
   void onHooked(HookedService hookedService) {
@@ -138,13 +146,13 @@ class RethinkService extends Service {
 
   @override
   Future index([Map params]) async {
-    var query = _getQuery(table, params);
+    var query = buildQuery(table, params);
     return await _sendQuery(query);
   }
 
   @override
   Future read(id, [Map params]) async {
-    var query = _getQuery(table.get(id?.toString()), params);
+    var query = buildQuery(table.get(id?.toString()), params);
     var found = await _sendQuery(query);
     print('Found for $id: $found');
 
@@ -157,13 +165,11 @@ class RethinkService extends Service {
 
   @override
   Future create(data, [Map params]) async {
-    if (table is! Table)
-      throw new StateError(
-          'RethinkServices can only create data within tables.');
+    if (table is! Table) throw new AngelHttpException.methodNotAllowed();
 
     var d = _serialize(data);
     var q = table as Table;
-    var query = _getQuery(q.insert(_squeeze(d)), params);
+    var query = buildQuery(q.insert(_squeeze(d)), params);
     return await _sendQuery(query);
   }
 
@@ -172,7 +178,7 @@ class RethinkService extends Service {
 
   @override
   Future update(id, data, [Map params]) async {
-    var query = _getQuery(table.get(id?.toString()), params).update(data);
+    var query = buildQuery(table.get(id?.toString()), params).update(data);
     await _sendQuery(query);
     return await read(id, params);
   }
@@ -186,7 +192,7 @@ class RethinkService extends Service {
       return await _sendQuery(table.delete());
     } else {
       var prior = await read(id, params);
-      var query = _getQuery(table.get(id), params).delete();
+      var query = buildQuery(table.get(id), params).delete();
       await _sendQuery(query);
       return prior;
     }

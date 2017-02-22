@@ -1,6 +1,6 @@
 # rethink
 
-[![version 1.0.0](https://img.shields.io/badge/pub-1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
+[![version 1.0.1](https://img.shields.io/badge/pub-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
 [![build status](https://travis-ci.org/angel-dart/rethink.svg?branch=master)](https://travis-ci.org/angel-dart/rethink)
 
 RethinkDB-enabled services for the Angel framework.
@@ -12,6 +12,8 @@ Add the following to your `pubspec.yaml`:
 dependencies:
   angel_rethink: ^1.0.0
 ```
+
+`package:rethinkdb_driver` will be installed as well.
 
 # Usage
 This library exposes one class: `RethinkService`. By default, these services will even
@@ -50,7 +52,7 @@ main() async {
 ```
 
 ## RethinkService
-This class interacts with a `Table` (from `package:rethinkdb_driver`) and serializes data to and from Maps.
+This class interacts with a `Query` (usually a table) and serializes data to and from Maps.
 
 ## RethinkTypedService<T>
 Does the same as above, but serializes to and from a target class using `package:json_god` and its support for reflection.
