@@ -1,7 +1,7 @@
 # angel_client
 
 [![pub 1.0.0](https://img.shields.io/badge/pub-1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_client)
-![build status](https://travis-ci.org/angel-dart/client.svg)
+[![build status](https://travis-ci.org/angel-dart/client.svg)](https://travis-ci.org/angel-dart/client)
 
 Client library for the Angel framework.
 This library provides virtually the same API as an Angel server.
