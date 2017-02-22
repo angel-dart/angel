@@ -1,7 +1,7 @@
 # angel_static
 
-![version 1.1.1](https://img.shields.io/badge/version-1.1.1-red.svg)
-![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)
+[![version 1.1.2](https://img.shields.io/badge/pub-1.1.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_static)
+[![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)](https://travis-ci.org/angel-dart/static)
 
 Static server middleware for Angel.
 
@@ -10,8 +10,7 @@ In `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    angel_framework: ^1.0.0-dev
-    angel_static: ^1.1.0-dev
+    angel_static: ^1.1.0
 ```
 
 # Usage
@@ -41,3 +40,4 @@ The `VirtualDirectory` API accepts a few named parameters:
 - **debug**: Print verbose debug output.
 - **callback**: Runs before sending a file to a client. Use this to set headers, etc. If it returns anything other than `null` or `true`,
 then the callback's result will be sent to the user, instead of the file contents.
+- **streamToIO**: If set to `true`, files will be streamed to `res.io`, instead of added to `res.buffer`.. Default is `false`.

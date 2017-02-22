@@ -25,7 +25,7 @@ String _pathify(String path) {
   return p;
 }
 
-class VirtualDirectory {
+class VirtualDirectory implements AngelPlugin {
   final bool debug;
   String _prefix;
   Directory _source;
@@ -34,12 +34,16 @@ class VirtualDirectory {
   final List<String> indexFileNames;
   final String publicPath;
 
+  /// If set to `true`, files will be streamed to `res.io`, instead of added to `res.buffer`.
+  final bool streamToIO;
+
   VirtualDirectory(
       {Directory source,
       this.debug: false,
       this.indexFileNames: const ['index.html'],
       this.publicPath: '/',
-      this.callback}) {
+      this.callback,
+      this.streamToIO: false}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
 
     if (source != null) {
@@ -56,9 +60,46 @@ class VirtualDirectory {
     if (debug) print(msg);
   }
 
-  call(AngelBase app) async => serve(app);
+  call(Angel app) async => serve(app);
 
-  Future<bool> sendFile(
+  void serve(Router router) {
+    _printDebug('Source directory: ${source.absolute.path}');
+    _printDebug('Public path prefix: "$_prefix"');
+    router.get('$publicPath/*',
+        (RequestContext req, ResponseContext res) async {
+      var path = req.path.replaceAll(_straySlashes, '');
+      return servePath(path, req, res);
+    });
+  }
+
+  servePath(String path, RequestContext req, ResponseContext res) async {
+    if (_prefix.isNotEmpty) {
+      path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
+    }
+
+    if (path.isEmpty) path = '.';
+
+    var absolute = source.absolute.uri.resolve(path).toFilePath();
+    var stat = await FileStat.stat(absolute);
+    return await serveStat(absolute, stat, req, res);
+  }
+
+  Future<bool> serveStat(String absolute, FileStat stat, RequestContext req,
+      ResponseContext res) async {
+    if (stat.type == FileSystemEntityType.NOT_FOUND)
+      return true;
+    else if (stat.type == FileSystemEntityType.DIRECTORY)
+      return await serveDirectory(new Directory(absolute), req, res);
+    else if (stat.type == FileSystemEntityType.FILE)
+      return await serveFile(new File(absolute), req, res);
+    else if (stat.type == FileSystemEntityType.LINK) {
+      var link = new Link(absolute);
+      return await servePath(await link.resolveSymbolicLinks(), req, res);
+    } else
+      return true;
+  }
+
+  Future<bool> serveFile(
       File file, RequestContext req, ResponseContext res) async {
     _printDebug('Sending file ${file.absolute.path}...');
     _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path)}');
@@ -71,44 +112,24 @@ class VirtualDirectory {
     }
 
     res.headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-    await res.streamFile(file);
+
+    if (streamToIO == true)
+      await res.streamFile(file);
+    else
+      await res.sendFile(file);
     return false;
   }
 
-  void serve(Router router) {
-    _printDebug('Source directory: ${source.absolute.path}');
-    _printDebug('Public path prefix: "$_prefix"');
-    router.get('$publicPath/*',
-        (RequestContext req, ResponseContext res) async {
-      var path = req.path.replaceAll(_straySlashes, '');
-      return serveFile(path, req, res);
-    });
-  }
-
-  serveFile(String path, RequestContext req, ResponseContext res) async {
-    if (_prefix.isNotEmpty) {
-      path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
-    }
-
-    final file = new File.fromUri(source.absolute.uri.resolve(path));
-    _printDebug('Attempting to statically serve file: ${file.absolute.path}');
-
-    if (await file.exists()) {
-      return sendFile(file, req, res);
-    } else {
-      // Try to resolve index
-      if (path.isEmpty) {
-        for (String indexFileName in indexFileNames) {
-          final index =
-              new File.fromUri(source.absolute.uri.resolve(indexFileName));
-          if (await index.exists()) {
-            return await sendFile(index, req, res);
-          }
-        }
-      } else {
-        _printDebug('File "$path" does not exist, and is not an index.');
-        return true;
+  Future<bool> serveDirectory(
+      Directory directory, RequestContext req, ResponseContext res) async {
+    for (String indexFileName in indexFileNames) {
+      final index =
+          new File.fromUri(directory.absolute.uri.resolve(indexFileName));
+      if (await index.exists()) {
+        return await serveFile(index, req, res);
       }
     }
+
+    return true;
   }
 }

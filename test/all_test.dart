@@ -42,6 +42,12 @@ main() {
     expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
   });
 
+  test('can serve child directories', () async {
+    var response = await client.get("$url/nested");
+    expect(response.body, equals("Bird"));
+    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
+  });
+
   test('non-existent files are skipped', () async {
     var response = await client.get("$url/nonexist.ent");
     expect(response.body, equals('"Fallback"'));
