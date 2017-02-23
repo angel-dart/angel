@@ -127,19 +127,25 @@ class RethinkService extends Service {
 
       if (type == 'add') {
         // Create
-        hookedService.fire(HookedServiceEvent.CREATED, newVal);
+        hookedService.fireEvent(
+            hookedService.afterCreated,
+            new HookedServiceEvent(
+                true, null, null, this, HookedServiceEvent.CREATED,
+                result: newVal));
       } else if (type == 'change') {
         // Update
-        hookedService.fire(HookedServiceEvent.UPDATED, newVal, (e) {
-          e
-            ..id = oldVal['id']
-            ..data = newVal;
-        });
+        hookedService.fireEvent(
+            hookedService.afterCreated,
+            new HookedServiceEvent(
+                true, null, null, this, HookedServiceEvent.UPDATED,
+                result: newVal, id: oldVal['od'], data: newVal));
       } else if (type == 'remove') {
         // Remove
-        hookedService.fire(HookedServiceEvent.CREATED, oldVal, (e) {
-          e.id = oldVal['id'];
-        });
+        hookedService.fireEvent(
+            hookedService.afterCreated,
+            new HookedServiceEvent(
+                true, null, null, this, HookedServiceEventREMOVED,
+                result: oldVal, id: oldVal['id']));
       }
     });
   }
