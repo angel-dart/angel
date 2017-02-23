@@ -5,6 +5,7 @@ import 'package:merge_map/merge_map.dart';
 import '../util.dart';
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
+import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
 import 'routable.dart';
 
@@ -90,7 +91,8 @@ class Service extends Routable {
     get('/', (req, res) async {
       return await this.index(mergeMap([
         {'query': req.query},
-        restProvider
+        restProvider,
+        req.serviceParams
       ]));
     },
         middleware: []
@@ -104,7 +106,8 @@ class Service extends Routable {
             req.body,
             mergeMap([
               {'query': req.query},
-              restProvider
+              restProvider,
+              req.serviceParams
             ])),
         middleware: []
           ..addAll(handlers)
@@ -119,7 +122,8 @@ class Service extends Routable {
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},
-              restProvider
+              restProvider,
+              req.serviceParams
             ])),
         middleware: []
           ..addAll(handlers)
@@ -133,7 +137,8 @@ class Service extends Routable {
             req.body,
             mergeMap([
               {'query': req.query},
-              restProvider
+              restProvider,
+              req.serviceParams
             ])),
         middleware: []
           ..addAll(handlers)
@@ -148,7 +153,8 @@ class Service extends Routable {
             req.body,
             mergeMap([
               {'query': req.query},
-              restProvider
+              restProvider,
+              req.serviceParams
             ])),
         middleware: []
           ..addAll(handlers)
@@ -162,11 +168,15 @@ class Service extends Routable {
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},
-              restProvider
+              restProvider,
+              req.serviceParams
             ])),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
   }
+
+  /// Invoked when this service is wrapped within a [HookedService].
+  void onHooked(HookedService hookedService) {}
 }

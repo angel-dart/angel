@@ -111,6 +111,9 @@ class Routable extends Router {
           .trim()
           .replaceAll(new RegExp(r'(^/+)|(/+$)'), '')] = service;
       service.addRoutes();
+
+      if (_router is HookedService && _router != router)
+        router.onHooked(_router);
     }
 
     final handlers = [];

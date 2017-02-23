@@ -10,6 +10,7 @@ export 'base_plugin.dart';
 export 'controller.dart';
 export 'fatal_error.dart';
 export 'hooked_service.dart';
+export 'map_service.dart';
 export 'metadata.dart';
 export 'memory_service.dart';
 export 'request_context.dart';
@@ -17,4 +18,5 @@ export 'response_context.dart';
 export 'routable.dart';
 export 'server.dart';
 export 'service.dart';
+export 'typed_service.dart';
 

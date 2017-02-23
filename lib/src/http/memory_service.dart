@@ -16,7 +16,10 @@ int _getId(id) {
   }
 }
 
+/// DEPRECATED: Use MapService instead.
+/// 
 /// An in-memory [Service].
+@deprecated
 class MemoryService<T> extends Service {
   /// If set to `true`, clients can remove all items by passing a `null` `id` to `remove`.
   ///

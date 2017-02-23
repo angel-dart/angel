@@ -19,12 +19,15 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel();
+    app = new Angel()
+      ..use('/todos', new TypedService<Todo>(new MapService()))
+      ..fatalErrorStream.listen((e) {
+        print('Whoops: ${e.error}');
+        print(e.stack);
+      });
+
+    await app.startServer();
     client = new http.Client();
-    Service todos = new MemoryService<Todo>();
-    app.use('/todos', todos);
-    print(app.service("todos"));
-    await app.startServer(null, 0);
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
   });
 
@@ -42,20 +45,17 @@ main() {
       expect(response.body, equals('[]'));
       for (int i = 0; i < 3; i++) {
         String postData = god.serialize({'text': 'Hello, world!'});
-        await client.post(
-            "$url/todos", headers: headers, body: postData);
+        await client.post("$url/todos", headers: headers, body: postData);
       }
       response = await client.get("$url/todos");
       print(response.body);
-      expect(god
-          .deserialize(response.body)
-          .length, equals(3));
+      expect(god.deserialize(response.body).length, equals(3));
     });
 
     test('can create data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      var response = await client.post(
-          "$url/todos", headers: headers, body: postData);
+      var response =
+          await client.post("$url/todos", headers: headers, body: postData);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));
@@ -63,10 +63,8 @@ main() {
 
     test('can fetch data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post(
-          "$url/todos", headers: headers, body: postData);
-      var response = await client.get(
-          "$url/todos/0");
+      await client.post("$url/todos", headers: headers, body: postData);
+      var response = await client.get("$url/todos/0");
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));
@@ -74,11 +72,10 @@ main() {
 
     test('can modify data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post(
-          "$url/todos", headers: headers, body: postData);
+      await client.post("$url/todos", headers: headers, body: postData);
       postData = god.serialize({'text': 'modified'});
-      var response = await client.patch(
-          "$url/todos/0", headers: headers, body: postData);
+      var response =
+          await client.patch("$url/todos/0", headers: headers, body: postData);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('modified'));
@@ -86,11 +83,10 @@ main() {
 
     test('can overwrite data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post(
-          "$url/todos", headers: headers, body: postData);
+      await client.post("$url/todos", headers: headers, body: postData);
       postData = god.serialize({'over': 'write'});
-      var response = await client.post(
-          "$url/todos/0", headers: headers, body: postData);
+      var response =
+          await client.post("$url/todos/0", headers: headers, body: postData);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals(null));
@@ -99,18 +95,14 @@ main() {
 
     test('can delete data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post(
-          "$url/todos", headers: headers, body: postData);
-      var response = await client.delete(
-          "$url/todos/0");
+      await client.post("$url/todos", headers: headers, body: postData);
+      var response = await client.delete("$url/todos/0");
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));
       response = await client.get("$url/todos");
       print(response.body);
-      expect(god
-          .deserialize(response.body)
-          .length, equals(0));
+      expect(god.deserialize(response.body).length, equals(0));
     });
   });
 }

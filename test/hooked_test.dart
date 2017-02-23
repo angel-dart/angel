@@ -20,7 +20,7 @@ main() {
   setUp(() async {
     app = new Angel();
     client = new http.Client();
-    app.use('/todos', new MemoryService<Todo>());
+    app.use('/todos', new TypedService<Todo>(new MapService()));
     app.use('/books', new BookService());
     Todos = app.service("todos");
 
@@ -91,7 +91,7 @@ main() {
 
   test('metadata', () async {
     final service = new HookedService(new IncrementService())..addHooks();
-    expect(service.inner, isNot(new isInstanceOf<MemoryService>()));
+    expect(service.inner, isNot(new isInstanceOf<MapService>()));
     IncrementService.TIMES = 0;
     await service.index();
     expect(IncrementService.TIMES, equals(2));

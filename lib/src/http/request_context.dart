@@ -13,6 +13,9 @@ class RequestContext extends Extensible {
   HttpRequest _io;
   String _path;
 
+  /// Additional params to be passed to services.
+  final Map serviceParams = {};
+
   /// The [Angel] instance that is responding to this request.
   AngelBase app;
 
