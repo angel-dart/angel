@@ -48,52 +48,6 @@ Map _removeSensitive(Map data) {
 
 const List<String> _NO_QUERY = const ['__requestctx', '__responsectx'];
 
-SelectorBuilder _makeQuery([Map params_]) {
-  Map params = params_ ?? {};
-  params = params..remove('provider');
-  SelectorBuilder result = where.exists('_id');
-
-  // You can pass a SelectorBuilder as 'query';
-  if (params['query'] is SelectorBuilder) {
-    return params['query'];
-  }
-
-  for (var key in params.keys) {
-    if (key == r'$sort' || key == r'$query') {
-      if (params[key] is Map) {
-        // If they send a map, then we'll sort by every key in the map
-        for (String fieldName in params[key].keys.where((x) => x is String)) {
-          var sorter = params[key][fieldName];
-          if (sorter is num) {
-            result = result.sortBy(fieldName, descending: sorter == -1);
-          } else if (sorter is String) {
-            result = result.sortBy(fieldName, descending: sorter == "-1");
-          } else if (sorter is SelectorBuilder) {
-            result = result.and(sorter);
-          }
-        }
-      } else if (params[key] is String && key == r'$sort') {
-        // If they send just a string, then we'll sort
-        // by that, ascending
-        result = result.sortBy(params[key]);
-      }
-    } else if (key == 'query') {
-      Map query = params[key];
-      query.forEach((key, v) {
-        var value = v is Map ? _filterNoQuery(v) : v;
-
-        if (!_NO_QUERY.contains(key) &&
-            value is! RequestContext &&
-            value is! ResponseContext) {
-          result = result.and(where.eq(key, value));
-        }
-      });
-    }
-  }
-
-  return result;
-}
-
 Map _filterNoQuery(Map data) {
   return data.keys.fold({}, (map, key) {
     var value = data[key];
