@@ -1,5 +1,7 @@
 part of angel_mongo.services;
 
+/// Use a normal TypedService instead.
+@deprecated
 class MongoTypedService<T> extends MongoService {
   MongoTypedService(DbCollection collection, {bool allowRemoveAll, bool debug})
       : super(collection,

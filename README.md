@@ -1,6 +1,6 @@
 # angel_mongo
 
-[![version 1.1.2](https://img.shields.io/badge/pub-1.1.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_mongo)
+[![version 1.1.3](https://img.shields.io/badge/pub-1.1.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_mongo)
 [![build status](https://travis-ci.org/angel-dart/mongo.svg?branch=master)](https://travis-ci.org/angel-dart/mongo)
 
 MongoDB-enabled services for the Angel framework.
@@ -14,7 +14,7 @@ dependencies:
 ```
 
 # Usage
-This library exposes two main classes: `MongoService` and `MongoTypedService<T>`.
+This library exposes one main class: `MongoService`.
 
 ## Model
 `Model` is class with no real functionality; however, it represents a basic document, and your services should host inherited classes.
@@ -30,7 +30,7 @@ main() async {
     Db db = new Db('mongodb://localhost:27017/local');
     await db.open();
     
-    app.use('/api/users', new MongoTypedService<User>(db.collection("users")));
+    app.use('/api/users', new TypedService<User>(new MongoService(db.collection("users"))));
     
     app.service('api/users').afterCreated.listen((event) {
         print("New user: ${event.result}");
@@ -40,9 +40,6 @@ main() async {
 
 ## MongoService
 This class interacts with a `DbCollection` (from mongo_dart) and serializing data to and from Maps.
-
-## MongoTypedService<T>
-Does the same as above, but serializes to and from a target class using json_god and its support for reflection.
 
 ## Querying
 You can query these services as follows:
