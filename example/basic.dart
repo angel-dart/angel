@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/common.dart';
 import 'package:angel_auth_oauth2/angel_auth_oauth2.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 
@@ -15,7 +16,7 @@ const Map<String, String> OAUTH2_CONFIG = const {
 };
 
 main() async {
-  var app = new Angel()..use('/users', new MemoryService<User>());
+  var app = new Angel()..use('/users', new TypedService<User>(new MapService()));
 
   var auth = new AngelAuth(jwtKey: 'oauth2 example secret', allowCookie: false);
   auth.deserializer =
@@ -45,10 +46,10 @@ main() async {
   print('Listening on http://${server.address.address}:${server.port}');
 }
 
-class User extends MemoryModel {
+class User extends Model {
   String example_siteId;
 
-  User({int id, this.example_siteId}) {
+  User({String id, this.example_siteId}) {
     this.id = id;
   }
 }

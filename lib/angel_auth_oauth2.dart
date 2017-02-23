@@ -8,7 +8,7 @@ import 'package:angel_validate/angel_validate.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 
 /// Loads a user profile via OAuth2.
-typedef Future ProfileLoader(oauth2.Client client);
+typedef Future OAuth2Verifier(oauth2.Client client);
 
 final Validator OAUTH2_OPTIONS_SCHEMA = new Validator({
   'key*': isString,
@@ -23,11 +23,11 @@ final Validator OAUTH2_OPTIONS_SCHEMA = new Validator({
   'scopes': "'scopes' must be an Iterable of strings. You provided: {{value}}"
 });
 
-class AngelAuthOauth2Options {
+class AngelAuthOAuth2Options {
   String key, secret, authorizationEndpoint, tokenEndpoint, callback;
   Iterable<String> scopes;
 
-  AngelAuthOauth2Options(
+  AngelAuthOAuth2Options(
       {this.key,
       this.secret,
       this.authorizationEndpoint,
@@ -37,8 +37,8 @@ class AngelAuthOauth2Options {
     this.scopes = scopes ?? [];
   }
 
-  factory AngelAuthOauth2Options.fromJson(Map json) =>
-      new AngelAuthOauth2Options(
+  factory AngelAuthOAuth2Options.fromJson(Map json) =>
+      new AngelAuthOAuth2Options(
           key: json['key'],
           secret: json['secret'],
           authorizationEndpoint: json['authorizationEndpoint'],
@@ -60,8 +60,8 @@ class AngelAuthOauth2Options {
 
 class OAuth2Strategy implements AuthStrategy {
   String _name;
-  AngelAuthOauth2Options _options;
-  final ProfileLoader profileLoader;
+  AngelAuthOAuth2Options _options;
+  final OAuth2Verifier verifier;
 
   @override
   String get name => _name;
@@ -69,12 +69,12 @@ class OAuth2Strategy implements AuthStrategy {
   @override
   set name(String value) => _name = name;
 
-  /// [options] can be either a `Map` or an instance of [AngelAuthOauth2Options].
-  OAuth2Strategy(this._name, options, this.profileLoader) {
-    if (options is AngelAuthOauth2Options)
+  /// [options] can be either a `Map` or an instance of [AngelAuthOAuth2Options].
+  OAuth2Strategy(this._name, options, this.verifier) {
+    if (options is AngelAuthOAuth2Options)
       _options = options;
     else if (options is Map)
-      _options = new AngelAuthOauth2Options.fromJson(
+      _options = new AngelAuthOAuth2Options.fromJson(
           OAUTH2_OPTIONS_SCHEMA.enforce(options));
     else
       throw new ArgumentError('Invalid OAuth2 options: $options');
@@ -106,7 +106,7 @@ class OAuth2Strategy implements AuthStrategy {
     await grant.getAuthorizationUrl(Uri.parse(_options.callback),
         scopes: _options.scopes);
     var client = await grant.handleAuthorizationResponse(req.query);
-    return await profileLoader(client);
+    return await verifier(client);
   }
 
   @override
