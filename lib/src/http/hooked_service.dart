@@ -494,15 +494,15 @@ class HookedService extends Service {
     }
 
     var ev = new HookedServiceEvent(true, null, null, this, eventName);
-    return await fireEvent(dispatcher, ev);
+    return await fireEvent(dispatcher, ev, callback);
   }
 
   /// Sends an arbitrary event down the hook chain.
   Future<HookedServiceEvent> fireEvent(
       HookedServiceEventDispatcher dispatcher, HookedServiceEvent event,
       [HookedServiceEventListener callback]) async {
-    if (callback != null && event._canceled != true) await callback(ev);
-    return await dispatcher._emit(ev);
+    if (callback != null && event?._canceled != true) await callback(event);
+    return await dispatcher._emit(event);
   }
 }
 
@@ -565,7 +565,7 @@ class HookedServiceEventDispatcher {
 
   /// Fires an event, and returns it once it is either canceled, or all listeners have run.
   Future<HookedServiceEvent> _emit(HookedServiceEvent event) async {
-    if (event._canceled != true) {
+    if (event?._canceled != true) {
       for (var listener in listeners) {
         await listener(event);
 
