@@ -13,7 +13,7 @@ class AuthController extends Controller {
   /// Attempt to log a user in
   verifier(UserService Users) {
     return (String username, String password) async {
-      List<User> users = await Users.index({'username': username});
+      List<User> users = await Users.index({'query': {'username': username}});
 
       if (users.isNotEmpty) {
         var hash = hashPassword(password);
