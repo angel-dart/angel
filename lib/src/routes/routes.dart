@@ -23,7 +23,7 @@ configureAfter(Angel app) async {
   // Set our application up to handle different errors.
   var errors = new ErrorHandler(handlers: {
     404: (req, res) async =>
-        res.render('error', {'message': 'No file exists at /${req.path}.'}),
+        res.render('error', {'message': 'No file exists at ${req.path}.'}),
     500: (req, res) async => res.render('error', {'message': req.error.message})
   });
 
