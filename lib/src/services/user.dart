@@ -2,6 +2,7 @@ import 'package:angel_common/angel_common.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:mongo_dart/mongo_dart.dart';
 import '../models/user.dart';
+import '../validators/user.dart';
 export '../models/user.dart';
 
 configureServer(Db db) {
@@ -12,14 +13,7 @@ configureServer(Db db) {
     app.container.singleton(service.inner);
 
     service.beforeCreated
-      ..listen(validateEvent(
-          new Validator({
-            'username*': [isString, isNotEmpty],
-            'password*': [isString, isNotEmpty],
-            'email*': [isString, isNotEmpty, isEmail],
-          }),
-          errorMessage:
-              'User must have a username, e-mail address and password.'))
+      ..listen(validateEvent(CREATE_USER))
       ..listen((e) {
         e.data['password'] = hashPassword(e.data['password']);
       });
@@ -35,10 +29,10 @@ String hashPassword(String password) =>
 /// Here, we extended the base service class. This allows to only expose
 /// specific methods, and also allows more freedom over things such as validation.
 class UserService extends Service {
-  MongoTypedService<User> _inner;
+  TypedService<User> _inner;
 
   UserService(DbCollection collection) : super() {
-    _inner = new MongoTypedService<User>(collection);
+    _inner = new TypedService<User>(new MongoService(collection));
   }
 
   @override
