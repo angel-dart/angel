@@ -11,7 +11,7 @@ class AuthController extends Controller {
   serializer(User user) async => user.id;
 
   /// Attempt to log a user in
-  verifier(UserService userService) {
+  LocalAuthVerifier localVerifier(UserService userService) {
     return (String username, String password) async {
       List<User> users = await userService.index({'query':{'username': username}});
 
@@ -30,7 +30,7 @@ class AuthController extends Controller {
       ..serializer = serializer
       ..deserializer = deserializer
       ..strategies.add(
-          new LocalAuthStrategy(verifier(app.container.make(UserService))));
+          new LocalAuthStrategy(localVerifier(app.container.make(UserService))));
 
     await super.call(app);
     await app.configure(auth);
