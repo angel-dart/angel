@@ -11,9 +11,9 @@ class AuthController extends Controller {
   serializer(User user) async => user.id;
 
   /// Attempt to log a user in
-  verifier(UserService Users) {
+  verifier(UserService userService) {
     return (String username, String password) async {
-      List<User> users = await Users.index({'query':{'username': username}});
+      List<User> users = await userService.index({'query':{'username': username}});
 
       if (users.isNotEmpty) {
         var hash = hashPassword(password);
