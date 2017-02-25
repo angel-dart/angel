@@ -3,7 +3,7 @@ library angel.routes.controllers.auth;
 import 'package:angel_common/angel_common.dart';
 import '../../services/user.dart';
 
-@Expose('/api/auth')
+@Expose('/auth')
 class AuthController extends Controller {
   AngelAuth auth;
 
@@ -36,7 +36,7 @@ class AuthController extends Controller {
     await app.configure(auth);
   }
 
-  @Expose('/login', method: 'POST')
+  @Expose('/local', method: 'POST')
   login() => auth.authenticate('local');
 
   @Expose('/register', method: 'POST')
