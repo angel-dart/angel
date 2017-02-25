@@ -37,7 +37,7 @@ class AuthController extends Controller {
   }
 
   @Expose('/login', method: 'POST')
-  login() async => auth.authenticate('local');
+  login() => auth.authenticate('local');
 
   @Expose('/register', method: 'POST')
   register(RequestContext req, UserService userService) async {
