@@ -24,8 +24,11 @@ typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 typedef Future AngelErrorHandler(
     AngelHttpException err, RequestContext req, ResponseContext res);
 
-/// A function that configures an [AngelBase] server in some way.
-typedef Future AngelConfigurer(AngelBase app);
+/// A function that configures an [Angel] server in some way.
+typedef Future AngelConfigurer(Angel app);
+
+/// A function that takes no parameters.
+typedef ParameterlessFunction();
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
@@ -153,6 +156,8 @@ class Angel extends AngelBase {
 
       if (result is bool)
         return result == true;
+      else if (result is RequestHandler)
+        return await executeHandler(result, req, res);
       else if (result != null) {
         res.serialize(result);
         return false;
@@ -161,7 +166,9 @@ class Angel extends AngelBase {
     }
 
     if (handler is RequestHandler) {
-      await handler(req, res);
+      var result = await handler(req, res);
+      if (result is RequestHandler)
+        return await executeHandler(result, req, res);
       return res.isOpen;
     }
 
@@ -169,6 +176,8 @@ class Angel extends AngelBase {
       var result = await handler;
       if (result is bool)
         return result == true;
+      else if (result is RequestHandler)
+        return await executeHandler(result, req, res);
       else if (result != null) {
         res.serialize(result);
         return false;
@@ -180,6 +189,8 @@ class Angel extends AngelBase {
       var result = await runContained(handler, req, res);
       if (result is bool)
         return result == true;
+      else if (result is RequestHandler)
+        return await executeHandler(result, req, res);
       else if (result != null) {
         res.serialize(result);
         return false;
@@ -479,8 +490,10 @@ class Angel extends AngelBase {
 
 /// Predetermines what needs to be injected for a handler to run.
 InjectionRequest preInject(Function handler) {
-  ClosureMirror closureMirror = reflect(handler);
   var injection = new InjectionRequest();
+  if (handler is ParameterlessFunction) return injection;
+
+  ClosureMirror closureMirror = reflect(handler);
 
   // Load parameters
   for (var parameter in closureMirror.function.parameters) {

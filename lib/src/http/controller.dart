@@ -39,7 +39,7 @@ class Controller {
   Controller({this.debug: false});
 
   Future call(Angel app) async {
-    _app = app;
+    _app = app..container.singleton(this);
 
     // Load global expose decl
     ClassMirror classMirror = reflectClass(this.runtimeType);

@@ -64,7 +64,7 @@ class MapService extends Service {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
-              'MapService does not support `create` with ${data.runtimeType}.');
+              'MapService does not support `modify` with ${data.runtimeType}.');
     var item = await read(id);
     return item
       ..addAll(data)
@@ -76,7 +76,7 @@ class MapService extends Service {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
-              'MapService does not support `create` with ${data.runtimeType}.');
+              'MapService does not support `update` with ${data.runtimeType}.');
     if (!items.any(_matchesId(id)))
       throw new AngelHttpException.notFound(
           message: 'No record found for ID $id');

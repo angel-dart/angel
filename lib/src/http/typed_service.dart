@@ -10,7 +10,7 @@ class TypedService<T> extends Service {
   TypedService(this.inner) : super() {
     if (!reflectType(T).isAssignableTo(reflectType(Model)))
       throw new Exception(
-          "If you specify a type for MongoService, it must extend Model.");
+          "If you specify a type for TypedService, it must extend Model.");
   }
 
   deserialize(x) {
