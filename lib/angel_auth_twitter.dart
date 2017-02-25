@@ -5,18 +5,23 @@ import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
+import 'package:http/http.dart' as http;
 import 'package:random_string/random_string.dart' as rs;
+import 'package:twit/twit.dart';
 
 const String _ENDPOINT = "https://api.twitter.com";
+
+typedef TwitterAuthVerifier(Twit twit);
 
 class TwitterStrategy extends AuthStrategy {
   HttpClient _client = new HttpClient();
   final Map<String, dynamic> config;
+  final TwitterAuthVerifier verifier;
 
   @override
   String get name => 'twitter';
 
-  TwitterStrategy({this.config: const {}});
+  TwitterStrategy(this.verifier, {this.config: const {}});
 
   String _createSignature(
       String method, String uriString, Map<String, String> params,
@@ -83,7 +88,7 @@ class TwitterStrategy extends AuthStrategy {
     var body = await rs.transform(UTF8.decoder).join();
 
     if (rs.statusCode != HttpStatus.OK) {
-      throw new AngelHttpException.NotAuthenticated(
+      throw new AngelHttpException.notAuthenticated(
           message: 'Twitter authentication error: $body');
     }
 
@@ -126,6 +131,7 @@ class TwitterStrategy extends AuthStrategy {
 
   @override
   Future<bool> canLogout(RequestContext req, ResponseContext res) async => true;
+
   @override
   authenticate(RequestContext req, ResponseContext res,
       [AngelAuthOptions options]) async {
@@ -145,13 +151,14 @@ class TwitterStrategy extends AuthStrategy {
     var verifier = req.query['oauth_verifier'];
     var loginData = await createAccessToken(token, verifier);
 
-    var oauthToken = loginData['oauth_token'];
-    var oauthTokenSecret = loginData['oauth_token_secret'];
+    var credentials = new TwitterCredentials(
+      consumerKey: config['key'],
+      consumerSecret: config['secret'],
+      accessToken: loginData['oauth_token'],
+      accessTokenSecret: loginData['oauth_token_secret']
+    );
 
-    var request = await _prepRequest('/1.1/account/verify_credentials.json',
-        accessToken: oauthToken, tokenSecret: oauthTokenSecret);
-    var rs = await request.close();
-    var body = await rs.transform(UTF8.decoder).join();
-    return new Extensible()..properties.addAll(JSON.decode(body));
+    var twit = new Twit(credentials, new http.Client());
+    return await this.verifier(twit);
   }
 }
