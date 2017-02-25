@@ -103,7 +103,7 @@ class RequestContext extends Extensible {
   /// Grabs an object by key or type from [params], [injections], or
   /// [app].container. Use this to perform dependency injection
   /// within a service hook.
-  grab(key) {
+  T grab<T>(key) {
     if (params.containsKey(key))
       return params[key];
     else if (injections.containsKey(key))

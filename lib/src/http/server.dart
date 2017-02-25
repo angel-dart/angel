@@ -27,9 +27,6 @@ typedef Future AngelErrorHandler(
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
 
-/// A function that takes no parameters.
-typedef ParameterlessFunction();
-
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
   StreamController<HttpRequest> _afterProcessed =
@@ -491,9 +488,10 @@ class Angel extends AngelBase {
 /// Predetermines what needs to be injected for a handler to run.
 InjectionRequest preInject(Function handler) {
   var injection = new InjectionRequest();
-  if (handler is ParameterlessFunction) return injection;
 
   ClosureMirror closureMirror = reflect(handler);
+
+  if (closureMirror.function.parameters.isEmpty) return injection;
 
   // Load parameters
   for (var parameter in closureMirror.function.parameters) {
