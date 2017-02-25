@@ -9,7 +9,6 @@ import 'plugins/plugins.dart' as plugins;
 
 /// This is a perfect place to include configuration and load plug-ins.
 configureServer(Angel app) async {
-
   await app.configure(loadConfigurationFile());
   var db = new Db(app.mongo_db);
   await db.open();
