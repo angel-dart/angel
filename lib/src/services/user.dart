@@ -28,12 +28,9 @@ String hashPassword(String password) =>
 ///
 /// Here, we extended the base service class. This allows to only expose
 /// specific methods, and also allows more freedom over things such as validation.
-class UserService extends Service {
-  TypedService<User> _inner;
+class UserService extends TypedService<User> {
 
-  UserService(DbCollection collection) : super() {
-    _inner = new TypedService<User>(new MongoService(collection));
-  }
+  UserService(DbCollection collection) : super(new MongoService(collection));
 
   @override
   index([Map params]) {
@@ -42,7 +39,7 @@ class UserService extends Service {
       throw new AngelHttpException.forbidden();
     }
 
-    return _inner.index(params);
+    return super.index(params);
   }
 
   @override
@@ -52,9 +49,6 @@ class UserService extends Service {
       throw new AngelHttpException.forbidden();
     }
 
-    return _inner.create(data, params);
+    return super.create(data, params);
   }
-
-  @override
-  read(id, [Map params]) => _inner.read(id, params);
 }
