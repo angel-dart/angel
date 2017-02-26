@@ -521,6 +521,11 @@ class HookedServiceEvent {
     this.result = result ?? this.result;
   }
 
+  /// Resolves a service from the application.
+  /// 
+  /// Shorthand for `e.service.app.service(...)`.
+  Service getService(Pattern path) => service.app.service(path);
+
   bool _canceled = false;
   String _eventName;
   var _id;

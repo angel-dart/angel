@@ -108,6 +108,8 @@ class RequestContext extends Extensible {
       return params[key];
     else if (injections.containsKey(key))
       return injections[key];
+    else if (properties.containsKey(key))
+      return properties[key];
     else if (key is Type) {
       try {
         return app.container.make(key);

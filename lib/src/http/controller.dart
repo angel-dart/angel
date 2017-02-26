@@ -148,6 +148,8 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
           args.add(req.params[requirement]);
         } else if (req.injections.containsKey(requirement))
           args.add(req.injections[requirement]);
+        else if (req.properties.containsKey(requirement))
+          args.add(req.properties[requirement]);
         else if (injection.optional.contains(requirement))
           args.add(null);
         else {

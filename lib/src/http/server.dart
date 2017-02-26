@@ -2,7 +2,6 @@ library angel_framework.http.server;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' show Random;
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
 import 'angel_base.dart';
@@ -39,7 +38,6 @@ class Angel extends AngelBase {
       new StreamController<Controller>.broadcast();
   final List<Angel> _children = [];
   Angel _parent;
-  final Random _rand = new Random.secure();
   ServerGenerator _serverGenerator = HttpServer.bind;
 
   final Map<dynamic, InjectionRequest> _preContained = {};
@@ -117,14 +115,6 @@ class Angel extends AngelBase {
     if (debug) print(x);
   }
 
-  String _randomString(int length) {
-    var codeUnits = new List.generate(length, (index) {
-      return _rand.nextInt(33) + 89;
-    });
-
-    return new String.fromCharCodes(codeUnits);
-  }
-
   /// Starts the server.
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
@@ -156,7 +146,9 @@ class Angel extends AngelBase {
       else if (result is RequestHandler)
         return await executeHandler(result, req, res);
       else if (result != null) {
-        res.serialize(result);
+        res.serialize(result,
+            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+                ContentType.JSON.mimeType);
         return false;
       } else
         return res.isOpen;
@@ -176,7 +168,9 @@ class Angel extends AngelBase {
       else if (result is RequestHandler)
         return await executeHandler(result, req, res);
       else if (result != null) {
-        res.serialize(result);
+        res.serialize(result,
+            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+                ContentType.JSON.mimeType);
         return false;
       } else
         return true;
@@ -189,7 +183,9 @@ class Angel extends AngelBase {
       else if (result is RequestHandler)
         return await executeHandler(result, req, res);
       else if (result != null) {
-        res.serialize(result);
+        res.serialize(result,
+            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+                ContentType.JSON.mimeType);
         return false;
       } else
         return true;
@@ -199,7 +195,9 @@ class Angel extends AngelBase {
       return await executeHandler(requestMiddleware[handler], req, res);
     }
 
-    res.serialize(handler);
+    res.serialize(handler,
+        contentType:
+            res.headers[HttpHeaders.CONTENT_TYPE] ?? ContentType.JSON.mimeType);
     return false;
   }
 
@@ -460,6 +458,17 @@ class Angel extends AngelBase {
   factory Angel.custom(ServerGenerator serverGenerator, {bool debug: false}) =>
       new Angel(debug: debug == true).._serverGenerator = serverGenerator;
 
+  factory Angel.fromSecurityContext(SecurityContext context,
+      {bool debug: false}) {
+    var app = new Angel(debug: debug == true);
+
+    app._serverGenerator = (InternetAddress address, int port) async {
+      return await HttpServer.bindSecure(address, port, context);
+    };
+
+    return app;
+  }
+
   /// Creates an HTTPS server.
   ///
   /// Provide paths to a certificate chain and server key (both .pem).
@@ -467,21 +476,14 @@ class Angel extends AngelBase {
   /// the server.
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
       {bool debug: false, String password}) {
-    var app = new Angel(debug: debug == true);
+    var certificateChain =
+        Platform.script.resolve(certificateChainPath).toFilePath();
+    var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
+    var serverContext = new SecurityContext();
+    serverContext.useCertificateChain(certificateChain);
+    serverContext.usePrivateKey(serverKey, password: password);
 
-    app._serverGenerator = (InternetAddress address, int port) async {
-      var certificateChain =
-          Platform.script.resolve(certificateChainPath).toFilePath();
-      var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
-      var serverContext = new SecurityContext();
-      serverContext.useCertificateChain(certificateChain);
-      serverContext.usePrivateKey(serverKey,
-          password: password ?? app._randomString(8));
-
-      return await HttpServer.bindSecure(address, port, serverContext);
-    };
-
-    return app;
+    return new Angel.fromSecurityContext(serverContext);
   }
 }
 
