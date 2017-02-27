@@ -1,6 +1,6 @@
 # angel_static
 
-[![version 1.1.2](https://img.shields.io/badge/pub-1.1.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_static)
+[![version 1.1.3](https://img.shields.io/badge/pub-1.1.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_static)
 [![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)](https://travis-ci.org/angel-dart/static)
 
 Static server middleware for Angel.
@@ -24,7 +24,13 @@ import 'package:angel_static/angel_static.dart';
 
 main() async {
   final app = new Angel();
+
+  // Normal static server
   await app.configure(new VirtualDirectory(source: new Directory('./public')));
+
+  // Send Cache-Control, ETag, etc. as well
+  await app.configure(new CachingVirtualDirectory(source: new Directory('./public')));
+
   await app.startServer();
 }
 ```

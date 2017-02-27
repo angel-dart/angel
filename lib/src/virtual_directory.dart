@@ -25,13 +25,22 @@ String _pathify(String path) {
   return p;
 }
 
+/// A static server plug-in.
 class VirtualDirectory implements AngelPlugin {
   final bool debug;
   String _prefix;
   Directory _source;
+
+  /// The directory to serve files from.
   Directory get source => _source;
+
+  /// An optional callback to run before serving files.
   final StaticFileCallback callback;
-  final List<String> indexFileNames;
+
+  /// Filenames to be resolved within directories as indices.
+  final Iterable<String> indexFileNames;
+
+  /// An optional public path to map requests to.
   final String publicPath;
 
   /// If set to `true`, files will be streamed to `res.io`, instead of added to `res.buffer`.
@@ -89,9 +98,9 @@ class VirtualDirectory implements AngelPlugin {
     if (stat.type == FileSystemEntityType.NOT_FOUND)
       return true;
     else if (stat.type == FileSystemEntityType.DIRECTORY)
-      return await serveDirectory(new Directory(absolute), req, res);
+      return await serveDirectory(new Directory(absolute), stat, req, res);
     else if (stat.type == FileSystemEntityType.FILE)
-      return await serveFile(new File(absolute), req, res);
+      return await serveFile(new File(absolute), stat, req, res);
     else if (stat.type == FileSystemEntityType.LINK) {
       var link = new Link(absolute);
       return await servePath(await link.resolveSymbolicLinks(), req, res);
@@ -100,7 +109,7 @@ class VirtualDirectory implements AngelPlugin {
   }
 
   Future<bool> serveFile(
-      File file, RequestContext req, ResponseContext res) async {
+      File file, FileStat stat, RequestContext req, ResponseContext res) async {
     _printDebug('Sending file ${file.absolute.path}...');
     _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path)}');
     res.statusCode = 200;
@@ -120,13 +129,13 @@ class VirtualDirectory implements AngelPlugin {
     return false;
   }
 
-  Future<bool> serveDirectory(
-      Directory directory, RequestContext req, ResponseContext res) async {
+  Future<bool> serveDirectory(Directory directory, FileStat stat,
+      RequestContext req, ResponseContext res) async {
     for (String indexFileName in indexFileNames) {
       final index =
           new File.fromUri(directory.absolute.uri.resolve(indexFileName));
       if (await index.exists()) {
-        return await serveFile(index, req, res);
+        return await serveFile(index, stat, req, res);
       }
     }
 
