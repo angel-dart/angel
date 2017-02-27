@@ -18,7 +18,9 @@ configureAfter(Angel app) async {
   // await app.configure(new PubServeLayer());
   
   // Static server at /web or /build/web, depending on if in production
-  await app.configure(new VirtualDirectory());
+  //
+  // In production, `Cache-Control` headers will also be enabled.
+  await app.configure(new CachingVirtualDirectory());
 
   // Set our application up to handle different errors.
   var errors = new ErrorHandler(handlers: {
