@@ -6,4 +6,5 @@ export 'src/auth_token.dart';
 export 'src/defs.dart';
 export 'src/options.dart';
 export 'src/plugin.dart';
+export 'src/popup_page.dart';
 export 'src/strategy.dart';
