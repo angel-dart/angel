@@ -8,7 +8,7 @@ import '../permissions.dart';
 HookedServiceEventListener variantPermission(
     createPermission(HookedServiceEvent e),
     {String errorMessage,
-    String userKey,
+    userKey,
     bool owner: false,
     getRoles(user),
     getId(user),

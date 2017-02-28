@@ -11,7 +11,7 @@ import 'is_server_side.dart';
 HookedServiceEventListener associateCurrentUser(
     {String idField,
     String ownerField,
-    String userKey,
+    userKey,
     String errorMessage,
     bool allowNullUserId: false,
     getId(user),

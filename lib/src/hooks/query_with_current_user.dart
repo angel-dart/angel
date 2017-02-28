@@ -10,7 +10,7 @@ import 'is_server_side.dart';
 HookedServiceEventListener queryWithCurrentUser(
     {String as,
     String idField,
-    String userKey,
+    userKey,
     String errorMessage,
     bool allowNullUserId: false,
     getId(user)}) {

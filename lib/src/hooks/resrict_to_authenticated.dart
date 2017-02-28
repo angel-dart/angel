@@ -4,7 +4,7 @@ import 'is_server_side.dart';
 
 /// Restricts the service method to authed users only.
 HookedServiceEventListener restrictToAuthenticated(
-    {String userKey, String errorMessage}) {
+    {userKey, String errorMessage}) {
   return (HookedServiceEvent e) async {
     var user = e.request?.grab(userKey ?? 'user');
 

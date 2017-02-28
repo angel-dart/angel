@@ -7,7 +7,7 @@ import 'is_server_side.dart';
 HookedServiceEventListener restrictToOwner(
     {String idField,
     String ownerField,
-    String userKey,
+    userKey,
     String errorMessage,
     getId(user),
     getOwner(obj)}) {
