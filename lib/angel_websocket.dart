@@ -1,6 +1,7 @@
 /// WebSocket plugin for Angel.
 library angel_websocket;
 
+const String ACTION_AUTHENTICATE = 'authenticate';
 const String ACTION_INDEX = 'index';
 const String ACTION_READ = 'read';
 const String ACTION_CREATE = 'create';
@@ -8,6 +9,7 @@ const String ACTION_MODIFY = 'modify';
 const String ACTION_UPDATE = 'update';
 const String ACTION_REMOVE = 'remove';
 
+const String EVENT_AUTHENTICATED = 'authenticated';
 const String EVENT_ERROR = 'error';
 const String EVENT_INDEXED = 'indexed';
 const String EVENT_READ = 'read';

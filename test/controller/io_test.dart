@@ -29,7 +29,7 @@ main() {
     url = 'ws://${server.address.address}:${server.port}/ws';
 
     client = new ws.WebSockets(url);
-    await client.connect();
+    await client.connect(timeout: new Duration(seconds: 3));
 
     client
       ..onData.listen((data) {

@@ -10,7 +10,9 @@ class Todo extends Model {
   Todo({String this.text, String this.when});
 }
 
-class TodoService extends MemoryService<Todo> {}
+class TodoService extends TypedService<Todo> {
+  TodoService() : super(new MapService());
+}
 
 testIndex(BaseWebSocketClient client) async {
   var Todos = client.service('api/todos');

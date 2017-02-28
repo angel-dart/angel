@@ -12,11 +12,14 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
 /// An [Angel] client that operates across WebSockets.
 abstract class BaseWebSocketClient extends BaseAngelClient {
+  Duration _reconnectInterval;
   WebSocketChannel _socket;
 
   final StreamController _onData = new StreamController();
   final StreamController<WebSocketEvent> _onAllEvents =
       new StreamController<WebSocketEvent>();
+  final StreamController<AngelAuthResult> _onAuthenticated =
+      new StreamController<AngelAuthResult>();
   final StreamController<AngelHttpException> _onError =
       new StreamController<AngelHttpException>();
   final StreamController<Map<String, WebSocketEvent>> _onServiceEvent =
@@ -31,6 +34,9 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   /// Fired on all events.
   Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
+
+  /// Fired whenever a WebSocket is successfully authenticated.
+  Stream<AngelAuthResult> get onAuthenticated => _onAuthenticated.stream;
 
   /// A broadcast stream of data coming from the [socket].
   ///
@@ -51,17 +57,66 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   /// The [WebSocketChannel] underneath this instance.
   WebSocketChannel get socket => _socket;
 
-  BaseWebSocketClient(http.BaseClient client, String basePath)
-      : super(client, basePath) {}
+  /// If `true` (default), then the client will automatically try to reconnect to the server
+  /// if the socket closes.
+  final bool reconnectOnClose;
+
+  /// The amount of time to wait between reconnect attempts. Default: 10 seconds.
+  Duration get reconnectInterval => _reconnectInterval;
+
+  BaseWebSocketClient(http.BaseClient client, String basePath,
+      {this.reconnectOnClose: true, Duration reconnectInterval})
+      : super(client, basePath) {
+    _reconnectInterval = reconnectInterval ?? new Duration(seconds: 10);
+  }
 
   @override
-  Future close() async => _socket.sink.close(status.goingAway);
+  Future close() async {
+    await _socket.sink.close(status.goingAway);
+    _onData.close();
+    _onAllEvents.close();
+    _onAuthenticated.close();
+    _onError.close();
+    _onServiceEvent.close();
+    _onWebSocketChannelException.close();
+  }
 
-  /// Connects the WebSocket.
-  Future<WebSocketChannel> connect() async {
-    _socket = await getConnectedWebSocket();
-    listen();
-    return _socket;
+  /// Connects the WebSocket. [timeout] is optional.
+  Future<WebSocketChannel> connect({Duration timeout}) async {
+    if (timeout != null) {
+      var c = new Completer<WebSocketChannel>();
+      Timer timer;
+
+      timer = new Timer(timeout, () {
+        if (!c.isCompleted) {
+          if (timer.isActive) timer.cancel();
+          c.completeError(new TimeoutException(
+              'WebSocket connection exceeded timeout of ${timeout.inMilliseconds} ms',
+              timeout));
+        }
+      });
+
+      getConnectedWebSocket().then((socket) {
+        if (!c.isCompleted) {
+          if (timer.isActive) timer.cancel();
+          c.complete(socket);
+        }
+      }).catchError((e, st) {
+        if (!c.isCompleted) {
+          if (timer.isActive) timer.cancel();
+          c.completeError(e, st);
+        }
+      });
+
+      return await c.future.then((socket) {
+        _socket = socket;
+        listen();
+      });
+    } else {
+      _socket = await getConnectedWebSocket();
+      listen();
+      return _socket;
+    }
   }
 
   /// Returns a new [WebSocketChannel], ready to be listened on.
@@ -79,39 +134,60 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   /// Starts listening for data.
   void listen() {
-    _socket.stream.listen((data) {
-      _onData.add(data);
+    _socket?.stream?.listen(
+        (data) {
+          _onData.add(data);
 
-      if (data is WebSocketChannelException) {
-        _onWebSocketChannelException.add(data);
-      } else if (data is String) {
-        var json = JSON.decode(data);
+          if (data is WebSocketChannelException) {
+            _onWebSocketChannelException.add(data);
+          } else if (data is String) {
+            var json = JSON.decode(data);
 
-        if (json is Map) {
-          var event = new WebSocketEvent.fromJson(json);
+            if (json is Map) {
+              var event = new WebSocketEvent.fromJson(json);
 
-          if (event.eventName?.isNotEmpty == true) {
-            _onAllEvents.add(event);
-            on._getStream(event.eventName).add(event);
-          }
+              if (event.eventName?.isNotEmpty == true) {
+                _onAllEvents.add(event);
+                on._getStream(event.eventName).add(event);
+              }
 
-          if (event.eventName == EVENT_ERROR) {
-            var error = new AngelHttpException.fromMap(event.data ?? {});
-            _onError.add(error);
-          } else if (event.eventName?.isNotEmpty == true) {
-            var split = event.eventName
-                .split("::")
-                .where((str) => str.isNotEmpty)
-                .toList();
+              if (event.eventName == EVENT_ERROR) {
+                var error = new AngelHttpException.fromMap(event.data ?? {});
+                _onError.add(error);
+              } else if (event.eventName == EVENT_AUTHENTICATED) {
+                var authResult = new AngelAuthResult.fromMap(event.data);
+                _onAuthenticated.add(authResult);
+              } else if (event.eventName?.isNotEmpty == true) {
+                var split = event.eventName
+                    .split("::")
+                    .where((str) => str.isNotEmpty)
+                    .toList();
 
-            if (split.length >= 2) {
-              var serviceName = split[0], eventName = split[1];
-              _onServiceEvent.add({serviceName: event..eventName = eventName});
+                if (split.length >= 2) {
+                  var serviceName = split[0], eventName = split[1];
+                  _onServiceEvent
+                      .add({serviceName: event..eventName = eventName});
+                }
+              }
             }
           }
-        }
-      }
-    });
+        },
+        cancelOnError: true,
+        onDone: () {
+          if (reconnectOnClose == true) {
+            new Timer.periodic(reconnectInterval, (Timer timer) async {
+              var result;
+
+              try {
+                result = await connect(timeout: reconnectInterval);
+              } catch (e) {
+                //
+              }
+
+              if (result != null) timer.cancel();
+            });
+          }
+        });
   }
 
   /// Serializes data to JSON.
@@ -124,6 +200,11 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   /// Sends the given [action] on the [socket].
   void sendAction(WebSocketAction action) {
     socket.sink.add(serialize(action));
+  }
+
+  /// Attempts to authenticate a WebSocket, using a valid JWT.
+  void authenticateViaJwt(String jwt) {
+    send(ACTION_AUTHENTICATE, new WebSocketAction(params: {'jwt': jwt}));
   }
 }
 

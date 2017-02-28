@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
+import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
@@ -35,6 +36,9 @@ class AngelWebSocket extends AngelPlugin {
   /// discarded, other than `params['query']`.
   final bool allowClientParams;
 
+  /// If `true`, then clients can authenticate their WebSockets by sending a valid JWT.
+  final bool allowAuth;
+
   /// Include debug information, and send error information across WebSockets.
   final bool debug;
 
@@ -50,6 +54,9 @@ class AngelWebSocket extends AngelPlugin {
 
   /// The endpoint that users should connect a WebSocket to.
   final String endpoint;
+
+  /// Used to notify other nodes of an event's firing. Good for scaled applications.
+  final WebSocketSynchronizer synchronizer;
 
   /// Fired on any [WebSocketAction].
   Stream<WebSocketAction> get onAction => _onAction.stream;
@@ -67,7 +74,9 @@ class AngelWebSocket extends AngelPlugin {
       {this.endpoint: '/ws',
       this.debug: false,
       this.allowClientParams: false,
-      this.register});
+      this.allowAuth: true,
+      this.register,
+      this.synchronizer});
 
   serviceHook(String path) {
     return (HookedServiceEvent e) async {
@@ -93,7 +102,7 @@ class AngelWebSocket extends AngelPlugin {
 
   /// Slates an event to be dispatched.
   Future batchEvent(WebSocketEvent event,
-      {filter(WebSocketContext socket)}) async {
+      {filter(WebSocketContext socket), bool notify: true}) async {
     // Default implementation will just immediately fire events
     _clients.forEach((client) async {
       var result = true;
@@ -105,6 +114,9 @@ class AngelWebSocket extends AngelPlugin {
         client.io.add(god.serialize(event.toJson()));
       }
     });
+
+    if (synchronizer != null && notify != false)
+      synchronizer.notifyOthers(event);
   }
 
   /// Returns a list of events yet to be sent.
@@ -112,6 +124,9 @@ class AngelWebSocket extends AngelPlugin {
 
   /// Responds to an incoming action on a WebSocket.
   Future handleAction(WebSocketAction action, WebSocketContext socket) async {
+    if (action.eventName == ACTION_AUTHENTICATE)
+      return await handleAuth(action, socket);
+
     var split = action.eventName.split("::");
 
     if (split.length < 2)
@@ -178,6 +193,37 @@ class AngelWebSocket extends AngelPlugin {
             message: e.toString(), stackTrace: st, errors: [st.toString()]));
       else
         socket.sendError(new AngelHttpException(e));
+    }
+  }
+
+  /// Authenticates a [WebSocketContext].
+  Future handleAuth(WebSocketAction action, WebSocketContext socket) async {
+    if (allowAuth != false &&
+        action.eventName == ACTION_AUTHENTICATE &&
+        action.params['jwt'] is String) {
+      try {
+        var auth = socket.request.grab<AngelAuth>(AngelAuth);
+        var jwt = action.params['jwt'] as String;
+        AuthToken token;
+
+        token = new AuthToken.validate(jwt, auth.hmac);
+        var user = await auth.deserializer(token.userId);
+        var req = socket.request;
+        req
+          ..inject(AuthToken, req.properties['token'] = token)
+          ..inject(user.runtimeType, req.properties["user"] = user);
+        socket.send(EVENT_AUTHENTICATED,
+            {'token': token.serialize(auth.hmac), 'data': user});
+      } catch (e, st) {
+        // Send an error
+        if (e is AngelHttpException)
+          socket.sendError(e);
+        else if (debug == true)
+          socket.sendError(new AngelHttpException(e,
+              message: e.toString(), stackTrace: st, errors: [st.toString()]));
+        else
+          socket.sendError(new AngelHttpException(e));
+      }
     }
   }
 
@@ -309,5 +355,16 @@ class AngelWebSocket extends AngelPlugin {
     }
 
     await _register();
+
+    if (synchronizer != null) {
+      synchronizer.stream.listen((e) => batchEvent(e, notify: false));
+    }
   }
+}
+
+/// Notifies other nodes of outgoing WWebSocket events, and listens for
+/// notifications from other nodes.
+abstract class WebSocketSynchronizer {
+  Stream<WebSocketEvent> get stream;
+  void notifyOthers(WebSocketEvent e);
 }

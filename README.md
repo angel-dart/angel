@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.1](https://img.shields.io/badge/pub-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![1.0.2](https://img.shields.io/badge/pub-1.0.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
@@ -84,6 +84,9 @@ main() async {
   // Happens asynchronously
   Cars.create({"brand": "Toyota"});
 
+  // Authenticate a WebSocket, if you were not already authenticated...
+  app.authenticateViaJwt('<some-jwt>');
+
   // Listen for arbitrary events
   app.on['custom_event'].listen((event) {
     // For example, this might be sent by a
@@ -127,5 +130,8 @@ main() async {
 
   // Happens asynchronously
   Cars.create({"year": 2016, "brand": "Toyota", "make": "Camry"});
+
+  // Authenticate a WebSocket, if you were not already authenticated...
+  app.authenticateViaJwt('<some-jwt>');
 }
 ```

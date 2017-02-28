@@ -17,16 +17,31 @@ class WebSocketContext {
 
   StreamController<WebSocketAction> _onAction =
       new StreamController<WebSocketAction>();
+
+  StreamController<Null> _onClose = new StreamController<Null>();
+
   StreamController _onData = new StreamController();
 
   /// Fired on any [WebSocketAction];
   Stream<WebSocketAction> get onAction => _onAction.stream;
+
+  /// Fired once the underlying [WebSocket] closes.
+  Stream<Null> get onClose => _onClose.stream;
 
   /// Fired when any data is sent through [io].
   Stream get onData => _onData.stream;
 
   WebSocketContext(WebSocket this.io, RequestContext this.request,
       ResponseContext this.response);
+
+  /// Closes the underlying [WebSocket].
+  Future close([int code, String reason]) async {
+    await io.close(code, reason);
+    _onAction.close();
+    _onData.close();
+    _onClose.add(null);
+    _onClose.close();
+  }
 
   /// Sends an arbitrary [WebSocketEvent];
   void send(String eventName, data) {
@@ -42,7 +57,7 @@ class _WebSocketEventTable {
 
   StreamController<Map> _getStreamForEvent(eventName) {
     if (!_handlers.containsKey(eventName))
-      _handlers[eventName] = new StreamController<Map>.broadcast();
+      _handlers[eventName] = new StreamController<Map>();
     return _handlers[eventName];
   }
 
