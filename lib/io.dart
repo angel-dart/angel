@@ -18,6 +18,10 @@ class Rest extends BaseAngelClient {
     return new RestService(
         client, this, "$basePath/$uri", T != dynamic ? T : type);
   }
+  @override
+  Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
+    throw new UnimplementedError('Opening popup windows is not supported in the `dart:io` client.');
+  }
 }
 
 /// Queries an Angel service via REST.

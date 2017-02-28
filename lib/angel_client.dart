@@ -17,7 +17,7 @@ typedef AngelDeserializer(x);
 
 /// Represents an Angel server that we are querying.
 abstract class Angel {
-  String get authToken;
+  String authToken;
   String basePath;
 
   Angel(String this.basePath);
@@ -28,6 +28,9 @@ abstract class Angel {
       String authEndpoint: '/auth',
       String reviveEndpoint: '/auth/token'});
 
+  /// Opens the [url] in a new window, and  returns a [Stream] that will fire a JWT on successful authentication.
+  Stream<String> authenticateViaPopup(String url, {String eventName: 'token'});
+
   Future close();
 
   /// Applies an [AngelConfigurer] to this instance.
@@ -37,21 +40,17 @@ abstract class Angel {
 
   Service service<T>(String path, {Type type, AngelDeserializer deserializer});
 
-  Future<http.Response> delete(String url,
-      {Map<String, String> headers});
+  Future<http.Response> delete(String url, {Map<String, String> headers});
 
   Future<http.Response> get(String url, {Map<String, String> headers});
 
   Future<http.Response> head(String url, {Map<String, String> headers});
 
-  Future<http.Response> patch(String url,
-      {body, Map<String, String> headers});
+  Future<http.Response> patch(String url, {body, Map<String, String> headers});
 
-  Future<http.Response> post(String url,
-      {body, Map<String, String> headers});
+  Future<http.Response> post(String url, {body, Map<String, String> headers});
 
-  Future<http.Response> put(String url,
-      {body, Map<String, String> headers});
+  Future<http.Response> put(String url, {body, Map<String, String> headers});
 }
 
 /// Represents the result of authentication with an Angel server.

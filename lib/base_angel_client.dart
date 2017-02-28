@@ -50,9 +50,6 @@ AngelHttpException failure(http.Response response, {error, StackTrace stack}) {
 }
 
 abstract class BaseAngelClient extends Angel {
-  @override
-  String authToken;
-
   final http.BaseClient client;
 
   BaseAngelClient(this.client, String basePath) : super(basePath);
