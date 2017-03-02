@@ -56,7 +56,7 @@ class ProxyLayer {
     _prefix = publicPath.replaceAll(_straySlashes, '');
   }
 
-  call(AngelBase app) async => serve(app);
+  call(Angel app) async => serve(app);
 
   _printDebug(msg) {
     if (debug == true) print(msg);
