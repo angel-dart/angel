@@ -28,7 +28,7 @@ class InitCommand extends Command {
         "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
     _pen();
     await _pubGet(projectDir);
-    await preBuild(projectDir);
+    // await preBuild(projectDir);
     var secret = rs.randomAlphaNumeric(32);
     print('Generated new development JWT secret: $secret');
     await _key.changeSecret(
