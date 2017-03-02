@@ -3,6 +3,7 @@ import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:console/console.dart';
 import 'package:inflection/inflection.dart';
+import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
 import 'service_generators/service_generators.dart';
 import 'init.dart' show preBuild;
@@ -25,6 +26,7 @@ class ServiceCommand extends Command {
 
   @override
   run() async {
+    var pubspec = await PubSpec.load(Directory.current);
     var name = await readInput('Name of Service (not plural): ');
     var chooser = new Chooser<String>(
         GENERATORS.map<String>((g) => g.name).toList(),
@@ -102,7 +104,7 @@ class ServiceCommand extends Command {
     export '../models/$lower.dart';
     */
     lib.addMember(
-        new ImportBuilder('package:angel_framework/angel_framework.dart'));
+        new ImportBuilder('package:angel_common/angel_common.dart'));
     generator.applyToLibrary(lib, name, lower);
 
     if (generator.createsModel == true) {
@@ -180,8 +182,14 @@ class $name extends Model {
     await file.writeAsString('''
 import 'package:angel_validate/angel_validate.dart';
 
-final Validator CREATE_$constantCase =
-    new Validator({'name*': isString, 'desc*': isString});
+final Validator $constantCase = new Validator({
+  'name': [isString, isNotEmpty],
+  'desc': [isString, isNotEmpty]
+});
+
+final Validator CREATE_$constantCase = $constantCase.extend({})
+  ..requiredFields.addAll(['name', 'desc']);
+
     '''
         .trim());
   }
@@ -198,11 +206,11 @@ final Validator CREATE_$constantCase =
         .trim();
   }
 
-  _generateTests(String lower, String type) {
+  _generateTests(PubSpec pubspec, String lower, String type) {
     return '''
 import 'dart:io';
-import 'package:angel/angel.dart';
-import 'package:angel_framework/angel_framework.dart';
+import 'package:${pubspec.name}/${pubspec.name}.dart';
+import 'package:angel_common/angel_common.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:test/test.dart';
 
