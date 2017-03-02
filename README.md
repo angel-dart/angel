@@ -1,11 +1,9 @@
 # security
-[![version 1.0.0-alpha](https://img.shields.io/badge/pub-v1.0.0--alpha-red.svg)](https://pub.dartlang.org/packages/angel_security)
+[![version 1.0.0-alpha+1](https://img.shields.io/badge/pub-v1.0.0--alpha+1-red.svg)](https://pub.dartlang.org/packages/angel_security)
 [![build status](https://travis-ci.org/angel-dart/security.svg)](https://travis-ci.org/angel-dart/security)
 
 Angel middleware designed to enhance application security by patching common Web security
 holes.
-
-Currently unfinished, with incomplete code coverage - **USE AT YOUR OWN RISK!!!**
 
 * Generic Middleware
     * [Sanitizing HTML](#sanitizing-html)
@@ -70,14 +68,7 @@ app.before.add(throttleRequests(5, new Duration(minutes: 1)));
 ```
 
 # Helmet
-`security` includes a port of [`helmetjs`](https://github.com/helmetjs/helmet).
-Helmet includes 11 middleware that attempt to enhance security via HTTP headers.
-
-Call `helmet` to include all of them.
-
-```dart
-import 'package:angel_security/helmet.dart';
-```
+[Supplementary security library](https://github.com/angel-dart/helmet)
 
 # Service Hooks
 Also included are a set of service hooks, some [ported from FeathersJS](https://github.com/feathersjs/feathers-legacy-authentication-hooks).
