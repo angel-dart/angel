@@ -17,7 +17,24 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
 /// Queries an Angel server via WebSockets.
 class WebSockets extends BaseWebSocketClient {
+  final List<WebSocketsService> _services = [];
+
   WebSockets(String path) : super(new http.Client(), path);
+
+  @override
+  Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
+    throw new UnimplementedError(
+        'Opening popup windows is not supported in the `dart:io` client.');
+  }
+
+  @override
+  Future close() {
+    for (var service in _services) {
+      service.close();
+    }
+
+    return super.close();
+  }
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() async {

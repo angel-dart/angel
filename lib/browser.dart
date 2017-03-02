@@ -15,7 +15,43 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
 /// Queries an Angel server via WebSockets.
 class WebSockets extends BaseWebSocketClient {
+  final List<WebSocketsService> _services = [];
+
   WebSockets(String path) : super(new http.BrowserClient(), path);
+
+  @override
+  Future close() {
+    for (var service in _services) {
+      service.close();
+    }
+
+    return super.close();
+  }
+
+  @override
+  Stream<String> authenticateViaPopup(String url,
+      {String eventName: 'token', String errorMessage}) {
+    var ctrl = new StreamController<String>();
+    var wnd = window.open(url, 'angel_client_auth_popup');
+
+    wnd
+      ..on['beforeunload'].listen((_) {
+        if (!ctrl.isClosed) {
+          ctrl.addError(new AngelHttpException.notAuthenticated(
+              message:
+                  errorMessage ?? 'Authentication via popup window failed.'));
+          ctrl.close();
+        }
+      })
+      ..on[eventName ?? 'token'].listen((CustomEvent e) {
+        if (!ctrl.isClosed) {
+          ctrl.add(e.detail);
+          ctrl.close();
+        }
+      });
+
+    return ctrl.stream;
+  }
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() {

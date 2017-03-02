@@ -263,6 +263,16 @@ class BaseWebSocketService extends Service {
     listen();
   }
 
+  Future close() async {
+    _onAllEvents.close();
+    _onCreated.close();
+    _onIndexed.close();
+    _onModified.close();
+    _onRead.close();
+    _onRemoved.close();
+    _onUpdated.close();
+  }
+
   /// Serializes an [action] to be sent over a WebSocket.
   serialize(WebSocketAction action) => JSON.encode(action);
 
