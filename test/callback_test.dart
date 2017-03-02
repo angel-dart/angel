@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/common.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
-class User extends MemoryModel {
+class User extends Model {
   String username, password;
 
   User({this.username, this.password});
@@ -19,7 +20,7 @@ main() {
 
   setUp(() async {
     app = new Angel();
-    app.use('/users', new MemoryService<User>());
+    app.use('/users', new TypedService<User>(new MapService()));
 
     await app
         .service('users')
