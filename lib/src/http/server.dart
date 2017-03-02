@@ -121,7 +121,11 @@ class Angel extends AngelBase {
   Future<HttpServer> startServer([InternetAddress address, int port]) async {
     var host = address ?? InternetAddress.LOOPBACK_IP_V4;
     this.httpServer = await _serverGenerator(host, port ?? 0);
-    await Future.wait(justBeforeStart.map(configure));
+
+    for (var configurer in justBeforeStart) {
+      await configure(configurer);
+    }
+
     preprocessRoutes();
     return httpServer..listen(handleRequest);
   }
@@ -480,7 +484,7 @@ class Angel extends AngelBase {
         Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
     var serverContext = new SecurityContext();
-    serverContext.useCertificateChain(certificateChain);
+    serverContext.useCertificateChain(certificateChain, password: password);
     serverContext.usePrivateKey(serverKey, password: password);
 
     return new Angel.fromSecurityContext(serverContext);

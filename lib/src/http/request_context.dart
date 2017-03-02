@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel_route/src/extensible.dart';
 import 'package:body_parser/body_parser.dart';
-import 'angel_base.dart';
+import 'server.dart' show Angel;
 
 /// A convenience wrapper around an incoming HTTP request.
 class RequestContext extends Extensible {
@@ -17,7 +17,7 @@ class RequestContext extends Extensible {
   final Map serviceParams = {};
 
   /// The [Angel] instance that is responding to this request.
-  AngelBase app;
+  Angel app;
 
   /// Any cookies sent with this request.
   List<Cookie> get cookies => io.cookies;
@@ -82,7 +82,7 @@ class RequestContext extends Extensible {
   }
 
   /// Magically transforms an [HttpRequest] into a [RequestContext].
-  static Future<RequestContext> from(HttpRequest request, AngelBase app) async {
+  static Future<RequestContext> from(HttpRequest request, Angel app) async {
     RequestContext ctx = new RequestContext();
 
     ctx.app = app;

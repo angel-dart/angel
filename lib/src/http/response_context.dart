@@ -7,7 +7,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
 import '../extensible.dart';
-import 'angel_base.dart';
+import 'server.dart' show Angel;
 import 'controller.dart';
 
 final RegExp _contentType =
@@ -23,7 +23,7 @@ class ResponseContext extends Extensible {
   bool _isOpen = true;
 
   /// The [Angel] instance that is sending a response.
-  AngelBase app;
+  Angel app;
 
   /// Is `Transfer-Encoding` chunked?
   bool chunked;
