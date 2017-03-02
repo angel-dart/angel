@@ -25,7 +25,9 @@ HookedServiceEventListener hashPassword(
       else if (passwordField == 'password')
         return user?.password;
       else
-        return reflect(user).getField(new Symbol(passwordField ?? 'password')).reflectee;
+        return reflect(user)
+            .getField(new Symbol(passwordField ?? 'password'))
+            .reflectee;
     }
 
     _setPassword(password, user) {
@@ -41,35 +43,24 @@ HookedServiceEventListener hashPassword(
     }
 
     if (e.data != null) {
-      var password;
+      applyHash(user) async {
+        var password = (await _getPassword(user))?.toString();
 
-      if (e.data is Iterable) {
-        for (var data in e.data) {
-          var p = await _getPassword(data);
-
-          if (p != null) {
-            password = p;
-            break;
-          }
-        }
-      } else
-        password = await _getPassword(e.data);
-
-      if (password != null) {
-        applyHash(user) async {
-          var password = (await _getPassword(user))?.toString();
+        if (password != null) {
           var digest = h.convert(password.codeUnits);
           return _setPassword(new String.fromCharCodes(digest.bytes), user);
         }
-
-        if (e.data is Iterable) {
-          var data = await Future.wait(e.data.map(applyHash));
-          e.data = e.data is List ? data.toList() : data;
-        } else
-          e.data = await applyHash(e.data);
-
-        // TODO (thosakwe): Add salting capability
       }
+
+      if (e.data is Iterable) {
+        var futures = await Future.wait(e.data.map((data) async {
+          await applyHash(data);
+          return data;
+        }));
+
+        e.data = futures.toList();
+      } else
+        await applyHash(e.data);
     }
   };
 }
