@@ -142,7 +142,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
       return file.readAsBytes().then((buf) {
         var etag = _etags[file.absolute.path] =
-            generateEtag(buf, weak: useWeakEtags != false);
+            generateEtag(buf, weak: useWeakEtags != false, hash: hash);
         res.headers
           ..[HttpHeaders.ETAG] = etag
           ..[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
