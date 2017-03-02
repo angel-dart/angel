@@ -1,5 +1,5 @@
 name: angel_rethink
-version: 1.0.2
+version: 1.0.3
 description: RethinkDB-enabled services for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 environment:
@@ -7,7 +7,7 @@ environment:
 homepage: https://github.com/angel-dart/rethink
 dependencies:
   angel_framework: ^1.0.0-dev
-  rethinkdb_driver: ^2.3.1
+  rethinkdb_driver2: ^2.3.1
 dev_dependencies:
   angel_test: ^1.0.0-dev
   test: ^0.12.0

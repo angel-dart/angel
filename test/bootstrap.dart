@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:rethinkdb_driver/rethinkdb_driver.dart';
+import 'package:rethinkdb_driver2/rethinkdb_driver2.dart';
 
 main() async {
   var r = new Rethinkdb();

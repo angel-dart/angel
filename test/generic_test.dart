@@ -2,7 +2,7 @@ import 'package:angel_client/angel_client.dart' as c;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_rethink/angel_rethink.dart';
 import 'package:angel_test/angel_test.dart';
-import 'package:rethinkdb_driver/rethinkdb_driver.dart';
+import 'package:rethinkdb_driver2/rethinkdb_driver2.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
-import 'package:rethinkdb_driver/rethinkdb_driver.dart';
+import 'package:rethinkdb_driver2/rethinkdb_driver2.dart';
 
 // Extends a RethinkDB query.
 typedef RqlQuery QueryCallback(RqlQuery query);

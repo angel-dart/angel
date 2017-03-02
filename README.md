@@ -1,6 +1,6 @@
 # rethink
 
-[![version 1.0.2](https://img.shields.io/badge/pub-1.0.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
+[![version 1.0.3](https://img.shields.io/badge/pub-1.0.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
 [![build status](https://travis-ci.org/angel-dart/rethink.svg?branch=master)](https://travis-ci.org/angel-dart/rethink)
 
 RethinkDB-enabled services for the Angel framework.
@@ -13,7 +13,7 @@ dependencies:
   angel_rethink: ^1.0.0
 ```
 
-`package:rethinkdb_driver` will be installed as well.
+`package:rethinkdb_driver2` will be installed as well.
 
 # Usage
 This library exposes one class: `RethinkService`. By default, these services will even
