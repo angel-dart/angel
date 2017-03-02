@@ -42,6 +42,9 @@ class Angel extends AngelBase {
 
   final Map<dynamic, InjectionRequest> _preContained = {};
 
+  /// Determines whether to allow HTTP request method overrides.
+  bool allowMethodOverrides = true;
+
   /// Fired after a request is processed. Always runs.
   Stream<HttpRequest> get afterProcessed => _afterProcessed.stream;
 
@@ -223,7 +226,7 @@ class Angel extends AngelBase {
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
       var resolved =
-          resolveAll(requestedUrl, requestedUrl, method: request.method);
+          resolveAll(requestedUrl, requestedUrl, method: req.method);
 
       for (var result in resolved) req.params.addAll(result.allParams);
 

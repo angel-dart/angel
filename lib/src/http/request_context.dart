@@ -11,7 +11,7 @@ class RequestContext extends Extensible {
   BodyParseResult _body;
   ContentType _contentType;
   HttpRequest _io;
-  String _path;
+  String _override, _path;
 
   /// Additional params to be passed to services.
   final Map serviceParams = {};
@@ -38,7 +38,12 @@ class RequestContext extends Extensible {
   String get ip => remoteAddress.address;
 
   /// This request's HTTP method.
-  String get method => io.method;
+  ///
+  /// This may have been processed by an override. See [originalMethod] to get the real method.
+  String get method => _override ?? originalMethod;
+
+  /// The original HTTP verb sent to the server.
+  String get originalMethod => io.method;
 
   /// All post data submitted to the server.
   Map get body => _body.body;
@@ -85,8 +90,16 @@ class RequestContext extends Extensible {
   static Future<RequestContext> from(HttpRequest request, Angel app) async {
     RequestContext ctx = new RequestContext();
 
+    String override = request.method;
+
+    if (app.allowMethodOverrides == true)
+      override =
+          request.headers.value('x-http-method-override')?.toUpperCase() ??
+              request.method;
+
     ctx.app = app;
     ctx._contentType = request.headers.contentType;
+    ctx._override = override;
     ctx._path = request.uri
         .toString()
         .replaceAll("?" + request.uri.query, "")
