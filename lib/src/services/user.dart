@@ -29,7 +29,6 @@ String hashPassword(String password) =>
 /// Here, we extended the base service class. This allows to only expose
 /// specific methods, and also allows more freedom over things such as validation.
 class UserService extends TypedService<User> {
-
   UserService(DbCollection collection) : super(new MongoService(collection));
 
   @override
