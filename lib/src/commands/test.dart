@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
+import 'package:pubspec/pubspec.dart';
 
 class TestCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -15,13 +16,13 @@ class TestCommand extends Command {
   run() async {
     final name = await readInput("Name of Test: "), lower = name.toLowerCase();
     final testDir = new Directory("test/services");
-    final testFile = new File.fromUri(
-        testDir.uri.resolve("${lower}_test.dart"));
+    final testFile =
+        new File.fromUri(testDir.uri.resolve("${lower}_test.dart"));
 
-    if (!await testFile.exists())
-      await testFile.create(recursive: true);
+    if (!await testFile.exists()) await testFile.create(recursive: true);
 
-    await testFile.writeAsString(_generateTest(lower));
+    await testFile.writeAsString(
+        _generateTest(await PubSpec.load(Directory.current), lower));
 
     final runConfig = new File('./.idea/runConfigurations/${name}_tests.xml');
 
@@ -49,10 +50,10 @@ class TestCommand extends Command {
         .trim();
   }
 
-  String _generateTest(String lower) {
+  String _generateTest(PubSpec pubspec, String lower) {
     return '''
 import 'dart:io';
-import 'package:angel/angel.dart';
+import 'package:${pubspec.name}/${pubspec.name}.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:test/test.dart';
