@@ -24,9 +24,7 @@ class TypedService<T> extends Service {
         var value = x[key];
 
         if ((key == 'createdAt' || key == 'updatedAt') && value is String) {
-          return map..[key] = DateTime.parse(value).toIso8601String();
-        } else if (value is DateTime) {
-          return map..[key] = value.toIso8601String();
+          return map..[key] = DateTime.parse(value);
         } else {
           return map..[key] = value;
         }

@@ -66,7 +66,7 @@ HookedServiceEventListener toType(Type type) {
 
 /// Removes one or more [key]s from `e.data` or `e.result`.
 /// Works on single objects and iterables.
-HookedServiceEventListener remove(key, remover(key, obj)) {
+HookedServiceEventListener remove(key, [remover(key, obj)]) {
   return (HookedServiceEvent e) async {
     if (!e.isAfter) throw new StateError("'remove' only works on after hooks.");
 

@@ -81,8 +81,8 @@ class Angel extends AngelBase {
   /// These will only not run if an [AngelFatalError] occurs.
   final List<RequestHandler> responseFinalizers = [];
 
-  /// Default error handler, show HTML error page
-  AngelErrorHandler _errorHandler =
+  /// The handler currently configured to run on [AngelHttpException]s.
+  AngelErrorHandler errorHandler =
       (AngelHttpException e, req, ResponseContext res) {
     res.headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     res.statusCode = e.statusCode;
@@ -96,9 +96,6 @@ class Angel extends AngelBase {
     res.write("</ul></body></html>");
     res.end();
   };
-
-  /// The handler currently configured to run on [AngelHttpException]s.
-  AngelErrorHandler get errorHandler => _errorHandler;
 
   /// [RequestMiddleware] to be run before all requests.
   final List before = [];
@@ -225,8 +222,7 @@ class Angel extends AngelBase {
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      var resolved =
-          resolveAll(requestedUrl, requestedUrl, method: req.method);
+      var resolved = resolveAll(requestedUrl, requestedUrl, method: req.method);
 
       for (var result in resolved) req.params.addAll(result.allParams);
 
@@ -452,8 +448,9 @@ class Angel extends AngelBase {
   }
 
   /// Registers a callback to run upon errors.
+  @deprecated
   onError(AngelErrorHandler handler) {
-    _errorHandler = handler;
+    this.errorHandler = handler;
   }
 
   /// Default constructor. ;)
