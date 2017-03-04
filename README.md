@@ -1,5 +1,5 @@
 # relations
-[![version 1.0.0](https://img.shields.io/badge/pub-v1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_relations)
+[![version 1.0.1](https://img.shields.io/badge/pub-v1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_relations)
 [![build status](https://travis-ci.org/angel-dart/relations.svg)](https://travis-ci.org/angel-dart/relations)
 
 Database-agnostic relations between Angel services.
@@ -17,7 +17,9 @@ app.service('authors').afterAll(
 app.service('books').afterAll(relations.belongsTo('authors'));
 ```
 
-Currently supports:
+Supports:
 * `hasOne`
 * `hasMany`
+* `hasManyThrough`
 * `belongsTo`
+* `belongsToMany`
