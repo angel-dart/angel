@@ -8,7 +8,7 @@ class ServiceGenerator {
   bool get createsModel => true;
   bool get createsValidator => true;
   bool get exportedInServiceLibrary => true;
-  bool get injectsSingleton => true;
+  bool get injectsSingleton => false;
   bool get shouldRunBuild => false;
 
   void applyToLibrary(LibraryBuilder library, String name, String lower) {}

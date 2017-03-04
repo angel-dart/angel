@@ -25,11 +25,6 @@ class InitCommand extends Command {
         argResults.arguments.isEmpty ? "." : argResults.arguments[0]);
     print("Creating new Angel project in ${projectDir.absolute.path}...");
     await _cloneRepo(projectDir);
-    _pen.green();
-    _pen(
-        "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
-    _pen();
-    await _pubGet(projectDir);
     // await preBuild(projectDir);
     var secret = rs.randomAlphaNumeric(32);
     print('Generated new development JWT secret: $secret');
@@ -45,7 +40,13 @@ class InitCommand extends Command {
 
     var name = p.basenameWithoutExtension(projectDir.path);
     print('Renaming project from "angel" to "$name"...');
+    await renamePubspec(projectDir, 'angel', name);
     await renameDartFiles(projectDir, 'angel', name);
+    _pen.green();
+    _pen(
+        "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
+    _pen();
+    await _pubGet(projectDir);
   }
 
   _cloneRepo(Directory projectDir) async {

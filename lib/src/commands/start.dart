@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:watcher/watcher.dart';
@@ -62,8 +63,8 @@ class StartCommand extends Command {
         try {
           var scripts =
               await Process.start('pub', ['global', 'run', 'scripts', 'start']);
-          stdout.addStream(scripts.stdout);
-          stderr.addStream(scripts.stderr);
+          listen(scripts.stdout, stdout);
+          listen(scripts.stderr, stderr);
           int code = await scripts.exitCode;
 
           if (code != 0) {
@@ -94,10 +95,8 @@ class StartCommand extends Command {
         environment: env);
 
     try {
-      if (isNew) {
-        stdout.addStream(server.stdout);
-        stderr.addStream(server.stderr);
-      }
+      listen(server.stdout, stdout);
+      listen(server.stderr, stderr);
     } catch (e) {
       print(e);
     }
@@ -109,4 +108,8 @@ class StartCommand extends Command {
 
     exitCode = await server.exitCode;
   }
+}
+
+void listen(Stream<List<int>> stream, IOSink sink) {
+  stream.listen(sink.add);
 }

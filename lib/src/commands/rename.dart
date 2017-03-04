@@ -39,9 +39,7 @@ class RenameCommand extends Command {
       } else {
         var pubspec = await PubSpec.load(Directory.current);
         var oldName = pubspec.name;
-        var newPubspec =
-            new PubSpec.fromJson(pubspec.toJson()..['name'] = newName);
-        await newPubspec.save(Directory.current);
+        await renamePubspec(Directory.current, oldName, newName);
         await renameDartFiles(Directory.current, oldName, newName);
         print('Now running `pub get`...');
         var pub = await Process.start('pub', ['get']);
@@ -53,11 +51,28 @@ class RenameCommand extends Command {
   }
 }
 
+renamePubspec(Directory dir, String oldName, String newName) async {
+  var pubspec = await PubSpec.load(dir);
+  var newPubspec = new PubSpec.fromJson(pubspec.toJson()..['name'] = newName);
+  await newPubspec.save(dir);
+}
+
 renameDartFiles(Directory dir, String oldName, String newName) async {
+  // Try to replace MongoDB URL
+  var defaultYaml = new File.fromUri(dir.uri.resolve('config/default.yaml'));
+
+  if (await defaultYaml.exists()) {
+    print('Changing MongoDB URL in file "${defaultYaml.absolute.path}"...');
+    var contents = await defaultYaml.readAsString();
+    contents = contents.replaceAll('mongodb://localhost:27017/$oldName',
+        'mongodb://localhost:27017/$newName');
+    await defaultYaml.writeAsString(contents);
+  }
+
   var entry = new File.fromUri(dir.uri.resolve('lib/$oldName.dart'));
 
   if (await entry.exists()) {
-    await entry.rename('lib/$newName.dart');
+    await entry.rename(dir.uri.resolve('lib/$newName.dart').toFilePath());
     print('Renaming library file `${entry.absolute.path}`...');
   }
 
