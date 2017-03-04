@@ -8,6 +8,5 @@ import 'user.dart' as user;
 
 configureServer(Angel app) async {
   Db db = app.container.make(Db);
-
   await app.configure(user.configureServer(db));
 }
