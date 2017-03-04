@@ -1,6 +1,7 @@
 import 'package:angel_common/angel_common.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:random_string/random_string.dart' as rs;
 import '../models/user.dart';
 import '../validators/user.dart';
 export '../models/user.dart';
@@ -15,14 +16,18 @@ configureServer(Db db) {
     service.beforeCreated
       ..listen(validateEvent(CREATE_USER))
       ..listen((e) {
-        e.data['password'] = hashPassword(e.data['password']);
+        var salt = rs.randomAlphaNumeric(12);
+        e.data
+          ..['password'] =
+              hashPassword(e.data['password'], salt, app.jwt_secret)
+          ..['salt'] = salt;
       });
   };
 }
 
 /// SHA-256 hash any string, particularly a password.
-String hashPassword(String password) =>
-    sha256.convert(password.codeUnits).toString();
+String hashPassword(String password, String salt, String pepper) =>
+    sha256.convert(('$salt:$password:$pepper').codeUnits).toString();
 
 /// Manages users.
 ///

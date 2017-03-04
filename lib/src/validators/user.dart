@@ -7,4 +7,5 @@ final Validator USER = new Validator({
 });
 
 final Validator CREATE_USER = USER.extend({})
-  ..requiredFields.addAll(['email', 'username', 'password']);
+  ..requiredFields.addAll(['email', 'username', 'password'])
+  ..forbiddenFields.addAll(['salt', 'roles']);

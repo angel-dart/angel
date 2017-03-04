@@ -6,7 +6,7 @@
             "type": "dart-cli",
             "request": "launch",
             "cwd": "${workspaceRoot}",
-            "debugSettings": "${command.debugSettings}",
+            "debugSettings": "${command:debugSettings}",
             "program": "${workspaceRoot}/bin/server.dart",
             "args": []
         },
@@ -15,7 +15,7 @@
             "type": "dart-cli",
             "request": "launch",
             "cwd": "${workspaceRoot}",
-            "debugSettings": "${command.debugSettings}",
+            "debugSettings": "${command:debugSettings}",
             "program": "${workspaceRoot}/bin/multi_server.dart",
             "args": []
         }
