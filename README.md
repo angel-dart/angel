@@ -16,7 +16,7 @@ import 'package:angel_client/cli.dart';
 import 'package:angel_client/browser.dart';
 
 main() async {
-  Angel app = new Rest("http://localhost:3000", new BrowserClient());
+  Angel app = new Rest("http://localhost:3000");
 }
 ```
 
