@@ -61,7 +61,7 @@ class ServiceCommand extends Command {
 
       await serviceFile
           .writeAsString(_generateService(generator, name, lower, typed));
-      await testFile.writeAsString(_generateTests(lower, type));
+      await testFile.writeAsString(_generateTests(pubspec, lower));
 
       var runConfig = new File('./.idea/runConfigurations/${name}_Tests.xml');
 
@@ -206,7 +206,7 @@ final Validator CREATE_$constantCase = $constantCase.extend({})
         .trim();
   }
 
-  _generateTests(PubSpec pubspec, String lower, String type) {
+  _generateTests(PubSpec pubspec, String lower) {
     return '''
 import 'dart:io';
 import 'package:${pubspec.name}/${pubspec.name}.dart';

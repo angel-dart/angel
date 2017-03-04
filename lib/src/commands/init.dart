@@ -2,7 +2,9 @@ import "dart:io";
 import "package:args/command_runner.dart";
 import "package:console/console.dart";
 import 'package:random_string/random_string.dart' as rs;
+import 'package:path/path.dart' as p;
 import 'key.dart';
+import 'rename.dart';
 
 class InitCommand extends Command {
   final KeyCommand _key = new KeyCommand();
@@ -40,6 +42,10 @@ class InitCommand extends Command {
     await _key.changeSecret(
         new File.fromUri(projectDir.uri.resolve('config/production.yaml')),
         secret);
+
+    var name = p.basenameWithoutExtension(projectDir.path);
+    print('Renaming project from "angel" to "$name"...');
+    await renameDartFiles(projectDir, 'angel', name);
   }
 
   _cloneRepo(Directory projectDir) async {

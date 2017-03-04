@@ -42,7 +42,7 @@ class RenameCommand extends Command {
         var newPubspec =
             new PubSpec.fromJson(pubspec.toJson()..['name'] = newName);
         await newPubspec.save(Directory.current);
-        await renameDartFiles(oldName, newName);
+        await renameDartFiles(Directory.current, oldName, newName);
         print('Now running `pub get`...');
         var pub = await Process.start('pub', ['get']);
         stdout.addStream(pub.stdout);
@@ -51,37 +51,35 @@ class RenameCommand extends Command {
       }
     }
   }
+}
 
-  renameDartFiles(String oldName, String newName) async {
-    var entry =
-        new File.fromUri(Directory.current.uri.resolve('lib/$oldName.dart'));
+renameDartFiles(Directory dir, String oldName, String newName) async {
+  var entry = new File.fromUri(dir.uri.resolve('lib/$oldName.dart'));
 
-    if (await entry.exists()) {
-      await entry.rename('lib/$newName.dart');
-      print('Renaming library file `${entry.absolute.path}`...');
-    }
+  if (await entry.exists()) {
+    await entry.rename('lib/$newName.dart');
+    print('Renaming library file `${entry.absolute.path}`...');
+  }
 
-    await for (FileSystemEntity file
-        in Directory.current.list(recursive: true)) {
-      if (file is File && file.path.endsWith('.dart')) {
-        var contents = await file.readAsString();
-        var ast = parseCompilationUnit(contents);
-        var visitor = new RenamingVisitor(oldName, newName)
-          ..visitCompilationUnit(ast);
+  await for (FileSystemEntity file in dir.list(recursive: true)) {
+    if (file is File && file.path.endsWith('.dart')) {
+      var contents = await file.readAsString();
+      var ast = parseCompilationUnit(contents);
+      var visitor = new RenamingVisitor(oldName, newName)
+        ..visitCompilationUnit(ast);
 
-        if (visitor.replace.isNotEmpty) {
-          visitor.replace.forEach((range, replacement) {
-            if (range.first is int) {
-              contents =
-                  contents.replaceRange(range.first, range.last, replacement);
-            } else if (range.first is String) {
-              contents = contents.replaceAll(range.first, replacement);
-            }
-          });
+      if (visitor.replace.isNotEmpty) {
+        visitor.replace.forEach((range, replacement) {
+          if (range.first is int) {
+            contents =
+                contents.replaceRange(range.first, range.last, replacement);
+          } else if (range.first is String) {
+            contents = contents.replaceAll(range.first, replacement);
+          }
+        });
 
-          await file.writeAsString(contents);
-          print('Updated file `${file.absolute.path}`.');
-        }
+        await file.writeAsString(contents);
+        print('Updated file `${file.absolute.path}`.');
       }
     }
   }
