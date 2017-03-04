@@ -1,5 +1,5 @@
 name: angel_rethink
-version: 1.0.3
+version: 1.0.4
 description: RethinkDB-enabled services for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 environment:

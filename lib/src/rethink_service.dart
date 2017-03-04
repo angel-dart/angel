@@ -138,7 +138,7 @@ class RethinkService extends Service {
             hookedService.afterCreated,
             new HookedServiceEvent(
                 true, null, null, this, HookedServiceEvent.UPDATED,
-                result: newVal, id: oldVal['od'], data: newVal));
+                result: newVal, id: oldVal['id'], data: newVal));
       } else if (type == 'remove') {
         // Remove
         hookedService.fireEvent(
