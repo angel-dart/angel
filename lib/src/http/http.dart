@@ -2,6 +2,7 @@
 library angel_framework.http;
 
 export 'package:angel_route/angel_route.dart';
+export 'package:body_parser/body_parser.dart' show FileUploadInfo;
 export 'angel_base.dart';
 export 'angel_http_exception.dart';
 export 'anonymous_service.dart';
