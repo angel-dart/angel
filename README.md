@@ -1,5 +1,5 @@
 # relations
-[![version 1.0.0-alpha](https://img.shields.io/badge/pub-v1.0.0--alpha-red.svg)](https://pub.dartlang.org/packages/angel_relations)
+[![version 1.0.0](https://img.shields.io/badge/pub-v1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_relations)
 [![build status](https://travis-ci.org/angel-dart/relations.svg)](https://travis-ci.org/angel-dart/relations)
 
 Database-agnostic relations between Angel services.

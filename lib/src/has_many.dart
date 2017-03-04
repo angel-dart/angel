@@ -17,15 +17,12 @@ HookedServiceEventListener hasMany(Pattern servicePath,
     String localKey,
     getLocalKey(obj),
     assignForeignObjects(foreign, obj)}) {
+
   return (HookedServiceEvent e) async {
     var ref = e.service.app.service(servicePath);
     var foreignName =
         as?.isNotEmpty == true ? as : pluralize.plural(servicePath.toString());
     if (ref == null) throw noService(servicePath);
-
-    if (foreignKey == null)
-      print(
-          'WARNING: No foreign key provided for hasMany, defaulting to \'userId\'.');
 
     _getLocalKey(obj) {
       if (getLocalKey != null)
@@ -58,7 +55,7 @@ HookedServiceEventListener hasMany(Pattern servicePath,
           'query': {foreignKey ?? 'userId': id}
         });
 
-        if (indexed?.isNotEmpty != true) {
+        if (indexed == null || indexed is! List || indexed.isNotEmpty != true) {
           await _assignForeignObjects([], obj);
         } else {
           await _assignForeignObjects(indexed, obj);

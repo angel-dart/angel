@@ -5,25 +5,25 @@ import 'plural.dart' as pluralize;
 import 'no_service.dart';
 
 /// Represents a relationship in which the current [service] "belongs to"
-/// a single member of the service at [servicePath]. Use [as] to set the name
+/// multiple members of the service at [servicePath]. Use [as] to set the name
 /// on the target object.
 ///
 /// Defaults:
 /// * [foreignKey]: `userId`
 /// * [localKey]: `id`
-HookedServiceEventListener belongsTo(Pattern servicePath,
+HookedServiceEventListener belongsToMany(Pattern servicePath,
     {String as,
     String foreignKey,
     String localKey,
     getForeignKey(obj),
-    assignForeignObject(foreign, obj)}) {
+    assignForeignObject(List foreign, obj)}) {
   String localId = localKey;
   var foreignName =
-      as?.isNotEmpty == true ? as : pluralize.singular(servicePath.toString());
+      as?.isNotEmpty == true ? as : pluralize.plural(servicePath.toString());
 
   if (localId == null) {
     localId = foreignName + 'Id';
-    // print('No local key provided for belongsTo, defaulting to \'$localId\'.');
+    // print('No local key provided for belongsToMany, defaulting to \'$localId\'.');
   }
 
   return (HookedServiceEvent e) async {
@@ -64,7 +64,7 @@ HookedServiceEventListener belongsTo(Pattern servicePath,
         if (indexed == null || indexed is! List || indexed.isNotEmpty != true) {
           await _assignForeignObject(null, obj);
         } else {
-          var child = indexed.first;
+          var child = indexed is Iterable ? indexed.toList() : [indexed];
           await _assignForeignObject(child, obj);
         }
       }

@@ -1,7 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 
-class MapService extends Service {
+class CustomMapService extends Service {
   final List<Map> _items = [];
 
   Iterable<Map> tailor(Iterable<Map> items, Map params) {
