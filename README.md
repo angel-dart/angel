@@ -12,7 +12,7 @@ In addition, the client supports `angel_auth` authentication.
 
 ```dart
 // Choose one or the other, depending on platform
-import 'package:angel_client/cli.dart';
+import 'package:angel_client/io.dart';
 import 'package:angel_client/browser.dart';
 
 main() async {
