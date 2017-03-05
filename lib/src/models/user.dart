@@ -4,7 +4,7 @@ import 'package:angel_framework/common.dart';
 
 class User extends Model {
   String email, username, password, salt;
-  final List<String> roles = [];
+  List<String> roles;
 
   User(
       {String id,
@@ -12,8 +12,7 @@ class User extends Model {
       this.username,
       this.password,
       this.salt,
-      Iterable<String> roles: const []}) {
+      this.roles: const []}) {
     this.id = id;
-    this.roles.addAll(roles ?? []);
   }
 }
