@@ -150,7 +150,7 @@ class Angel extends AngelBase {
   /// Shortcut for adding a middleware to inject a serialize on every request.
   void injectSerializer(ResponseSerializer serializer) {
     before.add((RequestContext req, ResponseContext res) async {
-      res.serializer = serialize;
+      res.serializer = serializer;
       return true;
     });
   }
