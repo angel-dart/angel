@@ -11,7 +11,7 @@ class AuthController extends Controller {
   ///
   /// Our User service is already wired to remove sensitive data from serialized JSON.
   deserializer(String id) async =>
-      app.service('api/users').read(id, {'provider': Providers.VIA_REST});
+      app.service('api/users').read(id, {'provider': Providers.REST});
 
   serializer(User user) async => user.id;
 
