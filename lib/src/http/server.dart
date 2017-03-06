@@ -139,6 +139,22 @@ class Angel extends AngelBase {
     container.singleton(this);
   }
 
+  /// Shortcut for adding a middleware to inject a key/value pair on every request.
+  void inject(key, value) {
+    before.add((RequestContext req, ResponseContext res) async {
+      req.inject(key, value);
+      return true;
+    });
+  }
+
+  /// Shortcut for adding a middleware to inject a serialize on every request.
+  void injectSerializer(ResponseSerializer serializer) {
+    before.add((RequestContext req, ResponseContext res) async {
+      res.serializer = serialize;
+      return true;
+    });
+  }
+
   /// Runs some [handler]. Returns `true` if request execution should continue.
   Future<bool> executeHandler(
       handler, RequestContext req, ResponseContext res) async {
@@ -265,9 +281,11 @@ class Angel extends AngelBase {
                   accept.contains('*/*') ||
                   accept.contains(ContentType.JSON.mimeType) ||
                   accept.contains("application/javascript")) {
-                res.serialize(e.toMap());
+                res.serialize(e.toMap(),
+                    contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+                        ContentType.JSON.mimeType);
               } else {
-                await _errorHandler(e, req, res);
+                await errorHandler(e, req, res);
               }
               // _finalizeResponse(request, res);
             } catch (e, st) {
