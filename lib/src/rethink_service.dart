@@ -159,7 +159,7 @@ class RethinkService extends Service {
   Future read(id, [Map params]) async {
     var query = buildQuery(table.get(id?.toString()), params);
     var found = await _sendQuery(query);
-    print('Found for $id: $found');
+    //print('Found for $id: $found');
 
     if (found == null) {
       throw new AngelHttpException.notFound(
