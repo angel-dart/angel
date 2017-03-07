@@ -64,8 +64,7 @@ class RethinkService extends Service {
         return query;
       else {
         Map q = params['query'];
-        return q.keys.map((k) => k.toString()).fold<RqlQuery>(query,
-            (out, key) {
+        return q.keys.fold<RqlQuery>(query, (out, key) {
           var val = q[key];
 
           if (val is RequestContext ||
@@ -74,7 +73,7 @@ class RethinkService extends Service {
               val is Providers)
             return out;
           else {
-            return out.filter({k.toString(): val});
+            return out.filter({key.toString(): val});
           }
         });
       }
