@@ -1,8 +1,6 @@
 # Body Parser
-![version 1.0.0-dev+5](https://img.shields.io/badge/version-1.0.0--dev+5-red.svg)
+![version 1.0.0](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)
 ![build status](https://travis-ci.org/thosakwe/body_parser.svg)
-
-**NOT YET PRODUCTION READY**
 
 Parse request bodies and query strings in Dart, as well multipart/form-data uploads. No external
 dependencies required.

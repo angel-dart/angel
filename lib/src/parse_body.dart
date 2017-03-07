@@ -26,9 +26,9 @@ Future<BodyParseResult> parseBody(HttpRequest request,
   Future<String> getBody() async {
     if (storeOriginalBuffer) {
       List<int> bytes = await getBytes();
-      return UTF8.decode(result.originalBuffer = bytes);
+      return Uri.decodeFull(UTF8.decode(result.originalBuffer = bytes));
     } else
-      return await request.transform(UTF8.decoder).join();
+      return await request.transform(UTF8.decoder).join().then(Uri.decodeFull);
   }
 
   try {
