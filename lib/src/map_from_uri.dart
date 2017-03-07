@@ -10,7 +10,8 @@ buildMapFromUri(Map map, String body) {
     if (keyValuePair.contains('=')) {
       var equals = keyValuePair.indexOf('=');
       String key = Uri.decodeQueryComponent(keyValuePair.substring(0, equals));
-      String value = keyValuePair.substring(equals + 1); //Uri.decodeQueryComponent(split[1]);
+      String value =
+          Uri.decodeQueryComponent(keyValuePair.substring(equals + 1));
 
       if (parseArrayRgx.hasMatch(key)) {
         Match queryMatch = parseArrayRgx.firstMatch(key);
@@ -34,8 +35,9 @@ buildMapFromUri(Map map, String body) {
             targetMap[keys[i]] = getValue(value);
           }
         }
-      }
-      else map[key] = getValue(value);
-    } else map[Uri.decodeQueryComponent(keyValuePair)] = true;
+      } else
+        map[key] = getValue(value);
+    } else
+      map[Uri.decodeQueryComponent(keyValuePair)] = true;
   }
 }
