@@ -16,7 +16,7 @@ class Rest extends BaseAngelClient {
 
   @override
   Future<AngelAuthResult> authenticate(
-      {String type: auth_types.LOCAL,
+      {String type,
       credentials,
       String authEndpoint: '/auth',
       String reviveEndpoint: '/auth/token'}) async {
@@ -28,6 +28,7 @@ class Rest extends BaseAngelClient {
 
       try {
         final result = await super.authenticate(
+            type: null,
             credentials: {'token': JSON.decode(window.localStorage['token'])},
             reviveEndpoint: reviveEndpoint);
         window.localStorage['token'] = JSON.encode(authToken = result.token);

@@ -8,7 +8,6 @@ import 'package:http/src/request.dart' as http;
 import 'package:http/src/response.dart' as http;
 import 'package:http/src/streamed_response.dart' as http;
 import 'angel_client.dart';
-import 'auth_types.dart' as auth_types;
 
 final RegExp straySlashes = new RegExp(r"(^/)|(/+$)");
 const Map<String, String> _readHeaders = const {'Accept': 'application/json'};
@@ -56,7 +55,7 @@ abstract class BaseAngelClient extends Angel {
 
   @override
   Future<AngelAuthResult> authenticate(
-      {String type: auth_types.LOCAL,
+      {String type,
       credentials,
       String authEndpoint: '/auth',
       String reviveEndpoint: '/auth/token'}) async {
