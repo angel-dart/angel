@@ -14,22 +14,27 @@ class ConfigurationTransformer extends Transformer {
   ConfigurationTransformer.asPlugin(this._settings) {}
 
   Future apply(Transform transform) async {
-    var app = new Angel();
+    try {
+      var app = new Angel();
 
-    await app.configure(loadConfigurationFile(
-        directoryPath: _settings.configuration["dir"] ?? "./config",
-        overrideEnvironmentName: _settings.configuration["env"]));
+      await app.configure(loadConfigurationFile(
+          directoryPath: _settings.configuration["dir"] ?? "./config",
+          overrideEnvironmentName: _settings.configuration["env"]));
 
-    var text = await transform.primaryInput.readAsString();
-    var compilationUnit = parseCompilationUnit(text);
-    var visitor = new ConfigAstVisitor(app.properties);
-    visitor.visitCompilationUnit(compilationUnit);
+      var text = await transform.primaryInput.readAsString();
+      var compilationUnit = parseCompilationUnit(text);
+      var visitor = new ConfigAstVisitor(app.properties);
+      visitor.visitCompilationUnit(compilationUnit);
 
-    await for (Map replaced in visitor.onReplaced) {
+      await for (Map replaced in visitor.onReplaced) {
         text = text.replaceAll(replaced["needle"], replaced["with"]);
-    }
+      }
 
-    transform.addOutput(new Asset.fromString(transform.primaryInput.id, text));
+      transform
+          .addOutput(new Asset.fromString(transform.primaryInput.id, text));
+    } catch (e) {
+      // Fail silently...
+    }
   }
 }
 
@@ -51,15 +56,15 @@ class ConfigAstVisitor extends GeneralizingAstVisitor {
     for (int i = 0; i < split.length; i++) {
       if (parent != null && parent is Map) parent = parent[split[i]];
     }
-    
+
     return parent;
   }
 
   @override
   visitCompilationUnit(CompilationUnit ctx) {
-      var result = super.visitCompilationUnit(ctx);
-      _onReplaced.close();
-      return result;
+    var result = super.visitCompilationUnit(ctx);
+    _onReplaced.close();
+    return result;
   }
 
   @override
@@ -70,7 +75,7 @@ class ConfigAstVisitor extends GeneralizingAstVisitor {
       _onReplaced.add({"needle": ctx.toString(), "with": ""});
 
       if (ctx.asKeyword != null) {
-          _prefix = ctx.prefix.name;
+        _prefix = ctx.prefix.name;
       }
     }
 
