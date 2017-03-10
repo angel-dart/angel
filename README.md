@@ -1,5 +1,10 @@
 # angel_cli
 Command-line tools for the Angel framework.
+Includes functionality such as:
+* Project scaffolding
+* Generating service models, plugins, tests and more
+* Renaming projects
+* Starting server with live reloading
 
 To install:
 

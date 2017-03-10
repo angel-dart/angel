@@ -17,7 +17,7 @@ class RethinkServiceGenerator extends ServiceGenerator {
   void applyToLibrary(LibraryBuilder library, String name, String lower) {
     library.addMembers([
       'package:angel_rethink/angel_rethink.dart',
-      'package:rethinkdb_driver/rethinkdb_driver.dart'
+      'package:rethinkdb_driver2/rethinkdb_driver2.dart'
     ].map((str) => new ImportBuilder(str)));
   }
 
