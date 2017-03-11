@@ -41,7 +41,7 @@ HookedServiceEventListener toJson() {
     }
 
     if (e.isBefore) {
-      return e.data = normalize(e.data);
+      e.data = normalize(e.data);
     } else
       e.result = normalize(e.result);
   };
@@ -49,6 +49,21 @@ HookedServiceEventListener toJson() {
 
 /// Mutates `e.data` or `e.result` using the given [transformer].
 HookedServiceEventListener transform(transformer(obj)) {
+  normalize(obj) {
+    if (obj == null)
+      return null;
+    else if (obj is Iterable)
+      return obj.map(normalize).toList();
+    else
+      return transformer(obj);
+  }
+
+  return (HookedServiceEvent e) {
+    if (e.isBefore) {
+      e.data = normalize(e.data);
+    } else
+      e.result = normalize(e.result);
+  };
 }
 
 /// Transforms `e.data` or `e.result` into an instance of the given [type],
@@ -62,7 +77,7 @@ HookedServiceEventListener toType(Type type) {
     }
 
     if (e.isBefore) {
-      return e.data = normalize(e.data);
+      e.data = normalize(e.data);
     } else
       e.result = normalize(e.result);
   };
