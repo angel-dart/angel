@@ -4,8 +4,7 @@ homepage: "https://github.com/thosakwe/oauth2_server.git"
 name: "angel_auth_oauth2_server"
 version: "0.0.0"
 dependencies: 
-  angel_auth: "^1.0.0-dev"
-  angel_framework: "^1.0.0-dev"
+  angel_auth: "^1.0.0"
 dev_dependencies: 
   angel_test: "^1.0.0-dev"
   http: "^0.11.3+9"
