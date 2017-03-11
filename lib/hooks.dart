@@ -47,6 +47,10 @@ HookedServiceEventListener toJson() {
   };
 }
 
+/// Mutates `e.data` or `e.result` using the given [transformer].
+HookedServiceEventListener transform(transformer(obj)) {
+}
+
 /// Transforms `e.data` or `e.result` into an instance of the given [type],
 /// if it is not already.
 HookedServiceEventListener toType(Type type) {
