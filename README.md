@@ -12,3 +12,6 @@
 [Roadmap](https://github.com/angel-dart/roadmap/blob/master/ROADMAP.md)
 
 [File an Issue](https://github.com/angel-dart/roadmap/issues)
+
+## Join the team
+Do you want to collaborate? Join the project at https://projectgroupie.com/projects/212 
