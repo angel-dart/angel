@@ -26,9 +26,7 @@ configureServer(Db db) {
     
     // Don't broadcast user events over WebSockets - they're sensitive data!
     service.beforeAll((e) {
-      if (e.params == null)
-        e.params = {'broadcast': false};
-      else e.params['broadcast'] = false;
+      e.params['broadcast'] = false;
     });
 
     // Validate new users, and also hash their passwords.
