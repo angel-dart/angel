@@ -16,6 +16,7 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
 class Router extends Extensible {
+  final List<_ChainedRouter> _chained = [];
   final List _middleware = [];
   final Map<Pattern, Router> _mounted = {};
   final List<Route> _routes = [];
@@ -31,7 +32,13 @@ class Router extends Extensible {
   /// Additional filters to be run on designated requests.
   Map<String, dynamic> requestMiddleware = {};
 
-  List<Route> get routes => new List<Route>.unmodifiable(_routes);
+  List<Route> get routes {
+    var result = []..addAll(_routes);
+
+    for (var piped in _chained) result.addAll(piped.routes);
+
+    return new List<Route>.unmodifiable(result);
+  }
 
   /// Provide a `root` to make this Router revolve around a pre-defined route.
   /// Not recommended.
@@ -57,13 +64,22 @@ class Router extends Extensible {
     return route.._path = _pathify(path);
   }
 
+  _ChainedRouter _addChained(_ChainedRouter piped) {
+    // mount('/', piped);
+    _chained.add(piped);
+    return piped;
+  }
+
   /// Prepends the given middleware to any routes created
   /// by the resulting router.
-  /// 
+  ///
   /// [middleware] can be either an `Iterable`, or a single object.
   ///
   /// The resulting router can be chained, too.
-  _ChainedRouter chain(middleware) => new _ChainedRouter(this, middleware);
+  _ChainedRouter chain(middleware) {
+    var piped = new _ChainedRouter(this, middleware);
+    return _addChained(piped);
+  }
 
   /// Returns a [Router] with a duplicated version of this tree.
   Router clone() {
@@ -142,7 +158,6 @@ class Router extends Extensible {
       String namespace: null}) {
     final router = new Router().._middleware.addAll(middleware);
     callback(router..debug = debug);
-
     return mount(path, router, namespace: namespace).._name = name;
   }
 
@@ -420,8 +435,18 @@ class _ChainedRouter extends Router {
   @override
   Route addRoute(String method, Pattern path, handler,
       {List middleware: const []}) {
-    return _root.addRoute(method, path, handler,
+    return super.addRoute(method, path, handler,
         middleware: []..addAll(_handlers)..addAll(middleware ?? []));
+  }
+
+  SymlinkRoute group(Pattern path, void callback(Router router),
+      {Iterable middleware: const [],
+      String name: null,
+      String namespace: null}) {
+    final router =
+        new _ChainedRouter(_root, []..addAll(_handlers)..addAll(middleware));
+    callback(router..debug = debug);
+    return mount(path, router, namespace: namespace).._name = name;
   }
 
   @override
@@ -439,6 +464,6 @@ class _ChainedRouter extends Router {
     piped._handlers.addAll([]
       ..addAll(_handlers)
       ..addAll(middleware is Iterable ? middleware : [middleware]));
-    return piped;
+    return _addChained(piped);
   }
 }
