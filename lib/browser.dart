@@ -1,7 +1,7 @@
 /// Browser library for the Angel framework.
 library angel_client.browser;
 
-import 'dart:async' show Future, Stream, StreamController;
+import 'dart:async' show Future, Stream, StreamController, Timer;
 import 'dart:convert' show JSON;
 import 'dart:html' show CustomEvent, window;
 import 'package:http/browser_client.dart' as http;
@@ -53,21 +53,24 @@ class Rest extends BaseAngelClient {
     var ctrl = new StreamController<String>();
     var wnd = window.open(url, 'angel_client_auth_popup');
 
-    wnd
-      ..on['beforeunload'].listen((_) {
-        if (!ctrl.isClosed) {
+    new Timer.periodic(new Duration(milliseconds: 500), (timer) {
+      if (!ctrl.isClosed) {
+        if (wnd.closed) {
           ctrl.addError(new AngelHttpException.notAuthenticated(
               message:
                   errorMessage ?? 'Authentication via popup window failed.'));
           ctrl.close();
         }
-      })
-      ..on[eventName ?? 'token'].listen((CustomEvent e) {
-        if (!ctrl.isClosed) {
-          ctrl.add(e.detail);
-          ctrl.close();
-        }
-      });
+      } else
+        timer.cancel();
+    });
+
+    window.on[eventName ?? 'token'].listen((CustomEvent e) {
+      if (!ctrl.isClosed) {
+        ctrl.add(e.detail);
+        ctrl.close();
+      }
+    });
 
     return ctrl.stream;
   }
