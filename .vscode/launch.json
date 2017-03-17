@@ -6,7 +6,7 @@
             "type": "dart-cli",
             "request": "launch",
             "cwd": "${workspaceRoot}/example",
-            "debugSettings": "${command.debugSettings}",
+            "debugSettings": "${command:debugSettings}",
             "program": "${workspaceRoot}/example/server.dart",
             "args": []
         }

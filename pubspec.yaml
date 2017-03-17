@@ -4,7 +4,7 @@ environment:
   sdk: ">=1.19.0"
 homepage: "https://github.com/angel-dart/auth_twitter.git"
 name: "angel_auth_twitter"
-version: "1.0.1"
+version: "1.0.2"
 dependencies: 
   angel_auth: "^1.0.0-dev"
   random_string: "^0.0.1"

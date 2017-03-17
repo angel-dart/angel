@@ -11,7 +11,7 @@ const Map<String, String> TWITTER_CONFIG = const {
   'secret': 'n2oA0ZtR7TzYincpMYElRpyYovAQlhYizTkTm2x5QxjH6mLVyE'
 };
 
-verifier(Twit twit) async {
+verifier(TwitBase twit) async {
   // Maybe fetch user credentials:
   return await twit.get('/account/verify_credentials.json');
 }

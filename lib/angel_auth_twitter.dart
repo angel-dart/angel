@@ -5,13 +5,12 @@ import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
-import 'package:http/http.dart' as http;
 import 'package:random_string/random_string.dart' as rs;
-import 'package:twit/twit.dart';
+import 'package:twit/io.dart';
 
 const String _ENDPOINT = "https://api.twitter.com";
 
-typedef TwitterAuthVerifier(Twit twit);
+typedef TwitterAuthVerifier(TwitBase twit);
 
 class TwitterStrategy extends AuthStrategy {
   HttpClient _client = new HttpClient();
@@ -158,7 +157,7 @@ class TwitterStrategy extends AuthStrategy {
       accessTokenSecret: loginData['oauth_token_secret']
     );
 
-    var twit = new Twit(credentials, new http.Client());
+    var twit = new Twit(credentials);
     return await this.verifier(twit);
   }
 }
