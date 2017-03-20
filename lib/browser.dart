@@ -90,7 +90,7 @@ class _HashRouter extends _BrowserRouterImpl {
 
   @override
   void listen() {
-    window.onHashChange.listen((_) {
+    void handleHash([_]) {
       final path = window.location.hash.replaceAll(_hash, '');
       final resolved = resolveAbsolute(path);
 
@@ -101,7 +101,10 @@ class _HashRouter extends _BrowserRouterImpl {
         _onResolve.add(resolved);
         _onRoute.add(_current = resolved.route);
       }
-    });
+    }
+
+    window.onHashChange.listen(handleHash);
+    handleHash();
   }
 }
 
@@ -130,20 +133,26 @@ class _PushStateRouter extends _BrowserRouterImpl {
 
   @override
   void listen() {
-    window.onPopState.listen((e) {
-      if (e.state is Map && e.state.containsKey('path')) {
-        final resolved = resolveAbsolute(e.state['path']);
+    void handleState(state) {
+      if (state is Map && state.containsKey('path')) {
+        final resolved = resolveAbsolute(state['path']);
 
         if (resolved != null && resolved.route != _current) {
-          properties.addAll(e.state['properties'] ?? {});
+          properties.addAll(state['properties'] ?? {});
           _onResolve.add(resolved);
           _onRoute.add(_current = resolved.route
-            ..state.properties.addAll(e.state['params'] ?? {}));
+            ..state.properties.addAll(state['params'] ?? {}));
         }
       } else {
         _onResolve.add(null);
         _onRoute.add(_current = null);
       }
+    }
+
+    window.onPopState.listen((e) {
+      handleState(e.state);
     });
+
+    handleState(window.history.state);
   }
 }
