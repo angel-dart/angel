@@ -31,5 +31,7 @@ basic(BrowserRouter router) {
 
   router.get('c', 'c handler');
 
-  router.dumpTree();
+  router
+    ..dumpTree()
+    ..listen();
 }

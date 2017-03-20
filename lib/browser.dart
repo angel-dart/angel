@@ -1,8 +1,10 @@
 import 'dart:async' show Stream, StreamController;
-import 'dart:html' show AnchorElement, window;
+import 'dart:html';
 import 'angel_route.dart';
+import 'package:path/path.dart' as p;
 
 final RegExp _hash = new RegExp(r'^#/');
+final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A variation of the [Router] support both hash routing and push state.
 abstract class BrowserRouter extends Router {
@@ -14,7 +16,7 @@ abstract class BrowserRouter extends Router {
 
   /// Set `hash` to true to use hash routing instead of push state.
   /// `listen` as `true` will call `listen` after initialization.
-  factory BrowserRouter({bool hash: false, bool listen: true}) {
+  factory BrowserRouter({bool hash: false, bool listen: false}) {
     return hash
         ? new _HashRouter(listen: listen)
         : new _PushStateRouter(listen: listen);
@@ -29,6 +31,9 @@ abstract class BrowserRouter extends Router {
   ///
   /// This always navigates to an absolute path.
   void go(List linkParams);
+
+  // Handles a route path, manually.
+  // void handle(String path);
 
   /// Begins listen for location changes.
   void listen();
@@ -88,34 +93,59 @@ class _HashRouter extends _BrowserRouterImpl {
     window.location.hash = '#$uri';
   }
 
+  void handleHash([_]) {
+    final path = window.location.hash.replaceAll(_hash, '');
+    final resolved = resolveAbsolute(path);
+
+    if (resolved == null) {
+      _onResolve.add(null);
+      _onRoute.add(_current = null);
+    } else if (resolved != null && resolved.route != _current) {
+      _onResolve.add(resolved);
+      _onRoute.add(_current = resolved.route);
+    }
+  }
+
+  void handlePath(String path) {
+    final resolved = resolveAbsolute(path);
+
+    if (resolved == null) {
+      _onResolve.add(null);
+      _onRoute.add(_current = null);
+    } else if (resolved != null && resolved.route != _current) {
+      _onResolve.add(resolved);
+      _onRoute.add(_current = resolved.route);
+    }
+  }
+
   @override
   void listen() {
-    void handleHash([_]) {
-      final path = window.location.hash.replaceAll(_hash, '');
-      final resolved = resolveAbsolute(path);
-
-      if (resolved == null) {
-        _onResolve.add(null);
-        _onRoute.add(_current = null);
-      } else if (resolved != null && resolved.route != _current) {
-        _onResolve.add(resolved);
-        _onRoute.add(_current = resolved.route);
-      }
-    }
-
     window.onHashChange.listen(handleHash);
     handleHash();
   }
 }
 
 class _PushStateRouter extends _BrowserRouterImpl {
+  String _basePath;
+
   _PushStateRouter({bool listen, Route root}) : super(listen: listen) {
+    var $base = window.document.querySelector('base[href]') as BaseElement;
+
+    if ($base?.href?.isNotEmpty != true)
+      throw new StateError(
+          'You must have a <base href="<base-url-here>"> element present in your document to run the push state router.');
+    _basePath = $base.href.replaceAll(_straySlashes, '');
     if (listen) this.listen();
   }
 
   @override
   void _goTo(String uri) {
     final resolved = resolveAbsolute(uri);
+    var relativeUri = uri;
+
+    if (_basePath?.isNotEmpty == true) {
+      relativeUri = p.join(_basePath, uri.replaceAll(_straySlashes, ''));
+    }
 
     if (resolved == null) {
       _onResolve.add(null);
@@ -125,30 +155,34 @@ class _PushStateRouter extends _BrowserRouterImpl {
       window.history.pushState(
           {'path': route.path, 'params': {}, 'properties': properties},
           route.name ?? route.path,
-          uri);
+          relativeUri);
       _onResolve.add(resolved);
       _onRoute.add(_current = route);
     }
   }
 
-  @override
-  void listen() {
-    void handleState(state) {
-      if (state is Map && state.containsKey('path')) {
-        final resolved = resolveAbsolute(state['path']);
+  void handleState(state) {
+    if (state is Map && state.containsKey('path')) {
+      var path = state['path'];
+      final resolved = resolveAbsolute(path);
 
-        if (resolved != null && resolved.route != _current) {
-          properties.addAll(state['properties'] ?? {});
-          _onResolve.add(resolved);
-          _onRoute.add(_current = resolved.route
-            ..state.properties.addAll(state['params'] ?? {}));
-        }
+      if (resolved != null && resolved.route != _current) {
+        properties.addAll(state['properties'] ?? {});
+        _onResolve.add(resolved);
+        _onRoute.add(_current = resolved.route
+          ..state.properties.addAll(state['params'] ?? {}));
       } else {
         _onResolve.add(null);
         _onRoute.add(_current = null);
       }
+    } else {
+      _onResolve.add(null);
+      _onRoute.add(_current = null);
     }
+  }
 
+  @override
+  void listen() {
     window.onPopState.listen((e) {
       handleState(e.state);
     });
