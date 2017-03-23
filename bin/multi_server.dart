@@ -19,7 +19,7 @@ main() async {
   app.responseFinalizers.add(gzip());
   
   // Cache static assets - just to lower response time
-  await app.configure(cacheResponses(filters: [new RegExp('images/\.*')]));
+  await app.configure(cacheResponses(filters: [new RegExp(r'images/\.*')]));
 
   // Start up 5 instances of our main application
   await app.spawnIsolates(cluster, count: 5);
