@@ -15,3 +15,6 @@
 
 ## Join the team
 Do you want to collaborate? Join the project at https://projectgroupie.com/projects/212 
+
+## Installation & Setup
+Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.
