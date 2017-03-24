@@ -4,7 +4,7 @@ library demon.tool;
 import "dart:io";
 import "package:args/command_runner.dart";
 import 'package:angel_cli/angel_cli.dart';
-import 'package:angel_cli/pubspec.update.g.dart';
+import 'package:angel_cli/pubspec.dart';
 import 'package:console/console.dart';
 import 'package:http/http.dart' as http;
 
