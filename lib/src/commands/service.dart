@@ -71,11 +71,11 @@ class ServiceCommand extends Command {
       }
 
       if (generator.createsModel == true) {
-        await _generateModel(name, lower);
+        await _generateModel(pubspec, name, lower);
       }
 
       if (generator.createsValidator == true) {
-        await _generateValidator(lower, rc.constantCase);
+        await _generateValidator(pubspec, lower, rc.constantCase);
       }
 
       if (generator.exportedInServiceLibrary == true) {
@@ -152,34 +152,33 @@ class ServiceCommand extends Command {
     return prettyToSource(lib.buildAst());
   }
 
-  _generateModel(String name, String lower) async {
+  _generateModel(PubSpec pubspec, String name, String lower) async {
     var file = new File('lib/src/models/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
 
     await file.writeAsString('''
-
+library ${pubspec.name}.models.$lower;
 import 'package:angel_framework/common.dart';
 
 class $name extends Model {
-  String name;
-  
-  String desc;
+  @override
+  String id;
+  String name, desc;
 
-  $name({String id, this.name, this.desc}) {
-    this.id = id;
-  }
+  $name({this.id, this.name, this.desc});
 }
     '''
         .trim());
   }
 
-  _generateValidator(String lower, String constantCase) async {
+  _generateValidator(PubSpec pubspec, String lower, String constantCase) async {
     var file = new File('lib/src/validators/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
 
     await file.writeAsString('''
+library ${pubspec.name}.models.$lower;
 import 'package:angel_validate/angel_validate.dart';
 
 final Validator $constantCase = new Validator({

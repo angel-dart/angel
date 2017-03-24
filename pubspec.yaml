@@ -2,13 +2,14 @@ author: "Tobe O <thosakwe@gmail.com>"
 description: "Command-line tools for the Angel framework."
 homepage: "https://github.com/angel-dart/angel_cli"
 name: "angel_cli"
-version: "1.0.6"
+version: "1.0.7"
 dependencies: 
   # analyzer: "^0.29.0"
   args: "^0.13.7"
   code_builder: "^1.0.0-beta"
   console: "^2.2.3"
   glob: "^1.1.0"
+  http: ^0.11.3
   id: "^1.0.0"
   inflection: "^0.4.1"
   pubspec: "^0.0.14"
@@ -16,6 +17,9 @@ dependencies:
   recase: "^1.0.0"
   watcher: "^0.9.7"
   yaml: "^2.0.0"
+dev_dependencies:
+  build_runner: ^0.3.0
+  check_for_update: ^1.0.0
 environment: 
   sdk: ">=1.19.0"
 executables: 

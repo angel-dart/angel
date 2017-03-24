@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
 import 'package:pubspec/pubspec.dart';
+import 'package:recase/recase.dart';
 
 class TestCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -14,7 +15,8 @@ class TestCommand extends Command {
 
   @override
   run() async {
-    final name = await readInput("Name of Test: "), lower = name.toLowerCase();
+    final name = await readInput("Name of Test: "),
+        lower = new ReCase(name).snakeCase;
     final testDir = new Directory("test/services");
     final testFile =
         new File.fromUri(testDir.uri.resolve("${lower}_test.dart"));

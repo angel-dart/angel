@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
+import 'package:pubspec/pubspec.dart';
+import 'package:recase/recase.dart';
 
 class PluginCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -13,24 +15,24 @@ class PluginCommand extends Command {
 
   @override
   run() async {
-    final name = await readInput("Name of Plugin: "), lower = name.toLowerCase();
+    var pubspec = await PubSpec.load(Directory.current);
+    final name = await readInput("Name of Plugin: "),
+        lower = new ReCase(name).snakeCase;
     final testDir = new Directory("lib/src/config/plugins");
-    final pluginFile = new File.fromUri(
-        testDir.uri.resolve("$lower.dart"));
+    final pluginFile = new File.fromUri(testDir.uri.resolve("$lower.dart"));
 
-    if (!await pluginFile.exists())
-      await pluginFile.create(recursive: true);
+    if (!await pluginFile.exists()) await pluginFile.create(recursive: true);
 
-    await pluginFile.writeAsString(_generatePlugin(lower));
+    await pluginFile.writeAsString(_generatePlugin(pubspec, name, lower));
 
     _pen.green();
     _pen("${Icon.CHECKMARK} Successfully generated plugin $name.");
     _pen();
   }
 
-  String _generatePlugin(String name) {
-
+  String _generatePlugin(PubSpec pubspec, String name, String lower) {
     return '''
+library ${pubspec.name}.plugins.$lower;
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 

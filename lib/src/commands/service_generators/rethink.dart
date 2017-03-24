@@ -25,6 +25,7 @@ class RethinkServiceGenerator extends ServiceGenerator {
   ExpressionBuilder createInstance(
       MethodBuilder methodBuilder, String name, String lower) {
     return new TypeBuilder('RethinkService').newInstance([
+      reference('connection'),
       reference('r').invoke('table', [literal(pluralize(lower))])
     ]);
   }

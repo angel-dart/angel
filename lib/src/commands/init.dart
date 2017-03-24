@@ -17,7 +17,9 @@ class InitCommand extends Command {
   String get description =>
       "Initializes a new Angel project in the current directory.";
 
-  InitCommand() {}
+  InitCommand() {
+    argParser.addFlag('pub-get', defaultsTo: true);
+  }
 
   @override
   run() async {
@@ -38,15 +40,60 @@ class InitCommand extends Command {
         new File.fromUri(projectDir.uri.resolve('config/production.yaml')),
         secret);
 
-    var name = p.basenameWithoutExtension(projectDir.path);
+    var name = p.basenameWithoutExtension(
+        projectDir.absolute.uri.normalizePath().toFilePath());
     print('Renaming project from "angel" to "$name"...');
     await renamePubspec(projectDir, 'angel', name);
     await renameDartFiles(projectDir, 'angel', name);
+
+    if (argResults['pub-get'] != false) {
+      print('Now running pub get...');
+      await _pubGet(projectDir);
+    }
+
     _pen.green();
-    _pen(
-        "${Icon.CHECKMARK} Successfully initialized Angel project. Now running pub get...");
+    _pen("${Icon.CHECKMARK} Successfully initialized Angel project.");
     _pen();
-    await _pubGet(projectDir);
+    _pen
+      ..reset()
+      ..text('\nCongratulations! You are ready to start developing with Angel!')
+      ..text('\nTo start the server (with file watching), run ')
+      ..magenta()
+      ..text('`angel start`')
+      ..normal()
+      ..text(' in your terminal.')
+      ..text('\nHappy coding!')
+      ..call();
+  }
+
+  _deleteRecursive(FileSystemEntity entity, [bool self = true]) async {
+    if (entity is Directory) {
+      await for (var entity in entity.list(recursive: true)) {
+        try {
+          await _deleteRecursive(entity);
+        } catch (e) {}
+      }
+
+      try {
+        if (self != false) await entity.delete(recursive: true);
+      } catch (e) {}
+    } else if (entity is File) {
+      try {
+        await entity.delete(recursive: true);
+      } catch (e) {}
+    } else if (entity is Link) {
+      var path = await entity.resolveSymbolicLinks();
+      var stat = await FileStat.stat(path);
+
+      switch (stat.type) {
+        case FileSystemEntityType.DIRECTORY:
+          return await _deleteRecursive(new Directory(path));
+        case FileSystemEntityType.FILE:
+          return await _deleteRecursive(new File(path));
+        default:
+          break;
+      }
+    }
   }
 
   _cloneRepo(Directory projectDir) async {
@@ -54,11 +101,16 @@ class InitCommand extends Command {
       if (await projectDir.exists()) {
         var chooser = new Chooser(["Yes", "No"],
             message:
-                "Directory '${projectDir.absolute.path}' exists. Overwrite it? (Yes/No)");
+                "Directory '${projectDir.absolute.path}' already exists. Overwrite it? (Yes/No)");
 
         if (await chooser.choose() != "Yes")
           throw new Exception("Chose not to overwrite existing directory.");
-        await projectDir.delete(recursive: true);
+        else if (projectDir.absolute.uri.normalizePath().toFilePath() !=
+            Directory.current.absolute.uri.normalizePath().toFilePath())
+          await projectDir.delete(recursive: true);
+        else {
+          await _deleteRecursive(projectDir, false);
+        }
       }
 
       var git = await Process.start("git", [
@@ -89,7 +141,10 @@ class InitCommand extends Command {
   }
 
   _pubGet(Directory projectDir) async {
-    var pub = await Process.start("pub", ["get"],
+    var exec = new File(Platform.resolvedExecutable);
+    var pubPath = exec.parent.uri.resolve('pub').path;
+    print('Running pub at "$pubPath"...');
+    var pub = await Process.start(pubPath, ["get"],
         workingDirectory: projectDir.absolute.path);
     stdout.addStream(pub.stdout);
     stderr.addStream(pub.stderr);
