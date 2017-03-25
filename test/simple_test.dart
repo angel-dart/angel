@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart' as server;
 import 'package:angel_test/angel_test.dart';
 import 'package:test/test.dart';
@@ -19,6 +20,11 @@ main() {
   tearDown(() async {
     await testClient.close();
     app = null;
+  });
+
+  test('mock()', () async {
+    var response = await mock(app, 'GET', Uri.parse('/hello'));
+    expect(await response.transform(UTF8.decoder).join(), equals('"Hello"'));
   });
 
   group('isJson+hasStatus', () {

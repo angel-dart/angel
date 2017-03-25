@@ -44,11 +44,33 @@ Future<TestClient> connectTo(Angel app,
 }
 
 Future<MockHttpResponse> mock(Angel app, String method, Uri uri,
-    {Iterable<Cookie> cookies: const [],
+    {body,
+    Iterable<Cookie> cookies: const [],
     Map<String, dynamic> headers: const {}}) async {
   var rq = new MockHttpRequest(method, uri);
   rq.cookies.addAll(cookies ?? []);
   headers.forEach(rq.headers.add);
+
+  if (body is! Map) {
+    rq.write(body);
+  } else if (rq.headers.contentType == null ||
+      rq.headers.contentType.mimeType == ContentType.JSON.mimeType) {
+    rq
+      ..headers.contentType = ContentType.JSON
+      ..write(JSON.encode(body));
+  } else if (rq.headers.contentType.mimeType ==
+      'application/x-www-form-urlencoded') {
+    rq
+      ..headers.contentType =
+          new ContentType('application', 'x-www-form-urlencoded')
+      ..write(body.keys.fold<List<String>>(
+          [],
+          (out, k) =>
+              out..add('$k=' + Uri.encodeComponent(body[k]))).join('&'));
+  } else
+    throw new UnsupportedError(
+        'mock() only supports sending JSON or URL-encoded bodies.');
+
   await rq.close();
   await app.handleRequest(rq);
   return rq.response;
