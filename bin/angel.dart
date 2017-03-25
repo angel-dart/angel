@@ -25,21 +25,26 @@ main(List<String> args) async {
     ..addCommand(new RenameCommand());
 
   stdout.write('Checking for update... ');
-  var client = new http.Client();
-  var update = await checkForUpdate(client);
-  client.close();
 
-  if (update != null) {
-    stdout.writeln();
-    var pen = new TextPen();
-    pen.cyan();
-    pen.text(
-        'ATTENTION: There is a new version of the Angel CLI available (version $update).');
-    pen.text('\nTo update, run `pub global activate angel_cli`.');
-    pen();
-    stdout.writeln();
-  } else
-    stdout.writeln('No update available.');
+  try {
+    var client = new http.Client();
+    var update = await checkForUpdate(client);
+    client.close();
+
+    if (update != null) {
+      stdout.writeln();
+      var pen = new TextPen();
+      pen.cyan();
+      pen.text(
+          'ATTENTION: There is a new version of the Angel CLI available (version $update).');
+      pen.text('\nTo update, run `pub global activate angel_cli`.');
+      pen();
+      stdout.writeln();
+    } else
+      stdout.writeln('No update available.');
+  } catch (e) {
+    stdout.writeln('Failed to check for update.');
+  }
 
   return await runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");
