@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/src/base_client.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
-final Version PACKAGE_VERSION = new Version(1, 0, 7);
+final Version PACKAGE_VERSION = new Version(1, 0, 9);
 Future<Version> fetchCurrentVersion(http.BaseClient client) async {
   var response =
       await client.get('https://pub.dartlang.org/api/packages/angel_cli');

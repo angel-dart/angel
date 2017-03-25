@@ -32,7 +32,8 @@ class PluginCommand extends Command {
 
   String _generatePlugin(PubSpec pubspec, String name, String lower) {
     return '''
-library ${pubspec.name}.plugins.$lower;
+library ${pubspec.name}.config.plugins.$lower;
+
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 
