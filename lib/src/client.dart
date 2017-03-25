@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:angel_client/io.dart' as client;
 import 'package:angel_framework/angel_framework.dart';
+import 'package:mock_request/mock_request.dart';
 import 'package:uuid/uuid.dart';
 
 final Uuid _uuid = new Uuid();
@@ -40,6 +41,17 @@ Future<TestClient> connectTo(Angel app,
   }
 
   return client;
+}
+
+Future<MockHttpResponse> mock(Angel app, String method, Uri uri,
+    {Iterable<Cookie> cookies: const [],
+    Map<String, dynamic> headers: const {}}) async {
+  var rq = new MockHttpRequest(method, uri);
+  rq.cookies.addAll(cookies ?? []);
+  headers.forEach(rq.headers.add);
+  await rq.close();
+  await app.handleRequest(rq);
+  return rq.response;
 }
 
 /// Interacts with an Angel server.
