@@ -1,67 +1,105 @@
-import 'dart:convert';
-import 'package:angel_framework/angel_framework.dart' as server;
+import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
+import 'package:angel_validate/angel_validate.dart';
+import 'package:angel_websocket/server.dart';
 import 'package:test/test.dart';
 
 main() {
-  server.Angel app;
-  TestClient testClient;
+  Angel app;
+  TestClient client;
 
   setUp(() async {
-    app = new server.Angel()
+    app = new Angel()
       ..get('/hello', 'Hello')
+      ..get(
+          '/error',
+          () => throw new AngelHttpException.forbidden(message: 'Test')
+            ..errors.addAll(['foo', 'bar']))
+      ..get('/body', (ResponseContext res) {
+        res
+          ..write('OK')
+          ..end();
+      })
+      ..get(
+          '/valid',
+          () => {
+                'michael': 'jackson',
+                'billie': {'jean': 'hee-hee', 'is_my_lover': false}
+              })
       ..post('/hello', (req, res) async {
         return {'bar': req.body['foo']};
-      });
+      })
+      ..use(
+          '/foo',
+          new AnonymousService(
+              create: (data, [params]) async => {'foo': 'bar'}));
 
-    testClient = await connectTo(app);
+    var ws = new AngelWebSocket();
+    await app.configure(ws);
+
+    client = await connectTo(app);
   });
 
   tearDown(() async {
-    await testClient.close();
+    await client.close();
     app = null;
   });
 
-  test('mock()', () async {
-    var response = await mock(app, 'GET', Uri.parse('/hello'));
-    expect(await response.transform(UTF8.decoder).join(), equals('"Hello"'));
-  });
+  group('matchers', () {
+    group('isJson+hasStatus', () {
+      test('get', () async {
+        final response = await client.get('/hello');
+        expect(response, isJson('Hello'));
+      });
 
-  group('isJson+hasStatus', () {
-    test('get', () async {
-      final response = await testClient.get('/hello');
-      expect(response, isJson('Hello'));
+      test('post', () async {
+        final response = await client.post('/hello', body: {'foo': 'baz'});
+        expect(response, allOf(hasStatus(200), isJson({'bar': 'baz'})));
+      });
     });
 
-    test('post', () async {
-      final response = await testClient.post('/hello', body: {'foo': 'baz'});
-      expect(response, allOf(hasStatus(200), isJson({'bar': 'baz'})));
-    });
-  });
-
-  group('session', () {
-    test('initial session', () async {
-      final TestClient client = await connectTo(app,
-          initialSession: {'foo': 'bar'}, saveSession: true);
-      expect(client.session['foo'], equals('bar'));
+    test('isAngelHttpException', () async {
+      var res = await client.get('/error');
+      expect(res, isAngelHttpException());
+      expect(
+          res,
+          isAngelHttpException(
+              statusCode: 403, message: 'Test', errors: ['foo', 'bar']));
     });
 
-    test('add to session', () async {
-      final TestClient client = await connectTo(app, saveSession: true);
-      await client.addToSession({'michael': 'jackson'});
-      expect(client.session['michael'], equals('jackson'));
+    test('hasBody', () async {
+      var res = await client.get('/body');
+      expect(res, hasBody());
+      expect(res, hasBody('OK'));
     });
 
-    test('remove from session', () async {
-      final TestClient client = await connectTo(app,
-          initialSession: {'angel': 'framework'}, saveSession: true);
-      await client.removeFromSession(['angel']);
-      expect(client.session.containsKey('angel'), isFalse);
+    test('hasHeader', () async {
+      var res = await client.get('/hello');
+      expect(res, hasHeader('server'));
+      expect(res, hasHeader('server', 'angel'));
+      expect(res, hasHeader('server', ['angel']));
     });
 
-    test('disable session', () async {
-      final client = await connectTo(app, saveSession: false);
-      expect(client.session, isNull);
+    test('hasValidBody', () async {
+      var res = await client.get('/valid');
+      expect(res, hasContentType('application/json'));
+      expect(
+          res,
+          hasValidBody(new Validator({
+            'michael*': [isString, isNotEmpty, equals('jackson')],
+            'billie': new Validator({
+              'jean': [isString, isNotEmpty],
+              'is_my_lover': [isBool, isFalse]
+            })
+          })));
+    });
+
+    test('websocket', () async {
+      var ws = await client.websocket();
+      var foo = ws.service('foo');
+      foo.create({});
+      var result = await foo.onCreated.first;
+      expect(result.data, equals({'foo': 'bar'}));
     });
   });
 }

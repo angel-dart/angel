@@ -2,10 +2,12 @@ author: "Tobe O <thosakwe@gmail.com>"
 description: "Testing utility library for the Angel framework."
 homepage: "https://github.com/angel-dart/test.git"
 name: "angel_test"
-version: "1.0.1"
+version: "1.0.2"
 dependencies: 
-  angel_client: "^1.0.0-dev+16"
+  angel_client: "^1.0.0"
   angel_framework: "^1.0.0-dev"
+  angel_validate: ^1.0.0
+  angel_websocket: ^1.0.0
   http: "^0.11.3+9"
   matcher: "^0.12.0+2"
   mock_request: ^1.0.0
