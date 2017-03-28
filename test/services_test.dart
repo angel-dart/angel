@@ -56,6 +56,7 @@ main() {
       String postData = god.serialize({'text': 'Hello, world!'});
       var response =
           await client.post("$url/todos", headers: headers, body: postData);
+      expect(response.statusCode, 201);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));
@@ -65,6 +66,7 @@ main() {
       String postData = god.serialize({'text': 'Hello, world!'});
       await client.post("$url/todos", headers: headers, body: postData);
       var response = await client.get("$url/todos/0");
+      expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));
@@ -76,6 +78,7 @@ main() {
       postData = god.serialize({'text': 'modified'});
       var response =
           await client.patch("$url/todos/0", headers: headers, body: postData);
+      expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('modified'));
@@ -87,6 +90,7 @@ main() {
       postData = god.serialize({'over': 'write'});
       var response =
           await client.post("$url/todos/0", headers: headers, body: postData);
+      expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals(null));
@@ -97,6 +101,7 @@ main() {
       String postData = god.serialize({'text': 'Hello, world!'});
       await client.post("$url/todos", headers: headers, body: postData);
       var response = await client.delete("$url/todos/0");
+      expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));

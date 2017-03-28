@@ -31,15 +31,26 @@ class InjectionRequest {
 class Controller {
   Angel _app;
 
+  /// The [Angel] application powering this controller.
   Angel get app => _app;
+
   final bool debug;
+
+  /// If `true` (default), this class will inject itself as a singleton into the [app]'s container when bootstrapped.
+  final bool injectSingleton;
+
+  /// Middleware to run before all handlers in this class.
   List middleware = [];
+
+  /// A mapping of route paths to routes, produced from the [Expose] annotations on this class.
   Map<String, Route> routeMappings = {};
 
-  Controller({this.debug: false});
+  Controller({this.debug: false, this.injectSingleton: true});
 
   Future call(Angel app) async {
-    _app = app..container.singleton(this);
+    _app = app;
+
+    if (injectSingleton != false) _app.container.singleton(this);
 
     // Load global expose decl
     ClassMirror classMirror = reflectClass(this.runtimeType);

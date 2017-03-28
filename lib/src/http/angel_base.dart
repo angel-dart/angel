@@ -13,7 +13,12 @@ class AngelBase extends Routable {
 
   Container _container = new Container();
 
-  /// When set to true, the original body bytes will be stored
+  /// When set to true, the request body will not be parsed
+  /// automatically. You can call `req.parse()` manually,
+  /// or use `lazyBody()`.
+  bool lazyParseBodies = false;
+
+  /// When set to `true`, the original body bytes will be stored
   /// on requests. `false` by default.
   bool storeOriginalBuffer = false;
 

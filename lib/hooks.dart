@@ -32,20 +32,8 @@ AngelConfigurer hookAllServices(callback(Service service)) {
   };
 }
 
-/// Transforms `e.data` or `e.result` into JSON-friendly data, i.e. a Map.
-HookedServiceEventListener toJson() {
-  return (HookedServiceEvent e) {
-    normalize(obj) {
-      if (obj != null && obj is! Map) return god.serializeObject(obj);
-      return obj;
-    }
-
-    if (e.isBefore) {
-      e.data = normalize(e.data);
-    } else
-      e.result = normalize(e.result);
-  };
-}
+/// Transforms `e.data` or `e.result` into JSON-friendly data, i.e. a Map. Runs on Iterables as well.
+HookedServiceEventListener toJson() => transform(god.serializeObject);
 
 /// Mutates `e.data` or `e.result` using the given [transformer].
 HookedServiceEventListener transform(transformer(obj)) {
@@ -61,7 +49,7 @@ HookedServiceEventListener transform(transformer(obj)) {
   return (HookedServiceEvent e) {
     if (e.isBefore) {
       e.data = normalize(e.data);
-    } else
+    } else if (e.isAfter)
       e.result = normalize(e.result);
   };
 }
@@ -134,8 +122,13 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
       }
     }
 
-    if (e.params?.containsKey('provider') == true)
-      await normalize(e.isBefore ? e.data : e.result);
+    if (e.params?.containsKey('provider') == true) {
+      if (e.isBefore) {
+        e.data = await normalize(e.data);
+      } else if (e.isAfter) {
+        e.result = await normalize(e.result);
+      }
+    }
   };
 }
 
@@ -166,5 +159,92 @@ HookedServiceEventListener disable([provider]) {
         }
       }
     }
+  };
+}
+
+/// Serializes the current time to `e.data` or `e.result`.
+/// You can provide an [assign] function to set the property on your object, and skip reflection.
+///
+/// Default key: `createdAt`
+HookedServiceEventListener addCreatedAt({
+  assign(obj, String now),
+  String key,
+}) {
+  var name = key?.isNotEmpty == true ? key : 'createdAt';
+
+  return (HookedServiceEvent e) async {
+    _assign(obj, String now) {
+      if (assign != null)
+        return assign(obj, now);
+      else if (obj is Map)
+        obj.remove(name);
+      else if (obj is Extensible)
+        obj..properties.remove(name);
+      else {
+        try {
+          reflect(obj).setField(new Symbol(name), now);
+        } catch (e) {
+          throw new ArgumentError("Cannot set key '$name' on $obj.");
+        }
+      }
+    }
+
+    var now = new DateTime.now().toIso8601String();
+
+    normalize(obj) async {
+      if (obj != null) {
+        if (obj is Iterable) {
+          obj.forEach(normalize);
+        } else {
+          await _assign(obj, now);
+        }
+      }
+    }
+
+    if (e.params?.containsKey('provider') == true)
+      await normalize(e.isBefore ? e.data : e.result);
+  };
+}
+
+/// Serializes the current time to `e.data` or `e.result`.
+/// You can provide an [assign] function to set the property on your object, and skip reflection.///
+/// Default key: `createdAt`
+HookedServiceEventListener addUpatedAt({
+  assign(obj, String now),
+  String key,
+}) {
+  var name = key?.isNotEmpty == true ? key : 'updatedAt';
+
+  return (HookedServiceEvent e) async {
+    _assign(obj, String now) {
+      if (assign != null)
+        return assign(obj, now);
+      else if (obj is Map)
+        obj.remove(name);
+      else if (obj is Extensible)
+        obj..properties.remove(name);
+      else {
+        try {
+          reflect(obj).setField(new Symbol(name), now);
+        } catch (e) {
+          throw new ArgumentError("Cannot SET key '$name' ON $obj.");
+        }
+      }
+    }
+
+    var now = new DateTime.now().toIso8601String();
+
+    normalize(obj) async {
+      if (obj != null) {
+        if (obj is Iterable) {
+          obj.forEach(normalize);
+        } else {
+          await _assign(obj, now);
+        }
+      }
+    }
+
+    if (e.params?.containsKey('provider') == true)
+      await normalize(e.isBefore ? e.data : e.result);
   };
 }

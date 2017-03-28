@@ -20,6 +20,8 @@ typedef String ResponseSerializer(data);
 
 /// A convenience wrapper around an outgoing HTTP request.
 class ResponseContext extends Extensible {
+  final _LockableBytesBuilder _buffer = new _LockableBytesBuilder();
+  final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
   bool _isOpen = true;
 
   /// The [Angel] instance that is sending a response.
@@ -32,11 +34,27 @@ class ResponseContext extends Extensible {
   final List<Cookie> cookies = [];
 
   /// Headers that will be sent to the user.
-  final Map<String, String> headers = {HttpHeaders.SERVER: 'angel'};
+  ///
+  /// If the response is closed, then this getter will return an immutable `Map`.
+  Map<String, String> get headers {
+    if (!_isOpen)
+      return new Map<String, String>.unmodifiable(_headers);
+    else
+      return _headers;
+  }
 
   /// Serializes response data into a String.
   ///
-  /// The default is conversion into JSON.
+  /// The default is conversion into JSON via `package:json_god`.
+  ///
+  /// If you are 100% sure that your response handlers will only
+  /// be JSON-encodable objects (i.e. primitives, `List`s and `Map`s),
+  /// then consider setting [serializer] to `JSON.encode`.
+  ///
+  /// To set it globally for the whole [app], use the following helper:
+  /// ```dart
+  /// app.injectSerializer(JSON.encode);
+  /// ```
   ResponseSerializer serializer = god.serialize;
 
   /// This response's status code.
@@ -46,7 +64,7 @@ class ResponseContext extends Extensible {
   bool get isOpen => _isOpen;
 
   /// A set of UTF-8 encoded bytes that will be written to the response.
-  final BytesBuilder buffer = new BytesBuilder();
+  BytesBuilder get buffer => _buffer;
 
   /// Sets the status code to be sent with this response.
   @Deprecated('Please use `statusCode=` instead.')
@@ -91,8 +109,12 @@ class ResponseContext extends Extensible {
   /// If `true`, all response finalizers will be skipped.
   bool willCloseItself = false;
 
+  StateError _closed() => new StateError('Cannot modify a closed response.');
+
   /// Sends a download as a response.
   download(File file, {String filename}) async {
+    if (!_isOpen) throw _closed();
+
     headers["Content-Disposition"] =
         'attachment; filename="${filename ?? file.path}"';
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
@@ -103,6 +125,7 @@ class ResponseContext extends Extensible {
 
   /// Prevents more data from being written to the response.
   void end() {
+    _buffer._lock();
     _isOpen = false;
   }
 
@@ -119,14 +142,24 @@ class ResponseContext extends Extensible {
   void json(value) => serialize(value, contentType: ContentType.JSON);
 
   /// Returns a JSONP response.
-  void jsonp(value, {String callbackName: "callback"}) {
-    write("$callbackName(${god.serialize(value)})");
-    headers[HttpHeaders.CONTENT_TYPE] = "application/javascript";
+  void jsonp(value, {String callbackName: "callback", contentType}) {
+    if (!_isOpen) throw _closed();
+    write("$callbackName(${serializer(value)})");
+
+    if (contentType != null) {
+      if (contentType is ContentType)
+        this.contentType = contentType;
+      else
+        headers[HttpHeaders.CONTENT_TYPE] = contentType.toString();
+    } else
+      headers[HttpHeaders.CONTENT_TYPE] = 'application/javascript';
+
     end();
   }
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) async {
+    if (!_isOpen) throw _closed();
     write(await app.viewGenerator(view, data));
     headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     end();
@@ -140,6 +173,7 @@ class ResponseContext extends Extensible {
   ///
   /// See [Router]#navigate for more. :)
   void redirect(url, {bool absolute: true, int code: 302}) {
+    if (!_isOpen) throw _closed();
     headers[HttpHeaders.LOCATION] =
         url is String ? url : app.navigate(url, absolute: absolute);
     statusCode = code ?? 302;
@@ -165,6 +199,7 @@ class ResponseContext extends Extensible {
 
   /// Redirects to the given named [Route].
   void redirectTo(String name, [Map params, int code]) {
+    if (!_isOpen) throw _closed();
     Route _findRoute(Router r) {
       for (Route route in r.routes) {
         if (route is SymlinkRoute) {
@@ -189,6 +224,7 @@ class ResponseContext extends Extensible {
 
   /// Redirects to the given [Controller] action.
   void redirectToAction(String action, [Map params, int code]) {
+    if (!_isOpen) throw _closed();
     // UserController@show
     List<String> split = action.split("@");
 
@@ -218,7 +254,7 @@ class ResponseContext extends Extensible {
   /// Copies a file's contents into the response buffer.
   Future sendFile(File file,
       {int chunkSize, int sleepMs: 0, bool resumable: true}) async {
-    if (!isOpen) return;
+    if (!_isOpen) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     buffer.add(await file.readAsBytes());
@@ -229,9 +265,10 @@ class ResponseContext extends Extensible {
   ///
   /// [contentType] can be either a [String], or a [ContentType].
   void serialize(value, {contentType}) {
+    if (!_isOpen) throw _closed();
     var text = serializer(value);
     write(text);
-    
+
     if (contentType is String)
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     else if (contentType is ContentType) this.contentType = contentType;
@@ -247,7 +284,7 @@ class ResponseContext extends Extensible {
       int sleepMs: 0,
       bool resumable: true,
       Codec<List<int>, List<int>> codec}) async {
-    if (!isOpen) return;
+    if (!_isOpen) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     end();
@@ -261,11 +298,83 @@ class ResponseContext extends Extensible {
 
   /// Writes data to the response.
   void write(value, {Encoding encoding: UTF8}) {
-    if (isOpen) {
+    if (!_isOpen)
+      throw _closed();
+    else {
       if (value is List<int>)
         buffer.add(value);
       else
         buffer.add(encoding.encode(value.toString()));
     }
+  }
+}
+
+abstract class _LockableBytesBuilder extends BytesBuilder {
+  factory _LockableBytesBuilder() => new _LockableBytesBuilderImpl();
+  void _lock();
+}
+
+class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
+  bool _closed = false;
+  final List<int> _data = [];
+
+  StateError _deny() =>
+      new StateError('Cannot modified a closed response\'s buffer.');
+
+  @override
+  void _lock() {
+    _closed = true;
+  }
+
+  @override
+  void add(List<int> bytes) {
+    if (_closed)
+      throw _deny();
+    else {
+      _data.addAll(bytes);
+    }
+  }
+
+  @override
+  void addByte(int byte) {
+    if (_closed)
+      throw _deny();
+    else {
+      _data.add(byte);
+    }
+  }
+
+  @override
+  void clear() {
+    if (_closed)
+      throw _deny();
+    else {
+      _data.clear();
+    }
+  }
+
+  @override
+  bool get isEmpty => _data.isEmpty;
+
+  @override
+  bool get isNotEmpty => _data.isNotEmpty;
+
+  @override
+  int get length => _data.length;
+
+  @override
+  List<int> takeBytes() {
+    if (_closed)
+      return toBytes();
+    else {
+      var r = new List<int>.from(_data);
+      clear();
+      return r;
+    }
+  }
+
+  @override
+  List<int> toBytes() {
+    return _data;
   }
 }

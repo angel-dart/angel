@@ -63,6 +63,9 @@ class Angel extends AngelBase {
   /// `'production'`.
   bool get isProduction => Platform.environment['ANGEL_ENV'] == 'production';
 
+  /// The function used to bind this instance to an HTTP server.
+  ServerGenerator get serverGenerator => _serverGenerator;
+
   /// Fired whenever a controller is added to this instance.
   ///
   /// **NOTE**: This is a broadcast stream.
@@ -78,7 +81,8 @@ class Angel extends AngelBase {
 
   /// Always run before responses are sent.
   ///
-  /// These will only not run if an [AngelFatalError] occurs.
+  /// These will only not run if an [AngelFatalError] occurs,
+  /// or if a response's `willCloseItself` is set to `true`.
   final List<RequestHandler> responseFinalizers = [];
 
   /// The handler currently configured to run on [AngelHttpException]s.

@@ -45,17 +45,50 @@ class RequestContext extends Extensible {
   /// The original HTTP verb sent to the server.
   String get originalMethod => io.method;
 
+  StateError _unparsed(String type, String caps) => new StateError(
+      'Cannot get the $type of an unparsed request. Use lazy${caps}() instead.');
+
   /// All post data submitted to the server.
-  Map get body => _body.body;
+  ///
+  /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
+  /// then an error will be thrown.
+  /// 
+  /// **If you are writing a plug-in, use [lazyBody] instead.**
+  Map get body {
+    if (_body == null)
+      throw _unparsed('body', 'Body');
+    else
+      return _body.body;
+  }
 
   /// The content type of an incoming request.
   ContentType get contentType => _contentType;
 
   /// Any and all files sent to the server with this request.
-  List<FileUploadInfo> get files => _body.files;
+  ///
+  /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
+  /// then an error will be thrown.
+  /// 
+  /// **If you are writing a plug-in, use [lazyFiles] instead.**
+  List<FileUploadInfo> get files {
+    if (_body == null)
+      throw _unparsed('query', 'Files');
+    else
+      return _body.files;
+  }
 
   /// The original body bytes sent with this request. May be empty.
-  List<int> get originalBuffer => _body.originalBuffer ?? [];
+  ///
+  /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
+  /// then an error will be thrown.
+  /// 
+  /// **If you are writing a plug-in, use [lazyOriginalBuffer] instead.**
+  List<int> get originalBuffer {
+    if (_body == null)
+      throw _unparsed('original buffer', 'OriginalBuffer');
+    else
+      return _body.originalBuffer ?? [];
+  }
 
   /// The URL parameters extracted from the request URI.
   Map params = {};
@@ -64,7 +97,17 @@ class RequestContext extends Extensible {
   String get path => _path;
 
   /// The parsed request query string.
-  Map get query => _body.query;
+  ///
+  /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
+  /// then [uri].query will be returned.
+  /// 
+  /// **If you are writing a plug-in, consider using [lazyQuery] instead.** 
+  Map get query {
+    if (_body == null)
+      return uri.queryParameters;
+    else
+      return _body.query;
+  }
 
   /// The remote address requesting this resource.
   InternetAddress get remoteAddress => io.connectionInfo.remoteAddress;
@@ -106,9 +149,10 @@ class RequestContext extends Extensible {
         .replaceAll(new RegExp(r'/+$'), '');
     ctx._io = request;
 
-    ctx._body = (await parseBody(request,
-            storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
-        {};
+    if (app.lazyParseBodies != true)
+      ctx._body = (await parseBody(request,
+              storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
+          {};
 
     return ctx;
   }
@@ -133,7 +177,39 @@ class RequestContext extends Extensible {
       return null;
   }
 
+  /// Shorthand to add to [injections].
   void inject(type, value) {
     injections[type] = value;
+  }
+
+  /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the body.
+  Future<Map> lazyBody() => parse().then((b) => b.body);
+
+  /// Retrieves the request files if it has already been parsed, or lazy-parses it before returning the files.
+  Future<List<FileUploadInfo>> lazyFiles() => parse().then((b) => b.files);
+
+  /// Retrieves the request files if it has already been parsed, or lazy-parses it before returning the files.
+  ///
+  /// This will return an empty `List` if you have not enabled `storeOriginalBuffer` on your [app] instance.
+  Future<List<int>> lazyOriginalBuffer() =>
+      parse().then((b) => b.originalBuffer);
+
+  /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the query.
+  ///
+  /// If [forceParse] is not `true`, then [uri].query will be returned, and no parsing will be performed.
+  Future<Map<String, dynamic>> lazyQuery({bool forceParse: false}) {
+    if (_body == null && forceParse != true)
+      return new Future.value(uri.query);
+    else
+      return parse().then((b) => b.query);
+  }
+
+  /// Manually parses the request body, if it has not already been parsed.
+  Future<BodyParseResult> parse() async {
+    if (_body != null)
+      return _body;
+    else
+      return _body = await parseBody(io,
+          storeOriginalBuffer: app.storeOriginalBuffer == true);
   }
 }

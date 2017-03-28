@@ -1,6 +1,7 @@
 library angel_framework.http.service;
 
 import 'dart:async';
+import 'package:angel_framework/src/http/response_context.dart';
 import 'package:merge_map/merge_map.dart';
 import '../util.dart';
 import 'angel_base.dart';
@@ -100,15 +101,17 @@ class Service extends Routable {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(this.create, Middleware);
-    post(
-        '/',
-        (req, res) async => await this.create(
-            req.body,
-            mergeMap([
-              {'query': req.query},
-              restProvider,
-              req.serviceParams
-            ])),
+    post('/', (req, ResponseContext res) async {
+      var r = await this.create(
+          await req.lazyBody(),
+          mergeMap([
+            {'query': req.query},
+            restProvider,
+            req.serviceParams
+          ]));
+      res.statusCode = 201;
+      return r;
+    },
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -134,7 +137,7 @@ class Service extends Routable {
         '/:id',
         (req, res) async => await this.modify(
             toId(req.params['id']),
-            req.body,
+            await req.lazyBody(),
             mergeMap([
               {'query': req.query},
               restProvider,
@@ -150,7 +153,21 @@ class Service extends Routable {
         '/:id',
         (req, res) async => await this.update(
             toId(req.params['id']),
-            req.body,
+            await req.lazyBody(),
+            mergeMap([
+              {'query': req.query},
+              restProvider,
+              req.serviceParams
+            ])),
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (updateMiddleware == null) ? [] : updateMiddleware.handlers));
+    put(
+        '/:id',
+        (req, res) async => await this.update(
+            toId(req.params['id']),
+            await req.lazyBody(),
             mergeMap([
               {'query': req.query},
               restProvider,
@@ -162,6 +179,19 @@ class Service extends Routable {
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware = getAnnotation(this.remove, Middleware);
+    delete(
+        '/',
+        (req, res) async => await this.remove(
+            null,
+            mergeMap([
+              {'query': req.query},
+              restProvider,
+              req.serviceParams
+            ])),
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (removeMiddleware == null) ? [] : removeMiddleware.handlers));
     delete(
         '/:id',
         (req, res) async => await this.remove(
@@ -175,6 +205,10 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
+
+    // REST compliance
+    put('/', () => throw new AngelHttpException.notFound());
+    patch('/', () => throw new AngelHttpException.notFound());
   }
 
   /// Invoked when this service is wrapped within a [HookedService].

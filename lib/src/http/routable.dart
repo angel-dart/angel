@@ -19,19 +19,12 @@ typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
 /// A function that receives an incoming [RequestContext] and responds to it.
 typedef Future RequestHandler(RequestContext req, ResponseContext res);
 
-/// Sequentially runs a list of [handlers] of middleware, and breaks if any does not
+/// Sequentially runs a list of [handlers] of middleware, and returns early if any does not
 /// return `true`. Works well with [Router].chain.
 RequestMiddleware waterfall(List handlers) {
-  for (var handler in handlers) {
-    if (handler is! RequestMiddleware && handler is! RequestHandler)
-      throw new ArgumentError(
-          '`waterfall` only accepts middleware and handlers. $handler is not a valid option.');
-  }
-
-  return (req, res) async {
+  return (RequestContext req, res) async {
     for (var handler in handlers) {
-      var result = await handler(req, res);
-
+      var result = await req.app.executeHandler(handler, req, res);
       if (result != true) return result;
     }
 

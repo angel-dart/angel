@@ -3,6 +3,7 @@ library angel_framework.http;
 import 'dart:async';
 import 'package:merge_map/merge_map.dart';
 import '../util.dart';
+import 'angel_http_exception.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'metadata.dart';
@@ -128,15 +129,18 @@ class HookedService extends Service {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(inner.create, Middleware);
-    post(
-        '/',
-        (req, res) async => await this.create(
-            req.body,
-            mergeMap([
-              {'query': req.query},
-              restProvider,
-              req.serviceParams
-            ])),
+
+    post('/', (req, res) async {
+      var r = await this.create(
+          await req.lazyBody(),
+          mergeMap([
+            {'query': req.query},
+            restProvider,
+            req.serviceParams
+          ]));
+      res.statusCode = 201;
+      return r;
+    },
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -162,7 +166,7 @@ class HookedService extends Service {
         '/:id',
         (req, res) async => await this.modify(
             toId(req.params['id']),
-            req.body,
+            await req.lazyBody(),
             mergeMap([
               {'query': req.query},
               restProvider,
@@ -178,7 +182,21 @@ class HookedService extends Service {
         '/:id',
         (req, res) async => await this.update(
             toId(req.params['id']),
-            req.body,
+            await req.lazyBody(),
+            mergeMap([
+              {'query': req.query},
+              restProvider,
+              req.serviceParams
+            ])),
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (updateMiddleware == null) ? [] : updateMiddleware.handlers));
+    put(
+        '/:id',
+        (req, res) async => await this.update(
+            toId(req.params['id']),
+            await req.lazyBody(),
             mergeMap([
               {'query': req.query},
               restProvider,
@@ -190,6 +208,19 @@ class HookedService extends Service {
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware = getAnnotation(inner.remove, Middleware);
+    delete(
+        '/',
+        (req, res) async => await this.remove(
+            null,
+            mergeMap([
+              {'query': req.query},
+              restProvider,
+              req.serviceParams
+            ])),
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (removeMiddleware == null) ? [] : removeMiddleware.handlers));
     delete(
         '/:id',
         (req, res) async => await this.remove(
@@ -203,6 +234,10 @@ class HookedService extends Service {
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
+
+    // REST compliance
+    put('/', () => throw new AngelHttpException.notFound());
+    patch('/', () => throw new AngelHttpException.notFound());
 
     addHooks();
   }
@@ -522,7 +557,7 @@ class HookedServiceEvent {
   }
 
   /// Resolves a service from the application.
-  /// 
+  ///
   /// Shorthand for `e.service.app.service(...)`.
   Service getService(Pattern path) => service.app.service(path);
 
