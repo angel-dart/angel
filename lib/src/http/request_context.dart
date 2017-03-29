@@ -188,7 +188,7 @@ class RequestContext extends Extensible {
   /// Retrieves the request files if it has already been parsed, or lazy-parses it before returning the files.
   Future<List<FileUploadInfo>> lazyFiles() => parse().then((b) => b.files);
 
-  /// Retrieves the request files if it has already been parsed, or lazy-parses it before returning the files.
+  /// Retrieves the original request buffer if it has already been parsed, or lazy-parses it before returning the files.
   ///
   /// This will return an empty `List` if you have not enabled `storeOriginalBuffer` on your [app] instance.
   Future<List<int>> lazyOriginalBuffer() =>
@@ -199,7 +199,7 @@ class RequestContext extends Extensible {
   /// If [forceParse] is not `true`, then [uri].query will be returned, and no parsing will be performed.
   Future<Map<String, dynamic>> lazyQuery({bool forceParse: false}) {
     if (_body == null && forceParse != true)
-      return new Future.value(uri.query);
+      return new Future.value(uri.queryParameters);
     else
       return parse().then((b) => b.query);
   }
