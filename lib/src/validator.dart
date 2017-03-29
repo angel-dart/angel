@@ -22,7 +22,9 @@ Map<String, dynamic> autoParse(Map inputData, Iterable<String> fields) {
       data[key] = inputData[key];
     } else {
       try {
-        var n = num.parse(inputData[key].toString());
+        var n = inputData[key] is num
+            ? inputData[key]
+            : num.parse(inputData[key].toString());
         data[key] = n == n.toInt() ? n.toInt() : n;
       } catch (e) {
         // Invalid number, don't pass it

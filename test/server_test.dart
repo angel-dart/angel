@@ -19,7 +19,8 @@ main() {
       res.write('Hello, ${req.body['message']}!');
     });
 
-    client = await connectTo(new DiagnosticsServer(app, new File('log.txt')));
+    await app.configure(logRequests(new File('log.txt')));
+    client = await connectTo(app);
   });
 
   tearDown(() async {

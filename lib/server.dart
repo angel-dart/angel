@@ -8,7 +8,7 @@ export 'angel_validate.dart';
 /// Auto-parses numbers in `req.body`.
 RequestMiddleware autoParseBody(List<String> fields) {
   return (RequestContext req, res) async {
-    req.body.addAll(autoParse(req.body, fields));
+    (await req.lazyBody()).addAll(autoParse(req.body, fields));
     return true;
   };
 }
@@ -16,7 +16,7 @@ RequestMiddleware autoParseBody(List<String> fields) {
 /// Auto-parses numbers in `req.query`.
 RequestMiddleware autoParseQuery(List<String> fields) {
   return (RequestContext req, res) async {
-    req.query.addAll(autoParse(req.query, fields));
+    (await req.lazyQuery()).addAll(autoParse(req.query, fields));
     return true;
   };
 }
@@ -24,7 +24,7 @@ RequestMiddleware autoParseQuery(List<String> fields) {
 /// Filters unwanted data out of `req.body`.
 RequestMiddleware filterBody(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var filtered = filter(req.body, only);
+    var filtered = filter(await req.lazyBody(), only);
     req.body
       ..clear()
       ..addAll(filtered);
@@ -35,7 +35,7 @@ RequestMiddleware filterBody(Iterable<String> only) {
 /// Filters unwanted data out of `req.query`.
 RequestMiddleware filterQuery(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var filtered = filter(req.query, only);
+    var filtered = filter(await req.lazyQuery(), only);
     req.query
       ..clear()
       ..addAll(filtered);
@@ -51,7 +51,7 @@ RequestMiddleware validate(Validator validator,
     var result = validator.check(req.body);
 
     if (result.errors.isNotEmpty) {
-      throw new AngelHttpException.BadRequest(
+      throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
@@ -71,7 +71,7 @@ RequestMiddleware validateQuery(Validator validator,
     var result = validator.check(req.query);
 
     if (result.errors.isNotEmpty) {
-      throw new AngelHttpException.BadRequest(
+      throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
@@ -91,7 +91,7 @@ HookedServiceEventListener validateEvent(Validator validator,
     var result = validator.check(e.data);
 
     if (result.errors.isNotEmpty) {
-      throw new AngelHttpException.BadRequest(
+      throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
