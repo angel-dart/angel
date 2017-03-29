@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:angel_client/angel_client.dart' show AngelAuthResult;
 import 'package:angel_client/base_angel_client.dart' as client;
 import 'package:angel_client/io.dart' as client;
 import 'package:angel_framework/angel_framework.dart';
@@ -28,7 +27,7 @@ Future<TestClient> connectTo(Angel app, {Map initialSession}) async =>
 
 /// An `angel_client` that sends mock requests to a server, rather than actual HTTP transactions.
 class TestClient extends client.BaseAngelClient {
-  final Map<String, Service> _services = {};
+  final Map<String, client.Service> _services = {};
 
   /// Session info to be sent to the server on every request.
   final HttpSession session = new MockHttpSession(id: 'angel-test-client');
@@ -157,15 +156,17 @@ class TestClient extends client.BaseAngelClient {
   client.Service service<T>(String path,
       {Type type, client.AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, "");
-    return _services.putIfAbsent(uri,
-        new MockService(this, '$basePath/$uri', deserializer: deserializer));
+    return _services.putIfAbsent(
+        uri,
+        () => new _MockService(this, '$basePath/$uri',
+            deserializer: deserializer));
   }
 }
 
-class MockService extends client.BaseAngelService {
+class _MockService extends client.BaseAngelService {
   final TestClient _app;
 
-  MockService(this._app, String basePath,
+  _MockService(this._app, String basePath,
       {client.AngelDeserializer deserializer})
       : super(null, _app, basePath, deserializer: deserializer);
 
@@ -176,7 +177,7 @@ class MockService extends client.BaseAngelService {
     }
 
     return _app.send(request.method, request.url, request.headers,
-        request.finalize(), request);
+        request.finalize());
   }
 }
 
