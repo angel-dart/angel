@@ -10,7 +10,7 @@ final Map<Pattern, String> DEFAULT_SANITIZERS = {
 /// Mitigates XSS risk by sanitizing user HTML input.
 ///
 /// You can also provide a Map of patterns to [replace].
-/// 
+///
 /// You can sanitize the [body] or [query] (both `true` by default).
 RequestMiddleware sanitizeHtmlInput(
     {bool body: true,
@@ -19,8 +19,12 @@ RequestMiddleware sanitizeHtmlInput(
   var sanitizers = {}..addAll(DEFAULT_SANITIZERS)..addAll(replace ?? {});
 
   return (RequestContext req, res) async {
-    if (body) _sanitizeMap(await req.lazyBody(), sanitizers);
-    if (query) _sanitizeMap(await req.lazyQuery(), sanitizers);
+    if (body) {
+      await req.parse();
+      _sanitizeMap(req.body, sanitizers);
+    }
+
+    if (query) _sanitizeMap(req.query, sanitizers);
     return true;
   };
 }

@@ -29,7 +29,7 @@ main() {
       ..beforeIndexed.listen(hooks.queryWithCurrentUser())
       ..beforeCreated.listen(hooks.hashPassword());
 
-    app.service('artists')
+    app.service('artists') as HookedService
       ..beforeIndexed.listen(hooks.restrictToAuthenticated())
       ..beforeRead.listen(hooks.restrictToOwner())
       ..beforeCreated.listen(hooks.associateCurrentUser());

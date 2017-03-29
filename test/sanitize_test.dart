@@ -14,10 +14,9 @@ main() async {
   TestClient client;
 
   setUp(() async {
-    app = new Angel()
-      ..chain(validate(untrustedSchema))
-          .chain(sanitizeHtmlInput())
-          .post('/untrusted', (RequestContext req, ResponseContext res) async {
+    app = new Angel();
+    app.chain([validate(untrustedSchema), sanitizeHtmlInput()])
+      ..post('/untrusted', (RequestContext req, ResponseContext res) async {
         String untrusted = req.body['html'];
         res
           ..contentType = ContentType.HTML
@@ -30,8 +29,7 @@ main() async {
             <body>$untrusted</body>
           </html>''');
       })
-      ..chain(validate(untrustedSchema)).post('/attribute',
-          (RequestContext req, ResponseContext res) async {
+      ..post('/attribute', (RequestContext req, ResponseContext res) async {
         String untrusted = req.body['html'];
         res
           ..contentType = ContentType.HTML
@@ -108,7 +106,7 @@ main() async {
     var response = await client.post('/attribute', body: {'html': xss});
     print(response.body);
     expect(response.body.contains(xss), isFalse);
-    expect(response.body.toLowerCase().contains('javascript:'), isFalse);
+    expect(response.body.toLowerCase().contains(xss), isFalse);
   });
 
   test('style attribute', () async {
@@ -116,6 +114,6 @@ main() async {
     var response = await client.post('/attribute', body: {'html': xss});
     print(response.body);
     expect(response.body.contains(xss), isFalse);
-    expect(response.body.toLowerCase().contains('javascript:'), isFalse);
+    expect(response.body.toLowerCase().contains(xss), isFalse);
   });
 }

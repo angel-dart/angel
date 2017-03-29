@@ -27,7 +27,7 @@ main() {
     // First request within the hour is fine
     var response = await client.get('/once-per-hour');
     print(response.body);
-    expect(response, hasBody('OK'));
+    expect(response, hasBody('"OK"'));
 
     // Second request within an hour? No no no!
     response = await client.get('/once-per-hour');
@@ -39,19 +39,19 @@ main() {
     // First request within the minute is fine
     var response = await client.get('/thrice-per-minute');
     print(response.body);
-    expect(response, hasBody('OK'));
+    expect(response, hasBody('"OK"'));
 
 
     // Second request within the minute is fine
     response = await client.get('/thrice-per-minute');
     print(response.body);
-    expect(response.body, hasBody('OK'));
+    expect(response, hasBody('"OK"'));
 
 
     // Third request within the minute is fine
     response = await client.get('/thrice-per-minute');
     print(response.body);
-    expect(response, hasBody('OK'));
+    expect(response, hasBody('"OK"'));
 
     // Fourth request within a minute? No no no!
     response = await client.get('/thrice-per-minute');
