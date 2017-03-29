@@ -28,6 +28,11 @@ _buildQuery(Map params) {
   return '?' + query.join('&');
 }
 
+bool _invalid(http.Response response) =>
+    response.statusCode == null ||
+    response.statusCode < 200 ||
+    response.statusCode >= 300;
+
 AngelHttpException failure(http.Response response, {error, StackTrace stack}) {
   try {
     final json = JSON.decode(response.body);
@@ -68,7 +73,7 @@ abstract class BaseAngelClient extends Angel {
       });
 
       try {
-        if (response.statusCode != 200) {
+        if (_invalid(response)) {
           throw failure(response);
         }
 
@@ -98,7 +103,7 @@ abstract class BaseAngelClient extends Angel {
       }
 
       try {
-        if (response.statusCode != 200) {
+        if (_invalid(response)) {
           throw failure(response);
         }
 
@@ -121,6 +126,10 @@ abstract class BaseAngelClient extends Angel {
 
   Future close() async {
     client.close();
+  }
+
+  Future logout() async {
+    authToken = null;
   }
 
   /// Sends a non-streaming [Request] and returns a non-streaming [Response].
@@ -230,7 +239,7 @@ class BaseAngelService extends Service {
         'GET', '$basePath${_buildQuery(params)}', _readHeaders);
 
     try {
-      if (response.statusCode != 200) {
+      if (_invalid(response)) {
         throw failure(response);
       }
 
@@ -248,7 +257,7 @@ class BaseAngelService extends Service {
         'GET', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
     try {
-      if (response.statusCode != 200) {
+      if (_invalid(response)) {
         throw failure(response);
       }
 
@@ -264,7 +273,7 @@ class BaseAngelService extends Service {
         '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
-      if (response.statusCode != 200) {
+      if (_invalid(response)) {
         throw failure(response);
       }
 
@@ -280,7 +289,7 @@ class BaseAngelService extends Service {
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
-      if (response.statusCode != 200) {
+      if (_invalid(response)) {
         throw failure(response);
       }
 
@@ -296,7 +305,7 @@ class BaseAngelService extends Service {
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
     try {
-      if (response.statusCode != 200) {
+      if (_invalid(response)) {
         throw failure(response);
       }
 
@@ -312,7 +321,7 @@ class BaseAngelService extends Service {
         'DELETE', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
     try {
-      if (response.statusCode != 200) {
+      if (_invalid(response)) {
         throw failure(response);
       }
 

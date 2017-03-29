@@ -6,8 +6,7 @@ import 'for_browser_tests.dart';
 main() {
   test("list todos", () async {
     var channel = spawnHybridCode(SERVER);
-    int port = await channel.stream.first;
-    var url = "http://localhost:$port";
+    String url = await channel.stream.first;
     print(url);
     var app = new Rest(url);
     var todoService = app.service("todos");
@@ -18,8 +17,7 @@ main() {
 
   test('create todos', () async {
     var channel = spawnHybridCode(SERVER);
-    int port = await channel.stream.first;
-    var url = "http://localhost:$port";
+    String url = await channel.stream.first;
     print(url);
     var app = new Rest(url);
     var todoService = app.service("todos");

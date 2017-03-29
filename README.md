@@ -1,6 +1,6 @@
 # angel_client
 
-[![pub 1.0.3](https://img.shields.io/badge/pub-1.0.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_client)
+[![pub 1.0.4](https://img.shields.io/badge/pub-1.0.4-brightgreen.svg)](https://pub.dartlang.org/packages/angel_client)
 [![build status](https://travis-ci.org/angel-dart/client.svg)](https://travis-ci.org/angel-dart/client)
 
 Client library for the Angel framework.
@@ -54,3 +54,37 @@ bar() async {
 
 Just like on the server, services support `index`, `read`, `create`, `modify`, `update` and
 `remove`.
+
+## Authentication
+Local auth:
+```dart
+var auth = await app.authenticate(type: 'local', credentials: {username: ..., password: ...});
+print(auth.token);
+print(auth.user);
+```
+
+Revive an existing jwt:
+```dart
+Future<AngelAuthResult> reviveJwt(String jwt) {
+  return app.authenticate(credentials: {'token': jwt});
+}
+```
+
+Via Popup:
+```dart
+app.authenticateViaPopup('/auth/google').listen((jwt) {
+  // Do something with the JWT
+});
+```
+
+Resume a session from localStorage (browser only):
+```dart
+// Automatically checks for JSON-encoded 'token' in localStorage,
+// and tries to revive it
+await app.authenticate();
+```
+
+Logout:
+```dart
+await app.logout();
+```

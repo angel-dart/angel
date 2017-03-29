@@ -6,7 +6,7 @@ import 'dart:convert' show JSON;
 import 'dart:html' show CustomEvent, window;
 import 'package:http/browser_client.dart' as http;
 import 'angel_client.dart';
-import 'auth_types.dart' as auth_types;
+// import 'auth_types.dart' as auth_types;
 import 'base_angel_client.dart';
 export 'angel_client.dart';
 
@@ -53,13 +53,15 @@ class Rest extends BaseAngelClient {
     var ctrl = new StreamController<String>();
     var wnd = window.open(url, 'angel_client_auth_popup');
 
-    new Timer.periodic(new Duration(milliseconds: 500), (timer) {
+    Timer t;
+    t = new Timer.periodic(new Duration(milliseconds: 500), (timer) {
       if (!ctrl.isClosed) {
         if (wnd.closed) {
           ctrl.addError(new AngelHttpException.notAuthenticated(
               message:
                   errorMessage ?? 'Authentication via popup window failed.'));
           ctrl.close();
+          timer.cancel();
         }
       } else
         timer.cancel();
@@ -68,10 +70,17 @@ class Rest extends BaseAngelClient {
     window.on[eventName ?? 'token'].listen((CustomEvent e) {
       if (!ctrl.isClosed) {
         ctrl.add(e.detail);
+        t.cancel();
         ctrl.close();
       }
     });
 
     return ctrl.stream;
+  }
+
+  @override
+  Future logout() {
+    window.localStorage.remove('token');
+    return super.logout();
   }
 }

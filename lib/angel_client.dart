@@ -38,6 +38,9 @@ abstract class Angel {
     await configurer(this);
   }
 
+  /// Logs the current user out of the application.
+  Future logout();
+
   Service service<T>(String path, {Type type, AngelDeserializer deserializer});
 
   Future<http.Response> delete(String url, {Map<String, String> headers});
