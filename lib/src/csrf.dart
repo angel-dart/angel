@@ -12,9 +12,9 @@ RequestMiddleware verifyCsrfToken(
   return (RequestContext req, res) async {
     String csrfToken;
 
-    if (allowQuery && req.query.containsKey(name))
+    if (allowQuery && (await req.lazyQuery()).containsKey(name))
       csrfToken = req.query[name];
-    else if (req.body.containsKey(name))
+    else if ((await req.lazyBody()).containsKey(name))
       csrfToken = req.body[name];
     else if (allowCookie) {
       var cookie =

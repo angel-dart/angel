@@ -11,6 +11,7 @@ main() {
 
   setUp(() async {
     app = new Angel()
+      ..lazyParseBodies = true
       ..before.add((RequestContext req, res) async {
         var xUser = req.headers.value('X-User');
         if (xUser != null)
@@ -65,7 +66,8 @@ main() {
       var response = await client
           .post('/artists', headers: {'X-User': 'John'}, body: {'foo': 'bar'});
       print('Response: ${response.body}');
-      expect(response, allOf(hasStatus(200), isJson({'foo': 'bar'})));
+      print('Status: ${response.statusCode}');
+      expect(response, allOf(hasStatus(201), isJson({'foo': 'bar'})));
     });
   });
 
