@@ -16,6 +16,7 @@ AngelAuthCallback confirmPopupAuthentication({String eventName: 'token'}) {
           <script>
             var ev = new CustomEvent('$eventName', { detail: '$jwt' });
             window.opener.dispatchEvent(ev);
+            window.close();
           </script>
         </head>
         <body>

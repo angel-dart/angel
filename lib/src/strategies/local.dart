@@ -61,6 +61,7 @@ class LocalAuthStrategy extends AuthStrategy {
     }
 
     if (verificationResult == null) {
+      await req.parse();
       if (_validateString(req.body[usernameField]) &&
           _validateString(req.body[passwordField])) {
         verificationResult =
