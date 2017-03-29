@@ -1,5 +1,5 @@
 # angel_test
-[![version 1.0.3](https://img.shields.io/badge/pub-1.0.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_test)
+[![version 1.0.4](https://img.shields.io/badge/pub-1.0.4-brightgreen.svg)](https://pub.dartlang.org/packages/angel_test)
 [![build status](https://travis-ci.org/angel-dart/test.svg)](https://travis-ci.org/angel-dart/test)
 
 Testing utility library for the Angel framework.

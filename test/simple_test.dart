@@ -33,6 +33,9 @@ main() {
       ..use(
           '/foo',
           new AnonymousService(
+              index: ([params]) async => [
+                    {'michael': 'jackson'}
+                  ],
               create: (data, [params]) async => {'foo': 'bar'}));
 
     var ws = new AngelWebSocket();
@@ -94,6 +97,20 @@ main() {
               'is_my_lover': [isBool, isFalse]
             })
           })));
+    });
+
+    group('service', () {
+      test('index', () async {
+        var foo = client.service('foo');
+        var result = await foo.index();
+        expect(result, [{'michael': 'jackson'}]);
+      });
+
+      test('index', () async {
+        var foo = client.service('foo');
+        var result = await foo.create({});
+        expect(result, {'foo': 'bar'});
+      });
     });
 
     test('websocket', () async {

@@ -104,7 +104,9 @@ class TestClient extends client.BaseAngelClient {
     await server.handleRequest(rq);
 
     var rs = rq.response;
-    session.addAll(rq.session);
+    session
+      ..clear()
+      ..addAll(rq.session);
 
     Map<String, String> extractedHeaders = {};
 
@@ -157,9 +159,7 @@ class TestClient extends client.BaseAngelClient {
       {Type type, client.AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, "");
     return _services.putIfAbsent(
-        uri,
-        () => new _MockService(this, '$basePath/$uri',
-            deserializer: deserializer));
+        uri, () => new _MockService(this, uri, deserializer: deserializer));
   }
 }
 
@@ -176,8 +176,8 @@ class _MockService extends client.BaseAngelService {
       request.headers['Authorization'] = 'Bearer ${app.authToken}';
     }
 
-    return _app.send(request.method, request.url, request.headers,
-        request.finalize());
+    return _app.send(
+        request.method, request.url, request.headers, request.finalize());
   }
 }
 
