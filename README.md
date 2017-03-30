@@ -60,7 +60,7 @@ Local auth:
 ```dart
 var auth = await app.authenticate(type: 'local', credentials: {username: ..., password: ...});
 print(auth.token);
-print(auth.user);
+print(auth.data); // User object
 ```
 
 Revive an existing jwt:
