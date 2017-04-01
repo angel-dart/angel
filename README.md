@@ -35,6 +35,17 @@ main() async {
 }
 ```
 
+# Push State Example
+```dart
+var vDir = new VirtualDirectory(...);
+var indexFile = new File.fromUri(vDir.source.uri.resolve('index.html'));
+
+app.after.add((req, ResponseContext res) {
+  // Fallback to index.html on 404
+  return res.sendFile(indexFile);
+});
+```
+
 # Options
 The `VirtualDirectory` API accepts a few named parameters:
 - **source**: A `Directory` containing the files to be served. If left null, then Angel will serve either from `web` (in development) or
