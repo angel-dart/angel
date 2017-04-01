@@ -1,2 +1,3 @@
 language: dart
+before_script: chmod +x ./tool/travis.sh
 script: ./tool/travis.sh
