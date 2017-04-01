@@ -225,6 +225,7 @@ including:
 * `isInt`: Asserts that a value is an `int`.
 * `isNum`: Asserts that a value is a `num`.
 * `isString`: Asserts that a value is a `String`.
+* `isUrl`: Asserts that a `String` is an HTTPS or HTTP URL.
 
 The remaining functionality is
 [effectively implemented by the `matcher` package](https://www.dartdocs.org/documentation/matcher/0.12.0%2B2/matcher/matcher-library.html).
