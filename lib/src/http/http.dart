@@ -1,6 +1,9 @@
 /// Various libraries useful for creating highly-extensible servers.
 library angel_framework.http;
 
+import 'dart:async';
+import 'dart:io';
+import 'server.dart' show ServerGenerator;
 export 'package:angel_route/angel_route.dart';
 export 'package:body_parser/body_parser.dart' show FileUploadInfo;
 export 'angel_base.dart';
@@ -21,3 +24,13 @@ export 'server.dart';
 export 'service.dart';
 export 'typed_service.dart';
 
+/// Boots a shared server instance. Use this if launching multiple isolates
+Future<HttpServer> startShared(InternetAddress address, int port) => HttpServer
+    .bind(address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0, shared: true);
+
+/// Boots a secure shared server instance. Use this if launching multiple isolates
+ServerGenerator startSharedSecure(SecurityContext securityContext) {
+  return (InternetAddress address, int port) => HttpServer.bindSecure(
+      address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0, securityContext,
+      shared: true);
+}

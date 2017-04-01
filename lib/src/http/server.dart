@@ -4,6 +4,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
+export 'package:container/container.dart';
+import 'package:flatten/flatten.dart';
+import 'package:json_god/json_god.dart' as god;
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
@@ -12,7 +15,6 @@ import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
 import 'service.dart';
-export 'package:container/container.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -37,10 +39,14 @@ class Angel extends AngelBase {
   StreamController<Controller> _onController =
       new StreamController<Controller>.broadcast();
   final List<Angel> _children = [];
+  Router _flattened;
+  bool _isProduction;
   Angel _parent;
   ServerGenerator _serverGenerator = HttpServer.bind;
 
+  final Map _injections = {};
   final Map<dynamic, InjectionRequest> _preContained = {};
+  ResponseSerializer _serializer;
 
   /// Determines whether to allow HTTP request method overrides.
   bool allowMethodOverrides = true;
@@ -61,7 +67,15 @@ class Angel extends AngelBase {
   ///
   /// The criteria for this is the `ANGEL_ENV` environment variable being set to
   /// `'production'`.
-  bool get isProduction => Platform.environment['ANGEL_ENV'] == 'production';
+  ///
+  /// This value is memoized the first time you call it, so do not change environment
+  /// configuration at runtime!
+  bool get isProduction {
+    if (_isProduction != null)
+      return _isProduction;
+    else
+      return _isProduction = Platform.environment['ANGEL_ENV'] == 'production';
+  }
 
   /// The function used to bind this instance to an HTTP server.
   ServerGenerator get serverGenerator => _serverGenerator;
@@ -130,8 +144,20 @@ class Angel extends AngelBase {
       await configure(configurer);
     }
 
-    preprocessRoutes();
+    optimizeForProduction();
     return httpServer..listen(handleRequest);
+  }
+
+  @override
+  Route addRoute(String method, String path, Object handler,
+      {List middleware: const []}) {
+    if (_flattened != null) {
+      print(
+          'WARNING: You added a route ($method $path) to the router, after it has been optimized.');
+      print('This route will be ignored, and no requests will ever reach it.');
+    }
+
+    return super.addRoute(method, path, handler, middleware: middleware ?? []);
   }
 
   /// Loads some base dependencies into the service container.
@@ -143,20 +169,45 @@ class Angel extends AngelBase {
     container.singleton(this);
   }
 
+  @override
+  void dumpTree(
+      {callback(String tree),
+      String header: 'Dumping route tree:',
+      String tab: '  ',
+      bool showMatchers: false}) {
+    if (isProduction) {
+      if (_flattened == null) _flattened = flatten(this);
+
+      _flattened.dumpTree(
+          callback: callback,
+          header: header?.isNotEmpty == true
+              ? header
+              : (isProduction
+                  ? 'Dumping flattened route tree:'
+                  : 'Dumping route tree:'),
+          tab: tab ?? '  ',
+          showMatchers: showMatchers == true);
+    } else {
+      super.dumpTree(
+          callback: callback,
+          header: header?.isNotEmpty == true
+              ? header
+              : (isProduction
+                  ? 'Dumping flattened route tree:'
+                  : 'Dumping route tree:'),
+          tab: tab ?? '  ',
+          showMatchers: showMatchers == true);
+    }
+  }
+
   /// Shortcut for adding a middleware to inject a key/value pair on every request.
   void inject(key, value) {
-    before.add((RequestContext req, ResponseContext res) async {
-      req.inject(key, value);
-      return true;
-    });
+    _injections[key] = value;
   }
 
   /// Shortcut for adding a middleware to inject a serialize on every request.
   void injectSerializer(ResponseSerializer serializer) {
-    before.add((RequestContext req, ResponseContext res) async {
-      res.serializer = serializer;
-      return true;
-    });
+    _serializer = serializer;
   }
 
   /// Runs some [handler]. Returns `true` if request execution should continue.
@@ -227,11 +278,14 @@ class Angel extends AngelBase {
 
   Future<RequestContext> createRequestContext(HttpRequest request) {
     _beforeProcessed.add(request);
-    return RequestContext.from(request, this);
+    return RequestContext.from(request, this).then((req) {
+      return req..injections.addAll(_injections ?? {});
+    });
   }
 
   Future<ResponseContext> createResponseContext(HttpResponse response) async =>
-      new ResponseContext(response, this);
+      new ResponseContext(response, this)
+        ..serializer = (_serializer ?? god.serialize);
 
   /// Handles a single request.
   Future handleRequest(HttpRequest request) async {
@@ -242,7 +296,10 @@ class Angel extends AngelBase {
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      var resolved = resolveAll(requestedUrl, requestedUrl, method: req.method);
+      Router r =
+          isProduction ? (_flattened ?? (_flattened = flatten(this))) : this;
+      var resolved =
+          r.resolveAll(requestedUrl, requestedUrl, method: req.method);
 
       for (var result in resolved) req.params.addAll(result.allParams);
 
@@ -317,29 +374,35 @@ class Angel extends AngelBase {
     }
   }
 
-  /// Preprocesses all routes, and eliminates the burden of reflecting handlers
+  /// Runs several optimizations, *if* [isProduction] is `true`.
+  ///
+  /// * Preprocesses all dependency injection, and eliminates the burden of reflecting handlers
   /// at run-time.
-  void preprocessRoutes() {
-    _add(v) {
-      if (v is Function && !_preContained.containsKey(v)) {
-        _preContained[v] = preInject(v);
-      }
-    }
-
-    void _walk(Router router) {
-      if (router is Angel) {
-        router..before.forEach(_add)..after.forEach(_add);
+  /// * [flatten]s the route tree into a linear one.
+  void optimizeForProduction() {
+    if (isProduction == true) {
+      _add(v) {
+        if (v is Function && !_preContained.containsKey(v)) {
+          _preContained[v] = preInject(v);
+        }
       }
 
-      router.requestMiddleware.forEach((k, v) => _add(v));
-      router.middleware.forEach(_add);
-      router.routes
-          .where((r) => r is SymlinkRoute)
-          .map((SymlinkRoute r) => r.router)
-          .forEach(_walk);
-    }
+      void _walk(Router router) {
+        if (router is Angel) {
+          router..before.forEach(_add)..after.forEach(_add);
+        }
 
-    _walk(this);
+        router.requestMiddleware.forEach((k, v) => _add(v));
+        router.middleware.forEach(_add);
+        router.routes
+            .where((r) => r is SymlinkRoute)
+            .map((SymlinkRoute r) => r.router)
+            .forEach(_walk);
+      }
+
+      _walk(_flattened = flatten(this));
+      print('Angel is running in production mode.');
+    }
   }
 
   /// Run a function after injecting from service container.

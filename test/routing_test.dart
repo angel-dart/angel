@@ -31,6 +31,11 @@ main() {
     nested = new Angel(debug: debug);
     todos = new Angel(debug: debug);
 
+    // Lazy-parse in production
+    [app, nested, todos].forEach((Angel app) {
+      app.lazyParseBodies = app.isProduction;
+    });
+
     app
       ..registerMiddleware('interceptor', (req, res) async {
         res.write('Middleware');
