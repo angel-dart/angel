@@ -13,15 +13,29 @@
 
 [File an Issue](https://github.com/angel-dart/roadmap/issues)
 
-## Join the team
-Do you want to collaborate? Join the project at https://projectgroupie.com/projects/212 
-
 ## Installation & Setup
-Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.
+*Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.*
 
-Once you have [Dart]() installed, bootstrapping a project is as simple as running two shell commands:
+Once you have [Dart](https://www.dartlang.org/) installed, bootstrapping a project is as simple as running one shell command:
+
+Install the [Angel CLI](https://github.com/angel-dart/cli):
 
 ```bash
 pub global activate angel_cli
+```
+
+Bootstrap a project:
+
+```bash
 angel init hello
 ```
+
+Next, check out the [detailed documentation](https://github.com/angel-dart/angel/wiki) to learn to flesh out your project.
+
+## What is Angel?
+Angel is a server-side Web application framework for the Dart programming language. It strives to be a flexible, extensible system, to be easily scalable, and to allow as much code to be shared between clients and servers as possible. Ultimately, I believe that this approach will shorten the time it takes to build a full-stack Web application, from start to finish.
+
+[Read more...](https://medium.com/the-angel-framework/announcing-angel-v1-0-0-beta-46dfb4aa8afe)
+
+## Join the team
+Do you want to collaborate? Join the project at https://projectgroupie.com/projects/212 
