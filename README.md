@@ -37,7 +37,7 @@ Bootstrap a project:
 angel init hello
 ```
 
-You can even have your server run and be hot-reloaded on file changes:
+You can even have your server run and be *live-reloaded* on file changes:
 
 ```dart
 angel start
