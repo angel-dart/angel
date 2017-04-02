@@ -55,7 +55,7 @@ More examples and complete projects can be found in the [angel-example](https://
 The following is an [explosive application](https://github.com/angel-example/explode) complete with a REST API and
 WebSocket support. It interacts with a MongoDB database, and reads configuration automatically from a `config/<ANGEL-ENV-NAME>.yaml` file. Templates are rendered with Mustache, and all responses are compressed via GZIP.
 
-All in under 20 lines of actual code.
+All in just about 20 lines of actual code.
 
 ```dart
 import 'dart:async';
