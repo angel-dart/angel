@@ -37,6 +37,12 @@ Bootstrap a project:
 angel init hello
 ```
 
+You can even have your server run and be hot-reloaded on file changes:
+
+```dart
+angel start
+```
+
 Next, check out the [detailed documentation](https://github.com/angel-dart/angel/wiki) to learn to flesh out your project.
 
 ## What is Angel?
