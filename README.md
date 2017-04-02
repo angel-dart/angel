@@ -53,7 +53,7 @@ With features like the following, Angel is the all-in-one framework you should c
 More examples and complete projects can be found in the [angel-example](https://github.com/angel-example) organization.
 
 The following is an [explosive application](https://github.com/angel-example/explode) complete with a REST API and
-WebSocket support. It interacts with a MongoDB database, and reads configuration automatically from a `config/<ANGEL-ENV-NAME>.yaml` file. Templates are rendered with Mustache.
+WebSocket support. It interacts with a MongoDB database, and reads configuration automatically from a `config/<ANGEL-ENV-NAME>.yaml` file. Templates are rendered with Mustache, and all responses are compressed via GZIP.
 
 ```dart
 import 'dart:async';
