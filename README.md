@@ -5,7 +5,7 @@
 
 **The Dart server framework that's ready for showtime.**
 
-[Wiki](https://github.com/angel-dart/angel/wiki)
+[Wiki (in-depth documentation)](https://github.com/angel-dart/angel/wiki)
 
 [API Documentation](http://www.dartdocs.org/documentation/angel_common/latest)
 
