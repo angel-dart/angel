@@ -123,7 +123,6 @@ class ProxyLayer {
     });
 
     await rs.forEach(res.buffer.add);
-    res.end();
     return false;
   }
 }

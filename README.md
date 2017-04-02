@@ -1,6 +1,6 @@
 # angel_proxy
 
-[![version 1.0.1](https://img.shields.io/badge/version-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_proxy)
+[![version 1.0.2](https://img.shields.io/badge/version-1.0.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_proxy)
 [![build status](https://travis-ci.org/angel-dart/proxy.svg)](https://travis-ci.org/angel-dart/proxy)
 
 Angel middleware to forward requests to another server (i.e. pub serve).
