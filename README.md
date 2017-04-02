@@ -5,6 +5,9 @@
 
 **The Dart server framework that's ready for showtime.**
 
+With features like the following, Angel is the all-in-one framework you should choose to build your next project:
+* 
+
 [Wiki (in-depth documentation)](https://github.com/angel-dart/angel/wiki)
 
 [API Documentation](http://www.dartdocs.org/documentation/angel_common/latest)
