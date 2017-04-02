@@ -5,6 +5,12 @@ Angel testApp() {
 
   app.get('/hello', 'world');
   app.get('/foo/bar', 'baz');
+  app.post('/body', (req, res) => req.lazyBody());
 
-  return app;
+  app.fatalErrorStream.listen((e) {
+    print('FATAL IN TEST APP: ${e.error}');
+    print(e.stack);
+  });
+
+  return app..dumpTree();
 }

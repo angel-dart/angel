@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_proxy/angel_proxy.dart';
@@ -12,7 +13,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel();
+    app = new Angel()..storeOriginalBuffer = true;
 
     testServer = await testApp().startServer();
 
@@ -44,5 +45,14 @@ main() {
     final response = await client.get('$url/bar');
     print('Response: ${response.body}');
     expect(response.body, equals('"baz"'));
+  });
+
+  test('original buffer', () async {
+    var response = await client.post('$url/proxy/body',
+        body: {'foo': 'bar'},
+        headers: {'content-type': 'application/x-www-form-urlencoded'});
+    print('Response: ${response.body}');
+    expect(response.body, isNotEmpty);
+    expect(JSON.decode(response.body), {'foo': 'bar'});
   });
 }

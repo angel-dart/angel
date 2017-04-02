@@ -1,7 +1,7 @@
 # angel_proxy
 
-[![version 1.0.0](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_proxy)
-[![build status](https://travis-ci.org/angel-dart/proxy.svg?branch=master)](https://travis-ci.org/angel-dart/proxy)
+[![version 1.0.1](https://img.shields.io/badge/version-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_proxy)
+[![build status](https://travis-ci.org/angel-dart/proxy.svg)](https://travis-ci.org/angel-dart/proxy)
 
 Angel middleware to forward requests to another server (i.e. pub serve).
 Based on [this repo](https://github.com/agilord/http_request_proxy).
@@ -22,3 +22,6 @@ main() async {
   await app.configure(new PubServeLayer());
 }
 ```
+
+If your app's `storeOriginalBuffer` is `true`, then request bodies will be forwarded
+as well, if they are not empty. This allows things like POST requests to function.

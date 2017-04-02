@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 
@@ -39,6 +40,7 @@ void copyHeaders(HttpHeaders from, HttpHeaders to) {
 }
 
 class ProxyLayer {
+  Angel app;
   HttpClient _client;
   String _prefix;
   final bool debug;
@@ -56,7 +58,7 @@ class ProxyLayer {
     _prefix = publicPath.replaceAll(_straySlashes, '');
   }
 
-  call(Angel app) async => serve(app);
+  call(Angel app) async => serve(this.app = app);
 
   _printDebug(msg) {
     if (debug == true) print(msg);
@@ -69,11 +71,10 @@ class ProxyLayer {
 
     handler(RequestContext req, ResponseContext res) async {
       var path = req.path.replaceAll(_straySlashes, '');
-
       return serveFile(path, req, res);
     }
 
-    router.get('$publicPath/*', handler);
+    router.all('$publicPath/*', handler);
   }
 
   serveFile(String path, RequestContext req, ResponseContext res) async {
@@ -82,10 +83,6 @@ class ProxyLayer {
     if (_prefix.isNotEmpty) {
       _path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
     }
-
-    res
-      ..willCloseItself = true
-      ..end();
 
     // Create mapping
     _printDebug('Serving path $_path via proxy');
@@ -107,16 +104,26 @@ class ProxyLayer {
       ..set('X-Forwarded-Proto', protocol);
     _printDebug('Added X-Forwarded headers');
 
-    await rq.addStream(req.io);
+    if (app.storeOriginalBuffer == true) {
+      await req.parse();
+      if (req.originalBuffer?.isNotEmpty == true) rq.add(req.originalBuffer);
+    }
+
+    await rq.flush();
     final HttpClientResponse rs = await rq.close();
-    final HttpResponse r = res.io;
     _printDebug(
         'Proxy responded to $mapping with status code ${rs.statusCode}');
-    r.statusCode = rs.statusCode;
-    r.headers.contentType = rs.headers.contentType;
-    copyHeaders(rs.headers, r.headers);
-    await r.addStream(rs);
-    await r.flush();
-    await r.close();
+
+    res
+      ..statusCode = rs.statusCode
+      ..contentType = rs.headers.contentType;
+
+    rs.headers.forEach((k, v) {
+      res.headers[k] = v.join(',');
+    });
+
+    await rs.forEach(res.buffer.add);
+    res.end();
+    return false;
   }
 }

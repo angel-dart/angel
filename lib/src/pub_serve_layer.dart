@@ -18,7 +18,7 @@ class PubServeLayer extends ProxyLayer {
 
   @override
   void serve(Router router) {
-    if (Platform.environment['ANGEL_ENV'] == 'production') {
+    if (app?.isProduction == true) {
       // Auto-deactivate in production ;)
       return;
     }
