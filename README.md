@@ -18,3 +18,10 @@ Do you want to collaborate? Join the project at https://projectgroupie.com/proje
 
 ## Installation & Setup
 Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.
+
+Once you have [Dart]() installed, bootstrapping a project is as simple as running two shell commands:
+
+```bash
+pub global activate angel_cli
+angel init hello
+```
