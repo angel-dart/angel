@@ -5,9 +5,6 @@
 
 **The Dart server framework that's ready for showtime.**
 
-With features like the following, Angel is the all-in-one framework you should choose to build your next project:
-* 
-
 [Wiki (in-depth documentation)](https://github.com/angel-dart/angel/wiki)
 
 [API Documentation](http://www.dartdocs.org/documentation/angel_common/latest)
@@ -15,6 +12,13 @@ With features like the following, Angel is the all-in-one framework you should c
 [Roadmap](https://github.com/angel-dart/roadmap/blob/master/ROADMAP.md)
 
 [File an Issue](https://github.com/angel-dart/roadmap/issues)
+
+
+With features like the following, Angel is the all-in-one framework you should choose to build your next project:
+* [Advanced, Modular Routing](https://github.com/angel-dart/route)
+* [Middleware](https://github.com/angel-dart/angel/wiki/Middleware)
+* [Dependency Injection](https://github.com/angel-dart/angel/wiki/Dependency-Injection)
+* And [much more](https://github.com/angel-dart)...
 
 ## Installation & Setup
 *Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.*
