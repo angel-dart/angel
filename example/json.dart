@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
-import 'common.dart';
 
 main() async {
   int x = 0;

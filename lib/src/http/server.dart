@@ -153,11 +153,22 @@ class Angel extends AngelBase {
       {List middleware: const []}) {
     if (_flattened != null) {
       print(
-          'WARNING: You added a route ($method $path) to the router, after it has been optimized.');
+          'WARNING: You added a route ($method $path) to the router, after it had been optimized.');
       print('This route will be ignored, and no requests will ever reach it.');
     }
 
     return super.addRoute(method, path, handler, middleware: middleware ?? []);
+  }
+
+  @override
+  mount(Pattern path, Router router, {bool hooked: true, String namespace}) {
+    if (_flattened != null) {
+      print(
+          'WARNING: You added mounted a child router ($path) on the router, after it had been optimized.');
+      print('This route will be ignored, and no requests will ever reach it.');
+    }
+    return super
+        .mount(path, router, hooked: hooked != false, namespace: namespace);
   }
 
   /// Loads some base dependencies into the service container.
@@ -400,7 +411,9 @@ class Angel extends AngelBase {
             .forEach(_walk);
       }
 
-      _walk(_flattened = flatten(this));
+      if (_flattened == null) _flattened = flatten(this);
+
+      _walk(_flattened);
       print('Angel is running in production mode.');
     }
   }
@@ -438,9 +451,13 @@ class Angel extends AngelBase {
     _afterProcessed.add(request);
 
     if (!res.willCloseItself) {
+      res.reopen();
+
       for (var finalizer in responseFinalizers) {
         await finalizer(req, res);
       }
+
+      if (res.isOpen) res.end();
 
       for (var key in res.headers.keys) {
         request.response.headers.add(key, res.headers[key]);
