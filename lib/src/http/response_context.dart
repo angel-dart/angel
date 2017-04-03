@@ -34,13 +34,12 @@ class ResponseContext extends Extensible {
   final List<Cookie> cookies = [];
 
   /// Headers that will be sent to the user.
-  ///
-  /// If the response is closed, then this getter will return an immutable `Map`.
   Map<String, String> get headers {
-    if (!_isOpen)
+    /// If the response is closed, then this getter will return an immutable `Map`.
+    /*if (!_isOpen)
       return new Map<String, String>.unmodifiable(_headers);
-    else
-      return _headers;
+    else*/
+    return _headers;
   }
 
   /// Serializes response data into a String.
@@ -113,7 +112,7 @@ class ResponseContext extends Extensible {
 
   /// Sends a download as a response.
   download(File file, {String filename}) async {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
 
     headers["Content-Disposition"] =
         'attachment; filename="${filename ?? file.path}"';
@@ -151,7 +150,7 @@ class ResponseContext extends Extensible {
 
   /// Returns a JSONP response.
   void jsonp(value, {String callbackName: "callback", contentType}) {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
     write("$callbackName(${serializer(value)})");
 
     if (contentType != null) {
@@ -167,7 +166,7 @@ class ResponseContext extends Extensible {
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) async {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
     write(await app.viewGenerator(view, data));
     headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     end();
@@ -181,7 +180,7 @@ class ResponseContext extends Extensible {
   ///
   /// See [Router]#navigate for more. :)
   void redirect(url, {bool absolute: true, int code: 302}) {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
     headers[HttpHeaders.LOCATION] =
         url is String ? url : app.navigate(url, absolute: absolute);
     statusCode = code ?? 302;
@@ -207,7 +206,7 @@ class ResponseContext extends Extensible {
 
   /// Redirects to the given named [Route].
   void redirectTo(String name, [Map params, int code]) {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
     Route _findRoute(Router r) {
       for (Route route in r.routes) {
         if (route is SymlinkRoute) {
@@ -232,7 +231,7 @@ class ResponseContext extends Extensible {
 
   /// Redirects to the given [Controller] action.
   void redirectToAction(String action, [Map params, int code]) {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
     // UserController@show
     List<String> split = action.split("@");
 
@@ -262,7 +261,7 @@ class ResponseContext extends Extensible {
   /// Copies a file's contents into the response buffer.
   Future sendFile(File file,
       {int chunkSize, int sleepMs: 0, bool resumable: true}) async {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     buffer.add(await file.readAsBytes());
@@ -273,7 +272,7 @@ class ResponseContext extends Extensible {
   ///
   /// [contentType] can be either a [String], or a [ContentType].
   void serialize(value, {contentType}) {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
     var text = serializer(value);
     write(text);
 
@@ -292,7 +291,7 @@ class ResponseContext extends Extensible {
       int sleepMs: 0,
       bool resumable: true,
       Codec<List<int>, List<int>> codec}) async {
-    if (!_isOpen) throw _closed();
+    // if (!_isOpen) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     end();
@@ -332,7 +331,7 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
 
   @override
   void _lock() {
-    _closed = true;
+    // _closed = true;
   }
 
   @override
