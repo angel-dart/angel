@@ -70,6 +70,9 @@ main() async {
 }
 
 Future<Angel> createServer() async {
+  // New instance...
+  var app = new Angel();
+  
   // Configuration
   await app.configure(loadConfigurationFile());
   await app.configure(mustache());
