@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 main() async {
   Angel angel = new Angel();
-  await angel.configure(mustache(new Directory('/test')));
+  await angel.configure(mustache(new Directory('./test')));
 
   test('can render templates', () async {
     var hello = await angel.viewGenerator('hello', {'name': 'world'});
