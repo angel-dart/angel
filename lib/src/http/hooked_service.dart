@@ -11,30 +11,34 @@ import 'service.dart';
 
 /// Wraps another service in a service that broadcasts events on actions.
 class HookedService extends Service {
+  final List<StreamController<HookedServiceEvent>> _ctrl = [];
+
   /// Tbe service that is proxied by this hooked one.
   final Service inner;
 
-  HookedServiceEventDispatcher beforeIndexed =
+  final HookedServiceEventDispatcher beforeIndexed =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher beforeRead = new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher beforeCreated =
+  final HookedServiceEventDispatcher beforeRead =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher beforeModified =
+  final HookedServiceEventDispatcher beforeCreated =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher beforeUpdated =
+  final HookedServiceEventDispatcher beforeModified =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher beforeRemoved =
+  final HookedServiceEventDispatcher beforeUpdated =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher afterIndexed =
+  final HookedServiceEventDispatcher beforeRemoved =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher afterRead = new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher afterCreated =
+  final HookedServiceEventDispatcher afterIndexed =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher afterModified =
+  final HookedServiceEventDispatcher afterRead =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher afterUpdated =
+  final HookedServiceEventDispatcher afterCreated =
       new HookedServiceEventDispatcher();
-  HookedServiceEventDispatcher afterRemoved =
+  final HookedServiceEventDispatcher afterModified =
+      new HookedServiceEventDispatcher();
+  final HookedServiceEventDispatcher afterUpdated =
+      new HookedServiceEventDispatcher();
+  final HookedServiceEventDispatcher afterRemoved =
       new HookedServiceEventDispatcher();
 
   HookedService(Service this.inner) {
@@ -59,6 +63,25 @@ class HookedService extends Service {
       return params.keys
           .where((key) => key != '__requestctx' && key != '__responsectx')
           .fold({}, (map, key) => map..[key] = params[key]);
+  }
+
+  /// Closes any open [StreamController]s on this instance. **Internal use only**.
+  Future close() async {
+    _ctrl.forEach((c) => c.close());
+    beforeIndexed._close();
+    beforeRead._close();
+    beforeCreated._close();
+    beforeModified._close();
+    beforeUpdated._close();
+    beforeRemoved._close();
+    afterIndexed._close();
+    afterRead._close();
+    afterCreated._close();
+    afterModified._close();
+    afterUpdated._close();
+    afterRemoved._close();
+
+    if (inner is HookedService) inner.close();
   }
 
   /// Adds hooks to this instance.
@@ -309,6 +332,54 @@ class HookedService extends Service {
     afterRemoved.listen(listener);
   }
 
+  /// Returns a [Stream] of all events fired before every service method.
+  ///
+  /// *NOTE*: Only use this if you do not plan to modify events. There is no guarantee
+  /// that events coming out of this [Stream] will see changes you make within the [Stream]
+  /// callback.
+  Stream<HookedServiceEvent> beforeAllStream() {
+    var ctrl = new StreamController<HookedServiceEvent>();
+    _ctrl.add(ctrl);
+    before(HookedServiceEvent.ALL, ctrl.add);
+    return ctrl.stream;
+  }
+
+  /// Returns a [Stream] of all events fired after every service method.
+  ///
+  /// *NOTE*: Only use this if you do not plan to modify events. There is no guarantee
+  /// that events coming out of this [Stream] will see changes you make within the [Stream]
+  /// callback.
+  Stream<HookedServiceEvent> afterAllStream() {
+    var ctrl = new StreamController<HookedServiceEvent>();
+    _ctrl.add(ctrl);
+    before(HookedServiceEvent.ALL, ctrl.add);
+    return ctrl.stream;
+  }
+
+  /// Returns a [Stream] of all events fired before every service method specified.
+  ///
+  /// *NOTE*: Only use this if you do not plan to modify events. There is no guarantee
+  /// that events coming out of this [Stream] will see changes you make within the [Stream]
+  /// callback.
+  Stream<HookedServiceEvent> beforeStream(Iterable<String> eventNames) {
+    var ctrl = new StreamController<HookedServiceEvent>();
+    _ctrl.add(ctrl);
+    before(eventNames, ctrl.add);
+    return ctrl.stream;
+  }
+
+  /// Returns a [Stream] of all events fired AFTER every service method specified.
+  ///
+  /// *NOTE*: Only use this if you do not plan to modify events. There is no guarantee
+  /// that events coming out of this [Stream] will see changes you make within the [Stream]
+  /// callback.
+  Stream<HookedServiceEvent> afterStream(Iterable<String> eventNames) {
+    var ctrl = new StreamController<HookedServiceEvent>();
+    _ctrl.add(ctrl);
+    after(eventNames, ctrl.add);
+    return ctrl.stream;
+  }
+
   /// Runs the [listener] before [create], [modify] and [update].
   void beforeModify(HookedServiceEventListener listener) {
     beforeCreated.listen(listener);
@@ -549,6 +620,14 @@ class HookedServiceEvent {
   static const String MODIFIED = "modified";
   static const String UPDATED = "updated";
   static const String REMOVED = "removed";
+  static const List<String> ALL = const [
+    INDEXED,
+    READ,
+    CREATED,
+    MODIFIED,
+    UPDATED,
+    REMOVED
+  ];
 
   /// Use this to end processing of an event.
   void cancel([result]) {
@@ -601,7 +680,12 @@ typedef HookedServiceEventListener(HookedServiceEvent event);
 
 /// Can be listened to, but events may be canceled.
 class HookedServiceEventDispatcher {
-  List<HookedServiceEventListener> listeners = [];
+  final List<StreamController<HookedServiceEvent>> _ctrl = [];
+  final List<HookedServiceEventListener> listeners = [];
+
+  void _close() {
+    _ctrl.forEach((c) => c.close());
+  }
 
   /// Fires an event, and returns it once it is either canceled, or all listeners have run.
   Future<HookedServiceEvent> _emit(HookedServiceEvent event) async {
@@ -614,6 +698,17 @@ class HookedServiceEventDispatcher {
     }
 
     return event;
+  }
+
+  /// Returns a [Stream] containing all events fired by this dispatcher.
+  ///
+  /// *NOTE*: Callbacks on the returned [Stream] cannot be guaranteed to run before other [listeners].
+  /// Use this only if you need a read-only stream of events.
+  Stream<HookedServiceEvent> asStream() {
+    var ctrl = new StreamController<HookedServiceEvent>();
+    _ctrl.add(ctrl);
+    listen(ctrl.add);
+    return ctrl.stream;
   }
 
   /// Registers the listener to be called whenever an event is triggered.

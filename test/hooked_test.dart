@@ -24,6 +24,10 @@ main() {
     app.use('/books', new BookService());
     Todos = app.service("todos");
 
+    Todos.beforeAllStream().listen((e) {
+      print('Fired ${e.eventName}! Data: ${e.data}; Params: ${e.params}');
+    });
+
     app.fatalErrorStream.listen((e) => throw e.error);
 
     server = await app.startServer();

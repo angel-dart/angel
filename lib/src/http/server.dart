@@ -11,6 +11,7 @@ import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
 import 'fatal_error.dart';
+import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -92,6 +93,11 @@ class Angel extends AngelBase {
   ///
   /// If the server is never started, they will never be called.
   final List<AngelConfigurer> justBeforeStart = [];
+
+  /// Plug-ins to be called right before server shutdown
+  ///
+  /// If the server is never [close]d, they will never be called.
+  final List<AngelConfigurer> justBeforeStop = [];
 
   /// Always run before responses are sent.
   ///
@@ -178,6 +184,31 @@ class Angel extends AngelBase {
     container.singleton(this, as: Routable);
     container.singleton(this, as: Router);
     container.singleton(this);
+  }
+
+  /// Shuts down the server, and closes any open [StreamController]s.
+  Future<HttpServer> close() async {
+    HttpServer server;
+
+    if (httpServer != null) {
+      server = httpServer;
+      await httpServer.close(force: true);
+    }
+
+    _afterProcessed.close();
+    _beforeProcessed.close();
+    _fatalErrorStream.close();
+    _onController.close();
+
+    await Future.forEach(services.keys, (Service service) async {
+      if (service is HookedService) {
+        await service.close();
+      }
+    });
+
+    for (var plugin in justBeforeStop) await plugin(this);
+
+    return server;
   }
 
   @override
