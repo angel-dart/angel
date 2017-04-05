@@ -95,7 +95,7 @@ Future<Angel> createServer() async {
   
   
   // Setup WebSockets, add GZIP, etc.
-  await app.configure(new AngelWebSocket(debug: true));
+  await app.configure(new AngelWebSocket());
   app.responseFinalizers.add(gzip());
   
   return app;
