@@ -23,5 +23,5 @@ res.render('hello', {'name': 'world'});
 
 # Options
 - **partialsPath**: A path within the viewsDirectory to search for partials in.
-    Default is `./partials`. *Include the leading dot, please*.
+    Default is `./partials`.
 - **fileExtension**: The file extension to search for. Default is `.mustache`.
