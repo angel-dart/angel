@@ -1,5 +1,6 @@
 # mustache
-Mustache (Handlebars) view generator for Angel.
+Mustache (Handlebars) view generator for the [Angel](https://github.com/angel-dart/angel)
+web server framework.
 
 # Installation
 In `pubspec.yaml`:
@@ -13,7 +14,7 @@ If your project imports [`package:angel_common`](https://github.com/angel-dart/c
 then this is already installed.
 
 # Usage
-```
+```dart
 // Run the plug-in
 await app.configure(mustache(new Directory('views')));
 
