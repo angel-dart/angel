@@ -1,5 +1,5 @@
 # mustache
-[![version 1.0.1](https://img.shields.io/badge/pub-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_mustache)
+[![version 1.0.3](https://img.shields.io/badge/pub-1.0.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_mustache)
 [![build status](https://travis-ci.org/angel-dart/mustache.svg?branch=master)](https://travis-ci.org/angel-dart/mustache)
 
 Mustache (Handlebars) view generator for the [Angel](https://github.com/angel-dart/angel)
