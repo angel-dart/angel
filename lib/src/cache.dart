@@ -1,29 +1,22 @@
 import 'dart:io';
 import 'dart:collection';
+import 'package:path/path.dart' as path;
 
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_mustache/src/mustache_context.dart';
 
 class MustacheCacheController {
+
+  /**
+   * The context for which views and partials are
+   * served from.
+   */
+  MustacheContext context;
+
   HashMap<String, String> viewCache = new HashMap();
   HashMap<String, String> partialCache = new HashMap();
 
-  /**
-   * The directory of the mustache views
-   */
-  Directory viewDirectory;
-
-  /**
-   * The directory of mustache partials
-   */
-  Directory partialsDirectory;
-
-  /**
-   * Default file extension associated with a view file
-   */
-  String fileExtension;
-
-  MustacheCacheController(
-      [this.viewDirectory, this.partialsDirectory, this.fileExtension]);
+  MustacheCacheController([this.context]);
 
   get_view(String viewName, Angel app) async {
     if (app.isProduction) {
@@ -32,9 +25,7 @@ class MustacheCacheController {
       }
     }
 
-    String viewPath = viewName + this.fileExtension;
-    File viewFile =
-        new File.fromUri(this.viewDirectory.absolute.uri.resolve(viewPath));
+    File viewFile = context.resolveView(viewName);
 
     if (await viewFile.exists()) {
       String viewTemplate = await viewFile.readAsString();
@@ -44,7 +35,7 @@ class MustacheCacheController {
       return viewTemplate;
     } else
       throw new FileSystemException(
-          'View "$viewName" was not found.', viewPath);
+          'View "$viewName" was not found.', viewFile.path);
   }
 
   get_partial(String partialName, Angel app) {
@@ -54,18 +45,16 @@ class MustacheCacheController {
       }
     }
 
-    String viewPath = partialName + this.fileExtension;
-    File viewFile =
-        new File.fromUri(partialsDirectory.absolute.uri.resolve(viewPath));
+    File partialFile = context.resolvePartial(partialName);
 
-    if (viewFile.existsSync()) {
-      String partialTemplate = viewFile.readAsStringSync();
+    if (partialFile.existsSync()) {
+      String partialTemplate = partialFile.readAsStringSync();
       if (app.isProduction) {
         this.partialCache[partialName] = partialTemplate;
       }
       return partialTemplate;
     } else
       throw new FileSystemException(
-          'View "$partialName" was not found.', viewPath);
+          'View "$partialName" was not found.', partialFile.path);
   }
 }
