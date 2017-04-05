@@ -5,7 +5,7 @@
 Mustache (Handlebars) view generator for the [Angel](https://github.com/angel-dart/angel)
 web server framework.
 
-Thanks so much @c4ward for his help with bringing this project to life!
+Thanks so much @c4wrd for his help with bringing this project to life!
 
 # Installation
 In `pubspec.yaml`:
