@@ -1,18 +1,23 @@
-# angel_hbs
-Handlebars view generator for Angel.
+# mustache
+Mustache (Handlebars) view generator for Angel.
 
 # Installation
 In `pubspec.yaml`:
 
-    dependencies:
-        angel_mustache: ">= 1.0.0-dev < 2.0.0"
+```yaml
+dependencies:
+    angel_mustache: ^1.0.0
+```
+
+If your project imports [`package:angel_common`](https://github.com/angel-dart/common),
+then this is already installed.
 
 # Usage
 ```
-app.configure(mustache(new Directory('views')));
-```
+// Run the plug-in
+await app.configure(mustache(new Directory('views')));
 
-```
+// Render `hello.mustache`
 res.render('hello', {'name': 'world'});
 ```
 
