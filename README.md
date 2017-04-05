@@ -19,7 +19,7 @@ then this is already installed.
 await app.configure(mustache(new Directory('views')));
 
 // Render `hello.mustache`
-res.render('hello', {'name': 'world'});
+await res.render('hello', {'name': 'world'});
 ```
 
 # Options
