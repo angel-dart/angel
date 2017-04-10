@@ -165,8 +165,10 @@ class $name extends Model {
   @override
   String id;
   String name, desc;
+  @override
+  DateTime createdAt, updatedAt;
 
-  $name({this.id, this.name, this.desc});
+  $name({this.id, this.name, this.desc, this.createdAt, this.updatedAt});
 }
     '''
         .trim());
