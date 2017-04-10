@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/common.dart';
 import 'package:angel_websocket/base_websocket_client.dart';
+import 'package:angel_websocket/server.dart';
 import 'package:test/test.dart';
 
 class Todo extends Model {
@@ -11,7 +12,12 @@ class Todo extends Model {
 }
 
 class TodoService extends TypedService<Todo> {
-  TodoService() : super(new MapService());
+  TodoService() : super(new MapService()) {
+    properties['ws:filter'] = (HookedServiceEvent e, WebSocketContext socket) {
+      print('Hello, service filter world!');
+      return true;
+    };
+  }
 }
 
 testIndex(BaseWebSocketClient client) async {

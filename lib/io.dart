@@ -38,7 +38,10 @@ class WebSockets extends BaseWebSocketClient {
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() async {
-    var socket = await WebSocket.connect(basePath);
+    var socket = await WebSocket.connect(basePath,
+        headers: authToken?.isNotEmpty == true
+            ? {'Authorization': 'Bearer $authToken'}
+            : {});
     return new IOWebSocketChannel(socket);
   }
 

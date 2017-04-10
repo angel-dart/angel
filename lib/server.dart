@@ -87,7 +87,7 @@ class AngelWebSocket extends AngelPlugin {
 
       _filter(WebSocketContext socket) {
         if (e.service.properties.containsKey('ws:filter'))
-          return e.service.properties['ws:filter'](socket);
+          return e.service.properties['ws:filter'](e, socket);
         else
           return true;
       }
@@ -230,14 +230,7 @@ class AngelWebSocket extends AngelPlugin {
   /// Hooks a service up to have its events broadcasted.
   hookupService(Pattern _path, HookedService service) {
     String path = _path.toString();
-    var batch = serviceHook(path);
-
-    service
-      ..afterCreated.listen(batch)
-      ..afterModified.listen(batch)
-      ..afterUpdated.listen(batch)
-      ..afterRemoved.listen(batch);
-
+    service.afterAll(serviceHook(path));
     _servicesAlreadyWired.add(path);
   }
 

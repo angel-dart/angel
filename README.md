@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.3](https://img.shields.io/badge/pub-1.0.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![1.0.4](https://img.shields.io/badge/pub-1.0.4-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
@@ -29,11 +29,11 @@ main() async {
 
 ```
 
-Filtering events is easy with services. Just return a `bool`, whether
+Filtering events is easy with hooked services. Just return a `bool`, whether
 synchronously or asynchronously.
 
 ```dart
-myService.properties['ws:filter'] = (WebSocketContext socket) async {
+myService.properties['ws:filter'] = (HookedServiceEvent e, WebSocketContext socket) async {
   return true;
 }
 ```

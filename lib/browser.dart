@@ -55,7 +55,7 @@ class WebSockets extends BaseWebSocketClient {
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() {
-    var socket = new WebSocket(basePath);
+    var socket = new WebSocket(authToken?.isNotEmpty == true ? basePath : '$basePath?token=$authToken');
     var completer = new Completer<WebSocketChannel>();
 
     socket
