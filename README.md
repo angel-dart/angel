@@ -4,7 +4,6 @@
 [![build status](https://travis-ci.org/angel-dart/proxy.svg)](https://travis-ci.org/angel-dart/proxy)
 
 Angel middleware to forward requests to another server (i.e. pub serve).
-Based on [this repo](https://github.com/agilord/http_request_proxy).
 
 ```dart
 import 'package:angel_proxy/angel_proxy.dart';
