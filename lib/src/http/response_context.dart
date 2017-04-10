@@ -305,14 +305,14 @@ class ResponseContext extends Extensible {
 
   /// Writes data to the response.
   void write(value, {Encoding encoding: UTF8}) {
-    if (!_isOpen)
+    /*if (!_isOpen)
       throw _closed();
-    else {
-      if (value is List<int>)
-        buffer.add(value);
-      else
-        buffer.add(encoding.encode(value.toString()));
-    }
+    else {*/
+    if (value is List<int>)
+      buffer.add(value);
+    else
+      buffer.add(encoding.encode(value.toString()));
+    //}
   }
 }
 
