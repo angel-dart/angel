@@ -3,16 +3,18 @@ library angel.models.user;
 import 'package:angel_framework/common.dart';
 
 class User extends Model {
+  @override
+  String id;
   String email, username, password, salt;
-  List<String> roles;
+  @override
+  DateTime createdAt, updatedAt;
 
   User(
-      {String id,
+      {this.id,
       this.email,
       this.username,
       this.password,
       this.salt,
-      this.roles: const []}) {
-    this.id = id;
-  }
+      this.createdAt,
+      this.updatedAt});
 }
