@@ -1,6 +1,5 @@
 # rethink
-
-[![version 1.0.6](https://img.shields.io/badge/pub-1.0.6-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
+[![version 1.0.7](https://img.shields.io/badge/pub-1.0.7-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
 [![build status](https://travis-ci.org/angel-dart/rethink.svg?branch=master)](https://travis-ci.org/angel-dart/rethink)
 
 RethinkDB-enabled services for the Angel framework.

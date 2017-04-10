@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:rethinkdb_driver2/rethinkdb_driver2.dart';
@@ -54,7 +55,7 @@ class RethinkService extends Service {
 
   RqlQuery _getQueryInner(RqlQuery query, Map params) {
     if (params == null || !params.containsKey('query'))
-      return null;
+      return query;
     else {
       if (params['query'] is RqlQuery)
         return params['query'];
@@ -179,11 +180,42 @@ class RethinkService extends Service {
   }
 
   @override
-  Future modify(id, data, [Map params]) => update(id, data, params);
+  Future modify(id, data, [Map params]) async {
+    var d = _serialize(data);
+
+    if (d is Map && d.containsKey('id')) {
+      try {
+        await read(d['id'], params);
+      } on AngelHttpException catch (e) {
+        if (e.statusCode == HttpStatus.NOT_FOUND)
+          return await create(data, params);
+        else
+          rethrow;
+      }
+    }
+
+    var query = buildQuery(table.get(id?.toString()), params).update(d);
+    await _sendQuery(query);
+    return await read(id, params);
+  }
 
   @override
   Future update(id, data, [Map params]) async {
-    var query = buildQuery(table.get(id?.toString()), params).update(data);
+    var d = _serialize(data);
+
+    if (d is Map && d.containsKey('id')) {
+      try {
+        await read(d['id'], params);
+      } on AngelHttpException catch (e) {
+        if (e.statusCode == HttpStatus.NOT_FOUND)
+          return await create(data, params);
+        else
+          rethrow;
+      }
+    }
+
+    if (d is Map && !d.containsKey('id')) d['id'] = id.toString();
+    var query = buildQuery(table.get(id?.toString()), params).replace(d);
     await _sendQuery(query);
     return await read(id, params);
   }

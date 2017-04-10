@@ -19,9 +19,9 @@ main() {
     app = new Angel();
     app.use('/todos', new RethinkService(conn, r.table('todos')));
 
-    app.onError((e, req, res) async {
+    app.errorHandler = (e, req, res) async {
       print('Whoops: $e');
-    });
+    };
 
     app.fatalErrorStream.listen((e) {
       print('Whoops: ${e.error}');
@@ -55,13 +55,13 @@ main() {
     expect(result['completed'], equals(todo.completed));
   });
 
-  test('update', () async {
+  test('modify', () async {
     var todo = new Todo(title: 'Clean your room');
     var creation = await todoService.create(todo.toJson());
     print('Creation: $creation');
 
     var id = creation['id'];
-    var result = await todoService.update(id, {'title': 'Eat healthy'});
+    var result = await todoService.modify(id, {'title': 'Eat healthy'});
 
     print('Response: $result');
     expect(result, isMap);
