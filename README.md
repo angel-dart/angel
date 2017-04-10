@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.4](https://img.shields.io/badge/pub-1.0.4-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![1.0.4+1](https://img.shields.io/badge/pub-1.0.4+1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
