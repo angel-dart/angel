@@ -73,10 +73,10 @@ main() {
     test('insert items', () async {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
 
       response = await client.get("$url/api");
-      expect(response.statusCode, 200);
+      expect(response.statusCode, isIn([200, 201]));
       List<Map> users = god.deserialize(response.body);
       expect(users.length, equals(1));
     });
@@ -84,11 +84,11 @@ main() {
     test('read item', () async {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
       Map created = god.deserialize(response.body);
 
       response = await client.get("$url/api/${created['id']}");
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
       Map read = god.deserialize(response.body);
       expect(read['id'], equals(created['id']));
       expect(read['to'], equals('world'));
@@ -98,13 +98,13 @@ main() {
     test('modify item', () async {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
       Map created = god.deserialize(response.body);
 
       response = await client.patch("$url/api/${created['id']}",
           body: god.serialize({"to": "Mom"}), headers: headers);
       Map modified = god.deserialize(response.body);
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
       expect(modified['id'], equals(created['id']));
       expect(modified['to'], equals('Mom'));
       expect(modified['updatedAt'], isNot(null));
@@ -113,13 +113,13 @@ main() {
     test('update item', () async {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
       Map created = god.deserialize(response.body);
 
       response = await client.post("$url/api/${created['id']}",
           body: god.serialize({"to": "Updated"}), headers: headers);
       Map modified = god.deserialize(response.body);
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, isIn([200, 201]));
       expect(modified['id'], equals(created['id']));
       expect(modified['to'], equals('Updated'));
       expect(modified['updatedAt'], isNot(null));

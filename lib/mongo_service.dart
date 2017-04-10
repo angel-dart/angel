@@ -126,7 +126,17 @@ class MongoService extends Service {
 
   @override
   Future modify(id, data, [Map params]) async {
-    var target = await read(id, params);
+    var target;
+
+    try {
+      target = await read(id, params);
+    } on AngelHttpException catch (e) {
+      if (e.statusCode == HttpStatus.NOT_FOUND)
+        return await create(data, params);
+      else
+        rethrow;
+    }
+
     Map result = mergeMap([
       target is Map ? target : god.serializeObject(target),
       _removeSensitive(data)
@@ -146,7 +156,17 @@ class MongoService extends Service {
 
   @override
   Future update(id, data, [Map params]) async {
-    var target = await read(id, params);
+    var target;
+
+    try {
+      target = await read(id, params);
+    } on AngelHttpException catch (e) {
+      if (e.statusCode == HttpStatus.NOT_FOUND)
+        return await create(data, params);
+      else
+        rethrow;
+    }
+    
     Map result = _removeSensitive(data);
     result['_id'] = _makeId(id);
     result['createdAt'] =
