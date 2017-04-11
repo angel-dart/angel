@@ -31,7 +31,7 @@ configureServer(Db db) {
 
     // Validate new users, and also hash their passwords.
     service.beforeCreated
-      ..listen(validateEvent(CREATE_USER))
+      // ..listen(validateEvent(CREATE_USER))
       ..listen((e) {
         var salt = rs.randomAlphaNumeric(12);
         e.data
