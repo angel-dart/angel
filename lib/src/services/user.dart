@@ -23,11 +23,6 @@ configureServer(Db db) {
       HookedServiceEvent.UPDATED,
       HookedServiceEvent.REMOVED
     ], hooks.disable());
-    
-    // Don't broadcast user events over WebSockets - they're sensitive data!
-    service.beforeAll((e) {
-      e.params['broadcast'] = false;
-    });
 
     // Validate new users, and also hash their passwords.
     service.beforeCreated
