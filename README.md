@@ -18,5 +18,5 @@ provides a facility for this, which works perfectly with the default callback pr
 in this package.
 
 ```dart
-app.authenticate('facebook', new AngelAuthOptions(callback: confirmPopupAuthentication()));
+auth.authenticate('facebook', new AngelAuthOptions(callback: confirmPopupAuthentication()));
 ```
