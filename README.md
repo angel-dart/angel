@@ -20,3 +20,11 @@ in this package.
 ```dart
 auth.authenticate('facebook', new AngelAuthOptions(callback: confirmPopupAuthentication()));
 ```
+This renders a simple HTML page that fires the user's JWT as a `token` event in `window.opener`.
+`angel_client` [exposes this as a Stream](https://github.com/angel-dart/client#authentication):
+
+```dart
+app.authenticateViaPopup('/auth/google').listen((jwt) {
+  // Do something with the JWT
+});
+```
