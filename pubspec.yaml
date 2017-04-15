@@ -9,9 +9,11 @@ dependencies:
   angel_auth: "^1.0.0-dev"
   angel_client: "^1.0.0"
   angel_framework: "^1.0.0-dev"
+  http: "^0.11.3"
+  json_god: ^2.0.0-beta
+  merge_map: ^1.0.0
   uuid: "^0.5.3"
   web_socket_channel: "^1.0.0"
 dev_dependencies:
   angel_diagnostics: "^1.0.0-dev"
-  http: "^0.11.3"
   test: "^0.12.15"
