@@ -67,6 +67,7 @@ class WebSocketController extends Controller {
       socket.onData.listen((data) => onData(data, socket));
 
       socket.onAction.listen((WebSocketAction action) async {
+        socket.request.inject(WebSocketAction, action);
         await onAction(action, socket);
 
         if (_handlers.containsKey(action.eventName)) {
