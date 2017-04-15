@@ -181,8 +181,10 @@ class ResponseContext extends Extensible {
   /// See [Router]#navigate for more. :)
   void redirect(url, {bool absolute: true, int code: 302}) {
     // if (!_isOpen) throw _closed();
-    headers[HttpHeaders.LOCATION] =
-        url is String ? url : app.navigate(url, absolute: absolute);
+    headers
+      ..[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString()
+      ..[HttpHeaders.LOCATION] =
+          url is String ? url : app.navigate(url, absolute: absolute);
     statusCode = code ?? 302;
     write('''
     <!DOCTYPE html>

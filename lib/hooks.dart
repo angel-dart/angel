@@ -36,21 +36,75 @@ AngelConfigurer hookAllServices(callback(Service service)) {
 HookedServiceEventListener toJson() => transform(god.serializeObject);
 
 /// Mutates `e.data` or `e.result` using the given [transformer].
-HookedServiceEventListener transform(transformer(obj)) {
-  normalize(obj) {
+///
+/// You can optionally provide a [condition], which can be:
+/// * A [Providers] instance, or String, to run only on certain clients
+/// * The type [Providers], in which case the transformer will run on every client, but *not* on server-side events.
+/// * A function: if the function returns `true` (sync or async, doesn't matter),
+/// then the transformer will run. If not, the event will be skipped.
+/// * An [Iterable] of the above three.
+///
+/// A provided function must take a [HookedServiceEvent] as its only parameter.
+HookedServiceEventListener transform(transformer(obj), [condition]) {
+  Iterable cond = condition is Iterable ? condition : [condition];
+
+  _condition(HookedServiceEvent e, condition) async {
+    if (condition is Function)
+      return await condition(e);
+    else if (condition == Providers)
+      return true;
+    else {
+      if (e.params?.containsKey('provider') == true) {
+        var provider = e.params['provider'] as Providers;
+        if (condition is Providers)
+          return condition == provider;
+        else
+          return condition.toString() == provider.via;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  normalize(HookedServiceEvent e, obj) async {
+    bool transform = true;
+
+    for (var c in cond) {
+      var r = await _condition(e, c);
+
+      if (r != true) {
+        transform = false;
+        break;
+      }
+    }
+
+    if (transform != true) {
+      if (obj == null)
+        return null;
+      else if (obj is Iterable)
+        return obj.toList();
+      else
+        return obj;
+    }
+
     if (obj == null)
       return null;
-    else if (obj is Iterable)
-      return obj.map(normalize).toList();
-    else
+    else if (obj is Iterable) {
+      var r = [];
+
+      for (var o in obj) {
+        r.add(await normalize(e, o));
+      }
+
+      return r;
+    } else
       return transformer(obj);
   }
 
-  return (HookedServiceEvent e) {
+  return (HookedServiceEvent e) async {
     if (e.isBefore) {
-      e.data = normalize(e.data);
-    } else if (e.isAfter)
-      e.result = normalize(e.result);
+      e.data = await normalize(e, e.data);
+    } else if (e.isAfter) e.result = await normalize(e, e.result);
   };
 }
 
@@ -77,8 +131,6 @@ HookedServiceEventListener toType(Type type) {
 /// Only applies to the client-side.
 HookedServiceEventListener remove(key, [remover(key, obj)]) {
   return (HookedServiceEvent e) async {
-    if (!e.isAfter) throw new StateError("'remove' only works on after hooks.");
-
     _remover(key, obj) {
       if (remover != null)
         return remover(key, obj);
@@ -95,7 +147,7 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
           reflect(obj).setField(new Symbol(key), null);
           return obj;
         } catch (e) {
-          throw new ArgumentError("Cannot remove key 'key' from $obj.");
+          throw new ArgumentError("Cannot remove key '$key' from $obj.");
         }
       }
     }
@@ -206,10 +258,18 @@ HookedServiceEventListener addCreatedAt({
   };
 }
 
+/// Typo: Use [addUpdatedAt] instead.
+@deprecated
+HookedServiceEventListener addUpatedAt({
+  assign(obj, String now),
+  String key,
+}) =>
+    addUpdatedAt(assign: assign, key: key);
+
 /// Serializes the current time to `e.data` or `e.result`.
 /// You can provide an [assign] function to set the property on your object, and skip reflection.///
 /// Default key: `createdAt`
-HookedServiceEventListener addUpatedAt({
+HookedServiceEventListener addUpdatedAt({
   assign(obj, String now),
   String key,
 }) {

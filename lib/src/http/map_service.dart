@@ -52,9 +52,11 @@ class MapService extends Service {
       throw new AngelHttpException.badRequest(
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
+    var now = new DateTime.now();
     var result = data
       ..['id'] = items.length.toString()
-      ..['createdAt'] = new DateTime.now();
+      ..['createdAt'] = now
+      ..['updatedAt'] = now;
     items.add(result);
     return result;
   }
@@ -97,6 +99,14 @@ class MapService extends Service {
 
   @override
   Future<Map> remove(id, [Map params]) async {
+    if (id == null ||
+        id == 'null' &&
+            (allowRemoveAll == true ||
+                params?.containsKey('provider') != true)) {
+      items.clear();
+      return {};
+    }
+
     var result = await read(id, params);
 
     if (items.remove(result))

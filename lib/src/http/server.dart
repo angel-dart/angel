@@ -252,70 +252,64 @@ class Angel extends AngelBase {
     _serializer = serializer;
   }
 
-  /// Runs some [handler]. Returns `true` if request execution should continue.
-  Future<bool> executeHandler(
+  Future getHandlerResult(
       handler, RequestContext req, ResponseContext res) async {
     if (handler is RequestMiddleware) {
       var result = await handler(req, res);
 
-      if (result is bool)
-        return result == true;
-      else if (result is RequestHandler)
-        return await executeHandler(result, req, res);
-      else if (result != null) {
-        res.serialize(result,
-            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-                ContentType.JSON.mimeType);
-        return false;
-      } else
-        return res.isOpen;
+      if (result is RequestHandler)
+        return await getHandlerResult(result, req, res);
+      else
+        return result;
     }
 
     if (handler is RequestHandler) {
       var result = await handler(req, res);
       if (result is RequestHandler)
-        return await executeHandler(result, req, res);
-      return res.isOpen;
+        return await getHandlerResult(result, req, res);
+      else
+        return result;
     }
 
     if (handler is Future) {
       var result = await handler;
-      if (result is bool)
-        return result == true;
-      else if (result is RequestHandler)
-        return await executeHandler(result, req, res);
-      else if (result != null) {
-        res.serialize(result,
-            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-                ContentType.JSON.mimeType);
-        return false;
-      } else
-        return true;
+      if (result is RequestHandler)
+        return await getHandlerResult(result, req, res);
+      else
+        return result;
     }
 
     if (handler is Function) {
       var result = await runContained(handler, req, res);
-      if (result is bool)
-        return result == true;
-      else if (result is RequestHandler)
-        return await executeHandler(result, req, res);
-      else if (result != null) {
-        res.serialize(result,
-            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-                ContentType.JSON.mimeType);
-        return false;
-      } else
-        return true;
+      if (result is RequestHandler)
+        return await getHandlerResult(result, req, res);
+      else
+        return result;
     }
 
     if (requestMiddleware.containsKey(handler)) {
-      return await executeHandler(requestMiddleware[handler], req, res);
+      return await getHandlerResult(requestMiddleware[handler], req, res);
     }
 
-    res.serialize(handler,
-        contentType:
-            res.headers[HttpHeaders.CONTENT_TYPE] ?? ContentType.JSON.mimeType);
-    return false;
+    return handler;
+  }
+
+  /// Runs some [handler]. Returns `true` if request execution should continue.
+  Future<bool> executeHandler(
+      handler, RequestContext req, ResponseContext res) async {
+    var result = await getHandlerResult(handler, req, res);
+
+    if (result is Future) {
+      return await executeHandler(await result, req, res);
+    } else if (result is bool) {
+      return result;
+    } else if (result != null) {
+      res.serialize(result,
+          contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+              ContentType.JSON.mimeType);
+      return false;
+    } else
+      return res.isOpen;
   }
 
   Future<RequestContext> createRequestContext(HttpRequest request) {
