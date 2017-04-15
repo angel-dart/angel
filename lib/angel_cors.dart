@@ -36,9 +36,9 @@ RequestMiddleware cors([CorsOptions options]) {
     if (req.method == 'OPTIONS' && opts.allowedHeaders.isNotEmpty) {
       res.headers['Access-Control-Allow-Headers'] =
           opts.allowedHeaders.join(',');
-    } else if (req.method == 'OPTIONS') {
+    } else if (req.headers['Access-Control-Request-Headers'] != null) {
       res.headers['Access-Control-Allow-Headers'] =
-          req.headers.value('Access-Control-Allow-Headers');
+          req.headers.value('Access-Control-Request-Headers');
     }
 
     // Access-Control-Expose-Headers

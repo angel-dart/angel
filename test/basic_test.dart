@@ -18,7 +18,7 @@ main() {
         return false;
       })
       ..all('*', () {
-        throw new AngelHttpException.NotFound();
+        throw new AngelHttpException.notFound();
       });
 
     server = await app.startServer();
@@ -39,5 +39,15 @@ main() {
     print('Response: ${response.body}');
     print('Headers: ${response.headers}');
     expect(response.headers['access-control-allow-origin'], equals('*'));
+  });
+
+  test('mirror headers', () async {
+    final response = await client.post(url, headers: {
+      'access-control-request-headers': 'foo'
+    });
+    expect(response.statusCode, equals(200));
+    print('Response: ${response.body}');
+    print('Headers: ${response.headers}');
+    expect(response.headers['access-control-allow-headers'], equals('foo'));
   });
 }

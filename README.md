@@ -1,6 +1,6 @@
 # cors
 
-![1.0.0](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)
+![1.0.0+1](https://img.shields.io/badge/version-1.0.0+1-brightgreen.svg)
 ![build status](https://travis-ci.org/angel-dart/cors.svg)
 
 Angel CORS middleware.
