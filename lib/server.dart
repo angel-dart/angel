@@ -230,7 +230,12 @@ class AngelWebSocket extends AngelPlugin {
   /// Hooks a service up to have its events broadcasted.
   hookupService(Pattern _path, HookedService service) {
     String path = _path.toString();
-    service.afterAll(serviceHook(path));
+    service.after([
+      HookedServiceEvent.CREATED,
+      HookedServiceEvent.MODIFIED,
+      HookedServiceEvent.UPDATED,
+      HookedServiceEvent.REMOVED
+    ], serviceHook(path));
     _servicesAlreadyWired.add(path);
   }
 

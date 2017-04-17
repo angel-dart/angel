@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.4+3](https://img.shields.io/badge/pub-1.0.4+3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![1.0.5](https://img.shields.io/badge/pub-1.0.5+3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
@@ -56,8 +56,10 @@ class MyController extends WebSocketController {
   
   // Dependency injection works, too..
   @ExposeWs("read_message")
-  void sendMessage(WebSocketContext socket, Db db) async {
-    socket.send("found_message", db.collection("messages").findOne(where.id("...")));
+  void sendMessage(WebSocketContext socket, WebSocketAction, Db db) async {
+    socket.send(
+      "found_message",
+      db.collection("messages").findOne(where.id(action.data['message_id'])));
   }
 
   // Event filtering
@@ -67,6 +69,18 @@ class MyController extends WebSocketController {
   }
 }
 ```
+
+**Client Use**
+This repo also provides two client libraries `browser` and `io` that extend the base
+`angel_client` interface, and allow you to use a very similar API on the client to that of
+the server.
+
+The provided clients also automatically try to reconnect their WebSockets when disconnected,
+which means you can restart your development server without having to reload browser windows.
+
+They also provide streams of data that pump out filtered data as it comes in from the server.
+
+Clients can even perform authentication over WebSockets.
 
 **In the Browser**
 
@@ -99,11 +113,11 @@ main() async {
 **CLI Client**
 
 ```dart
-import "package:angel_framework/angel_framework" as srv;
+import "package:angel_framework/common.dart";
 import "package:angel_websocket/io.dart";
 
 // You can include these in a shared file and access on both client and server
-class Car extends srv.Model {
+class Car extends Model {
   int year;
   String brand, make;
 
