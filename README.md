@@ -71,6 +71,7 @@ class MyController extends WebSocketController {
 ```
 
 **Client Use**
+
 This repo also provides two client libraries `browser` and `io` that extend the base
 `angel_client` interface, and allow you to use a very similar API on the client to that of
 the server.
