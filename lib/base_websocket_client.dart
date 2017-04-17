@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'package:angel_client/angel_client.dart';
 import 'package:http/src/base_client.dart' as http;
@@ -14,6 +15,7 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 abstract class BaseWebSocketClient extends BaseAngelClient {
   Duration _reconnectInterval;
   WebSocketChannel _socket;
+  final Queue<WebSocketAction> _queue = new Queue<WebSocketAction>();
 
   final StreamController _onData = new StreamController();
   final StreamController<WebSocketEvent> _onAllEvents =
@@ -99,6 +101,12 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
       getConnectedWebSocket().then((socket) {
         if (!c.isCompleted) {
           if (timer.isActive) timer.cancel();
+
+          while (_queue.isNotEmpty) {
+            var action = _queue.removeFirst();
+            socket.sink.add(serialize(action));
+          }
+
           c.complete(socket);
         }
       }).catchError((e, st) {
@@ -174,6 +182,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
         },
         cancelOnError: true,
         onDone: () {
+          _socket = null;
           if (reconnectOnClose == true) {
             new Timer.periodic(reconnectInterval, (Timer timer) async {
               var result;
@@ -199,7 +208,10 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   /// Sends the given [action] on the [socket].
   void sendAction(WebSocketAction action) {
-    socket.sink.add(serialize(action));
+    if (_socket == null)
+      _queue.addLast(action);
+    else
+      socket.sink.add(serialize(action));
   }
 
   /// Attempts to authenticate a WebSocket, using a valid JWT.
@@ -321,56 +333,56 @@ class BaseWebSocketService extends Service {
 
   /// Sends the given [action] on the [socket].
   void send(WebSocketAction action) {
-    socket.sink.add(serialize(action));
+    app.sendAction(action);
   }
 
   @override
   Future index([Map params]) async {
-    socket.sink.add(serialize(new WebSocketAction(
-        eventName: '$path::${ACTION_INDEX}', params: params ?? {})));
+    app.sendAction(new WebSocketAction(
+        eventName: '$path::${ACTION_INDEX}', params: params ?? {}));
     return null;
   }
 
   @override
   Future read(id, [Map params]) async {
-    socket.sink.add(serialize(new WebSocketAction(
-        eventName: '$path::${ACTION_READ}', id: id, params: params ?? {})));
+    app.sendAction(new WebSocketAction(
+        eventName: '$path::${ACTION_READ}', id: id, params: params ?? {}));
     return null;
   }
 
   @override
   Future create(data, [Map params]) async {
-    socket.sink.add(serialize(new WebSocketAction(
+    app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_CREATE}',
         data: data,
-        params: params ?? {})));
+        params: params ?? {}));
     return null;
   }
 
   @override
   Future modify(id, data, [Map params]) async {
-    socket.sink.add(serialize(new WebSocketAction(
+    app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_MODIFY}',
         id: id,
         data: data,
-        params: params ?? {})));
+        params: params ?? {}));
     return null;
   }
 
   @override
   Future update(id, data, [Map params]) async {
-    socket.sink.add(serialize(new WebSocketAction(
+    app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_UPDATE}',
         id: id,
         data: data,
-        params: params ?? {})));
+        params: params ?? {}));
     return null;
   }
 
   @override
   Future remove(id, [Map params]) async {
-    socket.sink.add(serialize(new WebSocketAction(
-        eventName: '$path::${ACTION_REMOVE}', id: id, params: params ?? {})));
+    app.sendAction(new WebSocketAction(
+        eventName: '$path::${ACTION_REMOVE}', id: id, params: params ?? {}));
     return null;
   }
 }
