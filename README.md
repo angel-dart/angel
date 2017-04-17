@@ -56,7 +56,7 @@ class MyController extends WebSocketController {
   
   // Dependency injection works, too..
   @ExposeWs("read_message")
-  void sendMessage(WebSocketContext socket, WebSocketAction, Db db) async {
+  void sendMessage(WebSocketContext socket, WebSocketAction action, Db db) async {
     socket.send(
       "found_message",
       db.collection("messages").findOne(where.id(action.data['message_id'])));
