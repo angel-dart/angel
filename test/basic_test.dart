@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_proxy/angel_proxy.dart';
+import 'package:angel_test/angel_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 import 'common.dart';
@@ -24,6 +25,8 @@ main() {
         testServer.address.address, testServer.port,
         mapTo: '/foo'));
 
+    app.after.add((req, res) async => res.write('intercept empty'));
+
     server = await app.startServer();
     url = 'http://${server.address.address}:${server.port}';
   });
@@ -39,6 +42,17 @@ main() {
     final response = await client.get('$url/proxy/hello');
     print('Response: ${response.body}');
     expect(response.body, equals('"world"'));
+  });
+
+  test('empty', () async {
+    var response = await client.get('$url/proxy/empty');
+    print('Response: ${response.body}');
+
+    // Shouldn't say it is gzipped...
+    expect(response, isNot(hasHeader('content-encoding')));
+
+    // Should have gzipped body
+    expect(response.body, 'intercept empty');
   });
 
   test('mapTo', () async {

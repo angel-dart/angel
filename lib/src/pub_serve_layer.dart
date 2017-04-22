@@ -4,6 +4,7 @@ import 'proxy_layer.dart';
 class PubServeLayer extends ProxyLayer {
   PubServeLayer(
       {bool debug: false,
+      bool streamToIO: true,
       String host: 'localhost',
       String mapTo: '/',
       int port: 8080,
@@ -13,7 +14,8 @@ class PubServeLayer extends ProxyLayer {
             debug: debug,
             mapTo: mapTo,
             protocol: protocol,
-            publicPath: publicPath);
+            publicPath: publicPath,
+            streamToIO: streamToIO != false);
 
   @override
   void serve(Router router) {

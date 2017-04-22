@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 
@@ -43,7 +42,7 @@ class ProxyLayer {
   Angel app;
   HttpClient _client;
   String _prefix;
-  final bool debug;
+  final bool debug, streamToIO;
   final String host, mapTo, publicPath;
   final int port;
   final String protocol;
@@ -53,6 +52,7 @@ class ProxyLayer {
       this.mapTo: '/',
       this.publicPath: '/',
       this.protocol: 'http',
+      this.streamToIO: false,
       SecurityContext securityContext}) {
     _client = new HttpClient(context: securityContext);
     _prefix = publicPath.replaceAll(_straySlashes, '');
@@ -118,11 +118,29 @@ class ProxyLayer {
       ..statusCode = rs.statusCode
       ..contentType = rs.headers.contentType;
 
-    rs.headers.forEach((k, v) {
-      res.headers[k] = v.join(',');
-    });
+    _printDebug('Proxy response headers:\n${rs.headers}');
 
-    await rs.forEach(res.buffer.add);
-    return false;
+    if (streamToIO == true) {
+      res
+        ..willCloseItself = true
+        ..end();
+
+      copyHeaders(rs.headers, res.io.headers);
+
+      if (rs.headers[HttpHeaders.CONTENT_ENCODING] != null)
+        res.io.headers.set(HttpHeaders.CONTENT_ENCODING,
+            rs.headers[HttpHeaders.CONTENT_ENCODING]);
+
+      await rs.pipe(res.io);
+    } else {
+      rs.headers.forEach((k, v) {
+        if (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip'))
+          res.headers[k] = v.join(',');
+      });
+
+      await rs.forEach(res.buffer.add);
+    }
+
+    return res.buffer.isEmpty;
   }
 }
