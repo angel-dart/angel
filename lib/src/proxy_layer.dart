@@ -140,11 +140,13 @@ class ProxyLayer {
         ..persistentConnection = from.persistentConnection
         ..port = from.port;
 
-      if (rs.headers[HttpHeaders.CONTENT_ENCODING] != null)
-        res.io.headers.set(HttpHeaders.CONTENT_ENCODING,
-            rs.headers[HttpHeaders.CONTENT_ENCODING]);
+      _printDebug('Outgoing content length: ${res.io.contentLength}');
 
-      await rs.pipe(res.io);
+      if (rs.headers[HttpHeaders.CONTENT_ENCODING]?.contains('gzip') == true) {
+        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
+        await rs.transform(GZIP.encoder).pipe(res.io);
+      } else
+        await rs.pipe(res.io);
     } else {
       rs.headers.forEach((k, v) {
         if (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip'))

@@ -20,7 +20,7 @@ main() {
     app = new Angel();
     app.get('/bar', (req, res) => res.write('normal'));
     var layer = new PubServeLayer(
-        publicPath: '/proxy', host: server.address.address, port: server.port);
+        debug: true, publicPath: '/proxy', host: server.address.address, port: server.port);
     print('streamToIO: ${layer.streamToIO}');
     await app.configure(layer);
 
@@ -49,7 +49,9 @@ main() {
     expect(response, hasHeader('content-encoding', 'gzip'));
 
     // Should have gzipped body
-    expect(response.body, 'pub serve');
+    //
+    // We have to decode it, because `mock_request` does not auto-decode.
+    expect(UTF8.decode(GZIP.decode(response.bodyBytes)), 'pub serve');
   });
 
   test('empty', () async {
@@ -59,7 +61,9 @@ main() {
     expect(response, hasHeader('content-encoding', 'gzip'));
 
     // Should have gzipped body
-    expect(response.bodyBytes, isEmpty);
+    //
+    // We have to decode it, because `mock_request` does not auto-decode.
+    expect(UTF8.decode(GZIP.decode(response.bodyBytes)), isEmpty);
   });
 
   test('normal', () async {
