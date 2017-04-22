@@ -126,20 +126,6 @@ class ProxyLayer {
         ..end();
 
       copyHeaders(rs.headers, res.io.headers);
-
-      var to = res.io.headers, from = rs.headers;
-
-      to
-        ..chunkedTransferEncoding = from.chunkedTransferEncoding
-        ..contentLength = from.contentLength
-        ..contentType = from.contentType
-        ..date = from.date
-        ..expires = from.expires
-        ..host = from.host
-        ..ifModifiedSince = from.ifModifiedSince
-        ..persistentConnection = from.persistentConnection
-        ..port = from.port;
-
       _printDebug('Outgoing content length: ${res.io.contentLength}');
 
       if (rs.headers[HttpHeaders.CONTENT_ENCODING]?.contains('gzip') == true) {
