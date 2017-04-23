@@ -219,10 +219,11 @@ class AngelWebSocket extends AngelPlugin {
   Future handleAuth(WebSocketAction action, WebSocketContext socket) async {
     if (allowAuth != false &&
         action.eventName == ACTION_AUTHENTICATE &&
-        action.params['jwt'] is String) {
+        action.params['query'] is Map &&
+        action.params['query']['jwt'] is String) {
       try {
         var auth = socket.request.grab<AngelAuth>(AngelAuth);
-        var jwt = action.params['jwt'] as String;
+        var jwt = action.params['query']['jwt'] as String;
         AuthToken token;
 
         token = new AuthToken.validate(jwt, auth.hmac);
@@ -243,6 +244,9 @@ class AngelWebSocket extends AngelPlugin {
         else
           socket.sendError(new AngelHttpException(e));
       }
+    } else {
+      socket.sendError(new AngelHttpException.badRequest(
+          message: 'No JWT provided for authentication.'));
     }
   }
 

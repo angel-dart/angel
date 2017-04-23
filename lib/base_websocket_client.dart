@@ -216,7 +216,11 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   /// Attempts to authenticate a WebSocket, using a valid JWT.
   void authenticateViaJwt(String jwt) {
-    send(ACTION_AUTHENTICATE, new WebSocketAction(params: {'jwt': jwt}));
+    send(
+        ACTION_AUTHENTICATE,
+        new WebSocketAction(params: {
+          'query': {'jwt': jwt}
+        }));
   }
 }
 
