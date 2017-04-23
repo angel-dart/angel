@@ -68,25 +68,26 @@ class WebSocketController extends Controller {
 
       socket.onAction.listen((WebSocketAction action) async {
         socket.request.inject(WebSocketAction, action);
-        await onAction(action, socket);
 
-        if (_handlers.containsKey(action.eventName)) {
-          try {
+        try {
+          await onAction(action, socket);
+
+          if (_handlers.containsKey(action.eventName)) {
             var methodMirror = _handlers[action.eventName];
             var fn = instanceMirror.getField(methodMirror.simpleName).reflectee;
             return app.runContained(fn, socket.request, socket.response);
-          } catch (e, st) {
-            // Send an error
-            if (e is AngelHttpException)
-              socket.sendError(e);
-            else if (ws.debug == true)
-              socket.sendError(new AngelHttpException(e,
-                  message: e.toString(),
-                  stackTrace: st,
-                  errors: [st.toString()]));
-            else
-              socket.sendError(new AngelHttpException(e));
           }
+        } catch (e, st) {
+          // Send an error
+          if (e is AngelHttpException)
+            socket.sendError(e);
+          else if (ws.debug == true || ws.sendErrors == true)
+            socket.sendError(new AngelHttpException(e,
+                message: e.toString(),
+                stackTrace: st,
+                errors: [st.toString()]));
+          else
+            socket.sendError(new AngelHttpException(e));
         }
       });
     });

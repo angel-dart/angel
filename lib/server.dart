@@ -42,6 +42,11 @@ class AngelWebSocket extends AngelPlugin {
   /// Include debug information, and send error information across WebSockets.
   final bool debug;
 
+  bool _sendErrors;
+
+  /// Send error information across WebSockets, without including [debug] information..
+  bool get sendErrors => _sendErrors == true;
+
   /// Registers this instance as a route on the server.
   final AngelWebSocketRegisterer register;
 
@@ -70,13 +75,27 @@ class AngelWebSocket extends AngelPlugin {
   /// Fired when a user disconnects.
   Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
+  /// Serializes data to WebSockets.
+  ResponseSerializer serializer;
+
+  /// Deserializes data from WebSockets.
+  Function deserializer;
+
   AngelWebSocket(
       {this.endpoint: '/ws',
       this.debug: false,
+      bool sendErrors,
       this.allowClientParams: false,
       this.allowAuth: true,
       this.register,
-      this.synchronizer});
+      this.synchronizer,
+      this.serializer,
+      this.deserializer}) {
+    _sendErrors = sendErrors;
+
+    if (serializer == null) serializer = god.serialize;
+    if (deserializer == null) deserializer = (params) => params;
+  }
 
   serviceHook(String path) {
     return (HookedServiceEvent e) async {
@@ -111,7 +130,7 @@ class AngelWebSocket extends AngelPlugin {
         var serialized = event.toJson();
         _printDebug('Batching this event: $serialized');
         // print('Serialized: ' + JSON.encode(serialized));
-        client.io.add(god.serialize(event.toJson()));
+        client.io.add((serializer ?? god.serialize)(event.toJson()));
       }
     });
 
@@ -150,7 +169,7 @@ class AngelWebSocket extends AngelPlugin {
     }
 
     var params = mergeMap([
-      god.deserializeDatum(action.params),
+      (deserializer ?? (params) => params)(action.params),
       {
         "provider": Providers.WEBSOCKET,
         '__requestctx': socket.request,
@@ -188,7 +207,7 @@ class AngelWebSocket extends AngelPlugin {
     } catch (e, st) {
       if (e is AngelHttpException)
         return socket.sendError(e);
-      else if (debug == true)
+      else if (debug == true || _sendErrors == true)
         socket.sendError(new AngelHttpException(e,
             message: e.toString(), stackTrace: st, errors: [st.toString()]));
       else
@@ -218,7 +237,7 @@ class AngelWebSocket extends AngelPlugin {
         // Send an error
         if (e is AngelHttpException)
           socket.sendError(e);
-        else if (debug == true)
+        else if (debug == true || _sendErrors == true)
           socket.sendError(new AngelHttpException(e,
               message: e.toString(), stackTrace: st, errors: [st.toString()]));
         else
@@ -277,7 +296,7 @@ class AngelWebSocket extends AngelPlugin {
       // Send an error
       if (e is AngelHttpException)
         socket.sendError(e);
-      else if (debug == true)
+      else if (debug == true || _sendErrors == true)
         socket.sendError(new AngelHttpException(e,
             message: e.toString(), stackTrace: st, errors: [st.toString()]));
       else
@@ -302,6 +321,8 @@ class AngelWebSocket extends AngelPlugin {
 
   @override
   Future call(Angel app) async {
+    if (_sendErrors == null) _sendErrors = app.isProduction;
+
     _app = app..container.singleton(this);
 
     if (runtimeType != AngelWebSocket)

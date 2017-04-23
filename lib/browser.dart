@@ -34,21 +34,27 @@ class WebSockets extends BaseWebSocketClient {
     var ctrl = new StreamController<String>();
     var wnd = window.open(url, 'angel_client_auth_popup');
 
-    wnd
-      ..on['beforeunload'].listen((_) {
-        if (!ctrl.isClosed) {
+    Timer t;
+    t = new Timer.periodic(new Duration(milliseconds: 500), (timer) {
+      if (!ctrl.isClosed) {
+        if (wnd.closed) {
           ctrl.addError(new AngelHttpException.notAuthenticated(
               message:
-                  errorMessage ?? 'Authentication via popup window failed.'));
+              errorMessage ?? 'Authentication via popup window failed.'));
           ctrl.close();
+          timer.cancel();
         }
-      })
-      ..on[eventName ?? 'token'].listen((CustomEvent e) {
-        if (!ctrl.isClosed) {
-          ctrl.add(e.detail);
-          ctrl.close();
-        }
-      });
+      } else
+        timer.cancel();
+    });
+
+    window.on[eventName ?? 'token'].listen((CustomEvent e) {
+      if (!ctrl.isClosed) {
+        ctrl.add(e.detail);
+        t.cancel();
+        ctrl.close();
+      }
+    });
 
     return ctrl.stream;
   }
