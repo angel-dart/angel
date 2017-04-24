@@ -23,7 +23,9 @@ String _pathify(String path) {
 /// Copies HTTP headers ;)
 void copyHeaders(HttpHeaders from, HttpHeaders to) {
   from.forEach((k, v) {
-    if (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip')) to.set(k, v);
+    if (k != HttpHeaders.SERVER &&
+        (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip')))
+      to.set(k, v);
   });
 
   /*to
@@ -42,7 +44,7 @@ class ProxyLayer {
   Angel app;
   HttpClient _client;
   String _prefix;
-  final bool debug, streamToIO;
+  final bool debug, recoverFrom404, streamToIO;
   final String host, mapTo, publicPath;
   final int port;
   final String protocol;
@@ -52,6 +54,7 @@ class ProxyLayer {
       this.mapTo: '/',
       this.publicPath: '/',
       this.protocol: 'http',
+      this.recoverFrom404: true,
       this.streamToIO: false,
       SecurityContext securityContext}) {
     _client = new HttpClient(context: securityContext);
@@ -114,6 +117,8 @@ class ProxyLayer {
     _printDebug(
         'Proxy responded to $mapping with status code ${rs.statusCode}');
 
+    if (rs.statusCode == 404 && recoverFrom404 != false) return true;
+
     res
       ..statusCode = rs.statusCode
       ..contentType = rs.headers.contentType;
@@ -126,6 +131,11 @@ class ProxyLayer {
         ..end();
 
       copyHeaders(rs.headers, res.io.headers);
+      res.io.statusCode = rs.statusCode;
+
+      if (rs.headers.contentType != null)
+        res.io.headers.contentType = rs.headers.contentType;
+
       _printDebug('Outgoing content length: ${res.io.contentLength}');
 
       if (rs.headers[HttpHeaders.CONTENT_ENCODING]?.contains('gzip') == true) {
