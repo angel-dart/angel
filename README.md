@@ -1,6 +1,6 @@
 # angel_framework
 
-[![pub 1.0.1](https://img.shields.io/badge/pub-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_framework)
+[![pub 1.0.2](https://img.shields.io/badge/pub-1.0.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_framework)
 [![build status](https://travis-ci.org/angel-dart/framework.svg)](https://travis-ci.org/angel-dart/framework)
 
 A high-powered HTTP server with support for dependency injection, sophisticated routing and more.

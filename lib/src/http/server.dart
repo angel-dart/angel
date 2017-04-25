@@ -476,8 +476,6 @@ class Angel extends AngelBase {
     _afterProcessed.add(request);
 
     if (!res.willCloseItself) {
-      res.reopen();
-
       for (var finalizer in responseFinalizers) {
         await finalizer(req, res);
       }

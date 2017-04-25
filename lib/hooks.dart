@@ -241,7 +241,7 @@ HookedServiceEventListener addCreatedAt({
       }
     }
 
-    var now = new DateTime.now().toIso8601String();
+    var now = new DateTime.now().toUtc().toIso8601String();
 
     normalize(obj) async {
       if (obj != null) {
@@ -292,7 +292,7 @@ HookedServiceEventListener addUpdatedAt({
       }
     }
 
-    var now = new DateTime.now().toIso8601String();
+    var now = new DateTime.now().toUtc().toIso8601String();
 
     normalize(obj) async {
       if (obj != null) {
