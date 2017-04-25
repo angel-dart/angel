@@ -200,10 +200,8 @@ class Angel extends AngelBase {
     _fatalErrorStream.close();
     _onController.close();
 
-    await Future.forEach(services.keys, (Service service) async {
-      if (service is HookedService) {
-        await service.close();
-      }
+    await Future.forEach(services.values, (Service service) async {
+      await service.close();
     });
 
     for (var plugin in justBeforeStop) await plugin(this);

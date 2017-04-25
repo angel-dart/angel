@@ -66,6 +66,7 @@ class HookedService extends Service {
   }
 
   /// Closes any open [StreamController]s on this instance. **Internal use only**.
+  @override
   Future close() async {
     _ctrl.forEach((c) => c.close());
     beforeIndexed._close();

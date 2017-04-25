@@ -40,6 +40,9 @@ class Service extends Routable {
   /// The [Angel] app powering this service.
   AngelBase app;
 
+  /// Closes this service, including any database connections or stream controllers.
+  Future close() async {}
+
   /// Retrieves all resources.
   Future index([Map params]) {
     throw new AngelHttpException.methodNotAllowed();
