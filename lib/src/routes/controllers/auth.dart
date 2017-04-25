@@ -18,7 +18,7 @@ class AuthController extends Controller {
   /// Attempt to log a user in
   LocalAuthVerifier localVerifier(Service userService) {
     return (String username, String password) async {
-      List<User> users = await userService.index({
+      Iterable<User> users = await userService.index({
         'query': {'username': username}
       });
 

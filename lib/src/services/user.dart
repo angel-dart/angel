@@ -12,7 +12,7 @@ configureServer(Db db) {
     app.use('/api/users',
         new TypedService<User>(new MongoService(db.collection('users'))));
 
-    HookedService service = app.service('api/users');
+    var service = app.service('api/users') as HookedService;
 
     // Prevent clients from doing anything to the `users` service,
     // apart from reading a single user's data.
