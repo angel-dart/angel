@@ -1,6 +1,6 @@
 # angel_auth
 
-[![version 1.0.2](https://img.shields.io/badge/version-1.0.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_auth)
+[![version 1.0.3](https://img.shields.io/badge/version-1.0.3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_auth)
 ![build status](https://travis-ci.org/angel-dart/auth.svg?branch=master)
 
 A complete authentication plugin for Angel. Inspired by Passport.

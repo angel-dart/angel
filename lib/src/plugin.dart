@@ -14,8 +14,6 @@ class AngelAuth extends AngelPlugin {
   num _jwtLifeSpan;
   Math.Random _random = new Math.Random.secure();
   final RegExp _rgxBearer = new RegExp(r"^Bearer");
-  RequireAuthorizationMiddleware _requireAuth =
-      new RequireAuthorizationMiddleware();
   final bool allowCookie;
   final bool allowTokenInQuery;
   String middlewareName;
@@ -59,11 +57,17 @@ class AngelAuth extends AngelPlugin {
     if (runtimeType != AngelAuth) app.container.singleton(this, as: AngelAuth);
 
     app.before.add(decodeJwt);
-    app.registerMiddleware(middlewareName, _requireAuth);
+    app.registerMiddleware(middlewareName, requireAuth);
 
     if (reviveTokenEndpoint != null) {
       app.post(reviveTokenEndpoint, reviveJwt);
     }
+  }
+
+  void _apply(RequestContext req, AuthToken token, user) {
+    req
+      ..inject(AuthToken, req.properties['token'] = token)
+      ..inject(user.runtimeType, req.properties["user"] = user);
   }
 
   decodeJwt(RequestContext req, ResponseContext res) async {
@@ -119,10 +123,7 @@ class AngelAuth extends AngelPlugin {
       }
 
       final user = await deserializer(token.userId);
-
-      req
-        ..inject(AuthToken, req.properties['token'] = token)
-        ..inject(user.runtimeType, req.properties["user"] = user);
+      _apply(req, token, user);
     }
 
     return true;
@@ -243,9 +244,7 @@ class AngelAuth extends AngelPlugin {
           if (r != null) return r;
         }
 
-        req
-          ..inject(AuthToken, req.properties['token'] = token)
-          ..inject(result.runtimeType, req.properties["user"] = result);
+        _apply(req, token, result);
 
         if (allowCookie) res.cookies.add(new Cookie("token", jwt));
 
@@ -254,13 +253,15 @@ class AngelAuth extends AngelPlugin {
         }
 
         if (options?.successRedirect?.isNotEmpty == true) {
-          return res.redirect(options.successRedirect, code: HttpStatus.OK);
+          res.redirect(options.successRedirect, code: HttpStatus.OK);
+          return false;
         } else if (options?.canRespondWithJson != false &&
             req.headers.value("accept") != null &&
             (req.headers.value("accept").contains("application/json") ||
                 req.headers.value("accept").contains("*/*") ||
                 req.headers.value("accept").contains("application/*"))) {
-          return {"data": result, "token": jwt};
+          var user = await deserializer(await serializer(result));
+          return {"data": user, "token": jwt};
         }
 
         return true;
@@ -277,10 +278,7 @@ class AngelAuth extends AngelPlugin {
   /// Log a user in on-demand.
   Future login(AuthToken token, RequestContext req, ResponseContext res) async {
     var user = await deserializer(token.userId);
-
-    req
-      ..inject(AuthToken, req.properties['token'] = token)
-      ..inject(user.runtimeType, req.properties["user"] = user);
+    _apply(req, token, user);
 
     if (allowCookie)
       res.cookies.add(new Cookie('token', token.serialize(_hs256)));
@@ -291,10 +289,7 @@ class AngelAuth extends AngelPlugin {
     var user = await deserializer(userId);
     var token = new AuthToken(
         userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
-
-    req
-      ..inject(AuthToken, req.properties['token'] = token)
-      ..inject(user.runtimeType, req.properties["user"] = user);
+    _apply(req, token, user);
 
     if (allowCookie)
       res.cookies.add(new Cookie('token', token.serialize(_hs256)));
