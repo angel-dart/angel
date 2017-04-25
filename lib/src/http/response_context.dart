@@ -36,7 +36,7 @@ class ResponseContext extends Extensible {
   /// Headers that will be sent to the user.
   Map<String, String> get headers {
     /// If the response is closed, then this getter will return an immutable `Map`.
-    if (!_isOpen)
+    if (_isClosed)
       return new Map<String, String>.unmodifiable(_headers);
     else
       return _headers;
