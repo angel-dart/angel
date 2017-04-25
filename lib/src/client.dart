@@ -22,8 +22,10 @@ const Map<String, String> _writeHeaders = const {
 final Uuid _uuid = new Uuid();
 
 /// Shorthand for bootstrapping a [TestClient].
-Future<TestClient> connectTo(Angel app, {Map initialSession}) async =>
-    new TestClient(app)..session.addAll(initialSession ?? {});
+Future<TestClient> connectTo(Angel app,
+        {Map initialSession, bool autoDecodeGzip: true}) async =>
+    new TestClient(app, autoDecodeGzip: autoDecodeGzip != false)
+      ..session.addAll(initialSession ?? {});
 
 /// An `angel_client` that sends mock requests to a server, rather than actual HTTP transactions.
 class TestClient extends client.BaseAngelClient {
@@ -35,16 +37,19 @@ class TestClient extends client.BaseAngelClient {
   /// A list of cookies to be sent to and received from the server.
   final List<Cookie> cookies = [];
 
+  /// If `true` (default), the client will automatically decode GZIP response bodies.
+  final bool autoDecodeGzip;
+
   /// The server instance to mock.
   final Angel server;
 
   @override
   String authToken;
 
-  TestClient(this.server) : super(null, '/');
+  TestClient(this.server, {this.autoDecodeGzip: true}) : super(null, '/');
 
   Future close() async {
-    if (server.httpServer != null) await server.httpServer.close(force: true);
+    await server.close();
   }
 
   /// Opens a WebSockets connection to the server. This will automatically bind the server
@@ -114,13 +119,20 @@ class TestClient extends client.BaseAngelClient {
       extractedHeaders[k] = v.join(',');
     });
 
-    return new http.StreamedResponse(rs, rs.statusCode,
+    Stream<List<int>> stream = rs;
+
+    if (autoDecodeGzip != false &&
+        rs.headers[HttpHeaders.CONTENT_ENCODING]?.contains('gzip') == true)
+      stream = stream.transform(GZIP.decoder);
+
+    return new http.StreamedResponse(stream, rs.statusCode,
         contentLength: rs.contentLength,
         isRedirect: rs.headers[HttpHeaders.LOCATION] != null,
         headers: extractedHeaders,
         persistentConnection:
             rq.headers.value(HttpHeaders.CONNECTION)?.toLowerCase()?.trim() ==
-                'keep-alive',
+                    'keep-alive' ||
+                rq.headers.persistentConnection == true,
         reasonPhrase: rs.reasonPhrase);
   }
 

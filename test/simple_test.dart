@@ -30,6 +30,12 @@ main() {
       ..post('/hello', (req, res) async {
         return {'bar': req.body['foo']};
       })
+      ..get('/gzip', (req, res) async {
+        res
+          ..headers[HttpHeaders.CONTENT_ENCODING] = 'gzip'
+          ..write(GZIP.encode('Poop'.codeUnits))
+          ..end();
+      })
       ..use(
           '/foo',
           new AnonymousService(
@@ -99,11 +105,19 @@ main() {
           })));
     });
 
+    test('gzip decode', () async {
+      var res = await client.get('/gzip');
+      expect(res, hasHeader(HttpHeaders.CONTENT_ENCODING, 'gzip'));
+      expect(res, hasBody('Poop'));
+    });
+
     group('service', () {
       test('index', () async {
         var foo = client.service('foo');
         var result = await foo.index();
-        expect(result, [{'michael': 'jackson'}]);
+        expect(result, [
+          {'michael': 'jackson'}
+        ]);
       });
 
       test('index', () async {
