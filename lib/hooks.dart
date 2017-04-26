@@ -167,10 +167,9 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
     normalize(obj) async {
       if (obj != null) {
         if (obj is Iterable) {
-          var r = await Future.wait(obj.map(_removeAll));
-          obj = obj is List ? r.toList() : r;
+          return await Future.wait(obj.map(_removeAll));
         } else
-          obj = await _removeAll(obj);
+          return await _removeAll(obj);
       }
     }
 

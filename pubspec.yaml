@@ -1,5 +1,5 @@
 name: angel_framework
-version: 1.0.2+2
+version: 1.0.2+3
 description: A high-powered HTTP server with DI, routing and more.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_framework
