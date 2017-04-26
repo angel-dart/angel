@@ -271,7 +271,13 @@ class AngelAuth extends AngelPlugin {
 
         return true;
       } else {
-        await authenticationFailure(req, res);
+        // Check if not redirect
+        if (res.statusCode == 301 ||
+            res.statusCode == 302 ||
+            res.headers.containsKey(HttpHeaders.LOCATION))
+          return false;
+        else
+          await authenticationFailure(req, res);
       }
     };
   }
