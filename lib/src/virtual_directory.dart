@@ -122,9 +122,15 @@ class VirtualDirectory implements AngelPlugin {
 
     res.headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
 
-    if (streamToIO == true)
-      await res.streamFile(file);
-    else
+    if (streamToIO == true) {
+      res
+        ..io.headers.set(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path))
+        ..io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
+        ..end()
+        ..willCloseItself = true;
+
+      await file.openRead().transform(GZIP.encoder).pipe(res.io);
+    } else
       await res.sendFile(file);
     return false;
   }
