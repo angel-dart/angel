@@ -82,12 +82,12 @@ class Validator extends Matcher {
 
         _addTo(x) {
           if (x is Iterable)
-            x.map(_addTo);
+            x.forEach(_addTo);
           else
             iterable.add(x);
         }
 
-        _iterable.map(_addTo);
+        _iterable.forEach(_addTo);
 
         for (var rule in iterable) {
           if (rule is Matcher) {
