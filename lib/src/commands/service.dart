@@ -107,7 +107,7 @@ class ServiceCommand extends Command {
         new ImportBuilder('package:angel_common/angel_common.dart'));
     generator.applyToLibrary(lib, name, lower);
 
-    if (generator.createsModel == true) {
+    if (generator.createsModel == true || typed) {
       lib
         ..addMember(new ImportBuilder('../models/$lower.dart'))
         ..addMember(new ExportBuilder('../models/$lower.dart'));
@@ -180,7 +180,7 @@ class $name extends Model {
     if (!await file.exists()) await file.createSync(recursive: true);
 
     await file.writeAsString('''
-library ${pubspec.name}.models.$lower;
+library ${pubspec.name}.validtors.$lower;
 import 'package:angel_validate/angel_validate.dart';
 
 final Validator $constantCase = new Validator({

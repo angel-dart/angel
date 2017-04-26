@@ -6,6 +6,9 @@ class RethinkServiceGenerator extends ServiceGenerator {
   const RethinkServiceGenerator() : super('RethinkDB');
 
   @override
+  bool get createsModel => false;
+
+  @override
   void applyToConfigureServer(
       MethodBuilder configureServer, String name, String lower) {
     configureServer

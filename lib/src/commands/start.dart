@@ -34,9 +34,23 @@ class StartCommand extends Command {
   @override
   run() async {
     if (argResults['watch']) {
-      new DirectoryWatcher('bin').events.listen((_) async => start());
-      new DirectoryWatcher('config').events.listen((_) async => start());
-      new DirectoryWatcher('lib').events.listen((_) async => start());
+      try {
+        new DirectoryWatcher('bin').events.listen((_) async => start());
+      } catch (e) {
+        // Fail silently...
+      }
+
+      try {
+        new DirectoryWatcher('config').events.listen((_) async => start());
+      } catch (e) {
+        // Fail silently...
+      }
+
+      try {
+        new DirectoryWatcher('lib').events.listen((_) async => start());
+      } catch (e) {
+        // Fail silently...
+      }
     }
 
     return await start();

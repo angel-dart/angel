@@ -6,6 +6,9 @@ class MongoServiceGenerator extends ServiceGenerator {
   const MongoServiceGenerator() : super('MongoDB');
 
   @override
+  bool get createsModel => false;
+
+  @override
   void applyToConfigureServer(
       MethodBuilder configureServer, String name, String lower) {
     configureServer.addPositional(parameter('db', [new TypeBuilder('Db')]));

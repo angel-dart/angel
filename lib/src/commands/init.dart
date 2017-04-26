@@ -6,6 +6,8 @@ import 'package:path/path.dart' as p;
 import 'key.dart';
 import 'rename.dart';
 
+final RegExp _leadingSlashes = new RegExp(r'^/+');
+
 class InitCommand extends Command {
   final KeyCommand _key = new KeyCommand();
   final TextPen _pen = new TextPen();
@@ -143,6 +145,7 @@ class InitCommand extends Command {
   _pubGet(Directory projectDir) async {
     var exec = new File(Platform.resolvedExecutable);
     var pubPath = exec.parent.uri.resolve('pub').path;
+    if (Platform.isWindows) pubPath = pubPath.replaceAll(_leadingSlashes, '');
     print('Running pub at "$pubPath"...');
     var pub = await Process.start(pubPath, ["get"],
         workingDirectory: projectDir.absolute.path);
