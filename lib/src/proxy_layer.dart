@@ -44,6 +44,9 @@ class ProxyLayer {
   Angel app;
   HttpClient _client;
   String _prefix;
+
+  /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
+  final bool recoverFromDead;
   final bool debug, recoverFrom404, streamToIO;
   final String host, mapTo, publicPath;
   final int port;
@@ -54,6 +57,7 @@ class ProxyLayer {
       this.mapTo: '/',
       this.publicPath: '/',
       this.protocol: 'http',
+      this.recoverFromDead: true,
       this.recoverFrom404: true,
       this.streamToIO: false,
       SecurityContext securityContext}) {
@@ -82,6 +86,7 @@ class ProxyLayer {
 
   serveFile(String path, RequestContext req, ResponseContext res) async {
     var _path = path;
+    HttpClientResponse rs;
 
     if (_prefix.isNotEmpty) {
       _path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
@@ -91,29 +96,38 @@ class ProxyLayer {
     _printDebug('Serving path $_path via proxy');
     final mapping = '$mapTo/$_path'.replaceAll(_straySlashes, '');
     _printDebug('Mapped path $_path to path $mapping on proxy $host:$port');
-    final rq = await _client.open(req.method, host, port, mapping);
-    _printDebug('Opened client request');
 
-    copyHeaders(req.headers, rq.headers);
-    _printDebug('Copied headers');
-    rq.cookies.addAll(req.cookies ?? []);
-    _printDebug('Added cookies');
-    rq.headers
-        .set('X-Forwarded-For', req.io.connectionInfo.remoteAddress.address);
-    rq.headers
-      ..set('X-Forwarded-Port', req.io.connectionInfo.remotePort.toString())
-      ..set('X-Forwarded-Host',
-          req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
-      ..set('X-Forwarded-Proto', protocol);
-    _printDebug('Added X-Forwarded headers');
+    try {
+      final rq = await _client.open(req.method, host, port, mapping);
+      _printDebug('Opened client request');
 
-    if (app.storeOriginalBuffer == true) {
-      await req.parse();
-      if (req.originalBuffer?.isNotEmpty == true) rq.add(req.originalBuffer);
+      copyHeaders(req.headers, rq.headers);
+      _printDebug('Copied headers');
+      rq.cookies.addAll(req.cookies ?? []);
+      _printDebug('Added cookies');
+      rq.headers
+          .set('X-Forwarded-For', req.io.connectionInfo.remoteAddress.address);
+      rq.headers
+        ..set('X-Forwarded-Port', req.io.connectionInfo.remotePort.toString())
+        ..set('X-Forwarded-Host',
+            req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
+        ..set('X-Forwarded-Proto', protocol);
+      _printDebug('Added X-Forwarded headers');
+
+      if (app.storeOriginalBuffer == true) {
+        await req.parse();
+        if (req.originalBuffer?.isNotEmpty == true) rq.add(req.originalBuffer);
+      }
+
+      await rq.flush();
+      rs = await rq.close();
+    } catch (e) {
+      if (recoverFromDead != false)
+        return true;
+      else
+        rethrow;
     }
 
-    await rq.flush();
-    final HttpClientResponse rs = await rq.close();
     _printDebug(
         'Proxy responded to $mapping with status code ${rs.statusCode}');
 

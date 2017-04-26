@@ -4,6 +4,7 @@ import 'proxy_layer.dart';
 class PubServeLayer extends ProxyLayer {
   PubServeLayer(
       {bool debug: false,
+      bool recoverFromDead: true,
       bool recoverFrom404: true,
       bool streamToIO: true,
       String host: 'localhost',
@@ -16,6 +17,7 @@ class PubServeLayer extends ProxyLayer {
             mapTo: mapTo,
             protocol: protocol,
             publicPath: publicPath,
+            recoverFromDead: recoverFromDead != false,
             recoverFrom404: recoverFrom404 != false,
             streamToIO: streamToIO != false);
 
