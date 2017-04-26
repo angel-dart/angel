@@ -161,6 +161,11 @@ class AngelAuth extends AngelPlugin {
 
       var jwt = getJwt(req);
 
+      if (jwt == null) {
+        var body = await req.lazyBody();
+        jwt = body['token'];
+      }
+
       if (debug) print('Found JWT: $jwt');
 
       if (jwt == null) {
