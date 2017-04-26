@@ -61,30 +61,33 @@ class Validator extends Matcher {
   final List<String> requiredFields = [];
 
   void _importSchema(Map<String, dynamic> schema) {
-    for (var key in schema.keys) {
-      var fieldName = key
-          .replaceAll(_asterisk, '')
-          .replaceAll(_forbidden, '')
-          .replaceAll(_optional, '');
-      var isForbidden = _forbidden.hasMatch(key),
-          isRequired = _asterisk.hasMatch(key);
+    for (var keys in schema.keys) {
+      for (var key in keys.split(',')) {
+        var fieldName = key
+            .replaceAll(_asterisk, '')
+            .replaceAll(_forbidden, '')
+            .replaceAll(_optional, '');
+        var isForbidden = _forbidden.hasMatch(key),
+            isRequired = _asterisk.hasMatch(key);
 
-      if (isForbidden) {
-        forbiddenFields.add(fieldName);
-      } else if (isRequired) {
-        requiredFields.add(fieldName);
-      }
+        if (isForbidden) {
+          forbiddenFields.add(fieldName);
+        } else if (isRequired) {
+          requiredFields.add(fieldName);
+        }
 
-      Iterable iterable = schema[key] is Iterable ? schema[key] : [schema[key]];
+        Iterable iterable =
+            schema[keys] is Iterable ? schema[keys] : [schema[keys]];
 
-      for (var rule in iterable) {
-        if (rule is Matcher) {
-          addRule(fieldName, rule);
-        } else if (rule is Filter) {
-          addRule(fieldName, predicate(rule));
-        } else {
-          throw new ArgumentError(
-              'Cannot use a(n) ${rule.runtimeType} as a validation rule.');
+        for (var rule in iterable) {
+          if (rule is Matcher) {
+            addRule(fieldName, rule);
+          } else if (rule is Filter) {
+            addRule(fieldName, predicate(rule));
+          } else {
+            throw new ArgumentError(
+                'Cannot use a(n) ${rule.runtimeType} as a validation rule.');
+          }
         }
       }
     }

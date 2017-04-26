@@ -7,7 +7,8 @@ final Validator emailSchema = new Validator({'to': isEmail},
 final Validator todoSchema = new Validator({
   'id': [isInt, isPositive],
   'text*': isString,
-  'completed*': isBool
+  'completed*': isBool,
+  'foo,bar': [isTrue]
 }, defaultValues: {
   'completed': false
 });
@@ -32,5 +33,11 @@ main() {
     var inputData = {'foo': 'bar', 'a': 'b', '1': 2};
     var only = filter(inputData, ['foo']);
     expect(only, equals({'foo': 'bar'}));
+  });
+
+  test('comma in schema', () {
+    expect(todoSchema.rules.keys, allOf(contains('foo'), contains('bar')));
+    expect([todoSchema.rules['foo'].first, todoSchema.rules['bar'].first],
+        everyElement(predicate((x) => x == isTrue)));
   });
 }
