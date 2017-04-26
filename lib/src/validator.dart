@@ -76,8 +76,18 @@ class Validator extends Matcher {
           requiredFields.add(fieldName);
         }
 
-        Iterable iterable =
+        Iterable _iterable =
             schema[keys] is Iterable ? schema[keys] : [schema[keys]];
+        var iterable = [];
+
+        _addTo(x) {
+          if (x is Iterable)
+            x.map(_addTo);
+          else
+            iterable.add(x);
+        }
+
+        _iterable.map(_addTo);
 
         for (var rule in iterable) {
           if (rule is Matcher) {

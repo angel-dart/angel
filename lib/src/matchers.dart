@@ -32,12 +32,20 @@ final Matcher isNum = predicate((value) => value is num, 'a number');
 /// Asserts that a value is a `String`.
 final Matcher isString = predicate((value) => value is String, 'a String');
 
+/// Asserts that a value is a non-empty `String`.
+final Matcher isNonEmptyString = predicate(
+    (value) => value is String && value.isNotEmpty, 'a non-empty String');
+
 ///  Asserts that a `String` is an `http://` or `https://` URL.
 ///
 /// The regular expression used:
 /// ```
 /// https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)
 /// ```
-final Matcher isurl = predicate(
+final Matcher isUrl = predicate(
     (value) => value is String && _url.hasMatch(value),
     'a valid url, starting with http:// or https://');
+
+/// Use [isUrl] instead.
+@deprecated
+final Matcher isurl = isUrl;

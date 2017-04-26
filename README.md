@@ -1,5 +1,5 @@
 # validate
-[![version 1.0.2+1](https://img.shields.io/badge/pub-v1.0.2+1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_validate)
+[![version 1.0.2+2](https://img.shields.io/badge/pub-v1.0.2+2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_validate)
 [![build status](https://travis-ci.org/angel-dart/validate.svg)](https://travis-ci.org/angel-dart/validate)
 
 [Live Example](https://angel-dart.github.io/validate)
@@ -38,9 +38,14 @@ import 'package:angel_validate/angel_validate.dart';
 main() {
     var validator = new Validator({
         'username': isAlphaNum,
+        'multiple,keys,with,same,rules': [isString, isNotEmpty],
         'balance': [
             greaterThanOrEqualTo(0),
             lessThan(1000000)
+        ],
+        'nested': [
+            foo,
+            [bar, baz]
         ]
     });
 }
@@ -225,6 +230,7 @@ including:
 * `isInt`: Asserts that a value is an `int`.
 * `isNum`: Asserts that a value is a `num`.
 * `isString`: Asserts that a value is a `String`.
+* `isNonEmptyString`: Asserts that a value is a non-empty `String`.
 * `isUrl`: Asserts that a `String` is an HTTPS or HTTP URL.
 
 The remaining functionality is
