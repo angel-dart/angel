@@ -62,7 +62,7 @@ class Validator extends Matcher {
 
   void _importSchema(Map<String, dynamic> schema) {
     for (var keys in schema.keys) {
-      for (var key in keys.split(',')) {
+      for (var key in keys.split(',').map((s) => s.trim())) {
         var fieldName = key
             .replaceAll(_asterisk, '')
             .replaceAll(_forbidden, '')
