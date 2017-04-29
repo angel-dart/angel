@@ -228,9 +228,9 @@ HookedServiceEventListener addCreatedAt({
       if (assign != null)
         return assign(obj, now);
       else if (obj is Map)
-        obj.remove(name);
+        obj[name] = now;
       else if (obj is Extensible)
-        obj..properties.remove(name);
+        obj..properties[name] = now;
       else {
         try {
           reflect(obj).setField(new Symbol(name), now);
@@ -279,9 +279,9 @@ HookedServiceEventListener addUpdatedAt({
       if (assign != null)
         return assign(obj, now);
       else if (obj is Map)
-        obj.remove(name);
+        obj[name] = now;
       else if (obj is Extensible)
-        obj..properties.remove(name);
+        obj..properties[name] = now;
       else {
         try {
           reflect(obj).setField(new Symbol(name), now);
