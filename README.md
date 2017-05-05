@@ -3,6 +3,8 @@
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/angel_dart/discussion)
 [![version: v1.0.0](https://img.shields.io/badge/pub-v1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_common)
 
+**Fill out the [v1.0.0 survey](https://docs.google.com/forms/d/e/1FAIpQLSfEgBNsOoi_nYZMmg2IAGyMv1nNaa6B3kUk3QdNJU5987ucVA/viewform?usp=sf_link) now!!!**
+
 [Wiki (in-depth documentation)](https://github.com/angel-dart/angel/wiki)
 
 [API Documentation](http://www.dartdocs.org/documentation/angel_common/latest)
