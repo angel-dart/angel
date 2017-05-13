@@ -16,7 +16,7 @@ RequestMiddleware autoParseBody(List<String> fields) {
 /// Auto-parses numbers in `req.query`.
 RequestMiddleware autoParseQuery(List<String> fields) {
   return (RequestContext req, res) async {
-    (await req.lazyQuery()).addAll(autoParse(req.query, fields));
+    req.query.addAll(autoParse(req.query, fields));
     return true;
   };
 }
@@ -35,7 +35,7 @@ RequestMiddleware filterBody(Iterable<String> only) {
 /// Filters unwanted data out of `req.query`.
 RequestMiddleware filterQuery(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var filtered = filter(await req.lazyQuery(), only);
+    var filtered = filter(req.query, only);
     req.query
       ..clear()
       ..addAll(filtered);
@@ -48,7 +48,7 @@ RequestMiddleware filterQuery(Iterable<String> only) {
 RequestMiddleware validate(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var result = validator.check(req.body);
+    var result = validator.check(await req.lazyBody());
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
