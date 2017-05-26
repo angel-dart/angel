@@ -1,6 +1,7 @@
 # paginate
 [![version 1.0.0](https://img.shields.io/badge/pub-v1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
 [![build status](https://travis-ci.org/angel-dart/paginate.svg)](https://travis-ci.org/angel-dart/paginate)
+![coverage: 97%](https://img.shields.io/badge/coverage-97%25-green.svg)
 
 Platform-agnostic pagination library, with custom support for the
 [Angel framework](https://github.com/angel-dart/angel).
@@ -48,7 +49,7 @@ main() {
   print(page.startIndex);
   print(page.data); // The actual items on this page.
   p.next(); // Advance a page
-  p.goBack(); // Back one page
+  p.back(); // Back one page
   p.goToPage(10); // Go to page number (1-based, not a 0-based index)
 }
 ```

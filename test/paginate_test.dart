@@ -43,6 +43,11 @@ main() {
     expect(paginator.canGoBack, false);
     expect(paginator.canGoForward, true);
     expect(paginator.lastPageNumber, 21);
+
+    // Going back should do nothing
+    var p = paginator.pageNumber;
+    paginator.back();
+    expect(paginator.pageNumber, p);
   });
 
   group('paginate', () {
