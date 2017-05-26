@@ -81,6 +81,9 @@ main() {
     expect(r.startIndex, 10);
     expect(r.endIndex, 14);
     expect(r.data, DATA.skip(r.startIndex).take(r.itemsPerPage).toList());
+
+    paginator.back();
+    expect(paginator.pageNumber, 2);
   });
 
   test('last page', () {

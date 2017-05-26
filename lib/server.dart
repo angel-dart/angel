@@ -15,7 +15,7 @@ HookedServiceEventListener paginate<T>(
         '`package:angel_paginate` can only be run as an after hook.');
     if (e.result is! Iterable) return;
 
-    int page = 0,
+    int page = 1,
         nItems = itemsPerPage;
 
     if (e.params.containsKey('query') && e.params['query'] is Map) {

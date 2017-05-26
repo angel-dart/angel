@@ -1,5 +1,5 @@
 name: angel_paginate
-version: 1.0.0
+version: 1.0.0+1
 description: Platform-agnostic pagination library, with custom support for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/paginate

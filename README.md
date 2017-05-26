@@ -1,7 +1,7 @@
 # paginate
-[![version 1.0.0](https://img.shields.io/badge/pub-v1.0.0-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
+[![version 1.0.0+1](https://img.shields.io/badge/pub-v1.0.0+1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
 [![build status](https://travis-ci.org/angel-dart/paginate.svg)](https://travis-ci.org/angel-dart/paginate)
-![coverage: 97%](https://img.shields.io/badge/coverage-97%25-green.svg)
+![coverage: 100%](https://img.shields.io/badge/coverage-100%25-green.svg)
 
 Platform-agnostic pagination library, with custom support for the
 [Angel framework](https://github.com/angel-dart/angel).
@@ -77,3 +77,16 @@ configureServer(Angel app) {
 ```
 
 See `test/server_test.dart` for examples of usage with Angel.
+
+The pagination hook also allows you to provide a `page` and/or `$limit` in the query.
+If the user provides a `page` in the query, it will return a pagination of the given page.
+
+Ex. `http://mysite.com/api/todos?page=4`
+
+A `$limit` can be used to override the `itemsPerPage` set in the `paginate` hook. If you
+would like to set a maximum on the number of items per page, you can set `maxItemsPerPage`
+in the `paginate` call.
+
+Ex. `http://mysite.com/api/todos?$limit=25`
+
+You can use these pagination functions to provide powerful search experiences on your websites.
