@@ -9,24 +9,25 @@ class Foo {
 
 main() {
   group('Utilities', () {
-    Angel angel;
+    Angel app;
 
     setUp(() {
-      angel = new Angel();
+      app = new Angel();
     });
 
-    tearDown(() {
-      angel = null;
+    tearDown(() async {
+      await app.close();
+      app = null;
     });
 
     test('can use app.properties like members', () {
-      angel.properties['hello'] = 'world';
-      angel.properties['foo'] = () => 'bar';
-      angel.properties['Foo'] = new Foo('bar');
+      app.properties['hello'] = 'world';
+      app.properties['foo'] = () => 'bar';
+      app.properties['Foo'] = new Foo('bar');
 
-      expect(angel.hello, equals('world'));
-      expect(angel.foo(), equals('bar'));
-      expect(angel.Foo.name, equals('bar'));
+      expect(app.hello, equals('world'));
+      expect(app.foo(), equals('bar'));
+      expect(app.Foo.name, equals('bar'));
     });
   });
 }

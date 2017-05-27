@@ -215,12 +215,11 @@ HookedServiceEventListener disable([provider]) {
 
 /// Serializes the current time to `e.data` or `e.result`.
 /// You can provide an [assign] function to set the property on your object, and skip reflection.
+/// If [serialize] is `true` (default), then the set date will be a `String`. If not, a raw `DateTime` will be used.
 ///
 /// Default key: `createdAt`
-HookedServiceEventListener addCreatedAt({
-  assign(obj, String now),
-  String key,
-}) {
+HookedServiceEventListener addCreatedAt(
+    {assign(obj, String now), String key, bool serialize: true}) {
   var name = key?.isNotEmpty == true ? key : 'createdAt';
 
   return (HookedServiceEvent e) async {
@@ -240,7 +239,8 @@ HookedServiceEventListener addCreatedAt({
       }
     }
 
-    var now = new DateTime.now().toUtc().toIso8601String();
+    var d = new DateTime.now().toUtc();
+    var now = serialize == false ? d : d.toIso8601String();
 
     normalize(obj) async {
       if (obj != null) {
@@ -252,8 +252,7 @@ HookedServiceEventListener addCreatedAt({
       }
     }
 
-    if (e.params?.containsKey('provider') == true)
-      await normalize(e.isBefore ? e.data : e.result);
+    await normalize(e.isBefore ? e.data : e.result);
   };
 }
 
@@ -266,12 +265,12 @@ HookedServiceEventListener addUpatedAt({
     addUpdatedAt(assign: assign, key: key);
 
 /// Serializes the current time to `e.data` or `e.result`.
-/// You can provide an [assign] function to set the property on your object, and skip reflection.///
-/// Default key: `createdAt`
-HookedServiceEventListener addUpdatedAt({
-  assign(obj, String now),
-  String key,
-}) {
+/// You can provide an [assign] function to set the property on your object, and skip reflection.
+/// If [serialize] is `true` (default), then the set date will be a `String`. If not, a raw `DateTime` will be used.
+///
+/// Default key: `updatedAt`
+HookedServiceEventListener addUpdatedAt(
+    {assign(obj, String now), String key, bool serialize: true}) {
   var name = key?.isNotEmpty == true ? key : 'updatedAt';
 
   return (HookedServiceEvent e) async {
@@ -291,7 +290,8 @@ HookedServiceEventListener addUpdatedAt({
       }
     }
 
-    var now = new DateTime.now().toUtc().toIso8601String();
+    var d = new DateTime.now().toUtc();
+    var now = serialize == false ? d : d.toIso8601String();
 
     normalize(obj) async {
       if (obj != null) {
@@ -303,7 +303,6 @@ HookedServiceEventListener addUpdatedAt({
       }
     }
 
-    if (e.params?.containsKey('provider') == true)
-      await normalize(e.isBefore ? e.data : e.result);
+    await normalize(e.isBefore ? e.data : e.result);
   };
 }

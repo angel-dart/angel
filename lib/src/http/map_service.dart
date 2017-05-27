@@ -22,7 +22,7 @@ class MapService extends Service {
 
   @override
   Future<List> index([Map params]) async {
-    if (allowRemoveAll != true || params == null || params['query'] is! Map)
+    if (allowQuery == false || params == null || params['query'] is! Map)
       return items;
     else {
       Map query = params['query'];

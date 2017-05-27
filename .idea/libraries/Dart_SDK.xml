@@ -1,24 +1,24 @@
 <component name="libraryTable">
   <library name="Dart SDK">
     <CLASSES>
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/async" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/collection" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/convert" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/core" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/developer" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/html" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/indexed_db" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/io" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/isolate" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/js" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/js_util" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/math" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/mirrors" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/svg" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/typed_data" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/web_audio" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/web_gl" />
-      <root url="file:///usr/local/Cellar/dart/1.23.0-dev.11.6/libexec/lib/web_sql" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/async" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/collection" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/convert" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/core" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/developer" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/html" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/indexed_db" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/io" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/isolate" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/js" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/js_util" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/math" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/mirrors" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/svg" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/typed_data" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/web_audio" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/web_gl" />
+      <root url="file://C:/Program Files/Dart/dart-sdk/lib/web_sql" />
     </CLASSES>
     <SOURCES />
   </library>

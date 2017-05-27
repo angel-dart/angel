@@ -11,7 +11,7 @@ import 'server.dart' show Angel;
 import 'controller.dart';
 
 final RegExp _contentType =
-    new RegExp(r'([^/\n]+)\/\s*([^;\n]+)\s*(;\s*charset=([^$;\n]+))?');
+new RegExp(r'([^/\n]+)\/\s*([^;\n]+)\s*(;\s*charset=([^$;\n]+))?');
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -22,7 +22,9 @@ typedef String ResponseSerializer(data);
 class ResponseContext extends Extensible {
   final _LockableBytesBuilder _buffer = new _LockableBytesBuilder();
   final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
-  bool _isOpen = true, _isClosed = false;
+  bool _isOpen = true,
+      _isClosed = false;
+  int _statusCode = 200;
 
   /// The [Angel] instance that is sending a response.
   Angel app;
@@ -57,7 +59,14 @@ class ResponseContext extends Extensible {
   ResponseSerializer serializer = god.serialize;
 
   /// This response's status code.
-  int statusCode = 200;
+  int get statusCode => _statusCode;
+
+  void set statusCode(int value) {
+    if (_isClosed)
+      throw _closed();
+    else
+      _statusCode = value ?? 200;
+  }
 
   /// Can we still write to this response?
   bool get isOpen => _isOpen;
@@ -115,7 +124,7 @@ class ResponseContext extends Extensible {
     if (!_isOpen) throw _closed();
 
     headers["Content-Disposition"] =
-        'attachment; filename="${filename ?? file.path}"';
+    'attachment; filename="${filename ?? file.path}"';
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     headers[HttpHeaders.CONTENT_LENGTH] = file.lengthSync().toString();
     buffer.add(await file.readAsBytes());
@@ -194,7 +203,7 @@ class ResponseContext extends Extensible {
     headers
       ..[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString()
       ..[HttpHeaders.LOCATION] =
-          url is String ? url : app.navigate(url, absolute: absolute);
+      url is String ? url : app.navigate(url, absolute: absolute);
     statusCode = code ?? 302;
     write('''
     <!DOCTYPE html>
@@ -252,7 +261,7 @@ class ResponseContext extends Extensible {
           "Controller redirects must take the form of 'Controller@action'. You gave: $action");
 
     Controller controller =
-        app.controller(split[0].replaceAll(_straySlashes, ''));
+    app.controller(split[0].replaceAll(_straySlashes, ''));
 
     if (controller == null)
       throw new Exception("Could not find a controller named '${split[0]}'");
@@ -264,7 +273,11 @@ class ResponseContext extends Extensible {
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
     final head =
-        controller.findExpose().path.toString().replaceAll(_straySlashes, '');
+    controller
+        .findExpose()
+        .path
+        .toString()
+        .replaceAll(_straySlashes, '');
     final tail = matched.makeUri(params).replaceAll(_straySlashes, '');
 
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
@@ -300,9 +313,9 @@ class ResponseContext extends Extensible {
   /// You can optionally transform the file stream with a [codec].
   Future streamFile(File file,
       {int chunkSize,
-      int sleepMs: 0,
-      bool resumable: true,
-      Codec<List<int>, List<int>> codec}) async {
+        int sleepMs: 0,
+        bool resumable: true,
+        Codec<List<int>, List<int>> codec}) async {
     if (_isClosed) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
@@ -330,7 +343,9 @@ class ResponseContext extends Extensible {
 
 abstract class _LockableBytesBuilder extends BytesBuilder {
   factory _LockableBytesBuilder() => new _LockableBytesBuilderImpl();
+
   void _lock();
+
   void _reopen();
 }
 

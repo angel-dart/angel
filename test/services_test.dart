@@ -32,6 +32,7 @@ main() {
   });
 
   tearDown(() async {
+    await app.close();
     app = null;
     url = null;
     client.close();
