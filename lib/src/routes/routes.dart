@@ -57,7 +57,7 @@ configureAfter(Angel app) async {
 
 configureServer(Angel app) async {
   await configureBefore(app);
-  await configureRoutes(app);
   await app.configure(controllers.configureServer);
+  await configureRoutes(app);
   await configureAfter(app);
 }
