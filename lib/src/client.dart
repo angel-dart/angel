@@ -23,9 +23,15 @@ final Uuid _uuid = new Uuid();
 
 /// Shorthand for bootstrapping a [TestClient].
 Future<TestClient> connectTo(Angel app,
-        {Map initialSession, bool autoDecodeGzip: true}) async =>
-    new TestClient(app, autoDecodeGzip: autoDecodeGzip != false)
-      ..session.addAll(initialSession ?? {});
+    {Map initialSession, bool autoDecodeGzip: true}) async {
+  if (!app.isProduction)
+    app.properties.putIfAbsent('testMode', () => true);
+
+  for (var plugin in app.justBeforeStart)
+    await plugin(app);
+  return new TestClient(app, autoDecodeGzip: autoDecodeGzip != false)
+    ..session.addAll(initialSession ?? {});
+}
 
 /// An `angel_client` that sends mock requests to a server, rather than actual HTTP transactions.
 class TestClient extends client.BaseAngelClient {
@@ -48,9 +54,7 @@ class TestClient extends client.BaseAngelClient {
 
   TestClient(this.server, {this.autoDecodeGzip: true}) : super(null, '/');
 
-  Future close() async {
-    await server.close();
-  }
+  Future close() => server.close();
 
   /// Opens a WebSockets connection to the server. This will automatically bind the server
   /// over HTTP, if it is not already listening. Unfortunately, WebSockets cannot be mocked (yet!).
@@ -65,13 +69,13 @@ class TestClient extends client.BaseAngelClient {
     return ws;
   }
 
-  Future<http.Response> sendUnstreamed(
-          String method, url, Map<String, String> headers,
-          [body, Encoding encoding]) =>
+  Future<http.Response> sendUnstreamed(String method, url,
+      Map<String, String> headers,
+      [body, Encoding encoding]) =>
       send(method, url, headers, body, encoding).then(http.Response.fromStream);
 
-  Future<http.StreamedResponse> send(
-      String method, url, Map<String, String> headers,
+  Future<http.StreamedResponse> send(String method, url,
+      Map<String, String> headers,
       [body, Encoding encoding]) async {
     var rq = new MockHttpRequest(
         method, url is Uri ? url : Uri.parse(url.toString()));
@@ -80,7 +84,9 @@ class TestClient extends client.BaseAngelClient {
     if (authToken?.isNotEmpty == true)
       rq.headers.set(HttpHeaders.AUTHORIZATION, 'Bearer $authToken');
 
-    rq..cookies.addAll(cookies)..session.addAll(session);
+    rq
+      ..cookies.addAll(cookies)
+      ..session.addAll(session);
 
     if (body is Stream<List<int>>) {
       await rq.addStream(body);
@@ -96,7 +102,8 @@ class TestClient extends client.BaseAngelClient {
       } else if (rq.headers.contentType?.mimeType ==
           'application/x-www-form-urlencoded') {
         rq.write(body.keys.fold<List<String>>([],
-            (out, k) => out..add('$k=' + Uri.encodeComponent(body[k]))).join());
+                (out, k) => out..add('$k=' + Uri.encodeComponent(body[k])))
+            .join());
       } else {
         throw new UnsupportedError(
             'Map bodies can only be sent for requests with the content type application/json or application/x-www-form-urlencoded.');
@@ -130,9 +137,9 @@ class TestClient extends client.BaseAngelClient {
         isRedirect: rs.headers[HttpHeaders.LOCATION] != null,
         headers: extractedHeaders,
         persistentConnection:
-            rq.headers.value(HttpHeaders.CONNECTION)?.toLowerCase()?.trim() ==
-                    'keep-alive' ||
-                rq.headers.persistentConnection == true,
+        rq.headers.value(HttpHeaders.CONNECTION)?.toLowerCase()?.trim() ==
+            'keep-alive' ||
+            rq.headers.persistentConnection == true,
         reasonPhrase: rs.reasonPhrase);
   }
 
