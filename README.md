@@ -1,5 +1,5 @@
 # paginate
-[![version 1.0.0+1](https://img.shields.io/badge/pub-v1.0.0+1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
+[![version 1.0.0+2](https://img.shields.io/badge/pub-v1.0.0+2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
 [![build status](https://travis-ci.org/angel-dart/paginate.svg)](https://travis-ci.org/angel-dart/paginate)
 ![coverage: 100%](https://img.shields.io/badge/coverage-100%25-green.svg)
 
@@ -90,3 +90,6 @@ in the `paginate` call.
 Ex. `http://mysite.com/api/todos?$limit=25`
 
 You can use these pagination functions to provide powerful search experiences on your websites.
+
+**NOTE**: If the paginated data is empty, expect `start_index` and `end_index`
+to both be `-1`.

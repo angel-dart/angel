@@ -110,4 +110,20 @@ main() {
       paginator.next();
     } while(paginator.canGoForward);
   });
+
+  test('empty collection', () {
+    var paginator = new Paginator([]);
+    var page = paginator.current;
+    print(page.toJson());
+
+    expect(page.total, 0);
+    expect(page.previousPage, -1);
+    expect(page.nextPage, -1);
+    expect(page.currentPage, 1);
+    expect(page.startIndex, -1);
+    expect(page.endIndex, -1);
+    expect(page.data, isEmpty);
+    expect(paginator.canGoBack, isFalse);
+    expect(paginator.canGoForward, isFalse);
+  });
 }
