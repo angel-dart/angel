@@ -1,5 +1,5 @@
 # paginate
-[![version 1.0.0+2](https://img.shields.io/badge/pub-v1.0.0+2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
+[![version 1.0.0+3](https://img.shields.io/badge/pub-v1.0.0+3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
 [![build status](https://travis-ci.org/angel-dart/paginate.svg)](https://travis-ci.org/angel-dart/paginate)
 ![coverage: 100%](https://img.shields.io/badge/coverage-100%25-green.svg)
 

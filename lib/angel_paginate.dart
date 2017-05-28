@@ -57,7 +57,8 @@ class Paginator<T> {
         nextPage: _page >= last - 1 ? -1 : _page + 2,
         startIndex: it.isEmpty ? -1 : offset,
         endIndex: offset + it.length - 1,
-        itemsPerPage: itemsPerPage,
+        itemsPerPage: itemsPerPage < _items.length ? itemsPerPage : _items
+            .length,
         total: len);
   }
 
