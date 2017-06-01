@@ -141,3 +141,13 @@ For applications where you need to access a chain of handlers, consider using
 
 # Route Parameters
 Routes can have parameters, as seen in the above examples.
+Use [allParams](https://www.dartdocs.org/documentation/angel_route/1.0.3/angel_route/RoutingResult-class.html)
+in a `RoutingResult` to get them as a nice `Map`:
+
+```dart
+var router = new Router();
+router.get('/book/:id/authors', () => ...);
+
+var result = router.resolve('/book/foo/authors');
+var params = result.allParams; // {'id': 'foo'};
+```
