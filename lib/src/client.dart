@@ -5,9 +5,7 @@ import 'package:angel_client/base_angel_client.dart' as client;
 import 'package:angel_client/io.dart' as client;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_websocket/io.dart' as client;
-import 'package:http/src/base_request.dart' as http;
-import 'package:http/src/response.dart' as http;
-import 'package:http/src/streamed_response.dart' as http;
+import 'package:http/http.dart' as http;
 import 'package:mock_request/mock_request.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
@@ -52,7 +50,7 @@ class TestClient extends client.BaseAngelClient {
   @override
   String authToken;
 
-  TestClient(this.server, {this.autoDecodeGzip: true}) : super(null, '/');
+  TestClient(this.server, {this.autoDecodeGzip: true}) : super(new http.Client(), '/');
 
   Future close() => server.close();
 
