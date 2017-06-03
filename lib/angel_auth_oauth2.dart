@@ -23,19 +23,35 @@ final Validator OAUTH2_OPTIONS_SCHEMA = new Validator({
   'scopes': "'scopes' must be an Iterable of strings. You provided: {{value}}"
 });
 
+/// Holds credentials and also specifies the means of authenticating users against a remote server.
 class AngelAuthOAuth2Options {
-  String key, secret, authorizationEndpoint, tokenEndpoint, callback;
-  Iterable<String> scopes;
+  /// Your application's client key or client ID, registered with the remote server.
+  final String key;
 
-  AngelAuthOAuth2Options(
+  /// Your application's client secret, registered with the remote server.
+  final String secret;
+
+  /// The remote endpoint that prompts external users for authentication credentials.
+  final String authorizationEndpoint;
+
+  /// The remote endpoint that exchanges auth codes for access tokens.
+  final String tokenEndpoint;
+
+  /// The callback URL that the OAuth2 server should redirect authenticated users to.
+  final String callback;
+
+  /// Used to split application scopes. Defaults to `' '`.
+  final String delimiter;
+  final Iterable<String> scopes;
+
+  const AngelAuthOAuth2Options(
       {this.key,
       this.secret,
       this.authorizationEndpoint,
       this.tokenEndpoint,
       this.callback,
-      Iterable<String> scopes: const []}) {
-    this.scopes = scopes ?? [];
-  }
+      this.delimiter: ' ',
+      this.scopes: const []});
 
   factory AngelAuthOAuth2Options.fromJson(Map json) =>
       new AngelAuthOAuth2Options(
@@ -85,7 +101,8 @@ class OAuth2Strategy implements AuthStrategy {
           _options.key,
           Uri.parse(_options.authorizationEndpoint),
           Uri.parse(_options.tokenEndpoint),
-          secret: _options.secret);
+          secret: _options.secret,
+          delimiter: _options.delimiter ?? ' ');
 
   @override
   Future authenticate(RequestContext req, ResponseContext res,
