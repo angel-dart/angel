@@ -288,8 +288,10 @@ class AngelAuth<T> extends AngelPlugin {
       for (int i = 0; i < names.length; i++) {
         var name = names[i];
 
-        AuthStrategy strategy =
-            strategies.firstWhere((AuthStrategy x) => x.name == name);
+        AuthStrategy strategy = strategies.firstWhere(
+            (AuthStrategy x) => x.name == name,
+            orElse: () =>
+                throw new ArgumentError('No strategy "$name" found.'));
         var result = await strategy.authenticate(req, res, options);
         if (result == true)
           return result;
