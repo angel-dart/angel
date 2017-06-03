@@ -11,6 +11,3 @@ dependencies:
   oauth2: ^1.0.0
 dev_dependencies:
   angel_diagnostics: ^1.0.0-dev
-dependency_overrides:
-  oauth2:
-    git: https://github.com/thosakwe/oauth2.git
