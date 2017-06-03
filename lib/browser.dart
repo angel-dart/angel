@@ -35,6 +35,7 @@ class WebSockets extends BaseWebSocketClient {
     var wnd = window.open(url, 'angel_client_auth_popup');
 
     Timer t;
+    StreamSubscription<CustomEvent> sub;
     t = new Timer.periodic(new Duration(milliseconds: 500), (timer) {
       if (!ctrl.isClosed) {
         if (wnd.closed) {
@@ -43,16 +44,18 @@ class WebSockets extends BaseWebSocketClient {
               errorMessage ?? 'Authentication via popup window failed.'));
           ctrl.close();
           timer.cancel();
+          sub?.cancel();
         }
       } else
         timer.cancel();
     });
 
-    window.on[eventName ?? 'token'].listen((CustomEvent e) {
+    sub = window.on[eventName ?? 'token'].listen((CustomEvent e) {
       if (!ctrl.isClosed) {
         ctrl.add(e.detail);
         t.cancel();
         ctrl.close();
+        sub.cancel();
       }
     });
 

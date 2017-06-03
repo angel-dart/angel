@@ -13,6 +13,7 @@ import 'angel_websocket.dart';
 export 'angel_websocket.dart';
 
 part 'websocket_context.dart';
+
 part 'websocket_controller.dart';
 
 /// Used to assign routes to a given handler.
@@ -25,12 +26,12 @@ class AngelWebSocket extends AngelPlugin {
   final List<String> _servicesAlreadyWired = [];
 
   final StreamController<WebSocketAction> _onAction =
-      new StreamController<WebSocketAction>();
+  new StreamController<WebSocketAction>();
   final StreamController _onData = new StreamController();
   final StreamController<WebSocketContext> _onConnection =
-      new StreamController<WebSocketContext>.broadcast();
+  new StreamController<WebSocketContext>.broadcast();
   final StreamController<WebSocketContext> _onDisconnect =
-      new StreamController<WebSocketContext>.broadcast();
+  new StreamController<WebSocketContext>.broadcast();
 
   /// If this is not `true`, then all client-side service parameters will be
   /// discarded, other than `params['query']`.
@@ -81,16 +82,15 @@ class AngelWebSocket extends AngelPlugin {
   /// Deserializes data from WebSockets.
   Function deserializer;
 
-  AngelWebSocket(
-      {this.endpoint: '/ws',
-      this.debug: false,
-      bool sendErrors,
-      this.allowClientParams: false,
-      this.allowAuth: true,
-      this.register,
-      this.synchronizer,
-      this.serializer,
-      this.deserializer}) {
+  AngelWebSocket({this.endpoint: '/ws',
+    this.debug: false,
+    bool sendErrors,
+    this.allowClientParams: false,
+    this.allowAuth: true,
+    this.register,
+    this.synchronizer,
+    this.serializer,
+    this.deserializer}) {
     _sendErrors = sendErrors;
 
     if (serializer == null) serializer = god.serialize;
@@ -143,9 +143,6 @@ class AngelWebSocket extends AngelPlugin {
 
   /// Responds to an incoming action on a WebSocket.
   Future handleAction(WebSocketAction action, WebSocketContext socket) async {
-    if (action.eventName == ACTION_AUTHENTICATE)
-      return await handleAuth(action, socket);
-
     var split = action.eventName.split("::");
 
     if (split.length < 2)
@@ -229,9 +226,8 @@ class AngelWebSocket extends AngelPlugin {
         token = new AuthToken.validate(jwt, auth.hmac);
         var user = await auth.deserializer(token.userId);
         var req = socket.request;
-        req
-          ..inject(AuthToken, req.properties['token'] = token)
-          ..inject(user.runtimeType, req.properties["user"] = user);
+        req..inject(AuthToken, req.properties['token'] = token)..inject(
+            user.runtimeType, req.properties["user"] = user);
         socket.send(EVENT_AUTHENTICATED,
             {'token': token.serialize(auth.hmac), 'data': user});
       } catch (e, st) {
@@ -285,6 +281,9 @@ class AngelWebSocket extends AngelPlugin {
             ._getStreamForEvent(fromJson["eventName"].toString())
             .add(fromJson["data"]);
       }
+
+      if (action.eventName == ACTION_AUTHENTICATE)
+        await handleAuth(action, socket);
 
       if (action.eventName.contains("::")) {
         var split = action.eventName.split("::");
@@ -389,5 +388,6 @@ class AngelWebSocket extends AngelPlugin {
 /// notifications from other nodes.
 abstract class WebSocketSynchronizer {
   Stream<WebSocketEvent> get stream;
+
   void notifyOthers(WebSocketEvent e);
 }
