@@ -1,7 +1,7 @@
 import 'dart:async';
 
 /// Serializes a user to the session.
-typedef Future UserSerializer(user);
+typedef FutureOr UserSerializer<T>(T user);
 
 /// Deserializes a user from the session.
-typedef Future UserDeserializer(userId);
+typedef FutureOr<T> UserDeserializer<T>(userId);
