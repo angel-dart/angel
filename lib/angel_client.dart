@@ -22,6 +22,9 @@ abstract class Angel {
 
   Angel(String this.basePath);
 
+  /// Fired whenever a WebSocket is successfully authenticated.
+  Stream<AngelAuthResult> get onAuthenticated;
+
   Future<AngelAuthResult> authenticate(
       {String type,
       credentials,
@@ -41,7 +44,7 @@ abstract class Angel {
   /// Logs the current user out of the application.
   Future logout();
 
-  Service service<T>(String path, {Type type, AngelDeserializer deserializer});
+  Service<T> service<T>(String path, {Type type, AngelDeserializer deserializer});
 
   Future<http.Response> delete(String url, {Map<String, String> headers});
 
@@ -87,9 +90,29 @@ class AngelAuthResult {
 }
 
 /// Queries a service on an Angel server, with the same API.
-abstract class Service {
+abstract class Service<T> {
+  /// Fired on `indexed` events.
+  Stream<T> get onIndexed;
+
+  /// Fired on `read` events.
+  Stream<T> get onRead;
+
+  /// Fired on `created` events.
+  Stream<T> get onCreated;
+
+  /// Fired on `modified` events.
+  Stream<T> get onModified;
+
+  /// Fired on `updated` events.
+  Stream<T> get onUpdated;
+
+  /// Fired on `removed` events.
+  Stream<T> get onRemoved;
+
   /// The Angel instance powering this service.
   Angel get app;
+
+  Future close();
 
   /// Retrieves all resources.
   Future index([Map params]);

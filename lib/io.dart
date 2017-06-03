@@ -10,27 +10,40 @@ export 'angel_client.dart';
 
 /// Queries an Angel server via REST.
 class Rest extends BaseAngelClient {
+  final List<Service> _services = [];
+
   Rest(String path) : super(new http.Client(), path);
 
   @override
-  Service service<T>(String path, {Type type, AngelDeserializer deserializer}) {
+  Service<T> service<T>(String path, {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(straySlashes, "");
-    return new RestService(
+    var s = new RestService<T>(
         client, this, "$basePath/$uri", T != dynamic ? T : type);
+    _services.add(s);
+    return s;
   }
+
   @override
   Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
     throw new UnimplementedError('Opening popup windows is not supported in the `dart:io` client.');
   }
+
+  Future close() async {
+    super.close();
+    Future.wait(_services.map((s) => s.close())).then((_) {
+      _services.clear();
+    });
+  }
 }
 
 /// Queries an Angel service via REST.
-class RestService extends BaseAngelService {
+class RestService<T> extends BaseAngelService<T> {
   final Type type;
 
   RestService(http.BaseClient client, Angel app, String url, this.type)
       : super(client, app, url);
 
+  @override
   deserialize(x) {
     if (type != null) {
       return x.runtimeType == type
@@ -49,29 +62,4 @@ class RestService extends BaseAngelService {
 
     return super.makeBody(x);
   }
-
-  @override
-  Future index([Map params]) async {
-    final items = await super.index(params);
-    if (items is! List) return items;
-    return items.map(deserialize).toList();
-  }
-
-  @override
-  Future read(id, [Map params]) => super.read(id, params).then(deserialize);
-
-  @override
-  Future create(data, [Map params]) =>
-      super.create(data, params).then(deserialize);
-
-  @override
-  Future modify(id, data, [Map params]) =>
-      super.modify(id, data, params).then(deserialize);
-
-  @override
-  Future update(id, data, [Map params]) =>
-      super.update(id, data, params).then(deserialize);
-
-  @override
-  Future remove(id, [Map params]) => super.remove(id, params).then(deserialize);
 }

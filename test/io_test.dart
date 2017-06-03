@@ -19,7 +19,7 @@ main() {
       httpServer =
           await serverApp.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
       url = "http://localhost:${httpServer.port}";
-      serverApp.use("/postcards", new server.MemoryService<Postcard>());
+      serverApp.use("/postcards", new server.TypedService<Postcard>(new server.MapService()));
       serverPostcards = serverApp.service("postcards");
 
       clientApp = new client.Rest(url);
@@ -94,7 +94,7 @@ main() {
 
     test("modify/update", () async {
       var innerPostcards =
-          serverPostcards.inner as server.MemoryService<Postcard>;
+          serverPostcards.inner as server.TypedService<Postcard>;
       print(innerPostcards.items);
       Postcard mecca = await clientTypedPostcards
           .create(new Postcard(location: "Mecca", message: "Pilgrimage"));

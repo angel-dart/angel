@@ -54,7 +54,13 @@ AngelHttpException failure(http.Response response, {error, StackTrace stack}) {
 }
 
 abstract class BaseAngelClient extends Angel {
+  final StreamController<AngelAuthResult> _onAuthenticated =
+      new StreamController<AngelAuthResult>();
+  final List<Service> _services = [];
   final http.BaseClient client;
+
+  @override
+  Stream<AngelAuthResult> get onAuthenticated => _onAuthenticated.stream;
 
   BaseAngelClient(this.client, String basePath) : super(basePath);
 
@@ -87,7 +93,9 @@ abstract class BaseAngelClient extends Angel {
                   "Auth endpoint '$url' did not return a proper response.");
         }
 
-        return new AngelAuthResult.fromMap(json);
+        var r = new AngelAuthResult.fromMap(json);
+        _onAuthenticated.add(r);
+        return r;
       } catch (e, st) {
         throw failure(response, error: e, stack: st);
       }
@@ -117,7 +125,9 @@ abstract class BaseAngelClient extends Angel {
                   "Auth endpoint '$url' did not return a proper response.");
         }
 
-        return new AngelAuthResult.fromMap(json);
+        var r = new AngelAuthResult.fromMap(json);
+        _onAuthenticated.add(r);
+        return r;
       } catch (e, st) {
         throw failure(response, error: e, stack: st);
       }
@@ -126,6 +136,10 @@ abstract class BaseAngelClient extends Angel {
 
   Future close() async {
     client.close();
+    _onAuthenticated.close();
+    Future.wait(_services.map((s) => s.close())).then((_) {
+      _services.clear();
+    });
   }
 
   Future logout() async {
@@ -161,10 +175,13 @@ abstract class BaseAngelClient extends Angel {
   }
 
   @override
-  Service service<T>(String path, {Type type, AngelDeserializer deserializer}) {
+  Service<T> service<T>(String path,
+      {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(straySlashes, "");
-    return new BaseAngelService(client, this, '$basePath/$uri',
+    var s = new BaseAngelService<T>(client, this, '$basePath/$uri',
         deserializer: deserializer);
+    _services.add(s);
+    return s;
   }
 
   String _join(url) {
@@ -208,12 +225,47 @@ abstract class BaseAngelClient extends Angel {
   }
 }
 
-class BaseAngelService extends Service {
+class BaseAngelService<T> extends Service<T> {
   @override
   final BaseAngelClient app;
   final String basePath;
   final http.BaseClient client;
   final AngelDeserializer deserializer;
+
+  final StreamController<T> _onIndexed = new StreamController<T>(),
+      _onRead = new StreamController<T>(),
+      _onCreated = new StreamController<T>(),
+      _onModified = new StreamController<T>(),
+      _onUpdated = new StreamController<T>(),
+      _onRemoved = new StreamController<T>();
+
+  @override
+  Stream<T> get onIndexed => _onIndexed.stream;
+
+  @override
+  Stream<T> get onRead => _onRead.stream;
+
+  @override
+  Stream<T> get onCreated => _onCreated.stream;
+
+  @override
+  Stream<T> get onModified => _onModified.stream;
+
+  @override
+  Stream<T> get onUpdated => _onUpdated.stream;
+
+  @override
+  Stream<T> get onRemoved => _onRemoved.stream;
+
+  @override
+  Future close() async {
+    _onIndexed.close();
+    _onRead.close();
+    _onCreated.close();
+    _onModified.close();
+    _onUpdated.close();
+    _onRemoved.close();
+  }
 
   BaseAngelService(this.client, this.app, this.basePath, {this.deserializer});
 
@@ -244,8 +296,15 @@ class BaseAngelService extends Service {
       }
 
       final json = JSON.decode(response.body);
-      if (json is! List) return json;
-      return json.map(deserialize).toList();
+
+      if (json is! List) {
+        _onIndexed.add(json);
+        return json;
+      }
+
+      var r = json.map(deserialize).toList();
+      _onIndexed.add(r);
+      return r;
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -261,7 +320,9 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return deserialize(JSON.decode(response.body));
+      var r = deserialize(JSON.decode(response.body));
+      _onRead.add(r);
+      return r;
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -277,7 +338,9 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return deserialize(JSON.decode(response.body));
+      var r = deserialize(JSON.decode(response.body));
+      _onCreated.add(r);
+      return r;
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -293,7 +356,9 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return deserialize(JSON.decode(response.body));
+      var r = deserialize(JSON.decode(response.body));
+      _onModified.add(r);
+      return r;
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -309,7 +374,9 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return deserialize(JSON.decode(response.body));
+      var r = deserialize(JSON.decode(response.body));
+      _onUpdated.add(r);
+      return r;
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
@@ -325,7 +392,9 @@ class BaseAngelService extends Service {
         throw failure(response);
       }
 
-      return deserialize(JSON.decode(response.body));
+      var r = deserialize(JSON.decode(response.body));
+      _onRemoved.add(r);
+      return r;
     } catch (e, st) {
       throw failure(response, error: e, stack: st);
     }
