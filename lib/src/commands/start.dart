@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:watcher/watcher.dart';
 import 'package:yaml/yaml.dart';
+import 'init.dart';
 
 Process server;
 bool watching = false;
@@ -76,7 +77,7 @@ class StartCommand extends Command {
       if (scriptsNode != null && scriptsNode.containsKey('start')) {
         try {
           var scripts =
-              await Process.start('pub', ['global', 'run', 'scripts', 'start']);
+              await Process.start(InitCommand.resolvePub(), ['global', 'run', 'scripts', 'start']);
           listen(scripts.stdout, stdout);
           listen(scripts.stderr, stderr);
           int code = await scripts.exitCode;

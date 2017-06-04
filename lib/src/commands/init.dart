@@ -142,10 +142,16 @@ class InitCommand extends Command {
     }
   }
 
-  _pubGet(Directory projectDir) async {
+  static String resolvePub() {
     var exec = new File(Platform.resolvedExecutable);
     var pubPath = exec.parent.uri.resolve('pub').path;
-    if (Platform.isWindows) pubPath = pubPath.replaceAll(_leadingSlashes, '');
+    if (Platform.isWindows) pubPath = pubPath.replaceAll(_leadingSlashes, '') + '.bat';
+    pubPath = Uri.decodeFull(pubPath);
+    return pubPath;
+  }
+
+  _pubGet(Directory projectDir) async {
+    var pubPath = resolvePub();
     print('Running pub at "$pubPath"...');
     var pub = await Process.start(pubPath, ["get"],
         workingDirectory: projectDir.absolute.path);
