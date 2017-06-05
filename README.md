@@ -109,5 +109,5 @@ Future<Angel> createServer() async {
 }
 ```
 
-## Join the team
-Do you want to collaborate? Join the project at https://projectgroupie.com/projects/212 
+## Get Social
+Join an activate chat about the Angel Framework, or seek assistance: https://gitter.im/angel_dart/discussion
