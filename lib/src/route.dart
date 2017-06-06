@@ -126,10 +126,6 @@ class Route {
         orElse: () => this);
   }
 
-  void _printDebug(msg) {
-    // if (debug == true) print(msg);
-  }
-
   Route._base();
 
   Route(Pattern path,
@@ -346,20 +342,20 @@ class Route {
     Iterable<String> values =
     _parseParameters(requestPath.replaceAll(_straySlashes, ''));
 
-    _printDebug(
-        'Searched request path $requestPath and found these values: $values');
-    _printDebug('This route\'s path is "$path".');
+    // _printDebug(
+    //    'Searched request path $requestPath and found these values: $values');
+    // _printDebug('This route\'s path is "$path".');
 
     final pathString = _pathify(path).replaceAll(new RegExp('\/'), r'\/');
     Iterable<Match> matches = _param.allMatches(pathString);
-    _printDebug(
-        'All param names parsed in "$pathString": ${matches.map((m) => m[1])}');
+    // _printDebug(
+    //    'All param names parsed in "$pathString": ${matches.map((m) => m[1])}');
 
     for (int i = 0; i < matches.length && i < values.length; i++) {
       Match match = matches.elementAt(i);
       String paramName = match.group(1);
       String value = values.elementAt(i);
-      _printDebug('Setting param "$paramName" to "$value"...');
+      // _printDebug('Setting param "$paramName" to "$value"...');
       result[paramName] = value;
     }
 
@@ -378,16 +374,16 @@ class Route {
   ///
   /// Can be used to navigate a route hierarchy like a file system.
   Route resolve(String path, {bool filter(Route route), String fullPath}) {
-    _printDebug(
-        'Path to resolve: "/${path.replaceAll(_straySlashes, '')}", our matcher: ${matcher.pattern}');
+    // _printDebug(
+    //    'Path to resolve: "/${path.replaceAll(_straySlashes, '')}", our matcher: ${matcher.pattern}');
     bool _filter(route) {
       if (filter == null) {
-        _printDebug('No filter provided, returning true for $route');
+        // _printDebug('No filter provided, returning true for $route');
         return true;
       } else {
-        _printDebug('Running filter on $route');
+        // _printDebug('Running filter on $route');
         final result = filter(route);
-        _printDebug('Filter result: $result');
+        // _printDebug('Filter result: $result');
         return result;
       }
     }
@@ -396,7 +392,7 @@ class Route {
 
     if ((path.isEmpty || path == '.') && _filter(indexRoute)) {
       // Try to find index
-      _printDebug('Empty path, resolving with indexRoute: $indexRoute');
+      // _printDebug('Empty path, resolving with indexRoute: $indexRoute');
       return indexRoute;
     } else if (path == '/') {
       return absoluteParent.resolve('');
@@ -409,8 +405,8 @@ class Route {
       }
 
       if (_filter(indexRoute)) {
-        _printDebug(
-            'Path "/$path" is technically empty, sending to indexRoute: $indexRoute');
+        // _printDebug(
+        //    'Path "/$path" is technically empty, sending to indexRoute: $indexRoute');
         return indexRoute;
       } else
         return null;
@@ -427,15 +423,15 @@ class Route {
           filter: _filter, fullPath: _fullPath);
     } else if (matcher.hasMatch(path.replaceAll(_straySlashes, '')) ||
         _resolver.hasMatch(path.replaceAll(_straySlashes, ''))) {
-      _printDebug(
-          'Path "/$path" matched our matcher, sending to indexRoute: $indexRoute');
+      // _printDebug(
+      //    'Path "/$path" matched our matcher, sending to indexRoute: $indexRoute');
       return indexRoute;
     } else {
       final segments = path.split('/').where((str) => str.isNotEmpty).toList();
-      _printDebug('Segments: $segments on "/${this.path}"');
+      // _printDebug('Segments: $segments on "/${this.path}"');
 
       if (segments.isEmpty) {
-        _printDebug('Empty segments, sending to indexRoute: $indexRoute');
+        // _printDebug('Empty segments, sending to indexRoute: $indexRoute');
         return indexRoute;
       }
 
@@ -452,8 +448,8 @@ class Route {
 
       for (Route route in children) {
         final subPath = '${this.path}/${segments[0]}';
-        _printDebug(
-            'seg0: ${segments[0]}, stub: ${route._stub?.pattern}, path: $path, route.path: ${route.path}, route.matcher: ${route.matcher.pattern}, this.matcher: ${matcher.pattern}');
+        // _printDebug(
+        //    'seg0: ${segments[0]}, stub: ${route._stub?.pattern}, path: $path, route.path: ${route.path}, route.matcher: ${route.matcher.pattern}, this.matcher: ${matcher.pattern}');
 
         if (route.match(subPath) != null ||
             route._resolver.firstMatch(subPath) != null) {
@@ -468,11 +464,11 @@ class Route {
           }
         } else if (route._stub != null && route._stub.hasMatch(segments[0])) {
           if (segments.length == 1) {
-            _printDebug('Stub perhaps matches');
+            // _printDebug('Stub perhaps matches');
             return route.resolve('');
           } else {
-            _printDebug(
-                'Maybe stub matches. Sending remaining segments to $route');
+            // _printDebug(
+            //    'Maybe stub matches. Sending remaining segments to $route');
             return route.resolve(segments.skip(1).join('/'));
           }
         }
@@ -480,14 +476,14 @@ class Route {
 
       // Try to match "subdirectory"
       for (Route route in children) {
-        _printDebug(
-            'Trying to match subdir for $path; child ${route.path} on ${this.path}');
+        // _printDebug(
+        //   'Trying to match subdir for $path; child ${route.path} on ${this.path}');
         final match = route._parentResolver.firstMatch(path);
 
         if (match != null) {
           final subPath =
           path.replaceFirst(match[0], '').replaceAll(_straySlashes, '');
-          _printDebug("Subdir path: $subPath");
+          // _printDebug("Subdir path: $subPath");
 
           for (Route child in route.children) {
             final testPath = child.path
@@ -506,24 +502,24 @@ class Route {
 
       // Try to match the whole route, if nothing else works
       for (Route route in children) {
-        _printDebug(
-            'Trying to match full $_fullPath for ${route.path} on ${this.path}');
+        // _printDebug(
+        //    'Trying to match full $_fullPath for ${route.path} on ${this.path}');
         if ((route.match(_fullPath) != null ||
             route._resolver.firstMatch(_fullPath) != null) &&
             _filter(route)) {
-          _printDebug('Matched full path!');
+          // _printDebug('Matched full path!');
           return route.resolve('');
         } else if ((route.match('/$_fullPath') != null ||
             route._resolver.firstMatch('/$_fullPath') != null) &&
             _filter(route)) {
-          _printDebug('Matched full path (with a leading slash!)');
+          // _printDebug('Matched full path (with a leading slash!)');
           return route.resolve('');
         }
       }
 
       // Lastly, check to see if we have an index route to resolve with
       if (indexRoute != this) {
-        _printDebug('Forwarding "/$path" to indexRoute');
+        // _printDebug('Forwarding "/$path" to indexRoute');
         return indexRoute.resolve(path);
       }
 

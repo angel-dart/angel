@@ -44,10 +44,6 @@ class Router extends Extensible {
   /// Not recommended.
   Router({this.debug: false});
 
-  void _printDebug(msg) {
-    // if (debug == true) print(msg);
-  }
-
   /// Adds a route that responds to the given path
   /// for requests with the given method (case-insensitive).
   /// Provide '*' as the method to respond to all methods.
@@ -257,7 +253,7 @@ class Router extends Extensible {
   }
 
   RoutingResult _dumpResult(String path, RoutingResult result) {
-    _printDebug('Resolved "/$path" to ${result.route}');
+    // _printDebug('Resolved "/$path" to ${result.route}');
     return result;
   }
 
@@ -287,9 +283,9 @@ class Router extends Extensible {
                 .replaceAll(_straySlashes, '');
 
             if (cleaned.isEmpty) {
-              _printDebug(
-                  'Matched relative "$cleanRelative" to head ${route._head
-                  .pattern} on $route. Tail: "$tail"');
+              // _printDebug(
+              //    'Matched relative "$cleanRelative" to head ${route._head
+              //    .pattern} on $route. Tail: "$tail"');
               route.router.debug = route.router.debug || debug;
               final nested =
                   route.router.resolve(cleanAbsolute, tail, method: method);
@@ -345,8 +341,8 @@ class Router extends Extensible {
       result = router.resolve(absolute, relative, method: method);
     }
 
-    _printDebug(
-        'Results of $method "/${absolute.replaceAll(_straySlashes, '')}": ${results.map((r) => r.route).toList()}');
+    // _printDebug(
+    //    'Results of $method "/${absolute.replaceAll(_straySlashes, '')}": ${results.map((r) => r.route).toList()}');
     return results;
   }
 
