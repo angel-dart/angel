@@ -177,8 +177,8 @@ class HotReloader {
   _handleWatchEvent(WatchEvent e) async {
     print('${e.path} changed. Reloading server...');
     var old = _server;
+    if (old != null) Future.forEach(old.justBeforeStop, old.configure);
     _server = null;
-    Future.forEach(old.justBeforeStop, old.configure);
 
     _client ??=
         new VMServiceClient.connect(vmServiceUrl ?? 'ws://localhost:8181/ws');
