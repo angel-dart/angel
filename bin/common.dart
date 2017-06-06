@@ -28,11 +28,11 @@ startServer(args, {bool clustered: false, SendPort sendPort}) {
     if (Platform.environment['ANGEL_ENV'] == 'production')
       server = await app.startServer(host, port);
     else {
-      var hot = new HotReloader(createServer, [
-        new Directory('bin'),
-        new Directory('config'),
-        new Directory('lib')
-      ]);
+      var hot = new HotReloader(() async {
+        var app = await createServer();
+        await app.configure(logRequests(logFile));
+        return app;
+      }, [new Directory('config'), new Directory('lib')]);
       server = await hot.startServer(host, port);
     }
 
