@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_websocket/server.dart';
 import 'package:glob/glob.dart';
 import 'package:html_builder/elements.dart';
 import 'package:html_builder/html_builder.dart';
@@ -177,9 +178,27 @@ class HotReloader {
   _handleWatchEvent(WatchEvent e) async {
     print('${e.path} changed. Reloading server...');
     var old = _server;
-    if (old != null) Future.forEach(old.justBeforeStop, old.configure);
-    _server = null;
 
+    if (old != null) {
+      // Do this asynchronously, because we really don't care about the old server anymore.
+      new Future(() async {
+        // Disconnect active WebSockets
+        var ws = old.container.make(AngelWebSocket) as AngelWebSocket;
+
+        for (var client in ws.clients) {
+          try {
+            client.io.close(WebSocketStatus.GOING_AWAY);
+          } catch (e) {
+            stderr.writeln(
+                'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
+          }
+        }
+
+        Future.forEach(old.justBeforeStop, old.configure);
+      });
+    }
+
+    _server = null;
     _client ??=
         new VMServiceClient.connect(vmServiceUrl ?? 'ws://localhost:8181/ws');
     var vm = await _client.getVM();
