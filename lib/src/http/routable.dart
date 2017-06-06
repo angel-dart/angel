@@ -124,8 +124,15 @@ class Routable extends Router {
 
     Map copiedMiddleware = new Map.from(router.requestMiddleware);
     for (String middlewareName in copiedMiddleware.keys) {
-      requestMiddleware["$middlewarePrefix$middlewareName"] =
-          copiedMiddleware[middlewareName];
+      requestMiddleware.putIfAbsent("$middlewarePrefix$middlewareName",
+          () => copiedMiddleware[middlewareName]);
+    }
+
+    // Also copy properties...
+    Map copiedProperties = new Map.from(router.properties);
+    for (String propertyName in copiedProperties.keys) {
+      properties.putIfAbsent("$middlewarePrefix$propertyName",
+          () => copiedMiddleware[propertyName]);
     }
 
     // _router.dumpTree(header: 'Mounting on "$path":');

@@ -15,5 +15,6 @@ dependencies:
   random_string: ^0.0.1
   mime: ^0.9.3
 dev_dependencies:
+  mock_request: ^1.0.0
   http: ^0.11.3
   test: ^0.12.13

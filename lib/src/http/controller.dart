@@ -143,13 +143,14 @@ RequestHandler createDynamicHandler(handler,
   injection.optional.addAll(optional ?? []);
   return handleContained(handler, injection);
 }
-
 /// Handles a request with a DI-enabled handler.
 RequestHandler handleContained(handler, InjectionRequest injection) {
   return (RequestContext req, ResponseContext res) async {
     List args = [];
 
     void inject(requirement) {
+      var propFromApp;
+
       if (requirement == RequestContext) {
         args.add(req);
       } else if (requirement == ResponseContext) {
@@ -161,6 +162,8 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
           args.add(req.injections[requirement]);
         else if (req.properties.containsKey(requirement))
           args.add(req.properties[requirement]);
+        else if ((propFromApp = req.app.findProperty(requirement)) != null)
+          args.add(propFromApp);
         else if (injection.optional.contains(requirement))
           args.add(null);
         else {
@@ -174,7 +177,10 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
         String key = requirement.first;
         Type type = requirement.last;
 
-        if (req.params.containsKey(key) || req.injections.containsKey(key)) {
+        if (req.params.containsKey(key) ||
+            req.injections.containsKey(key) ||
+            req.properties.containsKey(key) ||
+            req.app.properties.containsKey(key)) {
           inject(key);
         } else
           inject(type);

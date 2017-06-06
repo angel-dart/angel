@@ -49,6 +49,11 @@ class Angel extends AngelBase {
   final Map<dynamic, InjectionRequest> _preContained = {};
   ResponseSerializer _serializer;
 
+  /// A [Map] of dependency data obtained via reflection.
+  ///
+  /// You may modify this [Map] yourself if you intend to avoid reflection entirely.
+  Map<dynamic, InjectionRequest> get preContained => _preContained;
+
   /// Determines whether to allow HTTP request method overrides.
   bool allowMethodOverrides = true;
 
@@ -133,10 +138,6 @@ class Angel extends AngelBase {
   /// Handles a server error.
   _onError(e, [StackTrace st]) {
     _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
-  }
-
-  void _printDebug(x) {
-    if (debug) print(x);
   }
 
   /// Starts the server.
@@ -285,8 +286,9 @@ class Angel extends AngelBase {
         return result;
     }
 
-    if (requestMiddleware.containsKey(handler)) {
-      return await getHandlerResult(requestMiddleware[handler], req, res);
+    var middleware = (req.app ?? this).findMiddleware(handler);
+    if (middleware != null) {
+      return await getHandlerResult(middleware, req, res);
     }
 
     return handler;
@@ -321,6 +323,18 @@ class Angel extends AngelBase {
       new ResponseContext(response, this)
         ..serializer = (_serializer ?? god.serialize);
 
+  /// Attempts to find a middleware by the given name within this application.
+  findMiddleware(key) {
+    if (requestMiddleware.containsKey(key)) return requestMiddleware[key];
+    return parent != null ? parent.findMiddleware(key) : null;
+  }
+
+  /// Attempts to find a property by the given name within this application.
+  findProperty(key) {
+    if (properties.containsKey(key)) return properties[key];
+    return parent != null ? parent.findProperty(key) : null;
+  }
+
   /// Handles a single request.
   Future handleRequest(HttpRequest request) async {
     try {
@@ -347,24 +361,24 @@ class Angel extends AngelBase {
 
       var pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
 
-      _printDebug('Handler sequence on $requestedUrl: $pipeline');
+      // _printDebug('Handler sequence on $requestedUrl: $pipeline');
 
       for (var handler in pipeline) {
         try {
-          _printDebug('Executing handler: $handler');
+          // _printDebug('Executing handler: $handler');
           var result = await executeHandler(handler, req, res);
-          _printDebug('Result: $result');
+          // _printDebug('Result: $result');
 
           if (!result) {
-            _printDebug('Last executed handler: $handler');
+            // _printDebug('Last executed handler: $handler');
             break;
           } else {
-            _printDebug(
-                'Handler completed successfully, did not terminate response: $handler');
+            // _printDebug(
+            //    'Handler completed successfully, did not terminate response: $handler');
           }
         } catch (e, st) {
-          _printDebug('Caught error in handler $handler: $e');
-          _printDebug(st);
+          // _printDebug('Caught error in handler $handler: $e');
+          // _printDebug(st);
 
           if (e is AngelHttpException) {
             // Special handling for AngelHttpExceptions :)
@@ -413,8 +427,10 @@ class Angel extends AngelBase {
   /// * Preprocesses all dependency injection, and eliminates the burden of reflecting handlers
   /// at run-time.
   /// * [flatten]s the route tree into a linear one.
-  void optimizeForProduction() {
-    if (isProduction == true) {
+  ///
+  /// You may [force] the optimization to run, if you are not running in production.
+  void optimizeForProduction({bool force: false}) {
+    if (isProduction == true || force == true) {
       _add(v) {
         if (v is Function && !_preContained.containsKey(v)) {
           _preContained[v] = preInject(v);
@@ -428,10 +444,10 @@ class Angel extends AngelBase {
 
         router.requestMiddleware.forEach((k, v) => _add(v));
         router.middleware.forEach(_add);
-        router.routes
-            .where((r) => r is SymlinkRoute)
-            .map((SymlinkRoute r) => r.router)
-            .forEach(_walk);
+        router.routes.forEach((r) {
+          r.handlers.forEach(_add);
+          if (r is SymlinkRoute) _walk(r.router);
+        });
       }
 
       if (_flattened == null) _flattened = flatten(this);

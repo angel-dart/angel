@@ -2,6 +2,7 @@ import 'controller_test.dart' as controller;
 import 'di_test.dart' as di;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
+import 'precontained_test.dart' as precontained;
 import 'routing_test.dart' as routing;
 import 'serialize_test.dart' as serialize;
 import 'services_test.dart' as services;
@@ -14,6 +15,7 @@ main() {
   group('di', di.main);
   group('general', general.main);
   group('hooked', hooked.main);
+  group('precontained', precontained.main);
   group('routing', routing.main);
   group('serialize', serialize.main);
   group('services', services.main);
