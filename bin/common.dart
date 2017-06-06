@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'package:angel/angel.dart';
 import 'package:angel_diagnostics/angel_diagnostics.dart';
+import 'package:angel_hot/angel_hot.dart';
 import 'package:intl/intl.dart';
 
 startServer(args, {bool clustered: false, SendPort sendPort}) {
@@ -21,7 +22,19 @@ startServer(args, {bool clustered: false, SendPort sendPort}) {
     }
 
     await app.configure(logRequests(logFile));
-    var server = await app.startServer(host, port);
+    HttpServer server;
+
+    // Use `package:angel_hot` in any case, EXCEPT if starting in production mode.
+    if (Platform.environment['ANGEL_ENV'] == 'production')
+      server = await app.startServer(host, port);
+    else {
+      var hot = new HotReloader(createServer, [
+        new Directory('bin'),
+        new Directory('config'),
+        new Directory('lib')
+      ]);
+      server = await hot.startServer(host, port);
+    }
 
     if (sendPort == null) {
       print('Listening at http://${server.address.address}:${server.port}');

@@ -7,6 +7,7 @@ homepage: https://github.com/angel-dart/angel
 dependencies: 
   angel_common: ^1.0.0
   angel_configuration: ^1.0.0
+  angel_hot: ^1.0.0-rc.1
   angel_multiserver: ^1.0.0
 dev_dependencies:
   grinder: ^0.8.0
