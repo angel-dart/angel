@@ -34,6 +34,14 @@ class StartCommand extends Command {
 
   @override
   run() async {
+    stderr
+      ..writeln(
+          'WARNING: `angel start` is now deprecated, in favor of `package:angel_hot`.')
+      ..writeln(
+          'This new alternative supports hot reloading, which is faster and more reliable.')
+      ..writeln()
+      ..writeln('Find it on Pub: https://pub.dartlang.org/packages/angel_hot');
+
     if (argResults['watch']) {
       try {
         new DirectoryWatcher('bin').events.listen((_) async => start());
@@ -76,8 +84,8 @@ class StartCommand extends Command {
 
       if (scriptsNode != null && scriptsNode.containsKey('start')) {
         try {
-          var scripts =
-              await Process.start(InitCommand.resolvePub(), ['global', 'run', 'scripts', 'start']);
+          var scripts = await Process.start(
+              InitCommand.resolvePub(), ['global', 'run', 'scripts', 'start']);
           listen(scripts.stdout, stdout);
           listen(scripts.stderr, stderr);
           int code = await scripts.exitCode;
