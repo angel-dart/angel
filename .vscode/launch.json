@@ -5,19 +5,22 @@
             "name": "Start Server",
             "type": "dart-cli",
             "request": "launch",
-            "cwd": "${workspaceRoot}",
-            "debugSettings": "${command:debugSettings}",
             "program": "${workspaceRoot}/bin/server.dart",
-            "args": []
+            "checkedMode": true
         },
         {
-            "name": "Start Multiserver",
+            "name": "Multi-Threaded Server",
             "type": "dart-cli",
             "request": "launch",
-            "cwd": "${workspaceRoot}",
-            "debugSettings": "${command:debugSettings}",
+            "program": "${workspaceRoot}/bin/scaled_server.dart",
+            "checkedMode": true
+        },
+        {
+            "name": "Load-Balanced Server",
+            "type": "dart-cli",
+            "request": "launch",
             "program": "${workspaceRoot}/bin/multi_server.dart",
-            "args": []
+            "checkedMode": true
         }
     ]
 }

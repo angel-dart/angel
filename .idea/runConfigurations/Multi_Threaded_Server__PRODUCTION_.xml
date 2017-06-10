@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Multithreaded Server (PRODUCTION)" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+  <configuration default="false" name="Multi-Threaded Server (PRODUCTION)" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
     <option name="checkedMode" value="false" />
     <option name="envs">
       <entry key="ANGEL_ENV" value="production" />
