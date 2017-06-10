@@ -7,6 +7,5 @@ import 'common.dart';
 import 'dart:isolate';
 
 main(args, SendPort sendPort) async {
-  runZoned(startServer(args, clustered: true, sendPort: sendPort),
-      onError: onError);
+  runZoned(startServer(args, sendPort: sendPort), onError: onError);
 }

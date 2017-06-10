@@ -3,26 +3,27 @@ library angel.config;
 
 import 'dart:io';
 import 'package:angel_common/angel_common.dart';
-// import 'package:angel_multiserver/angel_multiserver.dart';
-import 'package:mongo_dart/mongo_dart.dart';
 import 'plugins/plugins.dart' as plugins;
 
 /// This is a perfect place to include configuration and load plug-ins.
 configureServer(Angel app) async {
-  await app.configure(loadConfigurationFile());
-  var db = new Db(app.mongo_db);
-  await db.open();
-  app.container.singleton(db);
-
-  await app.configure(mustache(new Directory('views')));
-  await plugins.configureServer(app);
-
-
-  // Uncomment this to enable session synchronization across instances.
-  // This will add the overhead of querying a database at the beginning
-  // and end of every request. Thus, it should only be activated if necessary.
+  // Load configuration from the `config/` directory.
   //
-  // For applications of scale, it is better to steer clear of session use
-  // entirely.
-  // await app.configure(new MongoSessionSynchronizer(db.collection('sessions')));
+  // See: https://github.com/angel-dart/configuration
+  await app.configure(loadConfigurationFile());
+
+  // Configure our application to render Mustache templates from the `views/` directory.
+  //
+  // See: https://github.com/angel-dart/mustache
+  await app.configure(mustache(new Directory('views')));
+
+  // Apply another plug-ins, i.e. ones that *you* have written.
+  //
+  // Typically, the plugins in `lib/src/config/plugins/plugins.dart` are plug-ins
+  // that add functionality specific to your application.
+  //
+  // If you write a plug-in that you plan to use again, or are
+  // using one created by the community, include it in
+  // `lib/src/config/config.dart`.
+  await plugins.configureServer(app);
 }

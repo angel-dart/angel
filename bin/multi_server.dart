@@ -2,13 +2,19 @@
 /// This is intended to replace Nginx in your web stack.
 /// Either use this or another reverse proxy, but there is no real
 /// reason to use them together.
-library angel.multiserver;
+///
+/// In most cases, you should run `scaled_server.dart` instead of this file.
+library angel.multi_server;
 
 import 'dart:io';
 import 'package:angel_compress/angel_compress.dart';
 import 'package:angel_multiserver/angel_multiserver.dart';
 
 final Uri cluster = Platform.script.resolve('cluster.dart');
+
+/// The number of isolates to spawn. You might consider starting one instance
+/// per processor core on your machine.
+final int nInstances = Platform.numberOfProcessors;
 
 main() async {
   var app = new LoadBalancer();
@@ -21,8 +27,8 @@ main() async {
   // Cache static assets - just to lower response time
   await app.configure(cacheResponses(filters: [new RegExp(r'images/\.*')]));
 
-  // Start up 5 instances of our main application
-  await app.spawnIsolates(cluster, count: 5);
+  // Start up multiple instances of our main application.
+  await app.spawnIsolates(cluster, count: nInstances);
 
   app.onCrash.listen((_) async {
     // Boot up a new instance on crash
@@ -33,4 +39,5 @@ main() async {
   var port = 3000;
   var server = await app.startServer(host, port);
   print('Listening at http://${server.address.address}:${server.port}');
+  print('Load-balancing $nInstances instance(s)');
 }

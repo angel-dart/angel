@@ -1,16 +1,29 @@
 import 'package:angel_common/angel_common.dart';
 import 'package:angel_framework/hooks.dart' as hooks;
 import 'package:crypto/crypto.dart' show sha256;
-import 'package:mongo_dart/mongo_dart.dart';
 import 'package:random_string/random_string.dart' as rs;
 import '../models/user.dart';
 import '../validators/user.dart';
 export '../models/user.dart';
 
-configureServer(Db db) {
+/// Sets up a service mounted at `api/users`.
+///
+/// In the real world, you will want to hook this up to a database.
+/// However, for the sake of the boilerplate, an in-memory service is used,
+/// so that users are not tied into using just one database. :)
+configureServer() {
   return (Angel app) async {
-    app.use('/api/users',
-        new TypedService<User>(new MongoService(db.collection('users'))));
+    // A TypedService can be used to serialize and deserialize data to a class, somewhat like an ORM.
+    //
+    // See here: https://github.com/angel-dart/angel/wiki/TypedService
+    app.use('/api/users', new TypedService<User>(new MapService()));
+
+    // Configure hooks for the user service.
+    // Hooks can be used to add additional functionality, or change the behavior
+    // of services, and run on any service, regardless of which database you are using.
+    //
+    // If you have not already, *definitely* read the service hook documentation:
+    // https://github.com/angel-dart/angel/wiki/Hooks
 
     var service = app.service('api/users') as HookedService;
 

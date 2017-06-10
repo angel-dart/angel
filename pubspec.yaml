@@ -1,17 +1,21 @@
 name: angel
 description: An easily-extensible web server framework in Dart.
-publish_to: none
+publish_to: none # Ensure we don't accidentally publish our private code! ;)
 environment:
   sdk: ">=1.19.0"
 homepage: https://github.com/angel-dart/angel
 dependencies: 
-  angel_common: ^1.0.0
-  angel_configuration: ^1.0.0
-  angel_hot: ^1.0.0-rc.1
-  angel_multiserver: ^1.0.0
+  angel_common: ^1.0.0 # Bundles the most commonly-used Angel packages.
+  angel_configuration: ^1.0.0 # Included in `angel_common`, but also exposes a transformer
+  angel_hot: ^1.0.0-rc.1 # Hot-reloading support. :)
+  angel_multiserver: ^1.0.0 # Helpful for applications running a scale.
 dev_dependencies:
   grinder: ^0.8.0
   http: ^0.11.3
   test: ^0.12.13
-transformers: 
+transformers:
+  # Injects data from application configuration into Dart code.
+  #
+  # Documentation:
+  # https://github.com/angel-dart/configuration
   - angel_configuration

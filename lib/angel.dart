@@ -9,8 +9,13 @@ import 'src/services/services.dart' as services;
 
 /// Creates and configures the server instance.
 Future<Angel> createServer() async {
-  Angel app = new Angel();
+  /// Passing `startShared` to the constructor allows us to start multiple
+  /// instances of our application concurrently, listening on a single port.
+  ///
+  /// This effectively lets us multi-thread the application.
+  var app = new Angel.custom(startShared);
 
+  /// Set up our application, using three plug-ins defined with this project.
   await app.configure(configuration.configureServer);
   await app.configure(services.configureServer);
   await app.configure(routes.configureServer);
