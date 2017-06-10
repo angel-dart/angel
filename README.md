@@ -43,7 +43,7 @@ angel init hello
 
 You can even have your server run and be *live-reloaded* on file changes:
 
-```dart
+```bash
 dart bin/server.dart
 ```
 
