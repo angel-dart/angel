@@ -44,7 +44,7 @@ angel init hello
 You can even have your server run and be *live-reloaded* on file changes:
 
 ```dart
-angel start
+dart bin/server.dart
 ```
 
 Next, check out the [detailed documentation](https://github.com/angel-dart/angel/wiki) to learn to flesh out your project.
