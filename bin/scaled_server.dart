@@ -57,7 +57,7 @@ void isolateMain(List args) {
     //
     // Here is an example of response caching:
     // https://github.com/angel-dart/multiserver/blob/master/example/cache.dart
-    await app.configure(cacheResponses(filters: [new RegExp(r'images/\.*')]));
+    await app.configure(cacheResponses(filters: [new RegExp(r'images/.*')]));
 
     var server = await app.startServer(
         InternetAddress.ANY_IP_V4, app.properties['port'] ?? 3000);
