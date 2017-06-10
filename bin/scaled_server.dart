@@ -7,6 +7,7 @@ library angel.scaled_server;
 import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_compress/angel_compress.dart';
+import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_multiserver/angel_multiserver.dart';
 import 'package:angel/angel.dart';
 
@@ -60,6 +61,9 @@ void isolateMain(List args) {
 
     var server = await app.startServer(
         InternetAddress.ANY_IP_V4, app.properties['port'] ?? 3000);
+
+    // Print request and error information to the console.
+    await app.configure(logRequests());
 
     // Send a notification back to the main isolate
     startupPort.send('Instance #$instanceId listening at http://${server.address.address}:${server.port}');
