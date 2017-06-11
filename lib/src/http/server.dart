@@ -45,7 +45,8 @@ class Angel extends AngelBase {
   Angel _parent;
   ServerGenerator _serverGenerator = HttpServer.bind;
 
-  final Map _injections = {};
+  /// A global Map of manual injections. You usually will not want to touch this.
+  final Map injections = {};
   final Map<dynamic, InjectionRequest> _preContained = {};
   ResponseSerializer _serializer;
 
@@ -243,7 +244,7 @@ class Angel extends AngelBase {
 
   /// Shortcut for adding a middleware to inject a key/value pair on every request.
   void inject(key, value) {
-    _injections[key] = value;
+    injections[key] = value;
   }
 
   /// Shortcut for adding a middleware to inject a serialize on every request.
@@ -315,7 +316,7 @@ class Angel extends AngelBase {
   Future<RequestContext> createRequestContext(HttpRequest request) {
     _beforeProcessed.add(request);
     return RequestContext.from(request, this).then((req) {
-      return req..injections.addAll(_injections ?? {});
+      return req..injections.addAll(injections ?? {});
     });
   }
 
