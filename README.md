@@ -14,7 +14,7 @@ rather than having to port code.
 
 * [Usage](#usage)
   * [embedShelf](#embedshelf)
-    * [Communicating with Angel](#communicating-with-angel-with-embedshelf))
+    * [Communicating with Angel](#communicating-with-angel-with-embedshelf)
   * [supportShelf](#supportshelf)
     * [Communicating with Angel](#communicating-with-angel-with-supportshelf)
 
