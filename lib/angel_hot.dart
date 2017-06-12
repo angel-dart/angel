@@ -16,6 +16,8 @@ typedef FutureOr<Angel> AngelGenerator();
 
 class HotReloader {
   VMServiceClient _client;
+  final StreamController<WatchEvent> _onChange =
+      new StreamController<WatchEvent>.broadcast();
   final List _paths = [];
   final StringRenderer _renderer = new StringRenderer(pretty: false);
   final Queue<HttpRequest> _requestQueue = new Queue<HttpRequest>();
@@ -24,6 +26,10 @@ class HotReloader {
 
   /// Invoked to load a new instance of [Angel] on file changes.
   final AngelGenerator generator;
+
+  /// Fires whenever a file change. You might consider using this to trigger
+  /// page reloads in a client.
+  Stream<WatchEvent> get onChange => _onChange.stream;
 
   /// The maximum amount of time to queue incoming requests for if there is no [server] available.
   ///
@@ -44,6 +50,10 @@ class HotReloader {
       {Duration timeout, this.vmServiceUrl: 'ws://localhost:8181/ws'}) {
     _timeout = timeout ?? new Duration(seconds: 5);
     _paths.addAll(paths ?? []);
+  }
+
+  Future close() async {
+    _onChange.close();
   }
 
   Future handleRequest(HttpRequest request) async {
@@ -109,6 +119,10 @@ class HotReloader {
     var s = _server = await _generateServer();
     while (!_requestQueue.isEmpty)
       await s.handleRequest(_requestQueue.removeFirst());
+
+    _onChange.stream
+        .transform(new _Debounce(new Duration(seconds: 1)))
+        .listen(_handleWatchEvent);
     await _listenToFilesystem();
 
     var server = await HttpServer.bind(
@@ -130,7 +144,10 @@ class HotReloader {
       } else if (path is Uri) {
         if (path.scheme == 'package') {
           var uri = await Isolate.resolvePackageUri(path);
-          await _listenToStat(uri.toFilePath());
+          if (uri != null)
+            await _listenToStat(uri.toFilePath());
+          else
+            await _listenToStat(path.toFilePath());
         } else
           await _listenToStat(path.toFilePath());
       } else {
@@ -158,8 +175,11 @@ class HotReloader {
           return null;
 
         var watcher = new Watcher(path);
-        //await watcher.ready;
-        watcher.events.listen(_handleWatchEvent);
+
+        watcher.events.listen(_onChange.add, onError: (e) {
+          stderr.writeln('Could not listen to file changes at ${path}: $e');
+        });
+
         print('Listening for file changes at ${path}...');
         return true;
       } catch (e) {
@@ -216,5 +236,25 @@ class HotReloader {
     _server = s;
     while (!_requestQueue.isEmpty)
       await s.handleRequest(_requestQueue.removeFirst());
+  }
+}
+
+class _Debounce<S> implements StreamTransformer<S, S> {
+  final Duration _delay;
+
+  const _Debounce(this._delay);
+
+  Stream<S> bind(Stream<S> stream) {
+    var initial = new DateTime.now();
+    var next = initial.subtract(this._delay);
+    return stream.where((S data) {
+      var now = new DateTime.now();
+      if (now.isAfter(next)) {
+        next = now.add(this._delay);
+        return true;
+      } else {
+        return false;
+      }
+    });
   }
 }

@@ -10,6 +10,7 @@ import 'src/foo.dart';
 main() async {
   var hot = new HotReloader(createServer, [
     new Directory('src'),
+    new Directory('src'),
     'server.dart',
     Uri.parse('package:angel_hot/angel_hot.dart')
   ]);

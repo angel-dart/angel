@@ -1,5 +1,5 @@
 # hot
-[![version 1.0.0-rc.2](https://img.shields.io/badge/pub-1.0.0--rc.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_rethink)
+[![Pub](https://img.shields.io/pub/v/angel_hot.svg)](https://pub.dartlang.org/packages/angel_hot)
 
 Supports *hot reloading* of Angel servers on file changes. This is faster and
 more reliable than merely reactively restarting a `Process`.
