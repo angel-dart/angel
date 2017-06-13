@@ -13,6 +13,8 @@
 
 [File an Issue](https://github.com/angel-dart/roadmap/issues)
 
+[Awesome Angel :fire:](https://github.com/angel-dart/awesome-angel)
+
 **The Dart server framework that's ready for showtime.**
 
 Angel is a full-featured server-side Web application framework for the Dart programming language. It strives to be a flexible, extensible system, to be easily scalable, and to allow as much code to be shared between clients and servers as possible. Ultimately, I believe that this approach will shorten the time it takes to build a full-stack Web application, from start to finish. [Read more...](https://medium.com/the-angel-framework/announcing-angel-v1-0-0-beta-46dfb4aa8afe)
