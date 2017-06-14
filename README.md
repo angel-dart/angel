@@ -1,7 +1,7 @@
 # Angel Configuration
 
 [![Pub](https://img.shields.io/pub/v/angel_configuration.svg)](https://pub.dartlang.org/packages/angel_configuration)
-[![build status](https://travis-ci.org/angel-dart/configuration.svg)](https://travis-ci.org/angel-dart/configuration.svg)
+[![build status](https://travis-ci.org/angel-dart/configuration.svg)](https://travis-ci.org/angel-dart/configuration)
 
 Automatic YAML configuration loader for Angel.
 
