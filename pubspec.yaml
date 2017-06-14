@@ -1,6 +1,6 @@
 name: angel_hot
 description: Supports hot reloading of Angel servers on file changes.
-version: 1.0.0
+version: 1.0.1
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/hot
 environment:

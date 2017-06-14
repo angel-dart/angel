@@ -132,6 +132,13 @@ class HotReloader {
   }
 
   _listenToFilesystem() async {
+    if (!Platform.executableArguments.contains('--observe') &&
+        !Platform.executableArguments.contains('--enable-vm-service')) {
+      stderr.writeln(
+          'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.');
+      return;
+    }
+
     for (var path in _paths) {
       if (path is String) {
         await _listenToStat(path);
