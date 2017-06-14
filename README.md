@@ -1,6 +1,6 @@
-# angel_static
+# static
 
-[![version 1.1.4+1](https://img.shields.io/badge/pub-1.1.4+1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_static)
+[![Pub](https://img.shields.io/pub/v/angel_static.svg)](https://pub.dartlang.org/packages/angel_static)
 [![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)](https://travis-ci.org/angel-dart/static)
 
 Static server middleware for Angel.

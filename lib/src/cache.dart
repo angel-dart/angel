@@ -162,7 +162,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
   void setCachedHeaders(
       File file, FileStat stat, RequestContext req, ResponseContext res) {
     var privacy = accessLevelToString(accessLevel ?? CacheAccessLevel.PUBLIC);
-    var expiry = new DateTime.now()..add(new Duration(seconds: maxAge ?? 0));
+    var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
 
     res.headers
       ..[HttpHeaders.CACHE_CONTROL] = '$privacy, max-age=${maxAge ?? 0}'
