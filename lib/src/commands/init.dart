@@ -122,13 +122,14 @@ class InitCommand extends Command {
         }
       }
 
-      var git = await Process.start("git", [
-        "clone",
-        "--depth",
-        "1",
-        "https://github.com/angel-dart/angel",
-        projectDir.absolute.path
-      ]);
+      print('Choose a project type before continuing:');
+      var boilerplateChooser = new Chooser<BoilerplateInfo>(ALL_BOILERPLATES);
+      var boilerplate = await boilerplateChooser.choose();
+
+      print(
+          'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
+      var git = await Process.start("git",
+          ["clone", "--depth", "1", boilerplate.url, projectDir.absolute.path]);
 
       stdout.addStream(git.stdout);
       stderr.addStream(git.stderr);
@@ -138,7 +139,6 @@ class InitCommand extends Command {
       }
 
       var gitDir = new Directory.fromUri(projectDir.uri.resolve(".git"));
-
       if (await gitDir.exists()) await gitDir.delete(recursive: true);
     } catch (e) {
       print(e);
@@ -183,4 +183,28 @@ preBuild(Directory projectDir) async {
   var buildCode = await build.exitCode;
 
   if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
+}
+
+const BoilerplateInfo FULL_APPLICATION_BOILERPLATE = const BoilerplateInfo(
+    'Full Application',
+    'A complete project including authentication, multi-threading, and more.',
+    'https://github.com/angel-dart/angel.git');
+
+const BoilerplateInfo LIGHT_BOILERPLATE = const BoilerplateInfo(
+    'Light',
+    'Minimal starting point for new users',
+    'https://github.com/angel-dart/boilerplate_light.git');
+
+const List<BoilerplateInfo> ALL_BOILERPLATES = const [
+  FULL_APPLICATION_BOILERPLATE,
+  LIGHT_BOILERPLATE
+];
+
+class BoilerplateInfo {
+  final String name, description, url;
+
+  const BoilerplateInfo(this.name, this.description, this.url);
+
+  @override
+  String toString() => '$name ($description)';
 }
