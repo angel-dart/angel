@@ -61,18 +61,14 @@ import 'package:angel_test/angel_test.dart';
 import 'package:test/test.dart';
 
 main() async {
-  Angel app;
   TestClient client;
 
   setUp(() async {
-    app = await createServer();
+    var app = await createServer();
     client = await connectTo(app);
   });
 
-  tearDown(() async {
-    await client.close();
-    app = null;
-  });
+  tearDown(() => client.close());
 
   test('$lower', () async {
     final response = await client.get('/$lower');

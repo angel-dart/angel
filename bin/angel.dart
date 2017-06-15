@@ -1,12 +1,9 @@
 #!/usr/bin/env dart
-library demon.tool;
+library angel_cli.tool;
 
 import "dart:io";
 import "package:args/command_runner.dart";
 import 'package:angel_cli/angel_cli.dart';
-import 'package:angel_cli/pubspec.dart';
-import 'package:console/console.dart';
-import 'package:http/http.dart' as http;
 
 final String DOCTOR = "doctor";
 
@@ -15,6 +12,7 @@ main(List<String> args) async {
       new CommandRunner("angel", "Command-line tools for the Angel framework.");
 
   runner
+    ..addCommand(new ControllerCommand())
     ..addCommand(new DoctorCommand())
     ..addCommand(new KeyCommand())
     ..addCommand(new ServiceCommand())
@@ -22,29 +20,8 @@ main(List<String> args) async {
     ..addCommand(new TestCommand())
     ..addCommand(new PluginCommand())
     ..addCommand(new StartCommand())
-    ..addCommand(new RenameCommand());
-
-  stdout.write('Checking for update... ');
-
-  try {
-    var client = new http.Client();
-    var update = await checkForUpdate(client);
-    client.close();
-
-    if (update != null) {
-      stdout.writeln();
-      var pen = new TextPen();
-      pen.cyan();
-      pen.text(
-          'ATTENTION: There is a new version of the Angel CLI available (version $update).');
-      pen.text('\nTo update, run `pub global activate angel_cli`.');
-      pen();
-      stdout.writeln();
-    } else
-      stdout.writeln('No update available.');
-  } catch (e) {
-    stdout.writeln('Failed to check for update.');
-  }
+    ..addCommand(new RenameCommand())
+    ..addCommand(new UpdateCommand());
 
   return await runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");

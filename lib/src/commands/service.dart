@@ -10,6 +10,7 @@ import 'init.dart' show preBuild;
 
 const List<ServiceGenerator> GENERATORS = const [
   const MapServiceGenerator(),
+  const FileServiceGenerator(),
   const MongoServiceGenerator(),
   const RethinkServiceGenerator(),
   const CustomServiceGenerator()
@@ -70,7 +71,7 @@ class ServiceCommand extends Command {
         await runConfig.writeAsString(_generateRunConfiguration(name, lower));
       }
 
-      if (generator.createsModel == true) {
+      if (generator.createsModel == true || typed == true) {
         await _generateModel(pubspec, name, lower);
       }
 
@@ -78,7 +79,7 @@ class ServiceCommand extends Command {
         await _generateValidator(pubspec, lower, rc.constantCase);
       }
 
-      if (generator.exportedInServiceLibrary == true) {
+      if (generator.exportedInServiceLibrary == true || typed == true) {
         var serviceLibrary = new File('lib/src/models/models.dart');
         await serviceLibrary.writeAsString("\nexport '$lower.dart';",
             mode: FileMode.APPEND);

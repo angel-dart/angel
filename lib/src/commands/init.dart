@@ -64,7 +64,14 @@ class InitCommand extends Command {
       ..text('`angel start`')
       ..normal()
       ..text(' in your terminal.')
-      ..text('\nHappy coding!')
+      ..text('\n\nFind more documentation about Angel:')
+      ..text('\n  * https://angel-dart.github.io')
+      ..text('\n  * https://github.com/angel-dart/angel/wiki')
+      ..text(
+          '\n  * https://www.youtube.com/playlist?list=PLl3P3tmiT-frEV50VdH_cIrA2YqIyHkkY')
+      ..text('\n  * https://medium.com/the-angel-framework')
+      ..text('\n  * https://dart.academy/tag/angel')
+      ..text('\n\nHappy coding!')
       ..call();
   }
 
@@ -145,7 +152,8 @@ class InitCommand extends Command {
   static String resolvePub() {
     var exec = new File(Platform.resolvedExecutable);
     var pubPath = exec.parent.uri.resolve('pub').path;
-    if (Platform.isWindows) pubPath = pubPath.replaceAll(_leadingSlashes, '') + '.bat';
+    if (Platform.isWindows)
+      pubPath = pubPath.replaceAll(_leadingSlashes, '') + '.bat';
     pubPath = Uri.decodeFull(pubPath);
     return pubPath;
   }
