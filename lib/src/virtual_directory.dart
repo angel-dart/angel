@@ -263,8 +263,8 @@ class VirtualDirectory implements AngelPlugin {
     var value = req.headers.value(HttpHeaders.ACCEPT);
     bool acceptable = value == null ||
         value.isEmpty ||
-        value.contains(mimeType) ||
-        value.contains('*/*');
+        value?.contains(mimeType) == true ||
+        value?.contains('*/*') == true;
     if (!acceptable)
       throw new AngelHttpException(
           new UnsupportedError(
