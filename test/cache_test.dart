@@ -53,7 +53,7 @@ main() {
   test('if-modified-since', () async {
     var response = await client.get("$url", headers: {
       HttpHeaders.IF_MODIFIED_SINCE:
-          formatDateForHttp(new DateTime.now()..add(new Duration(days: 365)))
+          formatDateForHttp(new DateTime.now().add(new Duration(days: 365)))
     });
 
     print('Response status: ${response.statusCode}');

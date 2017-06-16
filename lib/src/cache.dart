@@ -130,7 +130,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
         }
       }
 
-      if (req.headers[HttpHeaders.IF_MODIFIED_SINCE] != null) {
+      if (req.headers.ifModifiedSince != null) {
         try {
           var ifModifiedSince = req.headers.ifModifiedSince;
 
@@ -225,11 +225,12 @@ class CachingVirtualDirectory extends VirtualDirectory {
       }
     }
 
-    if (req.headers[HttpHeaders.IF_MODIFIED_SINCE] != null) {
+    if (req.headers.ifModifiedSince != null) {
       try {
         var ifModifiedSince = req.headers.ifModifiedSince;
 
-        if (ifModifiedSince.compareTo(fileInfo.lastModified) >= 0) {
+        if (fileInfo.lastModified != null &&
+            ifModifiedSince.compareTo(fileInfo.lastModified) >= 0) {
           res.statusCode = HttpStatus.NOT_MODIFIED;
           setCachedHeaders(fileInfo.lastModified, req, res);
 

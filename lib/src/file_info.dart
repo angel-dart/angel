@@ -69,8 +69,11 @@ class _FileInfoImpl implements FileInfo {
   String get extension => p.extension(filename);
 
   @override
-  FileInfo changeFilename(String newFilename) =>
-      new _FileInfoImpl(getContent, newFilename, mimeType, lastModified);
+  FileInfo changeFilename(String newFilename) => new _FileInfoImpl(
+      getContent,
+      newFilename,
+      lookupMimeType(newFilename) ?? mimeType ?? 'application/octet-stream',
+      lastModified);
 
   @override
   FileInfo changeExtension(String newExtension) =>
