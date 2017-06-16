@@ -10,3 +10,4 @@ export "service.dart";
 export "start.dart";
 export "test.dart";
 export 'update.dart';
+export 'version.dart';

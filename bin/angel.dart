@@ -21,7 +21,8 @@ main(List<String> args) async {
     ..addCommand(new PluginCommand())
     ..addCommand(new StartCommand())
     ..addCommand(new RenameCommand())
-    ..addCommand(new UpdateCommand());
+    ..addCommand(new UpdateCommand())
+    ..addCommand(new VersionCommand());
 
   return await runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");

@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
 import 'package:http/http.dart' as http;
-import 'init.dart';
 import 'pubspec.update.g.dart';
+import 'pub.dart';
 
 class UpdateCommand extends Command {
   @override
@@ -40,7 +40,7 @@ class UpdateCommand extends Command {
           pen();
           stdout.writeln();
         } else {
-          var pubPath = InitCommand.resolvePub();
+          var pubPath = resolvePub();
           print('Running `pub global activate` using $pubPath...');
           var p =
               await Process.start(pubPath, ['global', 'activate', 'angel_cli']);

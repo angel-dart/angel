@@ -3,6 +3,7 @@ import 'package:analyzer/analyzer.dart';
 import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
 import 'package:pubspec/pubspec.dart';
+import 'pub.dart';
 
 class RenameCommand extends Command {
   @override
@@ -42,7 +43,7 @@ class RenameCommand extends Command {
         await renamePubspec(Directory.current, oldName, newName);
         await renameDartFiles(Directory.current, oldName, newName);
         print('Now running `pub get`...');
-        var pub = await Process.start('pub', ['get']);
+        var pub = await Process.start(resolvePub(), ['get']);
         stdout.addStream(pub.stdout);
         stderr.addStream(pub.stderr);
         await pub.exitCode;

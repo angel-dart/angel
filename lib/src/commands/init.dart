@@ -4,9 +4,8 @@ import "package:console/console.dart";
 import 'package:random_string/random_string.dart' as rs;
 import 'package:path/path.dart' as p;
 import 'key.dart';
+import 'pub.dart';
 import 'rename.dart';
-
-final RegExp _leadingSlashes = new RegExp(r'^/+');
 
 class InitCommand extends Command {
   final KeyCommand _key = new KeyCommand();
@@ -147,15 +146,6 @@ class InitCommand extends Command {
       _pen();
       rethrow;
     }
-  }
-
-  static String resolvePub() {
-    var exec = new File(Platform.resolvedExecutable);
-    var pubPath = exec.parent.uri.resolve('pub').path;
-    if (Platform.isWindows)
-      pubPath = pubPath.replaceAll(_leadingSlashes, '') + '.bat';
-    pubPath = Uri.decodeFull(pubPath);
-    return pubPath;
   }
 
   _pubGet(Directory projectDir) async {
