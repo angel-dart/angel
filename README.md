@@ -67,7 +67,7 @@ Transformers are supported by `VirtualDirectory` and `CachingVirtualDirectory`.
 
 To create a transformer:
 ```dart
-class MinifierTransformer {
+class MinifierTransformer extends FileTransformer {
   /// Use this to declare outputs, and indicate if your transformer
   /// will compile a file.
   @override
