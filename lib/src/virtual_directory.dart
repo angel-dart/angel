@@ -217,6 +217,16 @@ class VirtualDirectory implements AngelPlugin {
       if (await index.exists()) {
         return await serveFile(index, stat, req, res);
       }
+
+      // Try to compile an asset
+      if (_transformerMap.isNotEmpty &&
+          _transformerMap.containsKey(index.absolute.path)) {
+        return await serveAsset(
+            new FileInfo.fromFile(
+                new File(_transformerMap[index.absolute.path])),
+            req,
+            res);
+      }
     }
 
     return true;
@@ -358,7 +368,9 @@ class VirtualDirectory implements AngelPlugin {
           var asset = new FileInfo.fromFile(entity);
           var compiled = await compileAsset(asset);
           if (compiled == null)
-            p.finish(message: '"${entity.absolute.path}" did not require compilation; skipping it.');
+            p.finish(
+                message:
+                    '"${entity.absolute.path}" did not require compilation; skipping it.');
           else {
             p.finish(
                 message:

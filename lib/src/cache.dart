@@ -95,7 +95,15 @@ class CachingVirtualDirectory extends VirtualDirectory {
       return super.serveFile(file, stat, req, res);
     }
 
-    if (noCache == true) {
+    bool shouldNotCache = noCache == true;
+
+    if (!shouldNotCache) {
+      shouldNotCache =
+          req.headers.value(HttpHeaders.CACHE_CONTROL) == 'no-cache' ||
+              req.headers.value(HttpHeaders.PRAGMA) == 'no-cache';
+    }
+
+    if (shouldNotCache) {
       res.headers[HttpHeaders.CACHE_CONTROL] = 'private, max-age=0, no-cache';
       return super.serveFile(file, stat, req, res);
     } else {
@@ -181,7 +189,15 @@ class CachingVirtualDirectory extends VirtualDirectory {
       return super.serveAsset(fileInfo, req, res);
     }
 
-    if (noCache == true) {
+    bool shouldNotCache = noCache == true;
+
+    if (!shouldNotCache) {
+      shouldNotCache =
+          req.headers.value(HttpHeaders.CACHE_CONTROL) == 'no-cache' ||
+              req.headers.value(HttpHeaders.PRAGMA) == 'no-cache';
+    }
+
+    if (shouldNotCache) {
       res.headers[HttpHeaders.CACHE_CONTROL] = 'private, max-age=0, no-cache';
       return super.serveAsset(fileInfo, req, res);
     } else {
