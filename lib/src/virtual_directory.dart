@@ -372,6 +372,10 @@ class VirtualDirectory implements AngelPlugin {
                 message:
                     '"${entity.absolute.path}" did not require compilation; skipping it.');
           else {
+            var outFile = new File(compiled.filename);
+            if (!await outFile.exists()) await outFile.create(recursive: true);
+            var sink = outFile.openWrite();
+            await compiled.content.pipe(sink);
             p.finish(
                 message:
                     'Built "${entity.absolute.path}" to "${compiled.filename}".',
