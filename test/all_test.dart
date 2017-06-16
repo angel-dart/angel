@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:http/http.dart' show Client;
@@ -24,10 +25,11 @@ main() {
         source: testDir,
         indexFileNames: ['index.php', 'index.txt']));
 
-    app.get('*', 'Fallback');
+    app.after.add('Fallback');
 
     app.dumpTree(showMatchers: true);
 
+    await app.configure(logRequests());
     await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
   });

@@ -5,6 +5,8 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
+import 'file_info.dart';
+import 'file_transformer.dart';
 import 'virtual_directory.dart';
 
 final DateFormat _fmt = new DateFormat('EEE, d MMM yyyy HH:mm:ss');
@@ -75,14 +77,16 @@ class CachingVirtualDirectory extends VirtualDirectory {
       this.useWeakEtags: true,
       String publicPath,
       StaticFileCallback callback,
-      bool streamToIO: false})
+      bool streamToIO: false,
+      Iterable<FileTransformer> transformers: const []})
       : super(
             source: source,
             debug: debug == true,
             indexFileNames: indexFileNames ?? ['index.html'],
             publicPath: publicPath ?? '/',
             callback: callback,
-            streamToIO: streamToIO == true);
+            streamToIO: streamToIO == true,
+            transformers: transformers ?? []);
 
   @override
   Future<bool> serveFile(
@@ -112,7 +116,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
           if (hasBeenModified) {
             res.statusCode = HttpStatus.NOT_MODIFIED;
-            setCachedHeaders(file, stat, req, res);
+            setCachedHeaders(stat.modified, req, res);
             return new Future.value(false);
           }
         }
@@ -124,7 +128,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
           if (ifModifiedSince.compareTo(stat.modified) >= 0) {
             res.statusCode = HttpStatus.NOT_MODIFIED;
-            setCachedHeaders(file, stat, req, res);
+            setCachedHeaders(stat.modified, req, res);
 
             if (_etags.containsKey(file.absolute.path))
               res.headers[HttpHeaders.ETAG] = _etags[file.absolute.path];
@@ -143,7 +147,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
         res.headers
           ..[HttpHeaders.ETAG] = etag
           ..[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-        setCachedHeaders(file, stat, req, res);
+        setCachedHeaders(stat.modified, req, res);
 
         if (useWeakEtags == false) {
           res
@@ -160,14 +164,71 @@ class CachingVirtualDirectory extends VirtualDirectory {
   }
 
   void setCachedHeaders(
-      File file, FileStat stat, RequestContext req, ResponseContext res) {
+      DateTime modified, RequestContext req, ResponseContext res) {
     var privacy = accessLevelToString(accessLevel ?? CacheAccessLevel.PUBLIC);
     var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
 
     res.headers
       ..[HttpHeaders.CACHE_CONTROL] = '$privacy, max-age=${maxAge ?? 0}'
       ..[HttpHeaders.EXPIRES] = formatDateForHttp(expiry)
-      ..[HttpHeaders.LAST_MODIFIED] = formatDateForHttp(stat.modified);
+      ..[HttpHeaders.LAST_MODIFIED] = formatDateForHttp(modified);
+  }
+
+  @override
+  Future<bool> serveAsset(
+      FileInfo fileInfo, RequestContext req, ResponseContext res) {
+    if (onlyInProduction == true && req.app.isProduction == true) {
+      return super.serveAsset(fileInfo, req, res);
+    }
+
+    if (noCache == true) {
+      res.headers[HttpHeaders.CACHE_CONTROL] = 'private, max-age=0, no-cache';
+      return super.serveAsset(fileInfo, req, res);
+    } else {
+      if (useEtags == true) {
+        var etags = req.headers[HttpHeaders.IF_NONE_MATCH];
+
+        if (etags?.isNotEmpty == true) {
+          bool hasBeenModified = false;
+
+          for (var etag in etags) {
+            if (etag == '*')
+              hasBeenModified = true;
+            else {
+              hasBeenModified = _etags.containsKey(fileInfo.filename) &&
+                  _etags[fileInfo.filename] == etag;
+            }
+          }
+
+          if (hasBeenModified) {
+            res.statusCode = HttpStatus.NOT_MODIFIED;
+            setCachedHeaders(fileInfo.lastModified, req, res);
+            return new Future.value(false);
+          }
+        }
+      }
+    }
+
+    if (req.headers[HttpHeaders.IF_MODIFIED_SINCE] != null) {
+      try {
+        var ifModifiedSince = req.headers.ifModifiedSince;
+
+        if (ifModifiedSince.compareTo(fileInfo.lastModified) >= 0) {
+          res.statusCode = HttpStatus.NOT_MODIFIED;
+          setCachedHeaders(fileInfo.lastModified, req, res);
+
+          if (_etags.containsKey(fileInfo.filename))
+            res.headers[HttpHeaders.ETAG] = _etags[fileInfo.filename];
+
+          return new Future.value(false);
+        }
+      } catch (_) {
+        throw new AngelHttpException.badRequest(
+            message: 'Invalid date for If-Modified-Since header.');
+      }
+    }
+
+    return super.serveAsset(fileInfo, req, res);
   }
 }
 

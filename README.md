@@ -10,7 +10,7 @@ In `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    angel_static: ^1.1.0
+    angel_static: ^1.2.0
 ```
 
 # Usage
@@ -58,3 +58,76 @@ The `VirtualDirectory` API accepts a few named parameters:
 - **callback**: Runs before sending a file to a client. Use this to set headers, etc. If it returns anything other than `null` or `true`,
 then the callback's result will be sent to the user, instead of the file contents.
 - **streamToIO**: If set to `true`, files will be streamed to `res.io`, instead of added to `res.buffer`.. Default is `false`.
+
+# Transformers
+`angel_static` now supports *transformers*. Similarly to `pub serve`, or `package:build`, these
+let you dynamically compile assets before sending them to users. For example, in development, you might
+consider using transformers to compile CSS files, or to even replace `pub serve`.
+Transformers are supported by `VirtualDirectory` and `CachingVirtualDirectory`.
+
+To create a transformer:
+```dart
+class MinifierTransformer {
+  /// Use this to declare outputs, and indicate if your transformer
+  /// will compile a file.
+  @override
+  FileInfo declareOutput(FileInfo file) {
+    // For example, we might only want to minify HTML files.
+    if (!file.extensions.endsWith('.min.html'))
+      return null;
+    else return file.changeExtension('.min.html');
+  }
+  
+  /// Actually compile the asset here.
+  @override
+  FutureOr<FileInfo> transform(FileInfo file) async {
+    return file
+      .changeExtension('.min.html')
+      .changeContent(
+        file.content
+          .transform(UTF8.decoder)
+          .transform(const LineSplitter()
+          .transform(UTF8.encoder))
+      );
+  }
+}
+```
+
+To use it:
+```dart
+configureServer(Angel app) async {
+  var vDir = new CachingVirtualDirectory(
+    transformers: [new MinifierTransformer()]
+  );
+  await app.configure(vDir);
+  
+  // It is suggested that you await `transformersLoaded`.
+  // Otherwise, you may receive 404's on paths that should send a compiled asset.
+  await vDir.transformersLoaded;
+}
+```
+
+## Pre-building
+You can pre-build all your assets with one command:
+
+```dart
+configureServer(Angel app) async {
+  var vDir = new VirtualDirectory(transformers: [...]);
+  await app.configure(vDir);
+  
+  // Build if in production
+  if (app.isProduction) {
+    await vDir.buildToDisk();
+  }
+}
+```
+
+## In Production
+By default, transformers are disabled in production mode.
+To force-enable them:
+
+```dart
+configureServer(Angel app) async {
+  var vDir = new VirtualDirectory(useTransformersInProduction: true, transformers: [...]);
+}
+```
