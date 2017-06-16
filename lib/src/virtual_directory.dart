@@ -262,8 +262,8 @@ class VirtualDirectory implements AngelPlugin {
   void _ensureContentTypeAllowed(String mimeType, RequestContext req) {
     var value = req.headers.value(HttpHeaders.ACCEPT);
     bool acceptable = value == null ||
-        value.isEmpty ||
-        value?.contains(mimeType) == true ||
+        value?.isNotEmpty != true ||
+        (mimeType?.isNotEmpty == true && value?.contains(mimeType) == true) ||
         value?.contains('*/*') == true;
     if (!acceptable)
       throw new AngelHttpException(

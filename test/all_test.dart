@@ -64,4 +64,12 @@ main() {
     var response = await client.get("$url/virtual");
     expect(response.body, equals("index!"));
   });
+
+  test('chrome accept', () async {
+    var response = await client.get("$url/virtual", headers: {
+      HttpHeaders.ACCEPT:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+    });
+    expect(response.body, equals("index!"));
+  });
 }

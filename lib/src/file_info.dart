@@ -26,7 +26,7 @@ abstract class FileInfo {
   factory FileInfo.fromFile(File file) => new _FileInfoImpl(
       () => file.openRead(),
       file.absolute.path,
-      lookupMimeType(file.path),
+      lookupMimeType(file.path) ?? 'application/octet-stream',
       file.statSync().modified);
 
   /// Creates a [FileInfo] describing a file that might not even exists to begin with.
