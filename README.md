@@ -35,7 +35,7 @@ import 'package:angel_serialize/builder.dart';
 
 final PhaseGroup PHASES = new PhaseGroup.singleAction(
     new GeneratorBuilder([const JsonModelGenerator()]),
-    new InputSet('angel_serialize', const ['test/models/*.dart']));
+    new InputSet('[YOUR_PACKAGE_NAME_HERE]', const ['lib/src/models/*.dart']));
 ```
 
 And then, a `tool/build.dart` can build your serializers:
