@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="serialize::build.dart" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/../serialize/tool/build.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$/../serialize" />
+    <method />
+  </configuration>
+</component>
