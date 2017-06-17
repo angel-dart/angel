@@ -161,6 +161,7 @@ tend to be snake_cased. This is not a problem, because we can define an alias
 for a field.
 
 ```dart
+@serializable
 abstract class _Spy extends Model {
   /// Will show up as 'agency_id' in serialized JSON.
   /// 
@@ -178,6 +179,7 @@ In pratice, there may keys that you want to exclude from JSON.
 To accomplish this, simply annotate them with `@exclude`:
 
 ```dart
+@serializable
 abstract class _Whisper extends Model {
   /// Will never be serialized to JSON
   @exclude
