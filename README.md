@@ -20,7 +20,7 @@ In your `pubspec.yaml`:
 ```yaml
 dependencies:
   angel_serialize:
-    git: https://github.com/angel-dart/serialize
+    git: https://github.com/angel-dart/serialize.git
 dev_dependencies:
   build_runner: ^0.3.0
 ```
