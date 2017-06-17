@@ -49,7 +49,7 @@ import 'car.dart';
 import 'car.orm.g.dart';
 
 /// Returns an Angel plug-in that connects to a PostgreSQL database, and sets up a controller connected to it...
-AngelConfigurer connectToCarsTable(PostgreSQL connection) {
+AngelConfigurer connectToCarsTable(PostgreSQLConnection connection) {
   return (Angel app) async {
     // Instantiate a Car repository, which is auto-generated. This class helps us build fluent queries easily.
     var cars = new CarRepository(connection);
