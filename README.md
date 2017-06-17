@@ -9,6 +9,12 @@ Source-generated ORM for use with the Angel framework. Documentation is coming s
 This ORM can work with virtually any database, thanks to the functionality exposed by
 `package:query_builder`.
 
+Currently supported:
+* PostgreSQL
+* MongoDB (planned)
+* RethinkDB (planned)
+* In-Memory (planned)
+
 Your model, courtesy of `package:angel_serialize`:
 
 ```dart
