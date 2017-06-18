@@ -6,13 +6,14 @@ import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import '../../annotations.dart';
 import '../../migration.dart';
+import '../../relations.dart';
 import '../find_annotation.dart';
 import 'postgres_build_context.dart';
 
 // TODO: Should add id, createdAt, updatedAt...
 PostgresBuildContext buildContext(ClassElement clazz, ORM annotation,
     BuildStep buildStep, bool autoSnakeCaseNames) {
-  var ctx = new PostgresBuildContext(annotation, clazz.fields,
+  var ctx = new PostgresBuildContext(annotation,
       originalClassName: clazz.name,
       tableName: annotation.tableName?.isNotEmpty == true
           ? annotation.tableName
@@ -21,6 +22,15 @@ PostgresBuildContext buildContext(ClassElement clazz, ORM annotation,
 
   for (var field in clazz.fields) {
     if (field.getter != null && field.setter != null) {
+      // Check for relationship. If so, skip.
+      Relationship relationship = findAnnotation<HasOne>(field, HasOne) ??
+          findAnnotation<HasMany>(field, HasMany) ??
+          findAnnotation<BelongsTo>(field, BelongsTo);
+
+      if (relationship != null) {
+        ctx.relationships[field.name] = relationship;
+        continue;
+      } else print('Hm: ${field.name}');
       // Check for alias
       var alias = findAnnotation<Alias>(field, Alias);
 
@@ -63,6 +73,7 @@ PostgresBuildContext buildContext(ClassElement clazz, ORM annotation,
       if (column == null)
         throw 'Cannot infer SQL column type for field "${field.name}" with type "${field.type.name}".';
       ctx.columnInfo[field.name] = column;
+      ctx.fields.add(field);
     }
   }
 

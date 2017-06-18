@@ -16,7 +16,7 @@ main() {
   });
 
   test('insert', () async {
-    var car = await CarQuery.insert(make: 'Mazda', familyFriendly: false);
+    var car = await CarQuery.insert(null, make: 'Mazda', familyFriendly: false);
     print(car.toJson());
   }, skip: 'Insert not yet implemented');
 }

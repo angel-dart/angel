@@ -20,7 +20,15 @@ class Car extends _Car {
   @override
   DateTime recalledAt;
 
-  Car({this.make, this.description, this.familyFriendly, this.recalledAt});
+  @override
+  List tires;
+
+  Car(
+      {this.make,
+      this.description,
+      this.familyFriendly,
+      this.recalledAt,
+      this.tires});
 
   factory Car.fromJson(Map data) {
     return new Car(
@@ -31,14 +39,16 @@ class Car extends _Car {
             ? data['recalledAt']
             : (data['recalledAt'] is String
                 ? DateTime.parse(data['recalledAt'])
-                : null));
+                : null),
+        tires: data['tires']);
   }
 
   Map<String, dynamic> toJson() => {
         'make': make,
         'description': description,
         'familyFriendly': familyFriendly,
-        'recalledAt': recalledAt == null ? null : recalledAt.toIso8601String()
+        'recalledAt': recalledAt == null ? null : recalledAt.toIso8601String(),
+        'tires': tires
       };
 
   static Car parse(Map map) => new Car.fromJson(map);
