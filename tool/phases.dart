@@ -9,6 +9,6 @@ final PhaseGroup PHASES = new PhaseGroup()
         new InputSet('angel_orm', const ['test/models/*.dart'])))
   ..addPhase(new Phase()
     ..addAction(
-        new GeneratorBuilder([new AngelQueryBuilderGenerator.postgresql()],
+        new GeneratorBuilder([new PostgresORMGenerator()],
             isStandalone: true, generatedExtension: '.orm.g.dart'),
         new InputSet('angel_orm', const ['test/models/*.dart'])));

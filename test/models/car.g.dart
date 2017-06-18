@@ -9,35 +9,36 @@ part of angel_orm.test.models.car;
 
 class Car extends _Car {
   @override
-  String id;
+  String make;
 
   @override
-  DateTime createdAt;
+  String description;
 
   @override
-  DateTime updatedAt;
+  bool familyFriendly;
 
-  Car({this.id, this.createdAt, this.updatedAt});
+  @override
+  DateTime recalledAt;
+
+  Car({this.make, this.description, this.familyFriendly, this.recalledAt});
 
   factory Car.fromJson(Map data) {
     return new Car(
-        id: data['id'],
-        createdAt: data['created_at'] is DateTime
-            ? data['created_at']
-            : (data['created_at'] is String
-                ? DateTime.parse(data['created_at'])
-                : null),
-        updatedAt: data['updated_at'] is DateTime
-            ? data['updated_at']
-            : (data['updated_at'] is String
-                ? DateTime.parse(data['updated_at'])
+        make: data['make'],
+        description: data['description'],
+        familyFriendly: data['familyFriendly'],
+        recalledAt: data['recalledAt'] is DateTime
+            ? data['recalledAt']
+            : (data['recalledAt'] is String
+                ? DateTime.parse(data['recalledAt'])
                 : null));
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
-        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
+        'make': make,
+        'description': description,
+        'familyFriendly': familyFriendly,
+        'recalledAt': recalledAt == null ? null : recalledAt.toIso8601String()
       };
 
   static Car parse(Map map) => new Car.fromJson(map);

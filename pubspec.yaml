@@ -8,6 +8,7 @@ dependencies:
   code_builder: ^1.0.0
   id: ^1.0.0
   inflection: ^0.4.1
+  intl: ^0.15.1
   query_builder_sql: ^1.0.0-alpha
   recase: ^1.0.0
   source_gen: ^0.5.8
