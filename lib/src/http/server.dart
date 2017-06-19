@@ -309,6 +309,8 @@ class Angel extends AngelBase {
           contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
               ContentType.JSON.mimeType);
       return false;
+    } else if (result is Stream) {
+      return await executeHandler(await result.toList(), req, res);
     } else
       return res.isOpen;
   }
@@ -334,6 +336,22 @@ class Angel extends AngelBase {
   findProperty(key) {
     if (properties.containsKey(key)) return properties[key];
     return parent != null ? parent.findProperty(key) : null;
+  }
+
+  _handleAngelHttpException(AngelHttpException e, StackTrace st,
+      RequestContext req, ResponseContext res) async {
+    res.statusCode = e.statusCode;
+    List<String> accept = request.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
+    if (accept.isEmpty ||
+        accept.contains('*/*') ||
+        accept.contains(ContentType.JSON.mimeType) ||
+        accept.contains("application/javascript")) {
+      res.serialize(e.toMap(),
+          contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+              ContentType.JSON.mimeType);
+    } else {
+      await errorHandler(e, req, res);
+    }
   }
 
   /// Handles a single request.
@@ -377,42 +395,15 @@ class Angel extends AngelBase {
             // _printDebug(
             //    'Handler completed successfully, did not terminate response: $handler');
           }
-        } catch (e, st) {
-          // _printDebug('Caught error in handler $handler: $e');
-          // _printDebug(st);
-
-          if (e is AngelHttpException) {
-            // Special handling for AngelHttpExceptions :)
-            try {
-              res.statusCode = e.statusCode;
-              List<String> accept =
-                  request.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
-              if (accept.isEmpty ||
-                  accept.contains('*/*') ||
-                  accept.contains(ContentType.JSON.mimeType) ||
-                  accept.contains("application/javascript")) {
-                res.serialize(e.toMap(),
-                    contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-                        ContentType.JSON.mimeType);
-              } else {
-                await errorHandler(e, req, res);
-              }
-              // _finalizeResponse(request, res);
-            } catch (e, st) {
-              _fatalErrorStream.add(
-                  new AngelFatalError(request: request, error: e, stack: st));
-            }
-          } else {
-            _fatalErrorStream.add(
-                new AngelFatalError(request: request, error: e, stack: st));
-          }
-
-          break;
+        } on AngelHttpException catch (e, st) {
+          return await _handleAngelHttpException(e, st, req, res);
         }
       }
 
       try {
         await sendResponse(request, req, res);
+      } on AngelHttpException catch (e, st) {
+        return await _handleAngelHttpException(e, st, req, res);
       } catch (e, st) {
         _fatalErrorStream
             .add(new AngelFatalError(request: request, error: e, stack: st));

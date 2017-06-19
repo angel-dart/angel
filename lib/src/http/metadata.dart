@@ -14,6 +14,8 @@ class Hooked {
   const Hooked();
 }
 
+const Hooked hooked = const Hooked();
+
 /// Attaches hooks to a [HookedService].
 class Hooks {
   final List<HookedServiceEventListener> before;
