@@ -36,8 +36,8 @@ main() {
       expect(
           serializedDeathlyHallows['description'], deathlyHallows.description);
       expect(serializedDeathlyHallows['page_count'], deathlyHallows.pageCount);
-      expect(serializedDeathlyHallows['createdAt'], isNull);
-      expect(serializedDeathlyHallows['updatedAt'],
+      expect(serializedDeathlyHallows['created_at'], isNull);
+      expect(serializedDeathlyHallows['updated_at'],
           deathlyHallows.updatedAt.toIso8601String());
     });
 

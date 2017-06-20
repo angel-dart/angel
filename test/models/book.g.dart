@@ -45,15 +45,15 @@ class Book extends _Book {
         title: data['title'],
         description: data['description'],
         pageCount: data['page_count'],
-        createdAt: data['createdAt'] is DateTime
-            ? data['createdAt']
-            : (data['createdAt'] is String
-                ? DateTime.parse(data['createdAt'])
+        createdAt: data['created_at'] is DateTime
+            ? data['created_at']
+            : (data['created_at'] is String
+                ? DateTime.parse(data['created_at'])
                 : null),
-        updatedAt: data['updatedAt'] is DateTime
-            ? data['updatedAt']
-            : (data['updatedAt'] is String
-                ? DateTime.parse(data['updatedAt'])
+        updatedAt: data['updated_at'] is DateTime
+            ? data['updated_at']
+            : (data['updated_at'] is String
+                ? DateTime.parse(data['updated_at'])
                 : null));
   }
 
@@ -63,8 +63,8 @@ class Book extends _Book {
         'title': title,
         'description': description,
         'page_count': pageCount,
-        'createdAt': createdAt == null ? null : createdAt.toIso8601String(),
-        'updatedAt': updatedAt == null ? null : updatedAt.toIso8601String()
+        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
+        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
   static Book parse(Map map) => new Book.fromJson(map);
@@ -86,45 +86,31 @@ class Author extends _Author {
   int age;
 
   @override
-  DateTime createdAt;
-
-  @override
-  DateTime updatedAt;
-
-  @override
   List<_Book> books;
 
   @override
   _Book newestBook;
 
   @override
-  String secret;
+  DateTime createdAt;
+
+  @override
+  DateTime updatedAt;
 
   Author(
       {this.id,
       this.name,
       this.age,
-      this.createdAt,
-      this.updatedAt,
       this.books,
       this.newestBook,
-      this.secret});
+      this.createdAt,
+      this.updatedAt});
 
   factory Author.fromJson(Map data) {
     return new Author(
         id: data['id'],
         name: data['name'],
         age: data['age'],
-        createdAt: data['createdAt'] is DateTime
-            ? data['createdAt']
-            : (data['createdAt'] is String
-                ? DateTime.parse(data['createdAt'])
-                : null),
-        updatedAt: data['updatedAt'] is DateTime
-            ? data['updatedAt']
-            : (data['updatedAt'] is String
-                ? DateTime.parse(data['updatedAt'])
-                : null),
         books: data['books'] is List
             ? data['books']
                 .map((x) =>
@@ -135,17 +121,27 @@ class Author extends _Author {
             ? null
             : (data['newest_book'] is Book
                 ? data['newest_book']
-                : new Book.fromJson(data['newest_book'])));
+                : new Book.fromJson(data['newest_book'])),
+        createdAt: data['created_at'] is DateTime
+            ? data['created_at']
+            : (data['created_at'] is String
+                ? DateTime.parse(data['created_at'])
+                : null),
+        updatedAt: data['updated_at'] is DateTime
+            ? data['updated_at']
+            : (data['updated_at'] is String
+                ? DateTime.parse(data['updated_at'])
+                : null));
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'age': age,
-        'createdAt': createdAt == null ? null : createdAt.toIso8601String(),
-        'updatedAt': updatedAt == null ? null : updatedAt.toIso8601String(),
         'books': books,
-        'newest_book': newestBook
+        'newest_book': newestBook,
+        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
+        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
   static Author parse(Map map) => new Author.fromJson(map);
@@ -161,29 +157,19 @@ class Library extends _Library {
   String id;
 
   @override
+  Map<String, _Book> collection;
+
+  @override
   DateTime createdAt;
 
   @override
   DateTime updatedAt;
 
-  @override
-  Map<String, _Book> collection;
-
-  Library({this.id, this.createdAt, this.updatedAt, this.collection});
+  Library({this.id, this.collection, this.createdAt, this.updatedAt});
 
   factory Library.fromJson(Map data) {
     return new Library(
         id: data['id'],
-        createdAt: data['createdAt'] is DateTime
-            ? data['createdAt']
-            : (data['createdAt'] is String
-                ? DateTime.parse(data['createdAt'])
-                : null),
-        updatedAt: data['updatedAt'] is DateTime
-            ? data['updatedAt']
-            : (data['updatedAt'] is String
-                ? DateTime.parse(data['updatedAt'])
-                : null),
         collection: data['collection'] is Map
             ? data['collection'].keys.fold({}, (out, k) {
                 out[k] = data['collection'][k] == null
@@ -193,14 +179,24 @@ class Library extends _Library {
                         : new Book.fromJson(data['collection'][k]));
                 return out;
               })
-            : null);
+            : null,
+        createdAt: data['created_at'] is DateTime
+            ? data['created_at']
+            : (data['created_at'] is String
+                ? DateTime.parse(data['created_at'])
+                : null),
+        updatedAt: data['updated_at'] is DateTime
+            ? data['updated_at']
+            : (data['updated_at'] is String
+                ? DateTime.parse(data['updated_at'])
+                : null));
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'createdAt': createdAt == null ? null : createdAt.toIso8601String(),
-        'updatedAt': updatedAt == null ? null : updatedAt.toIso8601String(),
-        'collection': collection
+        'collection': collection,
+        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
+        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
   static Library parse(Map map) => new Library.fromJson(map);

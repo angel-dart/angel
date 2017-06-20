@@ -4,70 +4,57 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:code_builder/dart/core.dart';
-import 'package:recase/recase.dart';
 import 'package:source_gen/src/annotation.dart';
 import 'package:source_gen/source_gen.dart';
 import 'angel_serialize.dart';
+import 'build_context.dart';
+import 'context.dart';
 
 class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
-  const JsonModelGenerator();
+  final bool autoSnakeCaseNames;
+  final bool autoIdAndDateFields;
+  const JsonModelGenerator(
+      {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
 
   @override
   Future<String> generateForAnnotatedElement(
       Element element, Serializable annotation, BuildStep buildStep) async {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
-    var lib = generateSerializerLibrary(element);
+    var ctx = buildContext(
+        element,
+        annotation,
+        buildStep,
+        await buildStep.resolver,
+        autoSnakeCaseNames != false,
+        autoIdAndDateFields != false);
+    var lib = generateSerializerLibrary(ctx);
     return prettyToSource(lib.buildAst());
   }
 
-  LibraryBuilder generateSerializerLibrary(ClassElement clazz) {
+  LibraryBuilder generateSerializerLibrary(BuildContext ctx) {
     var lib = new LibraryBuilder();
-    lib.addMember(generateBaseModelClass(clazz));
+    lib.addMember(generateBaseModelClass(ctx));
     return lib;
   }
 
-  ClassBuilder generateBaseModelClass(ClassElement clazz) {
-    if (!clazz.name.startsWith('_'))
+  ClassBuilder generateBaseModelClass(BuildContext ctx) {
+    if (!ctx.originalClassName.startsWith('_'))
       throw 'Classes annotated with @Serializable() must have names starting with a leading underscore.';
 
-    var genClassName = clazz.name.substring(1);
-    var genClass =
-        new ClassBuilder(genClassName, asExtends: new TypeBuilder(clazz.name));
-    Map<String, DartType> fields = {};
-    Map<String, String> aliases = {};
-
-    // Find all fields
-    for (var field in clazz.fields) {
-      // Skip if annotated with @exclude
-      var excludeAnnotation = field.metadata.firstWhere(
-          (ann) => matchAnnotation(Exclude, ann),
-          orElse: () => null);
-
-      if (excludeAnnotation == null) {
-        // Register the field
-        fields[field.name] = field.type;
-
-        // Search for Alias
-        var aliasAnnotation = field.metadata.firstWhere(
-            (ann) => matchAnnotation(Alias, ann),
-            orElse: () => null);
-        if (aliasAnnotation != null) {
-          var alias = instantiateAnnotation(aliasAnnotation) as Alias;
-          aliases[field.name] = alias.name;
-        }
-      }
-    }
+    var genClassName = ctx.modelClassName;
+    var genClass = new ClassBuilder(genClassName,
+        asExtends: new TypeBuilder(ctx.originalClassName));
 
     // Now, add all fields to the base class
-    clazz.fields.forEach((field) {
+    ctx.fields.forEach((field) {
       genClass.addField(
           varField(field.name, type: new TypeBuilder(field.type.displayName))
             ..addAnnotation(reference('override')));
     });
 
     // Create convenience constructor
-    var convenienceConstructor = constructor(clazz.fields.map((field) {
+    var convenienceConstructor = constructor(ctx.fields.map((field) {
       return thisField(named(parameter(field.name)));
     }));
     genClass.addConstructor(convenienceConstructor);
@@ -75,20 +62,19 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     // Create toJson
     Map<String, ExpressionBuilder> toJsonFields = {};
 
-    fields.forEach((fieldName, type) {
-      var resolvedName =
-          aliases.containsKey(fieldName) ? aliases[fieldName] : fieldName;
+    ctx.fields.forEach((field) {
+      var resolvedName = ctx.resolveFieldName(field.name);
       ExpressionBuilder value;
 
       // DateTime
-      if (type.name == 'DateTime') {
-        value = reference(fieldName).equals(literal(null)).ternary(
-            literal(null), reference(fieldName).invoke('toIso8601String', []));
+      if (field.type.name == 'DateTime') {
+        value = reference(field.name).equals(literal(null)).ternary(
+            literal(null), reference(field.name).invoke('toIso8601String', []));
       }
 
       // Anything else
       else {
-        value = reference(fieldName);
+        value = reference(field.name);
       }
 
       toJsonFields[resolvedName] = value;
@@ -106,12 +92,11 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     var fromJson = new ConstructorBuilder(name: 'fromJson', asFactory: true);
     fromJson.addPositional(parameter('data', [new TypeBuilder('Map')]));
     var namedParams =
-        fields.keys.fold<Map<String, ExpressionBuilder>>({}, (out, fieldName) {
-      var resolvedName =
-          aliases.containsKey(fieldName) ? aliases[fieldName] : fieldName;
+        ctx.fields.fold<Map<String, ExpressionBuilder>>({}, (out, field) {
+      var resolvedName = ctx.resolveFieldName(field.name);
       var mapKey = reference('data')[literal(resolvedName)];
       ExpressionBuilder value = mapKey;
-      var type = fields[fieldName];
+      var type = field.type;
 
       // DateTime
       if (type.name == 'DateTime') {
@@ -256,7 +241,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         }
       }
 
-      return out..[fieldName] = value;
+      return out..[field.name] = value;
     });
     fromJson.addStatement(new TypeBuilder(genClassName)
         .newInstance([], named: namedParams).asReturn());
