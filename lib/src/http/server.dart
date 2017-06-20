@@ -11,7 +11,7 @@ import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
 import 'fatal_error.dart';
-import 'hooked_service.dart';
+//import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -339,18 +339,37 @@ class Angel extends AngelBase {
   }
 
   _handleAngelHttpException(AngelHttpException e, StackTrace st,
-      RequestContext req, ResponseContext res) async {
-    res.statusCode = e.statusCode;
-    List<String> accept = request.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
-    if (accept.isEmpty ||
-        accept.contains('*/*') ||
-        accept.contains(ContentType.JSON.mimeType) ||
-        accept.contains("application/javascript")) {
-      res.serialize(e.toMap(),
-          contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-              ContentType.JSON.mimeType);
-    } else {
-      await errorHandler(e, req, res);
+      RequestContext req, ResponseContext res, HttpRequest request) async {
+    try {
+      if (req == null || res == null) {
+        _fatalErrorStream.add(new AngelFatalError(
+            request: request,
+            error: e?.error ??
+                e ??
+                new Exception('Unhandled exception while handling request.'),
+            stack: st));
+        return;
+      }
+
+      res.statusCode = e.statusCode;
+      List<String> accept = request?.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
+      if (accept.isEmpty ||
+          accept.contains('*/*') ||
+          accept.contains(ContentType.JSON.mimeType) ||
+          accept.contains("application/javascript")) {
+        res.serialize(e.toMap(),
+            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+                ContentType.JSON.mimeType);
+      } else {
+        await errorHandler(e, req, res);
+      }
+    } catch (_) {
+      _fatalErrorStream.add(new AngelFatalError(
+          request: request,
+          error: e?.error ??
+              e ??
+              new Exception('Unhandled exception while handling request.'),
+          stack: st));
     }
   }
 
@@ -396,14 +415,14 @@ class Angel extends AngelBase {
             //    'Handler completed successfully, did not terminate response: $handler');
           }
         } on AngelHttpException catch (e, st) {
-          return await _handleAngelHttpException(e, st, req, res);
+          return await _handleAngelHttpException(e, st, req, res, request);
         }
       }
 
       try {
         await sendResponse(request, req, res);
       } on AngelHttpException catch (e, st) {
-        return await _handleAngelHttpException(e, st, req, res);
+        return await _handleAngelHttpException(e, st, req, res, request);
       } catch (e, st) {
         _fatalErrorStream
             .add(new AngelFatalError(request: request, error: e, stack: st));
