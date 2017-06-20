@@ -60,6 +60,7 @@ Future mergeShelfResponse(
   angelResponse.headers.addAll(shelfResponse.headers);
   angelResponse.statusCode = shelfResponse.statusCode;
   angelResponse.properties['shelf_context'] = shelfResponse.context;
+  angelResponse.properties['shelf_response'] = shelfResponse;
   await shelfResponse.read().forEach(angelResponse.buffer.add);
   angelResponse.end();
 }
