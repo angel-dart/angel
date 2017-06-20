@@ -11,7 +11,8 @@ class PubServeLayer extends ProxyLayer {
       String mapTo: '/',
       int port: 8080,
       String protocol: 'http',
-      String publicPath: '/'})
+      String publicPath: '/',
+      Duration timeout})
       : super(host, port,
             debug: debug,
             mapTo: mapTo,
@@ -19,7 +20,8 @@ class PubServeLayer extends ProxyLayer {
             publicPath: publicPath,
             recoverFromDead: recoverFromDead != false,
             recoverFrom404: recoverFrom404 != false,
-            streamToIO: streamToIO != false);
+            streamToIO: streamToIO != false,
+            timeout: timeout);
 
   @override
   void serve(Router router) {

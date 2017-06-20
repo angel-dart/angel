@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 
@@ -51,30 +52,31 @@ class ProxyLayer {
   final String host, mapTo, publicPath;
   final int port;
   final String protocol;
+  final Duration timeout;
 
-  ProxyLayer(this.host, this.port,
-      {this.debug: false,
-      this.mapTo: '/',
-      this.publicPath: '/',
-      this.protocol: 'http',
-      this.recoverFromDead: true,
-      this.recoverFrom404: true,
-      this.streamToIO: false,
-      SecurityContext securityContext}) {
+  ProxyLayer(
+    this.host,
+    this.port, {
+    this.debug: false,
+    this.mapTo: '/',
+    this.publicPath: '/',
+    this.protocol: 'http',
+    this.recoverFromDead: true,
+    this.recoverFrom404: true,
+    this.streamToIO: false,
+    this.timeout,
+    SecurityContext securityContext,
+  }) {
     _client = new HttpClient(context: securityContext);
     _prefix = publicPath.replaceAll(_straySlashes, '');
   }
 
   call(Angel app) async => serve(this.app = app);
 
-  _printDebug(msg) {
-    if (debug == true) print(msg);
-  }
-
   void close() => _client.close(force: true);
 
   void serve(Router router) {
-    _printDebug('Public path prefix: "$_prefix"');
+    // _printDebug('Public path prefix: "$_prefix"');
 
     handler(RequestContext req, ResponseContext res) async {
       var path = req.path.replaceAll(_straySlashes, '');
@@ -93,34 +95,55 @@ class ProxyLayer {
     }
 
     // Create mapping
-    _printDebug('Serving path $_path via proxy');
+    // _printDebug('Serving path $_path via proxy');
     final mapping = '$mapTo/$_path'.replaceAll(_straySlashes, '');
-    _printDebug('Mapped path $_path to path $mapping on proxy $host:$port');
+    // _printDebug('Mapped path $_path to path $mapping on proxy $host:$port');
 
     try {
-      final rq = await _client.open(req.method, host, port, mapping);
-      _printDebug('Opened client request');
+      Future<HttpClientResponse> accessRemote() async {
+        var ips = await InternetAddress.lookup(host);
+        if (ips.isEmpty)
+          throw new StateError('Could not resolve remote host "$host".');
+        var address = ips.first.address;
+        final rq = await _client.open(req.method, address, port, mapping);
+        // _printDebug('Opened client request at "$address:$port/$mapping"');
 
-      copyHeaders(req.headers, rq.headers);
-      _printDebug('Copied headers');
-      rq.cookies.addAll(req.cookies ?? []);
-      _printDebug('Added cookies');
-      rq.headers
-          .set('X-Forwarded-For', req.io.connectionInfo.remoteAddress.address);
-      rq.headers
-        ..set('X-Forwarded-Port', req.io.connectionInfo.remotePort.toString())
-        ..set('X-Forwarded-Host',
-            req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
-        ..set('X-Forwarded-Proto', protocol);
-      _printDebug('Added X-Forwarded headers');
+        copyHeaders(req.headers, rq.headers);
+        rq.headers.set(HttpHeaders.HOST, host);
+        // _printDebug('Copied headers');
+        rq.cookies.addAll(req.cookies ?? []);
+        // _printDebug('Added cookies');
+        rq.headers.set(
+            'X-Forwarded-For', req.io.connectionInfo.remoteAddress.address);
+        rq.headers
+          ..set('X-Forwarded-Port', req.io.connectionInfo.remotePort.toString())
+          ..set('X-Forwarded-Host',
+              req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
+          ..set('X-Forwarded-Proto', protocol);
+        // _printDebug('Added X-Forwarded headers');
 
-      if (app.storeOriginalBuffer == true) {
-        await req.parse();
-        if (req.originalBuffer?.isNotEmpty == true) rq.add(req.originalBuffer);
+        if (app.storeOriginalBuffer == true) {
+          await req.parse();
+          if (req.originalBuffer?.isNotEmpty == true)
+            rq.add(req.originalBuffer);
+        }
+
+        await rq.flush();
+        return await rq.close();
       }
 
-      await rq.flush();
-      rs = await rq.close();
+      var future = accessRemote();
+      if (timeout != null) future = future.timeout(timeout);
+      rs = await future;
+    } on TimeoutException catch (e, st) {
+      if (recoverFromDead != false)
+        return true;
+      else
+        throw new AngelHttpException(e,
+            stackTrace: st,
+            statusCode: HttpStatus.GATEWAY_TIMEOUT,
+            message:
+                'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.');
     } catch (e) {
       if (recoverFromDead != false)
         return true;
@@ -128,8 +151,8 @@ class ProxyLayer {
         rethrow;
     }
 
-    _printDebug(
-        'Proxy responded to $mapping with status code ${rs.statusCode}');
+    // _printDebug(
+    //    'Proxy responded to $mapping with status code ${rs.statusCode}');
 
     if (rs.statusCode == 404 && recoverFrom404 != false) return true;
 
@@ -137,7 +160,7 @@ class ProxyLayer {
       ..statusCode = rs.statusCode
       ..contentType = rs.headers.contentType;
 
-    _printDebug('Proxy response headers:\n${rs.headers}');
+    // _printDebug('Proxy response headers:\n${rs.headers}');
 
     if (streamToIO == true) {
       res
@@ -150,7 +173,7 @@ class ProxyLayer {
       if (rs.headers.contentType != null)
         res.io.headers.contentType = rs.headers.contentType;
 
-      _printDebug('Outgoing content length: ${res.io.contentLength}');
+      // _printDebug('Outgoing content length: ${res.io.contentLength}');
 
       if (rs.headers[HttpHeaders.CONTENT_ENCODING]?.contains('gzip') == true) {
         res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
