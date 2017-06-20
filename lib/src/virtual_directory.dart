@@ -107,8 +107,8 @@ class VirtualDirectory implements AngelPlugin {
   void serve(Router router) {
     // _printDebug('Source directory: ${source.absolute.path}');
     // _printDebug('Public path prefix: "$_prefix"');
-    router.get('$publicPath/*',
-        (RequestContext req, ResponseContext res) async {
+    //router.get('$publicPath/*',
+    router.get('$_prefix/*', (RequestContext req, ResponseContext res) async {
       var path = req.path.replaceAll(_straySlashes, '');
       return servePath(path, req, res);
     });
@@ -124,7 +124,7 @@ class VirtualDirectory implements AngelPlugin {
   }
 
   close() async {
-    if (!_transformerLoad.isCompleted) {
+    if (!_transformerLoad.isCompleted && _transformers.isNotEmpty) {
       _transformerLoad.completeError(new StateError(
           'VirtualDirectory was closed before all transformers loaded.'));
     }
@@ -176,10 +176,13 @@ class VirtualDirectory implements AngelPlugin {
 
   servePath(String path, RequestContext req, ResponseContext res) async {
     if (_prefix.isNotEmpty) {
-      path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
+      // Only replace the *first* incidence
+      // Resolve: https://github.com/angel-dart/angel/issues/41
+      path = path.replaceFirst(new RegExp('^' + _pathify(_prefix)), '');
     }
 
     if (path.isEmpty) path = '.';
+    path = path.replaceAll(_straySlashes, '');
 
     var absolute = source.absolute.uri.resolve(path).toFilePath();
     var stat = await FileStat.stat(absolute);
