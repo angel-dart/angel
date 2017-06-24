@@ -1,5 +1,9 @@
 import 'package:intl/intl.dart';
 
+
+final DateFormat DATE_YMD = new DateFormat('yyyy-MM-dd');
+final DateFormat DATE_YMD_HMS = new DateFormat('yyyy-MM-dd HH:mm:ss');
+
 abstract class SqlExpressionBuilder {
   bool get hasValue;
   String compile();
@@ -123,8 +127,6 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder {
 }
 
 class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
-  static final DateFormat _ymd = new DateFormat('yy-MM-dd');
-  static final DateFormat _ymdHms = new DateFormat('yy-MM-dd HH:mm:ss');
   final NumericSqlExpressionBuilder<int> year =
           new NumericSqlExpressionBuilder<int>(),
       month = new NumericSqlExpressionBuilder<int>(),
@@ -148,7 +150,7 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
       second.hasValue;
 
   bool _change(String _op, DateTime dt, bool time) {
-    var dateString = time ? _ymdHms.format(dt) : _ymd.format(dt);
+    var dateString = time ? DATE_YMD_HMS.format(dt) : DATE_YMD.format(dt);
     _raw = '`$columnName` $_op \'$dateString\'';
     return true;
   }

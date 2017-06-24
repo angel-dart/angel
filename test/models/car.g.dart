@@ -9,6 +9,9 @@ part of angel_orm.test.models.car;
 
 class Car extends _Car {
   @override
+  String id;
+
+  @override
   String make;
 
   @override
@@ -21,34 +24,51 @@ class Car extends _Car {
   DateTime recalledAt;
 
   @override
-  List tires;
+  DateTime createdAt;
+
+  @override
+  DateTime updatedAt;
 
   Car(
-      {this.make,
+      {this.id,
+      this.make,
       this.description,
       this.familyFriendly,
       this.recalledAt,
-      this.tires});
+      this.createdAt,
+      this.updatedAt});
 
   factory Car.fromJson(Map data) {
     return new Car(
+        id: data['id'],
         make: data['make'],
         description: data['description'],
-        familyFriendly: data['familyFriendly'],
-        recalledAt: data['recalledAt'] is DateTime
-            ? data['recalledAt']
-            : (data['recalledAt'] is String
-                ? DateTime.parse(data['recalledAt'])
+        familyFriendly: data['family_friendly'],
+        recalledAt: data['recalled_at'] is DateTime
+            ? data['recalled_at']
+            : (data['recalled_at'] is String
+                ? DateTime.parse(data['recalled_at'])
                 : null),
-        tires: data['tires']);
+        createdAt: data['created_at'] is DateTime
+            ? data['created_at']
+            : (data['created_at'] is String
+                ? DateTime.parse(data['created_at'])
+                : null),
+        updatedAt: data['updated_at'] is DateTime
+            ? data['updated_at']
+            : (data['updated_at'] is String
+                ? DateTime.parse(data['updated_at'])
+                : null));
   }
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'make': make,
         'description': description,
-        'familyFriendly': familyFriendly,
-        'recalledAt': recalledAt == null ? null : recalledAt.toIso8601String(),
-        'tires': tires
+        'family_friendly': familyFriendly,
+        'recalled_at': recalledAt == null ? null : recalledAt.toIso8601String(),
+        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
+        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
   static Car parse(Map map) => new Car.fromJson(map);
