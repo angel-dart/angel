@@ -15,7 +15,7 @@ class TypedService<T> extends Service {
 
   deserialize(x) {
     // print('DESERIALIZE: $x (${x.runtimeType})');
-    if (x == dynamic || x == Object || x is T)
+    if (x is Type || x is T)
       return x;
     else if (x is Iterable)
       return x.map(deserialize).toList();
@@ -23,7 +23,11 @@ class TypedService<T> extends Service {
       Map data = x.keys.fold({}, (map, key) {
         var value = x[key];
 
-        if ((key == 'createdAt' || key == 'updatedAt') && value is String) {
+        if ((key == 'createdAt' ||
+                key == 'updatedAt' ||
+                key == 'created_at' ||
+                key == 'updated_at') &&
+            value is String) {
           return map..[key] = DateTime.parse(value);
         } else {
           return map..[key] = value;
@@ -32,16 +36,16 @@ class TypedService<T> extends Service {
 
       Model result = god.deserializeDatum(data, outputType: T);
 
-      if (x['createdAt'] is String) {
-        result.createdAt = DateTime.parse(x['createdAt']);
-      } else if (x['createdAt'] is DateTime) {
-        result.createdAt = x['createdAt'];
+      if (data['createdAt'] is DateTime) {
+        result.createdAt = data['createdAt'];
+      } else if (data['created_at'] is DateTime) {
+        result.createdAt = data['created_at'];
       }
 
-      if (x['updatedAt'] is String) {
-        result.updatedAt = DateTime.parse(x['updatedAt']);
-      } else if (x['updatedAt'] is DateTime) {
-        result.updatedAt = x['updatedAt'];
+      if (data['updatedAt'] is DateTime) {
+        result.updatedAt = data['updatedAt'];
+      } else if (data['updated_at'] is DateTime) {
+        result.updatedAt = data['updated_at'];
       }
 
       // print('x: $x\nresult: $result');

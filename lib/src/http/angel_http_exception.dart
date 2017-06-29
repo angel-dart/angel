@@ -32,7 +32,7 @@ class AngelHttpException implements Exception {
   Map toJson() {
     return {
       'isError': true,
-      'statusCode': statusCode,
+      'status_code': statusCode,
       'message': message,
       'errors': errors
     };
@@ -47,7 +47,7 @@ class AngelHttpException implements Exception {
 
   factory AngelHttpException.fromMap(Map data) {
     return new AngelHttpException(null,
-        statusCode: data['statusCode'],
+        statusCode: data['status_code'] ?? data['statusCode'],
         message: data['message'],
         errors: data['errors']);
   }

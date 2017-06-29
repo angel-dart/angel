@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
+import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
@@ -25,8 +26,19 @@ class TodoController extends Controller {
   }
 }
 
+class NoExposeController extends Controller {
+
+}
+
+@Expose('/named', as: 'foo')
+class NamedController extends Controller {
+  @Expose('/optional/:arg?', allowNull: const ['arg'])
+  optional() => 2;
+}
+
 main() {
   Angel app;
+  TodoController ctrl;
   HttpServer server;
   http.Client client = new http.Client();
   String url;
@@ -39,7 +51,7 @@ main() {
         "/redirect",
         (req, ResponseContext res) async =>
             res.redirectToAction("TodoController@foo", {"foo": "world"}));
-    await app.configure(new TodoController());
+    await app.configure(ctrl = new TodoController());
 
     print(app.controllers);
     app.dumpTree();
@@ -52,6 +64,39 @@ main() {
     await server.close(force: true);
     app = null;
     url = null;
+  });
+
+  test('basic', () {
+    expect(ctrl.app, app);
+  });
+
+  test('require expose', () async {
+    try {
+      var app = new Angel();
+      await app.configure(new NoExposeController());
+      throw 'Should require @Expose';
+    } on Exception {
+      // :)
+    }
+  });
+
+  test('create dynamic handler', () async {
+    var app = new Angel();
+    app.get('/foo', createDynamicHandler(({String bar}) {
+      return 2;
+    }, optional: [
+      'bar'
+    ]));
+    var rq = new MockHttpRequest('GET', new Uri(path: 'foo'));
+    await app.handleRequest(rq);
+    var body = await rq.response.transform(UTF8.decoder).join();
+    expect(JSON.decode(body), 2);
+  });
+
+  test('optional name', () async {
+    var app = new Angel();
+    await app.configure(new NamedController());
+    expect(app.controllers['foo'], new isInstanceOf<NamedController>());
   });
 
   test("middleware", () async {

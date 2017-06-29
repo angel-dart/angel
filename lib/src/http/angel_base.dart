@@ -28,6 +28,5 @@ class AngelBase extends Routable {
   /// A function that renders views.
   ///
   /// Called by [ResponseContext]@`render`.
-  ViewGenerator viewGenerator = (String view,
-      [Map data]) async => "No view engine has been configured yet.";
+  ViewGenerator viewGenerator = (String view, [Map data]) async => "No view engine has been configured yet.";
 }

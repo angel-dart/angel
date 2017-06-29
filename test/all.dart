@@ -1,23 +1,31 @@
+import 'anonymous_service_test.dart' as anonymous_service;
 import 'controller_test.dart' as controller;
 import 'di_test.dart' as di;
+import 'exception_test.dart' as exception;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
 import 'precontained_test.dart' as precontained;
 import 'routing_test.dart' as routing;
 import 'serialize_test.dart' as serialize;
 import 'services_test.dart' as services;
+import 'typed_service_test.dart' as typed_service;
 import 'util_test.dart' as util;
+import 'view_generator_test.dart' as view_generator;
 import 'package:test/test.dart';
 
 /// For running with coverage
 main() {
+  group('anonymous service', anonymous_service.main);
   group('controller', controller.main);
   group('di', di.main);
+  group('exception', exception.main);
   group('general', general.main);
   group('hooked', hooked.main);
   group('precontained', precontained.main);
   group('routing', routing.main);
   group('serialize', serialize.main);
   group('services', services.main);
+  group('typed_service', typed_service.main);
   group('util', util.main);
+  group('view generator', view_generator.main);
 }
