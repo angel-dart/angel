@@ -7,6 +7,7 @@ import 'hooked_test.dart' as hooked;
 import 'precontained_test.dart' as precontained;
 import 'routing_test.dart' as routing;
 import 'serialize_test.dart' as serialize;
+import 'server_test.dart' as server;
 import 'services_test.dart' as services;
 import 'typed_service_test.dart' as typed_service;
 import 'util_test.dart' as util;
@@ -24,6 +25,7 @@ main() {
   group('precontained', precontained.main);
   group('routing', routing.main);
   group('serialize', serialize.main);
+  group('server', server.main);
   group('services', services.main);
   group('typed_service', typed_service.main);
   group('util', util.main);

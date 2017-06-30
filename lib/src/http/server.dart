@@ -136,11 +136,6 @@ class Angel extends AngelBase {
   /// The native HttpServer running this instancce.
   HttpServer httpServer;
 
-  /// Handles a server error.
-  _onError(e, [StackTrace st]) {
-    _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
-  }
-
   /// Starts the server.
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
@@ -254,37 +249,32 @@ class Angel extends AngelBase {
 
   Future getHandlerResult(
       handler, RequestContext req, ResponseContext res) async {
-    if (handler is RequestMiddleware) {
+    /*if (handler is RequestMiddleware) {
       var result = await handler(req, res);
 
       if (result is RequestHandler)
         return await getHandlerResult(result, req, res);
       else
         return result;
-    }
+    }*/
 
     if (handler is RequestHandler) {
       var result = await handler(req, res);
-      if (result is RequestHandler)
-        return await getHandlerResult(result, req, res);
-      else
-        return result;
+      return await getHandlerResult(result, req, res);
     }
 
     if (handler is Future) {
       var result = await handler;
-      if (result is RequestHandler)
-        return await getHandlerResult(result, req, res);
-      else
-        return result;
+      return await getHandlerResult(result, req, res);
     }
 
     if (handler is Function) {
       var result = await runContained(handler, req, res);
-      if (result is RequestHandler)
-        return await getHandlerResult(result, req, res);
-      else
-        return result;
+      return await getHandlerResult(result, req, res);
+    }
+
+    if (handler is Stream) {
+      return await getHandlerResult(await handler.toList(), req, res);
     }
 
     var middleware = (req.app ?? this).findMiddleware(handler);
@@ -300,17 +290,13 @@ class Angel extends AngelBase {
       handler, RequestContext req, ResponseContext res) async {
     var result = await getHandlerResult(handler, req, res);
 
-    if (result is Future) {
-      return await executeHandler(await result, req, res);
-    } else if (result is bool) {
+    if (result is bool) {
       return result;
     } else if (result != null) {
       res.serialize(result,
           contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
               ContentType.JSON.mimeType);
       return false;
-    } else if (result is Stream) {
-      return await executeHandler(await result.toList(), req, res);
     } else
       return res.isOpen;
   }
@@ -338,39 +324,36 @@ class Angel extends AngelBase {
     return parent != null ? parent.findProperty(key) : null;
   }
 
-  _handleAngelHttpException(AngelHttpException e, StackTrace st,
-      RequestContext req, ResponseContext res, HttpRequest request) async {
-    try {
-      if (req == null || res == null) {
-        _fatalErrorStream.add(new AngelFatalError(
-            request: request,
-            error: e?.error ??
-                e ??
-                new Exception('Unhandled exception while handling request.'),
-            stack: st));
-        return;
-      }
-
-      res.statusCode = e.statusCode;
-      List<String> accept = request?.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
-      if (accept.isEmpty ||
-          accept.contains('*/*') ||
-          accept.contains(ContentType.JSON.mimeType) ||
-          accept.contains("application/javascript")) {
-        res.serialize(e.toMap(),
-            contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-                ContentType.JSON.mimeType);
-      } else {
-        await errorHandler(e, req, res);
-      }
-    } catch (_) {
+  handleAngelHttpException(AngelHttpException e, StackTrace st,
+      RequestContext req, ResponseContext res, HttpRequest request,
+      {bool ignoreFinalizers: false}) async {
+    if (req == null || res == null) {
       _fatalErrorStream.add(new AngelFatalError(
           request: request,
           error: e?.error ??
               e ??
-              new Exception('Unhandled exception while handling request.'),
+              new Exception(
+                  'handleAngelHttpException was called on a null request or response context.'),
           stack: st));
+      return;
     }
+
+    res.statusCode = e.statusCode;
+    List<String> accept = request?.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
+    if (accept.isEmpty ||
+        accept.contains('*/*') ||
+        accept.contains(ContentType.JSON.mimeType) ||
+        accept.contains("application/javascript")) {
+      res.serialize(e.toMap(),
+          contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
+              ContentType.JSON.mimeType);
+    } else {
+      await errorHandler(e, req, res);
+    }
+
+    res.end();
+    await sendResponse(request, req, res,
+        ignoreFinalizers: ignoreFinalizers == true);
   }
 
   /// Handles a single request.
@@ -415,17 +398,15 @@ class Angel extends AngelBase {
             //    'Handler completed successfully, did not terminate response: $handler');
           }
         } on AngelHttpException catch (e, st) {
-          return await _handleAngelHttpException(e, st, req, res, request);
+          return await handleAngelHttpException(e, st, req, res, request);
         }
       }
 
       try {
         await sendResponse(request, req, res);
       } on AngelHttpException catch (e, st) {
-        return await _handleAngelHttpException(e, st, req, res, request);
-      } catch (e, st) {
-        _fatalErrorStream
-            .add(new AngelFatalError(request: request, error: e, stack: st));
+        return await handleAngelHttpException(e, st, req, res, request,
+            ignoreFinalizers: true);
       }
     } catch (e, st) {
       _fatalErrorStream
@@ -442,6 +423,7 @@ class Angel extends AngelBase {
   /// You may [force] the optimization to run, if you are not running in production.
   void optimizeForProduction({bool force: false}) {
     if (isProduction == true || force == true) {
+      _isProduction = true;
       _add(v) {
         if (v is Function && !_preContained.containsKey(v)) {
           _preContained[v] = preInject(v);
@@ -497,12 +479,15 @@ class Angel extends AngelBase {
 
   /// Sends a response.
   Future sendResponse(
-      HttpRequest request, RequestContext req, ResponseContext res) async {
+      HttpRequest request, RequestContext req, ResponseContext res,
+      {bool ignoreFinalizers: false}) async {
     _afterProcessed.add(request);
 
     if (!res.willCloseItself) {
-      for (var finalizer in responseFinalizers) {
-        await finalizer(req, res);
+      if (ignoreFinalizers != true) {
+        for (var finalizer in responseFinalizers) {
+          await finalizer(req, res);
+        }
       }
 
       if (res.isOpen) res.end();
@@ -532,10 +517,16 @@ class Angel extends AngelBase {
   }
 
   /// Starts the server, wrapped in a [runZoned] call.
-  void listen({InternetAddress address, int port: 3000}) {
+  Future<HttpServer> listen({InternetAddress address, int port: 3000}) {
+    var c = new Completer<HttpServer>();
     runZoned(() async {
-      await startServer(address, port);
-    }, onError: _onError);
+      await startServer(address, port)
+          .then(c.complete)
+          .catchError(c.completeError);
+    }, onError: (e, st) {
+      _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
+    });
+    return c.future;
   }
 
   /// Mounts the child on this router.

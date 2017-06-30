@@ -81,8 +81,7 @@ class HookedService extends Service {
     afterModified._close();
     afterUpdated._close();
     afterRemoved._close();
-
-    if (inner is HookedService) inner.close();
+    await inner.close();
   }
 
   /// Adds hooks to this instance.
