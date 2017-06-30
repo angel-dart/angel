@@ -1,8 +1,9 @@
+const List<String> SQL_RESERVED_WORDS = const [
+  'SELECT', 'UPDATE', 'INSERT', 'DELETE', 'FROM', 'ASC', 'DESC', 'VALUES', 'RETURNING', 'ORDER', 'BY',
+];
+
 /// Applies additional attributes to a database column.
 class Column {
-  /// If `true`, a SQL field will be auto-incremented.
-  final bool autoIncrement;
-
   /// If `true`, a SQL field will be nullable.
   final bool nullable;
 
@@ -19,8 +20,7 @@ class Column {
   final defaultValue;
 
   const Column(
-      {this.autoIncrement: false,
-      this.nullable: true,
+      {this.nullable: true,
       this.length,
       this.type,
       this.index: IndexType.NONE,
@@ -28,8 +28,10 @@ class Column {
 }
 
 class PrimaryKey extends Column {
-  const PrimaryKey({bool autoIncrement: true})
-      : super(autoIncrement: autoIncrement, index: IndexType.PRIMARY_KEY);
+  const PrimaryKey({ColumnType columnType})
+      : super(
+            type: columnType ?? ColumnType.SERIAL,
+            index: IndexType.PRIMARY_KEY);
 }
 
 const Column primaryKey = const PrimaryKey();
@@ -55,6 +57,10 @@ class ColumnType {
   /// The name of this data type.
   final String name;
   const ColumnType._(this.name);
+
+  static const ColumnType SMALL_SERIAL = const ColumnType._('smallserial');
+  static const ColumnType SERIAL = const ColumnType._('serial');
+  static const ColumnType BIG_SERIAL = const ColumnType._('bigserial');
 
   // Numbers
   static const ColumnType BIG_INT = const ColumnType._('bigint');

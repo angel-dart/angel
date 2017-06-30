@@ -52,6 +52,10 @@ PostgresBuildContext buildContext(
     // Check for column annotation...
     var column = findAnnotation<Column>(field, Column);
 
+    if (column == null && field.name == 'id' && ctx.shimmed['id'] == true) {
+      column = const Column(type: ColumnType.SERIAL);
+    }
+
     if (column == null) {
       // Guess what kind of column this is...
       switch (field.type.name) {

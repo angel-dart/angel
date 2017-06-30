@@ -9,6 +9,8 @@ dependencies:
   id: ^1.0.0
   inflection: ^0.4.1
   intl: ^0.15.1
+  pool: ^1.0.0
+  postgres: ">=0.9.5 <1.0.0"
   query_builder_sql: ^1.0.0-alpha
   recase: ^1.0.0
   source_gen: ^0.5.8
@@ -19,8 +21,4 @@ dev_dependencies:
   angel_test: ">=1.0.0 <2.0.0"
   build_runner: ^0.3.0
   http: ">= 0.11.3 < 0.12.0"
-  postgres: ">=0.9.5 <1.0.0"
   test: ">= 0.12.13 < 0.13.0"
-dependency_overrides:
-  source_gen:
-    path: ../../Dart/source_gen

@@ -19,10 +19,10 @@ import 'postgres_build_context.dart';
 
 // TODO: HasOne, HasMany, BelongsTo
 class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
-  /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
+  /// If "true" (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
 
-  /// If `true` (default), then
+  /// If "true" (default), then
   final bool autoIdAndDateFields;
 
   const PostgresORMGenerator(
@@ -138,6 +138,21 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
   MethodBuilder buildToSqlMethod(PostgresBuildContext ctx) {
     // TODO: Bake relations into SQL queries
     var meth = new MethodBuilder('toSql', returnType: lib$core.String);
+    meth.addStatement(varField('buf',
+        value: lib$core.StringBuffer
+            .newInstance([literal('SELECT * FROM "${ctx.tableName}"')])));
+    meth.addStatement(varField('whereClause',
+        value: reference('where').invoke('toWhereClause', [])));
+    var buf = reference('buf');
+    var whereClause = reference('whereClause');
+
+    meth.addStatement(ifThen(whereClause.notEquals(literal(null)), [
+      buf.invoke('write', [literal(' ') + whereClause])
+    ]));
+
+    meth.addStatement(buf.invoke('write', [literal(';')]));
+    meth.addStatement(buf.invoke('toString', []).asReturn());
+
     return meth;
   }
 
@@ -145,6 +160,8 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     var meth = new MethodBuilder('parseRow',
         returnType: new TypeBuilder(ctx.modelClassName));
     meth.addPositional(parameter('row', [lib$core.List]));
+    //meth.addStatement(lib$core.print.call(
+    //    [literal('ROW MAP: ') + reference('row').invoke('toString', [])]));
     var row = reference('row');
     var DATE_YMD_HMS = reference('DATE_YMD_HMS');
 
@@ -158,7 +175,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       var name = ctx.resolveFieldName(field.name);
       var rowKey = row[literal(i++)];
 
-      if (field.type.name == 'DateTime') {
+      if (false && field.type.name == 'DateTime') {
         // TODO: Handle DATE and not just DATETIME
         data[name] = DATE_YMD_HMS.invoke('parse', [rowKey]);
       } else if (field.name == 'id' && ctx.shimmed.containsKey('id')) {
@@ -210,7 +227,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     meth.addPositional(
         parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
     meth.addStatement(reference('connection').invoke('query', [
-      literal('SELECT * FROM `${ctx.tableName}` WHERE `id` = @id;')
+      literal('SELECT * FROM "${ctx.tableName}" WHERE "id" = @id;')
     ], namedArguments: {
       'substitutionValues': map({'id': reference('id')})
     }).invoke('then', [
@@ -255,24 +272,57 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       meth.addNamed(p);
     });
 
-    var buf = new StringBuffer('INSERT INTO `${ctx.tableName}` (');
-    for (int i = 0; i < ctx.fields.length; i++) {
-      if (i > 0) buf.write(', ');
-      var key = ctx.resolveFieldName(ctx.fields[i].name);
-      buf.write('`$key`');
-    }
+    var buf = new StringBuffer('INSERT INTO "${ctx.tableName}" (');
+    int i = 0;
+    ctx.fields.forEach((field) {
+      if (field.name == 'id')
+        return;
+      else {
+        if (i++ > 0) buf.write(', ');
+        var key = ctx.resolveFieldName(field.name);
+        buf.write('"$key"');
+      }
+    });
 
-    buf.write(' VALUES (');
-    for (int i = 0; i < ctx.fields.length; i++) {
-      if (i > 0) buf.write(', ');
-      buf.write('@${ctx.fields[i].name}');
-    }
+    buf.write(') VALUES (');
+    i = 0;
+    ctx.fields.forEach((field) {
+      if (field.name == 'id')
+        return;
+      else {
+        if (i++ > 0) buf.write(', ');
+        buf.write('@${field.name}');
+      }
+    });
+
+    buf.write(')');
+
+    buf.write(' RETURNING (');
+    i = 0;
+    ctx.fields.forEach((field) {
+      if (i++ > 0) buf.write(', ');
+      var name = ctx.resolveFieldName(field.name);
+      buf.write('"$name"');
+    });
 
     buf.write(');');
+    meth.addStatement(lib$core.print.call([literal(buf.toString())]));
+
+    if (ctx.fields.any((f) => f.name == 'createdAt' || f.name == 'updatedAt')) {
+      meth.addStatement(varField('__ormNow__',
+          value: lib$core.DateTime.newInstance([], constructor: 'now')));
+    }
 
     Map<String, ExpressionBuilder> substitutionValues = {};
     ctx.fields.forEach((field) {
-      substitutionValues[field.name] = reference(field.name);
+      if (field.name == 'id')
+        return;
+      else if (field.name == 'createdAt' || field.name == 'updatedAt') {
+        var ref = reference(field.name);
+        substitutionValues[field.name] =
+            ref.notEquals(literal(null)).ternary(ref, reference('__ormNow__'));
+      } else
+        substitutionValues[field.name] = reference(field.name);
     });
 
     /*
@@ -285,15 +335,15 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     // Create "INSERT INTO segment"
     var fieldNames = ctx.fields
         .map((f) => ctx.resolveFieldName(f.name))
-        .map((k) => '`$k`')
+        .map((k) => '"$k"')
         .join(', ');
     var insertInto =
-        literal('INSERT INTO `${ctx.tableName}` ($fieldNames) VALUES (');
+        literal('INSERT INTO "${ctx.tableName}" ($fieldNames) VALUES (');
     meth.addStatement(buf.invoke('write', [insertInto]));
 
     // Write all fields
     int i = 0;
-    var backtick = literal('`');
+    var backtick = literal('"');
     var numType = ctx.typeProvider.numType;
     var boolType = ctx.typeProvider.boolType;
     ctx.fields.forEach((field) {
@@ -385,7 +435,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
           type: queryBuilderType, value: queryBuilderType.newInstance(args)));
     });
 
-    // Create `toWhereClause()`
+    // Create "toWhereClause()"
     var toWhereClause =
         new MethodBuilder('toWhereClause', returnType: lib$core.String);
 
@@ -401,7 +451,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       var queryBuilder = reference(field.name);
       var toAdd = field.type.name == 'DateTime'
           ? queryBuilder.invoke('compile', [])
-          : (literal('`$name` ') + queryBuilder.invoke('compile', []));
+          : (literal('"$name" ') + queryBuilder.invoke('compile', []));
 
       toWhereClause.addStatement(ifThen(queryBuilder.property('hasValue'), [
         expressions.invoke('add', [toAdd])

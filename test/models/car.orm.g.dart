@@ -40,7 +40,15 @@ class CarQuery {
     }
   }
 
-  String toSql() {}
+  String toSql() {
+    var buf = new StringBuffer('SELECT * FROM "cars"');
+    var whereClause = where.toWhereClause();
+    if (whereClause != null) {
+      buf.write(' ' + whereClause);
+    }
+    buf.write(';');
+    return buf.toString();
+  }
 
   static Car parseRow(List row) {
     return new Car.fromJson({
@@ -48,9 +56,9 @@ class CarQuery {
       'make': row[1],
       'description': row[2],
       'family_friendly': row[3] == 1,
-      'recalled_at': DATE_YMD_HMS.parse(row[4]),
-      'created_at': DATE_YMD_HMS.parse(row[5]),
-      'updated_at': DATE_YMD_HMS.parse(row[6])
+      'recalled_at': row[4],
+      'created_at': row[5],
+      'updated_at': row[6]
     });
   }
 
@@ -64,7 +72,7 @@ class CarQuery {
   }
 
   Future<Car> getOne(int id, PostgreSQLConnection connection) {
-    return connection.query('SELECT * FROM `cars` WHERE `id` = @id;',
+    return connection.query('SELECT * FROM "cars" WHERE "id" = @id;',
         substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
   }
 
@@ -80,16 +88,18 @@ class CarQuery {
       DateTime recalledAt,
       DateTime createdAt,
       DateTime updatedAt}) async {
+    print(
+        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");');
+    var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO `cars` (`id`, `make`, `description`, `family_friendly`, `recalled_at`, `created_at`, `updated_at` VALUES (@id, @make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt);',
+        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
         substitutionValues: {
-          'id': id,
           'make': make,
           'description': description,
           'familyFriendly': familyFriendly,
           'recalledAt': recalledAt,
-          'createdAt': createdAt,
-          'updatedAt': updatedAt
+          'createdAt': createdAt != null ? createdAt : __ormNow__,
+          'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
     return parseRow(result);
   }
@@ -121,16 +131,16 @@ class CarQueryWhere {
   String toWhereClause() {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('`id` ' + id.compile());
+      expressions.add('"id" ' + id.compile());
     }
     if (make.hasValue) {
-      expressions.add('`make` ' + make.compile());
+      expressions.add('"make" ' + make.compile());
     }
     if (description.hasValue) {
-      expressions.add('`description` ' + description.compile());
+      expressions.add('"description" ' + description.compile());
     }
     if (familyFriendly.hasValue) {
-      expressions.add('`family_friendly` ' + familyFriendly.compile());
+      expressions.add('"family_friendly" ' + familyFriendly.compile());
     }
     if (recalledAt.hasValue) {
       expressions.add(recalledAt.compile());
