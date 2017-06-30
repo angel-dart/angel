@@ -1,9 +1,9 @@
-/// Browser library for the Angel framework.
+/// Browser client library for the Angel framework.
 library angel_client.browser;
 
 import 'dart:async' show Future, Stream, StreamController, StreamSubscription, Timer;
 import 'dart:convert' show JSON;
-import 'dart:html' show CustomEvent, window;
+import 'dart:html' show CustomEvent, Event, window;
 import 'package:http/browser_client.dart' as http;
 import 'angel_client.dart';
 // import 'auth_types.dart' as auth_types;
@@ -69,7 +69,8 @@ class Rest extends BaseAngelClient {
         timer.cancel();
     });
 
-    sub = window.on[eventName ?? 'token'].listen((CustomEvent e) {
+    sub = window.on[eventName ?? 'token'].listen((Event ev) {
+      var e = ev as CustomEvent;
       if (!ctrl.isClosed) {
         ctrl.add(e.detail);
         t.cancel();

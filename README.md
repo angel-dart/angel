@@ -1,11 +1,11 @@
 # angel_client
 
-[![pub 1.0.6](https://img.shields.io/badge/pub-1.0.6-brightgreen.svg)](https://pub.dartlang.org/packages/angel_client)
+[![Pub](https://img.shields.io/pub/v/angel_client.svg)](https://pub.dartlang.org/packages/angel_client)
 [![build status](https://travis-ci.org/angel-dart/client.svg)](https://travis-ci.org/angel-dart/client)
 
 Client library for the Angel framework.
 This library provides virtually the same API as an Angel server.
-The client can run in the browser or on the command-line.
+The client can run in the browser, in Flutter, or on the command-line.
 In addition, the client supports `angel_auth` authentication.
 
 # Usage
