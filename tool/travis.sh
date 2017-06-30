@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
-pub run test
-ANGEL_ENV=production pub run test
+dart test/all.dart
+ANGEL_ENV=production dart test/all.dart
