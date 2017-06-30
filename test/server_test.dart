@@ -117,6 +117,8 @@ main() {
 
   group('handler results', () {
     var app = new Angel();
+    app.responseFinalizers
+        .add((req, res) => throw new AngelHttpException.forbidden());
     RequestContext req;
     ResponseContext res;
 
@@ -159,6 +161,8 @@ main() {
 
     setUp(() async {
       app = new Angel();
+      app.get('/wtf', () => throw new AngelHttpException.forbidden());
+      app.get('/wtf2', () => throw new AngelHttpException.forbidden());
       await app.listen(address: InternetAddress.LOOPBACK_IP_V4, port: 0);
       app.fatalErrorStream.listen((e) {
         print('FATAL: ${e.error}');
@@ -192,7 +196,6 @@ main() {
     });
 
     test('can send json', () async {
-      app.get('/wtf', () => throw new AngelHttpException.forbidden());
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'));
       rq.close();
       await app.handleRequest(rq);
@@ -202,8 +205,6 @@ main() {
     });
 
     test('can throw in finalizer', () async {
-      app.responseFinalizers
-          .add((req, res) => throw new AngelHttpException.forbidden());
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'));
       rq.close();
       await app.handleRequest(rq);
@@ -213,7 +214,6 @@ main() {
     });
 
     test('can send html', () async {
-      app.get('/wtf2', () => throw new AngelHttpException.forbidden());
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf2'));
       rq.headers.set(HttpHeaders.ACCEPT, ContentType.HTML.toString());
       rq.close();
