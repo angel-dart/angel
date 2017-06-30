@@ -15,7 +15,7 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
 /// Queries an Angel server via WebSockets.
 class WebSockets extends BaseWebSocketClient {
-  final List<WebSocketsService> _services = [];
+  final List<BrowserWebSocketsService> _services = [];
 
   WebSockets(String path) : super(new http.BrowserClient(), path);
 
@@ -80,17 +80,17 @@ class WebSockets extends BaseWebSocketClient {
   }
 
   @override
-  WebSocketsService service<T>(String path,
+  BrowserWebSocketsService service<T>(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new WebSocketsService(socket, this, uri, deserializer: deserializer);
+    return new BrowserWebSocketsService(socket, this, uri, deserializer: deserializer);
   }
 }
 
-class WebSocketsService extends BaseWebSocketService {
+class BrowserWebSocketsService extends WebSocketsService {
   final Type type;
 
-  WebSocketsService(WebSocketChannel socket, Angel app, String uri,
+  BrowserWebSocketsService(WebSocketChannel socket, Angel app, String uri,
       {this.type, AngelDeserializer deserializer})
       : super(socket, app, uri, deserializer: deserializer);
 }

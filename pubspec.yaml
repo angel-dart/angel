@@ -2,7 +2,7 @@ name: angel_websocket
 description: WebSocket plugin for Angel.
 environment:
   sdk: ">=1.19.0"
-version: 1.0.7
+version: 1.0.8
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_websocket
 dependencies:

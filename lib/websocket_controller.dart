@@ -37,7 +37,7 @@ class WebSocketController extends Controller {
 
   @override
   Future call(Angel app) async {
-    await super.call(app);
+    if (findExpose() != null) await super.call(app);
 
     InstanceMirror instanceMirror = reflect(this);
     ClassMirror classMirror = reflectClass(this.runtimeType);

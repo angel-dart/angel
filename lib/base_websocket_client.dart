@@ -133,10 +133,10 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   Future<WebSocketChannel> getConnectedWebSocket();
 
   @override
-  BaseWebSocketService service<T>(String path,
+  WebSocketsService service<T>(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, '');
-    return new BaseWebSocketService(socket, this, uri,
+    return new WebSocketsService(socket, this, uri,
         deserializer: deserializer);
   }
 
@@ -225,7 +225,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 }
 
 /// A [Service] that asynchronously interacts with the server.
-class BaseWebSocketService extends Service {
+class WebSocketsService extends Service {
   /// The [BaseWebSocketClient] that spawned this service.
   @override
   final BaseWebSocketClient app;
@@ -275,7 +275,7 @@ class BaseWebSocketService extends Service {
   /// Fired on `removed` events.
   Stream<WebSocketEvent> get onRemoved => _onRemoved.stream;
 
-  BaseWebSocketService(this.socket, this.app, this.path, {this.deserializer}) {
+  WebSocketsService(this.socket, this.app, this.path, {this.deserializer}) {
     listen();
   }
 

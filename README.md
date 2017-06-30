@@ -1,5 +1,5 @@
 # angel_websocket
-[![1.0.7](https://img.shields.io/badge/pub-1.0.7-brightgreen.svg)](https://pub.dartlang.org/packages/angel_websocket)
+[![Pub](https://img.shields.io/pub/v/angel_websocket.svg)](https://pub.dartlang.org/packages/angel_websocket)
 [![build status](https://travis-ci.org/angel-dart/websocket.svg)](https://travis-ci.org/angel-dart/websocket)
 
 WebSocket plugin for Angel.
@@ -36,6 +36,10 @@ synchronously or asynchronously.
 myService.properties['ws:filter'] = (HookedServiceEvent e, WebSocketContext socket) async {
   return true;
 }
+
+myService.index({
+  'ws:filter': (e, socket) => ...;
+});
 ```
 
 **Adding Handlers within a Controller**

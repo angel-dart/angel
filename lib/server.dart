@@ -107,6 +107,8 @@ class AngelWebSocket extends AngelPlugin {
       _filter(WebSocketContext socket) {
         if (e.service.properties.containsKey('ws:filter'))
           return e.service.properties['ws:filter'](e, socket);
+        else if (e.params != null && e.params.containsKey('ws:filter'))
+          return e.params['ws:filter'](e, socket);
         else
           return true;
       }
