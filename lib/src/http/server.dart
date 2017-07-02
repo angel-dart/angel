@@ -398,6 +398,7 @@ class Angel extends AngelBase {
             //    'Handler completed successfully, did not terminate response: $handler');
           }
         } on AngelHttpException catch (e, st) {
+          e.stackTrace ??= st;
           return await handleAngelHttpException(e, st, req, res, request);
         }
       }
@@ -405,6 +406,7 @@ class Angel extends AngelBase {
       try {
         await sendResponse(request, req, res);
       } on AngelHttpException catch (e, st) {
+        e.stackTrace ??= st;
         return await handleAngelHttpException(e, st, req, res, request,
             ignoreFinalizers: true);
       }
