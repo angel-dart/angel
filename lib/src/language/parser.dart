@@ -1,180 +1,187 @@
 library graphql_parser.language.parser;
 
-import 'dart:async';
 import 'ast/ast.dart';
-import 'stream_reader.dart';
 import 'syntax_error.dart';
 import 'token.dart';
 import 'token_type.dart';
-part 'base_parser.dart';
 
-class Parser extends BaseParser {
-  bool _closed = false;
-  final Completer _closer = new Completer();
+class Parser {
+  Token _current;
   final List<SyntaxError> _errors = [];
-  final StreamReader<Token> _reader = new StreamReader();
+  int _index = -1;
+
+  final List<Token> tokens;
+
+  Parser(this.tokens);
+
+  Token get current => _current;
 
   List<SyntaxError> get errors => new List<SyntaxError>.unmodifiable(_errors);
 
-  Future _waterfall(List<Function> futures) async {
-    for (var f in futures) {
-      var r = await f();
-      if (r != null) return r;
-    }
-  }
-
-  @override
-  Future addStream(Stream<Token> stream) {
-    if (_closed) throw new StateError('Parser is already closed.');
-
-    _closed = true;
-
-    _reader.onData
-        .listen((data) => _waterfall([parseDocument, parseBooleanValue]))
-          ..onDone(() => Future.wait([
-                _onBooleanValue.close(),
-                _onDocument.close(),
-                _onNode.close(),
-              ]))
-          ..onError(_closer.completeError);
-
-    return stream.pipe(_reader);
-  }
-
-  @override
-  Future close() {
-    return _closer.future;
-  }
-
-  Future<bool> expect(TokenType type) async {
-    var peek = await _reader.peek();
-
-    if (peek?.type != type) {
-      _errors.add(new SyntaxError.fromSourceLocation(
-          "Expected $type, found '${peek?.text ?? 'empty text'}' instead.",
-          peek?.span?.start));
-      return false;
-    } else {
-      await _reader.consume();
-      return true;
-    }
-  }
-
-  Future<bool> maybe(TokenType type) async {
-    var peek = await _reader.peek();
-
-    if (peek?.type == type) {
-      await _reader.consume();
+  bool next(TokenType type) {
+    if (peek()?.type == type) {
+      _current = tokens[++_index];
       return true;
     }
 
     return false;
   }
 
-  Future<bool> nextIs(TokenType type) =>
-      _reader.peek().then((t) => t?.type == type);
-
-  Future<DocumentContext> parseDocument() async {
-    return null;
-  }
-
-  Future<ValueContext> parseValue() async {
-    ValueContext value;
-
-    var string = await parseStringValue();
-    if (string != null)
-      value = string;
-    else {
-      var number = await parseNumberValue();
-      if (number != null)
-        value = number;
-      else {
-        var boolean = await parseBooleanValue();
-        if (boolean != null)
-          value = boolean;
-        else {
-          var array = await parseArrayValue();
-          if (array != null) value = array;
-        }
-      }
-    }
-
-    if (value != null) _onValue.add(value);
-    return value;
-  }
-
-  Future<StringValueContext> parseStringValue() async {
-    if (await nextIs(TokenType.STRING)) {
-      var result = new StringValueContext(await _reader.consume());
-      _onStringValue.add(result);
-      return result;
+  Token peek() {
+    if (_index < tokens.length - 1) {
+      return tokens[_index + 1];
     }
 
     return null;
   }
 
-  Future<NumberValueContext> parseNumberValue() async {
-    if (await nextIs(TokenType.NUMBER)) {
-      var result = new NumberValueContext(await _reader.consume());
-      _onNumberValue.add(result);
-      return result;
-    }
+  DocumentContext parseDocument() {}
 
-    return null;
-  }
+  FragmentDefinitionContext parseFragmentDefinition() {}
 
-  Future<BooleanValueContext> parseBooleanValue() async {
-    if (await nextIs(TokenType.BOOLEAN)) {
-      var result = new BooleanValueContext(await _reader.consume());
-      _onBooleanValue.add(result);
-      return result;
-    }
+  FragmentSpreadContext parseFragmentSpread() {}
 
-    return null;
-  }
+  InlineFragmentContext parseInlineFragment() {}
 
-  Future<ArrayValueContext> parseArrayValue() async {
-    if (await nextIs(TokenType.LBRACKET)) {
-      ArrayValueContext result;
-      var LBRACKET = await _reader.consume();
-      List<ValueContext> values = [];
+  SelectionSetContext parseSelectionSet() {}
 
-      if (await nextIs(TokenType.RBRACKET)) {
-        result = new ArrayValueContext(LBRACKET, await _reader.consume());
-        _onArrayValue.add(result);
-        return result;
-      }
+  SelectionContext parseSelection() {}
 
-      while (!_reader.isDone) {
-        ValueContext value = await parseValue();
-        if (value == null) break;
+  FieldContext parseField() {}
 
-        values.add(value);
+  FieldNameContext parseFieldName() {}
 
-        if (await nextIs(TokenType.COMMA)) {
-          await _reader.consume();
-          continue;
-        } else if (await nextIs(TokenType.RBRACKET)) {
-          result = new ArrayValueContext(LBRACKET, await _reader.consume());
-          _onArrayValue.add(result);
-          return result;
-        }
+  AliasContext parseAlias() {}
 
+  VariableDefinitionsContext parseVariableDefinitions() {}
+
+  VariableDefinitionContext parseVariableDefinition() {}
+
+  List<DirectiveContext> parseDirectives() {}
+
+  DirectiveContext parseDirective() {
+    if (next(TokenType.ARROBA)) {
+      var ARROBA = current;
+      if (next(TokenType.NAME)) {
+        var NAME = current;
+
+        if (next(TokenType.COLON)) {
+          var COLON = current;
+          var val = parseValueOrVariable();
+          if (val != null)
+            return new DirectiveContext(
+                ARROBA, NAME, COLON, null, null, null, val);
+          else
+            throw new SyntaxError.fromSourceLocation(
+                'Expected value or variable in directive after colon.',
+                COLON.span.end);
+        } else if (next(TokenType.LPAREN)) {
+          var LPAREN = current;
+          var arg = parseArgument();
+          if (arg != null) {
+            if (next(TokenType.RPAREN)) {
+              return new DirectiveContext(
+                  ARROBA, NAME, null, LPAREN, current, arg, null);
+            } else
+              throw new SyntaxError.fromSourceLocation(
+                  'Expected \'(\'', arg.valueOrVariable.span.end);
+          } else
+            throw new SyntaxError.fromSourceLocation(
+                'Expected argument in directive.', LPAREN.span.end);
+        } else
+          return new DirectiveContext(
+              ARROBA, NAME, null, null, null, null, null);
+      } else
         throw new SyntaxError.fromSourceLocation(
-            'Expected comma or right bracket in array',
-            (await _reader.current())?.span?.start);
+            'Expected name for directive.', ARROBA.span.end);
+    } else
+      return null;
+  }
+
+  ArgumentContext parseArgument() {
+    if (next(TokenType.NAME)) {
+      var NAME = current;
+      if (next(TokenType.COLON)) {
+        var COLON = current;
+        var val = parseValueOrVariable();
+        if (val != null)
+          return new ArgumentContext(NAME, COLON, val);
+        else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected value or variable in argument.', COLON.span.end);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected colon after name in argument.', NAME.span.end);
+    } else
+      return null;
+  }
+
+  ValueOrVariableContext parseValueOrVariable() {
+    var value = parseValue();
+    if (value != null)
+      return new ValueOrVariableContext(value, null);
+    else {
+      var variable = parseVariable();
+      if (variable != null)
+        return new ValueOrVariableContext(null, variable);
+      else
+        return null;
+    }
+  }
+
+  VariableContext parseVariable() {
+    if (next(TokenType.DOLLAR)) {
+      var DOLLAR = current;
+      if (next(TokenType.NAME))
+        return new VariableContext(DOLLAR, current);
+      else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected name for variable; found a lone "\$" instead.',
+            DOLLAR.span.end);
+    } else
+      return null;
+  }
+
+  DefaultValueContext parseDefaultValue() {}
+
+  TypeConditionContext parseTypeCondition() {}
+
+  ValueContext parseValue() {
+    return parseStringValue() ??
+        parseNumberValue() ??
+        parseBooleanValue() ??
+        parseArrayValue();
+  }
+
+  StringValueContext parseStringValue() =>
+      next(TokenType.STRING) ? new StringValueContext(current) : null;
+
+  NumberValueContext parseNumberValue() =>
+      next(TokenType.NUMBER) ? new NumberValueContext(current) : null;
+
+  BooleanValueContext parseBooleanValue() =>
+      next(TokenType.BOOLEAN) ? new BooleanValueContext(current) : null;
+
+  ArrayValueContext parseArrayValue() {
+    if (next(TokenType.LBRACKET)) {
+      var LBRACKET = current;
+      List<ValueContext> values = [];
+      ValueContext value = parseValue();
+
+      while (value != null) {
+        values.add(value);
+        if (next(TokenType.COMMA)) {
+          value = parseValue();
+        } else
+          break;
       }
 
-      throw new SyntaxError.fromSourceLocation(
-          'Unterminated array literal.', LBRACKET.span?.start);
-    }
-
-    if (await nextIs(TokenType.BOOLEAN)) {
-      var result = new BooleanValueContext(await _reader.consume());
-      _onBooleanValue.add(result);
-      return result;
-    }
-
-    return null;
+      if (next(TokenType.RBRACKET)) {
+        return new ArrayValueContext(LBRACKET, current)..values.addAll(values);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Unterminated array literal.', LBRACKET.span.end);
+    } else
+      return null;
   }
 }

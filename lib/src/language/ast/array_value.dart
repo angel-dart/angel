@@ -13,6 +13,9 @@ class ArrayValueContext extends ValueContext {
       new SourceSpan(LBRACKET.span?.end, RBRACKET.span?.end, toSource());
 
   @override
+  List get value => values.map((v) => v.value).toList();
+
+  @override
   String toSource() {
     var buf = new StringBuffer('[');
 

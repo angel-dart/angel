@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:string_scanner/string_scanner.dart';
 import 'syntax_error.dart';
 import 'token.dart';
@@ -35,43 +34,34 @@ final Map<Pattern, TokenType> _patterns = {
   _name: TokenType.NAME
 };
 
-class Lexer implements StreamTransformer<String, Token> {
-  @override
-  Stream<Token> bind(Stream<String> stream) {
-    var ctrl = new StreamController<Token>();
+List<Token> scan(String text) {
+  List<Token> out = [];
+  var scanner = new SpanScanner(text);
 
-    stream.listen((str) {
-      var scanner = new SpanScanner(str);
+  while (!scanner.isDone) {
+    List<Token> potential = [];
 
-      while (!scanner.isDone) {
-        List<Token> potential = [];
+    if (scanner.scan(_whitespace)) continue;
 
-        if (scanner.scan(_whitespace)) continue;
-
-        for (var pattern in _patterns.keys) {
-          if (scanner.matches(pattern)) {
-            potential.add(new Token(_patterns[pattern], scanner.lastMatch[0]));
-          }
-        }
-
-        if (potential.isEmpty) {
-          var ch = new String.fromCharCode(scanner.readChar());
-          ctrl.addError(new SyntaxError("Unexpected token '$ch'.",
-              scanner.state.line, scanner.state.column));
-        } else {
-          // Choose longest token
-          potential.sort((a, b) => b.text.length.compareTo(a.text.length));
-          var chosen = potential.first;
-          var start = scanner.state;
-          ctrl.add(chosen);
-          scanner.scan(chosen.text);
-          chosen.span = scanner.spanFrom(start);
-        }
+    for (var pattern in _patterns.keys) {
+      if (scanner.matches(pattern)) {
+        potential.add(new Token(_patterns[pattern], scanner.lastMatch[0], scanner.lastSpan));
       }
-    })
-      ..onDone(ctrl.close)
-      ..onError(ctrl.addError);
+    }
 
-    return ctrl.stream;
+    if (potential.isEmpty) {
+      var ch = new String.fromCharCode(scanner.readChar());
+      throw new SyntaxError(
+          "Unexpected token '$ch'.", scanner.state.line, scanner.state.column);
+    } else {
+      // Choose longest token
+      potential.sort((a, b) => b.text.length.compareTo(a.text.length));
+      var chosen = potential.first;
+      var start = scanner.state;
+      out.add(chosen);
+      scanner.scan(chosen.text);
+    }
   }
+
+  return out;
 }

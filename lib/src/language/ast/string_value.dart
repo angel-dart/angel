@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:charcode/charcode.dart';
+import 'package:source_span/source_span.dart';
+import '../syntax_error.dart';
 import '../token.dart';
-import 'package:source_span/src/span.dart';
 import 'value.dart';
 
 class StringValueContext extends ValueContext {
@@ -10,7 +13,61 @@ class StringValueContext extends ValueContext {
   @override
   SourceSpan get span => STRING.span;
 
-  String get stringValue => STRING.text.substring(0, STRING.text.length - 1);
+  String get stringValue {
+    var text = STRING.text.substring(1, STRING.text.length - 1);
+    var codeUnits = text.codeUnits;
+    var buf = new StringBuffer();
+
+    for (int i = 0; i < codeUnits.length; i++) {
+      var ch = codeUnits[i];
+
+      if (ch == $backslash) {
+        if (i < codeUnits.length - 5 && codeUnits[i + 1] == $u) {
+          var c1 = codeUnits[i += 2],
+              c2 = codeUnits[++i],
+              c3 = codeUnits[++i],
+              c4 = codeUnits[++i];
+          var hexString = new String.fromCharCodes([c1, c2, c3, c4]);
+          var hexNumber = int.parse(hexString, radix: 16);
+          buf.write(new String.fromCharCode(hexNumber));
+          continue;
+        }
+
+        if (i < codeUnits.length - 1) {
+          var next = codeUnits[++i];
+
+          switch (next) {
+            case $b:
+              buf.write('\b');
+              break;
+            case $f:
+              buf.write('\f');
+              break;
+            case $n:
+              buf.writeCharCode($lf);
+              break;
+            case $r:
+              buf.writeCharCode($cr);
+              break;
+            case $t:
+              buf.writeCharCode($tab);
+              break;
+            default:
+              buf.writeCharCode(next);
+          }
+        } else
+          throw new SyntaxError.fromSourceLocation(
+              'Unexpected "\\" in string literal.', span.start);
+      } else {
+        buf.writeCharCode(ch);
+      }
+    }
+
+    return buf.toString();
+  }
+
+  @override
+  get value => stringValue;
 
   @override
   String toSource() => STRING.text;
