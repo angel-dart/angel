@@ -7,7 +7,6 @@ import 'token_type.dart';
 
 class Parser {
   Token _current;
-  final List<SyntaxError> _errors = [];
   int _index = -1;
 
   final List<Token> tokens;
@@ -15,8 +14,6 @@ class Parser {
   Parser(this.tokens);
 
   Token get current => _current;
-
-  List<SyntaxError> get errors => new List<SyntaxError>.unmodifiable(_errors);
 
   bool next(TokenType type) {
     if (peek()?.type == type) {
@@ -84,7 +81,7 @@ class Parser {
                   ARROBA, NAME, null, LPAREN, current, arg, null);
             } else
               throw new SyntaxError.fromSourceLocation(
-                  'Expected \'(\'', arg.valueOrVariable.span.end);
+                  'Expected \')\'', arg.valueOrVariable.span.end);
           } else
             throw new SyntaxError.fromSourceLocation(
                 'Expected argument in directive.', LPAREN.span.end);

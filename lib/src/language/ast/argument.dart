@@ -9,6 +9,8 @@ class ArgumentContext extends Node {
 
   ArgumentContext(this.NAME, this.COLON, this.valueOrVariable);
 
+  String get name => NAME.text;
+
   @override
   SourceSpan get span =>
       new SourceSpan(NAME.span?.start, valueOrVariable.end, toSource());
