@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All Tests" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/all.dart" />
+    <method />
+  </configuration>
+</component>

@@ -7,6 +7,8 @@ class VariableContext extends Node {
 
   VariableContext(this.DOLLAR, this.NAME);
 
+  String get name => NAME.text;
+
   @override
   SourceSpan get span =>
       new SourceSpan(DOLLAR?.span?.start, NAME?.span?.end, toSource());

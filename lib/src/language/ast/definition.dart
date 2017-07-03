@@ -1,5 +1,3 @@
 import 'node.dart';
 
-abstract class DefinitionContext extends Node {
-
-}
+abstract class DefinitionContext extends Node {}

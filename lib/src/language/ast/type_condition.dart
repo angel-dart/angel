@@ -6,7 +6,7 @@ class TypeConditionContext extends Node {
   final TypeNameContext typeName;
 
   TypeConditionContext(this.typeName);
-  
+
   @override
   SourceSpan get span => typeName.span;
 

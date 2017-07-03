@@ -45,7 +45,8 @@ List<Token> scan(String text) {
 
     for (var pattern in _patterns.keys) {
       if (scanner.matches(pattern)) {
-        potential.add(new Token(_patterns[pattern], scanner.lastMatch[0], scanner.lastSpan));
+        potential.add(new Token(
+            _patterns[pattern], scanner.lastMatch[0], scanner.lastSpan));
       }
     }
 
@@ -57,7 +58,6 @@ List<Token> scan(String text) {
       // Choose longest token
       potential.sort((a, b) => b.text.length.compareTo(a.text.length));
       var chosen = potential.first;
-      var start = scanner.state;
       out.add(chosen);
       scanner.scan(chosen.text);
     }

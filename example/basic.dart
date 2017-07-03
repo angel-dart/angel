@@ -7,7 +7,8 @@ final String INPUT = '''
     tagline
   }
 }
-  '''.trim();
+  '''
+    .trim();
 
 main() {
   var tokens = scan(INPUT);
