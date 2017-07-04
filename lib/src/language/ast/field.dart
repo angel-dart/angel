@@ -15,21 +15,18 @@ class FieldContext extends Node {
 
   @override
   SourceSpan get span {
-    SourceLocation end = fieldName.end;
-
     if (selectionSet != null)
-      end = selectionSet.end;
+      return fieldName.span.union(selectionSet.span);
     else if (directives.isNotEmpty)
-      end = directives.last.end;
-    else if (arguments.isNotEmpty) end = arguments.last.end;
-
-    return new SourceSpan(fieldName.start, end, toSource());
+      return directives.fold<SourceSpan>(
+          fieldName.span, (out, d) => out.union(d.span));
+    if (arguments.isNotEmpty)
+      return arguments.fold<SourceSpan>(
+          fieldName.span, (out, a) => out.union(a.span));
+    else
+      return fieldName.span;
   }
 
   @override
-  String toSource() =>
-      fieldName.toSource() +
-      arguments.map((a) => a.toSource()).join() +
-      directives.map((d) => d.toSource()).join() +
-      (selectionSet?.toSource() ?? '');
+  String toSource() => span.text;
 }

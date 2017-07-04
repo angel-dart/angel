@@ -32,6 +32,8 @@ class Parser {
     return null;
   }
 
+  Token maybe(TokenType type) => next(type) ? current : null;
+
   DocumentContext parseDocument() {}
 
   FragmentDefinitionContext parseFragmentDefinition() {}
@@ -44,17 +46,98 @@ class Parser {
 
   SelectionContext parseSelection() {}
 
-  FieldContext parseField() {}
+  FieldContext parseField() {
+    var fieldName = parseFieldName();
+    if (fieldName != null) {
+      var args = parseArguments();
+      var directives = parseDirectives();
+      var selectionSet = parseSelectionSet();
+      return new FieldContext(fieldName, selectionSet)
+        ..arguments.addAll(args)
+        ..directives.addAll(directives);
+    } else
+      return null;
+  }
 
-  FieldNameContext parseFieldName() {}
-
-  AliasContext parseAlias() {}
+  FieldNameContext parseFieldName() {
+    if (next(TokenType.NAME)) {
+      var NAME1 = current;
+      if (next(TokenType.COLON)) {
+        var COLON = current;
+        if (next(TokenType.NAME))
+          return new FieldNameContext(
+              null, new AliasContext(NAME1, COLON, current));
+        else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected name after colon in alias.', COLON.span.end);
+      } else
+        return new FieldNameContext(NAME1);
+    } else
+      return null;
+  }
 
   VariableDefinitionsContext parseVariableDefinitions() {}
 
-  VariableDefinitionContext parseVariableDefinition() {}
+  VariableDefinitionContext parseVariableDefinition() {
+    var variable = parseVariable();
+    if (variable != null) {
+      if (next(TokenType.COLON)) {
+        var COLON = current;
+        var type = parseType();
+        if (type != null) {
+          var defaultValue = parseDefaultValue();
+          return new VariableDefinitionContext(
+              variable, COLON, type, defaultValue);
+        } else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected type in variable definition.', COLON.span.end);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected ":" in variable definition.', variable.span.end);
+    } else
+      return null;
+  }
 
-  List<DirectiveContext> parseDirectives() {}
+  TypeContext parseType() {
+    var name = parseTypeName();
+    if (name != null) {
+      return new TypeContext(name, null, maybe(TokenType.EXCLAMATION));
+    } else {
+      var listType = parseListType();
+      if (listType != null) {
+        return new TypeContext(null, listType, maybe(TokenType.EXCLAMATION));
+      } else
+        return null;
+    }
+  }
+
+  ListTypeContext parseListType() {
+    if (next(TokenType.LBRACKET)) {
+      var LBRACKET = current;
+      var type = parseType();
+      if (type != null) {
+        if (next(TokenType.RBRACKET)) {
+          return new ListTypeContext(LBRACKET, type, current);
+        } else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected "]" in list type.', type.span.end);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected type after "[".', LBRACKET.span.end);
+    } else
+      return null;
+  }
+
+  List<DirectiveContext> parseDirectives() {
+    List<DirectiveContext> out = [];
+    DirectiveContext d = parseDirective();
+    while (d != null) {
+      out.add(d);
+      d = parseDirective();
+    }
+
+    return out;
+  }
 
   DirectiveContext parseDirective() {
     if (next(TokenType.ARROBA)) {
@@ -93,6 +176,30 @@ class Parser {
             'Expected name for directive.', ARROBA.span.end);
     } else
       return null;
+  }
+
+  List<ArgumentContext> parseArguments() {
+    if (next(TokenType.LPAREN)) {
+      var LPAREN = current;
+      List<ArgumentContext> out = [];
+      ArgumentContext arg = parseArgument();
+
+      while (arg != null) {
+        out.add(arg);
+        if (next(TokenType.COMMA))
+          arg = parseArgument();
+        else
+          break;
+      }
+
+      if (next(TokenType.RPAREN))
+        return out;
+      else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected ")" in argument list.',
+            out.isEmpty ? LPAREN.span.end : out.last.span.end);
+    } else
+      return [];
   }
 
   ArgumentContext parseArgument() {
@@ -139,9 +246,33 @@ class Parser {
       return null;
   }
 
-  DefaultValueContext parseDefaultValue() {}
+  DefaultValueContext parseDefaultValue() {
+    if (next(TokenType.EQUALS)) {
+      var EQUALS = current;
+      var value = parseValue();
+      if (value != null) {
+        return new DefaultValueContext(EQUALS, value);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected value after "=" sign.', EQUALS.span.end);
+    } else
+      return null;
+  }
 
-  TypeConditionContext parseTypeCondition() {}
+  TypeConditionContext parseTypeCondition() {
+    var name = parseTypeName();
+    if (name != null)
+      return new TypeConditionContext(name);
+    else
+      return null;
+  }
+
+  TypeNameContext parseTypeName() {
+    if (next(TokenType.NAME)) {
+      return new TypeNameContext(current);
+    } else
+      return null;
+  }
 
   ValueContext parseValue() {
     return parseStringValue() ??

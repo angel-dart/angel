@@ -11,6 +11,8 @@ class FieldNameContext extends Node {
     assert(NAME != null || alias != null);
   }
 
+  String get name => NAME?.text;
+
   @override
   SourceSpan get span => alias?.span ?? NAME.span;
 

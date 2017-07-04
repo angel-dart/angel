@@ -5,6 +5,8 @@ import '../token.dart';
 class TypeNameContext extends Node {
   final Token NAME;
 
+  String get name => NAME.text;
+
   @override
   SourceSpan get span => NAME.span;
 

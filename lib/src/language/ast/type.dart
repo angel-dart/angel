@@ -9,7 +9,7 @@ class TypeContext extends Node {
   final TypeNameContext typeName;
   final ListTypeContext listType;
 
-  bool get nonNullType => EXCLAMATION != null;
+  bool get isNullable => EXCLAMATION == null;
 
   TypeContext(this.typeName, this.listType, [this.EXCLAMATION]) {
     assert(typeName != null || listType != null);
@@ -42,7 +42,7 @@ class TypeContext extends Node {
       buf.write(listType.toSource());
     }
 
-    if (nonNullType) buf.write('!');
+    if (!isNullable) buf.write('!');
 
     return buf.toString();
   }
