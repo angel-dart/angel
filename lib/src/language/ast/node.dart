@@ -7,7 +7,4 @@ abstract class Node {
   SourceLocation get end => span.end;
 
   String toSource();
-
-  @override
-  String toString() => '${runtimeType}: ${toSource()}';
 }

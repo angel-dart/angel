@@ -21,6 +21,8 @@ main() {
     expect(() => parseVariableDefinition(r'$foo'), throwsSyntaxError);
     expect(() => parseVariableDefinition(r'$foo:'), throwsSyntaxError);
     expect(() => parseVariableDefinition(r'$foo: int ='), throwsSyntaxError);
+    expect(() => parse(r'($foo: int = 2').parseVariableDefinitions(),
+        throwsSyntaxError);
   });
 }
 

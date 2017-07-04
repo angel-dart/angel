@@ -49,9 +49,69 @@ class Parser {
   DefinitionContext parseDefinition() =>
       parseOperationDefinition() ?? parseFragmentDefinition();
 
-  OperationDefinitionContext parseOperationDefinition() {}
+  OperationDefinitionContext parseOperationDefinition() {
+    var selectionSet = parseSelectionSet();
+    if (selectionSet != null)
+      return new OperationDefinitionContext(null, null, null, selectionSet);
+    else {
+      if (next(TokenType.MUTATION) || next(TokenType.QUERY)) {
+        var TYPE = current;
+        if (next(TokenType.NAME)) {
+          var NAME = current;
+          var variables = parseVariableDefinitions();
+          var dirs = parseDirectives();
+          var selectionSet = parseSelectionSet();
+          if (selectionSet != null)
+            return new OperationDefinitionContext(
+                TYPE, NAME, variables, selectionSet)
+              ..directives.addAll(dirs);
+          else
+            throw new SyntaxError.fromSourceLocation(
+                'Expected selection set in fragment definition.',
+                NAME.span.end);
+        } else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected name after operation type "${TYPE.text}" in operation definition.',
+              TYPE.span.end);
+      } else
+        return null;
+    }
+  }
 
-  FragmentDefinitionContext parseFragmentDefinition() {}
+  FragmentDefinitionContext parseFragmentDefinition() {
+    if (next(TokenType.FRAGMENT)) {
+      var FRAGMENT = current;
+      if (next(TokenType.NAME)) {
+        var NAME = current;
+        if (next(TokenType.ON)) {
+          var ON = current;
+          var typeCondition = parseTypeCondition();
+          if (typeCondition != null) {
+            var dirs = parseDirectives();
+            var selectionSet = parseSelectionSet();
+            if (selectionSet != null)
+              return new FragmentDefinitionContext(
+                  FRAGMENT, NAME, ON, typeCondition, selectionSet)
+                ..directives.addAll(dirs);
+            else
+              throw new SyntaxError.fromSourceLocation(
+                  'Expected selection set in fragment definition.',
+                  typeCondition.span.end);
+          } else
+            throw new SyntaxError.fromSourceLocation(
+                'Expected type condition after "on" in fragment definition.',
+                ON.span.end);
+        } else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected "on" after name "${NAME.text}" in fragment definition.',
+              NAME.span.end);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected name after "fragment" in fragment definition.',
+            FRAGMENT.span.end);
+    } else
+      return null;
+  }
 
   FragmentSpreadContext parseFragmentSpread() {
     if (next(TokenType.ELLIPSIS)) {
@@ -164,7 +224,27 @@ class Parser {
       return null;
   }
 
-  VariableDefinitionsContext parseVariableDefinitions() {}
+  VariableDefinitionsContext parseVariableDefinitions() {
+    if (next(TokenType.LPAREN)) {
+      var LPAREN = current;
+      List<VariableDefinitionContext> defs = [];
+      VariableDefinitionContext def = parseVariableDefinition();
+
+      while (def != null) {
+        defs.add(def);
+        maybe(TokenType.COMMA);
+        def = parseVariableDefinition();
+      }
+
+      if (next(TokenType.RPAREN))
+        return new VariableDefinitionsContext(LPAREN, current)
+          ..variableDefinitions.addAll(defs);
+      else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected ")" after variable definitions.', LPAREN.span.end);
+    } else
+      return null;
+  }
 
   VariableDefinitionContext parseVariableDefinition() {
     var variable = parseVariable();

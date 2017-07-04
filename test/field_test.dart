@@ -109,22 +109,22 @@ class _IsField extends Matcher {
 }
 
 class _IsFieldName extends Matcher {
-  final String name, alias;
+  final String name, realName;
 
-  _IsFieldName(this.name, this.alias);
+  _IsFieldName(this.name, this.realName);
 
   @override
   Description describe(Description description) {
-    if (alias != null)
-      return description.add('is field with name "$name" and alias "$alias"');
+    if (realName != null)
+      return description.add('is field with name "$name" and alias "$realName"');
     return description.add('is field with name "$name"');
   }
 
   @override
   bool matches(item, Map matchState) {
     var fieldName = item is FieldNameContext ? item : parseFieldName(item);
-    if (alias != null)
-      return fieldName.alias?.name == name && fieldName.alias?.alias == alias;
+    if (realName != null)
+      return fieldName.alias?.alias == name && fieldName.alias?.name == realName;
     else
       return fieldName.name == name;
   }

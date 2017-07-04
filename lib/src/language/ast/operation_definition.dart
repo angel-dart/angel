@@ -11,10 +11,10 @@ class OperationDefinitionContext extends DefinitionContext {
   final List<DirectiveContext> directives = [];
   final SelectionSetContext selectionSet;
 
-  bool get isMutation => TYPE.text == 'mutation';
-  bool get isQuery => TYPE.text == 'query';
+  bool get isMutation => TYPE?.text == 'mutation';
+  bool get isQuery => TYPE?.text == 'query';
 
-  String get name => NAME.text;
+  String get name => NAME?.text;
 
   OperationDefinitionContext(
       this.TYPE, this.NAME, this.variableDefinitions, this.selectionSet) {

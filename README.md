@@ -2,9 +2,9 @@
 [![Pub](https://img.shields.io/pub/v/graphql_parser.svg)](https://pub.dartlang.org/packages/graphql_parser)
 [![build status](https://travis-ci.org/thosakwe/graphql_parser.svg)](https://travis-ci.org/thosakwe/graphql_parser)
 
-Parses GraphQL queries and schemas.
+Parses GraphQL queries and schemas. Also includes a `GraphQLVisitor` class.
 
-*This library is merely a parser*. Any sort of actual GraphQL API functionality must be implemented by you,
+*This library is merely a parser/visitor*. Any sort of actual GraphQL API functionality must be implemented by you,
 or by a third-party package.
 
 [Angel framework](https://angel-dart.github.io)
