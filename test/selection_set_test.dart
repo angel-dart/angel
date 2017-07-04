@@ -3,8 +3,8 @@ import 'package:test/test.dart';
 import 'common.dart';
 import 'field_test.dart';
 import 'fragment_spread_test.dart';
+import 'inline_fragment_test.dart';
 
-// TODO: Test inline fragment...
 main() {
   test('empty', () {
     expect('{}', isSelectionSet([]));
@@ -21,11 +21,24 @@ main() {
 
   test('no commas', () {
     expect(
-        '{foo bar: baz ...quux}',
+        '''
+        {
+          foo
+          bar: baz ...quux
+          ... on foo {bar, baz}
+        }'''
+            .split('\n')
+            .map((s) => s.trim())
+            .join(' '),
         isSelectionSet([
           isField(fieldName: isFieldName('foo')),
           isField(fieldName: isFieldName('bar', alias: 'baz')),
-          isFragmentSpread('quux')
+          isFragmentSpread('quux'),
+          isInlineFragment('foo',
+              selectionSet: isSelectionSet([
+                isField(fieldName: isFieldName('bar')),
+                isField(fieldName: isFieldName('baz')),
+              ]))
         ]));
   });
 

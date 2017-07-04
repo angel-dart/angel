@@ -8,8 +8,9 @@ class DocumentContext extends Node {
   @override
   SourceSpan get span {
     if (definitions.isEmpty) return null;
-    return new SourceSpan(
-        definitions.first.start, definitions.last.end, toSource());
+    return definitions
+        .map<SourceSpan>((d) => d.span)
+        .reduce((a, b) => a.union(b));
   }
 
   @override

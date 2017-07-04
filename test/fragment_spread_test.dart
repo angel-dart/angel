@@ -19,10 +19,6 @@ main() {
               isDirective('quux', argument: isArgument('one', 1))
             ])));
   });
-
-  test('exceptions', () {
-    expect(() => parseFragmentSpread('...'), throwsSyntaxError);
-  });
 }
 
 FragmentSpreadContext parseFragmentSpread(String text) =>

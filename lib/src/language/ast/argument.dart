@@ -13,7 +13,7 @@ class ArgumentContext extends Node {
 
   @override
   SourceSpan get span =>
-      new SourceSpan(NAME.span?.start, valueOrVariable.end, toSource());
+      NAME.span.union(COLON.span).union(valueOrVariable.span);
 
   @override
   String toSource() => '${NAME.text}:${valueOrVariable.toSource()}';

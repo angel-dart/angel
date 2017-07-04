@@ -34,7 +34,22 @@ class Parser {
 
   Token maybe(TokenType type) => next(type) ? current : null;
 
-  DocumentContext parseDocument() {}
+  DocumentContext parseDocument() {
+    List<DefinitionContext> defs = [];
+    DefinitionContext def = parseDefinition();
+
+    while (def != null) {
+      defs.add(def);
+      def = parseDefinition();
+    }
+
+    return new DocumentContext()..definitions.addAll(defs);
+  }
+
+  DefinitionContext parseDefinition() =>
+      parseOperationDefinition() ?? parseFragmentDefinition();
+
+  OperationDefinitionContext parseOperationDefinition() {}
 
   FragmentDefinitionContext parseFragmentDefinition() {}
 
@@ -45,14 +60,43 @@ class Parser {
         var NAME = current;
         return new FragmentSpreadContext(ELLIPSIS, NAME)
           ..directives.addAll(parseDirectives());
-      } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected name in fragment spread.', ELLIPSIS.span.end);
+      } else {
+        _index--;
+        return null;
+      }
     } else
       return null;
   }
 
-  InlineFragmentContext parseInlineFragment() {}
+  InlineFragmentContext parseInlineFragment() {
+    if (next(TokenType.ELLIPSIS)) {
+      var ELLIPSIS = current;
+      if (next(TokenType.ON)) {
+        var ON = current;
+        var typeCondition = parseTypeCondition();
+        if (typeCondition != null) {
+          var directives = parseDirectives();
+          var selectionSet = parseSelectionSet();
+          if (selectionSet != null) {
+            return new InlineFragmentContext(
+                ELLIPSIS, ON, typeCondition, selectionSet)
+              ..directives.addAll(directives);
+          } else
+            throw new SyntaxError.fromSourceLocation(
+                'Expected selection set in inline fragment.',
+                directives.isEmpty
+                    ? typeCondition.span.end
+                    : directives.last.span.end);
+        } else
+          throw new SyntaxError.fromSourceLocation(
+              'Expected type condition after "on" in inline fragment.',
+              ON.span.end);
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected "on" after "..." in inline fragment.', ELLIPSIS.span.end);
+    } else
+      return null;
+  }
 
   SelectionSetContext parseSelectionSet() {
     if (next(TokenType.LBRACE)) {
@@ -240,8 +284,7 @@ class Parser {
         return out;
       else
         throw new SyntaxError.fromSourceLocation(
-            'Expected ")" in argument list.',
-            out.isEmpty ? LPAREN.span.end : out.last.span.end);
+            'Expected ")" in argument list.', LPAREN.span.end);
     } else
       return [];
   }

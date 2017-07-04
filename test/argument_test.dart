@@ -12,10 +12,12 @@ main() {
   test('exception', () {
     expect(() => parseArgument('foo'), throwsSyntaxError);
     expect(() => parseArgument('foo:'), throwsSyntaxError);
+    expect(() => parseArgumentList(r'(foo: $bar'), throwsSyntaxError);
   });
 }
 
 ArgumentContext parseArgument(String text) => parse(text).parseArgument();
+List<ArgumentContext> parseArgumentList(String text) => parse(text).parseArguments();
 
 Matcher isArgument(String name, value) => new _IsArgument(name, value);
 
