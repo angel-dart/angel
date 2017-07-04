@@ -35,6 +35,9 @@ Matcher isDirective(String name, {Matcher valueOrVariable, Matcher argument}) =>
     new _IsDirective(name,
         valueOrVariable: valueOrVariable, argument: argument);
 
+Matcher isDirectiveList(List<Matcher> directives) =>
+    new _IsDirectiveList(directives);
+
 class _IsDirective extends Matcher {
   final String name;
   final Matcher valueOrVariable, argument;
@@ -54,8 +57,8 @@ class _IsDirective extends Matcher {
   }
 
   @override
-  bool matches(String item, Map matchState) {
-    var directive = parseDirective(item);
+  bool matches(item, Map matchState) {
+    var directive = item is DirectiveContext ? item : parseDirective(item);
     if (directive == null) return false;
     if (valueOrVariable != null) {
       if (directive.valueOrVariable == null)
@@ -72,5 +75,30 @@ class _IsDirective extends Matcher {
         return argument.matches(directive.argument, matchState);
     } else
       return true;
+  }
+}
+
+class _IsDirectiveList extends Matcher {
+  final List<Matcher> directives;
+
+  _IsDirectiveList(this.directives);
+
+  @override
+  Description describe(Description description) {
+    return description.add('is list of ${directives.length} directive(s)');
+  }
+
+  @override
+  bool matches(item, Map matchState) {
+    var args =
+        item is List<DirectiveContext> ? item : parse(item).parseDirectives();
+
+    if (args.length != directives.length) return false;
+
+    for (int i = 0; i < args.length; i++) {
+      if (!directives[i].matches(args[i], matchState)) return false;
+    }
+
+    return true;
   }
 }

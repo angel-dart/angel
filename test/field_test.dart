@@ -3,6 +3,8 @@ import 'package:test/test.dart';
 import 'common.dart';
 import 'argument_test.dart';
 import 'directive_test.dart';
+import 'fragment_spread_test.dart';
+import 'selection_set_test.dart';
 import 'value_test.dart';
 
 main() {
@@ -45,13 +47,25 @@ main() {
 
     test('with directives', () {
       expect(
-          'foo: bar @bar @baz: 2 @quux (one: 1)',
+          'foo: bar (a: 2) @bar @baz: 2 @quux (one: 1)',
           isField(
               fieldName: isFieldName('foo', alias: 'bar'),
+              arguments: isArgumentList([isArgument('a', 2)]),
               directives: isDirectiveList([
                 isDirective('bar'),
                 isDirective('baz', valueOrVariable: isValue(2)),
                 isDirective('quux', argument: isArgument('one', 1))
+              ])));
+    });
+
+    test('with selection set', () {
+      expect(
+          'foo: bar {baz, ...quux}',
+          isField(
+              fieldName: isFieldName('foo', alias: 'bar'),
+              selectionSet: isSelectionSet([
+                isField(fieldName: isFieldName('baz')),
+                isFragmentSpread('quux')
               ])));
     });
   });
@@ -60,12 +74,6 @@ main() {
 FieldContext parseField(String text) => parse(text).parseField();
 
 FieldNameContext parseFieldName(String text) => parse(text).parseFieldName();
-
-Matcher isArgumentList(List<Matcher> arguments) =>
-    new _IsArgumentList(arguments);
-
-Matcher isDirectiveList(List<Matcher> directives) =>
-    new _IsDirectiveList(directives);
 
 Matcher isField(
         {Matcher fieldName,
@@ -119,55 +127,5 @@ class _IsFieldName extends Matcher {
       return fieldName.alias?.name == name && fieldName.alias?.alias == alias;
     else
       return fieldName.name == name;
-  }
-}
-
-class _IsArgumentList extends Matcher {
-  final List<Matcher> arguments;
-
-  _IsArgumentList(this.arguments);
-
-  @override
-  Description describe(Description description) {
-    return description.add('is list of ${arguments.length} argument(s)');
-  }
-
-  @override
-  bool matches(item, Map matchState) {
-    var args =
-        item is List<ArgumentContext> ? item : parse(item).parseArguments();
-
-    if (args.length != arguments.length) return false;
-
-    for (int i = 0; i < args.length; i++) {
-      if (!arguments[i].matches(args[i], matchState)) return false;
-    }
-
-    return true;
-  }
-}
-
-class _IsDirectiveList extends Matcher {
-  final List<Matcher> directives;
-
-  _IsDirectiveList(this.directives);
-
-  @override
-  Description describe(Description description) {
-    return description.add('is list of ${directives.length} directive(s)');
-  }
-
-  @override
-  bool matches(item, Map matchState) {
-    var args =
-        item is List<DirectiveContext> ? item : parse(item).parseDirectives();
-
-    if (args.length != directives.length) return false;
-
-    for (int i = 0; i < args.length; i++) {
-      if (!directives[i].matches(args[i], matchState)) return false;
-    }
-
-    return true;
   }
 }

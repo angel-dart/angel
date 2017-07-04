@@ -1,0 +1,69 @@
+import 'package:graphql_parser/graphql_parser.dart';
+import 'package:test/test.dart';
+import 'common.dart';
+import 'field_test.dart';
+import 'fragment_spread_test.dart';
+
+// TODO: Test inline fragment...
+main() {
+  test('empty', () {
+    expect('{}', isSelectionSet([]));
+  });
+
+  test('with commas', () {
+    expect(
+        '{foo, bar: baz}',
+        isSelectionSet([
+          isField(fieldName: isFieldName('foo')),
+          isField(fieldName: isFieldName('bar', alias: 'baz'))
+        ]));
+  });
+
+  test('no commas', () {
+    expect(
+        '{foo bar: baz ...quux}',
+        isSelectionSet([
+          isField(fieldName: isFieldName('foo')),
+          isField(fieldName: isFieldName('bar', alias: 'baz')),
+          isFragmentSpread('quux')
+        ]));
+  });
+
+  test('exceptions', () {
+    expect(() => parseSelectionSet('{foo,bar,baz'), throwsSyntaxError);
+  });
+}
+
+SelectionSetContext parseSelectionSet(String text) =>
+    parse(text).parseSelectionSet();
+
+Matcher isSelectionSet(List<Matcher> selections) =>
+    new _IsSelectionSet(selections);
+
+class _IsSelectionSet extends Matcher {
+  final List<Matcher> selections;
+
+  _IsSelectionSet(this.selections);
+
+  @override
+  Description describe(Description description) {
+    return description
+        .add('is selection set with ${selections.length} selection(s)');
+  }
+
+  @override
+  bool matches(item, Map matchState) {
+    var set = item is SelectionSetContext ? item : parseSelectionSet(item);
+    if (set == null) return false;
+    if (set.selections.length != selections.length) return false;
+
+    for (int i = 0; i < set.selections.length; i++) {
+      var sel = set.selections[i];
+      if (!selections[i].matches(
+          sel.field ?? sel.fragmentSpread ?? sel.inlineFragment, matchState))
+        return false;
+    }
+
+    return true;
+  }
+}

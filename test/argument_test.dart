@@ -19,6 +19,9 @@ ArgumentContext parseArgument(String text) => parse(text).parseArgument();
 
 Matcher isArgument(String name, value) => new _IsArgument(name, value);
 
+Matcher isArgumentList(List<Matcher> arguments) =>
+    new _IsArgumentList(arguments);
+
 class _IsArgument extends Matcher {
   final String name;
   final value;
@@ -39,5 +42,30 @@ class _IsArgument extends Matcher {
             arg.valueOrVariable.value?.value ??
                 arg.valueOrVariable.variable?.name,
             matchState);
+  }
+}
+
+class _IsArgumentList extends Matcher {
+  final List<Matcher> arguments;
+
+  _IsArgumentList(this.arguments);
+
+  @override
+  Description describe(Description description) {
+    return description.add('is list of ${arguments.length} argument(s)');
+  }
+
+  @override
+  bool matches(item, Map matchState) {
+    var args =
+        item is List<ArgumentContext> ? item : parse(item).parseArguments();
+
+    if (args.length != arguments.length) return false;
+
+    for (int i = 0; i < args.length; i++) {
+      if (!arguments[i].matches(args[i], matchState)) return false;
+    }
+
+    return true;
   }
 }

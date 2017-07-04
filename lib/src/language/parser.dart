@@ -38,13 +38,57 @@ class Parser {
 
   FragmentDefinitionContext parseFragmentDefinition() {}
 
-  FragmentSpreadContext parseFragmentSpread() {}
+  FragmentSpreadContext parseFragmentSpread() {
+    if (next(TokenType.ELLIPSIS)) {
+      var ELLIPSIS = current;
+      if (next(TokenType.NAME)) {
+        var NAME = current;
+        return new FragmentSpreadContext(ELLIPSIS, NAME)
+          ..directives.addAll(parseDirectives());
+      } else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected name in fragment spread.', ELLIPSIS.span.end);
+    } else
+      return null;
+  }
 
   InlineFragmentContext parseInlineFragment() {}
 
-  SelectionSetContext parseSelectionSet() {}
+  SelectionSetContext parseSelectionSet() {
+    if (next(TokenType.LBRACE)) {
+      var LBRACE = current;
+      List<SelectionContext> selections = [];
+      SelectionContext selection = parseSelection();
 
-  SelectionContext parseSelection() {}
+      while (selection != null) {
+        selections.add(selection);
+        next(TokenType.COMMA);
+        selection = parseSelection();
+      }
+
+      if (next(TokenType.RBRACE))
+        return new SelectionSetContext(LBRACE, current)
+          ..selections.addAll(selections);
+      else
+        throw new SyntaxError.fromSourceLocation(
+            'Expected "}" after selection set.',
+            selections.isEmpty ? LBRACE.span.end : selections.last.span.end);
+    } else
+      return null;
+  }
+
+  SelectionContext parseSelection() {
+    var field = parseField();
+    if (field != null) return new SelectionContext(field);
+    var fragmentSpread = parseFragmentSpread();
+    if (fragmentSpread != null)
+      return new SelectionContext(null, fragmentSpread);
+    var inlineFragment = parseInlineFragment();
+    if (inlineFragment != null)
+      return new SelectionContext(null, null, inlineFragment);
+    else
+      return null;
+  }
 
   FieldContext parseField() {
     var fieldName = parseFieldName();

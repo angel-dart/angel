@@ -9,10 +9,13 @@ class FragmentSpreadContext extends Node {
 
   FragmentSpreadContext(this.ELLIPSIS, this.NAME);
 
+  String get name => NAME.text;
+
   @override
   SourceSpan get span {
-    SourceLocation end;
-    return new SourceSpan(ELLIPSIS.span?.start, end, toSource());
+    var out = ELLIPSIS.span.union(NAME.span);
+    if (directives.isEmpty) return out;
+    return directives.fold<SourceSpan>(out, (o, d) => o.union(d.span));
   }
 
   @override

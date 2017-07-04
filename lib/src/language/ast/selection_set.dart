@@ -10,8 +10,11 @@ class SelectionSetContext extends Node {
   SelectionSetContext(this.LBRACE, this.RBRACE);
 
   @override
-  SourceSpan get span =>
-      new SourceSpan(LBRACE.span?.start, RBRACE.span?.end, toSource());
+  SourceSpan get span {
+    var out =
+        selections.fold<SourceSpan>(LBRACE.span, (out, s) => out.union(s.span));
+    return out.union(RBRACE.span);
+  }
 
   @override
   String toSource() {
