@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:charcode/charcode.dart';
 import 'package:source_span/source_span.dart';
 import '../syntax_error.dart';
@@ -11,7 +10,7 @@ class StringValueContext extends ValueContext {
   StringValueContext(this.STRING);
 
   @override
-  SourceSpan get span => STRING.span;
+  FileSpan get span => STRING.span;
 
   String get stringValue {
     var text = STRING.text.substring(1, STRING.text.length - 1);

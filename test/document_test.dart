@@ -63,6 +63,7 @@ main() {
       var doc =
           parse(r'query foo ($one: [int] = 2) @foo @bar: 2 {foo, bar: baz}')
               .parseDocument();
+      print(doc.toSource());
       expect(doc.definitions, hasLength(1));
       expect(doc.definitions.first,
           const isInstanceOf<OperationDefinitionContext>());

@@ -1,8 +1,8 @@
+import 'package:source_span/source_span.dart';
 import 'argument.dart';
 import 'directive.dart';
 import 'field_name.dart';
 import 'node.dart';
-import 'package:source_span/source_span.dart';
 import 'selection_set.dart';
 
 class FieldContext extends Node {
@@ -14,15 +14,15 @@ class FieldContext extends Node {
   FieldContext(this.fieldName, [this.selectionSet]);
 
   @override
-  SourceSpan get span {
+  FileSpan get span {
     if (selectionSet != null)
-      return fieldName.span.union(selectionSet.span);
+      return fieldName.span.expand(selectionSet.span);
     else if (directives.isNotEmpty)
-      return directives.fold<SourceSpan>(
-          fieldName.span, (out, d) => out.union(d.span));
+      return directives.fold<FileSpan>(
+          fieldName.span, (out, d) => out.expand(d.span));
     if (arguments.isNotEmpty)
-      return arguments.fold<SourceSpan>(
-          fieldName.span, (out, a) => out.union(a.span));
+      return arguments.fold<FileSpan>(
+          fieldName.span, (out, a) => out.expand(a.span));
     else
       return fieldName.span;
   }

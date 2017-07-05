@@ -1,7 +1,7 @@
+import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'alias.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
 
 class FieldNameContext extends Node {
   final Token NAME;
@@ -14,7 +14,7 @@ class FieldNameContext extends Node {
   String get name => NAME?.text;
 
   @override
-  SourceSpan get span => alias?.span ?? NAME.span;
+  FileSpan get span => alias?.span ?? NAME.span;
 
   @override
   String toSource() => alias?.toSource() ?? NAME.text;

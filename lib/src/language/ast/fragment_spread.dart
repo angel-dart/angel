@@ -12,10 +12,10 @@ class FragmentSpreadContext extends Node {
   String get name => NAME.text;
 
   @override
-  SourceSpan get span {
-    var out = ELLIPSIS.span.union(NAME.span);
+  FileSpan get span {
+    var out = ELLIPSIS.span.expand(NAME.span);
     if (directives.isEmpty) return out;
-    return directives.fold<SourceSpan>(out, (o, d) => o.union(d.span));
+    return directives.fold<FileSpan>(out, (o, d) => o.expand(d.span));
   }
 
   @override

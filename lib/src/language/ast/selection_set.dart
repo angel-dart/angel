@@ -1,6 +1,6 @@
+import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
 import 'selection.dart';
 
 class SelectionSetContext extends Node {
@@ -10,10 +10,10 @@ class SelectionSetContext extends Node {
   SelectionSetContext(this.LBRACE, this.RBRACE);
 
   @override
-  SourceSpan get span {
+  FileSpan get span {
     var out =
-        selections.fold<SourceSpan>(LBRACE.span, (out, s) => out.union(s.span));
-    return out.union(RBRACE.span);
+        selections.fold<FileSpan>(LBRACE.span, (out, s) => out.expand(s.span));
+    return out.expand(RBRACE.span);
   }
 
   @override

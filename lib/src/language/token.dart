@@ -4,7 +4,7 @@ import 'token_type.dart';
 class Token {
   final TokenType type;
   final String text;
-  SourceSpan span;
+  FileSpan span;
 
   Token(this.type, this.text, [this.span]);
 

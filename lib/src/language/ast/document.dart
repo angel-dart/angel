@@ -1,16 +1,16 @@
+import 'package:source_span/source_span.dart';
 import 'definition.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
 
 class DocumentContext extends Node {
   final List<DefinitionContext> definitions = [];
 
   @override
-  SourceSpan get span {
+  FileSpan get span {
     if (definitions.isEmpty) return null;
     return definitions
-        .map<SourceSpan>((d) => d.span)
-        .reduce((a, b) => a.union(b));
+        .map<FileSpan>((d) => d.span)
+        .reduce((a, b) => a.expand(b));
   }
 
   @override

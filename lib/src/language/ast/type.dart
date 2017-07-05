@@ -16,20 +16,9 @@ class TypeContext extends Node {
   }
 
   @override
-  SourceSpan get span {
-    SourceLocation start, end;
-
-    if (typeName != null) {
-      start = typeName.start;
-      end = typeName.end;
-    } else if (listType != null) {
-      start = listType.start;
-      end = listType.end;
-    }
-
-    if (EXCLAMATION != null) end = EXCLAMATION.span?.end;
-
-    return new SourceSpan(start, end, toSource());
+  FileSpan get span {
+    var out = typeName?.span ?? listType.span;
+    return EXCLAMATION != null ? out.expand(EXCLAMATION.span) : out;
   }
 
   @override

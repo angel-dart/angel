@@ -1,6 +1,6 @@
+import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
 import 'value_or_variable.dart';
 
 class ArgumentContext extends Node {
@@ -12,8 +12,8 @@ class ArgumentContext extends Node {
   String get name => NAME.text;
 
   @override
-  SourceSpan get span =>
-      NAME.span.union(COLON.span).union(valueOrVariable.span);
+  FileSpan get span =>
+      NAME.span.expand(COLON.span).expand(valueOrVariable.span);
 
   @override
   String toSource() => '${NAME.text}:${valueOrVariable.toSource()}';

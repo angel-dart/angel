@@ -1,5 +1,5 @@
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'type_name.dart';
 
 class TypeConditionContext extends Node {
@@ -8,7 +8,7 @@ class TypeConditionContext extends Node {
   TypeConditionContext(this.typeName);
 
   @override
-  SourceSpan get span => typeName.span;
+  FileSpan get span => typeName.span;
 
   @override
   String toSource() => typeName.toSource();

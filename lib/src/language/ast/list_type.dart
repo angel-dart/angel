@@ -1,6 +1,6 @@
 import '../token.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'type.dart';
 
 class ListTypeContext extends Node {
@@ -10,8 +10,7 @@ class ListTypeContext extends Node {
   ListTypeContext(this.LBRACKET, this.type, this.RBRACKET);
 
   @override
-  SourceSpan get span =>
-      new SourceSpan(LBRACKET.span?.end, RBRACKET.span?.end, toSource());
+  FileSpan get span => LBRACKET.span.expand(type.span).expand(RBRACKET.span);
 
   @override
   String toSource() => '[${type.toSource()}]';

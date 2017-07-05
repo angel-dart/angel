@@ -1,5 +1,5 @@
+import 'package:source_span/source_span.dart';
 import '../token.dart';
-import 'package:source_span/src/span.dart';
 import 'value.dart';
 
 class ArrayValueContext extends ValueContext {
@@ -9,8 +9,10 @@ class ArrayValueContext extends ValueContext {
   ArrayValueContext(this.LBRACKET, this.RBRACKET);
 
   @override
-  SourceSpan get span =>
-      new SourceSpan(LBRACKET.span?.end, RBRACKET.span?.end, toSource());
+  FileSpan get span {
+    var out = values.fold<FileSpan>(LBRACKET.span, (o, v) => o.expand(v.span));
+    return out.expand(RBRACKET.span);
+  }
 
   @override
   List get value => values.map((v) => v.value).toList();

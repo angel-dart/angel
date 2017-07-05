@@ -1,7 +1,7 @@
 import '../token.dart';
 import 'node.dart';
 import 'default_value.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'type.dart';
 import 'variable.dart';
 
@@ -15,8 +15,7 @@ class VariableDefinitionContext extends Node {
       [this.defaultValue]);
 
   @override
-  SourceSpan get span =>
-      new SourceSpan(variable.start, defaultValue?.end ?? type.end, toSource());
+  FileSpan get span => variable.span.expand(defaultValue?.span ?? type.span);
 
   @override
   String toSource() =>

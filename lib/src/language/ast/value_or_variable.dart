@@ -1,5 +1,5 @@
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'value.dart';
 import 'variable.dart';
 
@@ -12,7 +12,7 @@ class ValueOrVariableContext extends Node {
   }
 
   @override
-  SourceSpan get span => value?.span ?? variable.span;
+  FileSpan get span => value?.span ?? variable.span;
 
   @override
   String toSource() => '${value?.toSource() ?? variable.toSource()}';

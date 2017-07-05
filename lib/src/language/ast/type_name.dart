@@ -1,5 +1,5 @@
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import '../token.dart';
 
 class TypeNameContext extends Node {
@@ -8,7 +8,7 @@ class TypeNameContext extends Node {
   String get name => NAME.text;
 
   @override
-  SourceSpan get span => NAME.span;
+  FileSpan get span => NAME.span;
 
   TypeNameContext(this.NAME);
 

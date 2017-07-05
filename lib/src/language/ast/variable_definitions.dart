@@ -1,6 +1,6 @@
 import '../token.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'variable_definition.dart';
 
 class VariableDefinitionsContext extends Node {
@@ -10,19 +10,22 @@ class VariableDefinitionsContext extends Node {
   VariableDefinitionsContext(this.LPAREN, this.RPAREN);
 
   @override
-  SourceSpan get span =>
-      new SourceSpan(LPAREN.span?.end, RPAREN.span?.end, toSource());
+  FileSpan get span {
+    var out = variableDefinitions.fold<FileSpan>(
+        LPAREN.span, (o, v) => o.expand(v.span));
+    return out.expand(RPAREN.span);
+  }
 
   @override
   String toSource() {
-    var buf = new StringBuffer('[');
+    var buf = new StringBuffer('(');
 
     for (int i = 0; i < variableDefinitions.length; i++) {
       if (i > 0) buf.write(',');
       buf.write(variableDefinitions[i].toSource());
     }
 
-    buf.write(']');
+    buf.write(')');
     return buf.toString();
   }
 }

@@ -1,6 +1,6 @@
 import '../token.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'value.dart';
 
 class DefaultValueContext extends Node {
@@ -10,8 +10,7 @@ class DefaultValueContext extends Node {
   DefaultValueContext(this.EQUALS, this.value);
 
   @override
-  SourceSpan get span =>
-      new SourceSpan(EQUALS.span?.start, value.end, toSource());
+  FileSpan get span => EQUALS.span.expand(value.span);
 
   @override
   String toSource() => '=${value.toSource()}';

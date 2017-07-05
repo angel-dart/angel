@@ -1,6 +1,6 @@
 import '../token.dart';
 import 'node.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 
 class AliasContext extends Node {
   final Token NAME1, COLON, NAME2;
@@ -14,7 +14,7 @@ class AliasContext extends Node {
   String get name => NAME2.text;
 
   @override
-  SourceSpan get span => NAME1.span.union(COLON.span).union(NAME2.span);
+  FileSpan get span => NAME1.span.expand(COLON.span).expand(NAME2.span);
 
   @override
   String toSource() => '${NAME1.text}:${NAME2.text}';

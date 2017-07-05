@@ -1,7 +1,7 @@
 import '../token.dart';
 import 'definition.dart';
 import 'directive.dart';
-import 'package:source_span/src/span.dart';
+import 'package:source_span/source_span.dart';
 import 'selection_set.dart';
 import 'variable_definitions.dart';
 
@@ -22,9 +22,11 @@ class OperationDefinitionContext extends DefinitionContext {
   }
 
   @override
-  SourceSpan get span {
+  FileSpan get span {
     if (TYPE == null) return selectionSet.span;
-    return new SourceSpan(TYPE.span?.start, selectionSet.end, toSource());
+    var out = TYPE.span.expand(NAME.span);
+    out = directives.fold<FileSpan>(out, (o, d) => o.expand(d.span));
+    return out.expand(selectionSet.span);
   }
 
   @override

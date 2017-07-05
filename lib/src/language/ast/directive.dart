@@ -15,14 +15,16 @@ class DirectiveContext extends Node {
   }
 
   @override
-  SourceSpan get span {
-    SourceLocation end = NAME.span?.end;
+  FileSpan get span {
+    var out = ARROBA.span.expand(NAME.span);
 
-    if (valueOrVariable != null)
-      end = valueOrVariable.end;
-    else if (RPAREN != null) end = RPAREN.span?.end;
+    if (COLON != null) {
+      out = out.expand(COLON.span).expand(valueOrVariable.span);
+    } else if (LPAREN != null) {
+      out = out.expand(LPAREN.span).expand(argument.span).expand(RPAREN.span);
+    }
 
-    return new SourceSpan(ARROBA.span?.start, end, toSource());
+    return out;
   }
 
   @override
