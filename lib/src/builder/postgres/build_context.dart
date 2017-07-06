@@ -9,6 +9,7 @@ import '../../migration.dart';
 import '../../relations.dart';
 import 'package:angel_serialize/src/find_annotation.dart';
 import 'package:source_gen/src/annotation.dart';
+import 'package:source_gen/source_gen.dart';
 import 'postgres_build_context.dart';
 
 // TODO: Should add id, createdAt, updatedAt...
@@ -25,27 +26,47 @@ PostgresBuildContext buildContext(
       tableName: annotation.tableName?.isNotEmpty == true
           ? annotation.tableName
           : pluralize(new ReCase(clazz.name).snakeCase));
+  var relations = new TypeChecker.fromRuntime(Relationship);
   List<String> fieldNames = [];
+  List<FieldElement> fields = [];
 
   for (var field in raw.fields) {
     fieldNames.add(field.name);
     // Check for relationship. If so, skip.
-    Relationship relationship = null;
+    var relationshipAnnotation = relations.firstAnnotationOf(field);
     /* findAnnotation<HasOne>(field, HasOne) ??
           findAnnotation<HasMany>(field, HasMany) ??
           findAnnotation<BelongsTo>(field, BelongsTo);*/
-    bool isRelationship = field.metadata.any((ann) {
-      return matchAnnotation(Relationship, ann) ||
-          matchAnnotation(HasMany, ann) ||
-          matchAnnotation(HasOne, ann) ||
-          matchAnnotation(BelongsTo, ann);
-    });
 
-    if (relationship != null) {
-      ctx.relationships[field.name] = relationship;
-      continue;
-    } else if (isRelationship) {
-      ctx.relationships[field.name] = null;
+    if (relationshipAnnotation != null) {
+      int type = -1;
+
+      switch (relationshipAnnotation.type.name) {
+        case 'HasMany':
+          type = RelationshipType.HAS_MANY;
+          break;
+        case 'HasOne':
+          type = RelationshipType.HAS_ONE;
+          break;
+        case 'BelongsTo':
+          type = RelationshipType.BELONGS_TO;
+          break;
+        default:
+          throw new UnsupportedError(
+              'Unsupported relationship type "${relationshipAnnotation.type.name}".');
+      }
+
+      ctx.relationshipFields.add(field);
+      ctx.relationships[field.name] = new Relationship(type,
+          localKey:
+              relationshipAnnotation.getField('localKey')?.toStringValue(),
+          foreignKey:
+              relationshipAnnotation.getField('foreignKey')?.toStringValue(),
+          foreignTable:
+              relationshipAnnotation.getField('foreignTable')?.toStringValue(),
+          cascadeOnDelete: relationshipAnnotation
+              .getField('cascadeOnDelete')
+              ?.toBoolValue());
       continue;
     }
 
@@ -86,7 +107,9 @@ PostgresBuildContext buildContext(
     if (column == null)
       throw 'Cannot infer SQL column type for field "${field.name}" with type "${field.type.name}".';
     ctx.columnInfo[field.name] = column;
+    fields.add(field);
   }
 
+  ctx.fields.addAll(fields);
   return ctx;
 }

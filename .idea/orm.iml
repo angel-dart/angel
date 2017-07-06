@@ -12,6 +12,14 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tool/packages" />
     </content>
+    <content url="file://$MODULE_DIR$/../serialize">
+      <excludeFolder url="file://$MODULE_DIR$/../serialize/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/../serialize/build" />
+      <excludeFolder url="file://$MODULE_DIR$/../serialize/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/../serialize/test/models/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/../serialize/test/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/../serialize/tool/packages" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart SDK" level="project" />

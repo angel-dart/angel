@@ -45,24 +45,50 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     lib.addDirective(new ImportBuilder('package:angel_orm/angel_orm.dart'));
     lib.addDirective(new ImportBuilder('package:postgres/postgres.dart'));
     lib.addDirective(new ImportBuilder(p.basename(buildStep.inputId.path)));
-
+    var elements = getElementsFromLibraryElement(libraryElement)
+        .where((el) => el is ClassElement);
+    Map<ClassElement, PostgresBuildContext> contexts = {};
     List<String> done = [];
-    for (var element in getElementsFromLibraryElement(libraryElement)) {
-      if (element is ClassElement && !done.contains(element.name)) {
+    List<String> imported = [];
+
+    for (var element in elements) {
+      if (!done.contains(element.name)) {
         var ann = element.metadata
             .firstWhere((a) => matchAnnotation(ORM, a), orElse: () => null);
         if (ann != null) {
-          var ctx = buildContext(
+          var ctx = contexts[element] = buildContext(
               element,
               instantiateAnnotation(ann),
               buildStep,
               resolver,
               autoSnakeCaseNames != false,
               autoIdAndDateFields != false);
-          lib.addMember(buildQueryClass(ctx));
-          lib.addMember(buildWhereClass(ctx));
-          done.add(element.name);
+          ctx.relationships.forEach((name, relationship) {
+            var field = ctx.resolveRelationshipField(name);
+            var uri = field.type.element.source.uri;
+            var pathName = p
+                .basenameWithoutExtension(p.basenameWithoutExtension(uri.path));
+            var source =
+                '$pathName.orm.g.dart'; //uri.resolve('$pathName.orm.g.dart').toString();
+            // TODO: Find good way to source url...
+            source = new ReCase(field.type.name).snakeCase + '.orm.g.dart';
+
+            if (!imported.contains(source)) {
+              lib.addDirective(new ImportBuilder(source));
+              imported.add(source);
+            }
+          });
         }
+      }
+    }
+
+    done.clear();
+    for (var element in contexts.keys) {
+      if (!done.contains(element.name)) {
+        var ctx = contexts[element];
+        lib.addMember(buildQueryClass(ctx));
+        lib.addMember(buildWhereClass(ctx));
+        done.add(element.name);
       }
     }
     return lib;
@@ -111,7 +137,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     clazz.addMethod(buildGetMethod(ctx));
 
     // Add getOne()...
-    clazz.addMethod(buildGetOneMethod(ctx));
+    clazz.addMethod(buildGetOneMethod(ctx), asStatic: true);
 
     // Add update()...
     clazz.addMethod(buildUpdateMethod(ctx));
@@ -170,12 +196,11 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
 
     int i = 0;
 
-    // TODO: Support relations...
     ctx.fields.forEach((field) {
       var name = ctx.resolveFieldName(field.name);
       var rowKey = row[literal(i++)];
 
-      if (false && field.type.name == 'DateTime') {
+      if (field.type.isAssignableTo(ctx.dateTimeType)) {
         // TODO: Handle DATE and not just DATETIME
         data[name] = DATE_YMD_HMS.invoke('parse', [rowKey]);
       } else if (field.name == 'id' && ctx.shimmed.containsKey('id')) {
@@ -184,6 +209,17 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
         data[name] = rowKey.equals(literal(1));
       } else
         data[name] = rowKey;
+    });
+
+    ctx.relationships.forEach((name, relationship) {
+      var field = ctx.resolveRelationshipField(name);
+      var alias = ctx.resolveFieldName(name);
+      var idx = i++;
+      var rowKey = row[literal(idx)];
+      data[alias] = (row.property('length') < literal(idx + 1)).ternary(
+          literal(null),
+          new TypeBuilder(new ReCase(field.type.name).pascalCase + 'Query')
+              .invoke('parseRow', [rowKey]));
     });
 
     // Then, call a .fromJson() constructor
@@ -239,22 +275,151 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     return meth;
   }
 
+  void _addAllNamed(MethodBuilder meth, PostgresBuildContext ctx) {
+    // Add all named params
+    ctx.fields.forEach((field) {
+      if (field.name != 'id') {
+        var p = new ParameterBuilder(field.name,
+            type: new TypeBuilder(field.type.name));
+        var column = ctx.columnInfo[field.name];
+        if (column?.defaultValue != null)
+          p = p.asOptional(literal(column.defaultValue));
+        meth.addNamed(p);
+      }
+    });
+  }
+
+  void _addReturning(StringBuffer buf, PostgresBuildContext ctx) {
+    buf.write(' RETURNING (');
+    int i = 0;
+    ctx.fields.forEach((field) {
+      if (i++ > 0) buf.write(', ');
+      var name = ctx.resolveFieldName(field.name);
+      buf.write('"$name"');
+    });
+
+    buf.write(');');
+  }
+
+  void _ensureDates(MethodBuilder meth, PostgresBuildContext ctx) {
+    if (ctx.fields.any((f) => f.name == 'createdAt' || f.name == 'updatedAt')) {
+      meth.addStatement(varField('__ormNow__',
+          value: lib$core.DateTime.newInstance([], constructor: 'now')));
+    }
+  }
+
+  Map<String, ExpressionBuilder> _buildSubstitutionValues(
+      PostgresBuildContext ctx) {
+    Map<String, ExpressionBuilder> substitutionValues = {};
+    ctx.fields.forEach((field) {
+      if (field.name == 'id')
+        return;
+      else if (field.name == 'createdAt' || field.name == 'updatedAt') {
+        var ref = reference(field.name);
+        substitutionValues[field.name] =
+            ref.notEquals(literal(null)).ternary(ref, reference('__ormNow__'));
+      } else
+        substitutionValues[field.name] = reference(field.name);
+    });
+    return substitutionValues;
+  }
+
+  void _executeQuery(StringBuffer buf, MethodBuilder meth,
+      Map<String, ExpressionBuilder> substitutionValues) {
+    var connection = reference('connection');
+    var query = literal(buf.toString());
+    var result = reference('result');
+    meth.addStatement(varField('result',
+        value: connection.invoke('query', [
+          query
+        ], namedArguments: {
+          'substitutionValues': map(substitutionValues)
+        }).asAwait()));
+    meth.addStatement(reference('parseRow').call([result]).asReturn());
+  }
+
   MethodBuilder buildUpdateMethod(PostgresBuildContext ctx) {
     var meth = new MethodBuilder('update',
+        modifier: MethodModifier.asAsync,
         returnType: new TypeBuilder('Future',
             genericTypes: [new TypeBuilder(ctx.modelClassName)]));
+    meth.addPositional(parameter('id', [lib$core.int]));
+    meth.addPositional(
+        parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+    _addAllNamed(meth, ctx);
+
+    var buf = new StringBuffer('UPDATE "${ctx.tableName}" SET (');
+    int i = 0;
+    ctx.fields.forEach((field) {
+      if (field.name == 'id')
+        return;
+      else {
+        if (i++ > 0) buf.write(', ');
+        var key = ctx.resolveFieldName(field.name);
+        buf.write('"$key"');
+      }
+    });
+    buf.write(') = (');
+    i = 0;
+    ctx.fields.forEach((field) {
+      if (field.name == 'id')
+        return;
+      else {
+        if (i++ > 0) buf.write(', ');
+        buf.write('@${field.name}');
+      }
+    });
+    buf.write(') WHERE "id" = @id');
+
+    _addReturning(buf, ctx);
+    _ensureDates(meth, ctx);
+    var substitutionValues = _buildSubstitutionValues(ctx);
+    substitutionValues.putIfAbsent('id', () => reference('id'));
+    _executeQuery(buf, meth, substitutionValues);
     return meth;
   }
 
   MethodBuilder buildDeleteMethod(PostgresBuildContext ctx) {
     var meth = new MethodBuilder('delete',
+        modifier: MethodModifier.asAsync,
         returnType: new TypeBuilder('Future',
-            genericTypes: [new TypeBuilder(ctx.modelClassName)]));
+            genericTypes: [new TypeBuilder(ctx.modelClassName)]))
+      ..addPositional(parameter('id', [lib$core.int]))
+      ..addPositional(
+          parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+
+    var id = reference('id');
+    var connection = reference('connection');
+    var beforeDelete = reference('__ormBeforeDelete__');
+    var result = reference('result');
+
+    // var __ormBeforeDelete__ = await XQuery.getOne(id, connection);
+    meth.addStatement(varField('__ormBeforeDelete__',
+        value: new TypeBuilder(ctx.queryClassName)
+            .invoke('getOne', [id, connection]).asAwait()));
+
+    // await connection.execute('...');
+    meth.addStatement(varField('result',
+        value: connection.invoke('execute', [
+          literal('DELETE FROM "${ctx.tableName}" WHERE id = @id LIMIT 1;')
+        ], namedArguments: {
+          'substitutionValues': map({'id': id})
+        }).asAwait()));
+
+    meth.addStatement(ifThen(result.notEquals(literal(1)), [
+      lib$core.StateError.newInstance([
+        literal('DELETE query deleted ') +
+            result +
+            literal(' row(s), instead of exactly 1 row.')
+      ])
+    ]));
+
+    // return __ormBeforeDelete__
+    meth.addStatement(beforeDelete.asReturn());
     return meth;
   }
 
   MethodBuilder buildInsertMethod(PostgresBuildContext ctx) {
-    // TODO: Auto-set createdAt, updatedAt...
     var meth = new MethodBuilder('insert',
         modifier: MethodModifier.asAsync,
         returnType: new TypeBuilder('Future',
@@ -263,14 +428,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
         parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
 
     // Add all named params
-    ctx.fields.forEach((field) {
-      var p = new ParameterBuilder(field.name,
-          type: new TypeBuilder(field.type.name));
-      var column = ctx.columnInfo[field.name];
-      if (column?.defaultValue != null)
-        p = p.asOptional(literal(column.defaultValue));
-      meth.addNamed(p);
-    });
+    _addAllNamed(meth, ctx);
 
     var buf = new StringBuffer('INSERT INTO "${ctx.tableName}" (');
     int i = 0;
@@ -297,104 +455,13 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
 
     buf.write(')');
 
-    buf.write(' RETURNING (');
-    i = 0;
-    ctx.fields.forEach((field) {
-      if (i++ > 0) buf.write(', ');
-      var name = ctx.resolveFieldName(field.name);
-      buf.write('"$name"');
-    });
+    _addReturning(buf, ctx);
+    // meth.addStatement(lib$core.print.call([literal(buf.toString())]));
 
-    buf.write(');');
-    meth.addStatement(lib$core.print.call([literal(buf.toString())]));
+    _ensureDates(meth, ctx);
 
-    if (ctx.fields.any((f) => f.name == 'createdAt' || f.name == 'updatedAt')) {
-      meth.addStatement(varField('__ormNow__',
-          value: lib$core.DateTime.newInstance([], constructor: 'now')));
-    }
-
-    Map<String, ExpressionBuilder> substitutionValues = {};
-    ctx.fields.forEach((field) {
-      if (field.name == 'id')
-        return;
-      else if (field.name == 'createdAt' || field.name == 'updatedAt') {
-        var ref = reference(field.name);
-        substitutionValues[field.name] =
-            ref.notEquals(literal(null)).ternary(ref, reference('__ormNow__'));
-      } else
-        substitutionValues[field.name] = reference(field.name);
-    });
-
-    /*
-    // Create StringBuffer
-    meth.addStatement(varField('buf',
-        type: lib$core.StringBuffer,
-        value: lib$core.StringBuffer.newInstance([])));
-    var buf = reference('buf');
-
-    // Create "INSERT INTO segment"
-    var fieldNames = ctx.fields
-        .map((f) => ctx.resolveFieldName(f.name))
-        .map((k) => '"$k"')
-        .join(', ');
-    var insertInto =
-        literal('INSERT INTO "${ctx.tableName}" ($fieldNames) VALUES (');
-    meth.addStatement(buf.invoke('write', [insertInto]));
-
-    // Write all fields
-    int i = 0;
-    var backtick = literal('"');
-    var numType = ctx.typeProvider.numType;
-    var boolType = ctx.typeProvider.boolType;
-    ctx.fields.forEach((field) {
-      var ref = reference(field.name);
-      ExpressionBuilder value;
-
-      // Handle numbers
-      if (field.type.isAssignableTo(numType)) {
-        value = ref;
-      }
-
-      // Handle boolean
-      else if (field.type.isAssignableTo(numType)) {
-        value = ref.equals(literal(true)).ternary(literal(1), literal(0));
-      }
-
-      // Handle DateTime
-      else if (field.type.isAssignableTo(ctx.dateTimeType)) {
-        // TODO: DATE and not just DATETIME
-        value = reference('DATE_YMD_HMS').invoke('format', [ref]);
-      }
-
-      // Handle anything else...
-      // TODO: Escape SQL strings???
-      else {
-        value = backtick + (ref.invoke('toString', [])) + backtick;
-      }
-
-      if (i++ > 0) meth.addStatement(buf.invoke('write', [literal(', ')]));
-      meth.addStatement(ifThen(ref.equals(literal(null)), [
-        buf.invoke('write', [literal('NULL')]),
-        elseThen([
-          buf.invoke('write', [value])
-        ])
-      ]));
-    });
-
-    // Finalize buffer
-    meth.addStatement(buf.invoke('write', [literal(');')]));
-    meth.addStatement(varField('query', value: buf.invoke('toString', [])));*/
-
-    var connection = reference('connection');
-    var query = literal(buf.toString());
-    var result = reference('result');
-    meth.addStatement(varField('result',
-        value: connection.invoke('query', [
-          query
-        ], namedArguments: {
-          'substitutionValues': map(substitutionValues)
-        }).asAwait()));
-    meth.addStatement(reference('parseRow').call([result]).asReturn());
+    var substitutionValues = _buildSubstitutionValues(ctx);
+    _executeQuery(buf, meth, substitutionValues);
     return meth;
   }
 

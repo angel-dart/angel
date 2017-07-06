@@ -28,7 +28,7 @@ class PostgresBuildContext extends BuildContext {
             originalClassName: raw.originalClassName,
             sourceFilename: raw.sourceFilename);
 
-  List<FieldElement> get fields => raw.fields;
+  final List<FieldElement> fields = [], relationshipFields = [];
 
   Map<String, String> get aliases => raw.aliases;
 
@@ -53,4 +53,7 @@ class PostgresBuildContext extends BuildContext {
 
   TypeProvider get typeProvider =>
       _typeProviderCache ??= library.context.typeProvider;
+
+  FieldElement resolveRelationshipField(String name) =>
+      relationshipFields.firstWhere((f) => f.name == name, orElse: () => null);
 }

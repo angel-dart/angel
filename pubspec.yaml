@@ -13,7 +13,7 @@ dependencies:
   postgres: ">=0.9.5 <1.0.0"
   query_builder_sql: ^1.0.0-alpha
   recase: ^1.0.0
-  source_gen: ^0.5.8
+  source_gen: ^0.6.0
 dev_dependencies:
   angel_diagnostics: ">=1.0.0 <2.0.0"
   angel_serialize:

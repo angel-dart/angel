@@ -56,9 +56,9 @@ class CarQuery {
       'make': row[1],
       'description': row[2],
       'family_friendly': row[3] == 1,
-      'recalled_at': row[4],
-      'created_at': row[5],
-      'updated_at': row[6]
+      'recalled_at': DATE_YMD_HMS.parse(row[4]),
+      'created_at': DATE_YMD_HMS.parse(row[5]),
+      'updated_at': DATE_YMD_HMS.parse(row[6])
     });
   }
 
@@ -71,25 +71,53 @@ class CarQuery {
     return ctrl.stream;
   }
 
-  Future<Car> getOne(int id, PostgreSQLConnection connection) {
+  static Future<Car> getOne(int id, PostgreSQLConnection connection) {
     return connection.query('SELECT * FROM "cars" WHERE "id" = @id;',
         substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
   }
 
-  Future<Car> update() {}
-
-  Future<Car> delete() {}
-
-  static Future<Car> insert(PostgreSQLConnection connection,
-      {String id,
-      String make,
+  Future<Car> update(int id, PostgreSQLConnection connection,
+      {String make,
       String description,
       bool familyFriendly,
       DateTime recalledAt,
       DateTime createdAt,
       DateTime updatedAt}) async {
-    print(
-        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");');
+    var __ormNow__ = new DateTime.now();
+    var result = await connection.query(
+        'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) WHERE "id" = @id RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
+        substitutionValues: {
+          'make': make,
+          'description': description,
+          'familyFriendly': familyFriendly,
+          'recalledAt': recalledAt,
+          'createdAt': createdAt != null ? createdAt : __ormNow__,
+          'updatedAt': updatedAt != null ? updatedAt : __ormNow__,
+          'id': id
+        });
+    return parseRow(result);
+  }
+
+  Future<Car> delete(int id, PostgreSQLConnection connection) async {
+    var __ormBeforeDelete__ = await CarQuery.getOne(id, connection);
+    var result = await connection.execute(
+        'DELETE FROM "cars" WHERE id = @id LIMIT 1;',
+        substitutionValues: {'id': id});
+    if (result != 1) {
+      new StateError('DELETE query deleted ' +
+          result +
+          ' row(s), instead of exactly 1 row.');
+    }
+    return __ormBeforeDelete__;
+  }
+
+  static Future<Car> insert(PostgreSQLConnection connection,
+      {String make,
+      String description,
+      bool familyFriendly,
+      DateTime recalledAt,
+      DateTime createdAt,
+      DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
         'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
