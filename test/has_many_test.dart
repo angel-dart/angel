@@ -9,8 +9,8 @@ main() {
 
   setUp(() async {
     app = new Angel()
-      ..use('/authors', new CustomMapService())
-      ..use('/books', new CustomMapService());
+      ..use('/authors', new MapService())
+      ..use('/books', new MapService());
 
     await app.configure(seed(
         'authors',

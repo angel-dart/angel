@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 
+@deprecated
 class CustomMapService extends Service {
   final List<Map> _items = [];
 

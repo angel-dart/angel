@@ -9,8 +9,8 @@ main() {
 
   setUp(() async {
     app = new Angel()
-      ..use('/authors', new CustomMapService())
-      ..use('/books', new CustomMapService());
+      ..use('/authors', new MapService())
+      ..use('/books', new MapService());
 
     await app.configure(seed(
         'authors',
@@ -41,6 +41,8 @@ main() {
       expect(author.keys, contains('book'));
 
       Map book = author['book'];
+      print('Author: $author');
+      print('Book: $book');
       expect(book['authorId'], equals(author['id']));
     }
   });

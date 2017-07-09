@@ -52,6 +52,7 @@ HookedServiceEventListener hasOne(Pattern servicePath,
     _normalize(obj) async {
       if (obj != null) {
         var id = await _getLocalKey(obj);
+
         var indexed = await ref.index({
           'query': {foreignKey ?? 'userId': id}
         });

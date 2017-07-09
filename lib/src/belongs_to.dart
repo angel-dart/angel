@@ -9,8 +9,8 @@ import 'no_service.dart';
 /// on the target object.
 ///
 /// Defaults:
-/// * [foreignKey]: `userId`
-/// * [localKey]: `id`
+/// * [localKey]: `userId`
+/// * [foreignKey]: `id`
 HookedServiceEventListener belongsTo(Pattern servicePath,
     {String as,
     String foreignKey,
