@@ -14,7 +14,7 @@ part 'mongo_service.dart';
 part 'mongo_service_typed.dart';
 
 Map _transformId(Map doc) {
-  Map result = mergeMap([doc]);
+  Map result = new Map.from(doc);
   result
     ..['id'] = doc['_id']
     ..remove('_id');

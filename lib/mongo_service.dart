@@ -19,7 +19,7 @@ class MongoService extends Service {
       : super();
 
   SelectorBuilder _makeQuery([Map params_]) {
-    Map params = params_ ?? {};
+    Map params = new Map.from(params_ ?? {});
     params = params..remove('provider');
     SelectorBuilder result = where.exists('_id');
 
@@ -82,13 +82,6 @@ class MongoService extends Service {
     return _transformId(result);
   }
 
-  void printDebug(e, st, msg) {
-    if (debug) {
-      stderr.writeln('$msg ERROR: $e');
-      stderr.writeln(st);
-    }
-  }
-
   @override
   Future<List> index([Map params]) async {
     return await (await collection.find(_makeQuery(params)))
@@ -96,17 +89,22 @@ class MongoService extends Service {
         .toList();
   }
 
+  static const String _NONCE_KEY = '__angel__mongo__nonce__key__';
+
   @override
   Future create(data, [Map params]) async {
     Map item = (data is Map) ? data : god.serializeObject(data);
     item = _removeSensitive(item);
 
     try {
-      item['createdAt'] = new DateTime.now().toIso8601String();
-      await collection.insert(item);
-      return await _lastItem(collection, _jsonify, params);
+      String nonce = (await collection.db.getNonce())['nonce'];
+      var result = await collection.findAndModify(
+          query: where.eq(_NONCE_KEY, nonce),
+          update: item,
+          returnNew: true,
+          upsert: true);
+      return _jsonify(result);
     } catch (e, st) {
-      printDebug(e, st, 'CREATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -141,49 +139,43 @@ class MongoService extends Service {
       target is Map ? target : god.serializeObject(target),
       _removeSensitive(data)
     ]);
-    result['updatedAt'] = new DateTime.now().toIso8601String();
+    //result['updatedAt'] = new DateTime.now().toIso8601String();
 
     try {
-      await collection.update(where.id(_makeId(id)), result);
-      result = _jsonify(result, params);
-      result['id'] = id;
+      var modified = await collection.findAndModify(
+          query: where.id(_makeId(id)), update: result, returnNew: true);
+      result = _jsonify(modified, params);
+      result['id'] = _makeId(id).toHexString();
       return result;
     } catch (e, st) {
-      printDebug(e, st, 'MODIFY');
+      //printDebug(e, st, 'MODIFY');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
 
   @override
   Future update(id, data, [Map params]) async {
-    var target;
-
-    try {
-      target = await read(id, params);
-    } on AngelHttpException catch (e) {
-      if (e.statusCode == HttpStatus.NOT_FOUND)
-        return await create(data, params);
-      else
-        rethrow;
-    }
-    
     Map result = _removeSensitive(data);
     result['_id'] = _makeId(id);
-    result['createdAt'] =
+    /*result['createdAt'] =
         target is Map ? target['createdAt'] : target.createdAt;
 
     if (result['createdAt'] is DateTime)
       result['createdAt'] = result['createdAt'].toIso8601String();
 
-    result['updatedAt'] = new DateTime.now().toIso8601String();
+    result['updatedAt'] = new DateTime.now().toIso8601String();*/
 
     try {
-      await collection.update(where.id(_makeId(id)), result);
-      result = _jsonify(result, params);
-      result['id'] = id;
+      var updated = await collection.findAndModify(
+          query: where.id(_makeId(id)),
+          update: result,
+          returnNew: true,
+          upsert: true);
+      result = _jsonify(updated, params);
+      result['id'] = _makeId(id).toHexString();
       return result;
     } catch (e, st) {
-      printDebug(e, st, 'UPDATE');
+      //printDebug(e, st, 'UPDATE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
@@ -198,13 +190,14 @@ class MongoService extends Service {
       return {};
     }
 
-    var result = await read(id, params);
+    // var result = await read(id, params);
 
     try {
-      await collection.remove(where.id(_makeId(id)).and(_makeQuery(params)));
-      return result;
+      var result = await collection.findAndModify(
+          query: where.id(_makeId(id)), remove: true);
+      return _jsonify(result);
     } catch (e, st) {
-      printDebug(e, st, 'REMOVE');
+      //printDebug(e, st, 'REMOVE');
       throw new AngelHttpException(e, stackTrace: st);
     }
   }
