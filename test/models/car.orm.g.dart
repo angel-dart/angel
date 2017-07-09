@@ -20,21 +20,21 @@ class CarQuery {
   final CarQueryWhere where = new CarQueryWhere();
 
   void and(CarQuery other) {
-    var compiled = other.where.toWhereClause();
+    var compiled = other.where.toWhereClause(keyword: false);
     if (compiled != null) {
       _and.add(compiled);
     }
   }
 
   void or(CarQuery other) {
-    var compiled = other.where.toWhereClause();
+    var compiled = other.where.toWhereClause(keyword: false);
     if (compiled != null) {
       _or.add(compiled);
     }
   }
 
   void not(CarQuery other) {
-    var compiled = other.where.toWhereClause();
+    var compiled = other.where.toWhereClause(keyword: false);
     if (compiled != null) {
       _not.add(compiled);
     }
@@ -46,6 +46,15 @@ class CarQuery {
     if (whereClause != null) {
       buf.write(' ' + whereClause);
     }
+    if (_and.isNotEmpty) {
+      buf.write(' AND (' + _and.join(',') + ')');
+    }
+    if (_or.isNotEmpty) {
+      buf.write(' OR (' + _or.join(',') + ')');
+    }
+    if (_not.isNotEmpty) {
+      buf.write(' NOT (' + _not.join(',') + ')');
+    }
     buf.write(';');
     return buf.toString();
   }
@@ -55,10 +64,10 @@ class CarQuery {
       'id': row[0].toString(),
       'make': row[1],
       'description': row[2],
-      'family_friendly': row[3] == 1,
-      'recalled_at': DATE_YMD_HMS.parse(row[4]),
-      'created_at': DATE_YMD_HMS.parse(row[5]),
-      'updated_at': DATE_YMD_HMS.parse(row[6])
+      'family_friendly': row[3],
+      'recalled_at': row[4],
+      'created_at': row[5],
+      'updated_at': row[6]
     });
   }
 
@@ -76,32 +85,54 @@ class CarQuery {
         substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
   }
 
-  Future<Car> update(int id, PostgreSQLConnection connection,
+  Stream<Car> update(PostgreSQLConnection connection,
       {String make,
       String description,
       bool familyFriendly,
       DateTime recalledAt,
       DateTime createdAt,
-      DateTime updatedAt}) async {
+      DateTime updatedAt}) {
+    var buf = new StringBuffer(
+        'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) ');
+    var whereClause = where.toWhereClause();
+    if (whereClause == null) {
+      buf.write('WHERE "id" = @id');
+    } else {
+      buf.write(whereClause);
+    }
     var __ormNow__ = new DateTime.now();
-    var result = await connection.query(
-        'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) WHERE "id" = @id RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
+    var ctrl = new StreamController<Car>();
+    connection.query(
+        buf.toString() +
+            ' RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
         substitutionValues: {
           'make': make,
           'description': description,
           'familyFriendly': familyFriendly,
           'recalledAt': recalledAt,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
-          'updatedAt': updatedAt != null ? updatedAt : __ormNow__,
-          'id': id
-        });
-    return parseRow(result);
+          'updatedAt': updatedAt != null ? updatedAt : __ormNow__
+        }).then((rows) {
+      rows.map(parseRow).forEach(ctrl.add);
+      ctrl.close();
+    }).catchError(ctrl.addError);
+    return ctrl.stream;
   }
 
-  Future<Car> delete(int id, PostgreSQLConnection connection) async {
+  Stream<Car> delete(PostgreSQLConnection connection) {
+    var query = 'DELETE FROM "cars" RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");';
+    StreamController<Car> ctrl = new StreamController<Car>();
+    connection.execute(query).then((rows) {
+      print('Rows: $rows');
+      rows.map(parseRow).forEach(ctrl.add);
+      ctrl.close();
+    }).catchError(ctrl.addError);
+    return ctrl.stream;
+  }
+
+  static Future<Car> deleteOne(int id, PostgreSQLConnection connection) async {
     var __ormBeforeDelete__ = await CarQuery.getOne(id, connection);
-    var result = await connection.execute(
-        'DELETE FROM "cars" WHERE id = @id LIMIT 1;',
+    var result = await connection.execute('DELETE FROM "cars" WHERE id = @id;',
         substitutionValues: {'id': id});
     if (result != 1) {
       new StateError('DELETE query deleted ' +
@@ -119,8 +150,8 @@ class CarQuery {
       DateTime createdAt,
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
-    var result = await connection.query(
-        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
+    var nRows = await connection.execute(
+        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt);',
         substitutionValues: {
           'make': make,
           'description': description,
@@ -129,7 +160,12 @@ class CarQuery {
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
-    return parseRow(result);
+    if (nRows < 1) {
+      throw new StateError('Insertion into "cars" table failed.');
+    }
+    var currVal = await connection.query(
+        'SELECT * FROM "cars" WHERE id = currval(pg_get_serial_sequence(\'cars\', \'id\'));');
+    return parseRow(currVal[0]);
   }
 
   static Stream<Car> getAll(PostgreSQLConnection connection) =>
@@ -137,7 +173,8 @@ class CarQuery {
 }
 
 class CarQueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder();
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>();
 
   final StringSqlExpressionBuilder make = new StringSqlExpressionBuilder();
 
@@ -156,7 +193,7 @@ class CarQueryWhere {
   final DateTimeSqlExpressionBuilder updatedAt =
       new DateTimeSqlExpressionBuilder('updated_at');
 
-  String toWhereClause() {
+  String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
       expressions.add('"id" ' + id.compile());
@@ -179,6 +216,8 @@ class CarQueryWhere {
     if (updatedAt.hasValue) {
       expressions.add(updatedAt.compile());
     }
-    return expressions.isEmpty ? null : ('WHERE ' + expressions.join(' AND '));
+    return expressions.isEmpty
+        ? null
+        : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }

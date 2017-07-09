@@ -13,4 +13,5 @@ final PhaseGroup PHASES = new PhaseGroup()
         new GeneratorBuilder([new PostgresORMGenerator()],
             isStandalone: true, generatedExtension: '.orm.g.dart'),
         MODELS))
-  ..addPhase(new Phase()..addAction(new SQLMigrationGenerator(), MODELS));
+  ..addPhase(new Phase()
+    ..addAction(new SQLMigrationGenerator(temporary: true), MODELS));

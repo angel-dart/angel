@@ -17,6 +17,8 @@ import 'package:angel_serialize/src/find_annotation.dart';
 import 'build_context.dart';
 import 'postgres_build_context.dart';
 
+const List<String> RELATIONS = const ['and', 'or', 'not'];
+
 // TODO: HasOne, HasMany, BelongsTo
 class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
   /// If "true" (default), then field names will automatically be (de)serialized as snake_case.
@@ -102,7 +104,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     var connection = reference('connection');
 
     // Add or + not
-    for (var relation in ['and', 'or', 'not']) {
+    for (var relation in RELATIONS) {
       clazz.addField(varFinal('_$relation',
           type: new TypeBuilder('List', genericTypes: [lib$core.String]),
           value: list([])));
@@ -112,8 +114,9 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
           parameter('other', [new TypeBuilder(ctx.queryClassName)]));
       var otherWhere = reference('other').property('where');
       var compiled = reference('compiled');
-      relationMethod.addStatement(
-          varField('compiled', value: otherWhere.invoke('toWhereClause', [])));
+      relationMethod.addStatement(varField('compiled',
+          value: otherWhere.invoke('toWhereClause', [],
+              namedArguments: {'keyword': literal(false)})));
       relationMethod.addStatement(ifThen(compiled.notEquals(literal(null)), [
         reference('_$relation').invoke('add', [compiled])
       ]));
@@ -142,8 +145,11 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     // Add update()...
     clazz.addMethod(buildUpdateMethod(ctx));
 
-    // Add remove()...
+    // Add delete()...
     clazz.addMethod(buildDeleteMethod(ctx));
+
+    // Add deleteOne()...
+    clazz.addMethod(buildDeleteOneMethod(ctx), asStatic: true);
 
     // Add insert()...
     clazz.addMethod(buildInsertMethod(ctx), asStatic: true);
@@ -176,6 +182,16 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       buf.invoke('write', [literal(' ') + whereClause])
     ]));
 
+    for (var relation in RELATIONS) {
+      var ref = reference('_$relation');
+      var upper = relation.toUpperCase();
+      var joined = ref.invoke('join', [literal(',')]);
+
+      meth.addStatement(ifThen(ref.property('isNotEmpty'), [
+        buf.invoke('write', [literal(' $upper (') + joined + literal(')')])
+      ]));
+    }
+
     meth.addStatement(buf.invoke('write', [literal(';')]));
     meth.addStatement(buf.invoke('toString', []).asReturn());
 
@@ -200,14 +216,18 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       var name = ctx.resolveFieldName(field.name);
       var rowKey = row[literal(i++)];
 
-      if (field.type.isAssignableTo(ctx.dateTimeType)) {
+      /* if (field.type.isAssignableTo(ctx.dateTimeType)) {
         // TODO: Handle DATE and not just DATETIME
         data[name] = DATE_YMD_HMS.invoke('parse', [rowKey]);
-      } else if (field.name == 'id' && ctx.shimmed.containsKey('id')) {
-        data[name] = rowKey.invoke('toString', []);
-      } else if (field.type.isAssignableTo(ctx.typeProvider.boolType)) {
-        data[name] = rowKey.equals(literal(1));
       } else
+      */
+      if (field.name == 'id' && ctx.shimmed.containsKey('id')) {
+        data[name] = rowKey.invoke('toString', []);
+      } /* else if (field.type.isAssignableTo(ctx.typeProvider.boolType)) {
+        // TODO: Find out what date is returned as
+        data[name] = rowKey.equals(literal(1));
+      }*/
+      else
         data[name] = rowKey;
     });
 
@@ -229,20 +249,9 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     return meth;
   }
 
-  MethodBuilder buildGetMethod(PostgresBuildContext ctx) {
-    var meth = new MethodBuilder('get',
-        returnType: new TypeBuilder('Stream',
-            genericTypes: [new TypeBuilder(ctx.modelClassName)]));
-    meth.addPositional(
-        parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
-    var streamController = new TypeBuilder('StreamController',
-        genericTypes: [new TypeBuilder(ctx.modelClassName)]);
-    var ctrl = reference('ctrl'), connection = reference('connection');
-    meth.addStatement(varField('ctrl',
-        type: streamController, value: streamController.newInstance([])));
-
+  void _invokeStreamClosure(ExpressionBuilder future, MethodBuilder meth) {
+    var ctrl = reference('ctrl');
     // Invoke query...
-    var future = connection.invoke('query', [reference('toSql').call([])]);
     var catchError = ctrl.property('addError');
     var then = new MethodBuilder.closure()..addPositional(parameter('rows'));
     then.addStatement(reference('rows')
@@ -252,6 +261,22 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     meth.addStatement(
         future.invoke('then', [then]).invoke('catchError', [catchError]));
     meth.addStatement(ctrl.property('stream').asReturn());
+  }
+
+  MethodBuilder buildGetMethod(PostgresBuildContext ctx) {
+    var meth = new MethodBuilder('get',
+        returnType: new TypeBuilder('Stream',
+            genericTypes: [new TypeBuilder(ctx.modelClassName)]));
+    meth.addPositional(
+        parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+    var streamController = new TypeBuilder('StreamController',
+        genericTypes: [new TypeBuilder(ctx.modelClassName)]);
+    meth.addStatement(varField('ctrl',
+        type: streamController, value: streamController.newInstance([])));
+
+    var future =
+        reference('connection').invoke('query', [reference('toSql').call([])]);
+    _invokeStreamClosure(future, meth);
     return meth;
   }
 
@@ -324,26 +349,18 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     return substitutionValues;
   }
 
-  void _executeQuery(StringBuffer buf, MethodBuilder meth,
-      Map<String, ExpressionBuilder> substitutionValues) {
+  ExpressionBuilder _executeQuery(ExpressionBuilder queryString,
+      MethodBuilder meth, Map<String, ExpressionBuilder> substitutionValues) {
     var connection = reference('connection');
-    var query = literal(buf.toString());
-    var result = reference('result');
-    meth.addStatement(varField('result',
-        value: connection.invoke('query', [
-          query
-        ], namedArguments: {
-          'substitutionValues': map(substitutionValues)
-        }).asAwait()));
-    meth.addStatement(reference('parseRow').call([result]).asReturn());
+    var query = queryString;
+    return connection.invoke('query', [query],
+        namedArguments: {'substitutionValues': map(substitutionValues)});
   }
 
   MethodBuilder buildUpdateMethod(PostgresBuildContext ctx) {
     var meth = new MethodBuilder('update',
-        modifier: MethodModifier.asAsync,
-        returnType: new TypeBuilder('Future',
+        returnType: new TypeBuilder('Stream',
             genericTypes: [new TypeBuilder(ctx.modelClassName)]));
-    meth.addPositional(parameter('id', [lib$core.int]));
     meth.addPositional(
         parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
     _addAllNamed(meth, ctx);
@@ -369,18 +386,49 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
         buf.write('@${field.name}');
       }
     });
-    buf.write(') WHERE "id" = @id');
+    buf.write(') ');
 
-    _addReturning(buf, ctx);
+    var $buf = reference('buf');
+    var whereClause = reference('whereClause');
+    meth.addStatement(varField('buf',
+        value: lib$core.StringBuffer.newInstance([literal(buf.toString())])));
+    meth.addStatement(varField('whereClause',
+        value: reference('where').invoke('toWhereClause', [])));
+
+    meth.addStatement(ifThen(whereClause.equals(literal(null)), [
+      $buf.invoke('write', [literal('WHERE "id" = @id')]),
+      elseThen([
+        $buf.invoke('write', [whereClause])
+      ])
+    ]));
+
+    var buf2 = new StringBuffer();
+    _addReturning(buf2, ctx);
     _ensureDates(meth, ctx);
     var substitutionValues = _buildSubstitutionValues(ctx);
-    substitutionValues.putIfAbsent('id', () => reference('id'));
-    _executeQuery(buf, meth, substitutionValues);
+
+    var ctrlType = new TypeBuilder('StreamController',
+        genericTypes: [new TypeBuilder(ctx.modelClassName)]);
+    meth.addStatement(varField('ctrl', value: ctrlType.newInstance([])));
+    var result = _executeQuery(
+        $buf.invoke('toString', []) + literal(buf2.toString()),
+        meth,
+        substitutionValues);
+    _invokeStreamClosure(result, meth);
     return meth;
   }
 
   MethodBuilder buildDeleteMethod(PostgresBuildContext ctx) {
     var meth = new MethodBuilder('delete',
+        returnType: new TypeBuilder('Stream',
+            genericTypes: [new TypeBuilder(ctx.modelClassName)]));
+    meth.addPositional(
+        parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+    return meth;
+  }
+
+  MethodBuilder buildDeleteOneMethod(PostgresBuildContext ctx) {
+    var meth = new MethodBuilder('deleteOne',
         modifier: MethodModifier.asAsync,
         returnType: new TypeBuilder('Future',
             genericTypes: [new TypeBuilder(ctx.modelClassName)]))
@@ -401,7 +449,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     // await connection.execute('...');
     meth.addStatement(varField('result',
         value: connection.invoke('execute', [
-          literal('DELETE FROM "${ctx.tableName}" WHERE id = @id LIMIT 1;')
+          literal('DELETE FROM "${ctx.tableName}" WHERE id = @id;')
         ], namedArguments: {
           'substitutionValues': map({'id': id})
         }).asAwait()));
@@ -453,15 +501,43 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       }
     });
 
-    buf.write(')');
-
-    _addReturning(buf, ctx);
+    buf.write(');');
     // meth.addStatement(lib$core.print.call([literal(buf.toString())]));
 
     _ensureDates(meth, ctx);
 
     var substitutionValues = _buildSubstitutionValues(ctx);
-    _executeQuery(buf, meth, substitutionValues);
+
+    // connection.execute...
+    var connection = reference('connection'), nRows = reference('nRows');
+    meth.addStatement(varField('nRows',
+        value: connection.invoke('execute', [
+          literal(buf.toString())
+        ], namedArguments: {
+          'substitutionValues': map(substitutionValues)
+        }).asAwait()));
+
+    meth.addStatement(ifThen(nRows < literal(1), [
+      lib$core.StateError.newInstance([
+        literal('Insertion into "${ctx.tableName}" table failed.')
+      ]).asThrow()
+    ]));
+
+    // Query the last value...
+    /*
+    var currval = await connection.query("SELECT * FROM cars WHERE id = currval(pg_get_serial_sequence('cars', 'id'));");
+    print(currval);
+    return parseRow(currval[0]);
+     */
+
+    var currVal = reference('currVal');
+    meth.addStatement(varField('currVal',
+        value: connection.invoke('query', [
+          literal(
+              'SELECT * FROM "${ctx.tableName}" WHERE id = currval(pg_get_serial_sequence(\'${ctx.tableName}\', \'id\'));')
+        ]).asAwait()));
+    meth.addStatement(
+        reference('parseRow').call([currVal[literal(0)]]).asReturn());
     return meth;
   }
 
@@ -472,28 +548,33 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       TypeBuilder queryBuilderType;
       List<ExpressionBuilder> args = [];
 
-      switch (field.type.name) {
-        case 'String':
-          queryBuilderType = new TypeBuilder('StringSqlExpressionBuilder');
-          break;
-        case 'int':
-          queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder',
-              genericTypes: [lib$core.int]);
-          break;
-        case 'double':
-          queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder',
-              genericTypes: [new TypeBuilder('double')]);
-          break;
-        case 'num':
-          queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder');
-          break;
-        case 'bool':
-          queryBuilderType = new TypeBuilder('BooleanSqlExpressionBuilder');
-          break;
-        case 'DateTime':
-          queryBuilderType = new TypeBuilder('DateTimeSqlExpressionBuilder');
-          args.add(literal(ctx.resolveFieldName(field.name)));
-          break;
+      if (field.name == 'id') {
+        queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder',
+            genericTypes: [lib$core.int]);
+      } else {
+        switch (field.type.name) {
+          case 'String':
+            queryBuilderType = new TypeBuilder('StringSqlExpressionBuilder');
+            break;
+          case 'int':
+            queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder',
+                genericTypes: [lib$core.int]);
+            break;
+          case 'double':
+            queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder',
+                genericTypes: [new TypeBuilder('double')]);
+            break;
+          case 'num':
+            queryBuilderType = new TypeBuilder('NumericSqlExpressionBuilder');
+            break;
+          case 'bool':
+            queryBuilderType = new TypeBuilder('BooleanSqlExpressionBuilder');
+            break;
+          case 'DateTime':
+            queryBuilderType = new TypeBuilder('DateTimeSqlExpressionBuilder');
+            args.add(literal(ctx.resolveFieldName(field.name)));
+            break;
+        }
       }
 
       if (queryBuilderType == null)
@@ -505,6 +586,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     // Create "toWhereClause()"
     var toWhereClause =
         new MethodBuilder('toWhereClause', returnType: lib$core.String);
+    toWhereClause.addNamed(parameter('keyword', [lib$core.bool]));
 
     // List<String> expressions = [];
     toWhereClause.addStatement(varFinal('expressions',
@@ -525,13 +607,16 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       ]));
     });
 
+    var kw = reference('keyword')
+        .notEquals(literal(false))
+        .ternary(literal('WHERE '), literal(''))
+        .parentheses();
+
     // return expressions.isEmpty ? null : ('WHERE ' + expressions.join(' AND '));
     toWhereClause.addStatement(expressions
         .property('isEmpty')
-        .ternary(
-            literal(null),
-            (literal('WHERE ') + expressions.invoke('join', [literal(' AND ')]))
-                .parentheses())
+        .ternary(literal(null),
+            (kw + expressions.invoke('join', [literal(' AND ')])).parentheses())
         .asReturn());
 
     clazz.addMethod(toWhereClause);

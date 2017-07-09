@@ -19,14 +19,19 @@ import 'postgres_build_context.dart';
 
 // TODO: HasOne, HasMany, BelongsTo
 class SQLMigrationGenerator implements Builder {
-  /// If "true" (default), then field names will automatically be (de)serialized as snake_case.
+  /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
 
-  /// If "true" (default), then
+  /// If `true` (default), then the schema will automatically add id, created_at and updated_at fields.
   final bool autoIdAndDateFields;
 
+  /// If `true` (default: `false`), then the resulting schema will generate a `TEMPORARY` table.
+  final bool temporary;
+
   const SQLMigrationGenerator(
-      {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
+      {this.autoSnakeCaseNames: true,
+      this.autoIdAndDateFields: true,
+      this.temporary: false});
 
   @override
   Map<String, List<String>> get buildExtensions => {
@@ -80,7 +85,10 @@ class SQLMigrationGenerator implements Builder {
   }
 
   void buildUpMigration(PostgresBuildContext ctx, StringBuffer buf) {
-    buf.writeln('CREATE TABLE "${ctx.tableName}" (');
+    if (temporary == true)
+      buf.writeln('CREATE TEMPORARY TABLE "${ctx.tableName}" (');
+    else
+      buf.writeln('CREATE TABLE "${ctx.tableName}" (');
 
     int i = 0;
     ctx.columnInfo.forEach((name, col) {

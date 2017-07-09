@@ -5,16 +5,14 @@
 **This project is currently in the early stages, and may change at any given
 time without warning.**
 
-Source-generated ORM for use with the Angel framework. Documentation is coming soon.
-This ORM can work with virtually any database, thanks to the functionality exposed by
-`package:query_builder`.
+Source-generated PostgreSQL ORM for use with the
+[Angel framework](https://angel-dart.github.io).
+Now you can combine the power and flexibility of Angel with a strongly-typed ORM.
 
 Currently supported:
 * PostgreSQL
-* MongoDB (planned)
-* RethinkDB (planned)
-* In-Memory (planned)
 
+# Models
 Your model, courtesy of `package:angel_serialize`:
 
 ```dart
@@ -35,11 +33,12 @@ class _Car extends Model {
 }
 ```
 
-Models can still use the `@Alias()` annotation. `package:angel_orm` obeys it.
+Models can use the `@Alias()` annotation; `package:angel_orm` obeys it.
 
 After building, you'll have access to a `Query` class with strongly-typed methods that
 allow to run asynchronous queries without a headache.
-You can run complex queries like:
+
+MVC just got a whole lot easier:
 
 ```dart
 import 'package:angel_framework/angel_framework.dart';

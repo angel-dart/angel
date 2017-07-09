@@ -96,7 +96,7 @@ PostgresBuildContext buildContext(
           column = const Column(type: ColumnType.NUMERIC);
           break;
         case 'bool':
-          column = const Column(type: ColumnType.BIT);
+          column = const Column(type: ColumnType.BOOLEAN);
           break;
         case 'DateTime':
           column = const Column(type: ColumnType.TIME_STAMP);

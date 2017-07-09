@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
 
-
 final DateFormat DATE_YMD = new DateFormat('yyyy-MM-dd');
 final DateFormat DATE_YMD_HMS = new DateFormat('yyyy-MM-dd HH:mm:ss');
 
@@ -78,7 +77,8 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder {
   @override
   String compile() {
     if (_value == null) return null;
-    return '$_op `$_value`';
+    var v = _value.replaceAll("'", "\\'");
+    return "$_op '$v'";
   }
 
   void isEmpty() => equals('');
@@ -113,7 +113,7 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder {
   @override
   String compile() {
     if (_value == null) return null;
-    var v = _value ? 1 : 0;
+    var v = _value ? 'TRUE' : 'FALSE';
     return '$_op $v';
   }
 
@@ -151,7 +151,7 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
 
   bool _change(String _op, DateTime dt, bool time) {
     var dateString = time ? DATE_YMD_HMS.format(dt) : DATE_YMD.format(dt);
-    _raw = '`$columnName` $_op \'$dateString\'';
+    _raw = '"$columnName" $_op \'$dateString\'';
     return true;
   }
 
@@ -184,12 +184,12 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
   String compile() {
     if (_raw?.isNotEmpty == true) return _raw;
     List<String> parts = [];
-    if (year.hasValue) parts.add('YEAR(`$columnName`) ${year.compile()}');
-    if (month.hasValue) parts.add('MONTH(`$columnName`) ${month.compile()}');
-    if (day.hasValue) parts.add('DAY(`$columnName`) ${day.compile()}');
-    if (hour.hasValue) parts.add('HOUR(`$columnName`) ${hour.compile()}');
-    if (minute.hasValue) parts.add('MINUTE(`$columnName`) ${minute.compile()}');
-    if (second.hasValue) parts.add('SECOND(`$columnName`) ${second.compile()}');
+    if (year.hasValue) parts.add('YEAR("$columnName") ${year.compile()}');
+    if (month.hasValue) parts.add('MONTH("$columnName") ${month.compile()}');
+    if (day.hasValue) parts.add('DAY("$columnName") ${day.compile()}');
+    if (hour.hasValue) parts.add('HOUR("$columnName") ${hour.compile()}');
+    if (minute.hasValue) parts.add('MINUTE("$columnName") ${minute.compile()}');
+    if (second.hasValue) parts.add('SECOND("$columnName") ${second.compile()}');
 
     return parts.isEmpty ? null : parts.join(' AND ');
   }

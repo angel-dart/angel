@@ -58,6 +58,8 @@ class ColumnType {
   final String name;
   const ColumnType._(this.name);
 
+  static const ColumnType BOOLEAN = const ColumnType._('boolean');
+
   static const ColumnType SMALL_SERIAL = const ColumnType._('smallserial');
   static const ColumnType SERIAL = const ColumnType._('serial');
   static const ColumnType BIG_SERIAL = const ColumnType._('bigserial');

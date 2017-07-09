@@ -1,4 +1,4 @@
-CREATE TABLE "authors" (
+CREATE TEMPORARY TABLE "authors" (
   "id" serial,
   "name" varchar,
   "created_at" timestamp,

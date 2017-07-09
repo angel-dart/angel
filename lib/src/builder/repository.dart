@@ -220,9 +220,9 @@ class AngelQueryBuilderGenerator extends GeneratorForAnnotation<ORM> {
     //
     // var requestedKeys = whereFields.keys.isNotEmpty ? whereFields.keys : [<all fields...>];
 
-    var allModelFields = clazz.fields
-        .map((f) => aliases.containsKey(f.name) ? aliases[f.name] : f.name);
-    var whereFieldsKeys = reference('whereFields').property('keys');
+    //var allModelFields = clazz.fields
+    //    .map((f) => aliases.containsKey(f.name) ? aliases[f.name] : f.name);
+    //var whereFieldsKeys = reference('whereFields').property('keys');
 
     // return new Stream<>.fromFuture(...)
     meth.addStatement(lib$async.Stream.newInstance([
