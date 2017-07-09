@@ -52,7 +52,7 @@ class RequestContext extends Extensible {
   ///
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then an error will be thrown.
-  /// 
+  ///
   /// **If you are writing a plug-in, use [lazyBody] instead.**
   Map get body {
     if (_body == null)
@@ -68,7 +68,7 @@ class RequestContext extends Extensible {
   ///
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then an error will be thrown.
-  /// 
+  ///
   /// **If you are writing a plug-in, use [lazyFiles] instead.**
   List<FileUploadInfo> get files {
     if (_body == null)
@@ -81,7 +81,7 @@ class RequestContext extends Extensible {
   ///
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then an error will be thrown.
-  /// 
+  ///
   /// **If you are writing a plug-in, use [lazyOriginalBuffer] instead.**
   List<int> get originalBuffer {
     if (_body == null)
@@ -100,8 +100,8 @@ class RequestContext extends Extensible {
   ///
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then [uri].query will be returned.
-  /// 
-  /// **If you are writing a plug-in, consider using [lazyQuery] instead.** 
+  ///
+  /// **If you are writing a plug-in, consider using [lazyQuery] instead.**
   Map get query {
     if (_body == null)
       return uri.queryParameters;
@@ -167,14 +167,19 @@ class RequestContext extends Extensible {
       return injections[key];
     else if (properties.containsKey(key))
       return properties[key];
-    else if (key is Type) {
-      try {
-        return app.container.make(key);
-      } catch (e) {
+    else {
+      var prop = app?.findProperty(key);
+      if (prop != null)
+        return prop;
+      else if (key is Type) {
+        try {
+          return app.container.make(key);
+        } catch (e) {
+          return null;
+        }
+      } else
         return null;
-      }
-    } else
-      return null;
+    }
   }
 
   /// Shorthand to add to [injections].

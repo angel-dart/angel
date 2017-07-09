@@ -41,7 +41,8 @@ class Service extends Routable {
   static const List<String> SPECIAL_QUERY_KEYS = const [
     r'$limit',
     r'$sort',
-    'page'
+    'page',
+    'token'
   ];
 
   /// The [Angel] app powering this service.

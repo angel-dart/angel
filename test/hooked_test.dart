@@ -117,4 +117,22 @@ main() {
     expect(result, isNotEmpty);
     expect(result[0], equals({'foo': 'bar'}));
   });
+
+  test('contains provider in before and after', () async {
+    var svc = new HookedService(new AnonymousService(index: ([p]) async => []));
+
+    ensureProviderIsPresent(HookedServiceEvent e) {
+      var type = e.isBefore ? 'before' : 'after';
+      print('Params to $type ${e.eventName}: ${e.params}');
+      expect(e.params, isMap);
+      expect(e.params.keys, contains('provider'));
+      expect(e.params['provider'], const isInstanceOf<Providers>());
+    }
+
+    svc
+      ..beforeAll(ensureProviderIsPresent)
+      ..afterAll(ensureProviderIsPresent);
+
+    await svc.index({'provider': const Providers('testing')});
+  });
 }
