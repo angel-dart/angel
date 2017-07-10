@@ -2,7 +2,7 @@
   <configuration default="false" name="All Tests" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true">
     <option name="filePath" value="$PROJECT_DIR$/test" />
     <option name="scope" value="FOLDER" />
-    <option name="testRunnerOptions" value="-j 5" />
+    <option name="testRunnerOptions" value="-j 4" />
     <method />
   </configuration>
 </component>

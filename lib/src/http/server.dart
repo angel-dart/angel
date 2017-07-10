@@ -324,6 +324,7 @@ class Angel extends AngelBase {
     return parent != null ? parent.findProperty(key) : null;
   }
 
+  /// Handles an [AngelHttpException].
   handleAngelHttpException(AngelHttpException e, StackTrace st,
       RequestContext req, ResponseContext res, HttpRequest request,
       {bool ignoreFinalizers: false}) async {
@@ -339,11 +340,10 @@ class Angel extends AngelBase {
     }
 
     res.statusCode = e.statusCode;
-    List<String> accept = request?.headers[HttpHeaders.ACCEPT] ?? ['*/*'];
-    if (accept.isEmpty ||
-        accept.contains('*/*') ||
-        accept.contains(ContentType.JSON.mimeType) ||
-        accept.contains("application/javascript")) {
+    if (req.headers.value(HttpHeaders.ACCEPT) == null ||
+        req.acceptsAll ||
+        req.accepts(ContentType.JSON) ||
+        req.accepts('application/javascript')) {
       res.serialize(e.toMap(),
           contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
               ContentType.JSON.mimeType);

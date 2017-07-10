@@ -1,3 +1,4 @@
+import 'accepts_test.dart' as accepts;
 import 'anonymous_service_test.dart' as anonymous_service;
 import 'controller_test.dart' as controller;
 import 'di_test.dart' as di;
@@ -16,6 +17,7 @@ import 'package:test/test.dart';
 
 /// For running with coverage
 main() {
+  group('accepts', accepts.main);
   group('anonymous service', anonymous_service.main);
   group('controller', controller.main);
   group('di', di.main);

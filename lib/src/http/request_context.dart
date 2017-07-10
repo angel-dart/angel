@@ -8,6 +8,8 @@ import 'server.dart' show Angel;
 
 /// A convenience wrapper around an incoming HTTP request.
 class RequestContext extends Extensible {
+  String _acceptHeaderCache;
+  bool _acceptsAllCache;
   BodyParseResult _body;
   ContentType _contentType;
   HttpRequest _io;
@@ -186,6 +188,36 @@ class RequestContext extends Extensible {
   void inject(type, value) {
     injections[type] = value;
   }
+
+  /// Returns `true` if the client's `Accept` header indicates that the given [contentType] is considered a valid response.
+  ///
+  /// You cannot provide a `null` [contentType].
+  /// If the `Accept` header's value is `*/*`, this method will always return `true`.
+  ///
+  /// [contentType] can be either of the following:
+  /// * A [ContentType], in which case the `Accept` header will be compared against its `mimeType` property.
+  /// * Any other Dart value, in which case the `Accept` header will be compared against the result of a `toString()` call.
+  bool accepts(contentType) {
+    var contentTypeString = contentType is ContentType
+        ? contentType.mimeType
+        : contentType?.toString();
+
+    if (contentTypeString == null)
+      throw new ArgumentError(
+          'RequestContext.accepts expects the `contentType` parameter to NOT be null.');
+
+    _acceptHeaderCache ??= headers.value(HttpHeaders.ACCEPT);
+
+    if (_acceptHeaderCache == null)
+      return false;
+    else if (_acceptHeaderCache.contains('*/*'))
+      return true;
+    else
+      return _acceptHeaderCache.contains(contentTypeString);
+  }
+
+  /// Returns as `true` if the client's `Accept` header indicates that it will accept any response content type.
+  bool get acceptsAll => _acceptsAllCache ??= accepts('*/*');
 
   /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the body.
   Future<Map> lazyBody() => parse().then((b) => b.body);
