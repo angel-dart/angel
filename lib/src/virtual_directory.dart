@@ -235,31 +235,9 @@ class VirtualDirectory implements AngelPlugin {
     return true;
   }
 
-  Future<bool> serveFileOld(
-      File file, FileStat stat, RequestContext req, ResponseContext res) async {
-    // _printDebug('Sending file ${file.absolute.path}...');
-    // _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path)}');
-    res.statusCode = 200;
-
-    if (callback != null) {
-      var r = callback(file, req, res);
-      r = r is Future ? await r : r;
-      if (r != null && r != true) return r;
-    }
-
-    res.headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-
-    if (streamToIO == true) {
-      res
-        ..io.headers.set(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path))
-        ..io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
-        ..end()
-        ..willCloseItself = true;
-
-      await file.openRead().transform(GZIP.encoder).pipe(res.io);
-    } else
-      await res.sendFile(file);
-    return false;
+  bool _acceptsGzip(RequestContext req) {
+    var h = req.headers.value(HttpHeaders.ACCEPT)?.toLowerCase();
+    return h?.contains('gzip') == true;
   }
 
   void _ensureContentTypeAllowed(String mimeType, RequestContext req) {
@@ -279,7 +257,7 @@ class VirtualDirectory implements AngelPlugin {
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) async {
     // _printDebug('Sending file ${file.absolute.path}...');
-    // _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path)}');
+    // _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path) ?? 'application/octet-stream'}');
     res.statusCode = 200;
 
     if (callback != null) {
@@ -288,18 +266,24 @@ class VirtualDirectory implements AngelPlugin {
       if (r != null && r != true) return r;
     }
 
-    var type = lookupMimeType(file.path);
+    var type = lookupMimeType(file.path) ?? 'application/octet-stream';
     _ensureContentTypeAllowed(type, req);
     res.headers[HttpHeaders.CONTENT_TYPE] = type;
 
     if (streamToIO == true) {
       res
-        ..io.headers.set(HttpHeaders.CONTENT_TYPE, lookupMimeType(file.path))
-        ..io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
+        ..io.headers.set(HttpHeaders.CONTENT_TYPE,
+            lookupMimeType(file.path) ?? 'application/octet-stream')
         ..end()
         ..willCloseItself = true;
 
-      await file.openRead().transform(GZIP.encoder).pipe(res.io);
+      if (_acceptsGzip(req))
+        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
+
+      Stream<List<int>> stream = _acceptsGzip(req)
+          ? file.openRead().transform(GZIP.encoder)
+          : file.openRead();
+      await stream.pipe(res.io);
     } else
       await res.sendFile(file);
     return false;
@@ -316,11 +300,18 @@ class VirtualDirectory implements AngelPlugin {
     if (streamToIO == true) {
       res
         ..statusCode = 200
-        ..io.headers.set(HttpHeaders.CONTENT_TYPE, file.mimeType)
-        ..io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
+        ..io.headers.set(HttpHeaders.CONTENT_TYPE,
+            lookupMimeType(file.filename) ?? 'application/octet-stream')
         ..end()
         ..willCloseItself = true;
-      await file.content.transform(GZIP.encoder).pipe(res.io);
+
+      if (_acceptsGzip(req))
+        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
+
+      Stream<List<int>> stream = _acceptsGzip(req)
+          ? file.content.transform(GZIP.encoder)
+          : file.content;
+      await stream.pipe(res.io);
     } else {
       await file.content.forEach(res.buffer.add);
     }

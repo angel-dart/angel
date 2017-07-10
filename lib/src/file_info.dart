@@ -26,13 +26,13 @@ abstract class FileInfo {
   factory FileInfo.fromFile(File file) => new _FileInfoImpl(
       () => file.openRead(),
       file.absolute.path,
-      lookupMimeType(file.path) ?? 'application/octet-stream',
+      lookupMimeType(file.path) ?? 'application/octet-stream' ?? 'application/octet-stream',
       file.statSync().modified);
 
   /// Creates a [FileInfo] describing a file that might not even exists to begin with.
   factory FileInfo.hypothetical(String hypotheticalFileName) =>
       new _FileInfoImpl(null, hypotheticalFileName,
-          lookupMimeType(hypotheticalFileName), null);
+          lookupMimeType(hypotheticalFileName) ?? 'application/octet-stream', null);
 
   /// Returns an identical instance, but with a different filename.
   FileInfo changeFilename(String newFilename);

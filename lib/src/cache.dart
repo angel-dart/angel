@@ -154,7 +154,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
             generateEtag(buf, weak: useWeakEtags != false, hash: hash);
         res.headers
           ..[HttpHeaders.ETAG] = etag
-          ..[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
+          ..[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path) ?? 'application/octet-stream';
         setCachedHeaders(stat.modified, req, res);
 
         if (useWeakEtags == false) {
