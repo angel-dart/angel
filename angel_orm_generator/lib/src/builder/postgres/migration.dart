@@ -1,19 +1,9 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:angel_serialize/angel_serialize.dart';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/dart/async.dart';
-import 'package:code_builder/dart/core.dart';
-import 'package:code_builder/code_builder.dart';
-import 'package:inflection/inflection.dart';
-import 'package:path/path.dart' as p;
-import 'package:recase/recase.dart';
 import 'package:source_gen/src/annotation.dart';
 import 'package:source_gen/src/utils.dart';
-import 'package:source_gen/source_gen.dart';
-import '../../annotations.dart';
-import '../../migration.dart';
-import 'package:angel_serialize/src/find_annotation.dart';
 import 'build_context.dart';
 import 'postgres_build_context.dart';
 

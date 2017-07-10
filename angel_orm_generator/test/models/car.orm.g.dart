@@ -104,7 +104,7 @@ class CarQuery {
     var ctrl = new StreamController<Car>();
     connection.query(
         buf.toString() +
-            ' RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");',
+            ' RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
         substitutionValues: {
           'make': make,
           'description': description,
@@ -120,10 +120,24 @@ class CarQuery {
   }
 
   Stream<Car> delete(PostgreSQLConnection connection) {
-    var query = 'DELETE FROM "cars" RETURNING ("id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at");';
+    var buf = new StringBuffer('DELETE FROM "cars"');
+    var whereClause = where.toWhereClause();
+    if (whereClause != null) {
+      buf.write(' ' + whereClause);
+      if (_and.isNotEmpty) {
+        buf.write(' AND (' + _and.join(', ') + ')');
+      }
+      if (_or.isNotEmpty) {
+        buf.write(' OR (' + _or.join(', ') + ')');
+      }
+      if (_not.isNotEmpty) {
+        buf.write(' NOT (' + _not.join(', ') + ')');
+      }
+    }
+    buf.write(
+        ' RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";');
     StreamController<Car> ctrl = new StreamController<Car>();
-    connection.execute(query).then((rows) {
-      print('Rows: $rows');
+    connection.query(buf.toString()).then((rows) {
       rows.map(parseRow).forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
@@ -131,15 +145,10 @@ class CarQuery {
   }
 
   static Future<Car> deleteOne(int id, PostgreSQLConnection connection) async {
-    var __ormBeforeDelete__ = await CarQuery.getOne(id, connection);
-    var result = await connection.execute('DELETE FROM "cars" WHERE id = @id;',
+    var result = await connection.query(
+        'DELETE FROM "cars" WHERE id = @id RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
         substitutionValues: {'id': id});
-    if (result != 1) {
-      new StateError('DELETE query deleted ' +
-          result +
-          ' row(s), instead of exactly 1 row.');
-    }
-    return __ormBeforeDelete__;
+    return parseRow(result[0]);
   }
 
   static Future<Car> insert(PostgreSQLConnection connection,
@@ -150,8 +159,8 @@ class CarQuery {
       DateTime createdAt,
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
-    var nRows = await connection.execute(
-        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt);',
+    var result = await connection.query(
+        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
         substitutionValues: {
           'make': make,
           'description': description,
@@ -160,12 +169,31 @@ class CarQuery {
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
-    if (nRows < 1) {
-      throw new StateError('Insertion into "cars" table failed.');
-    }
-    var currVal = await connection.query(
-        'SELECT * FROM "cars" WHERE id = currval(pg_get_serial_sequence(\'cars\', \'id\'));');
-    return parseRow(currVal[0]);
+    return parseRow(result[0]);
+  }
+
+  static Future<Car> insertCar(PostgreSQLConnection connection, Car car) {
+    return CarQuery.insert(connection,
+        make: car.make,
+        description: car.description,
+        familyFriendly: car.familyFriendly,
+        recalledAt: car.recalledAt,
+        createdAt: car.createdAt,
+        updatedAt: car.updatedAt);
+  }
+
+  static Future<Car> updateCar(PostgreSQLConnection connection, Car car) {
+    var query = new CarQuery();
+    query.where.id.equals(int.parse(car.id));
+    return query
+        .update(connection,
+            make: car.make,
+            description: car.description,
+            familyFriendly: car.familyFriendly,
+            recalledAt: car.recalledAt,
+            createdAt: car.createdAt,
+            updatedAt: car.updatedAt)
+        .first;
   }
 
   static Stream<Car> getAll(PostgreSQLConnection connection) =>

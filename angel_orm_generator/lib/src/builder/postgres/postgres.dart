@@ -1,19 +1,14 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:angel_serialize/angel_serialize.dart';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/dart/async.dart';
 import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:inflection/inflection.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/src/annotation.dart';
 import 'package:source_gen/src/utils.dart';
 import 'package:source_gen/source_gen.dart';
-import '../../annotations.dart';
-import '../../migration.dart';
-import 'package:angel_serialize/src/find_annotation.dart';
 import 'build_context.dart';
 import 'postgres_build_context.dart';
 
@@ -153,6 +148,12 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
 
     // Add insert()...
     clazz.addMethod(buildInsertMethod(ctx), asStatic: true);
+
+    // Add insertX()
+    clazz.addMethod(buildInsertModelMethod(ctx), asStatic: true);
+
+    // Add updateX()
+    clazz.addMethod(buildUpdateModelMethod(ctx), asStatic: true);
 
     // Add getAll() => new TodoQuery().get();
     clazz.addMethod(
@@ -315,7 +316,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
   }
 
   void _addReturning(StringBuffer buf, PostgresBuildContext ctx) {
-    buf.write(' RETURNING (');
+    buf.write(' RETURNING ');
     int i = 0;
     ctx.fields.forEach((field) {
       if (i++ > 0) buf.write(', ');
@@ -323,7 +324,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       buf.write('"$name"');
     });
 
-    buf.write(');');
+    buf.write(';');
   }
 
   void _ensureDates(MethodBuilder meth, PostgresBuildContext ctx) {
@@ -424,6 +425,44 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
             genericTypes: [new TypeBuilder(ctx.modelClassName)]));
     meth.addPositional(
         parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+    var buf = reference('buf'), whereClause = reference('whereClause');
+
+    meth.addStatement(varField('buf',
+        value: lib$core.StringBuffer
+            .newInstance([literal('DELETE FROM "${ctx.tableName}"')])));
+    meth.addStatement(varField('whereClause',
+        value: reference('where').invoke('toWhereClause', [])));
+
+    var ifStmt = ifThen(whereClause.notEquals(literal(null)), [
+      buf.invoke('write', [literal(' ') + whereClause])
+    ]);
+    meth.addStatement(ifStmt);
+
+    for (var relation in RELATIONS) {
+      var ref = reference('_$relation');
+      var upper = relation.toUpperCase();
+      ifStmt.addStatement(ifThen(ref.property('isNotEmpty'), [
+        buf.invoke('write', [
+          literal(' $upper (') +
+              ref.invoke('join', [literal(', ')]) +
+              literal(')')
+        ])
+      ]));
+    }
+
+    var litBuf = new StringBuffer();
+    _addReturning(litBuf, ctx);
+    meth.addStatement(buf.invoke('write', [literal(litBuf.toString())]));
+
+    var streamController = new TypeBuilder('StreamController',
+        genericTypes: [new TypeBuilder(ctx.modelClassName)]);
+    meth.addStatement(varField('ctrl',
+        type: streamController, value: streamController.newInstance([])));
+
+    var future =
+        reference('connection').invoke('query', [buf.invoke('toString', [])]);
+    _invokeStreamClosure(future, meth);
+
     return meth;
   }
 
@@ -438,32 +477,21 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
 
     var id = reference('id');
     var connection = reference('connection');
-    var beforeDelete = reference('__ormBeforeDelete__');
     var result = reference('result');
 
-    // var __ormBeforeDelete__ = await XQuery.getOne(id, connection);
-    meth.addStatement(varField('__ormBeforeDelete__',
-        value: new TypeBuilder(ctx.queryClassName)
-            .invoke('getOne', [id, connection]).asAwait()));
+    var buf = new StringBuffer('DELETE FROM "${ctx.tableName}" WHERE id = @id');
+    _addReturning(buf, ctx);
 
     // await connection.execute('...');
     meth.addStatement(varField('result',
-        value: connection.invoke('execute', [
-          literal('DELETE FROM "${ctx.tableName}" WHERE id = @id;')
+        value: connection.invoke('query', [
+          literal(buf.toString())
         ], namedArguments: {
           'substitutionValues': map({'id': id})
         }).asAwait()));
 
-    meth.addStatement(ifThen(result.notEquals(literal(1)), [
-      lib$core.StateError.newInstance([
-        literal('DELETE query deleted ') +
-            result +
-            literal(' row(s), instead of exactly 1 row.')
-      ])
-    ]));
-
-    // return __ormBeforeDelete__
-    meth.addStatement(beforeDelete.asReturn());
+    meth.addStatement(
+        reference('parseRow').call([result[literal(0)]]).asReturn());
     return meth;
   }
 
@@ -501,43 +529,85 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       }
     });
 
-    buf.write(');');
+    buf.write(')');
     // meth.addStatement(lib$core.print.call([literal(buf.toString())]));
 
+    _addReturning(buf, ctx);
     _ensureDates(meth, ctx);
 
     var substitutionValues = _buildSubstitutionValues(ctx);
 
-    // connection.execute...
-    var connection = reference('connection'), nRows = reference('nRows');
-    meth.addStatement(varField('nRows',
-        value: connection.invoke('execute', [
-          literal(buf.toString())
+    var connection = reference('connection');
+    var query = literal(buf.toString());
+    var result = reference('result');
+    meth.addStatement(varField('result',
+        value: connection.invoke('query', [
+          query
         ], namedArguments: {
           'substitutionValues': map(substitutionValues)
         }).asAwait()));
+    meth.addStatement(
+        reference('parseRow').call([result[literal(0)]]).asReturn());
+    return meth;
+  }
 
-    meth.addStatement(ifThen(nRows < literal(1), [
-      lib$core.StateError.newInstance([
-        literal('Insertion into "${ctx.tableName}" table failed.')
-      ]).asThrow()
+  MethodBuilder buildInsertModelMethod(PostgresBuildContext ctx) {
+    var rc = new ReCase(ctx.modelClassName);
+    var meth = new MethodBuilder('insert${rc.pascalCase}',
+        returnType: new TypeBuilder('Future',
+            genericTypes: [new TypeBuilder(ctx.modelClassName)]));
+
+    meth.addPositional(
+        parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+    meth.addPositional(
+        parameter(rc.snakeCase, [new TypeBuilder(ctx.modelClassName)]));
+
+    Map<String, ExpressionBuilder> args = {};
+    var ref = reference(rc.snakeCase);
+
+    ctx.fields.forEach((f) {
+      if (f.name != 'id') args[f.name] = ref.property(f.name);
+    });
+
+    meth.addStatement(new TypeBuilder(ctx.queryClassName)
+        .invoke('insert', [reference('connection')], namedArguments: args)
+        .asReturn());
+
+    return meth;
+  }
+
+  MethodBuilder buildUpdateModelMethod(PostgresBuildContext ctx) {
+    var rc = new ReCase(ctx.modelClassName);
+    var meth = new MethodBuilder('update${rc.pascalCase}',
+        returnType: new TypeBuilder('Future',
+            genericTypes: [new TypeBuilder(ctx.modelClassName)]));
+
+    meth.addPositional(
+        parameter('connection', [new TypeBuilder('PostgreSQLConnection')]));
+    meth.addPositional(
+        parameter(rc.snakeCase, [new TypeBuilder(ctx.modelClassName)]));
+
+    // var query = new XQuery();
+    var ref = reference(rc.snakeCase);
+    var query = reference('query');
+    meth.addStatement(varField('query',
+        value: new TypeBuilder(ctx.queryClassName).newInstance([])));
+
+    // query.where.id.equals(x.id);
+    meth.addStatement(query.property('where').property('id').invoke('equals', [
+      lib$core.int.invoke('parse', [ref.property('id')])
     ]));
 
-    // Query the last value...
-    /*
-    var currval = await connection.query("SELECT * FROM cars WHERE id = currval(pg_get_serial_sequence('cars', 'id'));");
-    print(currval);
-    return parseRow(currval[0]);
-     */
+    // return query.update(connection, ...).first;
+    Map<String, ExpressionBuilder> args = {};
+    ctx.fields.forEach((f) {
+      if (f.name != 'id') args[f.name] = ref.property(f.name);
+    });
 
-    var currVal = reference('currVal');
-    meth.addStatement(varField('currVal',
-        value: connection.invoke('query', [
-          literal(
-              'SELECT * FROM "${ctx.tableName}" WHERE id = currval(pg_get_serial_sequence(\'${ctx.tableName}\', \'id\'));')
-        ]).asAwait()));
-    meth.addStatement(
-        reference('parseRow').call([currVal[literal(0)]]).asReturn());
+    var update =
+        query.invoke('update', [reference('connection')], namedArguments: args);
+    meth.addStatement(update.property('first').asReturn());
+
     return meth;
   }
 

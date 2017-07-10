@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="postgres::build.dart" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
-    <option name="filePath" value="$PROJECT_DIR$/tool/build.dart" />
-    <option name="workingDirectory" value="$PROJECT_DIR$" />
+    <option name="filePath" value="$PROJECT_DIR$/angel_orm_generator/tool/build.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$/angel_orm_generator" />
     <method />
   </configuration>
 </component>

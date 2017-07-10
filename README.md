@@ -2,15 +2,31 @@
 [![Pub](https://img.shields.io/pub/v/angel_orm.svg)](https://pub.dartlang.org/packages/angel_orm)
 [![build status](https://travis-ci.org/angel-dart/orm.svg)](https://travis-ci.org/angel-dart/orm)
 
-**This project is currently in the early stages, and may change at any given
-time without warning.**
-
 Source-generated PostgreSQL ORM for use with the
 [Angel framework](https://angel-dart.github.io).
 Now you can combine the power and flexibility of Angel with a strongly-typed ORM.
 
-Currently supported:
-* PostgreSQL
+* [Usage](#usage)
+* [Model Definitions](#models)
+* [MVC Example](#example)
+* [Relationships](#relations)
+
+# Usage
+You'll need these dependencies in your `pubspec.yaml`:
+```yaml
+dependencies:
+  angel_orm: ^1.0.0-alpha
+dev_dependencies:
+  angel_orm_generator: ^1.0.0-alpha
+  build_runner: ^0.3.0
+```
+
+`package:angel_orm_generator` exports two classes that you can include
+in a `package:build` flow:
+* `PostgreORMGenerator` - Fueled by `package:source_gen`; include this within a `GeneratorBuilder`.
+* `SQLMigrationGenerator` - This is its own `Builder`; it generates a SQL schema, as well as a SQL script to drop a generated table.
+
+You should pass an `InputSet` containing your project's models.
 
 # Models
 Your model, courtesy of `package:angel_serialize`:
@@ -37,6 +53,13 @@ Models can use the `@Alias()` annotation; `package:angel_orm` obeys it.
 
 After building, you'll have access to a `Query` class with strongly-typed methods that
 allow to run asynchronous queries without a headache.
+
+**IMPORTANT:** The ORM *assumes* that you are using `package:angel_serialize`, and will only generate code
+designed for such a workflow. Save yourself a headache and build models with `angel_serialize`:
+
+https://github.com/angel-dart/serialize
+
+# Example
 
 MVC just got a whole lot easier:
 
@@ -91,7 +114,7 @@ class CarService extends Controller {
 ```
 
 # Relations
-**NOTE**: This is not yet implemented.
+**NOTE**: This is not yet implemented. Expect to see more documentation about this soon.
 
 * `@HasOne()`
 * `@HasMany()`

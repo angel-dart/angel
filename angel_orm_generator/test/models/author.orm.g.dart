@@ -2,39 +2,38 @@
 
 // **************************************************************************
 // Generator: PostgresORMGenerator
-// Target: class _Book
+// Target: class _Author
 // **************************************************************************
 
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
-import 'book.dart';
-import 'author.orm.g.dart';
+import 'author.dart';
 
-class BookQuery {
+class AuthorQuery {
   final List<String> _and = [];
 
   final List<String> _or = [];
 
   final List<String> _not = [];
 
-  final BookQueryWhere where = new BookQueryWhere();
+  final AuthorQueryWhere where = new AuthorQueryWhere();
 
-  void and(BookQuery other) {
+  void and(AuthorQuery other) {
     var compiled = other.where.toWhereClause(keyword: false);
     if (compiled != null) {
       _and.add(compiled);
     }
   }
 
-  void or(BookQuery other) {
+  void or(AuthorQuery other) {
     var compiled = other.where.toWhereClause(keyword: false);
     if (compiled != null) {
       _or.add(compiled);
     }
   }
 
-  void not(BookQuery other) {
+  void not(AuthorQuery other) {
     var compiled = other.where.toWhereClause(keyword: false);
     if (compiled != null) {
       _not.add(compiled);
@@ -42,7 +41,7 @@ class BookQuery {
   }
 
   String toSql() {
-    var buf = new StringBuffer('SELECT * FROM "books"');
+    var buf = new StringBuffer('SELECT * FROM "authors"');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
@@ -60,18 +59,17 @@ class BookQuery {
     return buf.toString();
   }
 
-  static Book parseRow(List row) {
-    return new Book.fromJson({
+  static Author parseRow(List row) {
+    return new Author.fromJson({
       'id': row[0].toString(),
       'name': row[1],
       'created_at': row[2],
-      'updated_at': row[3],
-      'author': row.length < 5 ? null : AuthorQuery.parseRow(row[4])
+      'updated_at': row[3]
     });
   }
 
-  Stream<Book> get(PostgreSQLConnection connection) {
-    StreamController<Book> ctrl = new StreamController<Book>();
+  Stream<Author> get(PostgreSQLConnection connection) {
+    StreamController<Author> ctrl = new StreamController<Author>();
     connection.query(toSql()).then((rows) {
       rows.map(parseRow).forEach(ctrl.add);
       ctrl.close();
@@ -79,15 +77,15 @@ class BookQuery {
     return ctrl.stream;
   }
 
-  static Future<Book> getOne(int id, PostgreSQLConnection connection) {
-    return connection.query('SELECT * FROM "books" WHERE "id" = @id;',
+  static Future<Author> getOne(int id, PostgreSQLConnection connection) {
+    return connection.query('SELECT * FROM "authors" WHERE "id" = @id;',
         substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
   }
 
-  Stream<Book> update(PostgreSQLConnection connection,
+  Stream<Author> update(PostgreSQLConnection connection,
       {String name, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "books" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "authors" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
     if (whereClause == null) {
       buf.write('WHERE "id" = @id');
@@ -95,10 +93,9 @@ class BookQuery {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();
-    var ctrl = new StreamController<Book>();
+    var ctrl = new StreamController<Author>();
     connection.query(
-        buf.toString() +
-            ' RETURNING ("id", "name", "created_at", "updated_at");',
+        buf.toString() + ' RETURNING "id", "name", "created_at", "updated_at";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
@@ -110,43 +107,76 @@ class BookQuery {
     return ctrl.stream;
   }
 
-  Stream<Book> delete(PostgreSQLConnection connection) async {}
-
-  static Future<Book> deleteOne(int id, PostgreSQLConnection connection) async {
-    var __ormBeforeDelete__ = await BookQuery.getOne(id, connection);
-    var result = await connection.execute('DELETE FROM "books" WHERE id = @id;',
-        substitutionValues: {'id': id});
-    if (result != 1) {
-      new StateError('DELETE query deleted ' +
-          result +
-          ' row(s), instead of exactly 1 row.');
+  Stream<Author> delete(PostgreSQLConnection connection) {
+    var buf = new StringBuffer('DELETE FROM "authors"');
+    var whereClause = where.toWhereClause();
+    if (whereClause != null) {
+      buf.write(' ' + whereClause);
+      if (_and.isNotEmpty) {
+        buf.write(' AND (' + _and.join(', ') + ')');
+      }
+      if (_or.isNotEmpty) {
+        buf.write(' OR (' + _or.join(', ') + ')');
+      }
+      if (_not.isNotEmpty) {
+        buf.write(' NOT (' + _not.join(', ') + ')');
+      }
     }
-    return __ormBeforeDelete__;
+    buf.write(' RETURNING "id", "name", "created_at", "updated_at";');
+    StreamController<Author> ctrl = new StreamController<Author>();
+    connection.query(buf.toString()).then((rows) {
+      rows.map(parseRow).forEach(ctrl.add);
+      ctrl.close();
+    }).catchError(ctrl.addError);
+    return ctrl.stream;
   }
 
-  static Future<Book> insert(PostgreSQLConnection connection,
+  static Future<Author> deleteOne(
+      int id, PostgreSQLConnection connection) async {
+    var result = await connection.query(
+        'DELETE FROM "authors" WHERE id = @id RETURNING "id", "name", "created_at", "updated_at";',
+        substitutionValues: {'id': id});
+    return parseRow(result[0]);
+  }
+
+  static Future<Author> insert(PostgreSQLConnection connection,
       {String name, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
-    var nRows = await connection.execute(
-        'INSERT INTO "books" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt);',
+    var result = await connection.query(
+        'INSERT INTO "authors" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
-    if (nRows < 1) {
-      throw new StateError('Insertion into "books" table failed.');
-    }
-    var currVal = await connection.query(
-        'SELECT * FROM "books" WHERE id = currval(pg_get_serial_sequence(\'books\', \'id\'));');
-    return parseRow(currVal[0]);
+    return parseRow(result[0]);
   }
 
-  static Stream<Book> getAll(PostgreSQLConnection connection) =>
-      new BookQuery().get(connection);
+  static Future<Author> insertAuthor(
+      PostgreSQLConnection connection, Author author) {
+    return AuthorQuery.insert(connection,
+        name: author.name,
+        createdAt: author.createdAt,
+        updatedAt: author.updatedAt);
+  }
+
+  static Future<Author> updateAuthor(
+      PostgreSQLConnection connection, Author author) {
+    var query = new AuthorQuery();
+    query.where.id.equals(int.parse(author.id));
+    return query
+        .update(connection,
+            name: author.name,
+            createdAt: author.createdAt,
+            updatedAt: author.updatedAt)
+        .first;
+  }
+
+  static Stream<Author> getAll(PostgreSQLConnection connection) =>
+      new AuthorQuery().get(connection);
 }
 
-class BookQueryWhere {
+class AuthorQueryWhere {
   final NumericSqlExpressionBuilder<int> id =
       new NumericSqlExpressionBuilder<int>();
 

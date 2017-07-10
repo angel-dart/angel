@@ -1,27 +1,21 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of angel_orm.test.models.car;
+part of angel_orm.test.models.author;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Car
+// Target: class _Book
 // **************************************************************************
 
-class Car extends _Car {
+class Book extends _Book {
   @override
   String id;
 
   @override
-  String make;
+  dynamic author;
 
   @override
-  String description;
-
-  @override
-  bool familyFriendly;
-
-  @override
-  DateTime recalledAt;
+  String name;
 
   @override
   DateTime createdAt;
@@ -29,26 +23,13 @@ class Car extends _Car {
   @override
   DateTime updatedAt;
 
-  Car(
-      {this.id,
-      this.make,
-      this.description,
-      this.familyFriendly,
-      this.recalledAt,
-      this.createdAt,
-      this.updatedAt});
+  Book({this.id, this.author, this.name, this.createdAt, this.updatedAt});
 
-  factory Car.fromJson(Map data) {
-    return new Car(
+  factory Book.fromJson(Map data) {
+    return new Book(
         id: data['id'],
-        make: data['make'],
-        description: data['description'],
-        familyFriendly: data['family_friendly'],
-        recalledAt: data['recalled_at'] is DateTime
-            ? data['recalled_at']
-            : (data['recalled_at'] is String
-                ? DateTime.parse(data['recalled_at'])
-                : null),
+        author: data['author'],
+        name: data['name'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
             : (data['created_at'] is String
@@ -63,13 +44,15 @@ class Car extends _Car {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'make': make,
-        'description': description,
-        'family_friendly': familyFriendly,
-        'recalled_at': recalledAt == null ? null : recalledAt.toIso8601String(),
+        'author': author,
+        'name': name,
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
-  static Car parse(Map map) => new Car.fromJson(map);
+  static Book parse(Map map) => new Book.fromJson(map);
+
+  Book clone() {
+    return new Book.fromJson(toJson());
+  }
 }

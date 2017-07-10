@@ -4,15 +4,12 @@ part of angel_orm.test.models.author;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Book
+// Target: class _Author
 // **************************************************************************
 
-class Book extends _Book {
+class Author extends _Author {
   @override
   String id;
-
-  @override
-  dynamic author;
 
   @override
   String name;
@@ -23,12 +20,11 @@ class Book extends _Book {
   @override
   DateTime updatedAt;
 
-  Book({this.id, this.author, this.name, this.createdAt, this.updatedAt});
+  Author({this.id, this.name, this.createdAt, this.updatedAt});
 
-  factory Book.fromJson(Map data) {
-    return new Book(
+  factory Author.fromJson(Map data) {
+    return new Author(
         id: data['id'],
-        author: data['author'],
         name: data['name'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
@@ -44,11 +40,14 @@ class Book extends _Book {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'author': author,
         'name': name,
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
-  static Book parse(Map map) => new Book.fromJson(map);
+  static Author parse(Map map) => new Author.fromJson(map);
+
+  Author clone() {
+    return new Author.fromJson(toJson());
+  }
 }

@@ -1,11 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/generated/resolver.dart';
+import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_serialize_generator/context.dart';
 import 'package:build/build.dart';
-import 'package:angel_serialize/context.dart';
-import '../../annotations.dart';
-import '../../migration.dart';
-import '../../relations.dart';
 
 class PostgresBuildContext extends BuildContext {
   DartType _dateTimeTypeCache;

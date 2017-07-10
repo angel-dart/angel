@@ -106,11 +106,25 @@ main() {
           expect(cars, isEmpty);
         });
 
-        test('delete', () async {
-          var query = new CarQuery();
+        test('delete stream', () async {
+          var query = new CarQuery()..where.make.equals('Ferrari');
           var cars = await query.delete(connection).toList();
           expect(cars, hasLength(1));
           expect(cars.first.toJson(), ferrari.toJson());
+        });
+
+        test('update', () async {
+          var query = new CarQuery()..where.id.equals(int.parse(ferrari.id));
+          var cars = await query.update(connection, make: 'Hyundai').toList();
+          expect(cars, hasLength(1));
+          expect(cars.first.make, 'Hyundai');
+        });
+
+        test('update car', () async {
+          var cloned = ferrari.clone()..make = 'Angel';
+          var car = await CarQuery.updateCar(connection, cloned);
+          print(car.toJson());
+          expect(car.toJson(), cloned.toJson());
         });
       });
     });
@@ -126,8 +140,25 @@ main() {
       expect(car.make, 'Honda');
       expect(car.description, 'Hello');
       expect(car.familyFriendly, isTrue);
-      expect(DATE_YMD_HMS.format(car.recalledAt), DATE_YMD_HMS.format(recalledAt));
+      expect(
+          DATE_YMD_HMS.format(car.recalledAt), DATE_YMD_HMS.format(recalledAt));
       expect(car.createdAt, allOf(isNotNull, equals(car.updatedAt)));
+    });
+
+    test('insert car', () async {
+      var recalledAt = new DateTime.now();
+      var beetle = new Car(
+          make: 'Beetle',
+          description: 'Herbie',
+          familyFriendly: true,
+          recalledAt: recalledAt);
+      var car = await CarQuery.insertCar(connection, beetle);
+      print(car.toJson());
+      expect(car.make, beetle.make);
+      expect(car.description, beetle.description);
+      expect(car.familyFriendly, beetle.familyFriendly);
+      expect(DATE_YMD_HMS.format(car.recalledAt),
+          DATE_YMD_HMS.format(beetle.recalledAt));
     });
   });
 }

@@ -1,18 +1,14 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:angel_serialize/build_context.dart' as serialize;
-import 'package:angel_serialize/context.dart' as serialize;
+import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_serialize_generator/src/find_annotation.dart';
+import 'package:angel_serialize_generator/build_context.dart' as serialize;
+import 'package:angel_serialize_generator/context.dart' as serialize;
 import 'package:build/build.dart';
 import 'package:inflection/inflection.dart';
 import 'package:recase/recase.dart';
-import '../../annotations.dart';
-import '../../migration.dart';
-import '../../relations.dart';
-import 'package:angel_serialize/src/find_annotation.dart';
-import 'package:source_gen/src/annotation.dart';
 import 'package:source_gen/source_gen.dart';
 import 'postgres_build_context.dart';
 
-// TODO: Should add id, createdAt, updatedAt...
 PostgresBuildContext buildContext(
     ClassElement clazz,
     ORM annotation,
