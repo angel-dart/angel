@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:code_builder/dart/core.dart';
 import 'package:source_gen/src/annotation.dart';
 import 'package:source_gen/source_gen.dart';
-import 'angel_serialize.dart';
 import 'build_context.dart';
 import 'context.dart';
 
@@ -45,6 +45,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     var genClassName = ctx.modelClassName;
     var genClass = new ClassBuilder(genClassName,
         asExtends: new TypeBuilder(ctx.originalClassName));
+    var modelType = new TypeBuilder(genClassName);
 
     // Now, add all fields to the base class
     ctx.fields.forEach((field) {
@@ -243,17 +244,24 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
       return out..[field.name] = value;
     });
-    fromJson.addStatement(new TypeBuilder(genClassName)
-        .newInstance([], named: namedParams).asReturn());
+    fromJson
+        .addStatement(modelType.newInstance([], named: namedParams).asReturn());
     genClass.addConstructor(fromJson);
 
     // Create `parse` to just forward
     var parseMethod = new MethodBuilder('parse',
-        returnType: new TypeBuilder(genClassName),
-        returns: new TypeBuilder(genClassName)
-            .newInstance([reference('map')], constructor: 'fromJson'));
+        returnType: modelType,
+        returns:
+            modelType.newInstance([reference('map')], constructor: 'fromJson'));
     parseMethod.addPositional(parameter('map', [new TypeBuilder('Map')]));
     genClass.addMethod(parseMethod, asStatic: true);
+
+    // Create clone() method...
+    var cloneMethod = new MethodBuilder('clone', returnType: modelType);
+    cloneMethod.addStatement(modelType.newInstance(
+        [reference('toJson').call([])],
+        constructor: 'fromJson').asReturn());
+    genClass.addMethod(cloneMethod);
 
     return genClass;
   }

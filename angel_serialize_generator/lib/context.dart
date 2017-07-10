@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'angel_serialize.dart';
+import 'package:angel_serialize/angel_serialize.dart';
 
 class BuildContext {
   final Map<String, String> aliases = {};
@@ -15,9 +15,6 @@ class BuildContext {
   String get modelClassName => originalClassName.startsWith('_')
       ? originalClassName.substring(1)
       : originalClassName;
-
-  String get queryClassName => modelClassName + 'Query';
-  String get whereClassName => queryClassName + 'Where';
 
   String resolveFieldName(String name) =>
       aliases.containsKey(name) ? aliases[name] : name;

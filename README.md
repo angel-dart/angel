@@ -2,12 +2,9 @@
 [![Pub](https://img.shields.io/pub/v/angel_serialize.svg)](https://pub.dartlang.org/packages/angel_serialize)
 [![build status](https://travis-ci.org/angel-dart/serialize.svg)](https://travis-ci.org/angel-dart/serialize)
 
-**This project is currently in the early stages, and may change at any given
-time without warning.**
-
-Source-generated serialization for Dart object. This package uses `package:source_gen` to eliminate
+Source-generated serialization for Dart objects. This package uses `package:source_gen` to eliminate
 the time you spend writing boilerplate serialization code for your models.
-`package:angel_serialize` also powers `package:angel_postgres` and other ORM functionality.
+`package:angel_serialize` also powers `package:angel_orm`.
 
 * [Usage](#usage)
   * [Models](#models)
@@ -16,12 +13,12 @@ the time you spend writing boilerplate serialization code for your models.
   * [Nesting](#nesting)
 
 # Usage
-In your `pubspec.yaml`:
+In your `pubspec.yaml`, you need to install the following dependencies:
 ```yaml
 dependencies:
-  angel_serialize:
-    git: https://github.com/angel-dart/serialize.git
+  angel_serialize: ^1.0.0-alpha
 dev_dependencies:
+  angel_serialize_builder: ^1.0.0-alpha
   build_runner: ^0.3.0
 ```
 
@@ -31,7 +28,7 @@ the `JsonModelGenerator`.
 ```dart
 import 'package:build_runner/build_runner.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:angel_serialize/builder.dart';
+import 'package:angel_serialize_builder/angel_serialize_builder.dart';
 
 final PhaseGroup PHASES = new PhaseGroup.singleAction(
     new GeneratorBuilder([const JsonModelGenerator()]),
@@ -145,6 +142,10 @@ class Book extends _Book {
       };
 
   static Book parse(Map map) => new Book.fromJson(map);
+  
+  Book clone() {
+    return new Book.fromJson(toJson());
+  }
 }
 ```
 

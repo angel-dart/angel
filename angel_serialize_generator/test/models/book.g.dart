@@ -68,6 +68,10 @@ class Book extends _Book {
       };
 
   static Book parse(Map map) => new Book.fromJson(map);
+
+  Book clone() {
+    return new Book.fromJson(toJson());
+  }
 }
 
 // **************************************************************************
@@ -145,6 +149,10 @@ class Author extends _Author {
       };
 
   static Author parse(Map map) => new Author.fromJson(map);
+
+  Author clone() {
+    return new Author.fromJson(toJson());
+  }
 }
 
 // **************************************************************************
@@ -200,4 +208,8 @@ class Library extends _Library {
       };
 
   static Library parse(Map map) => new Library.fromJson(map);
+
+  Library clone() {
+    return new Library.fromJson(toJson());
+  }
 }
