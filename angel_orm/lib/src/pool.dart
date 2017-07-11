@@ -37,7 +37,11 @@ class PostgreSQLConnectionPool {
   Future<T> run<T>(FutureOr<T> callback(PostgreSQLConnection connection)) {
     return _pool.request().then((resx) {
       return _connect().then((connection) {
-        return new Future<T>.sync(() => callback(connection)).whenComplete(resx.release);
+        return new Future<T>.sync(() => callback(connection))
+            .whenComplete(() async {
+          if (!connection.isClosed) await connection.close();
+          resx.release();
+        });
       });
     });
   }
