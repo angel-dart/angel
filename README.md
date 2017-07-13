@@ -14,6 +14,7 @@ In addition, the client supports `angel_auth` authentication.
 // Choose one or the other, depending on platform
 import 'package:angel_client/io.dart';
 import 'package:angel_client/browser.dart';
+import 'package:angel_client/flutter.dart';
 
 main() async {
   Angel app = new Rest("http://localhost:3000");
