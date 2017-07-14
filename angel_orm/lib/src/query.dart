@@ -21,7 +21,7 @@ String sanitizeExpression(String unsafe) {
       continue;
 
     // Otherwise, add the next char, unless it's a null byte.
-    else if ((ch == scanner.readChar()) != 0) buf.writeCharCode(ch);
+    else if ((ch = scanner.readChar()) != 0 && ch != null) buf.writeCharCode(ch);
   }
 
   return buf.toString();
