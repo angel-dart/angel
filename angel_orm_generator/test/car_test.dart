@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
@@ -84,10 +83,32 @@ main() {
           expect(car.recalledAt, isNull);
         });
 
-        test('and clause', () async {
+        test('union', () async {
+          var query1 = new CarQuery()..where.make.like('%Fer%');
+          var query2 = new CarQuery()..where.familyFriendly.equals(true);
+          var query3 = new CarQuery()..where.description.equals('Submarine');
+          query1
+            ..union(query2)
+            ..unionAll(query3);
+          print(query1.toSql());
+
+          var cars = await query1.get(connection).toList();
+          expect(cars, hasLength(1));
+        });
+
+        test('or clause', () async {
           var query = new CarQuery()
             ..where.make.like('Fer%')
-            ..and(new CarQuery()..where.familyFriendly.equals(true));
+            ..or(new CarQueryWhere()
+              ..familyFriendly.equals(true)
+              ..make.equals('Honda'));
+          print(query.toSql());
+          var cars = await query.get(connection).toList();
+          expect(cars, hasLength(1));
+        });
+
+        test('limit obeyed', () async {
+          var query = new CarQuery()..limit = 0;
           print(query.toSql());
           var cars = await query.get(connection).toList();
           expect(cars, isEmpty);
@@ -108,6 +129,8 @@ main() {
 
         test('delete stream', () async {
           var query = new CarQuery()..where.make.equals('Ferrari');
+          query.or(new CarQueryWhere()..familyFriendly.equals(true));
+          print(query.toSql('DELETE FROM "cars"'));
           var cars = await query.delete(connection).toList();
           expect(cars, hasLength(1));
           expect(cars.first.toJson(), ferrari.toJson());

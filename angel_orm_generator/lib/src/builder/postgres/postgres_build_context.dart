@@ -4,11 +4,16 @@ import 'package:analyzer/src/generated/resolver.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/context.dart';
 import 'package:build/build.dart';
+import 'package:code_builder/code_builder.dart';
 
 class PostgresBuildContext extends BuildContext {
   DartType _dateTimeTypeCache;
   LibraryElement _libraryCache;
   TypeProvider _typeProviderCache;
+  TypeBuilder _modelClassBuilder,
+      _queryClassBuilder,
+      _whereClassBuilder,
+      _postgresqlConnectionBuilder;
   final Map<String, Column> columnInfo = {};
   final Map<String, IndexType> indices = {};
   final Map<String, Relationship> relationships = {};
@@ -27,6 +32,18 @@ class PostgresBuildContext extends BuildContext {
             sourceFilename: raw.sourceFilename);
 
   final List<FieldElement> fields = [], relationshipFields = [];
+
+  TypeBuilder get modelClassBuilder =>
+      _modelClassBuilder ??= new TypeBuilder(modelClassName);
+
+  TypeBuilder get queryClassBuilder =>
+      _queryClassBuilder ??= new TypeBuilder(queryClassName);
+
+  TypeBuilder get whereClassBuilder =>
+      _whereClassBuilder ??= new TypeBuilder(whereClassName);
+
+  TypeBuilder get postgreSQLConnectionBuilder =>
+      _postgresqlConnectionBuilder ??= new TypeBuilder('PostgreSQLConnection');
 
   Map<String, String> get aliases => raw.aliases;
 

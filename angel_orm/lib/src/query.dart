@@ -1,4 +1,3 @@
-import 'package:charcode/charcode.dart';
 import 'package:meta/meta.dart';
 import 'package:intl/intl.dart';
 import 'package:string_scanner/string_scanner.dart';

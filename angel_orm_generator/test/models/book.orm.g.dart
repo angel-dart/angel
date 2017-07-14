@@ -12,51 +12,79 @@ import 'book.dart';
 import 'author.orm.g.dart';
 
 class BookQuery {
-  final List<String> _and = [];
+  final Map<BookQuery, bool> _unions = {};
 
-  final List<String> _or = [];
+  String _sortKey;
 
-  final List<String> _not = [];
+  String _sortMode;
+
+  int limit;
+
+  int offset;
+
+  final List<BookQueryWhere> _or = [];
 
   final BookQueryWhere where = new BookQueryWhere();
 
-  void and(BookQuery other) {
-    var compiled = other.where.toWhereClause(keyword: false);
-    if (compiled != null) {
-      _and.add(compiled);
-    }
+  void union(BookQuery query) {
+    _unions[query] = false;
   }
 
-  void or(BookQuery other) {
-    var compiled = other.where.toWhereClause(keyword: false);
-    if (compiled != null) {
-      _or.add(compiled);
-    }
+  void unionAll(BookQuery query) {
+    _unions[query] = true;
   }
 
-  void not(BookQuery other) {
-    var compiled = other.where.toWhereClause(keyword: false);
-    if (compiled != null) {
-      _not.add(compiled);
-    }
+  void sortDescending(String key) {
+    _sortMode = 'Descending';
+    _sortKey = key;
   }
 
-  String toSql() {
-    var buf = new StringBuffer('SELECT * FROM "books"');
+  void sortAscending(String key) {
+    _sortMode = 'Ascending';
+    _sortKey = key;
+  }
+
+  void or(BookQueryWhere selector) {
+    _or.add(selector);
+  }
+
+  String toSql([String prefix]) {
+    var buf = new StringBuffer();
+    buf.write(prefix != null ? prefix : 'SELECT * FROM "books"');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
     }
-    if (_and.isNotEmpty) {
-      buf.write(' AND (' + _and.join(',') + ')');
+    _or.forEach((x) {
+      var whereClause = x.toWhereClause(keyword: false);
+      if (whereClause != null) {
+        buf.write(' OR (' + whereClause + ')');
+      }
+    });
+    if (prefix == null) {
+      if (limit != null) {
+        buf.write(' LIMIT ' + limit.toString());
+      }
+      if (offset != null) {
+        buf.write(' OFFSET ' + offset.toString());
+      }
+      if (_sortMode == 'Descending') {
+        buf.write(' ORDER BY "' + _sortKey + '" DESC');
+      }
+      if (_sortMode == 'Ascending') {
+        buf.write(' ORDER BY "' + _sortKey + '" ASC');
+      }
+      _unions.forEach((query, all) {
+        buf.write(' UNION');
+        if (all) {
+          buf.write(' ALL');
+        }
+        buf.write(' (');
+        var sql = query.toSql().replaceAll(';', '');
+        buf.write(sql + ')');
+      });
+      buf.write(';');
     }
-    if (_or.isNotEmpty) {
-      buf.write(' OR (' + _or.join(',') + ')');
-    }
-    if (_not.isNotEmpty) {
-      buf.write(' NOT (' + _not.join(',') + ')');
-    }
-    buf.write(';');
     return buf.toString();
   }
 
@@ -110,23 +138,11 @@ class BookQuery {
   }
 
   Stream<Book> delete(PostgreSQLConnection connection) {
-    var buf = new StringBuffer('DELETE FROM "books"');
-    var whereClause = where.toWhereClause();
-    if (whereClause != null) {
-      buf.write(' ' + whereClause);
-      if (_and.isNotEmpty) {
-        buf.write(' AND (' + _and.join(', ') + ')');
-      }
-      if (_or.isNotEmpty) {
-        buf.write(' OR (' + _or.join(', ') + ')');
-      }
-      if (_not.isNotEmpty) {
-        buf.write(' NOT (' + _not.join(', ') + ')');
-      }
-    }
-    buf.write(' RETURNING "id", "name", "created_at", "updated_at";');
     StreamController<Book> ctrl = new StreamController<Book>();
-    connection.query(buf.toString()).then((rows) {
+    connection
+        .query(toSql('DELETE FROM "books"') +
+            ' RETURNING "id", "name", "created_at", "updated_at";')
+        .then((rows) {
       rows.map(parseRow).forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
