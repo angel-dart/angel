@@ -7,6 +7,9 @@ typedef FutureOr<PostgreSQLConnection> PostgreSQLConnector();
 
 /// Pools connections to a PostgreSQL database.
 class PostgreSQLConnectionPool {
+  final List<PostgreSQLConnection> _connections = [];
+  final List<int> _opened = [];
+  int _index = 0;
   Pool _pool;
 
   /// The maximum number of concurrent connections to the database.
@@ -26,10 +29,21 @@ class PostgreSQLConnectionPool {
   }
 
   Future<PostgreSQLConnection> _connect() async {
-    var connection = await connector() as PostgreSQLConnection;
-    await connection.open();
+    if (_connections.isEmpty) {
+      for (int i = 0; i < concurrency; i++) {
+        _connections.add(await connector());
+      }
+    }
+
+    var connection = _connections[_index++];
+    if (_index >= _connections.length) _index = 0;
+
+    if (!_opened.contains(connection.hashCode)) await connection.open();
+
     return connection;
   }
+
+  Future close() => Future.wait(_connections.map((c) => c.close()));
 
   /// Connects to the database, and then executes the [callback].
   ///
@@ -39,7 +53,11 @@ class PostgreSQLConnectionPool {
       return _connect().then((connection) {
         return new Future<T>.sync(() => callback(connection))
             .whenComplete(() async {
-          if (!connection.isClosed) await connection.close();
+          if (connection.isClosed) {
+            _connections
+              ..remove(connection)
+              ..add(await connector());
+          }
           resx.release();
         });
       });

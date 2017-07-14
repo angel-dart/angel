@@ -1,23 +1,54 @@
+import 'package:charcode/charcode.dart';
+import 'package:meta/meta.dart';
 import 'package:intl/intl.dart';
+import 'package:string_scanner/string_scanner.dart';
 
 final DateFormat DATE_YMD = new DateFormat('yyyy-MM-dd');
 final DateFormat DATE_YMD_HMS = new DateFormat('yyyy-MM-dd HH:mm:ss');
 
+/// Cleans an input SQL expression of common SQL injection points.
+String sanitizeExpression(String unsafe) {
+  var buf = new StringBuffer();
+  var scanner = new StringScanner(unsafe);
+  int ch;
+
+  while (!scanner.isDone) {
+    // Ignore comment starts
+    if (scanner.scan('--') || scanner.scan('/*'))
+      continue;
+
+    // Ignore all single quotes and attempted escape sequences
+    else if (scanner.scan("'") || scanner.scan('\\'))
+      continue;
+
+    // Otherwise, add the next char, unless it's a null byte.
+    else if ((ch == scanner.readChar()) != 0) buf.writeCharCode(ch);
+  }
+
+  return buf.toString();
+}
+
 abstract class SqlExpressionBuilder {
   bool get hasValue;
   String compile();
+  void isBetween(lower, upper);
+  void isNotBetween(lower, upper);
+  void isIn(Iterable values);
+  void isNotIn(Iterable values);
 }
 
 class NumericSqlExpressionBuilder<T extends num>
     implements SqlExpressionBuilder {
   bool _hasValue = false;
   String _op = '=';
+  String _raw;
   T _value;
 
   @override
   bool get hasValue => _hasValue;
 
   bool _change(String op, T value) {
+    _raw = null;
     _op = op;
     _value = value;
     return _hasValue = true;
@@ -25,6 +56,7 @@ class NumericSqlExpressionBuilder<T extends num>
 
   @override
   String compile() {
+    if (_raw != null) return _raw;
     if (_value == null) return null;
     return '$_op $_value';
   }
@@ -57,18 +89,41 @@ class NumericSqlExpressionBuilder<T extends num>
   void notEquals(T value) {
     _change('!=', value);
   }
+
+  @override
+  void isBetween(@checked T lower, @checked T upper) {
+    _raw = 'BETWEEN $lower AND $upper';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotBetween(@checked T lower, @checked T upper) {
+    _raw = 'NOT BETWEEN $lower AND $upper';
+    _hasValue = true;
+  }
+
+  @override
+  void isIn(@checked Iterable<T> values) {
+    _raw = 'IN (' + values.join(', ') + ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(@checked Iterable<T> values) {
+    _raw = 'NOT IN (' + values.join(', ') + ')';
+    _hasValue = true;
+  }
 }
 
-// TODO: Escape SQL Strings
 class StringSqlExpressionBuilder implements SqlExpressionBuilder {
   bool _hasValue = false;
-  String _op = '=';
-  String _value;
+  String _op = '=', _raw, _value;
 
   @override
   bool get hasValue => _hasValue;
 
   bool _change(String op, String value) {
+    _raw = null;
     _op = op;
     _value = value;
     return _hasValue = true;
@@ -76,8 +131,9 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder {
 
   @override
   String compile() {
+    if (_raw != null) return _raw;
     if (_value == null) return null;
-    var v = _value.replaceAll("'", "\\'");
+    var v = sanitizeExpression(_value);
     return "$_op '$v'";
   }
 
@@ -94,17 +150,48 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder {
   void like(String value) {
     _change('LIKE', value);
   }
+
+  @override
+  void isBetween(@checked String lower, @checked String upper) {
+    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
+    _raw = "BETWEEN '$l' AND '$u'";
+    _hasValue = true;
+  }
+
+  @override
+  void isNotBetween(@checked String lower, @checked String upper) {
+    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
+    _raw = "NOT BETWEEN '$l' AND '$u'";
+    _hasValue = true;
+  }
+
+  @override
+  void isIn(@checked Iterable<String> values) {
+    _raw = 'IN (' +
+        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
+        ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(@checked Iterable<String> values) {
+    _raw = 'NOT IN (' +
+        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
+        ')';
+    _hasValue = true;
+  }
 }
 
 class BooleanSqlExpressionBuilder implements SqlExpressionBuilder {
   bool _hasValue = false;
-  String _op = '=';
+  String _op = '=', _raw;
   bool _value;
 
   @override
   bool get hasValue => _hasValue;
 
   bool _change(String op, bool value) {
+    _raw = null;
     _op = op;
     _value = value;
     return _hasValue = true;
@@ -112,6 +199,7 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder {
 
   @override
   String compile() {
+    if (_raw != null) return _raw;
     if (_value == null) return null;
     var v = _value ? 'TRUE' : 'FALSE';
     return '$_op $v';
@@ -123,6 +211,28 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder {
 
   void notEquals(bool value) {
     _change('!=', value);
+  }
+
+  @override
+  void isBetween(@checked bool lower, @checked bool upper) =>
+      throw new UnsupportedError(
+          'Booleans do not support BETWEEN expressions.');
+
+  @override
+  void isNotBetween(@checked bool lower, @checked bool upper) =>
+      isBetween(lower, upper);
+
+  @override
+  void isIn(@checked Iterable<bool> values) {
+    _raw = 'IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(@checked Iterable<bool> values) {
+    _raw =
+        'NOT IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
+    _hasValue = true;
   }
 }
 
@@ -178,6 +288,32 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
 
   void greaterThanOrEqualTo(DateTime value, {bool includeTime: true}) {
     _change('>=', value, includeTime != false);
+  }
+
+  @override
+  void isIn(@checked Iterable<DateTime> values) {
+    _raw = '"$columnName" IN (' +
+        values.map(DATE_YMD_HMS.format).map((s) => "'$s'").join(', ') +
+        ')';
+  }
+
+  @override
+  void isNotIn(@checked Iterable<DateTime> values) {
+    _raw = '"$columnName" NOT IN (' +
+        values.map(DATE_YMD_HMS.format).map((s) => "'$s'").join(', ') +
+        ')';
+  }
+
+  @override
+  void isBetween(@checked DateTime lower, @checked DateTime upper) {
+    var l = DATE_YMD_HMS.format(lower), u = DATE_YMD_HMS.format(upper);
+    _raw = "\"$columnName\" BETWEEN '$l' and '$u'";
+  }
+
+  @override
+  void isNotBetween(@checked DateTime lower, @checked DateTime upper) {
+    var l = DATE_YMD_HMS.format(lower), u = DATE_YMD_HMS.format(upper);
+    _raw = "\"$columnName\" NOT BETWEEN '$l' and '$u'";
   }
 
   @override
