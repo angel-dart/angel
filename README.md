@@ -56,6 +56,7 @@ With features like the following, Angel is the all-in-one framework you should c
 * [Advanced, Modular Routing](https://github.com/angel-dart/route)
 * [Middleware](https://github.com/angel-dart/angel/wiki/Middleware)
 * [Dependency Injection](https://github.com/angel-dart/angel/wiki/Dependency-Injection)
+* [Strongly-typed ORM](https://github.com/angel-dart/orm)
 * And [much more](https://github.com/angel-dart)...
 
 ## Basic Example
