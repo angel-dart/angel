@@ -88,7 +88,7 @@ class CarController extends Controller {
   @Expose('/recalled_since_2008')
   carsRecalledSince2008(PostgreSQLConnection connection) {
     // Instantiate a Car query, which is auto-generated. This class helps us build fluent queries easily.
-    var cars = new CarQuery(connection);
+    var cars = new CarQuery();
     cars.where
       ..familyFriendly.equals(false)
       ..recalledAt.year.greaterThanOrEqualTo(2008);
@@ -98,7 +98,7 @@ class CarController extends Controller {
     
     // `get()` returns a Stream.
     // `get().toList()` returns a Future.
-    return cars.get().toList();
+    return cars.get(connection).toList();
   }
   
   @Expose('/create', method: 'POST')
