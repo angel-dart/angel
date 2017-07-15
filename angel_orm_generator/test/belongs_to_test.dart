@@ -1,4 +1,6 @@
-import 'package:angel_orm/angel_orm.dart';
+/// Tests for @belongsTo...
+library angel_orm_generator.test.book_test;
+
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'models/author.dart';

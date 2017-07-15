@@ -1,3 +1,6 @@
+/// Test for queries without relationships.
+library angel_orm_generator.test.car_test;
+
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';

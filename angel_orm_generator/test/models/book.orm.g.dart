@@ -179,11 +179,10 @@ class BookQuery {
     return ctrl.stream;
   }
 
-  static Future<Book> deleteOne(int id, PostgreSQLConnection connection) async {
-    var result = await connection.query(
-        'DELETE FROM "books" WHERE id = @id RETURNING "id", "name", "created_at", "updated_at", "author_id";',
-        substitutionValues: {'id': id});
-    return parseRow(result[0]);
+  static Future<Book> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new BookQuery();
+    query.where.id.equals(id);
+    return query.delete(connection).first;
   }
 
   static Future<Book> insert(PostgreSQLConnection connection,

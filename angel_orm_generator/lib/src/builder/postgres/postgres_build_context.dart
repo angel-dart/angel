@@ -90,11 +90,21 @@ class PostgresBuildContext extends BuildContext {
 
   PopulatedRelationship populateRelationship(String name) {
     return _populatedRelationships.putIfAbsent(name, () {
-      // TODO: Belongs to many
       var f = raw.fields.firstWhere((f) => f.name == name);
       var relationship = relationships[name];
+      DartType refType = f.type;
+
+      if (refType.isAssignableTo(typeProvider.listType) || refType.name == 'List') {
+        var iType = refType as InterfaceType;
+
+        if (iType.typeArguments.isEmpty)
+          throw 'Relationship "${f.name}" cannot be modeled as a generic List.';
+
+        refType = iType.typeArguments.first;
+      }
+
       var typeName =
-          f.type.name.startsWith('_') ? f.type.name.substring(1) : f.type.name;
+          refType.name.startsWith('_') ? refType.name.substring(1) : refType.name;
       var rc = new ReCase(typeName);
 
       if (relationship.type == RelationshipType.HAS_ONE ||
@@ -108,13 +118,22 @@ class PostgresBuildContext extends BuildContext {
             (autoSnakeCaseNames != false
                 ? pluralize(rc.snakeCase)
                 : pluralize(typeName));
-        return new PopulatedRelationship(relationship.type, f.type, buildStep,
-            resolver, autoSnakeCaseNames, autoIdAndDateFields,
+        return new PopulatedRelationship(
+            relationship.type,
+            f.name,
+            f.type,
+            buildStep,
+            resolver,
+            autoSnakeCaseNames,
+            autoIdAndDateFields,
+            relationship.type == RelationshipType.HAS_ONE,
+            typeProvider,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
             cascadeOnDelete: relationship.cascadeOnDelete);
-      } else if (relationship.type == RelationshipType.BELONGS_TO) {
+      } else if (relationship.type == RelationshipType.BELONGS_TO ||
+          relationship.type == RelationshipType.BELONGS_TO_MANY) {
         var localKey = relationship.localKey ??
             (autoSnakeCaseNames != false
                 ? '${rc.snakeCase}_id'
@@ -124,8 +143,16 @@ class PostgresBuildContext extends BuildContext {
             (autoSnakeCaseNames != false
                 ? pluralize(rc.snakeCase)
                 : pluralize(typeName));
-        return new PopulatedRelationship(relationship.type, f.type, buildStep,
-            resolver, autoSnakeCaseNames, autoIdAndDateFields,
+        return new PopulatedRelationship(
+            relationship.type,
+            f.name,
+            f.type,
+            buildStep,
+            resolver,
+            autoSnakeCaseNames,
+            autoIdAndDateFields,
+            relationship.type == RelationshipType.BELONGS_TO,
+            typeProvider,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
@@ -138,16 +165,28 @@ class PostgresBuildContext extends BuildContext {
 }
 
 class PopulatedRelationship extends Relationship {
+  bool _isList;
   DartType _modelType;
   PostgresBuildContext _modelTypeContext;
   DartObject _modelTypeORM;
+  final String originalName;
   final DartType dartType;
   final BuildStep buildStep;
   final Resolver resolver;
   final bool autoSnakeCaseNames, autoIdAndDateFields;
+  final bool isSingular;
+  final TypeProvider typeProvider;
 
-  PopulatedRelationship(int type, this.dartType, this.buildStep, this.resolver,
-      this.autoSnakeCaseNames, this.autoIdAndDateFields,
+  PopulatedRelationship(
+      int type,
+      this.originalName,
+      this.dartType,
+      this.buildStep,
+      this.resolver,
+      this.autoSnakeCaseNames,
+      this.autoIdAndDateFields,
+      this.isSingular,
+      this.typeProvider,
       {String localKey,
       String foreignKey,
       String foreignTable,
@@ -158,10 +197,33 @@ class PopulatedRelationship extends Relationship {
             foreignTable: foreignTable,
             cascadeOnDelete: cascadeOnDelete);
 
+  bool get isBelongsTo =>
+      type == RelationshipType.BELONGS_TO ||
+      type == RelationshipType.BELONGS_TO_MANY;
+
+  bool get isHas =>
+      type == RelationshipType.HAS_ONE || type == RelationshipType.HAS_MANY;
+
+  bool get isList => _isList ??=
+      dartType.isAssignableTo(typeProvider.listType) || dartType.name == 'List';
+
   DartType get modelType {
     if (_modelType != null) return _modelType;
     DartType searchType = dartType;
     var ormChecker = new TypeChecker.fromRuntime(ORM);
+
+    // Get inner type from List if any...
+    if (!isSingular) {
+      if (!isList)
+        throw '"$originalName" is a many-to-one relationship, and thus it should be represented as a List within your Dart class. You have it represented as ${dartType.name}.';
+      else {
+        var iType = dartType as InterfaceType;
+        if (iType.typeArguments.isEmpty)
+          throw '"$originalName" is a many-to-one relationship, and should be modeled as a List that references another model type. Example: `List<T>`, where T is a model type.';
+        else
+          searchType = iType.typeArguments.first;
+      }
+    }
 
     while (searchType != null) {
       var classElement = searchType.element as ClassElement;

@@ -9,7 +9,6 @@ import 'package:source_gen/src/utils.dart';
 import 'build_context.dart';
 import 'postgres_build_context.dart';
 
-// TODO: HasOne, HasMany, BelongsTo
 class SQLMigrationGenerator implements Builder {
   /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
@@ -96,25 +95,14 @@ class SQLMigrationGenerator implements Builder {
     });
 
     // Relations
-    ctx.relationshipFields.forEach((f) {
-      if (i++ > 0) buf.writeln(',');
-      var typeName =
-          f.type.name.startsWith('_') ? f.type.name.substring(1) : f.type.name;
-      var rc = new ReCase(typeName);
-      var relationship = ctx.relationships[f.name];
+    ctx.relationships.forEach((name, r) {
+      var relationship = ctx.populateRelationship(name);
 
-      if (relationship.type == RelationshipType.BELONGS_TO) {
-        var localKey = relationship.localKey ??
-            (autoSnakeCaseNames != false
-                ? '${rc.snakeCase}_id'
-                : '${typeName}Id');
-        var foreignKey = relationship.foreignKey ?? 'id';
-        var foreignTable = relationship.foreignTable ??
-            (autoSnakeCaseNames != false
-                ? pluralize(rc.snakeCase)
-                : pluralize(typeName));
-        buf.write('  "$localKey" int REFERENCES $foreignTable($foreignKey)');
-        if (relationship.cascadeOnDelete != false)
+      if (relationship.isBelongsTo) {
+        if (i++ > 0) buf.writeln(',');
+        buf.write(
+            '  "${relationship.localKey}" int REFERENCES ${relationship.foreignTable}(${relationship.foreignKey})');
+        if (relationship.cascadeOnDelete != false && relationship.isSingular)
           buf.write(' ON DELETE CASCADE');
       }
     });

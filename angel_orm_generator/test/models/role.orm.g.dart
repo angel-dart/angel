@@ -2,16 +2,16 @@
 
 // **************************************************************************
 // Generator: PostgresORMGenerator
-// Target: class _Author
+// Target: class _Role
 // **************************************************************************
 
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
-import 'author.dart';
+import 'role.dart';
 
-class AuthorQuery {
-  final Map<AuthorQuery, bool> _unions = {};
+class RoleQuery {
+  final Map<RoleQuery, bool> _unions = {};
 
   String _sortKey;
 
@@ -21,15 +21,15 @@ class AuthorQuery {
 
   int offset;
 
-  final List<AuthorQueryWhere> _or = [];
+  final List<RoleQueryWhere> _or = [];
 
-  final AuthorQueryWhere where = new AuthorQueryWhere();
+  final RoleQueryWhere where = new RoleQueryWhere();
 
-  void union(AuthorQuery query) {
+  void union(RoleQuery query) {
     _unions[query] = false;
   }
 
-  void unionAll(AuthorQuery query) {
+  void unionAll(RoleQuery query) {
     _unions[query] = true;
   }
 
@@ -43,7 +43,7 @@ class AuthorQuery {
     _sortKey = ('' + key);
   }
 
-  void or(AuthorQueryWhere selector) {
+  void or(RoleQueryWhere selector) {
     _or.add(selector);
   }
 
@@ -51,7 +51,7 @@ class AuthorQuery {
     var buf = new StringBuffer();
     buf.write(prefix != null
         ? prefix
-        : 'SELECT id, name, created_at, updated_at FROM "authors"');
+        : 'SELECT id, name, created_at, updated_at FROM "roles"');
     if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
@@ -90,8 +90,8 @@ class AuthorQuery {
     return buf.toString();
   }
 
-  static Author parseRow(List row) {
-    var result = new Author.fromJson({
+  static Role parseRow(List row) {
+    var result = new Role.fromJson({
       'id': row[0].toString(),
       'name': row[1],
       'created_at': row[2],
@@ -100,8 +100,8 @@ class AuthorQuery {
     return result;
   }
 
-  Stream<Author> get(PostgreSQLConnection connection) {
-    StreamController<Author> ctrl = new StreamController<Author>();
+  Stream<Role> get(PostgreSQLConnection connection) {
+    StreamController<Role> ctrl = new StreamController<Role>();
     connection.query(toSql()).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
@@ -114,16 +114,16 @@ class AuthorQuery {
     return ctrl.stream;
   }
 
-  static Future<Author> getOne(int id, PostgreSQLConnection connection) {
-    var query = new AuthorQuery();
+  static Future<Role> getOne(int id, PostgreSQLConnection connection) {
+    var query = new RoleQuery();
     query.where.id.equals(id);
     return query.get(connection).first.catchError((_) => null);
   }
 
-  Stream<Author> update(PostgreSQLConnection connection,
+  Stream<Role> update(PostgreSQLConnection connection,
       {String name, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "authors" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "roles" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
     if (whereClause == null) {
       buf.write('WHERE "id" = @id');
@@ -131,7 +131,7 @@ class AuthorQuery {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();
-    var ctrl = new StreamController<Author>();
+    var ctrl = new StreamController<Role>();
     connection.query(
         buf.toString() + ' RETURNING "id", "name", "created_at", "updated_at";',
         substitutionValues: {
@@ -150,10 +150,10 @@ class AuthorQuery {
     return ctrl.stream;
   }
 
-  Stream<Author> delete(PostgreSQLConnection connection) {
-    StreamController<Author> ctrl = new StreamController<Author>();
+  Stream<Role> delete(PostgreSQLConnection connection) {
+    StreamController<Role> ctrl = new StreamController<Role>();
     connection
-        .query(toSql('DELETE FROM "authors"') +
+        .query(toSql('DELETE FROM "roles"') +
             ' RETURNING "id", "name", "created_at", "updated_at";')
         .then((rows) async {
       var futures = rows.map((row) async {
@@ -167,17 +167,17 @@ class AuthorQuery {
     return ctrl.stream;
   }
 
-  static Future<Author> deleteOne(int id, PostgreSQLConnection connection) {
-    var query = new AuthorQuery();
+  static Future<Role> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new RoleQuery();
     query.where.id.equals(id);
     return query.delete(connection).first;
   }
 
-  static Future<Author> insert(PostgreSQLConnection connection,
+  static Future<Role> insert(PostgreSQLConnection connection,
       {String name, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "authors" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
+        'INSERT INTO "roles" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
@@ -187,49 +187,45 @@ class AuthorQuery {
     return output;
   }
 
-  static Future<Author> insertAuthor(
-      PostgreSQLConnection connection, Author author) {
-    return AuthorQuery.insert(connection,
-        name: author.name,
-        createdAt: author.createdAt,
-        updatedAt: author.updatedAt);
+  static Future<Role> insertRole(PostgreSQLConnection connection, Role role) {
+    return RoleQuery.insert(connection,
+        name: role.name, createdAt: role.createdAt, updatedAt: role.updatedAt);
   }
 
-  static Future<Author> updateAuthor(
-      PostgreSQLConnection connection, Author author) {
-    var query = new AuthorQuery();
-    query.where.id.equals(int.parse(author.id));
+  static Future<Role> updateRole(PostgreSQLConnection connection, Role role) {
+    var query = new RoleQuery();
+    query.where.id.equals(int.parse(role.id));
     return query
         .update(connection,
-            name: author.name,
-            createdAt: author.createdAt,
-            updatedAt: author.updatedAt)
+            name: role.name,
+            createdAt: role.createdAt,
+            updatedAt: role.updatedAt)
         .first;
   }
 
-  static Stream<Author> getAll(PostgreSQLConnection connection) =>
-      new AuthorQuery().get(connection);
+  static Stream<Role> getAll(PostgreSQLConnection connection) =>
+      new RoleQuery().get(connection);
 }
 
-class AuthorQueryWhere {
+class RoleQueryWhere {
   final NumericSqlExpressionBuilder<int> id =
       new NumericSqlExpressionBuilder<int>();
 
   final StringSqlExpressionBuilder name = new StringSqlExpressionBuilder();
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('authors.created_at');
+      new DateTimeSqlExpressionBuilder('roles.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('authors.updated_at');
+      new DateTimeSqlExpressionBuilder('roles.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('authors.id ' + id.compile());
+      expressions.add('roles.id ' + id.compile());
     }
     if (name.hasValue) {
-      expressions.add('authors.name ' + name.compile());
+      expressions.add('roles.name ' + name.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());

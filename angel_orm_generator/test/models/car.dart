@@ -1,4 +1,4 @@
-library angel_orm.test.models.car;
+library angel_orm.generator.models.car;
 
 import 'package:angel_framework/common.dart';
 import 'package:angel_orm/angel_orm.dart';

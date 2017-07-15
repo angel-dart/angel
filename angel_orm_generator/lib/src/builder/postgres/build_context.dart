@@ -51,6 +51,9 @@ PostgresBuildContext buildContext(
         case 'BelongsTo':
           type = RelationshipType.BELONGS_TO;
           break;
+        case 'BelongsToMany':
+          type = RelationshipType.BELONGS_TO_MANY;
+          break;
         default:
           throw new UnsupportedError(
               'Unsupported relationship type "${relationshipAnnotation.type.name}".');

@@ -179,11 +179,10 @@ class CarQuery {
     return ctrl.stream;
   }
 
-  static Future<Car> deleteOne(int id, PostgreSQLConnection connection) async {
-    var result = await connection.query(
-        'DELETE FROM "cars" WHERE id = @id RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
-        substitutionValues: {'id': id});
-    return parseRow(result[0]);
+  static Future<Car> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new CarQuery();
+    query.where.id.equals(id);
+    return query.delete(connection).first;
   }
 
   static Future<Car> insert(PostgreSQLConnection connection,

@@ -1,6 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="tests in book_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" folderName="book" singleton="true">
-    <option name="filePath" value="$PROJECT_DIR$/angel_orm_generator/test/book_test.dart" />
-    <method />
-  </configuration>
-</component>

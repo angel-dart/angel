@@ -1,4 +1,4 @@
-library angel_orm.test.models.book;
+library angel_orm.generator.models.book;
 
 import 'package:angel_framework/common.dart';
 import 'package:angel_orm/angel_orm.dart';

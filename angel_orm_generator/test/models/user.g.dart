@@ -1,21 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of angel_orm.generator.models.book;
+part of angel_orm_generator.test.models.user;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Book
+// Target: class _User
 // **************************************************************************
 
-class Book extends _Book {
+class User extends _User {
   @override
   String id;
 
   @override
-  dynamic author;
+  String username;
 
   @override
-  String name;
+  String password;
+
+  @override
+  String email;
+
+  @override
+  List roles;
 
   @override
   DateTime createdAt;
@@ -23,13 +29,22 @@ class Book extends _Book {
   @override
   DateTime updatedAt;
 
-  Book({this.id, this.author, this.name, this.createdAt, this.updatedAt});
+  User(
+      {this.id,
+      this.username,
+      this.password,
+      this.email,
+      this.roles,
+      this.createdAt,
+      this.updatedAt});
 
-  factory Book.fromJson(Map data) {
-    return new Book(
+  factory User.fromJson(Map data) {
+    return new User(
         id: data['id'],
-        author: data['author'],
-        name: data['name'],
+        username: data['username'],
+        password: data['password'],
+        email: data['email'],
+        roles: data['roles'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
             : (data['created_at'] is String
@@ -44,15 +59,17 @@ class Book extends _Book {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'author': author,
-        'name': name,
+        'username': username,
+        'password': password,
+        'email': email,
+        'roles': roles,
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
-  static Book parse(Map map) => new Book.fromJson(map);
+  static User parse(Map map) => new User.fromJson(map);
 
-  Book clone() {
-    return new Book.fromJson(toJson());
+  User clone() {
+    return new User.fromJson(toJson());
   }
 }

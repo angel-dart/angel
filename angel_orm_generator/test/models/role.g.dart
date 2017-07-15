@@ -1,18 +1,15 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of angel_orm.generator.models.book;
+part of angel_orm_generator.test.models.role;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Book
+// Target: class _Role
 // **************************************************************************
 
-class Book extends _Book {
+class Role extends _Role {
   @override
   String id;
-
-  @override
-  dynamic author;
 
   @override
   String name;
@@ -23,12 +20,11 @@ class Book extends _Book {
   @override
   DateTime updatedAt;
 
-  Book({this.id, this.author, this.name, this.createdAt, this.updatedAt});
+  Role({this.id, this.name, this.createdAt, this.updatedAt});
 
-  factory Book.fromJson(Map data) {
-    return new Book(
+  factory Role.fromJson(Map data) {
+    return new Role(
         id: data['id'],
-        author: data['author'],
         name: data['name'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
@@ -44,15 +40,14 @@ class Book extends _Book {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'author': author,
         'name': name,
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
-  static Book parse(Map map) => new Book.fromJson(map);
+  static Role parse(Map map) => new Role.fromJson(map);
 
-  Book clone() {
-    return new Book.fromJson(toJson());
+  Role clone() {
+    return new Role.fromJson(toJson());
   }
 }
