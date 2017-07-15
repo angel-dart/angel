@@ -78,12 +78,12 @@ AngelConfigurer connectToCarsTable(PostgreSQLConnection connection) {
     app.container.singleton(connection);
     
     // Attach the controller we create below
-    await app.configure(new CarService(connection));
+    await app.configure(new CarController(connection));
   };
 }
 
 @Expose('/cars')
-class CarService extends Controller {
+class CarController extends Controller {
   // The `connection` will be injected.
   @Expose('/recalled_since_2008')
   carsRecalledSince2008(PostgreSQLConnection connection) {
