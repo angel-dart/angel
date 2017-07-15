@@ -35,12 +35,12 @@ class AuthorQuery {
 
   void sortDescending(String key) {
     _sortMode = 'Descending';
-    _sortKey = key;
+    _sortKey = ('' + key);
   }
 
   void sortAscending(String key) {
     _sortMode = 'Ascending';
-    _sortKey = key;
+    _sortKey = ('' + key);
   }
 
   void or(AuthorQueryWhere selector) {
@@ -49,7 +49,10 @@ class AuthorQuery {
 
   String toSql([String prefix]) {
     var buf = new StringBuffer();
-    buf.write(prefix != null ? prefix : 'SELECT * FROM "authors"');
+    buf.write(prefix != null
+        ? prefix
+        : 'SELECT id, name, created_at, updated_at FROM "authors"');
+    if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
@@ -88,26 +91,33 @@ class AuthorQuery {
   }
 
   static Author parseRow(List row) {
-    return new Author.fromJson({
+    var result = new Author.fromJson({
       'id': row[0].toString(),
       'name': row[1],
       'created_at': row[2],
       'updated_at': row[3]
     });
+    return result;
   }
 
   Stream<Author> get(PostgreSQLConnection connection) {
     StreamController<Author> ctrl = new StreamController<Author>();
-    connection.query(toSql()).then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+    connection.query(toSql()).then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
   }
 
   static Future<Author> getOne(int id, PostgreSQLConnection connection) {
-    return connection.query('SELECT * FROM "authors" WHERE "id" = @id;',
-        substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
+    var query = new AuthorQuery();
+    query.where.id.equals(id);
+    return query.get(connection).first.catchError((_) => null);
   }
 
   Stream<Author> update(PostgreSQLConnection connection,
@@ -128,8 +138,13 @@ class AuthorQuery {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
-        }).then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+        }).then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
@@ -140,8 +155,13 @@ class AuthorQuery {
     connection
         .query(toSql('DELETE FROM "authors"') +
             ' RETURNING "id", "name", "created_at", "updated_at";')
-        .then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+        .then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
@@ -165,7 +185,8 @@ class AuthorQuery {
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
-    return parseRow(result[0]);
+    var output = parseRow(result[0]);
+    return output;
   }
 
   static Future<Author> insertAuthor(
@@ -199,18 +220,18 @@ class AuthorQueryWhere {
   final StringSqlExpressionBuilder name = new StringSqlExpressionBuilder();
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+      new DateTimeSqlExpressionBuilder('authors.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+      new DateTimeSqlExpressionBuilder('authors.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('"id" ' + id.compile());
+      expressions.add('authors.id ' + id.compile());
     }
     if (name.hasValue) {
-      expressions.add('"name" ' + name.compile());
+      expressions.add('authors.name ' + name.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());

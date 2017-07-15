@@ -16,7 +16,7 @@ main() {
     var whereClause = query.where.toWhereClause();
     print('Where clause: $whereClause');
     expect(whereClause,
-        'WHERE "family_friendly" = TRUE AND "recalled_at" <= \'2000-01-01\'');
+        'WHERE cars.family_friendly = TRUE AND cars.recalled_at <= \'2000-01-01\'');
   });
 
   test('parseRow', () {

@@ -10,6 +10,10 @@ Future<PostgreSQLConnection> connectToPostgres() async {
 
   var query = await new File('test/models/car.up.g.sql').readAsString();
   await conn.execute(query);
+  query = await new File('test/models/author.up.g.sql').readAsString();
+  await conn.execute(query);
+  query = await new File('test/models/book.up.g.sql').readAsString();
+  await conn.execute(query);
 
   return conn;
 }

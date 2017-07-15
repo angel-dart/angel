@@ -260,7 +260,7 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
 
   bool _change(String _op, DateTime dt, bool time) {
     var dateString = time ? DATE_YMD_HMS.format(dt) : DATE_YMD.format(dt);
-    _raw = '"$columnName" $_op \'$dateString\'';
+    _raw = '$columnName $_op \'$dateString\'';
     return true;
   }
 
@@ -291,40 +291,40 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder {
 
   @override
   void isIn(@checked Iterable<DateTime> values) {
-    _raw = '"$columnName" IN (' +
-        values.map(DATE_YMD_HMS.format).map((s) => "'$s'").join(', ') +
+    _raw = '$columnName IN (' +
+        values.map(DATE_YMD_HMS.format).map((s) => '$s').join(', ') +
         ')';
   }
 
   @override
   void isNotIn(@checked Iterable<DateTime> values) {
-    _raw = '"$columnName" NOT IN (' +
-        values.map(DATE_YMD_HMS.format).map((s) => "'$s'").join(', ') +
+    _raw = '$columnName NOT IN (' +
+        values.map(DATE_YMD_HMS.format).map((s) => '$s').join(', ') +
         ')';
   }
 
   @override
   void isBetween(@checked DateTime lower, @checked DateTime upper) {
     var l = DATE_YMD_HMS.format(lower), u = DATE_YMD_HMS.format(upper);
-    _raw = "\"$columnName\" BETWEEN '$l' and '$u'";
+    _raw = "$columnName BETWEEN '$l' and '$u'";
   }
 
   @override
   void isNotBetween(@checked DateTime lower, @checked DateTime upper) {
     var l = DATE_YMD_HMS.format(lower), u = DATE_YMD_HMS.format(upper);
-    _raw = "\"$columnName\" NOT BETWEEN '$l' and '$u'";
+    _raw = "$columnName NOT BETWEEN '$l' and '$u'";
   }
 
   @override
   String compile() {
     if (_raw?.isNotEmpty == true) return _raw;
     List<String> parts = [];
-    if (year.hasValue) parts.add('YEAR("$columnName") ${year.compile()}');
-    if (month.hasValue) parts.add('MONTH("$columnName") ${month.compile()}');
-    if (day.hasValue) parts.add('DAY("$columnName") ${day.compile()}');
-    if (hour.hasValue) parts.add('HOUR("$columnName") ${hour.compile()}');
-    if (minute.hasValue) parts.add('MINUTE("$columnName") ${minute.compile()}');
-    if (second.hasValue) parts.add('SECOND("$columnName") ${second.compile()}');
+    if (year.hasValue) parts.add('YEAR($columnName) ${year.compile()}');
+    if (month.hasValue) parts.add('MONTH($columnName) ${month.compile()}');
+    if (day.hasValue) parts.add('DAY($columnName) ${day.compile()}');
+    if (hour.hasValue) parts.add('HOUR($columnName) ${hour.compile()}');
+    if (minute.hasValue) parts.add('MINUTE($columnName) ${minute.compile()}');
+    if (second.hasValue) parts.add('SECOND($columnName) ${second.compile()}');
 
     return parts.isEmpty ? null : parts.join(' AND ');
   }

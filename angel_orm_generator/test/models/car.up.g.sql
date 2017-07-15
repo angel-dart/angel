@@ -5,5 +5,6 @@ CREATE TEMPORARY TABLE "cars" (
   "family_friendly" boolean,
   "recalled_at" timestamp,
   "created_at" timestamp,
-  "updated_at" timestamp
+  "updated_at" timestamp,
+  PRIMARY KEY(id)
 );

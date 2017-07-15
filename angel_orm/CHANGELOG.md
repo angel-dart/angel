@@ -1,3 +1,7 @@
+# 1.0.0-alpha+6
+* `DateTimeSqlExpressionBuilder` will no longer automatically
+insert quotation marks around names.
+
 # 1.0.0-alpha+5
 * Corrected a typo that was causing the aforementioned test failures.
 `==` becomes `=`.

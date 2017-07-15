@@ -1,4 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/src/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/src/find_annotation.dart';
 import 'package:angel_serialize_generator/build_context.dart' as serialize;
@@ -21,7 +23,9 @@ PostgresBuildContext buildContext(
   var ctx = new PostgresBuildContext(raw, annotation, resolver, buildStep,
       tableName: annotation.tableName?.isNotEmpty == true
           ? annotation.tableName
-          : pluralize(new ReCase(clazz.name).snakeCase));
+          : pluralize(new ReCase(clazz.name).snakeCase),
+      autoSnakeCaseNames: autoSnakeCaseNames != false,
+      autoIdAndDateFields: autoIdAndDateFields != false);
   var relations = new TypeChecker.fromRuntime(Relationship);
   List<String> fieldNames = [];
   List<FieldElement> fields = [];
@@ -107,5 +111,28 @@ PostgresBuildContext buildContext(
   }
 
   ctx.fields.addAll(fields);
+
+  // Add belongs to fields
+  // TODO: Do this for belongs to many as well
+  ctx.relationships.forEach((name, r) {
+    var relationship = ctx.populateRelationship(name);
+    var rc = new ReCase(relationship.localKey);
+
+    if (relationship.type == RelationshipType.BELONGS_TO) {
+      var field = new RelationshipConstraintField(
+          rc.camelCase, ctx.typeProvider.intType, name);
+      ctx.fields.add(field);
+      ctx.aliases[field.name] = relationship.localKey;
+    }
+  });
+
   return ctx;
+}
+
+class RelationshipConstraintField extends FieldElementImpl {
+  @override
+  final DartType type;
+  final String originalName;
+  RelationshipConstraintField(String name, this.type, this.originalName)
+      : super(name, -1);
 }

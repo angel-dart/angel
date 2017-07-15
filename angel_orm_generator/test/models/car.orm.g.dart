@@ -35,12 +35,12 @@ class CarQuery {
 
   void sortDescending(String key) {
     _sortMode = 'Descending';
-    _sortKey = key;
+    _sortKey = ('' + key);
   }
 
   void sortAscending(String key) {
     _sortMode = 'Ascending';
-    _sortKey = key;
+    _sortKey = ('' + key);
   }
 
   void or(CarQueryWhere selector) {
@@ -49,7 +49,10 @@ class CarQuery {
 
   String toSql([String prefix]) {
     var buf = new StringBuffer();
-    buf.write(prefix != null ? prefix : 'SELECT * FROM "cars"');
+    buf.write(prefix != null
+        ? prefix
+        : 'SELECT id, make, description, family_friendly, recalled_at, created_at, updated_at FROM "cars"');
+    if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
@@ -88,7 +91,7 @@ class CarQuery {
   }
 
   static Car parseRow(List row) {
-    return new Car.fromJson({
+    var result = new Car.fromJson({
       'id': row[0].toString(),
       'make': row[1],
       'description': row[2],
@@ -97,20 +100,27 @@ class CarQuery {
       'created_at': row[5],
       'updated_at': row[6]
     });
+    return result;
   }
 
   Stream<Car> get(PostgreSQLConnection connection) {
     StreamController<Car> ctrl = new StreamController<Car>();
-    connection.query(toSql()).then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+    connection.query(toSql()).then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
   }
 
   static Future<Car> getOne(int id, PostgreSQLConnection connection) {
-    return connection.query('SELECT * FROM "cars" WHERE "id" = @id;',
-        substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
+    var query = new CarQuery();
+    query.where.id.equals(id);
+    return query.get(connection).first.catchError((_) => null);
   }
 
   Stream<Car> update(PostgreSQLConnection connection,
@@ -140,8 +150,13 @@ class CarQuery {
           'recalledAt': recalledAt,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
-        }).then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+        }).then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
@@ -152,8 +167,13 @@ class CarQuery {
     connection
         .query(toSql('DELETE FROM "cars"') +
             ' RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";')
-        .then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+        .then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
@@ -184,7 +204,8 @@ class CarQuery {
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
-    return parseRow(result[0]);
+    var output = parseRow(result[0]);
+    return output;
   }
 
   static Future<Car> insertCar(PostgreSQLConnection connection, Car car) {
@@ -228,27 +249,27 @@ class CarQueryWhere {
       new BooleanSqlExpressionBuilder();
 
   final DateTimeSqlExpressionBuilder recalledAt =
-      new DateTimeSqlExpressionBuilder('recalled_at');
+      new DateTimeSqlExpressionBuilder('cars.recalled_at');
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+      new DateTimeSqlExpressionBuilder('cars.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+      new DateTimeSqlExpressionBuilder('cars.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('"id" ' + id.compile());
+      expressions.add('cars.id ' + id.compile());
     }
     if (make.hasValue) {
-      expressions.add('"make" ' + make.compile());
+      expressions.add('cars.make ' + make.compile());
     }
     if (description.hasValue) {
-      expressions.add('"description" ' + description.compile());
+      expressions.add('cars.description ' + description.compile());
     }
     if (familyFriendly.hasValue) {
-      expressions.add('"family_friendly" ' + familyFriendly.compile());
+      expressions.add('cars.family_friendly ' + familyFriendly.compile());
     }
     if (recalledAt.hasValue) {
       expressions.add(recalledAt.compile());

@@ -36,12 +36,12 @@ class BookQuery {
 
   void sortDescending(String key) {
     _sortMode = 'Descending';
-    _sortKey = key;
+    _sortKey = ('books.' + key);
   }
 
   void sortAscending(String key) {
     _sortMode = 'Ascending';
-    _sortKey = key;
+    _sortKey = ('books.' + key);
   }
 
   void or(BookQueryWhere selector) {
@@ -50,7 +50,12 @@ class BookQuery {
 
   String toSql([String prefix]) {
     var buf = new StringBuffer();
-    buf.write(prefix != null ? prefix : 'SELECT * FROM "books"');
+    buf.write(prefix != null
+        ? prefix
+        : 'SELECT books.id, books.name, books.created_at, books.updated_at, books.author_id, authors.id, authors.name, authors.created_at, authors.updated_at FROM "books"');
+    if (prefix == null) {
+      buf.write(' INNER JOIN authors ON books.author_id = authors.id');
+    }
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
@@ -89,33 +94,44 @@ class BookQuery {
   }
 
   static Book parseRow(List row) {
-    return new Book.fromJson({
+    var result = new Book.fromJson({
       'id': row[0].toString(),
       'name': row[1],
       'created_at': row[2],
       'updated_at': row[3],
-      'author': row.length < 5 ? null : AuthorQuery.parseRow(row[4])
+      'author_id': row[4]
     });
+    if (row.length > 5) {
+      result.author = AuthorQuery.parseRow([row[5], row[6], row[7], row[8]]);
+    }
+    return result;
   }
 
   Stream<Book> get(PostgreSQLConnection connection) {
     StreamController<Book> ctrl = new StreamController<Book>();
-    connection.query(toSql()).then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+    connection.query(toSql()).then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        parsed.author = await AuthorQuery.getOne(row[4], connection);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
   }
 
   static Future<Book> getOne(int id, PostgreSQLConnection connection) {
-    return connection.query('SELECT * FROM "books" WHERE "id" = @id;',
-        substitutionValues: {'id': id}).then((rows) => parseRow(rows.first));
+    var query = new BookQuery();
+    query.where.id.equals(id);
+    return query.get(connection).first.catchError((_) => null);
   }
 
   Stream<Book> update(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) {
+      {String name, DateTime createdAt, DateTime updatedAt, int authorId}) {
     var buf = new StringBuffer(
-        'UPDATE "books" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "books" SET ("name", "created_at", "updated_at", "author_id") = (@name, @createdAt, @updatedAt, @authorId) ');
     var whereClause = where.toWhereClause();
     if (whereClause == null) {
       buf.write('WHERE "id" = @id');
@@ -125,13 +141,21 @@ class BookQuery {
     var __ormNow__ = new DateTime.now();
     var ctrl = new StreamController<Book>();
     connection.query(
-        buf.toString() + ' RETURNING "id", "name", "created_at", "updated_at";',
+        buf.toString() +
+            ' RETURNING "id", "name", "created_at", "updated_at", "author_id";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
-          'updatedAt': updatedAt != null ? updatedAt : __ormNow__
-        }).then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+          'updatedAt': updatedAt != null ? updatedAt : __ormNow__,
+          'authorId': authorId
+        }).then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        parsed.author = await AuthorQuery.getOne(row[4], connection);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
@@ -141,9 +165,15 @@ class BookQuery {
     StreamController<Book> ctrl = new StreamController<Book>();
     connection
         .query(toSql('DELETE FROM "books"') +
-            ' RETURNING "id", "name", "created_at", "updated_at";')
-        .then((rows) {
-      rows.map(parseRow).forEach(ctrl.add);
+            ' RETURNING "id", "name", "created_at", "updated_at", "author_id";')
+        .then((rows) async {
+      var futures = rows.map((row) async {
+        var parsed = parseRow(row);
+        parsed.author = await AuthorQuery.getOne(row[4], connection);
+        return parsed;
+      });
+      var output = await Future.wait(futures);
+      output.forEach(ctrl.add);
       ctrl.close();
     }).catchError(ctrl.addError);
     return ctrl.stream;
@@ -151,27 +181,37 @@ class BookQuery {
 
   static Future<Book> deleteOne(int id, PostgreSQLConnection connection) async {
     var result = await connection.query(
-        'DELETE FROM "books" WHERE id = @id RETURNING "id", "name", "created_at", "updated_at";',
+        'DELETE FROM "books" WHERE id = @id RETURNING "id", "name", "created_at", "updated_at", "author_id";',
         substitutionValues: {'id': id});
     return parseRow(result[0]);
   }
 
   static Future<Book> insert(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) async {
+      {String name,
+      DateTime createdAt,
+      DateTime updatedAt,
+      int authorId}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "books" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
+        'INSERT INTO "books" ("name", "created_at", "updated_at", "author_id") VALUES (@name, @createdAt, @updatedAt, @authorId) RETURNING "id", "name", "created_at", "updated_at", "author_id";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
-          'updatedAt': updatedAt != null ? updatedAt : __ormNow__
+          'updatedAt': updatedAt != null ? updatedAt : __ormNow__,
+          'authorId': authorId
         });
-    return parseRow(result[0]);
+    var output = parseRow(result[0]);
+    output.author = await AuthorQuery.getOne(result[0][4], connection);
+    return output;
   }
 
-  static Future<Book> insertBook(PostgreSQLConnection connection, Book book) {
+  static Future<Book> insertBook(PostgreSQLConnection connection, Book book,
+      {int authorId}) {
     return BookQuery.insert(connection,
-        name: book.name, createdAt: book.createdAt, updatedAt: book.updatedAt);
+        name: book.name,
+        createdAt: book.createdAt,
+        updatedAt: book.updatedAt,
+        authorId: authorId);
   }
 
   static Future<Book> updateBook(PostgreSQLConnection connection, Book book) {
@@ -181,7 +221,8 @@ class BookQuery {
         .update(connection,
             name: book.name,
             createdAt: book.createdAt,
-            updatedAt: book.updatedAt)
+            updatedAt: book.updatedAt,
+            authorId: int.parse(book.author.id))
         .first;
   }
 
@@ -196,24 +237,30 @@ class BookQueryWhere {
   final StringSqlExpressionBuilder name = new StringSqlExpressionBuilder();
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+      new DateTimeSqlExpressionBuilder('books.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+      new DateTimeSqlExpressionBuilder('books.updated_at');
+
+  final NumericSqlExpressionBuilder<int> authorId =
+      new NumericSqlExpressionBuilder<int>();
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('"id" ' + id.compile());
+      expressions.add('books.id ' + id.compile());
     }
     if (name.hasValue) {
-      expressions.add('"name" ' + name.compile());
+      expressions.add('books.name ' + name.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());
     }
     if (updatedAt.hasValue) {
       expressions.add(updatedAt.compile());
+    }
+    if (authorId.hasValue) {
+      expressions.add('books.author_id ' + authorId.compile());
     }
     return expressions.isEmpty
         ? null

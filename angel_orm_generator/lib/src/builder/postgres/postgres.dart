@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
+import 'package:code_builder/dart/async.dart';
 import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
+import 'package:inflection/inflection.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/src/annotation.dart';
@@ -125,7 +127,9 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       var m = new MethodBuilder('sort$sort', returnType: lib$core.$void);
       m.addPositional(parameter('key', [lib$core.String]));
       m.addStatement(literal(sort).asAssign(reference('_sortMode')));
-      m.addStatement(reference('key').asAssign(reference('_sortKey')));
+      m.addStatement((literal(ctx.prefix) + reference('key'))
+          .parentheses()
+          .asAssign(reference('_sortKey')));
       clazz.addMethod(m);
     });
 
@@ -199,8 +203,31 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     return clazz;
   }
 
+  String computeSelector(PostgresBuildContext ctx) {
+    var buf = new StringBuffer();
+    int i = 0;
+
+    // Add all regular fields
+    ctx.fields.forEach((f) {
+      if (i++ > 0) buf.write(', ');
+      var name = ctx.resolveFieldName(f.name);
+      buf.write(ctx.prefix + "$name");
+    });
+
+    // Add all relationship fields...
+    ctx.relationships.forEach((name, r) {
+      var relationship = ctx.populateRelationship(name);
+      relationship.modelTypeContext.fields.forEach((f) {
+        if (i++ > 0) buf.write(', ');
+        var name = relationship.modelTypeContext.resolveFieldName(f.name);
+        buf.write('${relationship.foreignTable}.$name');
+      });
+    });
+
+    return buf.toString();
+  }
+
   MethodBuilder buildToSqlMethod(PostgresBuildContext ctx) {
-    // TODO: Bake relationships into SQL queries
     var meth = new MethodBuilder('toSql', returnType: lib$core.String);
     meth.addPositional(parameter('prefix', [lib$core.String]).asOptional());
     var buf = reference('buf');
@@ -210,10 +237,26 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     // Write prefix, or default to SELECT
     var prefix = reference('prefix');
     meth.addStatement(buf.invoke('write', [
-      prefix
-          .notEquals(literal(null))
-          .ternary(prefix, literal('SELECT * FROM "${ctx.tableName}"'))
+      prefix.notEquals(literal(null)).ternary(prefix,
+          literal('SELECT ${computeSelector(ctx)} FROM "${ctx.tableName}"'))
     ]));
+
+    var relationsIfThen = ifThen(prefix.equals(literal(null)));
+
+    // Apply relationships
+    ctx.relationships.forEach((name, r) {
+      var relationship = ctx.populateRelationship(name);
+
+      // TODO: Has one, has many, belongs to many
+      if (relationship.type == RelationshipType.BELONGS_TO) {
+        var b = new StringBuffer(
+            ' INNER JOIN ${relationship.foreignTable} ON ${ctx.tableName}.${relationship.localKey} = ${relationship.foreignTable}.${relationship.foreignKey}');
+        relationsIfThen
+            .addStatement(buf.invoke('write', [literal(b.toString())]));
+      }
+    });
+
+    meth.addStatement(relationsIfThen);
 
     meth.addStatement(varField('whereClause',
         value: reference('where').invoke('toWhereClause', [])));
@@ -308,32 +351,62 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
         data[name] = rowKey;
     });
 
-    ctx.relationships.forEach((name, relationship) {
-      var field = ctx.resolveRelationshipField(name);
-      var alias = ctx.resolveFieldName(name);
-      var idx = i++;
-      var rowKey = row[literal(idx)];
-      data[alias] = (row.property('length') < literal(idx + 1)).ternary(
-          literal(null),
-          new TypeBuilder(new ReCase(field.type.name).pascalCase + 'Query')
-              .invoke('parseRow', [rowKey]));
+    // Invoke fromJson()
+    var result = reference('result');
+    meth.addStatement(varField('result',
+        value: ctx.modelClassBuilder
+            .newInstance([map(data)], constructor: 'fromJson')));
+
+    // For each relationship, try to parse
+    ctx.relationships.forEach((name, r) {
+      int minIndex = i;
+
+      var relationship = ctx.populateRelationship(name);
+      var rc = new ReCase(relationship.dartType.name);
+      var relationshipQuery = new TypeBuilder('${rc.pascalCase}Query');
+      List<ExpressionBuilder> relationshipRow = [];
+
+      relationship.modelTypeContext.fields.forEach((f) {
+        relationshipRow.add(row[literal(i++)]);
+      });
+
+      meth.addStatement(ifThen(row.property('length') > literal(minIndex), [
+        relationshipQuery.invoke(
+            'parseRow', [list(relationshipRow)]).asAssign(result.property(name))
+      ]));
     });
 
     // Then, call a .fromJson() constructor
-    meth.addStatement(ctx.modelClassBuilder
-        .newInstance([map(data)], constructor: 'fromJson').asReturn());
+    meth.addStatement(result.asReturn());
 
     return meth;
   }
 
-  void _invokeStreamClosure(ExpressionBuilder future, MethodBuilder meth) {
+  void _invokeStreamClosure(
+      PostgresBuildContext ctx, ExpressionBuilder future, MethodBuilder meth) {
     var ctrl = reference('ctrl');
     // Invoke query...
     var catchError = ctrl.property('addError');
-    var then = new MethodBuilder.closure()..addPositional(parameter('rows'));
-    then.addStatement(reference('rows')
-        .invoke('map', [reference('parseRow')]).invoke(
-            'forEach', [ctrl.property('add')]));
+    var then = new MethodBuilder.closure(modifier: MethodModifier.asAsync)
+      ..addPositional(parameter('rows'));
+
+    var forEachClosure =
+        new MethodBuilder.closure(modifier: MethodModifier.asAsync);
+    forEachClosure.addPositional(parameter('row'));
+    forEachClosure.addStatement(varField('parsed',
+        value: reference('parseRow').call([reference('row')])));
+    _applyRelationshipsToOutput(
+        ctx, reference('parsed'), reference('row'), forEachClosure);
+    forEachClosure.addStatement(reference('parsed').asReturn());
+
+    then.addStatement(varField('futures',
+        value: reference('rows').invoke('map', [forEachClosure])));
+    then.addStatement(varField('output',
+        value:
+            lib$async.Future.invoke('wait', [reference('futures')]).asAwait()));
+    then.addStatement(
+        reference('output').invoke('forEach', [ctrl.property('add')]));
+
     then.addStatement(ctrl.invoke('close', []));
     meth.addStatement(
         future.invoke('then', [then]).invoke('catchError', [catchError]));
@@ -353,7 +426,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
 
     var future =
         reference('connection').invoke('query', [reference('toSql').call([])]);
-    _invokeStreamClosure(future, meth);
+    _invokeStreamClosure(ctx, future, meth);
     return meth;
   }
 
@@ -364,16 +437,23 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     meth.addPositional(parameter('id', [lib$core.int]));
     meth.addPositional(
         parameter('connection', [ctx.postgreSQLConnectionBuilder]));
-    meth.addStatement(reference('connection').invoke('query', [
-      literal('SELECT * FROM "${ctx.tableName}" WHERE "id" = @id;')
-    ], namedArguments: {
-      'substitutionValues': map({'id': reference('id')})
-    }).invoke('then', [
-      new MethodBuilder.closure(
-          returns:
-              reference('parseRow').call([reference('rows').property('first')]))
-        ..addPositional(parameter('rows'))
-    ]).asReturn());
+
+    var query = reference('query'),
+        whereId = query.property('where').property('id');
+    meth.addStatement(
+        varField('query', value: ctx.queryClassBuilder.newInstance([])));
+    meth.addStatement(whereId.invoke('equals', [reference('id')]));
+
+    // Return null on error
+    var catchErr = new MethodBuilder.closure(returns: literal(null));
+    catchErr.addPositional(parameter('_'));
+
+    meth.addStatement(query
+        .invoke('get', [reference('connection')])
+        .property('first')
+        .invoke('catchError', [catchErr])
+        .asReturn());
+
     return meth;
   }
 
@@ -491,7 +571,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
         $buf.invoke('toString', []) + literal(buf2.toString()),
         meth,
         substitutionValues);
-    _invokeStreamClosure(result, meth);
+    _invokeStreamClosure(ctx, result, meth);
     return meth;
   }
 
@@ -514,7 +594,7 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
       reference('toSql').call([literal('DELETE FROM "${ctx.tableName}"')]) +
           literal(litBuf.toString())
     ]);
-    _invokeStreamClosure(future, meth);
+    _invokeStreamClosure(ctx, future, meth);
 
     return meth;
   }
@@ -592,16 +672,69 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
 
     var connection = reference('connection');
     var query = literal(buf.toString());
-    var result = reference('result');
+    var result = reference('result'), output = reference('output');
     meth.addStatement(varField('result',
         value: connection.invoke('query', [
           query
         ], namedArguments: {
           'substitutionValues': map(substitutionValues)
         }).asAwait()));
-    meth.addStatement(
-        reference('parseRow').call([result[literal(0)]]).asReturn());
+
+    meth.addStatement(varField('output',
+        value: reference('parseRow').call([result[literal(0)]])));
+
+    _applyRelationshipsToOutput(ctx, output, result[literal(0)], meth);
+
+    meth.addStatement(output.asReturn());
     return meth;
+  }
+
+  void _applyRelationshipsToOutput(PostgresBuildContext ctx,
+      ExpressionBuilder output, ExpressionBuilder row, MethodBuilder meth) {
+    // Every relationship should fill itself in with a query
+    // TODO: Has one, has many, belongs to many
+    ctx.relationships.forEach((name, r) {
+      var relationship = ctx.populateRelationship(name);
+
+      if (relationship.type == RelationshipType.BELONGS_TO) {
+        var rc = new ReCase(relationship.dartType.name);
+        var type = new TypeBuilder('${rc.pascalCase}Query');
+
+        // Resolve index within row...
+        bool matched = false;
+        int col = 0;
+        for (var field in ctx.fields) {
+          if (field is RelationshipConstraintField &&
+              field.originalName == name) {
+            matched = true;
+            break;
+          } else
+            col++;
+        }
+
+        if (!matched)
+          throw 'Couldn\'t resolve row index for relationship "${name}".';
+
+        var idAsInt = row[literal(col)];
+        meth.addStatement(type
+            .invoke('getOne', [idAsInt, reference('connection')])
+            .asAwait()
+            .asAssign(output.property(name)));
+      }
+    });
+  }
+
+  void _addRelationshipConstraintsNamed(
+      MethodBuilder m, PostgresBuildContext ctx) {
+    ctx.relationships.forEach((name, r) {
+      var relationship = ctx.populateRelationship(name);
+
+      // TODO: Belongs to many
+      if (relationship.type == RelationshipType.BELONGS_TO) {
+        var rc = new ReCase(relationship.localKey);
+        m.addNamed(parameter(rc.camelCase, [lib$core.int]));
+      }
+    });
   }
 
   MethodBuilder buildInsertModelMethod(PostgresBuildContext ctx) {
@@ -613,12 +746,17 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     meth.addPositional(
         parameter('connection', [ctx.postgreSQLConnectionBuilder]));
     meth.addPositional(parameter(rc.camelCase, [ctx.modelClassBuilder]));
+    _addRelationshipConstraintsNamed(meth, ctx);
 
     Map<String, ExpressionBuilder> args = {};
     var ref = reference(rc.camelCase);
 
     ctx.fields.forEach((f) {
-      if (f.name != 'id') args[f.name] = ref.property(f.name);
+      if (f.name != 'id') {
+        args[f.name] = f is RelationshipConstraintField
+            ? reference(f.name)
+            : ref.property(f.name);
+      }
     });
 
     meth.addStatement(ctx.queryClassBuilder
@@ -652,7 +790,16 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     // return query.update(connection, ...).first;
     Map<String, ExpressionBuilder> args = {};
     ctx.fields.forEach((f) {
-      if (f.name != 'id') args[f.name] = ref.property(f.name);
+      if (f.name != 'id') {
+        if (f is RelationshipConstraintField) {
+          // Need to int.parse the related id and pass it
+          var relation = ref.property(f.originalName);
+          var relationship = ctx.populateRelationship(f.originalName);
+          args[f.name] = lib$core.int
+              .invoke('parse', [relation.property(relationship.foreignKey)]);
+        } else
+          args[f.name] = ref.property(f.name);
+      }
     });
 
     var update =
@@ -693,7 +840,8 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
             break;
           case 'DateTime':
             queryBuilderType = new TypeBuilder('DateTimeSqlExpressionBuilder');
-            args.add(literal(ctx.resolveFieldName(field.name)));
+            args.add(literal(
+                ctx.tableName + '.' + ctx.resolveFieldName(field.name)));
             break;
         }
       }
@@ -719,9 +867,10 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     ctx.fields.forEach((field) {
       var name = ctx.resolveFieldName(field.name);
       var queryBuilder = reference(field.name);
-      var toAdd = field.type.name == 'DateTime'
+      var toAdd = field.type.isAssignableTo(ctx.dateTimeType)
           ? queryBuilder.invoke('compile', [])
-          : (literal('"$name" ') + queryBuilder.invoke('compile', []));
+          : (literal('${ctx.tableName}.$name ') +
+              queryBuilder.invoke('compile', []));
 
       toWhereClause.addStatement(ifThen(queryBuilder.property('hasValue'), [
         expressions.invoke('add', [toAdd])

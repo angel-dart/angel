@@ -1,3 +1,6 @@
+# 1.0.0-alpha+2
+* Added support for `belongsTo` relationships. Still missing `hasOne`, `hasMany`, `belongsToMany`.
+
 # 1.0.0-alpha+1
 * Closed #12. `insertX` and `updateX` now use `rc.camelCase`, instead of `rc.snakeCase`.
 * Closed #13. Added `limit` and `offset` properties to `XQuery`.

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
+import 'package:inflection/inflection.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/src/annotation.dart';
 import 'package:source_gen/src/utils.dart';
 import 'build_context.dart';
@@ -92,6 +94,56 @@ class SQLMigrationGenerator implements Builder {
 
       if (col.nullable != true) buf.write(' NOT NULLABLE');
     });
+
+    // Relations
+    ctx.relationshipFields.forEach((f) {
+      if (i++ > 0) buf.writeln(',');
+      var typeName =
+          f.type.name.startsWith('_') ? f.type.name.substring(1) : f.type.name;
+      var rc = new ReCase(typeName);
+      var relationship = ctx.relationships[f.name];
+
+      if (relationship.type == RelationshipType.BELONGS_TO) {
+        var localKey = relationship.localKey ??
+            (autoSnakeCaseNames != false
+                ? '${rc.snakeCase}_id'
+                : '${typeName}Id');
+        var foreignKey = relationship.foreignKey ?? 'id';
+        var foreignTable = relationship.foreignTable ??
+            (autoSnakeCaseNames != false
+                ? pluralize(rc.snakeCase)
+                : pluralize(typeName));
+        buf.write('  "$localKey" int REFERENCES $foreignTable($foreignKey)');
+        if (relationship.cascadeOnDelete != false)
+          buf.write(' ON DELETE CASCADE');
+      }
+    });
+
+    // Primary keys, unique
+    bool hasPrimary = false;
+    ctx.fields.forEach((f) {
+      var col = ctx.columnInfo[f.name];
+      if (col != null) {
+        var name = ctx.resolveFieldName(f.name);
+        if (col.index == IndexType.UNIQUE) {
+          if (i++ > 0) buf.writeln(',');
+          buf.write('  UNIQUE($name(');
+        } else if (col.index == IndexType.PRIMARY_KEY) {
+          if (i++ > 0) buf.writeln(',');
+          hasPrimary = true;
+          buf.write('  PRIMARY KEY($name)');
+        }
+      }
+    });
+
+    if (!hasPrimary) {
+      var idField =
+          ctx.fields.firstWhere((f) => f.name == 'id', orElse: () => null);
+      if (idField != null) {
+        if (i++ > 0) buf.writeln(',');
+        buf.write('  PRIMARY KEY(id)');
+      }
+    }
 
     buf.writeln();
     buf.writeln(');');
