@@ -38,7 +38,10 @@ class PostgreSQLConnectionPool {
     var connection = _connections[_index++];
     if (_index >= _connections.length) _index = 0;
 
-    if (!_opened.contains(connection.hashCode)) await connection.open();
+    if (!_opened.contains(connection.hashCode)) {
+      await connection.open();
+      _opened.add(connection.hashCode);
+    }
 
     return connection;
   }

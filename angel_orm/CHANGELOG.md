@@ -1,3 +1,8 @@
+# 1.0.0-alpha+7
+* Added a `@belongsToMany` annotation class.
+* Resolved [#20](https://github.com/angel-dart/orm/issues/20). The
+`PostgreSQLConnectionPool` keeps track of which connections have been opened now.
+
 # 1.0.0-alpha+6
 * `DateTimeSqlExpressionBuilder` will no longer automatically
 insert quotation marks around names.
