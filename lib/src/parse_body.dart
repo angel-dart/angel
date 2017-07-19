@@ -78,12 +78,21 @@ Future<BodyParseResult> parseBody(HttpRequest request,
           'application/x-www-form-urlencoded') {
         String body = await getBody();
         buildMapFromUri(result.body, body);
+      } else if (storeOriginalBuffer == true) {
+        result.originalBuffer = await getBytes();
       }
-    } else if (request.uri.hasQuery) {
-      buildMapFromUri(result.query, request.uri.query);
+    } else {
+      if (request.uri.hasQuery) {
+        buildMapFromUri(result.query, request.uri.query);
+      }
+
+      if (storeOriginalBuffer == true) {
+        result.originalBuffer = await getBytes();
+      }
     }
-  } catch (e) {
-    //
+  } catch (e, st) {
+    result.error = e;
+    result.stack = st;
   }
 
   return result;
@@ -101,4 +110,10 @@ class _BodyParseResultImpl implements BodyParseResult {
 
   @override
   Map<String, dynamic> query = {};
+
+  @override
+  var error = null;
+
+  @override
+  StackTrace stack = null;
 }

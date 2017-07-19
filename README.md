@@ -1,9 +1,14 @@
-# Body Parser
-![version 1.0.01(https://img.shields.io/badge/version-1.0.1-brightgreen.svg)
+# body_parser
+[![Pub](https://img.shields.io/pub/v/body_parser.svg)](https://pub.dartlang.org/packages/body_parser)
 ![build status](https://travis-ci.org/thosakwe/body_parser.svg)
 
 Parse request bodies and query strings in Dart, as well multipart/form-data uploads. No external
 dependencies required.
+
+This is the request body parser powering the
+[Angel](https://angel-dart.github.io)
+framework. If you are looking for a server-side solution with dependency injection,
+WebSockets, and more, then I highly recommend it as your first choice. Bam!
 
 ### Contents
 
@@ -32,7 +37,7 @@ pub dependencies.
 
 # Usage
 
-Body Parser exposes a simple class called [BodyParseResult].
+Body Parser exposes a simple class called `BodyParseResult`.
 You can easily parse the query string and request body for a request by calling `Future<BodyParseResult> parseBody`.
 
 ```dart
@@ -59,11 +64,19 @@ MyClass create(HttpRequest request) async {
 }
 ```
 
+## Custom Body Parsing
+In cases where you need to parse unrecognized content types, `body_parser` won't be of any help to you
+on its own. However, you can use the `originalBuffer` property of a `BodyParseResult` to see the original
+request buffer. To get this functionality, pass `storeOriginalBuffer` as `true` when calling `parseBody`.
 
-# Thank you for using Body Parser
+For example, if you wanted to
+[parse GraphQL queries within your server](https://github.com/angel-dart/graphql)...
 
-Thank you for using this library. I hope you like it.
-
-Feel free to follow me on Twitter:
-
-[@thosakwe](http://twitter.com/thosakwe)
+```dart
+app.get('/graphql', (req, res) async {
+  if (req.headers.contentType.mimeType == 'application/graphql') {
+    var graphQlString = new String.fromCharCodes(req.originalBuffer);
+    // ...
+  }
+});
+```

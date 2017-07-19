@@ -42,7 +42,7 @@ main() {
       expect(result['body'], equals({}));
       expect(result['query'], equals({'hello': 'world'}));
       expect(result['files'], equals([]));
-      expect(result['originalBuffer'], isNull);
+      //expect(result['originalBuffer'], isNull);
     });
 
     test('GET Complex', () async {

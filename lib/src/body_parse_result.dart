@@ -15,4 +15,14 @@ abstract class BodyParseResult {
   /// 
   /// You must set [storeOriginalBuffer] to `true` to see this.
   List<int> get originalBuffer;
+
+  /// If an error was encountered while parsing the body, it will appear here.
+  ///
+  /// Otherwise, this is `null`.
+  dynamic get error;
+
+  /// If an error was encountered while parsing the body, the call stack will appear here.
+  ///
+  /// Otherwise, this is `null`.
+  StackTrace get stack;
 }
