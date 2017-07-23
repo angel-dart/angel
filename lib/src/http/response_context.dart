@@ -293,12 +293,13 @@ class ResponseContext extends Extensible implements StringSink {
   /// [contentType] can be either a [String], or a [ContentType].
   void serialize(value, {contentType}) {
     if (_isClosed) throw _closed();
-    var text = serializer(value);
-    write(text);
 
     if (contentType is String)
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     else if (contentType is ContentType) this.contentType = contentType;
+
+    var text = serializer(value);
+    write(text);
 
     end();
   }

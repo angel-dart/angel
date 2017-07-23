@@ -1,3 +1,6 @@
+# 1.0.7+2
+Changed `ResponseContext.serialize`. The `contentType` is now set *before* serialization.
+
 # 1.0.7+1
 Moved the `Model` class into `package:angel_model`. No functionality was added or removed.
 
