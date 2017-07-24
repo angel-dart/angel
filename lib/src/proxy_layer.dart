@@ -5,6 +5,9 @@ import 'package:angel_framework/angel_framework.dart';
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
+/// Used to mount a route for a [ProxyLayer].
+typedef Route ProxyLayerRouteAssigner(Router router, String path, handler);
+
 String _pathify(String path) {
   var p = path.replaceAll(_straySlashes, '');
 
@@ -53,6 +56,7 @@ class ProxyLayer {
   final int port;
   final String protocol;
   final Duration timeout;
+  ProxyLayerRouteAssigner routeAssigner;
 
   ProxyLayer(
     this.host,
@@ -65,10 +69,13 @@ class ProxyLayer {
     this.recoverFrom404: true,
     this.streamToIO: false,
     this.timeout,
+    this.routeAssigner,
     SecurityContext securityContext,
   }) {
     _client = new HttpClient(context: securityContext);
     _prefix = publicPath.replaceAll(_straySlashes, '');
+    routeAssigner ??=
+        (Router router, String path, handler) => router.get(path, handler);
   }
 
   call(Angel app) async => serve(this.app = app);
@@ -83,7 +90,7 @@ class ProxyLayer {
       return serveFile(path, req, res);
     }
 
-    router.all('$publicPath/*', handler);
+    routeAssigner(router, '$publicPath/*', handler);
   }
 
   serveFile(String path, RequestContext req, ResponseContext res) async {

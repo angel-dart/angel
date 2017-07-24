@@ -20,7 +20,8 @@ main() {
 
     await app.configure(new ProxyLayer(
         testServer.address.address, testServer.port,
-        publicPath: '/proxy'));
+        publicPath: '/proxy',
+        routeAssigner: (router, path, handler) => router.all(path, handler)));
     await app.configure(new ProxyLayer(
         testServer.address.address, testServer.port,
         mapTo: '/foo'));

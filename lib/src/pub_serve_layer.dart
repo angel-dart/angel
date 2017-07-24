@@ -12,6 +12,7 @@ class PubServeLayer extends ProxyLayer {
       int port: 8080,
       String protocol: 'http',
       String publicPath: '/',
+      ProxyLayerRouteAssigner routeAssigner,
       Duration timeout})
       : super(host, port,
             debug: debug,
@@ -21,6 +22,7 @@ class PubServeLayer extends ProxyLayer {
             recoverFromDead: recoverFromDead != false,
             recoverFrom404: recoverFrom404 != false,
             streamToIO: streamToIO != false,
+            routeAssigner: routeAssigner,
             timeout: timeout);
 
   @override
