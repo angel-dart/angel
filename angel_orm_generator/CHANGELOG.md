@@ -1,3 +1,7 @@
+# 1.0.0-alpha+3
+Implemented `@hasOne`, with tests. Still missing `@hasMany`.
+`belongsToMany` will likely be scrapped.
+
 # 1.0.0-alpha+2
 * Added support for `belongsTo` relationships. Still missing `hasOne`, `hasMany`, `belongsToMany`.
 
