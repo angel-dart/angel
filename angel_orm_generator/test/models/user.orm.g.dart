@@ -53,9 +53,7 @@ class UserQuery {
     buf.write(prefix != null
         ? prefix
         : 'SELECT users.id, users.username, users.password, users.email, users.created_at, users.updated_at, roles.id, roles.name, roles.created_at, roles.updated_at FROM "users"');
-    if (prefix == null) {
-      buf.write(' INNER JOIN roles ON users.role_id = roles.id');
-    }
+    if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
@@ -140,9 +138,7 @@ class UserQuery {
     var buf = new StringBuffer(
         'UPDATE "users" SET ("username", "password", "email", "created_at", "updated_at") = (@username, @password, @email, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
-    if (whereClause == null) {
-      buf.write('WHERE "id" = @id');
-    } else {
+    if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();

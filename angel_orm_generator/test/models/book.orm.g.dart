@@ -54,7 +54,7 @@ class BookQuery {
         ? prefix
         : 'SELECT books.id, books.name, books.created_at, books.updated_at, books.author_id, authors.id, authors.name, authors.created_at, authors.updated_at FROM "books"');
     if (prefix == null) {
-      buf.write(' INNER JOIN authors ON books.author_id = authors.id');
+      buf.write(' LEFT OUTER JOIN authors ON books.author_id = authors.id');
     }
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
@@ -133,9 +133,7 @@ class BookQuery {
     var buf = new StringBuffer(
         'UPDATE "books" SET ("name", "created_at", "updated_at", "author_id") = (@name, @createdAt, @updatedAt, @authorId) ');
     var whereClause = where.toWhereClause();
-    if (whereClause == null) {
-      buf.write('WHERE "id" = @id');
-    } else {
+    if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();

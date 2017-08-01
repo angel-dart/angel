@@ -6,12 +6,16 @@ import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 final InputSet ALL_MODELS =
     new InputSet('angel_orm_generator', const ['test/models/*.dart']);
 final InputSet STANDALONE_MODELS = new InputSet('angel_orm_generator', const [
-  'test/models/car.dart',
   'test/models/author.dart',
+  'test/models/car.dart',
+  'test/models/foot.dart',
   'test/models/role.dart'
 ]);
-final InputSet DEPENDENT_MODELS = new InputSet('angel_orm_generator',
-    const ['test/models/book.dart', 'test/models/user.dart']);
+final InputSet DEPENDENT_MODELS = new InputSet('angel_orm_generator', const [
+  'test/models/book.dart',
+  'test/models/leg.dart',
+  'test/models/user.dart'
+]);
 
 final PhaseGroup PHASES = new PhaseGroup()
   ..addPhase(new Phase()

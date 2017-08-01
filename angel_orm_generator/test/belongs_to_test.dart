@@ -15,7 +15,7 @@ main() {
   Book deathlyHallows;
 
   setUp(() async {
-    connection = await connectToPostgres();
+    connection = await connectToPostgres(['author', 'book']);
 
     // Insert an author
     rowling = await AuthorQuery.insert(connection, name: 'J.K. Rowling');

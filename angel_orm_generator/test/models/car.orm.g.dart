@@ -133,9 +133,7 @@ class CarQuery {
     var buf = new StringBuffer(
         'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
-    if (whereClause == null) {
-      buf.write('WHERE "id" = @id');
-    } else {
+    if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();

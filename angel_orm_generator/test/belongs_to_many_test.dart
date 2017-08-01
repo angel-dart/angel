@@ -12,9 +12,9 @@ main() {
   User john;
 
   setUp(() async {
-    connection = await connectToPostgres();
+    connection = await connectToPostgres(['user', 'role']);
 
-    
+
   });
 
   tearDown(() => connection.close());

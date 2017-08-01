@@ -51,7 +51,7 @@ main() {
     PostgreSQLConnection connection;
 
     setUp(() async {
-      connection = await connectToPostgres();
+      connection = await connectToPostgres(['car']);
     });
 
     group('selects', () {

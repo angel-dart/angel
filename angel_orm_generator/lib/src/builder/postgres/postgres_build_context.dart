@@ -109,11 +109,12 @@ class PostgresBuildContext extends BuildContext {
 
       if (relationship.type == RelationshipType.HAS_ONE ||
           relationship.type == RelationshipType.HAS_MANY) {
-        var foreignKey = relationship.localKey ??
+        var single = singularize(tableName);
+        var foreignKey = relationship.foreignTable ??
             (autoSnakeCaseNames != false
-                ? '${rc.snakeCase}_id'
-                : '${typeName}Id');
-        var localKey = relationship.foreignKey ?? 'id';
+                ? '${single}_id'
+                : '${single}Id');
+        var localKey = relationship.localKey ?? 'id';
         var foreignTable = relationship.foreignTable ??
             (autoSnakeCaseNames != false
                 ? pluralize(rc.snakeCase)

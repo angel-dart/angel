@@ -2,16 +2,16 @@
 
 // **************************************************************************
 // Generator: PostgresORMGenerator
-// Target: class _Author
+// Target: class _Foot
 // **************************************************************************
 
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
-import 'author.dart';
+import 'foot.dart';
 
-class AuthorQuery {
-  final Map<AuthorQuery, bool> _unions = {};
+class FootQuery {
+  final Map<FootQuery, bool> _unions = {};
 
   String _sortKey;
 
@@ -21,15 +21,15 @@ class AuthorQuery {
 
   int offset;
 
-  final List<AuthorQueryWhere> _or = [];
+  final List<FootQueryWhere> _or = [];
 
-  final AuthorQueryWhere where = new AuthorQueryWhere();
+  final FootQueryWhere where = new FootQueryWhere();
 
-  void union(AuthorQuery query) {
+  void union(FootQuery query) {
     _unions[query] = false;
   }
 
-  void unionAll(AuthorQuery query) {
+  void unionAll(FootQuery query) {
     _unions[query] = true;
   }
 
@@ -43,7 +43,7 @@ class AuthorQuery {
     _sortKey = ('' + key);
   }
 
-  void or(AuthorQueryWhere selector) {
+  void or(FootQueryWhere selector) {
     _or.add(selector);
   }
 
@@ -51,7 +51,7 @@ class AuthorQuery {
     var buf = new StringBuffer();
     buf.write(prefix != null
         ? prefix
-        : 'SELECT id, name, created_at, updated_at FROM "authors"');
+        : 'SELECT id, leg_id, n_toes, created_at, updated_at FROM "foots"');
     if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
@@ -90,18 +90,19 @@ class AuthorQuery {
     return buf.toString();
   }
 
-  static Author parseRow(List row) {
-    var result = new Author.fromJson({
+  static Foot parseRow(List row) {
+    var result = new Foot.fromJson({
       'id': row[0].toString(),
-      'name': row[1],
-      'created_at': row[2],
-      'updated_at': row[3]
+      'leg_id': row[1],
+      'n_toes': row[2],
+      'created_at': row[3],
+      'updated_at': row[4]
     });
     return result;
   }
 
-  Stream<Author> get(PostgreSQLConnection connection) {
-    StreamController<Author> ctrl = new StreamController<Author>();
+  Stream<Foot> get(PostgreSQLConnection connection) {
+    StreamController<Foot> ctrl = new StreamController<Foot>();
     connection.query(toSql()).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
@@ -114,26 +115,28 @@ class AuthorQuery {
     return ctrl.stream;
   }
 
-  static Future<Author> getOne(int id, PostgreSQLConnection connection) {
-    var query = new AuthorQuery();
+  static Future<Foot> getOne(int id, PostgreSQLConnection connection) {
+    var query = new FootQuery();
     query.where.id.equals(id);
     return query.get(connection).first.catchError((_) => null);
   }
 
-  Stream<Author> update(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) {
+  Stream<Foot> update(PostgreSQLConnection connection,
+      {int legId, int nToes, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "authors" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "foots" SET ("leg_id", "n_toes", "created_at", "updated_at") = (@legId, @nToes, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();
-    var ctrl = new StreamController<Author>();
+    var ctrl = new StreamController<Foot>();
     connection.query(
-        buf.toString() + ' RETURNING "id", "name", "created_at", "updated_at";',
+        buf.toString() +
+            ' RETURNING "id", "leg_id", "n_toes", "created_at", "updated_at";',
         substitutionValues: {
-          'name': name,
+          'legId': legId,
+          'nToes': nToes,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         }).then((rows) async {
@@ -148,11 +151,11 @@ class AuthorQuery {
     return ctrl.stream;
   }
 
-  Stream<Author> delete(PostgreSQLConnection connection) {
-    StreamController<Author> ctrl = new StreamController<Author>();
+  Stream<Foot> delete(PostgreSQLConnection connection) {
+    StreamController<Foot> ctrl = new StreamController<Foot>();
     connection
-        .query(toSql('DELETE FROM "authors"') +
-            ' RETURNING "id", "name", "created_at", "updated_at";')
+        .query(toSql('DELETE FROM "foots"') +
+            ' RETURNING "id", "leg_id", "n_toes", "created_at", "updated_at";')
         .then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
@@ -165,19 +168,20 @@ class AuthorQuery {
     return ctrl.stream;
   }
 
-  static Future<Author> deleteOne(int id, PostgreSQLConnection connection) {
-    var query = new AuthorQuery();
+  static Future<Foot> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new FootQuery();
     query.where.id.equals(id);
     return query.delete(connection).first;
   }
 
-  static Future<Author> insert(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) async {
+  static Future<Foot> insert(PostgreSQLConnection connection,
+      {int legId, int nToes, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "authors" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
+        'INSERT INTO "foots" ("leg_id", "n_toes", "created_at", "updated_at") VALUES (@legId, @nToes, @createdAt, @updatedAt) RETURNING "id", "leg_id", "n_toes", "created_at", "updated_at";',
         substitutionValues: {
-          'name': name,
+          'legId': legId,
+          'nToes': nToes,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
@@ -185,49 +189,56 @@ class AuthorQuery {
     return output;
   }
 
-  static Future<Author> insertAuthor(
-      PostgreSQLConnection connection, Author author) {
-    return AuthorQuery.insert(connection,
-        name: author.name,
-        createdAt: author.createdAt,
-        updatedAt: author.updatedAt);
+  static Future<Foot> insertFoot(PostgreSQLConnection connection, Foot foot) {
+    return FootQuery.insert(connection,
+        legId: foot.legId,
+        nToes: foot.nToes,
+        createdAt: foot.createdAt,
+        updatedAt: foot.updatedAt);
   }
 
-  static Future<Author> updateAuthor(
-      PostgreSQLConnection connection, Author author) {
-    var query = new AuthorQuery();
-    query.where.id.equals(int.parse(author.id));
+  static Future<Foot> updateFoot(PostgreSQLConnection connection, Foot foot) {
+    var query = new FootQuery();
+    query.where.id.equals(int.parse(foot.id));
     return query
         .update(connection,
-            name: author.name,
-            createdAt: author.createdAt,
-            updatedAt: author.updatedAt)
+            legId: foot.legId,
+            nToes: foot.nToes,
+            createdAt: foot.createdAt,
+            updatedAt: foot.updatedAt)
         .first;
   }
 
-  static Stream<Author> getAll(PostgreSQLConnection connection) =>
-      new AuthorQuery().get(connection);
+  static Stream<Foot> getAll(PostgreSQLConnection connection) =>
+      new FootQuery().get(connection);
 }
 
-class AuthorQueryWhere {
+class FootQueryWhere {
   final NumericSqlExpressionBuilder<int> id =
       new NumericSqlExpressionBuilder<int>();
 
-  final StringSqlExpressionBuilder name = new StringSqlExpressionBuilder();
+  final NumericSqlExpressionBuilder<int> legId =
+      new NumericSqlExpressionBuilder<int>();
+
+  final NumericSqlExpressionBuilder<int> nToes =
+      new NumericSqlExpressionBuilder<int>();
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('authors.created_at');
+      new DateTimeSqlExpressionBuilder('foots.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('authors.updated_at');
+      new DateTimeSqlExpressionBuilder('foots.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('authors.id ' + id.compile());
+      expressions.add('foots.id ' + id.compile());
     }
-    if (name.hasValue) {
-      expressions.add('authors.name ' + name.compile());
+    if (legId.hasValue) {
+      expressions.add('foots.leg_id ' + legId.compile());
+    }
+    if (nToes.hasValue) {
+      expressions.add('foots.n_toes ' + nToes.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());

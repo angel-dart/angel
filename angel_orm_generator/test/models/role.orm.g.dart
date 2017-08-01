@@ -125,9 +125,7 @@ class RoleQuery {
     var buf = new StringBuffer(
         'UPDATE "roles" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
-    if (whereClause == null) {
-      buf.write('WHERE "id" = @id');
-    } else {
+    if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();

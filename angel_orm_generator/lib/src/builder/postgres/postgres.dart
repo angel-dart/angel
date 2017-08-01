@@ -35,11 +35,17 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ORM annotation, BuildStep buildStep) async {
+    if (buildStep.inputId.path.contains('.orm.g.dart')) {
+      return null;
+    }
+
     if (element is! ClassElement)
-      throw 'Only classes can be annotated with @serializable.';
+      throw 'Only classes can be annotated with @ORM().';
     var resolver = await buildStep.resolver;
-    return prettyToSource(
-        generateOrmLibrary(element.library, resolver, buildStep).buildAst());
+    var lib =
+        generateOrmLibrary(element.library, resolver, buildStep).buildAst();
+    if (lib == null) return null;
+    return prettyToSource(lib);
   }
 
   LibraryBuilder generateOrmLibrary(
@@ -90,6 +96,8 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
         }
       }
     }
+
+    if (contexts.isEmpty) return null;
 
     done.clear();
     for (var element in contexts.keys) {
@@ -252,12 +260,10 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     ctx.relationships.forEach((name, r) {
       var relationship = ctx.populateRelationship(name);
 
-      // TODO: Has one, has many
-      if (relationship.isBelongsTo) {
-        var b = new StringBuffer(
-            ' INNER JOIN ${relationship.foreignTable} ON ${ctx.tableName}.${relationship.localKey} = ${relationship.foreignTable}.${relationship.foreignKey}');
-        relationsIfThen
-            .addStatement(buf.invoke('write', [literal(b.toString())]));
+      // TODO: Belongs to many, has many
+      if (relationship.isSingular) {
+        String b = ' LEFT OUTER JOIN ${relationship.foreignTable} ON ${ctx.tableName}.${relationship.localKey} = ${relationship.foreignTable}.${relationship.foreignKey}';
+        relationsIfThen.addStatement(buf.invoke('write', [literal(b)]));
       }
     });
 
@@ -559,11 +565,8 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
     meth.addStatement(varField('whereClause',
         value: reference('where').invoke('toWhereClause', [])));
 
-    meth.addStatement(ifThen(whereClause.equals(literal(null)), [
-      $buf.invoke('write', [literal('WHERE "id" = @id')]),
-      elseThen([
-        $buf.invoke('write', [whereClause])
-      ])
+    meth.addStatement(ifThen(whereClause.notEquals(literal(null)), [
+      $buf.invoke('write', [whereClause])
     ]));
 
     var buf2 = new StringBuffer();
@@ -690,38 +693,37 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
   void _applyRelationshipsToOutput(PostgresBuildContext ctx,
       ExpressionBuilder output, ExpressionBuilder row, MethodBuilder meth) {
     // Every relationship should fill itself in with a query
-    // TODO: Has one, has many, belongs to many
     ctx.relationships.forEach((name, r) {
       var relationship = ctx.populateRelationship(name);
 
-      if (relationship.isBelongsTo) {
-        var rc = new ReCase(relationship.isList
-            ? relationship.modelType.name
-            : relationship.dartType.name);
-        var type = new TypeBuilder('${rc.pascalCase}Query');
+      var rc = new ReCase(relationship.isList
+          ? relationship.modelType.name
+          : relationship.dartType.name);
+      var type = new TypeBuilder('${rc.pascalCase}Query');
 
-        // Resolve index within row...
-        bool matched = false;
-        int col = 0;
-        for (var field in ctx.fields) {
-          if (field is RelationshipConstraintField &&
-              field.originalName == name) {
-            matched = true;
-            break;
-          } else
-            col++;
-        }
+      // Resolve index within row...
+      bool matched = false;
+      int col = 0;
+      for (var field in ctx.fields) {
+        if (field is RelationshipConstraintField &&
+            field.originalName == name) {
+          matched = true;
+          break;
+        } else
+          col++;
+      }
 
-        if (!matched) {
-          matched = ctx.resolveRelationshipField(name) != null;
-        }
+      if (!matched) {
+        matched = ctx.resolveRelationshipField(name) != null;
+      }
 
-        if (!matched)
-          throw 'Couldn\'t resolve row index for relationship "${name}".';
+      if (!matched)
+        throw 'Couldn\'t resolve row index for relationship "${name}".';
 
-        var idAsInt = row[literal(col)];
+      var idAsInt = row[literal(col)];
 
-        if (relationship.isSingular) {
+      if (relationship.isSingular) {
+        if (relationship.isBelongsTo) {
           meth.addStatement(type
               .invoke('getOne', [idAsInt, reference('connection')])
               .asAwait()
@@ -730,20 +732,38 @@ class PostgresORMGenerator extends GeneratorForAnnotation<ORM> {
           var query = reference('${rc.camelCase}Query');
           meth.addStatement(
               varField('${rc.camelCase}Query', value: type.newInstance([])));
-          ExpressionBuilder fetched;
-
-          // TODO: HasMany
-          if (relationship.isBelongsTo) {
-            meth.addStatement(query
-                .property('where')
-                .property('id')
-                .invoke('equals', [idAsInt]));
-            fetched = query.invoke('get', [reference('connection')]).invoke(
-                'toList', []).asAwait();
-          }
-
-          meth.addStatement(output.property(name).invoke('addAll', [fetched]));
+          // Set id to row[0]
+          meth.addStatement(query
+              .property('where')
+              .property('id')
+              .invoke('equals', [row[literal(0)]]));
+          var fetched = query
+              .invoke('get', [reference('connection')])
+              .property('first')
+              .invoke('catchError', [
+                new MethodBuilder.closure(returns: literal(null))
+                  ..addPositional(parameter('_'))
+              ])
+              .asAwait();
+          meth.addStatement(fetched.asAssign(output.property(name)));
         }
+      } else {
+        var query = reference('${rc.camelCase}Query');
+        meth.addStatement(
+            varField('${rc.camelCase}Query', value: type.newInstance([])));
+        ExpressionBuilder fetched;
+
+        // TODO: HasMany
+        if (relationship.isBelongsTo) {
+          meth.addStatement(query
+              .property('where')
+              .property('id')
+              .invoke('equals', [idAsInt]));
+          fetched = query.invoke('get', [reference('connection')]).invoke(
+              'toList', []).asAwait();
+        }
+
+        meth.addStatement(output.property(name).invoke('addAll', [fetched]));
       }
     });
   }
