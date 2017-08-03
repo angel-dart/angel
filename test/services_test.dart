@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:angel_framework/src/defs.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
@@ -44,13 +45,8 @@ main() {
       var response = await client.get("$url/todos/");
       print(response.body);
       expect(response.body, equals('[]'));
-      for (int i = 0; i < 3; i++) {
-        String postData = god.serialize({'text': 'Hello, world!'});
-        await client.post("$url/todos", headers: headers, body: postData);
-      }
-      response = await client.get("$url/todos");
       print(response.body);
-      expect(god.deserialize(response.body).length, equals(3));
+      expect(JSON.decode(response.body).length, 0);
     });
 
     test('can create data', () async {
@@ -100,15 +96,12 @@ main() {
 
     test('can delete data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post("$url/todos", headers: headers, body: postData);
-      var response = await client.delete("$url/todos/0");
+      var created = await client.post("$url/todos", headers: headers, body: postData).then((r) => JSON.decode(r.body));
+      var response = await client.delete("$url/todos/${created['id']}");
       expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
       expect(json['text'], equals('Hello, world!'));
-      response = await client.get("$url/todos");
-      print(response.body);
-      expect(god.deserialize(response.body).length, equals(0));
     });
   });
 }

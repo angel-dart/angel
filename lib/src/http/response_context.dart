@@ -3,10 +3,10 @@ library angel_framework.http.response_context;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
-import '../extensible.dart';
 import 'server.dart' show Angel;
 import 'controller.dart';
 
@@ -19,9 +19,10 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef String ResponseSerializer(data);
 
 /// A convenience wrapper around an outgoing HTTP request.
-class ResponseContext extends Extensible implements StringSink {
+class ResponseContext implements StringSink {
   final _LockableBytesBuilder _buffer = new _LockableBytesBuilder();
   final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
+  final Map properties = {};
   bool _isOpen = true, _isClosed = false;
   int _statusCode = 200;
 
@@ -366,7 +367,7 @@ abstract class _LockableBytesBuilder extends BytesBuilder {
 
 class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
   bool _closed = false;
-  final List<int> _data = [];
+  Uint8List _data = new Uint8List(0);
 
   StateError _deny() =>
       new StateError('Cannot modified a closed response\'s buffer.');
@@ -385,8 +386,19 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
   void add(List<int> bytes) {
     if (_closed)
       throw _deny();
-    else {
-      _data.addAll(bytes);
+    else if (bytes.isNotEmpty) {
+      int len = _data.length + bytes.length;
+      var d = new Uint8List(len);
+
+      for (int i = 0; i < _data.length; i++) {
+        d[i] = _data[i];
+      }
+
+      for (int i = 0; i < bytes.length; i++) {
+        d[i + _data.length] = bytes[i];
+      }
+
+      _data = d;
     }
   }
 
@@ -395,7 +407,15 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
     if (_closed)
       throw _deny();
     else {
-      _data.add(byte);
+      int len = _data.length + 1;
+      var d = new Uint8List(len);
+
+      for (int i = 0; i < _data.length; i++) {
+        d[i] = _data[i];
+      }
+
+      d[_data.length] = byte;
+      _data = d;
     }
   }
 
@@ -404,7 +424,7 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
     if (_closed)
       throw _deny();
     else {
-      _data.clear();
+      for (int i = 0; i < _data.length; i++) _data[i] = 0;
     }
   }
 
@@ -422,7 +442,7 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
     if (_closed)
       return toBytes();
     else {
-      var r = new List<int>.from(_data);
+      var r = new Uint8List.fromList(_data);
       clear();
       return r;
     }

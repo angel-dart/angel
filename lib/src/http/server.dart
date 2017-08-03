@@ -3,10 +3,13 @@ library angel_framework.http.server;
 import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
-import 'package:angel_route/angel_route.dart';
+import 'package:angel_route/angel_route.dart' hide Extensible;
+import 'package:charcode/charcode.dart';
 export 'package:container/container.dart';
 import 'package:flatten/flatten.dart';
 import 'package:json_god/json_god.dart' as god;
+import 'package:meta/meta.dart';
+import '../safe_stream_controller.dart';
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
@@ -31,18 +34,18 @@ typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
-  StreamController<HttpRequest> _afterProcessed =
-      new StreamController<HttpRequest>.broadcast();
-  StreamController<HttpRequest> _beforeProcessed =
-      new StreamController<HttpRequest>.broadcast();
-  StreamController<AngelFatalError> _fatalErrorStream =
-      new StreamController<AngelFatalError>.broadcast();
-  StreamController<Controller> _onController =
-      new StreamController<Controller>.broadcast();
+  SafeCtrl<HttpRequest> _afterProcessed = new SafeCtrl<HttpRequest>.broadcast();
+  SafeCtrl<HttpRequest> _beforeProcessed =
+      new SafeCtrl<HttpRequest>.broadcast();
+  SafeCtrl<AngelFatalError> _fatalErrorStream =
+      new SafeCtrl<AngelFatalError>.broadcast();
+  SafeCtrl<Controller> _onController = new SafeCtrl<Controller>.broadcast();
+
   final List<Angel> _children = [];
   Router _flattened;
   bool _isProduction;
   Angel _parent;
+  final Map<String, List> _handlerCache = {};
   ServerGenerator _serverGenerator = HttpServer.bind;
 
   /// A global Map of manual injections. You usually will not want to touch this.
@@ -152,7 +155,7 @@ class Angel extends AngelBase {
   }
 
   @override
-  Route addRoute(String method, String path, Object handler,
+  Route addRoute(String method, Pattern path, Object handler,
       {List middleware: const []}) {
     if (_flattened != null) {
       print(
@@ -308,9 +311,9 @@ class Angel extends AngelBase {
     });
   }
 
-  Future<ResponseContext> createResponseContext(HttpResponse response) async =>
-      new ResponseContext(response, this)
-        ..serializer = (_serializer ?? god.serialize);
+  Future<ResponseContext> createResponseContext(HttpResponse response) =>
+      new Future<ResponseContext>.value(new ResponseContext(response, this)
+        ..serializer = (_serializer ?? god.serialize));
 
   /// Attempts to find a middleware by the given name within this application.
   findMiddleware(key) {
@@ -361,42 +364,50 @@ class Angel extends AngelBase {
     try {
       var req = await createRequestContext(request);
       var res = await createResponseContext(request.response);
-      String requestedUrl = request.uri.path.replaceAll(_straySlashes, '');
+      String requestedUrl;
+
+      // Faster way to get path
+      List<int> _path = request.uri.path.codeUnits;
+
+      // Remove trailing slashes
+      int lastSlash = -1;
+
+      for (int i = _path.length - 1; i >= 0; i--) {
+        if (_path[i] == $slash)
+          lastSlash = i;
+        else
+          break;
+      }
+
+      if (lastSlash > -1)
+        requestedUrl = new String.fromCharCodes(_path.take(lastSlash));
+      else
+        requestedUrl = new String.fromCharCodes(_path);
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      Router r =
-          isProduction ? (_flattened ?? (_flattened = flatten(this))) : this;
-      var resolved =
-          r.resolveAll(requestedUrl, requestedUrl, method: req.method);
+      var pipeline = _handlerCache.putIfAbsent(requestedUrl, () {
+        Router r =
+            isProduction ? (_flattened ?? (_flattened = flatten(this))) : this;
+        var resolved =
+            r.resolveAll(requestedUrl, requestedUrl, method: req.method);
 
-      for (var result in resolved) req.params.addAll(result.allParams);
+        for (var result in resolved) req.params.addAll(result.allParams);
 
-      if (resolved.isNotEmpty) {
-        var route = resolved.first.route;
-        req.inject(Match, route.match(requestedUrl));
-      }
+        if (resolved.isNotEmpty) {
+          var route = resolved.first.route;
+          req.inject(Match, route.match(requestedUrl));
+        }
 
-      var m = new MiddlewarePipeline(resolved);
-      req.inject(MiddlewarePipeline, m);
+        var m = new MiddlewarePipeline(resolved);
+        req.inject(MiddlewarePipeline, m);
 
-      var pipeline = []..addAll(before)..addAll(m.handlers)..addAll(after);
-
-      // _printDebug('Handler sequence on $requestedUrl: $pipeline');
+        return new List.from(before)..addAll(m.handlers)..addAll(after);
+      });
 
       for (var handler in pipeline) {
         try {
-          // _printDebug('Executing handler: $handler');
-          var result = await executeHandler(handler, req, res);
-          // _printDebug('Result: $result');
-
-          if (!result) {
-            // _printDebug('Last executed handler: $handler');
-            break;
-          } else {
-            // _printDebug(
-            //    'Handler completed successfully, did not terminate response: $handler');
-          }
+          if (!await executeHandler(handler, req, res)) break;
         } on AngelHttpException catch (e, st) {
           e.stackTrace ??= st;
           return await handleAngelHttpException(e, st, req, res, request);
@@ -448,7 +459,8 @@ class Angel extends AngelBase {
       if (_flattened == null) _flattened = flatten(this);
 
       _walk(_flattened);
-      print('Angel is running in production mode.');
+
+      //if (silent != true) print('Angel is running in production mode.');
     }
   }
 
@@ -482,15 +494,16 @@ class Angel extends AngelBase {
   /// Sends a response.
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
-      {bool ignoreFinalizers: false}) async {
+      {bool ignoreFinalizers: false}) {
     _afterProcessed.add(request);
 
-    if (!res.willCloseItself) {
-      if (ignoreFinalizers != true) {
-        for (var finalizer in responseFinalizers) {
-          await finalizer(req, res);
-        }
-      }
+    if (res.willCloseItself) {
+      return new Future.value();
+    } else {
+      Future finalizers = ignoreFinalizers == true
+          ? new Future.value()
+          : responseFinalizers.fold<Future>(
+              new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
       if (res.isOpen) res.end();
 
@@ -505,8 +518,9 @@ class Angel extends AngelBase {
       request.response
         ..statusCode = res.statusCode
         ..cookies.addAll(res.cookies)
-        ..add(res.buffer.takeBytes());
-      await request.response.close();
+        ..add(res.buffer.toBytes());
+
+      return finalizers.then((_) => request.response.close());
     }
   }
 
@@ -541,7 +555,7 @@ class Angel extends AngelBase {
   /// NOTE: The above will not be properly copied if [path] is
   /// a [RegExp].
   @override
-  use(Pattern path, Routable routable,
+  use(Pattern path, @checked Routable routable,
       {bool hooked: true, String namespace: null}) {
     var head = path.toString().replaceAll(_straySlashes, '');
 
@@ -581,6 +595,22 @@ class Angel extends AngelBase {
         var tail = k.toString().replaceAll(_straySlashes, '');
         services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
       });
+
+      _beforeProcessed.whenInitialized(() {
+        routable.beforeProcessed.listen(_beforeProcessed.add);
+      });
+
+      _afterProcessed.whenInitialized(() {
+        routable.afterProcessed.listen(_afterProcessed.add);
+      });
+
+      _fatalErrorStream.whenInitialized(() {
+        routable.fatalErrorStream.listen(_fatalErrorStream.add);
+      });
+
+      _onController.whenInitialized(() {
+        routable.onController.listen(_onController.add);
+      });
     }
 
     if (routable is Service) {
@@ -597,17 +627,18 @@ class Angel extends AngelBase {
   }
 
   /// Default constructor. ;)
-  Angel({bool debug: false}) : super(debug: debug == true) {
+  Angel({@deprecated bool debug: false}) : super() {
     bootstrapContainer();
   }
 
   /// An instance mounted on a server started by the [serverGenerator].
-  factory Angel.custom(ServerGenerator serverGenerator, {bool debug: false}) =>
-      new Angel(debug: debug == true).._serverGenerator = serverGenerator;
+  factory Angel.custom(ServerGenerator serverGenerator,
+          {@deprecated bool debug: false}) =>
+      new Angel().._serverGenerator = serverGenerator;
 
   factory Angel.fromSecurityContext(SecurityContext context,
-      {bool debug: false}) {
-    var app = new Angel(debug: debug == true);
+      {@deprecated bool debug: false}) {
+    var app = new Angel();
 
     app._serverGenerator = (InternetAddress address, int port) async {
       return await HttpServer.bindSecure(address, port, context);

@@ -7,14 +7,15 @@ environment:
   sdk: ">=1.19.0"
 dependencies:
   angel_model: ^1.0.0
-  angel_route: ^1.0.0-dev
+  angel_route: ">=1.0.5 <2.0.0"
   body_parser: ^1.0.0-dev
   container: ^0.1.2
   flatten: ^1.0.0
   json_god: ^2.0.0-beta
   merge_map: ^1.0.0
-  random_string: ^0.0.1
+  meta: ^1.0.0
   mime: ^0.9.3
+  random_string: ^0.0.1
 dev_dependencies:
   mock_request: ^1.0.0
   http: ^0.11.3

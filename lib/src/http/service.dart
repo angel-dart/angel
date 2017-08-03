@@ -20,14 +20,34 @@ class Providers {
 
   const Providers(String this.via);
 
+  static const String viaRest = "rest";
+  static const String viaWebsocket = "websocket";
+  static const String viaGraphQL = "graphql";
+
+  /// Use [viaRest] instead.
+  @deprecated
   static const String VIA_REST = "rest";
+
+  /// Use [viaWebSocket] instead.
+  @deprecated
   static const String VIA_WEBSOCKET = "websocket";
 
+  /// Use [rest] instead.
+  @deprecated
+  static const Providers REST = const Providers(viaRest);
+
+  /// Use [websocket] instead.
+  @deprecated
+  static const Providers WEBSOCKET = const Providers(viaWebsocket);
+
   /// Represents a request via REST.
-  static final Providers REST = const Providers(VIA_REST);
+  static const Providers rest = const Providers(viaRest);
 
   /// Represents a request over WebSockets.
-  static final Providers WEBSOCKET = const Providers(VIA_WEBSOCKET);
+  static const Providers websocket = const Providers(viaWebsocket);
+
+  /// Represents a request parsed from GraphQL.
+  static const Providers graphql = const Providers(viaGraphQL);
 
   @override
   bool operator ==(other) => other is Providers && other.via == via;
@@ -38,12 +58,16 @@ class Providers {
 /// Heavily inspired by FeathersJS. <3
 class Service extends Routable {
   /// A [List] of keys that services should ignore, should they see them in the query.
-  static const List<String> SPECIAL_QUERY_KEYS = const [
+  static const List<String> specialQueryKeys = const [
     r'$limit',
     r'$sort',
     'page',
     'token'
   ];
+
+  /// Use [specialQueryKeys] instead.
+  @deprecated
+  static const List<String> SPECIAL_QUERY_KEYS = specialQueryKeys;
 
   /// The [Angel] app powering this service.
   AngelBase app;
@@ -91,7 +115,7 @@ class Service extends Routable {
 
   /// Generates RESTful routes pointing to this class's methods.
   void addRoutes() {
-    Map restProvider = {'provider': Providers.REST};
+    Map restProvider = {'provider': Providers.rest};
 
     // Add global middleware if declared on the instance itself
     Middleware before = getAnnotation(this, Middleware);
@@ -107,8 +131,9 @@ class Service extends Routable {
         req.serviceParams
       ]));
     },
-        middleware: []..addAll(handlers)..addAll(
-            (indexMiddleware == null) ? [] : indexMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(this.create, Middleware);
     post('/', (req, ResponseContext res) async {
@@ -122,29 +147,30 @@ class Service extends Routable {
       res.statusCode = 201;
       return r;
     },
-        middleware: []..addAll(handlers)..addAll(
-            (createMiddleware == null) ? [] : createMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (createMiddleware == null) ? [] : createMiddleware.handlers));
 
     Middleware readMiddleware = getAnnotation(this.read, Middleware);
 
     get(
         '/:id',
-            (req, res) async =>
-        await this.read(
+        (req, res) async => await this.read(
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},
               restProvider,
               req.serviceParams
             ])),
-        middleware: []..addAll(handlers)..addAll(
-            (readMiddleware == null) ? [] : readMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
 
     Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
     patch(
         '/:id',
-            (req, res) async =>
-        await this.modify(
+        (req, res) async => await this.modify(
             toId(req.params['id']),
             await req.lazyBody(),
             mergeMap([
@@ -152,14 +178,15 @@ class Service extends Routable {
               restProvider,
               req.serviceParams
             ])),
-        middleware: []..addAll(handlers)..addAll(
-            (modifyMiddleware == null) ? [] : modifyMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (modifyMiddleware == null) ? [] : modifyMiddleware.handlers));
 
     Middleware updateMiddleware = getAnnotation(this.update, Middleware);
     post(
         '/:id',
-            (req, res) async =>
-        await this.update(
+        (req, res) async => await this.update(
             toId(req.params['id']),
             await req.lazyBody(),
             mergeMap([
@@ -167,12 +194,13 @@ class Service extends Routable {
               restProvider,
               req.serviceParams
             ])),
-        middleware: []..addAll(handlers)..addAll(
-            (updateMiddleware == null) ? [] : updateMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (updateMiddleware == null) ? [] : updateMiddleware.handlers));
     put(
         '/:id',
-            (req, res) async =>
-        await this.update(
+        (req, res) async => await this.update(
             toId(req.params['id']),
             await req.lazyBody(),
             mergeMap([
@@ -180,34 +208,38 @@ class Service extends Routable {
               restProvider,
               req.serviceParams
             ])),
-        middleware: []..addAll(handlers)..addAll(
-            (updateMiddleware == null) ? [] : updateMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware = getAnnotation(this.remove, Middleware);
     delete(
         '/',
-            (req, res) async =>
-        await this.remove(
+        (req, res) async => await this.remove(
             null,
             mergeMap([
               {'query': req.query},
               restProvider,
               req.serviceParams
             ])),
-        middleware: []..addAll(handlers)..addAll(
-            (removeMiddleware == null) ? [] : removeMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (removeMiddleware == null) ? [] : removeMiddleware.handlers));
     delete(
         '/:id',
-            (req, res) async =>
-        await this.remove(
+        (req, res) async => await this.remove(
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},
               restProvider,
               req.serviceParams
             ])),
-        middleware: []..addAll(handlers)..addAll(
-            (removeMiddleware == null) ? [] : removeMiddleware.handlers));
+        middleware: []
+          ..addAll(handlers)
+          ..addAll(
+              (removeMiddleware == null) ? [] : removeMiddleware.handlers));
 
     // REST compliance
     put('/', () => throw new AngelHttpException.notFound());

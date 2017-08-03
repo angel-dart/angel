@@ -2,18 +2,23 @@ library angel_framework.http.request_context;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:angel_route/src/extensible.dart';
 import 'package:body_parser/body_parser.dart';
+import 'package:charcode/charcode.dart';
+import '../fast_name_from_symbol.dart';
 import 'server.dart' show Angel;
 
 /// A convenience wrapper around an incoming HTTP request.
-class RequestContext extends Extensible {
+@proxy
+class RequestContext {
   String _acceptHeaderCache;
   bool _acceptsAllCache;
   BodyParseResult _body;
   ContentType _contentType;
   HttpRequest _io;
   String _override, _path;
+  Map _provisionalQuery;
+
+  final Map properties = {};
 
   /// Additional params to be passed to services.
   final Map serviceParams = {};
@@ -106,7 +111,7 @@ class RequestContext extends Extensible {
   /// **If you are writing a plug-in, consider using [lazyQuery] instead.**
   Map get query {
     if (_body == null)
-      return uri.queryParameters;
+      return _provisionalQuery ??= new Map.from(uri.queryParameters);
     else
       return _body.query;
   }
@@ -145,16 +150,36 @@ class RequestContext extends Extensible {
     ctx.app = app;
     ctx._contentType = request.headers.contentType;
     ctx._override = override;
-    ctx._path = request.uri
-        .toString()
-        .replaceAll("?" + request.uri.query, "")
-        .replaceAll(new RegExp(r'/+$'), '');
+
+    // Faster way to get path
+    List<int> _path = [];
+
+    // Go up until we reach a ?
+    for (int ch in request.uri.toString().codeUnits) {
+      if (ch != $question)
+        _path.add(ch);
+      else break;
+    }
+
+    // Remove trailing slashes
+    int lastSlash = -1;
+
+    for (int i = _path.length - 1; i >= 0; i--) {
+      if (_path[i] == $slash)
+        lastSlash = i;
+      else break;
+    }
+
+    if (lastSlash > -1)
+      ctx._path = new String.fromCharCodes(_path.take(lastSlash));
+    else ctx._path = new String.fromCharCodes(_path);
     ctx._io = request;
 
-    if (app.lazyParseBodies != true)
+    if (app.lazyParseBodies != true) {
       ctx._body = (await parseBody(request,
-              storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
+          storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
           {};
+    }
 
     return ctx;
   }
@@ -246,7 +271,26 @@ class RequestContext extends Extensible {
     if (_body != null)
       return _body;
     else
+      _provisionalQuery = null;
       return _body = await parseBody(io,
           storeOriginalBuffer: app.storeOriginalBuffer == true);
+  }
+
+  operator [](key) => properties[key];
+  operator []=(key, value) => properties[key] = value;
+
+  noSuchMethod(Invocation invocation) {
+    if (invocation.memberName != null) {
+      String name = fastNameFromSymbol(invocation.memberName);
+
+      if (invocation.isMethod) {
+        return Function.apply(properties[name], invocation.positionalArguments,
+            invocation.namedArguments);
+      } else if (invocation.isGetter) {
+        return properties[name];
+      }
+    }
+
+    return super.noSuchMethod(invocation);
   }
 }

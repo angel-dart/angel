@@ -143,8 +143,6 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
         return obj.where((k) => !key);
       else if (obj is Map)
         return obj..remove(key);
-      else if (obj is Extensible)
-        return obj..properties.remove(key);
       else {
         try {
           reflect(obj).setField(new Symbol(key), null);
@@ -231,8 +229,6 @@ HookedServiceEventListener addCreatedAt(
         return assign(obj, now);
       else if (obj is Map)
         obj[name] = now;
-      else if (obj is Extensible)
-        obj..properties[name] = now;
       else {
         try {
           reflect(obj).setField(new Symbol(name), now);
@@ -282,8 +278,6 @@ HookedServiceEventListener addUpdatedAt(
         return assign(obj, now);
       else if (obj is Map)
         obj[name] = now;
-      else if (obj is Extensible)
-        obj..properties[name] = now;
       else {
         try {
           reflect(obj).setField(new Symbol(name), now);

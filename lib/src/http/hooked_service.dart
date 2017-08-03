@@ -108,27 +108,27 @@ class HookedService extends Service {
 
     applyListeners(inner.index, beforeIndexed);
     applyListeners(inner.read, beforeRead);
-    applyListeners(inner.created, beforeCreated);
+    applyListeners(inner.create, beforeCreated);
     applyListeners(inner.modify, beforeModified);
-    applyListeners(inner.updated, beforeUpdated);
-    applyListeners(inner.removed, beforeRemoved);
+    applyListeners(inner.update, beforeUpdated);
+    applyListeners(inner.remove, beforeRemoved);
     applyListeners(inner.index, afterIndexed, true);
     applyListeners(inner.read, afterRead, true);
-    applyListeners(inner.created, afterCreated, true);
+    applyListeners(inner.create, afterCreated, true);
     applyListeners(inner.modify, afterModified, true);
-    applyListeners(inner.updated, afterUpdated, true);
-    applyListeners(inner.removed, afterRemoved, true);
+    applyListeners(inner.update, afterUpdated, true);
+    applyListeners(inner.remove, afterRemoved, true);
   }
 
   /// Adds routes to this instance.
   @override
   void addRoutes() {
     // Set up our routes. We still need to copy middleware from inner service
-    Map restProvider = {'provider': Providers.REST};
+    Map restProvider = {'provider': Providers.rest};
 
     // Add global middleware if declared on the instance itself
     Middleware before = getAnnotation(inner, Middleware);
-    final handlers = [
+    List handlers = [
       (RequestContext req, ResponseContext res) async {
         req.serviceParams
           ..['__requestctx'] = req
@@ -270,17 +270,17 @@ class HookedService extends Service {
       Iterable<String> eventNames, HookedServiceEventListener listener) {
     eventNames.map((name) {
       switch (name) {
-        case HookedServiceEvent.INDEXED:
+        case HookedServiceEvent.indexed:
           return beforeIndexed;
-        case HookedServiceEvent.READ:
+        case HookedServiceEvent.read:
           return beforeRead;
-        case HookedServiceEvent.CREATED:
+        case HookedServiceEvent.created:
           return beforeCreated;
-        case HookedServiceEvent.MODIFIED:
+        case HookedServiceEvent.modified:
           return beforeModified;
-        case HookedServiceEvent.UPDATED:
+        case HookedServiceEvent.updated:
           return beforeUpdated;
-        case HookedServiceEvent.REMOVED:
+        case HookedServiceEvent.removed:
           return beforeRemoved;
         default:
           throw new ArgumentError('Invalid service method: ${name}');
@@ -293,17 +293,17 @@ class HookedService extends Service {
   void after(Iterable<String> eventNames, HookedServiceEventListener listener) {
     eventNames.map((name) {
       switch (name) {
-        case HookedServiceEvent.INDEXED:
+        case HookedServiceEvent.indexed:
           return afterIndexed;
-        case HookedServiceEvent.READ:
+        case HookedServiceEvent.read:
           return afterRead;
-        case HookedServiceEvent.CREATED:
+        case HookedServiceEvent.created:
           return afterCreated;
-        case HookedServiceEvent.MODIFIED:
+        case HookedServiceEvent.modified:
           return afterModified;
-        case HookedServiceEvent.UPDATED:
+        case HookedServiceEvent.updated:
           return afterUpdated;
-        case HookedServiceEvent.REMOVED:
+        case HookedServiceEvent.removed:
           return afterRemoved;
         default:
           throw new ArgumentError('Invalid service method: ${name}');
@@ -340,7 +340,7 @@ class HookedService extends Service {
   Stream<HookedServiceEvent> beforeAllStream() {
     var ctrl = new StreamController<HookedServiceEvent>();
     _ctrl.add(ctrl);
-    before(HookedServiceEvent.ALL, ctrl.add);
+    before(HookedServiceEvent.all, ctrl.add);
     return ctrl.stream;
   }
 
@@ -352,7 +352,7 @@ class HookedService extends Service {
   Stream<HookedServiceEvent> afterAllStream() {
     var ctrl = new StreamController<HookedServiceEvent>();
     _ctrl.add(ctrl);
-    before(HookedServiceEvent.ALL, ctrl.add);
+    before(HookedServiceEvent.all, ctrl.add);
     return ctrl.stream;
   }
 
@@ -392,12 +392,12 @@ class HookedService extends Service {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeIndexed._emit(
         new HookedServiceEvent(false, _getRequest(_params),
-            _getResponse(_params), inner, HookedServiceEvent.INDEXED,
+            _getResponse(_params), inner, HookedServiceEvent.indexed,
             params: params));
     if (before._canceled) {
       HookedServiceEvent after = await beforeIndexed._emit(
           new HookedServiceEvent(true, _getRequest(_params),
-              _getResponse(_params), inner, HookedServiceEvent.INDEXED,
+              _getResponse(_params), inner, HookedServiceEvent.indexed,
               params: params, result: before.result));
       return after.result;
     }
@@ -408,7 +408,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.INDEXED,
+        HookedServiceEvent.indexed,
         params: params,
         result: result));
     return after.result;
@@ -422,7 +422,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.READ,
+        HookedServiceEvent.indexed,
         id: id,
         params: params));
 
@@ -432,7 +432,7 @@ class HookedService extends Service {
           _getRequest(_params),
           _getResponse(_params),
           inner,
-          HookedServiceEvent.READ,
+          HookedServiceEvent.read,
           id: id,
           params: params,
           result: before.result));
@@ -445,7 +445,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.READ,
+        HookedServiceEvent.read,
         id: id,
         params: params,
         result: result));
@@ -457,13 +457,13 @@ class HookedService extends Service {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeCreated._emit(
         new HookedServiceEvent(false, _getRequest(_params),
-            _getResponse(_params), inner, HookedServiceEvent.CREATED,
+            _getResponse(_params), inner, HookedServiceEvent.created,
             data: data, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterCreated._emit(
           new HookedServiceEvent(true, _getRequest(_params),
-              _getResponse(_params), inner, HookedServiceEvent.CREATED,
+              _getResponse(_params), inner, HookedServiceEvent.created,
               data: data, params: params, result: before.result));
       return after.result;
     }
@@ -474,7 +474,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.CREATED,
+        HookedServiceEvent.created,
         data: data,
         params: params,
         result: result));
@@ -486,13 +486,13 @@ class HookedService extends Service {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeModified._emit(
         new HookedServiceEvent(false, _getRequest(_params),
-            _getResponse(_params), inner, HookedServiceEvent.MODIFIED,
+            _getResponse(_params), inner, HookedServiceEvent.modified,
             id: id, data: data, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterModified._emit(
           new HookedServiceEvent(true, _getRequest(_params),
-              _getResponse(_params), inner, HookedServiceEvent.MODIFIED,
+              _getResponse(_params), inner, HookedServiceEvent.modified,
               id: id, data: data, params: params, result: before.result));
       return after.result;
     }
@@ -503,7 +503,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.MODIFIED,
+        HookedServiceEvent.modified,
         id: id,
         data: data,
         params: params,
@@ -516,13 +516,13 @@ class HookedService extends Service {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeUpdated._emit(
         new HookedServiceEvent(false, _getRequest(_params),
-            _getResponse(_params), inner, HookedServiceEvent.UPDATED,
+            _getResponse(_params), inner, HookedServiceEvent.updated,
             id: id, data: data, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterUpdated._emit(
           new HookedServiceEvent(true, _getRequest(_params),
-              _getResponse(_params), inner, HookedServiceEvent.UPDATED,
+              _getResponse(_params), inner, HookedServiceEvent.updated,
               id: id, data: data, params: params, result: before.result));
       return after.result;
     }
@@ -533,7 +533,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.UPDATED,
+        HookedServiceEvent.updated,
         id: id,
         data: data,
         params: params,
@@ -546,13 +546,13 @@ class HookedService extends Service {
     var params = _stripReq(_params);
     HookedServiceEvent before = await beforeRemoved._emit(
         new HookedServiceEvent(false, _getRequest(_params),
-            _getResponse(_params), inner, HookedServiceEvent.REMOVED,
+            _getResponse(_params), inner, HookedServiceEvent.removed,
             id: id, params: params));
 
     if (before._canceled) {
       HookedServiceEvent after = await afterRemoved._emit(
           new HookedServiceEvent(true, _getRequest(_params),
-              _getResponse(_params), inner, HookedServiceEvent.REMOVED,
+              _getResponse(_params), inner, HookedServiceEvent.removed,
               id: id, params: params, result: before.result));
       return after.result;
     }
@@ -563,7 +563,7 @@ class HookedService extends Service {
         _getRequest(_params),
         _getResponse(_params),
         inner,
-        HookedServiceEvent.REMOVED,
+        HookedServiceEvent.removed,
         id: id,
         params: params,
         result: result));
@@ -577,22 +577,22 @@ class HookedService extends Service {
     HookedServiceEventDispatcher dispatcher;
 
     switch (eventName) {
-      case HookedServiceEvent.INDEXED:
+      case HookedServiceEvent.indexed:
         dispatcher = afterIndexed;
         break;
-      case HookedServiceEvent.READ:
+      case HookedServiceEvent.read:
         dispatcher = afterRead;
         break;
-      case HookedServiceEvent.CREATED:
+      case HookedServiceEvent.created:
         dispatcher = afterCreated;
         break;
-      case HookedServiceEvent.MODIFIED:
+      case HookedServiceEvent.modified:
         dispatcher = afterModified;
         break;
-      case HookedServiceEvent.UPDATED:
+      case HookedServiceEvent.updated:
         dispatcher = afterUpdated;
         break;
-      case HookedServiceEvent.REMOVED:
+      case HookedServiceEvent.removed:
         dispatcher = afterRemoved;
         break;
       default:
@@ -614,20 +614,44 @@ class HookedService extends Service {
 
 /// Fired when a hooked service is invoked.
 class HookedServiceEvent {
-  static const String INDEXED = "indexed";
-  static const String READ = "read";
-  static const String CREATED = "created";
-  static const String MODIFIED = "modified";
-  static const String UPDATED = "updated";
-  static const String REMOVED = "removed";
-  static const List<String> ALL = const [
-    INDEXED,
-    READ,
-    CREATED,
-    MODIFIED,
-    UPDATED,
-    REMOVED
+  static const String indexed = 'indexed';
+  static const String read = 'read';
+  static const String created = 'created';
+  static const String modified = 'modified';
+  static const String updated = 'updated';
+  static const String removed = 'removed';
+
+  static const List<String> all = const [
+    indexed, read, created, modified, updated, removed
   ];
+  
+  /// Use [indexed] instead.
+  @deprecated
+  static const String INDEXED = indexed;
+
+  /// Use [read] instead.
+  @deprecated
+  static const String READ = read;
+
+  /// Use [created] instead.
+  @deprecated
+  static const String CREATED = created;
+
+  /// Use [modified] instead.
+  @deprecated
+  static const String MODIFIED = modified;
+
+  /// Use [updated] instead.
+  @deprecated
+  static const String UPDATED = updated;
+
+  /// Use [removed] instead.
+  @deprecated
+  static const String REMOVED = removed;
+
+  /// Use [all] instead.
+  @deprecated
+  static const List<String> ALL = all;
 
   /// Use this to end processing of an event.
   void cancel([result]) {

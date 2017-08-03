@@ -3,6 +3,7 @@ library angel_framework.http.controller;
 import 'dart:async';
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
+import 'package:meta/meta.dart';
 import 'metadata.dart';
 import 'request_context.dart';
 import 'response_context.dart';
@@ -18,13 +19,20 @@ import 'server.dart' show Angel, preInject;
 /// and memory use.
 class InjectionRequest {
   /// Optional, typed data that can be passed to a DI-enabled method.
-  Map<String, Type> named = {};
+  final Map<String, Type> named;
 
   /// A list of the arguments required for a DI-enabled method to run.
-  final List required = [];
+  final List required;
 
   /// A list of the arguments that can be null in a DI-enabled method.
-  final List<String> optional = [];
+  final List<String> optional;
+
+  const InjectionRequest.constant({this.named, this.required, this.optional});
+
+  InjectionRequest()
+      : named = {},
+        required = [],
+        optional = [];
 }
 
 /// Supports grouping routes with shared functionality.
@@ -47,6 +55,7 @@ class Controller {
 
   Controller({this.debug: false, this.injectSingleton: true});
 
+  @mustCallSuper
   Future call(Angel app) async {
     _app = app;
 
@@ -143,6 +152,7 @@ RequestHandler createDynamicHandler(handler,
   injection.optional.addAll(optional ?? []);
   return handleContained(handler, injection);
 }
+
 /// Handles a request with a DI-enabled handler.
 RequestHandler handleContained(handler, InjectionRequest injection) {
   return (RequestContext req, ResponseContext res) async {

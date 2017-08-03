@@ -13,9 +13,7 @@ testMiddlewareMetadata(RequestContext req, ResponseContext res) async {
 class QueryService extends Service {
   @override
   @Middleware(const ['interceptor'])
-  read(id, [Map params]) {
-    return params;
-  }
+  read(id, [Map params]) async => params;
 }
 
 main() {

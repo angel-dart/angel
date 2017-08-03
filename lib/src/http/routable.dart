@@ -2,6 +2,7 @@ library angel_framework.http.routable;
 
 import 'dart:async';
 import 'package:angel_route/angel_route.dart';
+import 'package:meta/meta.dart';
 import '../util.dart';
 import 'angel_base.dart';
 import 'controller.dart';
@@ -36,6 +37,7 @@ RequestMiddleware waterfall(List handlers) {
 class Routable extends Router {
   final Map<Pattern, Controller> _controllers = {};
   final Map<Pattern, Service> _services = {};
+  final Map properties = {};
 
   Routable({bool debug: false}) : super(debug: debug);
 
@@ -59,7 +61,7 @@ class Routable extends Router {
 
   /// Assigns a middleware to a name for convenience.
   @override
-  registerMiddleware(String name, RequestMiddleware middleware) =>
+  registerMiddleware(String name, @checked RequestHandler middleware) =>
       super.registerMiddleware(name, middleware);
 
   /// Retrieves the service assigned to the given path.
@@ -129,17 +131,19 @@ class Routable extends Router {
     }
 
     // Also copy properties...
-    Map copiedProperties = new Map.from(router.properties);
-    for (String propertyName in copiedProperties.keys) {
-      properties.putIfAbsent("$middlewarePrefix$propertyName",
-          () => copiedMiddleware[propertyName]);
+    if (router is Routable) {
+      Map copiedProperties = new Map.from(router.properties);
+      for (String propertyName in copiedProperties.keys) {
+        properties.putIfAbsent("$middlewarePrefix$propertyName",
+                () => copiedMiddleware[propertyName]);
+      }
     }
 
     // _router.dumpTree(header: 'Mounting on "$path":');
     // root.child(path, debug: debug, handlers: handlers).addChild(router.root);
     mount(path, _router);
 
-    if (router is Routable) {
+    if (_router is Routable) {
       // Copy services, too. :)
       for (Pattern servicePath in _router._services.keys) {
         String newServicePath =
@@ -149,6 +153,8 @@ class Routable extends Router {
       }
     }
 
-    if (service != null) _onService.add(service);
+    if (service != null) {
+      if (_onService.hasListener) _onService.add(service);
+    }
   }
 }
