@@ -1,2 +1,3 @@
-export 'src/builder/postgres/migration.dart';
-export 'src/builder/postgres/postgres.dart';
+export 'src/builder/orm/migration.dart';
+export 'src/builder/orm/postgres.dart';
+export 'src/builder/orm/service.dart';

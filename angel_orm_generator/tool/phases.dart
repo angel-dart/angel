@@ -34,4 +34,9 @@ final PhaseGroup PHASES = new PhaseGroup()
             isStandalone: true, generatedExtension: '.orm.g.dart'),
         DEPENDENT_MODELS))
   ..addPhase(new Phase()
+    ..addAction(
+        new GeneratorBuilder([new PostgresServiceGenerator()],
+            isStandalone: true, generatedExtension: '.service.g.dart'),
+        ALL_MODELS))
+  ..addPhase(new Phase()
     ..addAction(new SQLMigrationGenerator(temporary: true), ALL_MODELS));
