@@ -5,6 +5,7 @@ final RegExp _sym = new RegExp(r'Symbol\("([^"]+)"\)');
 ///
 /// No longer requires reflection. :)
 @proxy
+@deprecated
 class Extensible {
   /// A set of custom properties that can be assigned to the server.
   ///

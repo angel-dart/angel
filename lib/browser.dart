@@ -39,11 +39,10 @@ abstract class BrowserRouter extends Router {
   void listen();
 
   /// Identical to [all].
-  Route on(Pattern path, handler, {List middleware}) =>
-      all(path, handler, middleware: middleware);
+  Route on(Pattern path, handler, {List middleware});
 }
 
-class _BrowserRouterImpl extends Router implements BrowserRouter {
+abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
   Route _current;
   StreamController<RoutingResult> _onResolve =
       new StreamController<RoutingResult>();
@@ -63,6 +62,9 @@ class _BrowserRouterImpl extends Router implements BrowserRouter {
 
   @override
   void go(Iterable linkParams) => _goTo(navigate(linkParams));
+
+  Route on(Pattern path, handler, {List middleware}) =>
+      all(path, handler, middleware: middleware);
 
   void prepareAnchors() {
     final anchors = window.document.querySelectorAll('a:not([dynamic])');
@@ -153,7 +155,7 @@ class _PushStateRouter extends _BrowserRouterImpl {
     } else {
       final route = resolved.route;
       window.history.pushState(
-          {'path': route.path, 'params': {}, 'properties': properties},
+          {'path': route.path, 'params': {}},
           route.name ?? route.path,
           relativeUri);
       _onResolve.add(resolved);
@@ -167,7 +169,7 @@ class _PushStateRouter extends _BrowserRouterImpl {
       final resolved = resolveAbsolute(path);
 
       if (resolved != null && resolved.route != _current) {
-        properties.addAll(state['properties'] ?? {});
+        //properties.addAll(state['properties'] ?? {});
         _onResolve.add(resolved);
         _onRoute.add(_current = resolved.route
           ..state.properties.addAll(state['params'] ?? {}));

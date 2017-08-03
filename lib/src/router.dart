@@ -15,7 +15,7 @@ final RegExp _slashDollar = new RegExp(r'/+\$');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
-class Router extends Extensible {
+class Router {
   final List<_ChainedRouter> _chained = [];
   final List _middleware = [];
   final Map<Pattern, Router> _mounted = {};
