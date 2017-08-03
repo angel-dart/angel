@@ -145,16 +145,6 @@ class ResponseContext implements StringSink {
     _isOpen = false;
   }
 
-  /// Re-opens a closed response. **NEVER USE THIS IN A PLUGIN**.
-  ///
-  /// To preserve your sanity, don't use it ever. This is solely for internal use.
-  ///
-  /// You're going to need this one day, and you'll be happy it was added.
-  void reopen() {
-    _buffer._reopen();
-    _isOpen = true;
-  }
-
   /// Sets a response header to the given value, or retrieves its value.
   @Deprecated('Please use `headers` instead.')
   header(String key, [String value]) {
@@ -361,8 +351,6 @@ abstract class _LockableBytesBuilder extends BytesBuilder {
   factory _LockableBytesBuilder() => new _LockableBytesBuilderImpl();
 
   void _lock();
-
-  void _reopen();
 }
 
 class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
@@ -376,12 +364,6 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
   void _lock() {
     _closed = true;
   }
-
-  @override
-  void _reopen() {
-    _closed = false;
-  }
-
   @override
   void add(List<int> bytes) {
     if (_closed)

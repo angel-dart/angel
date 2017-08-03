@@ -14,6 +14,8 @@ patterns, to prevent memory leaks.
 * Removed the inheritance on `Extensible` in many classes, and removed it from `angel_route`.
 Now, only `Angel` and `RequestContext` have `@proxy` annotations.
 * Deprecated passing `debug` to Angel.
+* `_LockableBytesBuilder` now uses `Uint8List`.
+* Removed `reopen` from `ResponseContext`.
 
 # 1.0.7+2
 Changed `ResponseContext.serialize`. The `contentType` is now set *before* serialization.
