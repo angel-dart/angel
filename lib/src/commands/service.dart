@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:console/console.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:inflection/inflection.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
@@ -60,9 +61,11 @@ class ServiceCommand extends Command {
         await servicesDir.create(recursive: true);
       if (!await testDir.exists()) await testDir.create(recursive: true);
 
+      var fmt = new DartFormatter();
+
       await serviceFile
           .writeAsString(_generateService(generator, name, lower, typed));
-      await testFile.writeAsString(_generateTests(pubspec, lower));
+      await testFile.writeAsString(_generateTests(pubspec, lower, fmt));
 
       var runConfig = new File('./.idea/runConfigurations/${name}_Tests.xml');
 
@@ -72,11 +75,11 @@ class ServiceCommand extends Command {
       }
 
       if (generator.createsModel == true || typed == true) {
-        await _generateModel(pubspec, name, lower);
+        await _generateModel(pubspec, name, lower, fmt);
       }
 
       if (generator.createsValidator == true) {
-        await _generateValidator(pubspec, lower, rc.constantCase);
+        await _generateValidator(pubspec, lower, rc, fmt);
       }
 
       if (generator.exportedInServiceLibrary == true || typed == true) {
@@ -104,8 +107,7 @@ class ServiceCommand extends Command {
     import '../models/$lower.dart';
     export '../models/$lower.dart';
     */
-    lib.addMember(
-        new ImportBuilder('package:angel_common/angel_common.dart'));
+    lib.addMember(new ImportBuilder('package:angel_common/angel_common.dart'));
     generator.applyToLibrary(lib, name, lower);
 
     if (generator.createsModel == true || typed) {
@@ -153,47 +155,46 @@ class ServiceCommand extends Command {
     return prettyToSource(lib.buildAst());
   }
 
-  _generateModel(PubSpec pubspec, String name, String lower) async {
+  _generateModel(
+      PubSpec pubspec, String name, String lower, DartFormatter fmt) async {
     var file = new File('lib/src/models/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
 
-    await file.writeAsString('''
+    await file.writeAsString(fmt.format('''
 library ${pubspec.name}.models.$lower;
-import 'package:angel_framework/common.dart';
+import 'package:angel_model/angel_model.dart';
 
 class $name extends Model {
   @override
   String id;
-  String name, desc;
+  String name, description;
   @override
   DateTime createdAt, updatedAt;
 
-  $name({this.id, this.name, this.desc, this.createdAt, this.updatedAt});
+  $name({this.id, this.name, this.description, this.createdAt, this.updatedAt});
 }
-    '''
-        .trim());
+    '''));
   }
 
-  _generateValidator(PubSpec pubspec, String lower, String constantCase) async {
+  _generateValidator(
+      PubSpec pubspec, String lower, ReCase rc, DartFormatter fmt) async {
     var file = new File('lib/src/validators/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
 
-    await file.writeAsString('''
+    await file.writeAsString(fmt.format('''
 library ${pubspec.name}.validtors.$lower;
 import 'package:angel_validate/angel_validate.dart';
 
-final Validator $constantCase = new Validator({
+final Validator ${rc.camelCase} = new Validator({
   'name': [isString, isNotEmpty],
-  'desc': [isString, isNotEmpty]
+  'description': [isString, isNotEmpty]
 });
 
-final Validator CREATE_$constantCase = $constantCase.extend({})
-  ..requiredFields.addAll(['name', 'desc']);
-
-    '''
-        .trim());
+final Validator create${rc.pascalCase} = ${rc.camelCase}.extend({})
+  ..requiredFields.addAll(['name', 'description']);
+    '''));
   }
 
   _generateRunConfiguration(String name, String lower) {
@@ -208,8 +209,8 @@ final Validator CREATE_$constantCase = $constantCase.extend({})
         .trim();
   }
 
-  _generateTests(PubSpec pubspec, String lower) {
-    return '''
+  _generateTests(PubSpec pubspec, String lower, DartFormatter fmt) {
+    return fmt.format('''
 import 'dart:io';
 import 'package:${pubspec.name}/${pubspec.name}.dart';
 import 'package:angel_common/angel_common.dart';
@@ -241,7 +242,6 @@ main() async {
   });
 }
 
-    '''
-        .trim();
+    ''');
   }
 }

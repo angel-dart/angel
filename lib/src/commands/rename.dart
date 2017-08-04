@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:analyzer/analyzer.dart';
 import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:pubspec/pubspec.dart';
 import 'pub.dart';
 
@@ -43,7 +44,9 @@ class RenameCommand extends Command {
         await renamePubspec(Directory.current, oldName, newName);
         await renameDartFiles(Directory.current, oldName, newName);
         print('Now running `pub get`...');
-        var pub = await Process.start(resolvePub(), ['get']);
+        var pubPath = resolvePub();
+        print('Pub path: $pubPath');
+        var pub = await Process.start(pubPath, ['get']);
         stdout.addStream(pub.stdout);
         stderr.addStream(pub.stderr);
         await pub.exitCode;
@@ -77,6 +80,7 @@ renameDartFiles(Directory dir, String oldName, String newName) async {
     print('Renaming library file `${entry.absolute.path}`...');
   }
 
+  var fmt = new DartFormatter();
   await for (FileSystemEntity file in dir.list(recursive: true)) {
     if (file is File && file.path.endsWith('.dart')) {
       var contents = await file.readAsString();
@@ -94,7 +98,7 @@ renameDartFiles(Directory dir, String oldName, String newName) async {
           }
         });
 
-        await file.writeAsString(contents);
+        await file.writeAsString(fmt.format(contents));
         print('Updated file `${file.absolute.path}`.');
       }
     }

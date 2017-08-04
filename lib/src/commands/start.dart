@@ -80,7 +80,7 @@ class StartCommand extends Command {
     if (await pubspec.exists()) {
       // Run start scripts
       final doc = loadYamlDocument(await pubspec.readAsString());
-      final scriptsNode = doc.contents['scripts'];
+      final scriptsNode = doc.contents.value['scripts'];
 
       if (scriptsNode != null && scriptsNode.containsKey('start')) {
         try {

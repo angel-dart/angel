@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
+import 'package:dart_style/dart_style.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
 
@@ -23,7 +24,8 @@ class PluginCommand extends Command {
 
     if (!await pluginFile.exists()) await pluginFile.create(recursive: true);
 
-    await pluginFile.writeAsString(_generatePlugin(pubspec, name, lower));
+    await pluginFile.writeAsString(
+        new DartFormatter().format(_generatePlugin(pubspec, name, lower)));
 
     _pen.green();
     _pen("${Icon.CHECKMARK} Successfully generated plugin $name.");

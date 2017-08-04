@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
+import 'package:dart_style/dart_style.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
 
@@ -23,8 +24,8 @@ class TestCommand extends Command {
 
     if (!await testFile.exists()) await testFile.create(recursive: true);
 
-    await testFile.writeAsString(
-        _generateTest(await PubSpec.load(Directory.current), lower));
+    await testFile.writeAsString(new DartFormatter()
+        .format(_generateTest(await PubSpec.load(Directory.current), lower)));
 
     final runConfig = new File('./.idea/runConfigurations/${name}_tests.xml');
 

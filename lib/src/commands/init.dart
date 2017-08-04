@@ -122,7 +122,7 @@ class InitCommand extends Command {
       }
 
       print('Choose a project type before continuing:');
-      var boilerplateChooser = new Chooser<BoilerplateInfo>(ALL_BOILERPLATES);
+      var boilerplateChooser = new Chooser<BoilerplateInfo>(allBoilerplates);
       var boilerplate = await boilerplateChooser.choose();
 
       print(
@@ -175,19 +175,24 @@ preBuild(Directory projectDir) async {
   if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
 }
 
-const BoilerplateInfo FULL_APPLICATION_BOILERPLATE = const BoilerplateInfo(
+const BoilerplateInfo fullApplicationBoilerplate = const BoilerplateInfo(
     'Full Application',
     'A complete project including authentication, multi-threading, and more.',
     'https://github.com/angel-dart/angel.git');
 
-const BoilerplateInfo LIGHT_BOILERPLATE = const BoilerplateInfo(
+const BoilerplateInfo lightBoilerplate = const BoilerplateInfo(
     'Light',
-    'Minimal starting point for new users',
+    'Minimal starting point for new users.',
     'https://github.com/angel-dart/boilerplate_light.git');
 
-const List<BoilerplateInfo> ALL_BOILERPLATES = const [
-  FULL_APPLICATION_BOILERPLATE,
-  LIGHT_BOILERPLATE
+const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
+    'ORM',
+    "A starting point for applications that use Angel's ORM.",
+    'https://github.com/angel-dart/boilerplate_orm.git');
+
+const List<BoilerplateInfo> allBoilerplates = const [
+  fullApplicationBoilerplate,
+  lightBoilerplate
 ];
 
 class BoilerplateInfo {
