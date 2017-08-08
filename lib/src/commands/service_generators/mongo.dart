@@ -1,9 +1,14 @@
 import 'generator.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:inflection/inflection.dart';
+import '../make/maker.dart';
 
 class MongoServiceGenerator extends ServiceGenerator {
   const MongoServiceGenerator() : super('MongoDB');
+
+  @override
+  List<MakerDependency> get dependencies =>
+      const [const MakerDependency('angel_mongo', '^1.0.0')];
 
   @override
   bool get createsModel => false;

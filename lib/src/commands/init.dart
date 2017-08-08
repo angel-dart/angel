@@ -60,7 +60,7 @@ class InitCommand extends Command {
       ..text('\nCongratulations! You are ready to start developing with Angel!')
       ..text('\nTo start the server (with file watching), run ')
       ..magenta()
-      ..text('`angel start`')
+      ..text('`dart bin/server.dart`')
       ..normal()
       ..text(' in your terminal.')
       ..text('\n\nFind more documentation about Angel:')
@@ -192,7 +192,8 @@ const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
 
 const List<BoilerplateInfo> allBoilerplates = const [
   fullApplicationBoilerplate,
-  lightBoilerplate
+  lightBoilerplate,
+  ormBoilerplate
 ];
 
 class BoilerplateInfo {

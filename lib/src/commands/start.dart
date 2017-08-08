@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:watcher/watcher.dart';
 import 'package:yaml/yaml.dart';
+import 'deprecated.dart';
 import 'pub.dart';
 
 Process server;
@@ -34,6 +35,8 @@ class StartCommand extends Command {
 
   @override
   run() async {
+    warnDeprecated(this.name);
+    
     stderr
       ..writeln(
           'WARNING: `angel start` is now deprecated, in favor of `package:angel_hot`.')

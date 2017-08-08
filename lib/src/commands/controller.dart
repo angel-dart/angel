@@ -4,6 +4,7 @@ import 'package:code_builder/code_builder.dart';
 import "package:console/console.dart";
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
+import 'deprecated.dart';
 
 class ControllerCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -17,6 +18,8 @@ class ControllerCommand extends Command {
 
   @override
   run() async {
+    warnDeprecated(this.name, _pen);
+
     final name = await readInput("Name of Controller: "),
         recase = new ReCase(name),
         lower = recase.snakeCase;

@@ -4,6 +4,7 @@ export 'controller.dart';
 export "doctor.dart";
 export "key.dart";
 export "init.dart";
+export "make.dart";
 export "plugin.dart";
 export "rename.dart";
 export "service.dart";

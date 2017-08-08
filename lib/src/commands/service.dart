@@ -7,15 +7,8 @@ import 'package:inflection/inflection.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
 import 'service_generators/service_generators.dart';
+import 'deprecated.dart';
 import 'init.dart' show preBuild;
-
-const List<ServiceGenerator> GENERATORS = const [
-  const MapServiceGenerator(),
-  const FileServiceGenerator(),
-  const MongoServiceGenerator(),
-  const RethinkServiceGenerator(),
-  const CustomServiceGenerator()
-];
 
 class ServiceCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -28,10 +21,12 @@ class ServiceCommand extends Command {
 
   @override
   run() async {
+    warnDeprecated(this.name, _pen);
+    
     var pubspec = await PubSpec.load(Directory.current);
     var name = await readInput('Name of Service (not plural): ');
     var chooser = new Chooser<String>(
-        GENERATORS.map<String>((g) => g.name).toList(),
+        serviceGenerators.map<String>((g) => g.name).toList(),
         message: 'What type of service would you like to create? ');
     var type = await chooser.choose();
 
@@ -40,7 +35,7 @@ class ServiceCommand extends Command {
     var typed = (await chooser.choose()) == 'Yes';
 
     var generator =
-        GENERATORS.firstWhere((g) => g.name == type, orElse: () => null);
+        serviceGenerators.firstWhere((g) => g.name == type, orElse: () => null);
 
     if (generator == null) {
       _pen.blue();

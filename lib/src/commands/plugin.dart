@@ -4,6 +4,7 @@ import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
+import 'deprecated.dart';
 
 class PluginCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -16,6 +17,8 @@ class PluginCommand extends Command {
 
   @override
   run() async {
+    warnDeprecated(this.name, _pen);
+
     var pubspec = await PubSpec.load(Directory.current);
     final name = await readInput("Name of Plugin: "),
         lower = new ReCase(name).snakeCase;

@@ -4,6 +4,7 @@ import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:recase/recase.dart';
+import 'deprecated.dart';
 
 class TestCommand extends Command {
   final TextPen _pen = new TextPen();
@@ -16,6 +17,8 @@ class TestCommand extends Command {
 
   @override
   run() async {
+    warnDeprecated(this.name, _pen);
+
     final name = await readInput("Name of Test: "),
         lower = new ReCase(name).snakeCase;
     final testDir = new Directory("test/services");

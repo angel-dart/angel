@@ -22,6 +22,7 @@ main(List<String> args) async {
     ..addCommand(new StartCommand())
     ..addCommand(new RenameCommand())
     ..addCommand(new UpdateCommand())
+    ..addCommand(new MakeCommand())
     ..addCommand(new VersionCommand());
 
   return await runner.run(args).then((_) {}).catchError((exc) {
