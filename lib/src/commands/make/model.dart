@@ -101,8 +101,7 @@ class ModelCommand extends Command {
       ..reset();
 
     if (argResults['migration']) {
-      deps.add(
-          const MakerDependency('angel_migration', '^1.0.0-alpha'));
+      deps.add(const MakerDependency('angel_migration', '^1.0.0-alpha'));
 
       var migrationLib = new LibraryBuilder()
         ..addDirective(
@@ -129,7 +128,8 @@ class ModelCommand extends Command {
           ]);
       callback.addStatement(cascade);
 
-      up.addStatement(reference('schema').invoke('create', [callback]));
+      up.addStatement(
+          reference('schema').invoke('create', [literal(tableName), callback]));
 
       // down()
       var down = new MethodBuilder('down', returnType: lib$core.$void);
@@ -148,12 +148,12 @@ class ModelCommand extends Command {
         await migrationFile.create(recursive: true);
       await migrationFile
           .writeAsString(prettyToSource(migrationLib.buildAst()));
-    _pen
-      ..green()
-      ..call(
-          '${Icon.CHECKMARK} Created migration file "${migrationFile.absolute.path}".')
-      ..call()
-      ..reset();
+      _pen
+        ..green()
+        ..call(
+            '${Icon.CHECKMARK} Created migration file "${migrationFile.absolute.path}".')
+        ..call()
+        ..reset();
     }
 
     if (deps.isNotEmpty) await depend(deps);
