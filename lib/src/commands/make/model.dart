@@ -102,7 +102,7 @@ class ModelCommand extends Command {
 
     if (argResults['migration']) {
       deps.add(
-          const MakerDependency('angel_migration', '^1.0.0-alpha', dev: true));
+          const MakerDependency('angel_migration', '^1.0.0-alpha'));
 
       var migrationLib = new LibraryBuilder()
         ..addDirective(
