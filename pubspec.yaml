@@ -1,5 +1,5 @@
 name: angel_markdown
-version: 1.0.0
+version: 1.0.0+1
 description: Markdown view generator for Angel.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/markdown

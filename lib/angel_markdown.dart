@@ -4,7 +4,7 @@ import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:markdown/markdown.dart';
 
-final RegExp _braces = new RegExp(r'@?{{((\\})|([^}]))+}}');
+final RegExp _braces = new RegExp(r'@?{{(((\\})|([^}]))+)}}');
 
 /// Configures an [Angel] instance to render Markdown templates from the specified [viewsDirectory].
 ///
@@ -21,7 +21,7 @@ AngelConfigurer markdown(
   FutureOr<String> template(String content, Map locals),
 }) {
   extension ??= '.md';
-  extensionSet ?? ExtensionSet.gitHub;
+  extensionSet ??= ExtensionSet.gitHub;
 
   return (Angel app) async {
     app.viewGenerator = (String name, [Map locals]) async {
