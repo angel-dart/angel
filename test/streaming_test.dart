@@ -6,7 +6,7 @@ import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 import 'encoders_buffer_test.dart' show encodingTests;
 
-main() async {
+main() {
   Angel app;
 
   setUp(() {
