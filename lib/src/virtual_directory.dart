@@ -236,8 +236,8 @@ class VirtualDirectory implements AngelPlugin {
   }
 
   bool _acceptsGzip(RequestContext req) {
-    var h = req.headers.value(HttpHeaders.ACCEPT)?.toLowerCase();
-    return h?.contains('gzip') == true;
+    var h = req.headers.value(HttpHeaders.ACCEPT_ENCODING)?.toLowerCase();
+    return h?.contains('*') == true || h?.contains('gzip') == true;
   }
 
   void _ensureContentTypeAllowed(String mimeType, RequestContext req) {

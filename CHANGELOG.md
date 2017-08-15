@@ -1,3 +1,6 @@
+# 1.2.4+1
+Fixed a bug where `Accept-Encoding` was not properly adhered to.
+
 # 1.2.4
 Fixes https://github.com/angel-dart/angel/issues/44.
 * MIME types will now default to `application/octet-stream`.
