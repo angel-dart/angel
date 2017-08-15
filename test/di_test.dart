@@ -16,7 +16,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(debug: true);
+    app = new Angel();
     client = new http.Client();
 
     // Inject some todos

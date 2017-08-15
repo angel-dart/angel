@@ -1,3 +1,14 @@
+# 1.0.9
+* Closed [#161](https://github.com/angel-dart/framework/issues/161). `addCreated`/`addUpdatedAt` no longer
+crash when `serialize` is `false`.
+* Added an explicit on `charcode`, `path`, and others. Resolves
+[#160](https://github.com/angel-dart/framework/issues/160).
+* `ResponseContext` now implements `StreamSink<List<int>`, so data can be streamed directly to the
+underlying response.
+* You can now inject `encoders` into a `ResponseContext`, which takes care of `Accept-Encoding`.
+This will ultimately replace `package:angel_compress`.
+Resolves [#159](https://github.com/angel-dart/framework/issues/159).
+
 # 1.0.8
 * Changed `req.query` to use a modifiable Map if the body has not parsed. Resolves
 [#157](https://github.com/angel-dart/framework/issues/157).

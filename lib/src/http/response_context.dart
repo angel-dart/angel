@@ -9,6 +9,7 @@ import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
 import 'server.dart' show Angel;
 import 'controller.dart';
+import 'request_context.dart';
 
 final RegExp _contentType =
     new RegExp(r'([^/\n]+)\/\s*([^;\n]+)\s*(;\s*charset=([^$;\n]+))?');
@@ -19,11 +20,14 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef String ResponseSerializer(data);
 
 /// A convenience wrapper around an outgoing HTTP request.
-class ResponseContext implements StringSink {
-  final _LockableBytesBuilder _buffer = new _LockableBytesBuilder();
-  final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
+class ResponseContext implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
-  bool _isOpen = true, _isClosed = false;
+  final BytesBuilder _buffer = new _LockableBytesBuilder();
+  final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
+  final RequestContext _correspondingRequest;
+
+  Completer _done;
+  bool _isOpen = true, _isClosed = false, _useStream = false;
   int _statusCode = 200;
 
   /// The [Angel] instance that is sending a response.
@@ -34,6 +38,17 @@ class ResponseContext implements StringSink {
 
   /// Any and all cookies to be sent to the user.
   final List<Cookie> cookies = [];
+
+  /// A set of [Converter] objects that can be used to encode response data.
+  ///
+  /// At most one encoder will ever be used to convert data.
+  final Map<String, Converter<List<int>, List<int>>> encoders = {};
+
+  /// Points to the [RequestContext] corresponding to this response.
+  RequestContext get correspondingRequest => _correspondingRequest;
+
+  @override
+  Future get done => (_done ?? new Completer()).future;
 
   /// Headers that will be sent to the user.
   Map<String, String> get headers {
@@ -74,8 +89,8 @@ class ResponseContext implements StringSink {
   /// A set of UTF-8 encoded bytes that will be written to the response.
   BytesBuilder get buffer => _buffer;
 
-  /// Sets the status code to be sent with this response.
-  @Deprecated('Please use `statusCode=` instead.')
+  /// Please use `statusCode=` instead.'
+  @deprecated
   void status(int code) {
     statusCode = code;
   }
@@ -110,7 +125,7 @@ class ResponseContext implements StringSink {
     headers[HttpHeaders.CONTENT_TYPE] = contentType.toString();
   }
 
-  ResponseContext(this.io, this.app);
+  ResponseContext(this.io, this.app, [this._correspondingRequest]);
 
   /// Set this to true if you will manually close the response.
   ///
@@ -127,15 +142,32 @@ class ResponseContext implements StringSink {
         'attachment; filename="${filename ?? file.path}"';
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     headers[HttpHeaders.CONTENT_LENGTH] = file.lengthSync().toString();
-    buffer.add(await file.readAsBytes());
-    end();
+
+    if (_useStream) {
+      await file.openRead().pipe(this);
+    } else {
+      buffer.add(await file.readAsBytes());
+      end();
+    }
   }
 
   /// Prevents more data from being written to the response, and locks it entire from further editing.
-  void close() {
-    _buffer._lock();
+  Future close() {
+    var f = new Future.value();
+
+    if (_useStream) {
+      _useStream = false;
+      _buffer?.clear();
+      f = io.close();
+    } else if (_buffer is _LockableBytesBuilder) {
+      (_buffer as _LockableBytesBuilder)._lock();
+    }
+
     _isOpen = false;
     _isClosed = true;
+
+    if (_done?.isCompleted == false) _done.complete();
+    return f;
   }
 
   /// Prevents further request handlers from running on the response, except for response finalizers.
@@ -271,7 +303,9 @@ class ResponseContext implements StringSink {
 
   /// Copies a file's contents into the response buffer.
   Future sendFile(File file,
-      {int chunkSize, int sleepMs: 0, bool resumable: true}) async {
+      {@deprecated int chunkSize,
+      @deprecated int sleepMs: 0,
+      @deprecated bool resumable: true}) async {
     if (_isClosed) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
@@ -297,29 +331,120 @@ class ResponseContext implements StringSink {
 
   /// Streams a file to this response.
   ///
+  // ignore: deprecated_member_use
   /// You can optionally transform the file stream with a [codec].
   Future streamFile(File file,
-      {int chunkSize,
-      int sleepMs: 0,
-      bool resumable: true,
-      Codec<List<int>, List<int>> codec}) async {
+      {@deprecated int chunkSize,
+      @deprecated int sleepMs: 0,
+      @deprecated bool resumable: true,
+
+      /// Use [encoders] instead of manually specifying a codec.
+      @deprecated Codec<List<int>, List<int>> codec}) async {
     if (_isClosed) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-    end();
-    willCloseItself = true;
 
-    Stream stream = codec != null
-        ? file.openRead().transform(codec.encoder)
-        : file.openRead();
-    await stream.pipe(io);
+    // ignore: deprecated_member_use
+    if (codec != null) {
+      end();
+      willCloseItself = true;
+
+      // ignore: deprecated_member_use
+      Stream stream = codec != null
+          // ignore: deprecated_member_use
+          ? file.openRead().transform(codec.encoder)
+          : file.openRead();
+      await stream.pipe(io);
+    } else {
+      await file.openRead().pipe(this);
+    }
+  }
+
+  @override
+  void add(List<int> data) {
+    if (_isClosed && !_useStream)
+      throw _closed();
+    else if (_useStream)
+      io.add(data);
+    else
+      buffer.add(data);
+  }
+
+  /// Adds a stream directly the underlying dart:[io] response.
+  ///
+  /// This will also set [willCloseItself] to `true`, thus canceling out response finalizers.
+  ///
+  /// If this instance has access to a [correspondingRequest], then it will attempt to transform
+  /// the content using at most one of the response [encoders].
+  @override
+  Future addStream(Stream<List<int>> stream) {
+    if (_isClosed && !_useStream) throw _closed();
+    bool firstStream = _useStream == false;
+    willCloseItself = _useStream = _isClosed = true;
+
+    Stream<List<int>> output = stream;
+
+    if (firstStream) {
+      // If this is the first stream added to this response,
+      // then add headers, status code, etc.
+      io
+        ..statusCode = statusCode
+        ..cookies.addAll(cookies);
+      headers.forEach(io.headers.set);
+    }
+
+    if (encoders.isNotEmpty && correspondingRequest != null) {
+      var allowedEncodings =
+          (correspondingRequest.headers[HttpHeaders.ACCEPT_ENCODING] ?? [])
+              .map((str) {
+        // Ignore quality specifications in accept-encoding
+        // ex. gzip;q=0.8
+        if (!str.contains(';')) return str;
+        return str.split(';')[0];
+      });
+
+      for (var encodingName in allowedEncodings) {
+        Converter<List<int>, List<int>> encoder;
+        String key = encodingName;
+
+        if (encoders.containsKey(encodingName))
+          encoder = encoders[encodingName];
+        else if (encodingName == '*') {
+          encoder = encoders[key = encoders.keys.first];
+        }
+
+        if (encoder != null) {
+          if (firstStream) {
+            io.headers.set(HttpHeaders.CONTENT_ENCODING, key);
+          }
+
+          output = encoders[key].bind(output);
+          break;
+        }
+      }
+    }
+
+    return io.addStream(output);
+  }
+
+  @override
+  void addError(Object error, [StackTrace stackTrace]) {
+    io.addError(error, stackTrace);
+    if (_done?.isCompleted == false) _done.completeError(error, stackTrace);
   }
 
   /// Writes data to the response.
-  void write(value, {Encoding encoding: UTF8}) {
-    if (_isClosed)
+  void write(value, {Encoding encoding}) {
+    encoding ??= UTF8;
+
+    if (_isClosed && !_useStream)
       throw _closed();
-    else {
+    else if (_useStream) {
+      if (value is List<int>)
+        io.add(value);
+      else
+        io.add(encoding.encode(value.toString()));
+    } else {
       if (value is List<int>)
         buffer.add(value);
       else
@@ -329,8 +454,10 @@ class ResponseContext implements StringSink {
 
   @override
   void writeCharCode(int charCode) {
-    if (_isClosed)
+    if (_isClosed && !_useStream)
       throw _closed();
+    else if (_useStream)
+      io.add([charCode]);
     else
       buffer.addByte(charCode);
   }
@@ -364,6 +491,7 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
   void _lock() {
     _closed = true;
   }
+
   @override
   void add(List<int> bytes) {
     if (_closed)

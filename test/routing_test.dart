@@ -24,10 +24,9 @@ main() {
   http.Client client;
 
   setUp(() async {
-    final debug = true;
-    app = new Angel(debug: debug);
-    nested = new Angel(debug: debug);
-    todos = new Angel(debug: debug);
+    app = new Angel();
+    nested = new Angel();
+    todos = new Angel();
 
     // Lazy-parse in production
     [app, nested, todos].forEach((Angel app) {

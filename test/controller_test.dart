@@ -44,7 +44,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(debug: true);
+    app = new Angel();
     app.registerMiddleware("foo", (req, res) async => res.write("Hello, "));
     app.registerMiddleware("bar", (req, res) async => res.write("world!"));
     app.get(

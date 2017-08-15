@@ -1,6 +1,7 @@
 library angel_framework.http.server;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart' hide Extensible;
@@ -14,6 +15,7 @@ import 'angel_base.dart';
 import 'angel_http_exception.dart';
 import 'controller.dart';
 import 'fatal_error.dart';
+
 //import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
@@ -26,30 +28,37 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
 /// Handles an [AngelHttpException].
-typedef Future AngelErrorHandler(
-    AngelHttpException err, RequestContext req, ResponseContext res);
+typedef Future AngelErrorHandler(AngelHttpException err, RequestContext req,
+    ResponseContext res);
 
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
-  SafeCtrl<HttpRequest> _afterProcessed = new SafeCtrl<HttpRequest>.broadcast();
-  SafeCtrl<HttpRequest> _beforeProcessed =
-      new SafeCtrl<HttpRequest>.broadcast();
-  SafeCtrl<AngelFatalError> _fatalErrorStream =
-      new SafeCtrl<AngelFatalError>.broadcast();
-  SafeCtrl<Controller> _onController = new SafeCtrl<Controller>.broadcast();
+  final SafeCtrl<HttpRequest> _afterProcessed =
+  new SafeCtrl<HttpRequest>.broadcast();
+  final SafeCtrl<HttpRequest> _beforeProcessed =
+  new SafeCtrl<HttpRequest>.broadcast();
+  final SafeCtrl<AngelFatalError> _fatalErrorStream =
+  new SafeCtrl<AngelFatalError>.broadcast();
+  final SafeCtrl<Controller> _onController =
+  new SafeCtrl<Controller>.broadcast();
 
   final List<Angel> _children = [];
+  final Map<String, List> _handlerCache = {};
+
   Router _flattened;
   bool _isProduction;
   Angel _parent;
-  final Map<String, List> _handlerCache = {};
   ServerGenerator _serverGenerator = HttpServer.bind;
+
+  /// A global Map of converters that can transform responses bodies.
+  final Map<String, Converter<List<int>, List<int>>> encoders = {};
 
   /// A global Map of manual injections. You usually will not want to touch this.
   final Map injections = {};
+
   final Map<dynamic, InjectionRequest> _preContained = {};
   ResponseSerializer _serializer;
 
@@ -204,17 +213,17 @@ class Angel extends AngelBase {
       await service.close();
     });
 
-    for (var plugin in justBeforeStop) await plugin(this);
+    for (var plugin in justBeforeStop)
+      await plugin(this);
 
     return server;
   }
 
   @override
-  void dumpTree(
-      {callback(String tree),
-      String header: 'Dumping route tree:',
-      String tab: '  ',
-      bool showMatchers: false}) {
+  void dumpTree({callback(String tree),
+    String header: 'Dumping route tree:',
+    String tab: '  ',
+    bool showMatchers: false}) {
     if (isProduction) {
       if (_flattened == null) _flattened = flatten(this);
 
@@ -223,8 +232,8 @@ class Angel extends AngelBase {
           header: header?.isNotEmpty == true
               ? header
               : (isProduction
-                  ? 'Dumping flattened route tree:'
-                  : 'Dumping route tree:'),
+              ? 'Dumping flattened route tree:'
+              : 'Dumping route tree:'),
           tab: tab ?? '  ',
           showMatchers: showMatchers == true);
     } else {
@@ -233,8 +242,8 @@ class Angel extends AngelBase {
           header: header?.isNotEmpty == true
               ? header
               : (isProduction
-                  ? 'Dumping flattened route tree:'
-                  : 'Dumping route tree:'),
+              ? 'Dumping flattened route tree:'
+              : 'Dumping route tree:'),
           tab: tab ?? '  ',
           showMatchers: showMatchers == true);
     }
@@ -245,13 +254,18 @@ class Angel extends AngelBase {
     injections[key] = value;
   }
 
+  /// Shortcuts for adding converters to transform the response buffer/stream of any request.
+  void injectEncoders(Map<String, Converter<List<int>, List<int>>> encoders) {
+    this.encoders.addAll(encoders);
+  }
+
   /// Shortcut for adding a middleware to inject a serialize on every request.
   void injectSerializer(ResponseSerializer serializer) {
     _serializer = serializer;
   }
 
-  Future getHandlerResult(
-      handler, RequestContext req, ResponseContext res) async {
+  Future getHandlerResult(handler, RequestContext req,
+      ResponseContext res) async {
     /*if (handler is RequestMiddleware) {
       var result = await handler(req, res);
 
@@ -289,8 +303,8 @@ class Angel extends AngelBase {
   }
 
   /// Runs some [handler]. Returns `true` if request execution should continue.
-  Future<bool> executeHandler(
-      handler, RequestContext req, ResponseContext res) async {
+  Future<bool> executeHandler(handler, RequestContext req,
+      ResponseContext res) async {
     var result = await getHandlerResult(handler, req, res);
 
     if (result is bool) {
@@ -311,9 +325,12 @@ class Angel extends AngelBase {
     });
   }
 
-  Future<ResponseContext> createResponseContext(HttpResponse response) =>
-      new Future<ResponseContext>.value(new ResponseContext(response, this)
-        ..serializer = (_serializer ?? god.serialize));
+  Future<ResponseContext> createResponseContext(HttpResponse response,
+      [RequestContext correspondingRequest]) =>
+      new Future<ResponseContext>.value(
+          new ResponseContext(response, this, correspondingRequest)
+            ..serializer = (_serializer ?? god.serialize)
+            ..encoders.addAll(encoders ?? {}));
 
   /// Attempts to find a middleware by the given name within this application.
   findMiddleware(key) {
@@ -363,7 +380,7 @@ class Angel extends AngelBase {
   Future handleRequest(HttpRequest request) async {
     try {
       var req = await createRequestContext(request);
-      var res = await createResponseContext(request.response);
+      var res = await createResponseContext(request.response, req);
       String requestedUrl;
 
       // Faster way to get path
@@ -388,11 +405,12 @@ class Angel extends AngelBase {
 
       var pipeline = _handlerCache.putIfAbsent(requestedUrl, () {
         Router r =
-            isProduction ? (_flattened ?? (_flattened = flatten(this))) : this;
+        isProduction ? (_flattened ?? (_flattened = flatten(this))) : this;
         var resolved =
-            r.resolveAll(requestedUrl, requestedUrl, method: req.method);
+        r.resolveAll(requestedUrl, requestedUrl, method: req.method);
 
-        for (var result in resolved) req.params.addAll(result.allParams);
+        for (var result in resolved)
+          req.params.addAll(result.allParams);
 
         if (resolved.isNotEmpty) {
           var route = resolved.first.route;
@@ -402,7 +420,8 @@ class Angel extends AngelBase {
         var m = new MiddlewarePipeline(resolved);
         req.inject(MiddlewarePipeline, m);
 
-        return new List.from(before)..addAll(m.handlers)..addAll(after);
+        return new List.from(before)
+          ..addAll(m.handlers)..addAll(after);
       });
 
       for (var handler in pipeline) {
@@ -445,7 +464,9 @@ class Angel extends AngelBase {
 
       void _walk(Router router) {
         if (router is Angel) {
-          router..before.forEach(_add)..after.forEach(_add);
+          router
+            ..before.forEach(_add)
+            ..after.forEach(_add);
         }
 
         router.requestMiddleware.forEach((k, v) => _add(v));
@@ -467,8 +488,8 @@ class Angel extends AngelBase {
   /// Run a function after injecting from service container.
   /// If this function has been reflected before, then
   /// the execution will be faster, as the injection requirements were stored beforehand.
-  Future runContained(
-      Function handler, RequestContext req, ResponseContext res) {
+  Future runContained(Function handler, RequestContext req,
+      ResponseContext res) {
     if (_preContained.containsKey(handler)) {
       return handleContained(handler, _preContained[handler])(req, res);
     }
@@ -477,23 +498,23 @@ class Angel extends AngelBase {
   }
 
   /// Runs with DI, and *always* reflects. Prefer [runContained].
-  Future runReflected(
-      Function handler, RequestContext req, ResponseContext res) async {
+  Future runReflected(Function handler, RequestContext req,
+      ResponseContext res) async {
     var h =
-        handleContained(handler, _preContained[handler] = preInject(handler));
+    handleContained(handler, _preContained[handler] = preInject(handler));
     return await h(req, res);
     // return await closureMirror.apply(args).reflectee;
   }
 
   /// Use [sendResponse] instead.
   @deprecated
-  Future sendRequest(
-          HttpRequest request, RequestContext req, ResponseContext res) =>
+  Future sendRequest(HttpRequest request, RequestContext req,
+      ResponseContext res) =>
       sendResponse(request, req, res);
 
   /// Sends a response.
-  Future sendResponse(
-      HttpRequest request, RequestContext req, ResponseContext res,
+  Future sendResponse(HttpRequest request, RequestContext req,
+      ResponseContext res,
       {bool ignoreFinalizers: false}) {
     _afterProcessed.add(request);
 
@@ -503,7 +524,7 @@ class Angel extends AngelBase {
       Future finalizers = ignoreFinalizers == true
           ? new Future.value()
           : responseFinalizers.fold<Future>(
-              new Future.value(), (out, f) => out.then((_) => f(req, res)));
+          new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
       if (res.isOpen) res.end();
 
@@ -515,10 +536,40 @@ class Angel extends AngelBase {
         ..chunkedTransferEncoding = res.chunked ?? true
         ..set(HttpHeaders.CONTENT_LENGTH, res.buffer.length);
 
+      List<int> outputBuffer = res.buffer.toBytes();
+
+      if (res.encoders.isNotEmpty) {
+        var allowedEncodings =
+        (req.headers[HttpHeaders.ACCEPT_ENCODING] ?? []).map((str) {
+          // Ignore quality specifications in accept-encoding
+          // ex. gzip;q=0.8
+          if (!str.contains(';')) return str;
+          return str.split(';')[0];
+        });
+
+        for (var encodingName in allowedEncodings) {
+          Converter<List<int>, List<int>> encoder;
+          String key = encodingName;
+
+          if (res.encoders.containsKey(encodingName))
+            encoder = res.encoders[encodingName];
+          else if (encodingName == '*') {
+            encoder = res.encoders[key = res.encoders.keys.first];
+          }
+
+          if (encoder != null) {
+            request.response.headers
+                .set(HttpHeaders.CONTENT_ENCODING, key);
+            outputBuffer = res.encoders[key].convert(outputBuffer);
+            break;
+          }
+        }
+      }
+
       request.response
         ..statusCode = res.statusCode
         ..cookies.addAll(res.cookies)
-        ..add(res.buffer.toBytes());
+        ..add(outputBuffer);
 
       return finalizers.then((_) => request.response.close());
     }
@@ -529,7 +580,9 @@ class Angel extends AngelBase {
     await configurer(this);
 
     if (configurer is Controller)
-      _onController.add(controllers[configurer.findExpose().path] = configurer);
+      _onController.add(controllers[configurer
+          .findExpose()
+          .path] = configurer);
   }
 
   /// Starts the server, wrapped in a [runZoned] call.
@@ -633,8 +686,9 @@ class Angel extends AngelBase {
 
   /// An instance mounted on a server started by the [serverGenerator].
   factory Angel.custom(ServerGenerator serverGenerator,
-          {@deprecated bool debug: false}) =>
-      new Angel().._serverGenerator = serverGenerator;
+      {@deprecated bool debug: false}) =>
+      new Angel()
+        .._serverGenerator = serverGenerator;
 
   factory Angel.fromSecurityContext(SecurityContext context,
       {@deprecated bool debug: false}) {
@@ -655,7 +709,7 @@ class Angel extends AngelBase {
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
       {bool debug: false, String password}) {
     var certificateChain =
-        Platform.script.resolve(certificateChainPath).toFilePath();
+    Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
     var serverContext = new SecurityContext();
     serverContext.useCertificateChain(certificateChain, password: password);

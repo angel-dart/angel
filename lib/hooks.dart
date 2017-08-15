@@ -220,11 +220,11 @@ HookedServiceEventListener disable([provider]) {
 ///
 /// Default key: `createdAt`
 HookedServiceEventListener addCreatedAt(
-    {assign(obj, String now), String key, bool serialize: true}) {
+    {assign(obj, now), String key, bool serialize: true}) {
   var name = key?.isNotEmpty == true ? key : 'createdAt';
 
   return (HookedServiceEvent e) async {
-    _assign(obj, String now) {
+    _assign(obj, now) {
       if (assign != null)
         return assign(obj, now);
       else if (obj is Map)
@@ -269,11 +269,11 @@ HookedServiceEventListener addUpatedAt({
 ///
 /// Default key: `updatedAt`
 HookedServiceEventListener addUpdatedAt(
-    {assign(obj, String now), String key, bool serialize: true}) {
+    {assign(obj, now), String key, bool serialize: true}) {
   var name = key?.isNotEmpty == true ? key : 'updatedAt';
 
   return (HookedServiceEvent e) async {
-    _assign(obj, String now) {
+    _assign(obj, now) {
       if (assign != null)
         return assign(obj, now);
       else if (obj is Map)
