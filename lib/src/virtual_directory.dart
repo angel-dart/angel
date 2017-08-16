@@ -284,8 +284,17 @@ class VirtualDirectory implements AngelPlugin {
           ? file.openRead().transform(GZIP.encoder)
           : file.openRead();
       await stream.pipe(res.io);
-    } else
-      await res.sendFile(file);
+    } else {
+      if (_acceptsGzip(req)) {
+        res.io.headers
+          ..set(HttpHeaders.CONTENT_TYPE,
+              lookupMimeType(file.path) ?? 'application/octet-stream')
+          ..set(HttpHeaders.CONTENT_ENCODING, 'gzip');
+        await file.openRead().transform(GZIP.encoder).forEach(res.buffer.add);
+        res.end();
+      } else
+        await res.sendFile(file);
+    }
     return false;
   }
 
@@ -313,7 +322,11 @@ class VirtualDirectory implements AngelPlugin {
           : file.content;
       await stream.pipe(res.io);
     } else {
-      await file.content.forEach(res.buffer.add);
+      if (_acceptsGzip(req)) {
+        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
+        await file.content.transform(GZIP.encoder).forEach(res.buffer.add);
+      } else
+        await file.content.forEach(res.buffer.add);
     }
 
     return false;
@@ -330,8 +343,8 @@ class VirtualDirectory implements AngelPlugin {
       String originalName = file.filename;
       for (var transformer in _transformers) {
         if (++iterations >= 100) {
-          print(
-              'VirtualDirectory has tried 100 times to compile ${file.filename}. Perhaps one of your transformers is not changing the output file\'s extension.');
+          print('VirtualDirectory has tried 100 times to compile ${file
+              .filename}. Perhaps one of your transformers is not changing the output file\'s extension.');
           throw new AngelHttpException(new StackOverflowError(),
               statusCode: 500);
         } else if (iterations < 100) iterations++;
@@ -363,8 +376,8 @@ class VirtualDirectory implements AngelPlugin {
           var compiled = await compileAsset(asset);
           if (compiled == null)
             p.finish(
-                message:
-                    '"${entity.absolute.path}" did not require compilation; skipping it.');
+                message: '"${entity.absolute
+                    .path}" did not require compilation; skipping it.');
           else {
             var outFile = new File(compiled.filename);
             if (!await outFile.exists()) await outFile.create(recursive: true);
@@ -385,5 +398,48 @@ class VirtualDirectory implements AngelPlugin {
     }
 
     print('Build of assets in "${source.absolute.path}" complete.');
+  }
+
+  /// Deletes any pre-built assets.
+  Future cleanFromDisk() async {
+    var l = new cli.Logger.standard();
+    print('Cleaning assets in "${source.absolute.path}"...');
+
+    await for (var entity in source.list(recursive: true)) {
+      if (entity is File) {
+        var p = l.progress('Checking "${entity.absolute.path}"');
+
+        try {
+          var asset = new FileInfo.fromFile(entity);
+          var compiled = await compileAsset(asset);
+          if (compiled == null)
+            p.finish(
+                message: '"${entity.absolute
+                    .path}" did not require compilation; skipping it.');
+          else {
+            var outFile = new File(compiled.filename);
+            if (await outFile.exists()) {
+              await outFile.delete();
+              p.finish(
+                  message: 'Deleted "${compiled
+                      .filename}", which was the output of "${entity.absolute
+                      .path}".',
+                  showTiming: true);
+            } else {
+              p.finish(
+                  message:
+                      'Output "${compiled.filename}" of "${entity.absolute.path}" does not exist.');
+            }
+          }
+        } on AngelHttpException {
+          // Ignore 500
+        } catch (e, st) {
+          p.finish(message: 'Failed to delete "${entity.absolute.path}".');
+          stderr..writeln(e)..writeln(st);
+        }
+      }
+    }
+
+    print('Purge of assets in "${source.absolute.path}" complete.');
   }
 }

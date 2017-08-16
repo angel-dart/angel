@@ -12,7 +12,7 @@ main() {
   Client client = new Client();
 
   setUp(() async {
-    app = new Angel(debug: true);
+    app = new Angel();
 
     await app.configure(new VirtualDirectory(
         debug: true,
@@ -23,6 +23,7 @@ main() {
     await app.configure(new VirtualDirectory(
         debug: true,
         source: testDir,
+        streamToIO: true,
         indexFileNames: ['index.php', 'index.txt']));
 
     app.after.add('Fallback');
@@ -71,5 +72,29 @@ main() {
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
     });
     expect(response.body, equals("index!"));
+  });
+
+  test('can gzip: just gzip', () async {
+    var response = await client
+        .get("$url/sample.txt", headers: {HttpHeaders.ACCEPT_ENCODING: 'gzip'});
+    expect(response.body, equals("Hello world"));
+    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
+    expect(response.headers[HttpHeaders.CONTENT_ENCODING], 'gzip');
+  });
+
+  test('can gzip: wildcard', () async {
+    var response = await client
+        .get("$url/sample.txt", headers: {HttpHeaders.ACCEPT_ENCODING: 'foo, *'});
+    expect(response.body, equals("Hello world"));
+    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
+    expect(response.headers[HttpHeaders.CONTENT_ENCODING], 'gzip');
+  });
+
+  test('can gzip: gzip and friends', () async {
+    var response = await client
+        .get("$url/sample.txt", headers: {HttpHeaders.ACCEPT_ENCODING: 'gzip, deflate, br'});
+    expect(response.body, equals("Hello world"));
+    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
+    expect(response.headers[HttpHeaders.CONTENT_ENCODING], 'gzip');
   });
 }

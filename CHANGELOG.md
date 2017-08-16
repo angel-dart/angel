@@ -1,3 +1,10 @@
+# 1.2.5
+* Fixed a bug where `onlyInProduction` was not properly adhered to.
+* Fixed another bug where `Accept-Encoding` was not properly adhered to.
+* Setting `maxAge` to `null` will now prevent a `CachingVirtualDirectory` from sending an `Expires` header.
+* Pre-built assets can now be mass-deleted with `VirtualDirectory.cleanFromDisk()`.
+Resolves [#22](https://github.com/angel-dart/static/issues/22).
+
 # 1.2.4+1
 Fixed a bug where `Accept-Encoding` was not properly adhered to.
 

@@ -62,6 +62,8 @@ class CachingVirtualDirectory extends VirtualDirectory {
   final bool useWeakEtags;
 
   /// The `max-age` for `Cache-Control`.
+  ///
+  /// Set this to `null` to leave no `Expires` header on responses.
   final int maxAge;
 
   CachingVirtualDirectory(
@@ -91,7 +93,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
   @override
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) {
-    if (onlyInProduction == true && req.app.isProduction == true) {
+    if (onlyInProduction == true && req.app.isProduction != true) {
       return super.serveFile(file, stat, req, res);
     }
 
@@ -154,7 +156,8 @@ class CachingVirtualDirectory extends VirtualDirectory {
             generateEtag(buf, weak: useWeakEtags != false, hash: hash);
         res.headers
           ..[HttpHeaders.ETAG] = etag
-          ..[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path) ?? 'application/octet-stream';
+          ..[HttpHeaders.CONTENT_TYPE] =
+              lookupMimeType(file.path) ?? 'application/octet-stream';
         setCachedHeaders(stat.modified, req, res);
 
         if (useWeakEtags == false) {
@@ -174,18 +177,21 @@ class CachingVirtualDirectory extends VirtualDirectory {
   void setCachedHeaders(
       DateTime modified, RequestContext req, ResponseContext res) {
     var privacy = accessLevelToString(accessLevel ?? CacheAccessLevel.PUBLIC);
-    var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
 
     res.headers
       ..[HttpHeaders.CACHE_CONTROL] = '$privacy, max-age=${maxAge ?? 0}'
-      ..[HttpHeaders.EXPIRES] = formatDateForHttp(expiry)
       ..[HttpHeaders.LAST_MODIFIED] = formatDateForHttp(modified);
+
+    if (maxAge != null) {
+      var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
+      res.headers[HttpHeaders.EXPIRES] = formatDateForHttp(expiry);
+    }
   }
 
   @override
   Future<bool> serveAsset(
       FileInfo fileInfo, RequestContext req, ResponseContext res) {
-    if (onlyInProduction == true && req.app.isProduction == true) {
+    if (onlyInProduction == true && req.app.isProduction != true) {
       return super.serveAsset(fileInfo, req, res);
     }
 
