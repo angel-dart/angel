@@ -73,6 +73,30 @@ main() async {
 The former will allow you to search in a directory other than `config`, and the latter lets you
 override `$ANGEL_ENV` by specifying a specific configuration name to look for (i.e. `production`).
 
+This package uses
+[`package:merge_map`](https://github.com/thosakwe/merge_map)
+internally, so existing configurations can be deeply merged.
+
+Example:
+
+```yaml
+# default.yaml
+foo:
+  bar: baz
+  quux: hello
+  
+# production.yaml
+foo:
+  quux: goodbye
+  yellow: submarine
+  
+# Propagates to:
+foo:
+  bar: baz
+  quux: goodbye
+  yellow: submarine
+```
+
 **In the Browser**
 
 You can easily load configuration values within your client-side app,

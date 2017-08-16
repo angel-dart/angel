@@ -3,6 +3,7 @@ library angel_configuration;
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
+import 'package:merge_map/merge_map.dart';
 import 'package:yaml/yaml.dart';
 
 final RegExp _equ = new RegExp(r'=$');
@@ -42,9 +43,20 @@ _loadYamlFile(Angel app, File yamlFile, Map<String, String> env) async {
           'WARNING: The configuration at "${yamlFile.absolute.path}" is not a Map. Refusing to load it.');
       return;
     }
+
+    Map<String, dynamic> out = {};
+
     for (String key in config.keys) {
-      app.properties[key] = _applyEnv(config[key], env ?? {});
+      out[key] = _applyEnv(config[key], env ?? {});
     }
+
+    app.properties.addAll(mergeMap(
+      [
+        app.properties,
+        out,
+      ],
+      acceptNull: true,
+    ));
   }
 }
 
@@ -71,12 +83,20 @@ _applyEnv(var v, Map<String, String> env) {
 }
 
 /// Dynamically loads application configuration from configuration files.
+///
+/// You can modify which [directoryPath] to search in, or explicitly
+/// load from a [overrideEnvironmentName].
+///
+/// You can also specify a custom [envPath] to load system configuration from.
 AngelConfigurer loadConfigurationFile(
-    {String directoryPath: "./config", String overrideEnvironmentName}) {
+    {String directoryPath: "./config",
+    String overrideEnvironmentName,
+    String envPath}) {
   return (Angel app) async {
     Directory sourceDirectory = new Directory(directoryPath);
     var env = dotenv.env;
-    var envFile = new File.fromUri(sourceDirectory.uri.resolve('.env'));
+    var envFile =
+        new File.fromUri(sourceDirectory.uri.resolve(envPath ?? '.env'));
 
     if (await envFile.exists()) {
       try {

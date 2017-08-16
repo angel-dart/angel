@@ -6,8 +6,7 @@ import 'transformer.dart' as transformer;
 main() async {
   // Note: Set ANGEL_ENV to 'development'
   var app = new Angel();
-  await app.configure(
-      loadConfigurationFile(directoryPath: './test/config'));
+  await app.configure(loadConfigurationFile(directoryPath: './test/config'));
 
   test('can load based on ANGEL_ENV', () async {
     expect(app.properties['hello'], equals('world'));
@@ -35,7 +34,11 @@ main() async {
     expect(app.properties['foo']['version'], equals('baz'));
   });
 
-
+  test('merges configuration', () async {
+    await app.configure(loadConfigurationFile(
+        directoryPath: './test/config', overrideEnvironmentName: 'override'));
+    expect(app.properties['merge'], {'map': true, 'hello': 'goodbye'});
+  });
 
   group("transformer", transformer.main);
 }
