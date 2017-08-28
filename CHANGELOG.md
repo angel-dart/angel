@@ -1,4 +1,4 @@
-# 1.0.9+1
+# 1.0.10
 * Closed [#162](https://github.com/angel-dart/framework/issues/162), fixing a caching bug
 that would cause multiple requests to the same URL to fail.
 * Resolved dependency injection of primitives (namely `String`), no longer triggering
