@@ -7,6 +7,8 @@ import 'exception_test.dart' as exception;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
 import 'precontained_test.dart' as precontained;
+import 'primitives_test.dart' as primitives;
+import 'repeat_request_test.dart' as repeat_request;
 import 'routing_test.dart' as routing;
 import 'serialize_test.dart' as serialize;
 import 'server_test.dart' as server;
@@ -28,6 +30,8 @@ main() {
   group('general', general.main);
   group('hooked', hooked.main);
   group('precontained', precontained.main);
+  group('primitives', primitives.main);
+  group('repeat request', repeat_request.main);
   group('routing', routing.main);
   group('serialize', serialize.main);
   group('server', server.main);

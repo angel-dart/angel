@@ -1,3 +1,9 @@
+# 1.0.9+1
+* Closed [#162](https://github.com/angel-dart/framework/issues/162), fixing a caching bug
+that would cause multiple requests to the same URL to fail.
+* Resolved dependency injection of primitives (namely `String`), no longer triggering
+errors about `String has no constructor`, etc.
+
 # 1.0.9
 * Closed [#161](https://github.com/angel-dart/framework/issues/161). `addCreated`/`addUpdatedAt` no longer
 crash when `serialize` is `false`.

@@ -10,6 +10,8 @@ import 'response_context.dart';
 import 'routable.dart';
 import 'server.dart' show Angel, preInject;
 
+const List<Type> _primitiveTypes = const [String, int, num, double, Null];
+
 /// Contains a list of the data required for a DI-enabled method to run.
 ///
 /// This improves performance by removing the necessity to reflect a method
@@ -186,11 +188,11 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
           requirement.last is Type) {
         String key = requirement.first;
         Type type = requirement.last;
-
         if (req.params.containsKey(key) ||
             req.injections.containsKey(key) ||
             req.properties.containsKey(key) ||
-            req.app.properties.containsKey(key)) {
+            req.app.properties.containsKey(key) ||
+            _primitiveTypes.contains(type)) {
           inject(key);
         } else
           inject(type);

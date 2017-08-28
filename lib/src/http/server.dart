@@ -10,6 +10,7 @@ export 'package:container/container.dart';
 import 'package:flatten/flatten.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:meta/meta.dart';
+import 'package:tuple/tuple.dart';
 import '../safe_stream_controller.dart';
 import 'angel_base.dart';
 import 'angel_http_exception.dart';
@@ -28,8 +29,8 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
 /// Handles an [AngelHttpException].
-typedef Future AngelErrorHandler(AngelHttpException err, RequestContext req,
-    ResponseContext res);
+typedef Future AngelErrorHandler(
+    AngelHttpException err, RequestContext req, ResponseContext res);
 
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
@@ -37,16 +38,16 @@ typedef Future AngelConfigurer(Angel app);
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
   final SafeCtrl<HttpRequest> _afterProcessed =
-  new SafeCtrl<HttpRequest>.broadcast();
+      new SafeCtrl<HttpRequest>.broadcast();
   final SafeCtrl<HttpRequest> _beforeProcessed =
-  new SafeCtrl<HttpRequest>.broadcast();
+      new SafeCtrl<HttpRequest>.broadcast();
   final SafeCtrl<AngelFatalError> _fatalErrorStream =
-  new SafeCtrl<AngelFatalError>.broadcast();
+      new SafeCtrl<AngelFatalError>.broadcast();
   final SafeCtrl<Controller> _onController =
-  new SafeCtrl<Controller>.broadcast();
+      new SafeCtrl<Controller>.broadcast();
 
   final List<Angel> _children = [];
-  final Map<String, List> _handlerCache = {};
+  final Map<String, Tuple3<MiddlewarePipeline, Map, Match>> _handlerCache = {};
 
   Router _flattened;
   bool _isProduction;
@@ -213,17 +214,17 @@ class Angel extends AngelBase {
       await service.close();
     });
 
-    for (var plugin in justBeforeStop)
-      await plugin(this);
+    for (var plugin in justBeforeStop) await plugin(this);
 
     return server;
   }
 
   @override
-  void dumpTree({callback(String tree),
-    String header: 'Dumping route tree:',
-    String tab: '  ',
-    bool showMatchers: false}) {
+  void dumpTree(
+      {callback(String tree),
+      String header: 'Dumping route tree:',
+      String tab: '  ',
+      bool showMatchers: false}) {
     if (isProduction) {
       if (_flattened == null) _flattened = flatten(this);
 
@@ -232,8 +233,8 @@ class Angel extends AngelBase {
           header: header?.isNotEmpty == true
               ? header
               : (isProduction
-              ? 'Dumping flattened route tree:'
-              : 'Dumping route tree:'),
+                  ? 'Dumping flattened route tree:'
+                  : 'Dumping route tree:'),
           tab: tab ?? '  ',
           showMatchers: showMatchers == true);
     } else {
@@ -242,8 +243,8 @@ class Angel extends AngelBase {
           header: header?.isNotEmpty == true
               ? header
               : (isProduction
-              ? 'Dumping flattened route tree:'
-              : 'Dumping route tree:'),
+                  ? 'Dumping flattened route tree:'
+                  : 'Dumping route tree:'),
           tab: tab ?? '  ',
           showMatchers: showMatchers == true);
     }
@@ -264,8 +265,8 @@ class Angel extends AngelBase {
     _serializer = serializer;
   }
 
-  Future getHandlerResult(handler, RequestContext req,
-      ResponseContext res) async {
+  Future getHandlerResult(
+      handler, RequestContext req, ResponseContext res) async {
     /*if (handler is RequestMiddleware) {
       var result = await handler(req, res);
 
@@ -303,8 +304,8 @@ class Angel extends AngelBase {
   }
 
   /// Runs some [handler]. Returns `true` if request execution should continue.
-  Future<bool> executeHandler(handler, RequestContext req,
-      ResponseContext res) async {
+  Future<bool> executeHandler(
+      handler, RequestContext req, ResponseContext res) async {
     var result = await getHandlerResult(handler, req, res);
 
     if (result is bool) {
@@ -326,7 +327,7 @@ class Angel extends AngelBase {
   }
 
   Future<ResponseContext> createResponseContext(HttpResponse response,
-      [RequestContext correspondingRequest]) =>
+          [RequestContext correspondingRequest]) =>
       new Future<ResponseContext>.value(
           new ResponseContext(response, this, correspondingRequest)
             ..serializer = (_serializer ?? god.serialize)
@@ -403,26 +404,24 @@ class Angel extends AngelBase {
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      var pipeline = _handlerCache.putIfAbsent(requestedUrl, () {
-        Router r =
-        isProduction ? (_flattened ?? (_flattened = flatten(this))) : this;
+      var tuple = _handlerCache.putIfAbsent(requestedUrl, () {
+        Router r = isProduction ? (_flattened ??= flatten(this)) : this;
         var resolved =
-        r.resolveAll(requestedUrl, requestedUrl, method: req.method);
-
-        for (var result in resolved)
-          req.params.addAll(result.allParams);
-
-        if (resolved.isNotEmpty) {
-          var route = resolved.first.route;
-          req.inject(Match, route.match(requestedUrl));
-        }
-
-        var m = new MiddlewarePipeline(resolved);
-        req.inject(MiddlewarePipeline, m);
-
-        return new List.from(before)
-          ..addAll(m.handlers)..addAll(after);
+            r.resolveAll(requestedUrl, requestedUrl, method: req.method);
+        return new Tuple3(
+          new MiddlewarePipeline(resolved),
+          resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
+          resolved.isEmpty ? null : resolved.first.route.match(requestedUrl),
+        );
       });
+
+      req.inject(MiddlewarePipeline, tuple.item1);
+      req.params.addAll(tuple.item2);
+      req.inject(Match, tuple.item3);
+
+      var pipeline = new List.from(before)
+        ..addAll(tuple.item1.handlers)
+        ..addAll(after);
 
       for (var handler in pipeline) {
         try {
@@ -464,9 +463,7 @@ class Angel extends AngelBase {
 
       void _walk(Router router) {
         if (router is Angel) {
-          router
-            ..before.forEach(_add)
-            ..after.forEach(_add);
+          router..before.forEach(_add)..after.forEach(_add);
         }
 
         router.requestMiddleware.forEach((k, v) => _add(v));
@@ -488,8 +485,8 @@ class Angel extends AngelBase {
   /// Run a function after injecting from service container.
   /// If this function has been reflected before, then
   /// the execution will be faster, as the injection requirements were stored beforehand.
-  Future runContained(Function handler, RequestContext req,
-      ResponseContext res) {
+  Future runContained(
+      Function handler, RequestContext req, ResponseContext res) {
     if (_preContained.containsKey(handler)) {
       return handleContained(handler, _preContained[handler])(req, res);
     }
@@ -498,23 +495,23 @@ class Angel extends AngelBase {
   }
 
   /// Runs with DI, and *always* reflects. Prefer [runContained].
-  Future runReflected(Function handler, RequestContext req,
-      ResponseContext res) async {
+  Future runReflected(
+      Function handler, RequestContext req, ResponseContext res) async {
     var h =
-    handleContained(handler, _preContained[handler] = preInject(handler));
+        handleContained(handler, _preContained[handler] = preInject(handler));
     return await h(req, res);
     // return await closureMirror.apply(args).reflectee;
   }
 
   /// Use [sendResponse] instead.
   @deprecated
-  Future sendRequest(HttpRequest request, RequestContext req,
-      ResponseContext res) =>
+  Future sendRequest(
+          HttpRequest request, RequestContext req, ResponseContext res) =>
       sendResponse(request, req, res);
 
   /// Sends a response.
-  Future sendResponse(HttpRequest request, RequestContext req,
-      ResponseContext res,
+  Future sendResponse(
+      HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
     _afterProcessed.add(request);
 
@@ -524,7 +521,7 @@ class Angel extends AngelBase {
       Future finalizers = ignoreFinalizers == true
           ? new Future.value()
           : responseFinalizers.fold<Future>(
-          new Future.value(), (out, f) => out.then((_) => f(req, res)));
+              new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
       if (res.isOpen) res.end();
 
@@ -540,7 +537,7 @@ class Angel extends AngelBase {
 
       if (res.encoders.isNotEmpty) {
         var allowedEncodings =
-        (req.headers[HttpHeaders.ACCEPT_ENCODING] ?? []).map((str) {
+            (req.headers[HttpHeaders.ACCEPT_ENCODING] ?? []).map((str) {
           // Ignore quality specifications in accept-encoding
           // ex. gzip;q=0.8
           if (!str.contains(';')) return str;
@@ -558,8 +555,7 @@ class Angel extends AngelBase {
           }
 
           if (encoder != null) {
-            request.response.headers
-                .set(HttpHeaders.CONTENT_ENCODING, key);
+            request.response.headers.set(HttpHeaders.CONTENT_ENCODING, key);
             outputBuffer = res.encoders[key].convert(outputBuffer);
             break;
           }
@@ -580,9 +576,7 @@ class Angel extends AngelBase {
     await configurer(this);
 
     if (configurer is Controller)
-      _onController.add(controllers[configurer
-          .findExpose()
-          .path] = configurer);
+      _onController.add(controllers[configurer.findExpose().path] = configurer);
   }
 
   /// Starts the server, wrapped in a [runZoned] call.
@@ -686,9 +680,8 @@ class Angel extends AngelBase {
 
   /// An instance mounted on a server started by the [serverGenerator].
   factory Angel.custom(ServerGenerator serverGenerator,
-      {@deprecated bool debug: false}) =>
-      new Angel()
-        .._serverGenerator = serverGenerator;
+          {@deprecated bool debug: false}) =>
+      new Angel().._serverGenerator = serverGenerator;
 
   factory Angel.fromSecurityContext(SecurityContext context,
       {@deprecated bool debug: false}) {
@@ -709,7 +702,7 @@ class Angel extends AngelBase {
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
       {bool debug: false, String password}) {
     var certificateChain =
-    Platform.script.resolve(certificateChainPath).toFilePath();
+        Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
     var serverContext = new SecurityContext();
     serverContext.useCertificateChain(certificateChain, password: password);
