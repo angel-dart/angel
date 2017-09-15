@@ -21,7 +21,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       Element element, ConstantReader reader, BuildStep buildStep) async {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
-    var ctx = buildContext(
+    var ctx = await buildContext(
         element,
         serializable,
         buildStep,

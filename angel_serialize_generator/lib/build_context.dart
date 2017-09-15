@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/dart/element/element.dart';
@@ -13,21 +14,21 @@ const TypeChecker aliasTypeChecker = const TypeChecker.fromRuntime(Alias);
 const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
 
 const TypeChecker serializableTypeChecker =
-const TypeChecker.fromRuntime(Serializable);
+    const TypeChecker.fromRuntime(Serializable);
 
 // TODO: Should add id, createdAt, updatedAt...
-BuildContext buildContext(
+Future<BuildContext> buildContext(
     ClassElement clazz,
     Serializable annotation,
     BuildStep buildStep,
     Resolver resolver,
     bool autoSnakeCaseNames,
     bool autoIdAndDateFields,
-    {bool heedExclude: true}) {
+    {bool heedExclude: true}) async {
   var ctx = new BuildContext(annotation,
       originalClassName: clazz.name,
       sourceFilename: p.basename(buildStep.inputId.path));
-  var lib = resolver.getLibrary(buildStep.inputId);
+  var lib = await resolver.libraryFor(buildStep.inputId);
   List<String> fieldNames = [];
 
   for (var field in clazz.fields) {
@@ -62,10 +63,11 @@ BuildContext buildContext(
     }
 
     DartType dateTime;
-    ['createdAt', 'updatedAt'].forEach((key) {
+    for (var key in ['createdAt', 'updatedAt']) {
       if (!fieldNames.contains(key)) {
         if (dateTime == null) {
-          var coreLib = resolver.libraries.singleWhere((lib) => lib.isDartCore);
+          var coreLib =
+              await resolver.libraries.singleWhere((lib) => lib.isDartCore);
           var dt = coreLib.getType('DateTime');
           dateTime = dt.type;
         }
@@ -75,7 +77,8 @@ BuildContext buildContext(
         ctx.fields.add(field);
         ctx.shimmed[key] = true;
       }
-    });
+    }
+    ;
   }
 
   return ctx;

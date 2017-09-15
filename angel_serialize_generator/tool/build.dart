@@ -1,4 +1,4 @@
 import 'package:build_runner/build_runner.dart';
-import 'phases.dart';
+import 'actions.dart';
 
-main() => build(PHASES, deleteFilesByDefault: true);
+main() => build(actions, deleteFilesByDefault: true);
