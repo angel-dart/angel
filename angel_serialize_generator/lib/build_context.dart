@@ -5,9 +5,15 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
-import 'package:source_gen/src/annotation.dart';
-import 'src/find_annotation.dart';
+import 'package:source_gen/source_gen.dart';
 import 'context.dart';
+
+const TypeChecker aliasTypeChecker = const TypeChecker.fromRuntime(Alias);
+
+const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
+
+const TypeChecker serializableTypeChecker =
+const TypeChecker.fromRuntime(Serializable);
 
 // TODO: Should add id, createdAt, updatedAt...
 BuildContext buildContext(
@@ -28,12 +34,15 @@ BuildContext buildContext(
     if (field.getter != null && field.setter != null) {
       fieldNames.add(field.name);
       // Skip if annotated with @exclude
-      var excludeAnnotation = field.metadata.firstWhere(
-          (ann) => matchAnnotation(Exclude, ann),
-          orElse: () => null);
+      var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(field);
       if (excludeAnnotation != null) continue;
       // Check for alias
-      var alias = findAnnotation<Alias>(field, Alias);
+      Alias alias;
+      var aliasAnn = aliasTypeChecker.firstAnnotationOf(field);
+
+      if (aliasAnn != null) {
+        alias = new Alias(aliasAnn.getField('name').toStringValue());
+      }
 
       if (alias?.name?.isNotEmpty == true) {
         ctx.aliases[field.name] = alias.name;

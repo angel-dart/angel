@@ -5,25 +5,25 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:code_builder/dart/core.dart';
-import 'package:source_gen/src/annotation.dart';
-import 'package:source_gen/source_gen.dart';
+import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
 import 'context.dart';
 
 class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   final bool autoSnakeCaseNames;
   final bool autoIdAndDateFields;
+
   const JsonModelGenerator(
       {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
 
   @override
   Future<String> generateForAnnotatedElement(
-      Element element, Serializable annotation, BuildStep buildStep) async {
+      Element element, ConstantReader reader, BuildStep buildStep) async {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
     var ctx = buildContext(
         element,
-        annotation,
+        serializable,
         buildStep,
         await buildStep.resolver,
         autoSnakeCaseNames != false,
@@ -71,6 +71,12 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       if (field.type.name == 'DateTime') {
         value = reference(field.name).equals(literal(null)).ternary(
             literal(null), reference(field.name).invoke('toIso8601String', []));
+      }
+
+      // Serialize models
+      else if (serializableTypeChecker.firstAnnotationOf(field.type.element) !=
+          null) {
+        value = reference(field.name).invoke('toJson', []);
       }
 
       // Anything else
@@ -126,8 +132,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             fromJsonClassName = genericClass.displayName;
           } else {
             // If it has a serializable annotation, act accordingly.
-            if (genericClass.metadata
-                .any((ann) => matchAnnotation(Serializable, ann))) {
+            if (serializableTypeChecker.firstAnnotationOf(genericClass) != null) {
               fromJsonClassName = genericClass.displayName.substring(1);
               hasFromJson = true;
             }
@@ -166,8 +171,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
           fromJsonClassName = type.displayName;
         } else {
           // If it has a serializable annotation, act accordingly.
-          if (genericClass.metadata
-              .any((ann) => matchAnnotation(Serializable, ann))) {
+          if (serializableTypeChecker.firstAnnotationOf(genericClass) != null) {
             fromJsonClassName = type.displayName.substring(1);
             hasFromJson = true;
           }
@@ -202,8 +206,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             fromJsonClassName = targetType.displayName;
           } else {
             // If it has a serializable annotation, act accordingly.
-            if (genericClass.metadata
-                .any((ann) => matchAnnotation(Serializable, ann))) {
+            if (serializableTypeChecker.firstAnnotationOf(genericClass) != null) {
               fromJsonClassName = targetType.displayName.substring(1);
               hasFromJson = true;
             }
@@ -240,6 +243,17 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
                 .ternary(mapKey, literal(null));
           }
         }
+      }
+
+      // Deerialize models
+      if (!done &&
+          serializableTypeChecker.firstAnnotationOf(field.type.element) !=
+              null) {
+        var typeName = field.type.name;
+        typeName.startsWith('_') ? typeName = typeName.substring(1) : null;
+        var typeBuilder = new TypeBuilder(typeName);
+        value = mapKey.isInstanceOf(typeBuilder).ternary(
+            mapKey, typeBuilder.newInstance([mapKey], constructor: 'fromJson'));
       }
 
       return out..[field.name] = value;

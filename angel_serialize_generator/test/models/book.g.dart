@@ -4,7 +4,6 @@ part of angel_serialize.test.models.book;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: abstract class _Book
 // **************************************************************************
 
 class Book extends _Book {
@@ -74,11 +73,6 @@ class Book extends _Book {
   }
 }
 
-// **************************************************************************
-// Generator: JsonModelGenerator
-// Target: abstract class _Author
-// **************************************************************************
-
 class Author extends _Author {
   @override
   String id;
@@ -121,11 +115,9 @@ class Author extends _Author {
                     x == null ? null : (x is Book ? x : new Book.fromJson(x)))
                 .toList()
             : null,
-        newestBook: data['newest_book'] == null
-            ? null
-            : (data['newest_book'] is Book
-                ? data['newest_book']
-                : new Book.fromJson(data['newest_book'])),
+        newestBook: data['newest_book'] is Book
+            ? data['newest_book']
+            : new Book.fromJson(data['newest_book']),
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
             : (data['created_at'] is String
@@ -143,7 +135,7 @@ class Author extends _Author {
         'name': name,
         'age': age,
         'books': books,
-        'newest_book': newestBook,
+        'newest_book': newestBook.toJson(),
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
@@ -154,11 +146,6 @@ class Author extends _Author {
     return new Author.fromJson(toJson());
   }
 }
-
-// **************************************************************************
-// Generator: JsonModelGenerator
-// Target: abstract class _Library
-// **************************************************************************
 
 class Library extends _Library {
   @override
