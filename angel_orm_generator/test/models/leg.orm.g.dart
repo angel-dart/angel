@@ -1,8 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
-// Generator: PostgresORMGenerator
-// Target: class _Leg
+// Generator: PostgresOrmGenerator
 // **************************************************************************
 
 import 'dart:async';

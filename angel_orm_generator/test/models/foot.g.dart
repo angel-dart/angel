@@ -4,7 +4,6 @@ part of angel_orm_generator.test.models.foot;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Foot
 // **************************************************************************
 
 class Foot extends _Foot {

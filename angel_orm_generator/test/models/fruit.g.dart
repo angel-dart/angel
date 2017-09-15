@@ -1,26 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of angel_orm_generator.test.models.user;
+part of angel_orm_generator.test.models.fruit;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
 // **************************************************************************
 
-class User extends _User {
+class Fruit extends _Fruit {
   @override
   String id;
 
   @override
-  String username;
+  int treeId;
 
   @override
-  String password;
-
-  @override
-  String email;
-
-  @override
-  List<Role> roles;
+  String commonName;
 
   @override
   DateTime createdAt;
@@ -28,27 +22,14 @@ class User extends _User {
   @override
   DateTime updatedAt;
 
-  User(
-      {this.id,
-      this.username,
-      this.password,
-      this.email,
-      this.roles,
-      this.createdAt,
-      this.updatedAt});
+  Fruit(
+      {this.id, this.treeId, this.commonName, this.createdAt, this.updatedAt});
 
-  factory User.fromJson(Map data) {
-    return new User(
+  factory Fruit.fromJson(Map data) {
+    return new Fruit(
         id: data['id'],
-        username: data['username'],
-        password: data['password'],
-        email: data['email'],
-        roles: data['roles'] is List
-            ? data['roles']
-                .map((x) =>
-                    x == null ? null : (x is Role ? x : new Role.fromJson(x)))
-                .toList()
-            : null,
+        treeId: data['tree_id'],
+        commonName: data['common_name'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
             : (data['created_at'] is String
@@ -63,17 +44,15 @@ class User extends _User {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'username': username,
-        'password': password,
-        'email': email,
-        'roles': roles,
+        'tree_id': treeId,
+        'common_name': commonName,
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
       };
 
-  static User parse(Map map) => new User.fromJson(map);
+  static Fruit parse(Map map) => new Fruit.fromJson(map);
 
-  User clone() {
-    return new User.fromJson(toJson());
+  Fruit clone() {
+    return new Fruit.fromJson(toJson());
   }
 }

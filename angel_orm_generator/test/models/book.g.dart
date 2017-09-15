@@ -4,7 +4,6 @@ part of angel_orm.generator.models.book;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Book
 // **************************************************************************
 
 class Book extends _Book {
@@ -12,7 +11,10 @@ class Book extends _Book {
   String id;
 
   @override
-  dynamic author;
+  Author author;
+
+  @override
+  int authorId;
 
   @override
   String name;
@@ -23,12 +25,23 @@ class Book extends _Book {
   @override
   DateTime updatedAt;
 
-  Book({this.id, this.author, this.name, this.createdAt, this.updatedAt});
+  Book(
+      {this.id,
+      this.author,
+      this.authorId,
+      this.name,
+      this.createdAt,
+      this.updatedAt});
 
   factory Book.fromJson(Map data) {
     return new Book(
         id: data['id'],
-        author: data['author'],
+        author: data['author'] == null
+            ? null
+            : (data['author'] is Author
+                ? data['author']
+                : new Author.fromJson(data['author'])),
+        authorId: data['author_id'],
         name: data['name'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']
@@ -45,6 +58,7 @@ class Book extends _Book {
   Map<String, dynamic> toJson() => {
         'id': id,
         'author': author,
+        'author_id': authorId,
         'name': name,
         'created_at': createdAt == null ? null : createdAt.toIso8601String(),
         'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()

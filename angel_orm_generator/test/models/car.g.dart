@@ -4,7 +4,6 @@ part of angel_orm.generator.models.car;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Car
 // **************************************************************************
 
 class Car extends _Car {

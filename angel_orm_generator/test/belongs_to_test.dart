@@ -111,7 +111,7 @@ main() {
 
   test('insert sets relationship', () {
     expect(deathlyHallows.author, isNotNull);
-    expect((deathlyHallows.author as Author).name, rowling.name);
+    expect((deathlyHallows.author).name, rowling.name);
   });
 
   test('delete stream', () async {
@@ -123,7 +123,7 @@ main() {
     var book = books.first;
     expect(book.id, deathlyHallows.id);
     expect(book.author, isNotNull);
-    expect((book.author as Author).name, rowling.name);
+    expect((book.author).name, rowling.name);
   });
 
   test('update book', () async {

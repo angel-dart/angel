@@ -7,10 +7,11 @@
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
-import 'role.dart';
+import 'tree.dart';
+import 'fruit.orm.g.dart';
 
-class RoleQuery {
-  final Map<RoleQuery, bool> _unions = {};
+class TreeQuery {
+  final Map<TreeQuery, bool> _unions = {};
 
   String _sortKey;
 
@@ -20,29 +21,29 @@ class RoleQuery {
 
   int offset;
 
-  final List<RoleQueryWhere> _or = [];
+  final List<TreeQueryWhere> _or = [];
 
-  final RoleQueryWhere where = new RoleQueryWhere();
+  final TreeQueryWhere where = new TreeQueryWhere();
 
-  void union(RoleQuery query) {
+  void union(TreeQuery query) {
     _unions[query] = false;
   }
 
-  void unionAll(RoleQuery query) {
+  void unionAll(TreeQuery query) {
     _unions[query] = true;
   }
 
   void sortDescending(String key) {
     _sortMode = 'Descending';
-    _sortKey = ('' + key);
+    _sortKey = ('trees.' + key);
   }
 
   void sortAscending(String key) {
     _sortMode = 'Ascending';
-    _sortKey = ('' + key);
+    _sortKey = ('trees.' + key);
   }
 
-  void or(RoleQueryWhere selector) {
+  void or(TreeQueryWhere selector) {
     _or.add(selector);
   }
 
@@ -50,7 +51,7 @@ class RoleQuery {
     var buf = new StringBuffer();
     buf.write(prefix != null
         ? prefix
-        : 'SELECT id, name, created_at, updated_at FROM "roles"');
+        : 'SELECT trees.id, trees.rings, trees.created_at, trees.updated_at FROM "trees"');
     if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
@@ -89,21 +90,29 @@ class RoleQuery {
     return buf.toString();
   }
 
-  static Role parseRow(List row) {
-    var result = new Role.fromJson({
+  static Tree parseRow(List row) {
+    var result = new Tree.fromJson({
       'id': row[0].toString(),
-      'name': row[1],
+      'rings': row[1],
       'created_at': row[2],
       'updated_at': row[3]
     });
+    if (row.length > 4) {
+      result.fruits =
+          FruitQuery.parseRow([row[4], row[5], row[6], row[7], row[8]]);
+    }
     return result;
   }
 
-  Stream<Role> get(PostgreSQLConnection connection) {
-    StreamController<Role> ctrl = new StreamController<Role>();
+  Stream<Tree> get(PostgreSQLConnection connection) {
+    StreamController<Tree> ctrl = new StreamController<Tree>();
     connection.query(toSql()).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
+        var fruitQuery = new FruitQuery();
+        fruitQuery.where.treeId.equals(row[0]);
+        parsed.fruits =
+            await fruitQuery.get(connection).toList().catchError((_) => []);
         return parsed;
       });
       var output = await Future.wait(futures);
@@ -113,31 +122,36 @@ class RoleQuery {
     return ctrl.stream;
   }
 
-  static Future<Role> getOne(int id, PostgreSQLConnection connection) {
-    var query = new RoleQuery();
+  static Future<Tree> getOne(int id, PostgreSQLConnection connection) {
+    var query = new TreeQuery();
     query.where.id.equals(id);
     return query.get(connection).first.catchError((_) => null);
   }
 
-  Stream<Role> update(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) {
+  Stream<Tree> update(PostgreSQLConnection connection,
+      {int rings, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "roles" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "trees" SET ("rings", "created_at", "updated_at") = (@rings, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();
-    var ctrl = new StreamController<Role>();
+    var ctrl = new StreamController<Tree>();
     connection.query(
-        buf.toString() + ' RETURNING "id", "name", "created_at", "updated_at";',
+        buf.toString() +
+            ' RETURNING "id", "rings", "created_at", "updated_at";',
         substitutionValues: {
-          'name': name,
+          'rings': rings,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         }).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
+        var fruitQuery = new FruitQuery();
+        fruitQuery.where.treeId.equals(row[0]);
+        parsed.fruits =
+            await fruitQuery.get(connection).toList().catchError((_) => []);
         return parsed;
       });
       var output = await Future.wait(futures);
@@ -147,14 +161,18 @@ class RoleQuery {
     return ctrl.stream;
   }
 
-  Stream<Role> delete(PostgreSQLConnection connection) {
-    StreamController<Role> ctrl = new StreamController<Role>();
+  Stream<Tree> delete(PostgreSQLConnection connection) {
+    StreamController<Tree> ctrl = new StreamController<Tree>();
     connection
-        .query(toSql('DELETE FROM "roles"') +
-            ' RETURNING "id", "name", "created_at", "updated_at";')
+        .query(toSql('DELETE FROM "trees"') +
+            ' RETURNING "id", "rings", "created_at", "updated_at";')
         .then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
+        var fruitQuery = new FruitQuery();
+        fruitQuery.where.treeId.equals(row[0]);
+        parsed.fruits =
+            await fruitQuery.get(connection).toList().catchError((_) => []);
         return parsed;
       });
       var output = await Future.wait(futures);
@@ -164,65 +182,72 @@ class RoleQuery {
     return ctrl.stream;
   }
 
-  static Future<Role> deleteOne(int id, PostgreSQLConnection connection) {
-    var query = new RoleQuery();
+  static Future<Tree> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new TreeQuery();
     query.where.id.equals(id);
     return query.delete(connection).first;
   }
 
-  static Future<Role> insert(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) async {
+  static Future<Tree> insert(PostgreSQLConnection connection,
+      {int rings, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "roles" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
+        'INSERT INTO "trees" ("rings", "created_at", "updated_at") VALUES (@rings, @createdAt, @updatedAt) RETURNING "id", "rings", "created_at", "updated_at";',
         substitutionValues: {
-          'name': name,
+          'rings': rings,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
     var output = parseRow(result[0]);
+    var fruitQuery = new FruitQuery();
+    fruitQuery.where.treeId.equals(result[0][0]);
+    output.fruits =
+        await fruitQuery.get(connection).toList().catchError((_) => []);
     return output;
   }
 
-  static Future<Role> insertRole(PostgreSQLConnection connection, Role role) {
-    return RoleQuery.insert(connection,
-        name: role.name, createdAt: role.createdAt, updatedAt: role.updatedAt);
+  static Future<Tree> insertTree(PostgreSQLConnection connection, Tree tree) {
+    return TreeQuery.insert(connection,
+        rings: tree.rings,
+        createdAt: tree.createdAt,
+        updatedAt: tree.updatedAt);
   }
 
-  static Future<Role> updateRole(PostgreSQLConnection connection, Role role) {
-    var query = new RoleQuery();
-    query.where.id.equals(int.parse(role.id));
+  static Future<Tree> updateTree(PostgreSQLConnection connection, Tree tree) {
+    var query = new TreeQuery();
+    query.where.id.equals(int.parse(tree.id));
     return query
         .update(connection,
-            name: role.name,
-            createdAt: role.createdAt,
-            updatedAt: role.updatedAt)
+            rings: tree.rings,
+            createdAt: tree.createdAt,
+            updatedAt: tree.updatedAt)
         .first;
   }
 
-  static Stream<Role> getAll(PostgreSQLConnection connection) =>
-      new RoleQuery().get(connection);
+  static Stream<Tree> getAll(PostgreSQLConnection connection) =>
+      new TreeQuery().get(connection);
 }
 
-class RoleQueryWhere {
+class TreeQueryWhere {
   final NumericSqlExpressionBuilder<int> id =
       new NumericSqlExpressionBuilder<int>();
 
-  final StringSqlExpressionBuilder name = new StringSqlExpressionBuilder();
+  final NumericSqlExpressionBuilder<int> rings =
+      new NumericSqlExpressionBuilder<int>();
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('roles.created_at');
+      new DateTimeSqlExpressionBuilder('trees.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('roles.updated_at');
+      new DateTimeSqlExpressionBuilder('trees.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('roles.id ' + id.compile());
+      expressions.add('trees.id ' + id.compile());
     }
-    if (name.hasValue) {
-      expressions.add('roles.name ' + name.compile());
+    if (rings.hasValue) {
+      expressions.add('trees.rings ' + rings.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());

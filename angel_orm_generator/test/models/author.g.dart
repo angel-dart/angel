@@ -4,7 +4,6 @@ part of angel_orm.generator.models.author;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Author
 // **************************************************************************
 
 class Author extends _Author {

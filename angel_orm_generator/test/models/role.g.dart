@@ -4,7 +4,6 @@ part of angel_orm_generator.test.models.role;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Role
 // **************************************************************************
 
 class Role extends _Role {

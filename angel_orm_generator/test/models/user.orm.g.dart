@@ -1,8 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
-// Generator: PostgresORMGenerator
-// Target: class _User
+// Generator: PostgresOrmGenerator
 // **************************************************************************
 
 import 'dart:async';
@@ -52,7 +51,7 @@ class UserQuery {
     var buf = new StringBuffer();
     buf.write(prefix != null
         ? prefix
-        : 'SELECT users.id, users.username, users.password, users.email, users.created_at, users.updated_at, roles.id, roles.name, roles.created_at, roles.updated_at FROM "users"');
+        : 'SELECT users.id, users.username, users.password, users.email, users.created_at, users.updated_at FROM "users"');
     if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {

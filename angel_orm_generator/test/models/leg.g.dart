@@ -4,7 +4,6 @@ part of angel_orm_generator.test.models.leg;
 
 // **************************************************************************
 // Generator: JsonModelGenerator
-// Target: class _Leg
 // **************************************************************************
 
 class Leg extends _Leg {
@@ -12,7 +11,7 @@ class Leg extends _Leg {
   String id;
 
   @override
-  dynamic foot;
+  Foot foot;
 
   @override
   String name;
@@ -28,7 +27,11 @@ class Leg extends _Leg {
   factory Leg.fromJson(Map data) {
     return new Leg(
         id: data['id'],
-        foot: data['foot'],
+        foot: data['foot'] == null
+            ? null
+            : (data['foot'] is Foot
+                ? data['foot']
+                : new Foot.fromJson(data['foot'])),
         name: data['name'],
         createdAt: data['created_at'] is DateTime
             ? data['created_at']

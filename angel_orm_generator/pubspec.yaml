@@ -1,5 +1,5 @@
 name: angel_orm_generator
-version: 1.0.0-alpha+3
+version: 1.0.0-alpha+4
 description: Code generators for Angel's ORM.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/orm
@@ -10,11 +10,11 @@ dependencies:
   angel_serialize_generator: ^1.0.0-alpha
   code_builder: ^1.0.0
   inflection: ^0.4.1
+  meta: ^1.0.0
   recase: ^1.0.0
-  source_gen: ^0.6.0
 dev_dependencies:
   angel_diagnostics: ^1.0.0
   angel_framework: ^1.0.0
   angel_test: ^1.0.0
-  build_runner: ^0.3.0
+  build_runner: ^0.5.0
   test: ^0.12.0

@@ -23,10 +23,10 @@ dev_dependencies:
 
 `package:angel_orm_generator` exports two classes that you can include
 in a `package:build` flow:
-* `PostgreORMGenerator` - Fueled by `package:source_gen`; include this within a `GeneratorBuilder`.
-* `SQLMigrationGenerator` - This is its own `Builder`; it generates a SQL schema, as well as a SQL script to drop a generated table.
+* `PostgresOrmGenerator` - Fueled by `package:source_gen`; include this within a `LibraryBuilder`.
+* `SqlMigrationBuilder` - This is its own `Builder`; it generates a SQL schema, as well as a SQL script to drop a generated table.
 
-You should pass an `InputSet` containing your project's models.
+You should pass an `List<String>` containing your project's models.
 
 # Models
 Your model, courtesy of `package:angel_serialize`:
