@@ -18,8 +18,8 @@ In your `pubspec.yaml`, you need to install the following dependencies:
 dependencies:
   angel_serialize: ^1.0.0-alpha
 dev_dependencies:
-  angel_serialize_builder: ^1.0.0-alpha
-  build_runner: ^0.3.0
+  angel_serialize_generator: ^1.0.0-alpha
+  build_runner: ^0.5.0
 ```
 
 You'll want to create a Dart script, usually named `tool/phases.dart` that invokes
@@ -28,11 +28,13 @@ the `JsonModelGenerator`.
 ```dart
 import 'package:build_runner/build_runner.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:angel_serialize_builder/angel_serialize_builder.dart';
+import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 
-final PhaseGroup PHASES = new PhaseGroup.singleAction(
-    new GeneratorBuilder([const JsonModelGenerator()]),
-    new InputSet('[YOUR_PACKAGE_NAME_HERE]', const ['lib/src/models/*.dart']));
+final List<BuildAction> actions = [
+  new BuildAction(new PartBuilder([const JsonModelGenerator()]),
+      '<package-name>',
+      inputs: const ['test/models/*.dart'])
+];
 ```
 
 And then, a `tool/build.dart` can build your serializers:
@@ -40,7 +42,7 @@ And then, a `tool/build.dart` can build your serializers:
 import 'package:build_runner/build_runner.dart';
 import 'phases.dart';
 
-main() => build(PHASES, deleteFilesByDefault: true);
+main() => build(actions, deleteFilesByDefault: true);
 ```
 
 If you want to watch for file changes and re-build when necessary, replace the `build` call
