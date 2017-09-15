@@ -10,6 +10,10 @@ Now you can combine the power and flexibility of Angel with a strongly-typed ORM
 * [Model Definitions](#models)
 * [MVC Example](#example)
 * [Relationships](#relations)
+* [Columns (`@Column(...)`)](#columns)
+    * [Column Types](#column-types)
+    * [Indices](#indices)
+    * [Default Values](#default-values)
 
 # Usage
 You'll need these dependencies in your `pubspec.yaml`:
@@ -114,11 +118,14 @@ class CarController extends Controller {
 ```
 
 # Relations
-**NOTE**: This is not yet implemented. Expect to see more documentation about this soon.
+`angel_orm` supports the following relationships:
 
 * `@HasOne()`
 * `@HasMany()`
-* `@BelongsTo()`
+* `@BelongsTo()` (one-to-one)
+
+The annotations can be abbreviated with the default options (ex. `@hasOne`), or supplied
+with custom parameters (ex. `@HasOne(foreignKey: 'foreign_id')`).
 
 ```dart
 @serializable
@@ -134,5 +141,57 @@ abstract class _Author extends Model {
   @Alias('writing_utensil')
   @hasOne
   Pen pen;
+}
+```
+
+The relationships will "just work" out-of-the-box, following any operation. For example,
+after fetching an `Author` from the database in the above example, the `books` field would
+be populated with a set of deserialized `Book` objects, also fetched from the database.
+
+Relationships use joins when possible, but in the case of `@HasMany()`, two queries are used:
+* One to fetch the object itself
+* One to fetch a list of related objects
+
+# Columns
+Use a `@Column()` annotation to change how a given field is handled within the ORM.
+
+## Column Types
+Using the `@Column()` annotation, it is possible to explicitly declare the data type of any given field:
+
+```dart
+@serializable
+@orm
+abstract class _Foo extends Model {
+  @Column(type: ColumnType.BIG_INT)
+  int bar;
+}
+```
+
+## Indices
+Columns can also have an `index`:
+
+```dart
+@serializable
+@orm
+abstract class _Foo extends Model {
+  @Column(index: IndexType.PRIMARY)
+  String bar;
+}
+```
+
+## Default Values
+It is also possible to specify the default value of a field.
+**Note that this only works with primitive objects.**
+
+If a default value is supplied, the `SqlMigrationBuilder` will include
+it in the generated schema. The `PostgresOrmGenerator` ignores default values;
+it does not need them to function properly.
+
+```dart
+@serializable
+@orm
+abstract class _Foo extends Model {
+  @Column(defaultValue: 'baz')
+  String bar;
 }
 ```
