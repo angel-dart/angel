@@ -22,7 +22,7 @@ dependencies:
   angel_orm: ^1.0.0-alpha
 dev_dependencies:
   angel_orm_generator: ^1.0.0-alpha
-  build_runner: ^0.3.0
+  build_runner: ^0.5.0
 ```
 
 `package:angel_orm_generator` exports two classes that you can include
