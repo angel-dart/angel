@@ -4,20 +4,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart' hide Extensible;
 import 'package:charcode/charcode.dart';
 export 'package:container/container.dart';
 import 'package:flatten/flatten.dart';
 import 'package:json_god/json_god.dart' as god;
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
 import '../safe_stream_controller.dart';
 import 'angel_base.dart';
-import 'angel_http_exception.dart';
 import 'controller.dart';
 import 'fatal_error.dart';
-
-//import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -28,19 +27,11 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 /// A function that binds an [Angel] server to an Internet address and port.
 typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
 
-/// Handles an [AngelHttpException].
-typedef Future AngelErrorHandler(
-    AngelHttpException err, RequestContext req, ResponseContext res);
-
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
-  final SafeCtrl<HttpRequest> _afterProcessed =
-      new SafeCtrl<HttpRequest>.broadcast();
-  final SafeCtrl<HttpRequest> _beforeProcessed =
-      new SafeCtrl<HttpRequest>.broadcast();
   final SafeCtrl<AngelFatalError> _fatalErrorStream =
       new SafeCtrl<AngelFatalError>.broadcast();
   final SafeCtrl<Controller> _onController =
@@ -57,8 +48,12 @@ class Angel extends AngelBase {
   /// A global Map of converters that can transform responses bodies.
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
 
-  /// A global Map of manual injections. You usually will not want to touch this.
-  final Map injections = {};
+  final Map _injections = {};
+
+  /// Creates a safe zone within which a request can be handled, without crashing the application.
+  Future<ZoneSpecification> Function(
+          HttpRequest request, RequestContext req, ResponseContext res)
+      createZoneForRequest;
 
   final Map<dynamic, InjectionRequest> _preContained = {};
   ResponseSerializer _serializer;
@@ -70,12 +65,6 @@ class Angel extends AngelBase {
 
   /// Determines whether to allow HTTP request method overrides.
   bool allowMethodOverrides = true;
-
-  /// Fired after a request is processed. Always runs.
-  Stream<HttpRequest> get afterProcessed => _afterProcessed.stream;
-
-  /// Fired before a request is processed. Always runs.
-  Stream<HttpRequest> get beforeProcessed => _beforeProcessed.stream;
 
   /// All child application mounted on this instance.
   List<Angel> get children => new List<Angel>.unmodifiable(_children);
@@ -108,15 +97,18 @@ class Angel extends AngelBase {
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
 
+  /// Outputs diagnostics and debug messages.
+  Logger logger;
+
   /// Plug-ins to be called right before server startup.
   ///
   /// If the server is never started, they will never be called.
-  final List<AngelConfigurer> justBeforeStart = [];
+  final List<AngelConfigurer> startupHooks = [];
 
-  /// Plug-ins to be called right before server shutdown
+  /// Plug-ins to be called right before server shutdown.
   ///
   /// If the server is never [close]d, they will never be called.
-  final List<AngelConfigurer> justBeforeStop = [];
+  final List<AngelConfigurer> shutdownHooks = [];
 
   /// Always run before responses are sent.
   ///
@@ -125,8 +117,8 @@ class Angel extends AngelBase {
   final List<RequestHandler> responseFinalizers = [];
 
   /// The handler currently configured to run on [AngelHttpException]s.
-  AngelErrorHandler errorHandler =
-      (AngelHttpException e, req, ResponseContext res) {
+  Function(AngelHttpException e, RequestContext req, ResponseContext res)
+      errorHandler = (AngelHttpException e, req, ResponseContext res) {
     res.headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
@@ -140,12 +132,6 @@ class Angel extends AngelBase {
     res.end();
   };
 
-  /// [RequestMiddleware] to be run before all requests.
-  final List before = [];
-
-  /// [RequestMiddleware] to be run after all requests.
-  final List after = [];
-
   /// The native HttpServer running this instancce.
   HttpServer httpServer;
 
@@ -156,7 +142,7 @@ class Angel extends AngelBase {
     var host = address ?? InternetAddress.LOOPBACK_IP_V4;
     this.httpServer = await _serverGenerator(host, port ?? 0);
 
-    for (var configurer in justBeforeStart) {
+    for (var configurer in startupHooks) {
       await configure(configurer);
     }
 
@@ -205,8 +191,6 @@ class Angel extends AngelBase {
       await httpServer.close(force: true);
     }
 
-    _afterProcessed.close();
-    _beforeProcessed.close();
     _fatalErrorStream.close();
     _onController.close();
 
@@ -214,7 +198,7 @@ class Angel extends AngelBase {
       await service.close();
     });
 
-    for (var plugin in justBeforeStop) await plugin(this);
+    for (var plugin in shutdownHooks) await plugin(this);
 
     return server;
   }
@@ -252,7 +236,7 @@ class Angel extends AngelBase {
 
   /// Shortcut for adding a middleware to inject a key/value pair on every request.
   void inject(key, value) {
-    injections[key] = value;
+    _injections[key] = value;
   }
 
   /// Shortcuts for adding converters to transform the response buffer/stream of any request.
@@ -267,15 +251,6 @@ class Angel extends AngelBase {
 
   Future getHandlerResult(
       handler, RequestContext req, ResponseContext res) async {
-    /*if (handler is RequestMiddleware) {
-      var result = await handler(req, res);
-
-      if (result is RequestHandler)
-        return await getHandlerResult(result, req, res);
-      else
-        return result;
-    }*/
-
     if (handler is RequestHandler) {
       var result = await handler(req, res);
       return await getHandlerResult(result, req, res);
@@ -320,9 +295,8 @@ class Angel extends AngelBase {
   }
 
   Future<RequestContext> createRequestContext(HttpRequest request) {
-    _beforeProcessed.add(request);
     return RequestContext.from(request, this).then((req) {
-      return req..injections.addAll(injections ?? {});
+      return req..injections.addAll(_injections ?? {});
     });
   }
 
@@ -346,21 +320,23 @@ class Angel extends AngelBase {
   }
 
   /// Handles an [AngelHttpException].
-  handleAngelHttpException(AngelHttpException e, StackTrace st,
+  Future handleAngelHttpException(AngelHttpException e, StackTrace st,
       RequestContext req, ResponseContext res, HttpRequest request,
       {bool ignoreFinalizers: false}) async {
     if (req == null || res == null) {
-      _fatalErrorStream.add(new AngelFatalError(
-          request: request,
-          error: e?.error ??
-              e ??
-              new Exception(
-                  'handleAngelHttpException was called on a null request or response context.'),
-          stack: st));
-      return;
+      try {
+        logger?.severe(e, st);
+        request.response
+          ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+          ..write('500 Internal Server Error')
+          ..close();
+      } finally {
+        return null;
+      }
     }
 
     res.statusCode = e.statusCode;
+
     if (req.headers.value(HttpHeaders.ACCEPT) == null ||
         req.acceptsAll ||
         req.accepts(ContentType.JSON) ||
@@ -373,13 +349,16 @@ class Angel extends AngelBase {
     }
 
     res.end();
-    await sendResponse(request, req, res,
+    return await sendResponse(request, req, res,
         ignoreFinalizers: ignoreFinalizers == true);
   }
 
   /// Handles a single request.
   Future handleRequest(HttpRequest request) async {
-    try {
+    var zoneSpec = await createZoneForRequest(request, req, res);
+    var zone = Zone.current.fork(specification: zoneSpec);
+
+    return zone.run(() async {
       var req = await createRequestContext(request);
       var res = await createResponseContext(request.response, req);
       String requestedUrl;
@@ -415,13 +394,13 @@ class Angel extends AngelBase {
         );
       });
 
+      req.inject(Zone, zone);
+      req.inject(ZoneSpecification, zoneSpec);
       req.inject(MiddlewarePipeline, tuple.item1);
       req.params.addAll(tuple.item2);
       req.inject(Match, tuple.item3);
 
-      var pipeline = new List.from(before)
-        ..addAll(tuple.item1.handlers)
-        ..addAll(after);
+      var pipeline = tuple.item1.handlers;
 
       for (var handler in pipeline) {
         try {
@@ -436,13 +415,16 @@ class Angel extends AngelBase {
         await sendResponse(request, req, res);
       } on AngelHttpException catch (e, st) {
         e.stackTrace ??= st;
-        return await handleAngelHttpException(e, st, req, res, request,
-            ignoreFinalizers: true);
+        return await handleAngelHttpException(
+          e,
+          st,
+          req,
+          res,
+          request,
+          ignoreFinalizers: true,
+        );
       }
-    } catch (e, st) {
-      _fatalErrorStream
-          .add(new AngelFatalError(request: request, error: e, stack: st));
-    }
+    });
   }
 
   /// Runs several optimizations, *if* [isProduction] is `true`.
@@ -503,17 +485,10 @@ class Angel extends AngelBase {
     // return await closureMirror.apply(args).reflectee;
   }
 
-  /// Use [sendResponse] instead.
-  @deprecated
-  Future sendRequest(
-          HttpRequest request, RequestContext req, ResponseContext res) =>
-      sendResponse(request, req, res);
-
   /// Sends a response.
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
-    _afterProcessed.add(request);
 
     if (res.willCloseItself) {
       return new Future.value();
@@ -579,20 +554,8 @@ class Angel extends AngelBase {
       _onController.add(controllers[configurer.findExpose().path] = configurer);
   }
 
-  /// Starts the server, wrapped in a [runZoned] call.
-  Future<HttpServer> listen({InternetAddress address, int port: 3000}) {
-    var c = new Completer<HttpServer>();
-    runZoned(() async {
-      await startServer(address, port)
-          .then(c.complete)
-          .catchError(c.completeError);
-    }, onError: (e, st) {
-      _fatalErrorStream.add(new AngelFatalError(error: e, stack: st));
-    });
-    return c.future;
-  }
-
-  /// Mounts the child on this router.
+  /// Mounts the child on this router. If [routable] is `null`,
+  /// then this method will add a handler as a global middleware instead.
   ///
   /// If the router is an [Angel] instance, all controllers
   /// will be copied, as well as services and response finalizers.
@@ -602,25 +565,14 @@ class Angel extends AngelBase {
   /// NOTE: The above will not be properly copied if [path] is
   /// a [RegExp].
   @override
-  use(Pattern path, @checked Routable routable,
-      {bool hooked: true, String namespace: null}) {
+  use(path, [@checked Routable routable, String namespace = null]) {
+    if (routable == null) return all('*', path);
+
     var head = path.toString().replaceAll(_straySlashes, '');
 
     if (routable is Angel) {
       _children.add(routable.._parent = this);
       _preContained.addAll(routable._preContained);
-
-      if (routable.before.isNotEmpty) {
-        all(path, (req, res) {
-          return true;
-        }, middleware: routable.before);
-      }
-
-      if (routable.after.isNotEmpty) {
-        all(path, (req, res) {
-          return true;
-        }, middleware: routable.after);
-      }
 
       if (routable.responseFinalizers.isNotEmpty) {
         responseFinalizers.add((req, res) async {
@@ -643,14 +595,6 @@ class Angel extends AngelBase {
         services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
       });
 
-      _beforeProcessed.whenInitialized(() {
-        routable.beforeProcessed.listen(_beforeProcessed.add);
-      });
-
-      _afterProcessed.whenInitialized(() {
-        routable.afterProcessed.listen(_afterProcessed.add);
-      });
-
       _fatalErrorStream.whenInitialized(() {
         routable.fatalErrorStream.listen(_fatalErrorStream.add);
       });
@@ -664,27 +608,45 @@ class Angel extends AngelBase {
       routable.app = this;
     }
 
-    return super.use(path, routable, hooked: hooked, namespace: namespace);
-  }
-
-  /// Registers a callback to run upon errors.
-  @deprecated
-  onError(AngelErrorHandler handler) {
-    this.errorHandler = handler;
+    return super.use(path, routable, namespace);
   }
 
   /// Default constructor. ;)
-  Angel({@deprecated bool debug: false}) : super() {
+  Angel() : super() {
     bootstrapContainer();
+
+    createZoneForRequest = (request, req, res) async {
+      return new ZoneSpecification(
+        handleUncaughtError: (Zone self, ZoneDelegate parent, Zone zone, error,
+            StackTrace stackTrace) {
+          var e = new AngelHttpException(error,
+              stackTrace: stackTrace, message: error?.toString());
+          return handleAngelHttpException(
+            e,
+            stackTrace,
+            req,
+            res,
+            request,
+            ignoreFinalizers: true,
+          );
+        },
+        print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+          if (logger != null) {
+            logger.info(line);
+          } else {
+            return parent.print(zone, line);
+          }
+        },
+      );
+    };
   }
 
   /// An instance mounted on a server started by the [serverGenerator].
-  factory Angel.custom(ServerGenerator serverGenerator,
-          {@deprecated bool debug: false}) =>
-      new Angel().._serverGenerator = serverGenerator;
+  factory Angel.custom(ServerGenerator serverGenerator) {
+    return new Angel().._serverGenerator = serverGenerator;
+  }
 
-  factory Angel.fromSecurityContext(SecurityContext context,
-      {@deprecated bool debug: false}) {
+  factory Angel.fromSecurityContext(SecurityContext context) {
     var app = new Angel();
 
     app._serverGenerator = (InternetAddress address, int port) async {

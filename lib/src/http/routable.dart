@@ -89,18 +89,20 @@ class Routable extends Router {
     return super.addRoute(method, path, handler, middleware: handlerSequence);
   }
 
-  void use(Pattern path, Router router,
-      {bool hooked: true, String namespace: null}) {
+  /// Mounts the given [router] on this instance.
+  ///
+  /// The [router] may only omitted when called via
+  /// an [Angel] instance.
+  ///
+  /// Returns either a [Route] or a [Service] (if one was mounted).
+  use(Pattern path, [Router router, String namespace = null]) {
     Router _router = router;
     Service service;
 
     // If we need to hook this service, do it here. It has to be first, or
     // else all routes will point to the old service.
     if (router is Service) {
-      Hooked hookedDeclaration = getAnnotation(router, Hooked);
-      _router = service = (hookedDeclaration != null || hooked)
-          ? new HookedService(router)
-          : router;
+      _router = service = new HookedService(router);
       _services[path
           .toString()
           .trim()
@@ -135,13 +137,13 @@ class Routable extends Router {
       Map copiedProperties = new Map.from(router.properties);
       for (String propertyName in copiedProperties.keys) {
         properties.putIfAbsent("$middlewarePrefix$propertyName",
-                () => copiedMiddleware[propertyName]);
+            () => copiedMiddleware[propertyName]);
       }
     }
 
     // _router.dumpTree(header: 'Mounting on "$path":');
     // root.child(path, debug: debug, handlers: handlers).addChild(router.root);
-    mount(path, _router);
+    var mounted = mount(path, _router);
 
     if (_router is Routable) {
       // Copy services, too. :)
@@ -156,5 +158,7 @@ class Routable extends Router {
     if (service != null) {
       if (_onService.hasListener) _onService.add(service);
     }
+
+    return service ?? mounted;
   }
 }

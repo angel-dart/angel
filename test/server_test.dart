@@ -11,17 +11,6 @@ final Uri $foo = Uri.parse('http://localhost:3000/foo');
 /// Additional tests to improve coverage of server.dart
 main() {
   group('streams fired', () {
-    test('before+after processed are fired', () async {
-      var app = new Angel();
-      var before = app.beforeProcessed.first;
-      var after = app.afterProcessed.first;
-      var rq = new MockHttpRequest('GET', $foo);
-      rq.close();
-      await app.handleRequest(rq);
-      app.close();
-      expect(await before, rq);
-      expect(await after, rq);
-    });
 
     test('oncontroller fired', () async {
       var app = new Angel();
@@ -77,7 +66,7 @@ main() {
 
   test('plug-ins run on startup', () async {
     var app = new Angel();
-    app.justBeforeStart.add((app) async {
+    app.startupHooks.add((app) async {
       app.properties['two'] = 2;
     });
     await app.startServer();
@@ -101,9 +90,13 @@ main() {
     expect(svc.value, 3);
   });
 
-  test('global injection added to injection map', () {
+  test('global injection added to injection map', () async {
     var app = new Angel()..inject('a', 'b');
-    expect(app.injections['a'], 'b');
+    app.get('/', (String a) => a);
+    var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();
+    await app.handleRequest(rq);
+    var body = await rq.response.transform(UTF8.decoder).join();
+    expect(body, JSON.encode('b'));
   });
 
   test('global injected serializer', () async {
@@ -163,7 +156,7 @@ main() {
       app = new Angel();
       app.get('/wtf', () => throw new AngelHttpException.forbidden());
       app.get('/wtf2', () => throw new AngelHttpException.forbidden());
-      await app.listen(address: InternetAddress.LOOPBACK_IP_V4, port: 0);
+      await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
       app.fatalErrorStream.listen((e) {
         print('FATAL: ${e.error}');
         print(e.stack);
@@ -171,29 +164,6 @@ main() {
     });
 
     tearDown(() => app.close());
-
-    test('null req/res', () async {
-      app.handleAngelHttpException(null, null, null, null, null);
-      var empty = app.fatalErrorStream.isEmpty;
-      await app.close();
-      expect(await empty, isFalse);
-    });
-
-    test('null req/res, valid error', () async {
-      app.handleAngelHttpException(
-          new AngelHttpException(new StateError('')), null, null, null, null);
-      var empty = app.fatalErrorStream.isEmpty;
-      await app.close();
-      expect(await empty, isFalse);
-    });
-
-    test('null req/res, http error', () async {
-      app.handleAngelHttpException(
-          new AngelHttpException.forbidden(), null, null, null, null);
-      var empty = app.fatalErrorStream.isEmpty;
-      await app.close();
-      expect(await empty, isFalse);
-    });
 
     test('can send json', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'));

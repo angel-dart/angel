@@ -89,20 +89,8 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// A set of UTF-8 encoded bytes that will be written to the response.
   BytesBuilder get buffer => _buffer;
 
-  /// Please use `statusCode=` instead.'
-  @deprecated
-  void status(int code) {
-    statusCode = code;
-  }
-
   /// The underlying [HttpResponse] under this instance.
   final HttpResponse io;
-
-  @deprecated
-  HttpResponse get underlyingRequest {
-    throw new Exception(
-        '`ResponseContext#underlyingResponse` is deprecated. Please update your application to use the newer `ResponseContext#io`.');
-  }
 
   /// Gets the Content-Type header.
   ContentType get contentType {
@@ -135,7 +123,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   StateError _closed() => new StateError('Cannot modify a closed response.');
 
   /// Sends a download as a response.
-  download(File file, {String filename}) async {
+  Future download(File file, {String filename}) async {
     if (!_isOpen) throw _closed();
 
     headers["Content-Disposition"] =
@@ -163,7 +151,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
       (_buffer as _LockableBytesBuilder)._lock();
     }
 
-    _isOpen = false;
+    _isOpen = _useStream = false;
     _isClosed = true;
 
     if (_done?.isCompleted == false) _done.complete();
@@ -175,15 +163,6 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// To disable response finalizers, see [willCloseItself].
   void end() {
     _isOpen = false;
-  }
-
-  /// Sets a response header to the given value, or retrieves its value.
-  @Deprecated('Please use `headers` instead.')
-  header(String key, [String value]) {
-    if (value == null)
-      return headers[key];
-    else
-      headers[key] = value;
   }
 
   /// Serializes JSON to the response.
@@ -302,10 +281,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Copies a file's contents into the response buffer.
-  Future sendFile(File file,
-      {@deprecated int chunkSize,
-      @deprecated int sleepMs: 0,
-      @deprecated bool resumable: true}) async {
+  Future sendFile(File file) async {
     if (_isClosed) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
@@ -331,33 +307,12 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Streams a file to this response.
   ///
-  // ignore: deprecated_member_use
   /// You can optionally transform the file stream with a [codec].
-  Future streamFile(File file,
-      {@deprecated int chunkSize,
-      @deprecated int sleepMs: 0,
-      @deprecated bool resumable: true,
-
-      /// Use [encoders] instead of manually specifying a codec.
-      @deprecated Codec<List<int>, List<int>> codec}) async {
+  Future streamFile(File file) {
     if (_isClosed) throw _closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-
-    // ignore: deprecated_member_use
-    if (codec != null) {
-      end();
-      willCloseItself = true;
-
-      // ignore: deprecated_member_use
-      Stream stream = codec != null
-          // ignore: deprecated_member_use
-          ? file.openRead().transform(codec.encoder)
-          : file.openRead();
-      await stream.pipe(io);
-    } else {
-      await file.openRead().pipe(this);
-    }
+    return file.openRead().pipe(this);
   }
 
   @override

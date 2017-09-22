@@ -2,10 +2,10 @@ library angel_framework.http.service;
 
 import 'dart:async';
 import 'package:angel_framework/src/http/response_context.dart';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:merge_map/merge_map.dart';
 import '../util.dart';
 import 'angel_base.dart';
-import 'angel_http_exception.dart';
 import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
 import 'routable.dart';
@@ -23,22 +23,6 @@ class Providers {
   static const String viaRest = "rest";
   static const String viaWebsocket = "websocket";
   static const String viaGraphQL = "graphql";
-
-  /// Use [viaRest] instead.
-  @deprecated
-  static const String VIA_REST = "rest";
-
-  /// Use [viaWebSocket] instead.
-  @deprecated
-  static const String VIA_WEBSOCKET = "websocket";
-
-  /// Use [rest] instead.
-  @deprecated
-  static const Providers REST = const Providers(viaRest);
-
-  /// Use [websocket] instead.
-  @deprecated
-  static const Providers WEBSOCKET = const Providers(viaWebsocket);
 
   /// Represents a request via REST.
   static const Providers rest = const Providers(viaRest);
@@ -64,10 +48,6 @@ class Service extends Routable {
     'page',
     'token'
   ];
-
-  /// Use [specialQueryKeys] instead.
-  @deprecated
-  static const List<String> SPECIAL_QUERY_KEYS = specialQueryKeys;
 
   /// The [Angel] app powering this service.
   AngelBase app;

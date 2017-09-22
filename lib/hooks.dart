@@ -255,14 +255,6 @@ HookedServiceEventListener addCreatedAt(
   };
 }
 
-/// Typo: Use [addUpdatedAt] instead.
-@deprecated
-HookedServiceEventListener addUpatedAt({
-  assign(obj, String now),
-  String key,
-}) =>
-    addUpdatedAt(assign: assign, key: key);
-
 /// Serializes the current time to `e.data` or `e.result`.
 /// You can provide an [assign] function to set the property on your object, and skip reflection.
 /// If [serialize] is `true` (default), then the set date will be a `String`. If not, a raw `DateTime` will be used.

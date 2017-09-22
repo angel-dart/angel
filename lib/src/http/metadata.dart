@@ -9,13 +9,6 @@ class Middleware {
   const Middleware(this.handlers);
 }
 
-/// Annotation to set a service up to release hooks on every action.
-class Hooked {
-  const Hooked();
-}
-
-const Hooked hooked = const Hooked();
-
 /// Attaches hooks to a [HookedService].
 class Hooks {
   final List<HookedServiceEventListener> before;

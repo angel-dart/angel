@@ -41,11 +41,21 @@ main() {
       res.statusCode = 32;
       await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res);
-      await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
-          .pipe(res);
+
+      try {
+        await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
+            .pipe(res);
+        throw new Exception('Should throw on rewrite...');
+      } on StateError {
+        // Yay!!!
+      }
     });
 
     app.get('/error', (res) => res.addError(new StateError('wtf')));
+
+    app.errorHandler = (e, req, res) async {
+      print('ok');
+    };
 
     app.fatalErrorStream.listen((e) {
       stderr..writeln(e.error)..writeln(e.stack);

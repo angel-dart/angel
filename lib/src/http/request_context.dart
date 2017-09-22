@@ -130,12 +130,6 @@ class RequestContext {
       io.headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
       'xmlhttprequest';
 
-  @deprecated
-  HttpRequest get underlyingRequest {
-    throw new Exception(
-        '`RequestContext#underlyingRequest` is deprecated. Please update your application to use the newer `RequestContext#io`.');
-  }
-
   /// Magically transforms an [HttpRequest] into a [RequestContext].
   static Future<RequestContext> from(HttpRequest request, Angel app) async {
     RequestContext ctx = new RequestContext();

@@ -2,4 +2,3 @@
 library angel_framework;
 
 export 'src/http/http.dart';
-export 'src/defs.dart';

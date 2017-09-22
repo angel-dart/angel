@@ -1,3 +1,7 @@
+# 1.1.0-alpha
+* Removed all `@deprecated` members.
+* Removed `@Hooked`, `beforeProcessed`, and `afterProcessed`.
+
 # 1.0.10
 * Closed [#162](https://github.com/angel-dart/framework/issues/162), fixing a caching bug
 that would cause multiple requests to the same URL to fail.

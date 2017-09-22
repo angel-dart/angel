@@ -1,9 +1,9 @@
 library angel_framework.http;
 
 import 'dart:async';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:merge_map/merge_map.dart';
 import '../util.dart';
-import 'angel_http_exception.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'metadata.dart';
@@ -624,34 +624,6 @@ class HookedServiceEvent {
   static const List<String> all = const [
     indexed, read, created, modified, updated, removed
   ];
-  
-  /// Use [indexed] instead.
-  @deprecated
-  static const String INDEXED = indexed;
-
-  /// Use [read] instead.
-  @deprecated
-  static const String READ = read;
-
-  /// Use [created] instead.
-  @deprecated
-  static const String CREATED = created;
-
-  /// Use [modified] instead.
-  @deprecated
-  static const String MODIFIED = modified;
-
-  /// Use [updated] instead.
-  @deprecated
-  static const String UPDATED = updated;
-
-  /// Use [removed] instead.
-  @deprecated
-  static const String REMOVED = removed;
-
-  /// Use [all] instead.
-  @deprecated
-  static const List<String> ALL = all;
 
   /// Use this to end processing of an event.
   void cancel([result]) {

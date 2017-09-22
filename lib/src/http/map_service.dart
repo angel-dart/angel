@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'angel_http_exception.dart';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'service.dart';
 
 /// A basic service that manages an in-memory list of maps.

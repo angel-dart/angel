@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:angel_framework/src/defs.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;

@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://C:\Users\thosa\Source\Angel\framework\.idea\angel_framework.iml" filepath="C:\Users\thosa\Source\Angel\framework\.idea\angel_framework.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/framework.iml" filepath="$PROJECT_DIR$/.idea/framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework.iml" filepath="$PROJECT_DIR$/framework.iml" />
     </modules>
   </component>
 </project>
