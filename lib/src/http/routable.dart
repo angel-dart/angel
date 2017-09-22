@@ -95,7 +95,7 @@ class Routable extends Router {
   /// an [Angel] instance.
   ///
   /// Returns either a [Route] or a [Service] (if one was mounted).
-  use(Pattern path, [Router router, String namespace = null]) {
+  use(path, [Router router, String namespace = null]) {
     Router _router = router;
     Service service;
 
