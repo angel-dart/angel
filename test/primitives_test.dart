@@ -24,9 +24,9 @@ main() {
 
     app.get('/num/global', (num global) => global);
 
-    app.fatalErrorStream.listen((e) {
-      stderr..writeln(e.error)..writeln(e.stack);
-    });
+    app.errorHandler = (e, req, res) {
+      stderr..writeln(e.error)..writeln(e.stackTrace);
+    };
   });
 
   tearDown(() => app.close());
@@ -59,7 +59,8 @@ main() {
       var req = await app.createRequestContext(rq);
       var res = await app.createResponseContext(rq.response, req);
       await app.runContained((num unparsed) => unparsed, req, res);
-      throw new StateError('ArgumentError should be thrown if a parameter cannot be resolved.');
+      throw new StateError(
+          'ArgumentError should be thrown if a parameter cannot be resolved.');
     } on ArgumentError {
       // Success
     }

@@ -16,7 +16,6 @@ import 'package:tuple/tuple.dart';
 import '../safe_stream_controller.dart';
 import 'angel_base.dart';
 import 'controller.dart';
-import 'fatal_error.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -32,8 +31,6 @@ typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
-  final SafeCtrl<AngelFatalError> _fatalErrorStream =
-      new SafeCtrl<AngelFatalError>.broadcast();
   final SafeCtrl<Controller> _onController =
       new SafeCtrl<Controller>.broadcast();
 
@@ -68,9 +65,6 @@ class Angel extends AngelBase {
 
   /// All child application mounted on this instance.
   List<Angel> get children => new List<Angel>.unmodifiable(_children);
-
-  /// Fired on fatal errors.
-  Stream<AngelFatalError> get fatalErrorStream => _fatalErrorStream.stream;
 
   /// Indicates whether the application is running in a production environment.
   ///
@@ -112,8 +106,7 @@ class Angel extends AngelBase {
 
   /// Always run before responses are sent.
   ///
-  /// These will only not run if an [AngelFatalError] occurs,
-  /// or if a response's `willCloseItself` is set to `true`.
+  /// These will only not run if a response's `willCloseItself` is set to `true`.
   final List<RequestHandler> responseFinalizers = [];
 
   /// The handler currently configured to run on [AngelHttpException]s.
@@ -191,7 +184,6 @@ class Angel extends AngelBase {
       await httpServer.close(force: true);
     }
 
-    _fatalErrorStream.close();
     _onController.close();
 
     await Future.forEach(services.values, (Service service) async {
@@ -489,7 +481,6 @@ class Angel extends AngelBase {
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
-
     if (res.willCloseItself) {
       return new Future.value();
     } else {
@@ -593,10 +584,6 @@ class Angel extends AngelBase {
       routable.services.forEach((k, v) {
         var tail = k.toString().replaceAll(_straySlashes, '');
         services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
-      });
-
-      _fatalErrorStream.whenInitialized(() {
-        routable.fatalErrorStream.listen(_fatalErrorStream.add);
       });
 
       _onController.whenInitialized(() {

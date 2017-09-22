@@ -622,7 +622,12 @@ class HookedServiceEvent {
   static const String removed = 'removed';
 
   static const List<String> all = const [
-    indexed, read, created, modified, updated, removed
+    indexed,
+    read,
+    created,
+    modified,
+    updated,
+    removed
   ];
 
   /// Use this to end processing of an event.

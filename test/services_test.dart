@@ -21,10 +21,10 @@ main() {
   setUp(() async {
     app = new Angel()
       ..use('/todos', new TypedService<Todo>(new MapService()))
-      ..fatalErrorStream.listen((e) {
+      ..errorHandler = (e, req, res) {
         print('Whoops: ${e.error}');
-        print(e.stack);
-      });
+        print(e.stackTrace);
+      };
 
     await app.startServer();
     client = new http.Client();
@@ -95,7 +95,9 @@ main() {
 
     test('can delete data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      var created = await client.post("$url/todos", headers: headers, body: postData).then((r) => JSON.decode(r.body));
+      var created = await client
+          .post("$url/todos", headers: headers, body: postData)
+          .then((r) => JSON.decode(r.body));
       var response = await client.delete("$url/todos/${created['id']}");
       expect(response.statusCode, 200);
       var json = god.deserialize(response.body);

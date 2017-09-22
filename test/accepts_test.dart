@@ -25,7 +25,7 @@ main() {
     expect(req.accepts('text/html'), isTrue);
   });
 
-  test('specific type', () async  {
+  test('specific type', () async {
     var req = await acceptContentTypes(['text/html']);
     expect(req.acceptsAll, isFalse);
     expect(req.accepts(ContentType.JSON), isFalse);

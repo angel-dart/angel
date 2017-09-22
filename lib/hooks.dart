@@ -35,7 +35,8 @@ AngelConfigurer hookAllServices(callback(Service service)) {
 /// Transforms `e.data` or `e.result` into JSON-friendly data, i.e. a Map. Runs on Iterables as well.
 ///
 /// The [condition] is optional, and is passed to [transform].
-HookedServiceEventListener toJson([condition]) => transform(god.serializeObject, condition);
+HookedServiceEventListener toJson([condition]) =>
+    transform(god.serializeObject, condition);
 
 /// Mutates `e.data` or `e.result` using the given [transformer].
 ///

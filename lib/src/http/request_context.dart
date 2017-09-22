@@ -152,7 +152,8 @@ class RequestContext {
     for (int ch in request.uri.toString().codeUnits) {
       if (ch != $question)
         _path.add(ch);
-      else break;
+      else
+        break;
     }
 
     // Remove trailing slashes
@@ -161,17 +162,19 @@ class RequestContext {
     for (int i = _path.length - 1; i >= 0; i--) {
       if (_path[i] == $slash)
         lastSlash = i;
-      else break;
+      else
+        break;
     }
 
     if (lastSlash > -1)
       ctx._path = new String.fromCharCodes(_path.take(lastSlash));
-    else ctx._path = new String.fromCharCodes(_path);
+    else
+      ctx._path = new String.fromCharCodes(_path);
     ctx._io = request;
 
     if (app.lazyParseBodies != true) {
       ctx._body = (await parseBody(request,
-          storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
+              storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
           {};
     }
 
@@ -266,8 +269,8 @@ class RequestContext {
       return _body;
     else
       _provisionalQuery = null;
-      return _body = await parseBody(io,
-          storeOriginalBuffer: app.storeOriginalBuffer == true);
+    return _body = await parseBody(io,
+        storeOriginalBuffer: app.storeOriginalBuffer == true);
   }
 
   operator [](key) => properties[key];

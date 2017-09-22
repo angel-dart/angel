@@ -13,7 +13,7 @@ class BookService extends Service {
   @override
   index([params]) async {
     print('Book params: $params');
-    
+
     return [
       {'foo': 'bar'}
     ];

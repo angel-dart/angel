@@ -13,7 +13,6 @@ export 'anonymous_service.dart';
 export 'base_middleware.dart';
 export 'base_plugin.dart';
 export 'controller.dart';
-export 'fatal_error.dart';
 export 'hooked_service.dart';
 export 'map_service.dart';
 export 'metadata.dart';

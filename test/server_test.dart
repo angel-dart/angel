@@ -11,7 +11,6 @@ final Uri $foo = Uri.parse('http://localhost:3000/foo');
 /// Additional tests to improve coverage of server.dart
 main() {
   group('streams fired', () {
-
     test('oncontroller fired', () async {
       var app = new Angel();
       var ctrl = new FooController();
@@ -157,10 +156,13 @@ main() {
       app.get('/wtf', () => throw new AngelHttpException.forbidden());
       app.get('/wtf2', () => throw new AngelHttpException.forbidden());
       await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
-      app.fatalErrorStream.listen((e) {
-        print('FATAL: ${e.error}');
-        print(e.stack);
-      });
+
+      var oldHandler = app.errorHandler;
+      app.errorHandler = (e, req, res) {
+        print('FATAL: ${e.error ?? e}');
+        print(e.stackTrace);
+        return oldHandler(e, req, res);
+      };
     });
 
     tearDown(() => app.close());
@@ -190,7 +192,7 @@ main() {
       await app.handleRequest(rq);
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
-          rq.response.headers.contentType.mimeType, ContentType.HTML.mimeType);
+          rq.response.headers.contentType?.mimeType, ContentType.HTML.mimeType);
     });
   });
 }

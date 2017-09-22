@@ -32,8 +32,8 @@ main() {
     app.get('/multiple', (res) async {
       await res.addStream(
           new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
-      await res.addStream(
-          new Stream<List<int>>.fromIterable(['bye'.codeUnits]));
+      await res
+          .addStream(new Stream<List<int>>.fromIterable(['bye'.codeUnits]));
       await res.close();
     });
 
@@ -54,12 +54,8 @@ main() {
     app.get('/error', (res) => res.addError(new StateError('wtf')));
 
     app.errorHandler = (e, req, res) async {
-      print('ok');
+      stderr..writeln(e.error)..writeln(e.stackTrace);
     };
-
-    app.fatalErrorStream.listen((e) {
-      stderr..writeln(e.error)..writeln(e.stack);
-    });
   });
 
   tearDown(() => app.close());
@@ -76,8 +72,7 @@ main() {
   test('multiple addStream', () => _expectHelloBye('/multiple'));
 
   test('cannot write after close', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))
-      ..close();
+    var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))..close();
     await app.handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
 
@@ -87,8 +82,7 @@ main() {
 
   test('res => addError', () async {
     try {
-      var rq = new MockHttpRequest('GET', Uri.parse('/error'))
-        ..close();
+      var rq = new MockHttpRequest('GET', Uri.parse('/error'))..close();
       await app.handleRequest(rq);
       var body = await rq.response.transform(UTF8.decoder).join();
       throw 'addError should throw error; response: $body';

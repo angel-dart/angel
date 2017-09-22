@@ -28,7 +28,9 @@ main() {
       print('Fired ${e.eventName}! Data: ${e.data}; Params: ${e.params}');
     });
 
-    app.fatalErrorStream.listen((e) => throw e.error);
+    app.errorHandler = (e, req, res) {
+      throw e.error;
+    };
 
     server = await app.startServer();
     url = "http://${app.httpServer.address.host}:${app.httpServer.port}";

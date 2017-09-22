@@ -1,4 +1,5 @@
 # 1.1.0-alpha
+* Removed `AngelFatalError`, and subsequently `fatalErrorStream`.
 * Removed all `@deprecated` members.
 * Removed `@Hooked`, `beforeProcessed`, and `afterProcessed`.
 

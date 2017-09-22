@@ -26,9 +26,7 @@ class TodoController extends Controller {
   }
 }
 
-class NoExposeController extends Controller {
-
-}
+class NoExposeController extends Controller {}
 
 @Expose('/named', as: 'foo')
 class NamedController extends Controller {
@@ -82,11 +80,11 @@ main() {
 
   test('create dynamic handler', () async {
     var app = new Angel();
-    app.get('/foo', createDynamicHandler(({String bar}) {
-      return 2;
-    }, optional: [
-      'bar'
-    ]));
+    app.get(
+        '/foo',
+        createDynamicHandler(({String bar}) {
+          return 2;
+        }, optional: ['bar']));
     var rq = new MockHttpRequest('GET', new Uri(path: 'foo'));
     await app.handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
