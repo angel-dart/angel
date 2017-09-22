@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 import 'encoders_buffer_test.dart' show encodingTests;
@@ -11,6 +12,13 @@ main() {
 
   setUp(() {
     app = new Angel();
+
+    app.logger = new Logger('streaming_test')
+      ..onRecord.listen((rec) {
+        print(rec);
+        if (rec.stackTrace != null) print(rec.stackTrace);
+      });
+
     app.injectEncoders(
       {
         'deflate': ZLIB.encoder,

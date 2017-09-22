@@ -147,9 +147,10 @@ class Angel extends AngelBase {
   Route addRoute(String method, Pattern path, Object handler,
       {List middleware: const []}) {
     if (_flattened != null) {
-      print(
+      logger?.warning(
           'WARNING: You added a route ($method $path) to the router, after it had been optimized.');
-      print('This route will be ignored, and no requests will ever reach it.');
+      logger?.warning(
+          'This route will be ignored, and no requests will ever reach it.');
     }
 
     return super.addRoute(method, path, handler, middleware: middleware ?? []);
@@ -158,9 +159,10 @@ class Angel extends AngelBase {
   @override
   mount(Pattern path, Router router, {bool hooked: true, String namespace}) {
     if (_flattened != null) {
-      print(
+      logger?.warning(
           'WARNING: You added mounted a child router ($path) on the router, after it had been optimized.');
-      print('This route will be ignored, and no requests will ever reach it.');
+      logger?.warning(
+          'This route will be ignored, and no requests will ever reach it.');
     }
     return super
         .mount(path, router, hooked: hooked != false, namespace: namespace);
@@ -391,6 +393,7 @@ class Angel extends AngelBase {
       req.inject(MiddlewarePipeline, tuple.item1);
       req.params.addAll(tuple.item2);
       req.inject(Match, tuple.item3);
+      req.inject(Stopwatch, new Stopwatch()..start());
 
       var pipeline = tuple.item1.handlers;
 
@@ -452,7 +455,7 @@ class Angel extends AngelBase {
 
       _walk(_flattened);
 
-      //if (silent != true) print('Angel is running in production mode.');
+      logger?.config('Angel is running in production mode.');
     }
   }
 
@@ -533,7 +536,14 @@ class Angel extends AngelBase {
         ..cookies.addAll(res.cookies)
         ..add(outputBuffer);
 
-      return finalizers.then((_) => request.response.close());
+      return finalizers.then((_) => request.response.close()).then((_) {
+        if (logger != null) {
+          var sw = req.injections[Stopwatch];
+          sw?.stop();
+          logger.info(
+              "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
+        }
+      });
     }
   }
 
