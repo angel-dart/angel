@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:crypto/crypto.dart';
+import 'package:async/async.dart';
+import 'package:file/file.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
-import 'file_info.dart';
-import 'file_transformer.dart';
 import 'virtual_directory.dart';
 
 final DateFormat _fmt = new DateFormat('EEE, d MMM yyyy HH:mm:ss');
@@ -14,15 +13,9 @@ final DateFormat _fmt = new DateFormat('EEE, d MMM yyyy HH:mm:ss');
 /// Formats a date (converted to UTC), ex: `Sun, 03 May 2015 23:02:37 GMT`.
 String formatDateForHttp(DateTime dt) => _fmt.format(dt.toUtc()) + ' GMT';
 
-/// Generates an ETag from the given buffer.
-String generateEtag(List<int> buf, {bool weak: true, Hash hash}) {
-  if (weak == false) {
-    Hash h = hash ?? md5;
-    return new String.fromCharCodes(h.convert(buf).bytes);
-  } else {
-    // length + first 50 bytes as base64url
-    return 'W/${buf.length}' + BASE64URL.encode(buf.take(50).toList());
-  }
+/// Generates a weak ETag from the given buffer.
+String weakEtag(List<int> buf) {
+  return 'W/${buf.length}' + BASE64URL.encode(buf);
 }
 
 /// Returns a string representation of the given [CacheAccessLevel].
@@ -37,17 +30,12 @@ String accessLevelToString(CacheAccessLevel accessLevel) {
   }
 }
 
-/// A static server plug-in that also sets `Cache-Control` headers.
+/// A `VirtualDirectory` that also sets `Cache-Control` headers.
 class CachingVirtualDirectory extends VirtualDirectory {
   final Map<String, String> _etags = {};
 
   /// Either `PUBLIC` or `PRIVATE`.
   final CacheAccessLevel accessLevel;
-
-  /// Used to generate strong ETags, if [useWeakEtags] is false.
-  ///
-  /// Default: `md5`.
-  final Hash hash;
 
   /// If `true`, responses will always have `private, max-age=0` as their `Cache-Control` header.
   final bool noCache;
@@ -58,37 +46,27 @@ class CachingVirtualDirectory extends VirtualDirectory {
   /// If `true` (default), ETags will be computed and sent along with responses.
   final bool useEtags;
 
-  /// If `false` (default: `true`), ETags will be generated via MD5 hash.
-  final bool useWeakEtags;
-
   /// The `max-age` for `Cache-Control`.
   ///
   /// Set this to `null` to leave no `Expires` header on responses.
   final int maxAge;
 
-  CachingVirtualDirectory(
+  CachingVirtualDirectory(Angel app, FileSystem fileSystem,
       {this.accessLevel: CacheAccessLevel.PUBLIC,
       Directory source,
       bool debug,
-      this.hash,
       Iterable<String> indexFileNames,
       this.maxAge: 0,
       this.noCache: false,
       this.onlyInProduction: false,
       this.useEtags: true,
-      this.useWeakEtags: true,
       String publicPath,
-      StaticFileCallback callback,
-      bool streamToIO: false,
-      Iterable<FileTransformer> transformers: const []})
-      : super(
+      callback(File file, RequestContext req, ResponseContext res)})
+      : super(app, fileSystem,
             source: source,
-            debug: debug == true,
             indexFileNames: indexFileNames ?? ['index.html'],
             publicPath: publicPath ?? '/',
-            callback: callback,
-            streamToIO: streamToIO == true,
-            transformers: transformers ?? []);
+            callback: callback);
 
   @override
   Future<bool> serveFile(
@@ -100,17 +78,16 @@ class CachingVirtualDirectory extends VirtualDirectory {
     bool shouldNotCache = noCache == true;
 
     if (!shouldNotCache) {
-      shouldNotCache =
-          req.headers.value(HttpHeaders.CACHE_CONTROL) == 'no-cache' ||
-              req.headers.value(HttpHeaders.PRAGMA) == 'no-cache';
+      shouldNotCache = req.headers.value('cache-control') == 'no-cache' ||
+          req.headers.value('pragma') == 'no-cache';
     }
 
     if (shouldNotCache) {
-      res.headers[HttpHeaders.CACHE_CONTROL] = 'private, max-age=0, no-cache';
+      res.headers['cache-control'] = 'private, max-age=0, no-cache';
       return super.serveFile(file, stat, req, res);
     } else {
       if (useEtags == true) {
-        var etags = req.headers[HttpHeaders.IF_NONE_MATCH];
+        var etags = req.headers['if-none-match'];
 
         if (etags?.isNotEmpty == true) {
           bool hasBeenModified = false;
@@ -125,7 +102,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
           }
 
           if (hasBeenModified) {
-            res.statusCode = HttpStatus.NOT_MODIFIED;
+            res.statusCode = 304;
             setCachedHeaders(stat.modified, req, res);
             return new Future.value(false);
           }
@@ -137,11 +114,11 @@ class CachingVirtualDirectory extends VirtualDirectory {
           var ifModifiedSince = req.headers.ifModifiedSince;
 
           if (ifModifiedSince.compareTo(stat.modified) >= 0) {
-            res.statusCode = HttpStatus.NOT_MODIFIED;
+            res.statusCode = 304;
             setCachedHeaders(stat.modified, req, res);
 
             if (_etags.containsKey(file.absolute.path))
-              res.headers[HttpHeaders.ETAG] = _etags[file.absolute.path];
+              res.headers['ETag'] = _etags[file.absolute.path];
 
             return new Future.value(false);
           }
@@ -151,25 +128,38 @@ class CachingVirtualDirectory extends VirtualDirectory {
         }
       }
 
-      return file.readAsBytes().then((buf) {
-        var etag = _etags[file.absolute.path] =
-            generateEtag(buf, weak: useWeakEtags != false, hash: hash);
+      var queue = new StreamQueue(file.openRead());
+
+      return new Future<bool>(() async {
+        var buf = new Uint8List(50), hanging = <int>[];
+        int added = 0;
+
+        while (added < 50) {
+          var deficit = 50 - added;
+          var next = await queue.next;
+
+          for (int i = 0; i < deficit; i++) {
+            buf[added + i] = next[i];
+          }
+
+          if (next.length > deficit) {
+            hanging.addAll(next.skip(deficit));
+          }
+        }
+
+        var etag = _etags[file.absolute.path] = weakEtag(buf);
+
+        res.statusCode = 200;
         res.headers
-          ..[HttpHeaders.ETAG] = etag
-          ..[HttpHeaders.CONTENT_TYPE] =
+          ..['ETag'] = etag
+          ..['content-type'] =
               lookupMimeType(file.path) ?? 'application/octet-stream';
         setCachedHeaders(stat.modified, req, res);
 
-        if (useWeakEtags == false) {
-          res
-            ..statusCode = 200
-            ..willCloseItself = false
-            ..buffer.add(buf)
-            ..end();
-          return new Future.value(false);
-        }
+        res.add(buf);
+        res.add(hanging);
 
-        return super.serveFile(file, stat, req, res);
+        return queue.rest.pipe(res).then((_) => false);
       });
     }
   }
@@ -179,79 +169,13 @@ class CachingVirtualDirectory extends VirtualDirectory {
     var privacy = accessLevelToString(accessLevel ?? CacheAccessLevel.PUBLIC);
 
     res.headers
-      ..[HttpHeaders.CACHE_CONTROL] = '$privacy, max-age=${maxAge ?? 0}'
-      ..[HttpHeaders.LAST_MODIFIED] = formatDateForHttp(modified);
+      ..['cache-control'] = '$privacy, max-age=${maxAge ?? 0}'
+      ..['last-modified'] = formatDateForHttp(modified);
 
     if (maxAge != null) {
       var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
-      res.headers[HttpHeaders.EXPIRES] = formatDateForHttp(expiry);
+      res.headers['expires'] = formatDateForHttp(expiry);
     }
-  }
-
-  @override
-  Future<bool> serveAsset(
-      FileInfo fileInfo, RequestContext req, ResponseContext res) {
-    if (onlyInProduction == true && req.app.isProduction != true) {
-      return super.serveAsset(fileInfo, req, res);
-    }
-
-    bool shouldNotCache = noCache == true;
-
-    if (!shouldNotCache) {
-      shouldNotCache =
-          req.headers.value(HttpHeaders.CACHE_CONTROL) == 'no-cache' ||
-              req.headers.value(HttpHeaders.PRAGMA) == 'no-cache';
-    }
-
-    if (shouldNotCache) {
-      res.headers[HttpHeaders.CACHE_CONTROL] = 'private, max-age=0, no-cache';
-      return super.serveAsset(fileInfo, req, res);
-    } else {
-      if (useEtags == true) {
-        var etags = req.headers[HttpHeaders.IF_NONE_MATCH];
-
-        if (etags?.isNotEmpty == true) {
-          bool hasBeenModified = false;
-
-          for (var etag in etags) {
-            if (etag == '*')
-              hasBeenModified = true;
-            else {
-              hasBeenModified = _etags.containsKey(fileInfo.filename) &&
-                  _etags[fileInfo.filename] == etag;
-            }
-          }
-
-          if (hasBeenModified) {
-            res.statusCode = HttpStatus.NOT_MODIFIED;
-            setCachedHeaders(fileInfo.lastModified, req, res);
-            return new Future.value(false);
-          }
-        }
-      }
-    }
-
-    if (req.headers.ifModifiedSince != null) {
-      try {
-        var ifModifiedSince = req.headers.ifModifiedSince;
-
-        if (fileInfo.lastModified != null &&
-            ifModifiedSince.compareTo(fileInfo.lastModified) >= 0) {
-          res.statusCode = HttpStatus.NOT_MODIFIED;
-          setCachedHeaders(fileInfo.lastModified, req, res);
-
-          if (_etags.containsKey(fileInfo.filename))
-            res.headers[HttpHeaders.ETAG] = _etags[fileInfo.filename];
-
-          return new Future.value(false);
-        }
-      } catch (_) {
-        throw new AngelHttpException.badRequest(
-            message: 'Invalid date for If-Modified-Since header.');
-      }
-    }
-
-    return super.serveAsset(fileInfo, req, res);
   }
 }
 

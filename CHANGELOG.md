@@ -1,3 +1,8 @@
+# 1.3.0-alpha
+* Removed file transformers.
+* `VirtualDirectory` is no longer an `AngelPlugin`, and instead exposes a `handleRequest` middleware.
+* Added `pushState` to `VirtualDirectory`.
+
 # 1.2.5
 * Fixed a bug where `onlyInProduction` was not properly adhered to.
 * Fixed another bug where `Accept-Encoding` was not properly adhered to.

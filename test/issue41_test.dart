@@ -1,13 +1,13 @@
-import 'dart:async';
-import 'dart:io';
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:angel_test/angel_test.dart';
+import 'package:file/file.dart';
+import 'package:file/local.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 final Directory swaggerUiDistDir =
-    new Directory('test/node_modules/swagger-ui-dist');
+    const LocalFileSystem().directory('test/node_modules/swagger-ui-dist');
 
 main() async {
   TestClient client;
@@ -15,19 +15,22 @@ main() async {
 
   setUp(() async {
     // Load file contents
-    swaggerUiCssContents =
-        await new File.fromUri(swaggerUiDistDir.uri.resolve('swagger-ui.css'))
-            .readAsString();
-    swaggerTestJsContents =
-        await new File.fromUri(swaggerUiDistDir.uri.resolve('test.js'))
-            .readAsString();
+    swaggerUiCssContents = await const LocalFileSystem()
+        .file(swaggerUiDistDir.uri.resolve('swagger-ui.css'))
+        .readAsString();
+    swaggerTestJsContents = await const LocalFileSystem()
+        .file(swaggerUiDistDir.uri.resolve('test.js'))
+        .readAsString();
 
     // Initialize app
     var app = new Angel();
-    await Future.forEach([
-      new VirtualDirectory(source: swaggerUiDistDir, publicPath: 'swagger/'),
-      logRequests()
-    ], app.configure);
+    app.logger = new Logger('angel')..onRecord.listen(print);
+
+    app.use(
+      new VirtualDirectory(app, const LocalFileSystem(),
+              source: swaggerUiDistDir, publicPath: 'swagger/')
+          .handleRequest,
+    );
 
     app.dumpTree();
     client = await connectTo(app);

@@ -1,38 +1,40 @@
-import 'dart:io';
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
+import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:http/http.dart' show Client;
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 main() {
   Angel app;
-  Directory testDir = new Directory('test');
+  Directory testDir = const LocalFileSystem().directory('test');
   String url;
   Client client = new Client();
 
   setUp(() async {
     app = new Angel();
+    app.logger = new Logger('angel')..onRecord.listen(print);
 
-    await app.configure(new VirtualDirectory(
-        debug: true,
-        source: testDir,
-        publicPath: '/virtual',
-        indexFileNames: ['index.txt']));
+    app.use(
+      new VirtualDirectory(app, const LocalFileSystem(),
+          source: testDir,
+          publicPath: '/virtual',
+          indexFileNames: ['index.txt']).handleRequest,
+    );
 
-    await app.configure(new VirtualDirectory(
-        debug: true,
-        source: testDir,
-        streamToIO: true,
-        indexFileNames: ['index.php', 'index.txt']));
+    app.use(
+      new VirtualDirectory(app, const LocalFileSystem(),
+          source: testDir,
+          indexFileNames: ['index.php', 'index.txt']).handleRequest,
+    );
 
-    app.after.add('Fallback');
+    app.use('Fallback');
 
     app.dumpTree(showMatchers: true);
 
-    await app.configure(logRequests());
-    await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
-    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
+    var server = await app.startServer();
+    url = "http://${server.address.host}:${server.port}";
   });
 
   tearDown(() async {
@@ -42,13 +44,13 @@ main() {
   test('can serve files, with correct Content-Type', () async {
     var response = await client.get("$url/sample.txt");
     expect(response.body, equals("Hello world"));
-    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
+    expect(response.headers['content-type'], contains("text/plain"));
   });
 
   test('can serve child directories', () async {
     var response = await client.get("$url/nested");
     expect(response.body, equals("Bird"));
-    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
+    expect(response.headers['content-type'], contains("text/plain"));
   });
 
   test('non-existent files are skipped', () async {
@@ -68,7 +70,7 @@ main() {
 
   test('chrome accept', () async {
     var response = await client.get("$url/virtual", headers: {
-      HttpHeaders.ACCEPT:
+      'accept':
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
     });
     expect(response.body, equals("index!"));
@@ -76,25 +78,25 @@ main() {
 
   test('can gzip: just gzip', () async {
     var response = await client
-        .get("$url/sample.txt", headers: {HttpHeaders.ACCEPT_ENCODING: 'gzip'});
+        .get("$url/sample.txt", headers: {'accept-encoding': 'gzip'});
     expect(response.body, equals("Hello world"));
-    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
-    expect(response.headers[HttpHeaders.CONTENT_ENCODING], 'gzip');
+    expect(response.headers['content-type'], contains("text/plain"));
+    expect(response.headers['content-encoding'], 'gzip');
   });
 
   test('can gzip: wildcard', () async {
     var response = await client
-        .get("$url/sample.txt", headers: {HttpHeaders.ACCEPT_ENCODING: 'foo, *'});
+        .get("$url/sample.txt", headers: {'accept-encoding': 'foo, *'});
     expect(response.body, equals("Hello world"));
-    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
-    expect(response.headers[HttpHeaders.CONTENT_ENCODING], 'gzip');
+    expect(response.headers['content-type'], contains("text/plain"));
+    expect(response.headers['content-encoding'], 'gzip');
   });
 
   test('can gzip: gzip and friends', () async {
-    var response = await client
-        .get("$url/sample.txt", headers: {HttpHeaders.ACCEPT_ENCODING: 'gzip, deflate, br'});
+    var response = await client.get("$url/sample.txt",
+        headers: {'accept-encoding': 'gzip, deflate, br'});
     expect(response.body, equals("Hello world"));
-    expect(response.headers[HttpHeaders.CONTENT_TYPE], contains("text/plain"));
-    expect(response.headers[HttpHeaders.CONTENT_ENCODING], 'gzip');
+    expect(response.headers['content-type'], contains("text/plain"));
+    expect(response.headers['content-encoding'], 'gzip');
   });
 }

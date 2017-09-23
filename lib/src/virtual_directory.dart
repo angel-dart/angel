@@ -1,15 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_route/angel_route.dart';
-import 'package:cli_util/cli_logging.dart' as cli;
+import 'package:file/file.dart';
 import 'package:mime/mime.dart';
-import 'package:pool/pool.dart';
-import 'package:watcher/watcher.dart';
-import 'file_info.dart';
-import 'file_transformer.dart';
-
-typedef StaticFileCallback(File file, RequestContext req, ResponseContext res);
 
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
@@ -31,24 +23,18 @@ String _pathify(String path) {
 }
 
 /// A static server plug-in.
-class VirtualDirectory implements AngelPlugin {
-  final bool debug;
-  Angel _app;
+class VirtualDirectory {
   String _prefix;
   Directory _source;
-  final Completer<Map<String, String>> _transformerLoad =
-      new Completer<Map<String, String>>();
-  final Map<String, String> _transformerMap = {};
-  Pool _transformerMapMutex;
-  final List<FileTransformer> _transformers = [];
-  List<FileTransformer> _transformersCache;
-  StreamSubscription<WatchEvent> _watch;
 
   /// The directory to serve files from.
   Directory get source => _source;
 
   /// An optional callback to run before serving files.
-  final StaticFileCallback callback;
+  final Function(File file, RequestContext req, ResponseContext res) callback;
+
+  final Angel app;
+  final FileSystem fileSystem;
 
   /// Filenames to be resolved within directories as indices.
   final Iterable<String> indexFileNames;
@@ -56,125 +42,46 @@ class VirtualDirectory implements AngelPlugin {
   /// An optional public path to map requests to.
   final String publicPath;
 
-  /// If set to `true`, files will be streamed to `res.io`, instead of added to `res.buffer`.
-  final bool streamToIO;
-
-  /// A collection of [FileTransformer] instances that will be used to dynamically compile assets, if any. **READ-ONLY**.
-  List<FileTransformer> get transformers =>
-      _transformersCache ??
-      (_transformersCache =
-          new List<FileTransformer>.unmodifiable(_transformers));
-
-  /// If `true` (default: `false`), then transformers will not be disabled in production.
-  final bool useTransformersInProduction;
-
-  /// Completes when all [transformers] are loaded.
-  Future<Map<String, String>> get transformersLoaded {
-    if ((!_app.isProduction || useTransformersInProduction == true) &&
-        !_transformerLoad.isCompleted)
-      return _transformerLoad.future;
-    else
-      return new Future.value(_transformerMap);
-  }
-
-  VirtualDirectory(
+  VirtualDirectory(this.app, this.fileSystem,
       {Directory source,
-      this.debug: false,
       this.indexFileNames: const ['index.html'],
       this.publicPath: '/',
-      this.callback,
-      this.streamToIO: false,
-      this.useTransformersInProduction: false,
-      Iterable<FileTransformer> transformers: const []}) {
+      this.callback}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
-    this._transformers.addAll(transformers ?? []);
-
     if (source != null) {
       _source = source;
     } else {
-      String dirPath = Platform.environment['ANGEL_ENV'] == 'production'
-          ? './build/web'
-          : './web';
-      _source = new Directory(dirPath);
+      String dirPath = app.isProduction ? './build/web' : './web';
+      _source = fileSystem.directory(dirPath);
     }
   }
 
-  call(Angel app) async {
-    serve(_app = app);
-    app.justBeforeStop.add((_) => close());
+  /// Responds to incoming HTTP requests.
+  Future<bool> handleRequest(RequestContext req, ResponseContext res) {
+    if (req.method != 'GET') return new Future<bool>.value(true);
+    var path = req.path.replaceAll(_straySlashes, '');
+
+    if (_prefix?.isNotEmpty == true && !path.startsWith(_prefix))
+      return new Future<bool>.value(true);
+
+    return servePath(path, req, res);
   }
 
-  void serve(Router router) {
-    // _printDebug('Source directory: ${source.absolute.path}');
-    // _printDebug('Public path prefix: "$_prefix"');
-    //router.get('$publicPath/*',
-    router.get('$_prefix/*', (RequestContext req, ResponseContext res) async {
+  /// A handler that serves the file at the given path, unless the user has requested that path.
+  RequestMiddleware pushState(String path) {
+    var vPath = path.replaceAll(_straySlashes, '');
+    if (_prefix?.isNotEmpty == true) vPath = '$_prefix/$vPath';
+
+    return (RequestContext req, ResponseContext res) {
       var path = req.path.replaceAll(_straySlashes, '');
-      return servePath(path, req, res);
-    });
-
-    if ((!_app.isProduction || useTransformersInProduction == true) &&
-        _transformers.isNotEmpty) {
-      // Create mutex, and watch for file changes
-      _transformerMapMutex = new Pool(1);
-      _transformerMapMutex.request().then((resx) {
-        _buildTransformerMap().then((_) => resx.release());
-      });
-    }
+      if (path == vPath) return new Future<bool>.value(true);
+      return servePath(vPath, req, res);
+    };
   }
 
-  close() async {
-    if (!_transformerLoad.isCompleted && _transformers.isNotEmpty) {
-      _transformerLoad.completeError(new StateError(
-          'VirtualDirectory was closed before all transformers loaded.'));
-    }
-
-    _transformerMapMutex?.close();
-    _watch?.cancel();
-  }
-
-  Future _buildTransformerMap() async {
-    print('VirtualDirectory is loading transformers...');
-
-    await for (var entity in source.list(recursive: true)) {
-      if (entity is File) {
-        _applyTransformers(entity.absolute.uri.toFilePath());
-      }
-    }
-
-    print('VirtualDirectory finished loading transformers.');
-    _transformerLoad.complete(_transformerMap);
-
-    _watch =
-        new DirectoryWatcher(source.absolute.path).events.listen((e) async {
-      _transformerMapMutex.withResource(() {
-        _applyTransformers(e.path);
-      });
-    });
-  }
-
-  void _applyTransformers(String originalAbsolutePath) {
-    FileInfo file = new FileInfo.fromFile(new File(originalAbsolutePath));
-    FileInfo outFile = file;
-    var wasClaimed = false;
-
-    do {
-      wasClaimed = false;
-      for (var transformer in _transformers) {
-        var claimed = transformer.declareOutput(outFile);
-        if (claimed != null) {
-          outFile = claimed;
-          wasClaimed = true;
-        }
-      }
-    } while (wasClaimed);
-
-    var finalName = outFile.filename;
-    if (finalName?.isNotEmpty == true && outFile != file)
-      _transformerMap[finalName] = originalAbsolutePath;
-  }
-
-  servePath(String path, RequestContext req, ResponseContext res) async {
+  /// Writes the file at the given virtual [path] to a response.
+  Future<bool> servePath(
+      String path, RequestContext req, ResponseContext res) async {
     if (_prefix.isNotEmpty) {
       // Only replace the *first* incidence
       // Resolve: https://github.com/angel-dart/angel/issues/41
@@ -185,63 +92,41 @@ class VirtualDirectory implements AngelPlugin {
     path = path.replaceAll(_straySlashes, '');
 
     var absolute = source.absolute.uri.resolve(path).toFilePath();
-    var stat = await FileStat.stat(absolute);
+    var stat = await fileSystem.stat(absolute);
     return await serveStat(absolute, stat, req, res);
   }
 
+  /// Writes the file at the path given by the [stat] to a response.
   Future<bool> serveStat(String absolute, FileStat stat, RequestContext req,
       ResponseContext res) async {
     if (stat.type == FileSystemEntityType.DIRECTORY)
-      return await serveDirectory(new Directory(absolute), stat, req, res);
+      return await serveDirectory(
+          fileSystem.directory(absolute), stat, req, res);
     else if (stat.type == FileSystemEntityType.FILE)
-      return await serveFile(new File(absolute), stat, req, res);
+      return await serveFile(fileSystem.file(absolute), stat, req, res);
     else if (stat.type == FileSystemEntityType.LINK) {
-      var link = new Link(absolute);
+      var link = fileSystem.link(absolute);
       return await servePath(await link.resolveSymbolicLinks(), req, res);
-    } else if (_transformerMapMutex != null) {
-      var resx = await _transformerMapMutex.request();
-      if (!_transformerMap.containsKey(absolute)) return true;
-      var sourceFile = new File(_transformerMap[absolute]);
-      resx.release();
-      if (!await sourceFile.exists())
-        return true;
-      else {
-        return await serveAsset(new FileInfo.fromFile(sourceFile), req, res);
-      }
     } else
       return true;
   }
 
+  /// Serves the index file of a [directory], if it exists.
   Future<bool> serveDirectory(Directory directory, FileStat stat,
       RequestContext req, ResponseContext res) async {
     for (String indexFileName in indexFileNames) {
       final index =
-          new File.fromUri(directory.absolute.uri.resolve(indexFileName));
+          fileSystem.file(directory.absolute.uri.resolve(indexFileName));
       if (await index.exists()) {
         return await serveFile(index, stat, req, res);
-      }
-
-      // Try to compile an asset
-      if (_transformerMap.isNotEmpty &&
-          _transformerMap.containsKey(index.absolute.path)) {
-        return await serveAsset(
-            new FileInfo.fromFile(
-                new File(_transformerMap[index.absolute.path])),
-            req,
-            res);
       }
     }
 
     return true;
   }
 
-  bool _acceptsGzip(RequestContext req) {
-    var h = req.headers.value(HttpHeaders.ACCEPT_ENCODING)?.toLowerCase();
-    return h?.contains('*') == true || h?.contains('gzip') == true;
-  }
-
   void _ensureContentTypeAllowed(String mimeType, RequestContext req) {
-    var value = req.headers.value(HttpHeaders.ACCEPT);
+    var value = req.headers.value('accept');
     bool acceptable = value == null ||
         value?.isNotEmpty != true ||
         (mimeType?.isNotEmpty == true && value?.contains(mimeType) == true) ||
@@ -250,14 +135,13 @@ class VirtualDirectory implements AngelPlugin {
       throw new AngelHttpException(
           new UnsupportedError(
               'Client requested $value, but server wanted to send $mimeType.'),
-          statusCode: HttpStatus.NOT_ACCEPTABLE,
+          statusCode: 406,
           message: '406 Not Acceptable');
   }
 
+  /// Writes the contents of a file to a response.
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) async {
-    // _printDebug('Sending file ${file.absolute.path}...');
-    // _printDebug('MIME type for ${file.path}: ${lookupMimeType(file.path) ?? 'application/octet-stream'}');
     res.statusCode = 200;
 
     if (callback != null) {
@@ -268,178 +152,9 @@ class VirtualDirectory implements AngelPlugin {
 
     var type = lookupMimeType(file.path) ?? 'application/octet-stream';
     _ensureContentTypeAllowed(type, req);
-    res.headers[HttpHeaders.CONTENT_TYPE] = type;
+    res.headers['content-type'] = type;
 
-    if (streamToIO == true) {
-      res
-        ..io.headers.set(HttpHeaders.CONTENT_TYPE,
-            lookupMimeType(file.path) ?? 'application/octet-stream')
-        ..end()
-        ..willCloseItself = true;
-
-      if (_acceptsGzip(req))
-        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
-
-      Stream<List<int>> stream = _acceptsGzip(req)
-          ? file.openRead().transform(GZIP.encoder)
-          : file.openRead();
-      await stream.pipe(res.io);
-    } else {
-      if (_acceptsGzip(req)) {
-        res.io.headers
-          ..set(HttpHeaders.CONTENT_TYPE,
-              lookupMimeType(file.path) ?? 'application/octet-stream')
-          ..set(HttpHeaders.CONTENT_ENCODING, 'gzip');
-        await file.openRead().transform(GZIP.encoder).forEach(res.buffer.add);
-        res.end();
-      } else
-        await res.sendFile(file);
-    }
+    await file.openRead().pipe(res);
     return false;
-  }
-
-  Future<bool> serveAsset(
-      FileInfo fileInfo, RequestContext req, ResponseContext res) async {
-    var file = await compileAsset(fileInfo);
-    if (file == null) return true;
-    _ensureContentTypeAllowed(file.mimeType, req);
-    res.headers[HttpHeaders.CONTENT_TYPE] = file.mimeType;
-    res.statusCode = 200;
-
-    if (streamToIO == true) {
-      res
-        ..statusCode = 200
-        ..io.headers.set(HttpHeaders.CONTENT_TYPE,
-            lookupMimeType(file.filename) ?? 'application/octet-stream')
-        ..end()
-        ..willCloseItself = true;
-
-      if (_acceptsGzip(req))
-        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
-
-      Stream<List<int>> stream = _acceptsGzip(req)
-          ? file.content.transform(GZIP.encoder)
-          : file.content;
-      await stream.pipe(res.io);
-    } else {
-      if (_acceptsGzip(req)) {
-        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
-        await file.content.transform(GZIP.encoder).forEach(res.buffer.add);
-      } else
-        await file.content.forEach(res.buffer.add);
-    }
-
-    return false;
-  }
-
-  /// Applies all [_transformers] to an input [file], if any.
-  Future<FileInfo> compileAsset(FileInfo file) async {
-    var iterations = 0;
-    FileInfo result = file;
-    bool wasTransformed = false;
-
-    do {
-      wasTransformed = false;
-      String originalName = file.filename;
-      for (var transformer in _transformers) {
-        if (++iterations >= 100) {
-          print('VirtualDirectory has tried 100 times to compile ${file
-              .filename}. Perhaps one of your transformers is not changing the output file\'s extension.');
-          throw new AngelHttpException(new StackOverflowError(),
-              statusCode: 500);
-        } else if (iterations < 100) iterations++;
-        var claimed = transformer.declareOutput(result);
-        if (claimed != null) {
-          result = await transformer.transform(result);
-          wasTransformed = true;
-        }
-      }
-
-      // Don't re-compile infinitely...
-      if (result.filename == originalName) wasTransformed = false;
-    } while (wasTransformed);
-
-    return result == file ? null : result;
-  }
-
-  /// Builds assets to disk using [transformers].
-  Future buildToDisk() async {
-    var l = new cli.Logger.standard();
-    print('Building assets in "${source.absolute.path}"...');
-
-    await for (var entity in source.list(recursive: true)) {
-      if (entity is File) {
-        var p = l.progress('Building "${entity.absolute.path}"');
-
-        try {
-          var asset = new FileInfo.fromFile(entity);
-          var compiled = await compileAsset(asset);
-          if (compiled == null)
-            p.finish(
-                message: '"${entity.absolute
-                    .path}" did not require compilation; skipping it.');
-          else {
-            var outFile = new File(compiled.filename);
-            if (!await outFile.exists()) await outFile.create(recursive: true);
-            var sink = outFile.openWrite();
-            await compiled.content.pipe(sink);
-            p.finish(
-                message:
-                    'Built "${entity.absolute.path}" to "${compiled.filename}".',
-                showTiming: true);
-          }
-        } on AngelHttpException {
-          // Ignore 500
-        } catch (e, st) {
-          p.finish(message: 'Failed to build "${entity.absolute.path}".');
-          stderr..writeln(e)..writeln(st);
-        }
-      }
-    }
-
-    print('Build of assets in "${source.absolute.path}" complete.');
-  }
-
-  /// Deletes any pre-built assets.
-  Future cleanFromDisk() async {
-    var l = new cli.Logger.standard();
-    print('Cleaning assets in "${source.absolute.path}"...');
-
-    await for (var entity in source.list(recursive: true)) {
-      if (entity is File) {
-        var p = l.progress('Checking "${entity.absolute.path}"');
-
-        try {
-          var asset = new FileInfo.fromFile(entity);
-          var compiled = await compileAsset(asset);
-          if (compiled == null)
-            p.finish(
-                message: '"${entity.absolute
-                    .path}" did not require compilation; skipping it.');
-          else {
-            var outFile = new File(compiled.filename);
-            if (await outFile.exists()) {
-              await outFile.delete();
-              p.finish(
-                  message: 'Deleted "${compiled
-                      .filename}", which was the output of "${entity.absolute
-                      .path}".',
-                  showTiming: true);
-            } else {
-              p.finish(
-                  message:
-                      'Output "${compiled.filename}" of "${entity.absolute.path}" does not exist.');
-            }
-          }
-        } on AngelHttpException {
-          // Ignore 500
-        } catch (e, st) {
-          p.finish(message: 'Failed to delete "${entity.absolute.path}".');
-          stderr..writeln(e)..writeln(st);
-        }
-      }
-    }
-
-    print('Purge of assets in "${source.absolute.path}" complete.');
   }
 }
