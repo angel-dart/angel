@@ -1,16 +1,18 @@
 import 'package:angel_framework/angel_framework.dart';
+import 'package:logging/logging.dart';
 
 Angel testApp() {
-  final app = new Angel();
+  final app = new Angel()..lazyParseBodies = true;
 
   app.get('/hello', 'world');
   app.get('/foo/bar', 'baz');
-  app.post('/body', (req, res) => req.lazyBody());
-
-  app.fatalErrorStream.listen((e) {
-    print('FATAL IN TEST APP: ${e.error}');
-    print(e.stack);
+  app.post('/body', (RequestContext req, res) async {
+    var body = await req.lazyBody();
+    print('Body: $body');
+    return body;
   });
+
+  app.logger = new Logger('testApp');
 
   return app..dumpTree();
 }

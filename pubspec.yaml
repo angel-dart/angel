@@ -1,16 +1,14 @@
 name: angel_proxy
 description: Angel middleware to forward requests to another server (i.e. pub serve).
-version: 1.0.9
+version: 1.1.0-alpha
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/proxy
 environment:
   sdk: ">=1.19.0"
 dependencies:
-  angel_framework: ^1.0.0-dev
+  angel_framework: ^1.1.0-alpha
+  http: ^0.11.3
 dev_dependencies:
-    angel_compress: ^1.0.0
-    angel_diagnostics: ^1.0.0
-    angel_test: ^1.0.0
-    http: ^0.11.3
-    test: ^0.12.15
+  angel_test: ^1.1.0-alpha
+  test: ^0.12.15
   

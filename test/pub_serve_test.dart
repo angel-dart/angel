@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:angel_compress/angel_compress.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_proxy/angel_proxy.dart';
 import 'package:angel_test/angel_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -12,27 +13,40 @@ main() {
 
   setUp(() async {
     testApp = new Angel();
-    testApp.get('/foo', (req, res) => res.write('pub serve'));
+    testApp.get('/foo', (req, res) async {
+      res.write('pub serve');
+    });
     testApp.get('/empty', (req, res) => res.end());
-    testApp.responseFinalizers.add(gzip());
+
+    testApp.responseFinalizers.add((req, ResponseContext res) async {
+      print('OUTGOING: ' + new String.fromCharCodes(res.buffer.toBytes()));
+    });
+
+    testApp.injectEncoders({'gzip': GZIP.encoder});
+
     var server = await testApp.startServer();
 
     app = new Angel();
     app.get('/bar', (req, res) => res.write('normal'));
-    var layer = new PubServeLayer(
-        debug: true,
-        publicPath: '/proxy',
-        host: server.address.address,
-        port: server.port);
-    print('streamToIO: ${layer.streamToIO}');
-    await app.configure(layer);
+
+    var httpClient = new http.Client();
+
+    var layer = new Proxy(
+      app,
+      httpClient,
+      server.address.address,
+      port: server.port,
+      publicPath: '/proxy',
+    );
+    app.use(layer.handleRequest);
 
     app.responseFinalizers.add((req, ResponseContext res) async {
       print('Normal. Buf: ' +
           new String.fromCharCodes(res.buffer.toBytes()) +
           ', headers: ${res.headers}');
     });
-    app.responseFinalizers.add(gzip());
+
+    app.injectEncoders({'gzip': GZIP.encoder});
 
     client = await connectTo(app);
   });
@@ -46,34 +60,19 @@ main() {
   });
 
   test('proxied', () async {
-    var response = await client.get('/proxy/foo');
-
-    // Should say it is gzipped...
-    expect(response, hasHeader('content-encoding', 'gzip'));
-
-    // Should have gzipped body
-    //
-    // We have to decode it, because `mock_request` does not auto-decode.
-    expect(response, hasBody('pub serve'));
+    var rq = new MockHttpRequest('GET', Uri.parse('/proxy/foo'))..close();
+    await app.handleRequest(rq);
+    var response = await rq.response.transform(UTF8.decoder).join();
+    expect(response, 'pub serve');
   });
 
   test('empty', () async {
     var response = await client.get('/proxy/empty');
-
-    // Should say it is gzipped...
-    expect(response, hasHeader('content-encoding', 'gzip'));
-
-    // Should have gzipped body
     expect(response.body, isEmpty);
   });
 
   test('normal', () async {
     var response = await client.get('/bar');
-
-    // Should say it is gzipped...
-    expect(response, hasHeader('content-encoding', 'gzip'));
-
-    // Should have normal body
     expect(response, hasBody('normal'));
   });
 }

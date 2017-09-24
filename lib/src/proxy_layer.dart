@@ -1,142 +1,107 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:http/src/base_client.dart' as http;
+import 'package:http/src/request.dart' as http;
+import 'package:http/src/response.dart' as http;
+import 'package:http/src/streamed_response.dart' as http;
 
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
-/// Used to mount a route for a [ProxyLayer].
-typedef Route ProxyLayerRouteAssigner(Router router, String path, handler);
-
-String _pathify(String path) {
-  var p = path.replaceAll(_straySlashes, '');
-
-  Map<String, String> replace = {};
-
-  for (Match match in _param.allMatches(p)) {
-    if (match[3] != null) replace[match[0]] = ':${match[1]}';
-  }
-
-  replace.forEach((k, v) {
-    p = p.replaceAll(k, v);
-  });
-
-  return p;
-}
-
-/// Copies HTTP headers ;)
-void copyHeaders(HttpHeaders from, HttpHeaders to) {
-  from.forEach((k, v) {
-    if (k != HttpHeaders.SERVER &&
-        (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip')))
-      to.set(k, v);
-  });
-
-  /*to
-    ..chunkedTransferEncoding = from.chunkedTransferEncoding
-    ..contentLength = from.contentLength
-    ..contentType = from.contentType
-    ..date = from.date
-    ..expires = from.expires
-    ..host = from.host
-    ..ifModifiedSince = from.ifModifiedSince
-    ..persistentConnection = from.persistentConnection
-    ..port = from.port;*/
-}
-
-class ProxyLayer {
-  Angel app;
-  HttpClient _client;
+class Proxy {
   String _prefix;
+
+  final Angel app;
+  final http.BaseClient httpClient;
 
   /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
   final bool recoverFromDead;
-  final bool debug, recoverFrom404, streamToIO;
+  final bool recoverFrom404;
   final String host, mapTo, publicPath;
   final int port;
   final String protocol;
   final Duration timeout;
-  ProxyLayerRouteAssigner routeAssigner;
 
-  ProxyLayer(
-    this.host,
-    this.port, {
-    this.debug: false,
+  Proxy(
+    this.app,
+    this.httpClient,
+    this.host, {
+    this.port,
     this.mapTo: '/',
     this.publicPath: '/',
     this.protocol: 'http',
     this.recoverFromDead: true,
     this.recoverFrom404: true,
-    this.streamToIO: false,
     this.timeout,
-    this.routeAssigner,
-    SecurityContext securityContext,
   }) {
-    _client = new HttpClient(context: securityContext);
     _prefix = publicPath.replaceAll(_straySlashes, '');
-    routeAssigner ??=
-        (Router router, String path, handler) => router.get(path, handler);
   }
 
-  call(Angel app) async => serve(this.app = app);
+  void close() => httpClient.close();
 
-  void close() => _client.close(force: true);
+  /// Handles an incoming HTTP request.
+  Future<bool> handleRequest(RequestContext req, ResponseContext res) {
+    var path = req.path.replaceAll(_straySlashes, '');
 
-  void serve(Router router) {
-    // _printDebug('Public path prefix: "$_prefix"');
-
-    handler(RequestContext req, ResponseContext res) async {
-      var path = req.path.replaceAll(_straySlashes, '');
-      return serveFile(path, req, res);
+    if (_prefix?.isNotEmpty == true) {
+      if (!path.startsWith(_prefix))
+        return new Future<bool>.value(true);
+      else {
+        path = path.replaceFirst(_prefix, '').replaceAll(_straySlashes, '');
+      }
     }
 
-    routeAssigner(router, '$publicPath/*', handler);
+    return servePath(path, req, res);
   }
 
-  serveFile(String path, RequestContext req, ResponseContext res) async {
-    var _path = path;
-    HttpClientResponse rs;
+  /// Proxies a request to the given path on the remote server.
+  Future<bool> servePath(
+      String path, RequestContext req, ResponseContext res) async {
+    http.StreamedResponse rs;
 
-    if (_prefix.isNotEmpty) {
-      _path = path.replaceAll(new RegExp('^' + _pathify(_prefix)), '');
-    }
-
-    // Create mapping
-    // _printDebug('Serving path $_path via proxy');
-    final mapping = '$mapTo/$_path'.replaceAll(_straySlashes, '');
-    // _printDebug('Mapped path $_path to path $mapping on proxy $host:$port');
+    final mapping = '$mapTo/$path'.replaceAll(_straySlashes, '');
 
     try {
-      Future<HttpClientResponse> accessRemote() async {
-        var ips = await InternetAddress.lookup(host);
-        if (ips.isEmpty)
-          throw new StateError('Could not resolve remote host "$host".');
-        var address = ips.first.address;
-        final rq = await _client.open(req.method, address, port, mapping);
-        // _printDebug('Opened client request at "$address:$port/$mapping"');
+      Future<http.StreamedResponse> accessRemote() async {
+        var url = port == null ? host : '$host:$port';
+        url = url.replaceAll(_straySlashes, '');
+        url = '$url/$mapping';
 
-        copyHeaders(req.headers, rq.headers);
-        rq.headers.set(HttpHeaders.HOST, host);
-        // _printDebug('Copied headers');
-        rq.cookies.addAll(req.cookies ?? []);
-        // _printDebug('Added cookies');
-        rq.headers.set(
-            'X-Forwarded-For', req.io.connectionInfo.remoteAddress.address);
-        rq.headers
-          ..set('X-Forwarded-Port', req.io.connectionInfo.remotePort.toString())
-          ..set('X-Forwarded-Host',
-              req.headers.host ?? req.headers.value(HttpHeaders.HOST) ?? 'none')
-          ..set('X-Forwarded-Proto', protocol);
-        // _printDebug('Added X-Forwarded headers');
+        if (!url.startsWith('http')) url = 'http://$url';
+        url = url.replaceAll(_straySlashes, '');
 
-        if (app.storeOriginalBuffer == true) {
+        var headers = <String, String>{
+          'host': port == null ? host : '$host:$port',
+          'x-forwarded-for': req.io.connectionInfo.remoteAddress.address,
+          'x-forwarded-port': req.io.connectionInfo.remotePort.toString(),
+          'x-forwarded-host':
+              req.headers.host ?? req.headers.value('host') ?? 'none',
+          'x-forwarded-proto': protocol,
+        };
+
+        req.headers.forEach((name, values) {
+          headers[name] = values.join(',');
+        });
+
+        headers['cookie'] =
+            req.cookies.map<String>((c) => '${c.name}=${c.value}').join('; ');
+
+        var body;
+
+        if (req.method != 'GET' && app.storeOriginalBuffer == true) {
           await req.parse();
-          if (req.originalBuffer?.isNotEmpty == true)
-            rq.add(req.originalBuffer);
+          if (req.originalBuffer?.isNotEmpty == true) body = req.originalBuffer;
         }
 
-        await rq.flush();
-        return await rq.close();
+        var rq = new http.Request(req.method, Uri.parse(url));
+        rq.headers.addAll(headers);
+        rq.headers['host'] = rq.url.host;
+
+        if (body != null) rq.bodyBytes = body;
+
+        return await httpClient.send(rq);
       }
 
       var future = accessRemote();
@@ -146,11 +111,13 @@ class ProxyLayer {
       if (recoverFromDead != false)
         return true;
       else
-        throw new AngelHttpException(e,
-            stackTrace: st,
-            statusCode: HttpStatus.GATEWAY_TIMEOUT,
-            message:
-                'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.');
+        throw new AngelHttpException(
+          e,
+          stackTrace: st,
+          statusCode: 504,
+          message:
+              'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.',
+        );
     } catch (e) {
       if (recoverFromDead != false)
         return true;
@@ -158,44 +125,21 @@ class ProxyLayer {
         rethrow;
     }
 
-    // _printDebug(
-    //    'Proxy responded to $mapping with status code ${rs.statusCode}');
-
     if (rs.statusCode == 404 && recoverFrom404 != false) return true;
 
     res
       ..statusCode = rs.statusCode
-      ..contentType = rs.headers.contentType;
+      ..headers.addAll(rs.headers);
 
-    // _printDebug('Proxy response headers:\n${rs.headers}');
+    if (rs.contentLength == 0 && recoverFromDead != false) return true;
 
-    if (streamToIO == true) {
-      res
-        ..willCloseItself = true
-        ..end();
+    var stream = rs.stream;
 
-      copyHeaders(rs.headers, res.io.headers);
-      res.io.statusCode = rs.statusCode;
+    if (rs.headers['content-encoding'] == 'gzip')
+      stream = stream.transform(GZIP.encoder);
 
-      if (rs.headers.contentType != null)
-        res.io.headers.contentType = rs.headers.contentType;
+    await stream.pipe(res);
 
-      // _printDebug('Outgoing content length: ${res.io.contentLength}');
-
-      if (rs.headers[HttpHeaders.CONTENT_ENCODING]?.contains('gzip') == true) {
-        res.io.headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip');
-        await rs.transform(GZIP.encoder).pipe(res.io);
-      } else
-        await rs.pipe(res.io);
-    } else {
-      rs.headers.forEach((k, v) {
-        if (k != HttpHeaders.CONTENT_ENCODING || !v.contains('gzip'))
-          res.headers[k] = v.join(',');
-      });
-
-      await rs.forEach(res.buffer.add);
-    }
-
-    return res.buffer.isEmpty;
+    return false;
   }
 }
