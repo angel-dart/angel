@@ -46,10 +46,10 @@ class WebSockets extends BaseWebSocketClient {
   }
 
   @override
-  IoWebSocketsService service<T>(String path,
+  IoWebSocketsService service(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new IoWebSocketsService(socket, this, uri, T != dynamic ? T : type);
+    return new IoWebSocketsService(socket, this, uri, type);
   }
 
   @override

@@ -78,16 +78,7 @@ class WebSocketController extends Controller {
             return app.runContained(fn, socket.request, socket.response);
           }
         } catch (e, st) {
-          // Send an error
-          if (e is AngelHttpException)
-            socket.sendError(e);
-          else if (ws.debug == true || ws.sendErrors == true)
-            socket.sendError(new AngelHttpException(e,
-                message: e.toString(),
-                stackTrace: st,
-                errors: [st.toString()]));
-          else
-            socket.sendError(new AngelHttpException(e));
+          ws.catchError(e, st, socket);
         }
       });
     });

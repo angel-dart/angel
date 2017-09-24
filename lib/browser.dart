@@ -4,11 +4,11 @@ library angel_websocket.browser;
 import 'dart:async';
 import 'dart:html';
 import 'package:angel_client/angel_client.dart';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:http/browser_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/html.dart';
 import 'base_websocket_client.dart';
-export 'package:angel_client/angel_client.dart';
 export 'angel_websocket.dart';
 
 final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
@@ -41,7 +41,7 @@ class WebSockets extends BaseWebSocketClient {
         if (wnd.closed) {
           ctrl.addError(new AngelHttpException.notAuthenticated(
               message:
-              errorMessage ?? 'Authentication via popup window failed.'));
+                  errorMessage ?? 'Authentication via popup window failed.'));
           ctrl.close();
           timer.cancel();
           sub?.cancel();
@@ -50,9 +50,9 @@ class WebSockets extends BaseWebSocketClient {
         timer.cancel();
     });
 
-    sub = window.on[eventName ?? 'token'].listen((CustomEvent e) {
+    sub = window.on[eventName ?? 'token'].listen((e) {
       if (!ctrl.isClosed) {
-        ctrl.add(e.detail);
+        ctrl.add((e as CustomEvent).detail);
         t.cancel();
         ctrl.close();
         sub.cancel();
@@ -64,7 +64,9 @@ class WebSockets extends BaseWebSocketClient {
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() {
-    var socket = new WebSocket(authToken?.isNotEmpty == true ? '$basePath?token=$authToken' : basePath );
+    var socket = new WebSocket(authToken?.isNotEmpty == true
+        ? '$basePath?token=$authToken'
+        : basePath);
     var completer = new Completer<WebSocketChannel>();
 
     socket
@@ -72,18 +74,20 @@ class WebSockets extends BaseWebSocketClient {
         if (!completer.isCompleted)
           return completer.complete(new HtmlWebSocketChannel(socket));
       })
-      ..onError.listen((ErrorEvent e) {
-        if (!completer.isCompleted) return completer.completeError(e.error);
+      ..onError.listen((e) {
+        var err = e as ErrorEvent;
+        if (!completer.isCompleted) return completer.completeError(err.error);
       });
 
     return completer.future;
   }
 
   @override
-  BrowserWebSocketsService service<T>(String path,
+  BrowserWebSocketsService service(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new BrowserWebSocketsService(socket, this, uri, deserializer: deserializer);
+    return new BrowserWebSocketsService(socket, this, uri,
+        deserializer: deserializer);
   }
 }
 

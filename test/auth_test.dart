@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_client/io.dart' as c;
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_websocket/io.dart' as c;
 import 'package:angel_websocket/server.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 const Map<String, String> USER = const {'username': 'foo', 'password': 'bar'};
@@ -27,10 +27,11 @@ main() {
 
     app.post('/auth/local', auth.authenticate('local'));
 
-    await app.configure(auth);
-    var sock = new AngelWebSocket();
-    await app.configure(sock);
-    await app.configure(logRequests());
+    await app.configure(auth.configureServer);
+    var sock = new AngelWebSocket(app);
+    await app.configure(sock.configureServer);
+    app.all('/ws', sock.handleRequest);
+    app.logger = new Logger('angel_auth')..onRecord.listen(print);
 
     var server = await app.startServer();
     client = new c.Rest('http://${server.address.address}:${server.port}');
@@ -38,12 +39,13 @@ main() {
     await ws.connect();
   });
 
-  tearDown(() =>
-      Future.wait([
-        app.close(),
-        client.close(),
-        ws.close()
-      ]));
+  tearDown(() {
+    return Future.wait([
+      app.close(),
+      client.close(),
+      ws.close(),
+    ]);
+  });
 
   test('auth event fires', () async {
     var localAuth = await client.authenticate(type: 'local', credentials: USER);

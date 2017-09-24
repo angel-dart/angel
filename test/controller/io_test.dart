@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart' as srv;
 import 'package:angel_websocket/io.dart' as ws;
 import 'package:angel_websocket/server.dart' as srv;
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
@@ -16,14 +16,15 @@ main() {
   setUp(() async {
     app = new srv.Angel();
 
-    websockets = new srv.AngelWebSocket(debug: true)
+    websockets = new srv.AngelWebSocket(app)
       ..onData.listen((data) {
         print('Received by server: $data');
       });
 
-    await app.configure(websockets);
+    await app.configure(websockets.configureServer);
+    app.all('/ws', websockets.handleRequest);
     await app.configure(new GameController());
-    await app.configure(logRequests(new File('log.txt')));
+    app.logger = new Logger('angel_auth')..onRecord.listen(print);
 
     server = await app.startServer();
     url = 'ws://${server.address.address}:${server.port}/ws';

@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'package:angel_client/angel_client.dart';
+import 'package:angel_client/base_angel_client.dart';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:http/src/base_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'angel_websocket.dart';
-export 'package:angel_client/angel_client.dart';
-import 'package:angel_client/base_angel_client.dart';
 
 final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
@@ -133,7 +133,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   Future<WebSocketChannel> getConnectedWebSocket();
 
   @override
-  WebSocketsService service<T>(String path,
+  WebSocketsService service(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, '');
     return new WebSocketsService(socket, this, uri,

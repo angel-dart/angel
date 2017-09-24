@@ -23,8 +23,13 @@ import "package:angel_websocket/server.dart";
 main() async {
   var app = new Angel();
 
-  // Ensure this runs after all our services are in-place
-  app.justBeforeStart.add(new AngelWebSocket("/ws"));
+  var ws = new AngelWebSocket();
+  
+  // Apply configuration
+  await app.configure(ws.configureServer);
+  
+  // Listen for requests at `/ws`.
+  app.all('/ws', ws.handleRequest);
 }
 
 ```
