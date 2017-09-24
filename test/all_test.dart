@@ -75,28 +75,4 @@ main() {
     });
     expect(response.body, equals("index!"));
   });
-
-  test('can gzip: just gzip', () async {
-    var response = await client
-        .get("$url/sample.txt", headers: {'accept-encoding': 'gzip'});
-    expect(response.body, equals("Hello world"));
-    expect(response.headers['content-type'], contains("text/plain"));
-    expect(response.headers['content-encoding'], 'gzip');
-  });
-
-  test('can gzip: wildcard', () async {
-    var response = await client
-        .get("$url/sample.txt", headers: {'accept-encoding': 'foo, *'});
-    expect(response.body, equals("Hello world"));
-    expect(response.headers['content-type'], contains("text/plain"));
-    expect(response.headers['content-encoding'], 'gzip');
-  });
-
-  test('can gzip: gzip and friends', () async {
-    var response = await client.get("$url/sample.txt",
-        headers: {'accept-encoding': 'gzip, deflate, br'});
-    expect(response.body, equals("Hello world"));
-    expect(response.headers['content-type'], contains("text/plain"));
-    expect(response.headers['content-encoding'], 'gzip');
-  });
 }

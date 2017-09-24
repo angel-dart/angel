@@ -128,38 +128,16 @@ class CachingVirtualDirectory extends VirtualDirectory {
         }
       }
 
-      var queue = new StreamQueue(file.openRead());
-
-      return new Future<bool>(() async {
-        var buf = new Uint8List(50), hanging = <int>[];
-        int added = 0;
-
-        while (added < 50) {
-          var deficit = 50 - added;
-          var next = await queue.next;
-
-          for (int i = 0; i < deficit; i++) {
-            buf[added + i] = next[i];
-          }
-
-          if (next.length > deficit) {
-            hanging.addAll(next.skip(deficit));
-          }
-        }
-
+      return file.readAsBytes().then((buf) {
         var etag = _etags[file.absolute.path] = weakEtag(buf);
-
         res.statusCode = 200;
         res.headers
           ..['ETag'] = etag
           ..['content-type'] =
               lookupMimeType(file.path) ?? 'application/octet-stream';
         setCachedHeaders(stat.modified, req, res);
-
         res.add(buf);
-        res.add(hanging);
-
-        return queue.rest.pipe(res).then((_) => false);
+        return false;
       });
     }
   }

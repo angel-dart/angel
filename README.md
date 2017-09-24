@@ -9,25 +9,27 @@ In `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    angel_static: ^1.3.0
+    angel_static: ^1.3.0-alpha
 ```
 
 # Usage
 To serve files from a directory, you need to create a `VirtualDirectory`.
+Keep in mind that `angel_static` uses `package:file` instead of `dart:io`.
 
 ```dart
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
+import 'package:file/local.dart';
 
 main() async {
   var app = new Angel();
+  var fs = const LocalFileSystem();
 
   // Normal static server
-  var vDir = new VirtualDirectory(source: new Directory('./public'));
+  var vDir = new VirtualDirectory(app, fs, source: new Directory('./public'));
 
   // Send Cache-Control, ETag, etc. as well
-  var vDir = new CachingVirtualDirectory(source: new Directory('./public'));
+  var vDir = new CachingVirtualDirectory(app, fs, source: new Directory('./public'));
 
   // Mount the VirtualDirectory's request handler
   app.use(vDir.handleRequest);

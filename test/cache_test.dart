@@ -3,6 +3,7 @@ import 'package:angel_static/angel_static.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:http/http.dart' show Client;
+import 'package:logging/logging.dart';
 import 'package:matcher/matcher.dart';
 import 'package:test/test.dart';
 
@@ -26,6 +27,13 @@ main() {
 
     app.dumpTree(showMatchers: true);
 
+    app.logger = new Logger('angel_static')
+      ..onRecord.listen((rec) {
+        print(rec);
+        if (rec.error != null) print(rec.error);
+        if (rec.stackTrace != null) print(rec.stackTrace);
+      });
+
     var server = await app.startServer();
     url = "http://${server.address.host}:${server.port}";
   });
@@ -43,7 +51,7 @@ main() {
 
     expect(response.statusCode, equals(200));
     expect(
-        ['ETag', 'cache-control', 'expires', 'last-modified'],
+        ['etag', 'cache-control', 'expires', 'last-modified'],
         everyElement(predicate(
             response.headers.containsKey, 'contained in response headers')));
   });
