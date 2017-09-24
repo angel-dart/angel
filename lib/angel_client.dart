@@ -44,7 +44,7 @@ abstract class Angel {
   /// Logs the current user out of the application.
   Future logout();
 
-  Service<T> service<T>(String path, {Type type, AngelDeserializer deserializer});
+  Service service(String path, {Type type, AngelDeserializer deserializer});
 
   Future<http.Response> delete(String url, {Map<String, String> headers});
 
@@ -90,24 +90,24 @@ class AngelAuthResult {
 }
 
 /// Queries a service on an Angel server, with the same API.
-abstract class Service<T> {
+abstract class Service {
   /// Fired on `indexed` events.
-  Stream<T> get onIndexed;
+  Stream get onIndexed;
 
   /// Fired on `read` events.
-  Stream<T> get onRead;
+  Stream get onRead;
 
   /// Fired on `created` events.
-  Stream<T> get onCreated;
+  Stream get onCreated;
 
   /// Fired on `modified` events.
-  Stream<T> get onModified;
+  Stream get onModified;
 
   /// Fired on `updated` events.
-  Stream<T> get onUpdated;
+  Stream get onUpdated;
 
   /// Fired on `removed` events.
-  Stream<T> get onRemoved;
+  Stream get onRemoved;
 
   /// The Angel instance powering this service.
   Angel get app;

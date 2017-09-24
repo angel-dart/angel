@@ -191,10 +191,10 @@ abstract class BaseAngelClient extends Angel {
   }
 
   @override
-  Service<T> service<T>(String path,
+  Service service(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(straySlashes, "");
-    var s = new BaseAngelService<T>(client, this, '$basePath/$uri',
+    var s = new BaseAngelService(client, this, '$basePath/$uri',
         deserializer: deserializer);
     _services.add(s);
     return s;
@@ -241,37 +241,37 @@ abstract class BaseAngelClient extends Angel {
   }
 }
 
-class BaseAngelService<T> extends Service<T> {
+class BaseAngelService extends Service {
   @override
   final BaseAngelClient app;
   final String basePath;
   final http.BaseClient client;
   final AngelDeserializer deserializer;
 
-  final StreamController<T> _onIndexed = new StreamController<T>(),
-      _onRead = new StreamController<T>(),
-      _onCreated = new StreamController<T>(),
-      _onModified = new StreamController<T>(),
-      _onUpdated = new StreamController<T>(),
-      _onRemoved = new StreamController<T>();
+  final StreamController _onIndexed = new StreamController(),
+      _onRead = new StreamController(),
+      _onCreated = new StreamController(),
+      _onModified = new StreamController(),
+      _onUpdated = new StreamController(),
+      _onRemoved = new StreamController();
 
   @override
-  Stream<T> get onIndexed => _onIndexed.stream;
+  Stream get onIndexed => _onIndexed.stream;
 
   @override
-  Stream<T> get onRead => _onRead.stream;
+  Stream get onRead => _onRead.stream;
 
   @override
-  Stream<T> get onCreated => _onCreated.stream;
+  Stream get onCreated => _onCreated.stream;
 
   @override
-  Stream<T> get onModified => _onModified.stream;
+  Stream get onModified => _onModified.stream;
 
   @override
-  Stream<T> get onUpdated => _onUpdated.stream;
+  Stream get onUpdated => _onUpdated.stream;
 
   @override
-  Stream<T> get onRemoved => _onRemoved.stream;
+  Stream get onRemoved => _onRemoved.stream;
 
   @override
   Future close() async {
