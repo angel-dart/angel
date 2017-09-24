@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
@@ -5,25 +6,26 @@ import 'package:angel_auth/angel_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
-final AngelAuth Auth = new AngelAuth();
+final AngelAuth auth = new AngelAuth();
 Map headers = {HttpHeaders.ACCEPT: ContentType.JSON.mimeType};
 AngelAuthOptions localOpts = new AngelAuthOptions(
     failureRedirect: '/failure', successRedirect: '/success');
 Map sampleUser = {'hello': 'world'};
 
-verifier(username, password) async {
+Future verifier(String username, String password) async {
   if (username == 'username' && password == 'password') {
     return sampleUser;
   } else
     return false;
 }
 
-wireAuth(Angel app) async {
-  Auth.serializer = (user) async => 1337;
-  Auth.deserializer = (id) async => sampleUser;
+Future wireAuth(Angel app) async {
+  auth.serializer = (user) async => 1337;
+  auth.deserializer = (id) async => sampleUser;
 
-  Auth.strategies.add(new LocalAuthStrategy(verifier));
-  await app.configure(Auth);
+  auth.strategies.add(new LocalAuthStrategy(verifier));
+  await app.configure(auth.configureServer);
+  app.use(auth.decodeJwt);
 }
 
 main() async {
@@ -34,11 +36,11 @@ main() async {
 
   setUp(() async {
     client = new http.Client();
-    app = new Angel(debug: true);
+    app = new Angel();
     await app.configure(wireAuth);
-    app.get('/hello', 'Woo auth', middleware: [Auth.authenticate('local')]);
+    app.get('/hello', 'Woo auth', middleware: [auth.authenticate('local')]);
     app.post('/login', 'This should not be shown',
-        middleware: [Auth.authenticate('local', localOpts)]);
+        middleware: [auth.authenticate('local', localOpts)]);
     app.get('/success', "yep", middleware: ['auth']);
     app.get('/failure', "nope");
 
@@ -95,8 +97,8 @@ main() async {
   });
 
   test('force basic', () async {
-    Auth.strategies.clear();
-    Auth.strategies
+    auth.strategies.clear();
+    auth.strategies
         .add(new LocalAuthStrategy(verifier, forceBasic: true, realm: 'test'));
     var response = await client.get("$url/hello", headers: headers);
     print(response.headers);

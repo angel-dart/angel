@@ -30,7 +30,8 @@ main() {
     auth.serializer = (User user) async => user.id;
     auth.deserializer = app.service('users').read;
 
-    await app.configure(auth);
+    await app.configure(auth.configureServer);
+    app.use(auth.decodeJwt);
 
     auth.strategies.add(new LocalAuthStrategy((username, password) async {
       final List<User> users = await app.service('users').index();

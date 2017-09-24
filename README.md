@@ -33,9 +33,15 @@ configureServer(Angel app) async {
   // If the last strategy throws an authentication failure, then
   // a `401 Not Authenticated` is thrown.
   var chainedHandler = auth.authenticate(
-    'basic,facebook',
+    ['basic','facebook'],
     authOptions
   );
+  
+  // Apply angel_auth-specific configuration
+  await app.configure(auth.configureServer);
+  
+  // Middleware to decode JWT's...
+  app.use(auth.decodeJwt);
 }
 ```
 
@@ -60,7 +66,7 @@ configureServer(Angel app) async {
   // If the last strategy throws an authentication failure, then
   // a `401 Not Authenticated` is thrown.
   var chainedHandler = auth.authenticate(
-    'basic,facebook',
+    ['basic','facebook'],
     authOptions
   );
 }
