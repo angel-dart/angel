@@ -62,7 +62,10 @@ main() {
   test('proxied', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/proxy/foo'))..close();
     await app.handleRequest(rq);
-    var response = await rq.response.transform(UTF8.decoder).join();
+    var response = await rq.response
+        .transform(GZIP.decoder)
+        .transform(UTF8.decoder)
+        .join();
     expect(response, 'pub serve');
   });
 
