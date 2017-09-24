@@ -25,7 +25,7 @@ Future<TestClient> connectTo(Angel app,
   if (!app.isProduction)
     app.properties.putIfAbsent('testMode', () => true);
 
-  for (var plugin in app.justBeforeStart)
+  for (var plugin in app.startupHooks)
     await plugin(app);
   return new TestClient(app, autoDecodeGzip: autoDecodeGzip != false)
     ..session.addAll(initialSession ?? {});

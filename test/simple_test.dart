@@ -44,8 +44,9 @@ main() {
                   ],
               create: (data, [params]) async => {'foo': 'bar'}));
 
-    var ws = new AngelWebSocket();
-    await app.configure(ws);
+    var ws = new AngelWebSocket(app);
+    await app.configure(ws.configureServer);
+    app.all('/ws', ws.handleRequest);
 
     client = await connectTo(app);
   });
