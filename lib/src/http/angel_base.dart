@@ -13,7 +13,7 @@ typedef Future<String> ViewGenerator(String path, [Map data]);
 class AngelBase extends Routable {
   Container _container = new Container();
 
-  final Map properties = {};
+  final Map configuration = {};
 
   /// When set to true, the request body will not be parsed
   /// automatically. You can call `req.parse()` manually,
@@ -33,18 +33,18 @@ class AngelBase extends Routable {
   ViewGenerator viewGenerator = (String view, [Map data]) async =>
       "No view engine has been configured yet.";
 
-  operator [](key) => properties[key];
-  operator []=(key, value) => properties[key] = value;
+  operator [](key) => configuration[key];
+  operator []=(key, value) => configuration[key] = value;
 
   noSuchMethod(Invocation invocation) {
     if (invocation.memberName != null) {
       String name = fastNameFromSymbol(invocation.memberName);
 
       if (invocation.isMethod) {
-        return Function.apply(properties[name], invocation.positionalArguments,
+        return Function.apply(configuration[name], invocation.positionalArguments,
             invocation.namedArguments);
       } else if (invocation.isGetter) {
-        return properties[name];
+        return configuration[name];
       }
     }
 

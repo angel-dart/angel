@@ -21,9 +21,9 @@ main() {
     });
 
     test('can use app.properties like members', () {
-      app.properties['hello'] = 'world';
-      app.properties['foo'] = () => 'bar';
-      app.properties['Foo'] = new Foo('bar');
+      app.configuration['hello'] = 'world';
+      app.configuration['foo'] = () => 'bar';
+      app.configuration['Foo'] = new Foo('bar');
 
       expect(app.hello, equals('world'));
       expect(app.foo(), equals('bar'));

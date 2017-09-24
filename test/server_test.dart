@@ -21,7 +21,7 @@ main() {
   });
 
   group('scoping', () {
-    var parent = new Angel()..properties['two'] = 2;
+    var parent = new Angel()..configuration['two'] = 2;
     var child = new Angel();
     parent.use('/child', child);
 
@@ -66,10 +66,10 @@ main() {
   test('plug-ins run on startup', () async {
     var app = new Angel();
     app.startupHooks.add((app) async {
-      app.properties['two'] = 2;
+      app.configuration['two'] = 2;
     });
     await app.startServer();
-    expect(app.properties['two'], 2);
+    expect(app.configuration['two'], 2);
     await app.close();
   });
 

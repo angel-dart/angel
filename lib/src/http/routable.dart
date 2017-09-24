@@ -37,7 +37,7 @@ RequestMiddleware waterfall(List handlers) {
 class Routable extends Router {
   final Map<Pattern, Controller> _controllers = {};
   final Map<Pattern, Service> _services = {};
-  final Map properties = {};
+  final Map configuration = {};
 
   Routable({bool debug: false}) : super(debug: debug);
 
@@ -134,9 +134,9 @@ class Routable extends Router {
 
     // Also copy properties...
     if (router is Routable) {
-      Map copiedProperties = new Map.from(router.properties);
+      Map copiedProperties = new Map.from(router.configuration);
       for (String propertyName in copiedProperties.keys) {
-        properties.putIfAbsent("$middlewarePrefix$propertyName",
+        configuration.putIfAbsent("$middlewarePrefix$propertyName",
             () => copiedMiddleware[propertyName]);
       }
     }

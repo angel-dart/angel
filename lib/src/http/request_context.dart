@@ -2,10 +2,14 @@ library angel_framework.http.request_context;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:mirrors';
 import 'package:body_parser/body_parser.dart';
 import 'package:charcode/charcode.dart';
 import '../fast_name_from_symbol.dart';
+import 'response_context.dart';
+import 'routable.dart';
 import 'server.dart' show Angel;
+part 'injection.dart';
 
 /// A convenience wrapper around an incoming HTTP request.
 @proxy
@@ -35,8 +39,10 @@ class RequestContext {
   /// The requested hostname.
   String get hostname => io.headers.value(HttpHeaders.HOST);
 
-  /// A [Map] of values that should be DI'd.
-  final Map injections = {};
+  final Map _injections = {};
+
+  /// A [Map] of singletons injected via [inject]. *Read-only*.
+  Map get injections => new Map.unmodifiable(_injections);
 
   /// The underlying [HttpRequest] instance underneath this context.
   HttpRequest get io => _io;
@@ -181,14 +187,14 @@ class RequestContext {
     return ctx;
   }
 
-  /// Grabs an object by key or type from [params], [injections], or
+  /// Grabs an object by key or type from [params], [_injections], or
   /// [app].container. Use this to perform dependency injection
   /// within a service hook.
   T grab<T>(key) {
     if (params.containsKey(key))
       return params[key];
-    else if (injections.containsKey(key))
-      return injections[key];
+    else if (_injections.containsKey(key))
+      return _injections[key];
     else if (properties.containsKey(key))
       return properties[key];
     else {
@@ -206,9 +212,9 @@ class RequestContext {
     }
   }
 
-  /// Shorthand to add to [injections].
+  /// Shorthand to add to [_injections].
   void inject(type, value) {
-    injections[type] = value;
+    _injections[type] = value;
   }
 
   /// Returns `true` if the client's `Accept` header indicates that the given [contentType] is considered a valid response.

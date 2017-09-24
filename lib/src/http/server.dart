@@ -3,7 +3,6 @@ library angel_framework.http.server;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:mirrors';
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart' hide Extensible;
 import 'package:charcode/charcode.dart';
@@ -290,7 +289,8 @@ class Angel extends AngelBase {
 
   Future<RequestContext> createRequestContext(HttpRequest request) {
     return RequestContext.from(request, this).then((req) {
-      return req..injections.addAll(_injections ?? {});
+      _injections.forEach(req.inject);
+      return req;
     });
   }
 
@@ -309,7 +309,7 @@ class Angel extends AngelBase {
 
   /// Attempts to find a property by the given name within this application.
   findProperty(key) {
-    if (properties.containsKey(key)) return properties[key];
+    if (configuration.containsKey(key)) return configuration[key];
     return parent != null ? parent.findProperty(key) : null;
   }
 
@@ -538,10 +538,13 @@ class Angel extends AngelBase {
 
       return finalizers.then((_) => request.response.close()).then((_) {
         if (logger != null) {
-          var sw = req.injections[Stopwatch];
-          sw?.stop();
-          logger.info(
-              "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
+          var sw = req.grab<Stopwatch>(Stopwatch);
+
+          if (sw.isRunning) {
+            sw?.stop();
+            logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
+                    ?.elapsedMilliseconds ?? 'unknown'} ms)");
+          }
         }
       });
     }
@@ -669,39 +672,4 @@ class Angel extends AngelBase {
 
     return new Angel.fromSecurityContext(serverContext);
   }
-}
-
-/// Predetermines what needs to be injected for a handler to run.
-InjectionRequest preInject(Function handler) {
-  var injection = new InjectionRequest();
-
-  ClosureMirror closureMirror = reflect(handler);
-
-  if (closureMirror.function.parameters.isEmpty) return injection;
-
-  // Load parameters
-  for (var parameter in closureMirror.function.parameters) {
-    var name = MirrorSystem.getName(parameter.simpleName);
-    var type = parameter.type.reflectedType;
-
-    if (!parameter.isNamed) {
-      if (parameter.isOptional) injection.optional.add(name);
-
-      if (type == RequestContext || type == ResponseContext) {
-        injection.required.add(type);
-      } else if (name == 'req') {
-        injection.required.add(RequestContext);
-      } else if (name == 'res') {
-        injection.required.add(ResponseContext);
-      } else if (type == dynamic) {
-        injection.required.add(name);
-      } else {
-        injection.required.add([name, type]);
-      }
-    } else {
-      injection.named[name] = type;
-    }
-  }
-
-  return injection;
 }
