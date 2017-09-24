@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:angel_framework/src/http/angel_http_exception.dart';
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:collection/collection.dart';
 import 'package:http/src/base_client.dart' as http;
 import 'package:http/src/base_request.dart' as http;
@@ -72,17 +72,29 @@ abstract class BaseAngelClient extends Angel {
       String reviveEndpoint: '/auth/token'}) async {
     if (type == null) {
       final url = '$basePath$reviveEndpoint';
+      String token;
+
+      if (credentials is String)
+        token = credentials;
+      else if (credentials is Map && credentials.containsKey('token'))
+        token = credentials['token'];
+
+      if (token == null) {
+        throw new ArgumentError(
+            'If `type` is not set, a JWT is expected as the `credentials` argument.');
+      }
+
       final response = await client.post(url, headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${credentials['token']}'
+        'Authorization': 'Bearer $token'
       });
 
-      try {
-        if (_invalid(response)) {
-          throw failure(response);
-        }
+      if (_invalid(response)) {
+        throw failure(response);
+      }
 
+      try {
         final json = JSON.decode(response.body);
 
         if (json is! Map ||
@@ -96,6 +108,8 @@ abstract class BaseAngelClient extends Angel {
         var r = new AngelAuthResult.fromMap(json);
         _onAuthenticated.add(r);
         return r;
+      } on AngelHttpException {
+        rethrow;
       } catch (e, st) {
         throw failure(response, error: e, stack: st);
       }
@@ -110,11 +124,11 @@ abstract class BaseAngelClient extends Angel {
         response = await client.post(url, headers: _writeHeaders);
       }
 
-      try {
-        if (_invalid(response)) {
-          throw failure(response);
-        }
+      if (_invalid(response)) {
+        throw failure(response);
+      }
 
+      try {
         final json = JSON.decode(response.body);
 
         if (json is! Map ||
@@ -128,6 +142,8 @@ abstract class BaseAngelClient extends Angel {
         var r = new AngelAuthResult.fromMap(json);
         _onAuthenticated.add(r);
         return r;
+      } on AngelHttpException {
+        rethrow;
       } catch (e, st) {
         throw failure(response, error: e, stack: st);
       }

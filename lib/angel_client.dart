@@ -4,7 +4,7 @@ library angel_client;
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/src/response.dart' as http;
-export 'package:angel_framework/src/http/angel_http_exception.dart';
+export 'package:angel_http_exception/angel_http_exception.dart';
 
 /// A function that configures an [Angel] client in some way.
 typedef Future AngelConfigurer(Angel app);
