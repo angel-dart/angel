@@ -6,8 +6,8 @@ class WebSocketContext {
   /// Use this to listen for events.
   _WebSocketEventTable on = new _WebSocketEventTable();
 
-  /// The underlying [WebSocket] instance.
-  final WebSocket io;
+  /// The underlying [WebSocketChannel].
+  final WebSocketChannel channel;
 
   /// The original [RequestContext].
   final RequestContext request;
@@ -28,15 +28,14 @@ class WebSocketContext {
   /// Fired once the underlying [WebSocket] closes.
   Stream<Null> get onClose => _onClose.stream;
 
-  /// Fired when any data is sent through [io].
+  /// Fired when any data is sent through [channel].
   Stream get onData => _onData.stream;
 
-  WebSocketContext(WebSocket this.io, RequestContext this.request,
-      ResponseContext this.response);
+  WebSocketContext(this.channel, this.request, this.response);
 
   /// Closes the underlying [WebSocket].
   Future close([int code, String reason]) async {
-    await io.close(code, reason);
+    await channel.sink.close(code, reason);
     _onAction.close();
     _onData.close();
     _onClose.add(null);
@@ -45,7 +44,8 @@ class WebSocketContext {
 
   /// Sends an arbitrary [WebSocketEvent];
   void send(String eventName, data) {
-    io.add(god.serialize(new WebSocketEvent(eventName: eventName, data: data)));
+    channel.sink.add(
+        god.serialize(new WebSocketEvent(eventName: eventName, data: data)));
   }
 
   /// Sends an error event.

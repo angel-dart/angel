@@ -9,6 +9,8 @@ import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'angel_websocket.dart';
 export 'angel_websocket.dart';
 
@@ -108,7 +110,7 @@ class AngelWebSocket {
       var result = true;
       if (filter != null) result = await filter(client);
       if (result == true) {
-        client.io.add((serializer ?? god.serialize)(event.toJson()));
+        client.channel.sink.add((serializer ?? god.serialize)(event.toJson()));
       }
     });
 
@@ -330,7 +332,8 @@ class AngelWebSocket {
       ..end();
 
     var ws = await WebSocketTransformer.upgrade(req.io);
-    var socket = new WebSocketContext(ws, req, res);
+    var channel = new IOWebSocketChannel(ws);
+    var socket = new WebSocketContext(channel, req, res);
     _clients.add(socket);
     await handleConnect(socket);
 
@@ -363,6 +366,8 @@ class AngelWebSocket {
 /// notifications from other nodes.
 abstract class WebSocketSynchronizer {
   Stream<WebSocketEvent> get stream;
+
+  Future close() => new Future.value();
 
   void notifyOthers(WebSocketEvent e);
 }
