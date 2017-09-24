@@ -1,3 +1,7 @@
+# 1.1.0-alpha+3
+* Fixed a bug where `encoders` would cause a malformed response to be sent.
+* Fixed a bug where `encoders` would not always use the correct encoder.
+
 # 1.1.0-alpha
 * Removed `AngelFatalError`, and subsequently `fatalErrorStream`.
 * Removed all `@deprecated` members.

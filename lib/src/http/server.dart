@@ -498,9 +498,8 @@ class Angel extends AngelBase {
         request.response.headers.add(key, res.headers[key]);
       }
 
-      request.response.headers
-        ..chunkedTransferEncoding = res.chunked ?? true
-        ..set(HttpHeaders.CONTENT_LENGTH, res.buffer.length);
+      request.response.contentLength = res.buffer.length;
+      request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
 
       List<int> outputBuffer = res.buffer.toBytes();
 
@@ -526,6 +525,7 @@ class Angel extends AngelBase {
           if (encoder != null) {
             request.response.headers.set(HttpHeaders.CONTENT_ENCODING, key);
             outputBuffer = res.encoders[key].convert(outputBuffer);
+            request.response.contentLength = outputBuffer.length;
             break;
           }
         }
