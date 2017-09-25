@@ -1,8 +1,8 @@
 library angel_configuration;
 
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
+import 'package:file/file.dart';
 import 'package:merge_map/merge_map.dart';
 import 'package:yaml/yaml.dart';
 
@@ -16,18 +16,18 @@ class Configuration {
   final Angel app;
   Configuration(this.app);
 
-  operator [](key) => app.properties[key];
-  operator []=(key, value) => app.properties[key] = value;
+  operator [](key) => app.configuration[key];
+  operator []=(key, value) => app.configuration[key] = value;
 
   noSuchMethod(Invocation invocation) {
     if (invocation.memberName != null) {
       String name = _sym.firstMatch(invocation.memberName.toString()).group(1);
 
       if (invocation.isMethod) {
-        return Function.apply(app.properties[name],
+        return Function.apply(app.configuration[name],
             invocation.positionalArguments, invocation.namedArguments);
       } else if (invocation.isGetter) {
-        return app.properties[name];
+        return app.configuration[name];
       }
     }
 
@@ -38,8 +38,9 @@ class Configuration {
 _loadYamlFile(Angel app, File yamlFile, Map<String, String> env) async {
   if (await yamlFile.exists()) {
     var config = loadYaml(await yamlFile.readAsString());
+
     if (config is! Map) {
-      stderr.writeln(
+      app.logger?.warning(
           'WARNING: The configuration at "${yamlFile.absolute.path}" is not a Map. Refusing to load it.');
       return;
     }
@@ -47,12 +48,12 @@ _loadYamlFile(Angel app, File yamlFile, Map<String, String> env) async {
     Map<String, dynamic> out = {};
 
     for (String key in config.keys) {
-      out[key] = _applyEnv(config[key], env ?? {});
+      out[key] = _applyEnv(config[key], env ?? {}, app);
     }
 
-    app.properties.addAll(mergeMap(
+    app.configuration.addAll(mergeMap(
       [
-        app.properties,
+        app.configuration,
         out,
       ],
       acceptNull: true,
@@ -60,24 +61,24 @@ _loadYamlFile(Angel app, File yamlFile, Map<String, String> env) async {
   }
 }
 
-_applyEnv(var v, Map<String, String> env) {
+_applyEnv(var v, Map<String, String> env, Angel app) {
   if (v is String) {
     if (v.startsWith(r'$') && v.length > 1) {
       var key = v.substring(1);
       if (env.containsKey(key))
         return env[key];
       else {
-        stderr.writeln(
+        app.logger?.warning(
             'Your configuration calls for loading the value of "$key" from the system environment, but it is not defined. Defaulting to `null`.');
         return null;
       }
     } else
       return v;
   } else if (v is Iterable) {
-    return v.map((x) => _applyEnv(x, env ?? {})).toList();
+    return v.map((x) => _applyEnv(x, env ?? {}, app)).toList();
   } else if (v is Map) {
     return v.keys
-        .fold<Map>({}, (out, k) => out..[k] = _applyEnv(v[k], env ?? {}));
+        .fold<Map>({}, (out, k) => out..[k] = _applyEnv(v[k], env ?? {}, app));
   } else
     return v;
 }
@@ -88,21 +89,21 @@ _applyEnv(var v, Map<String, String> env) {
 /// load from a [overrideEnvironmentName].
 ///
 /// You can also specify a custom [envPath] to load system configuration from.
-AngelConfigurer loadConfigurationFile(
+AngelConfigurer configuration(
+    FileSystem fileSystem,
     {String directoryPath: "./config",
     String overrideEnvironmentName,
     String envPath}) {
   return (Angel app) async {
-    Directory sourceDirectory = new Directory(directoryPath);
+    Directory sourceDirectory = fileSystem.directory(directoryPath);
     var env = dotenv.env;
-    var envFile =
-        new File.fromUri(sourceDirectory.uri.resolve(envPath ?? '.env'));
+    var envFile = sourceDirectory.childFile(envPath ?? '.env');
 
     if (await envFile.exists()) {
       try {
         dotenv.load(envFile.absolute.uri.toFilePath());
       } catch (_) {
-        stderr.writeln(
+        app.logger?.warning(
             'WARNING: Found an environment configuration at ${envFile.absolute.path}, but it was invalidly formatted. Refusing to load it.');
       }
     }
@@ -113,13 +114,11 @@ AngelConfigurer loadConfigurationFile(
       environmentName = overrideEnvironmentName;
     }
 
-    File defaultYaml =
-        new File.fromUri(sourceDirectory.absolute.uri.resolve("default.yaml"));
+    var defaultYaml = sourceDirectory.childFile('default.yaml');
     await _loadYamlFile(app, defaultYaml, env);
 
     String configFilePath = "$environmentName.yaml";
-    File configFile =
-        new File.fromUri(sourceDirectory.absolute.uri.resolve(configFilePath));
+    var configFile = sourceDirectory.childFile(configFilePath);
 
     await _loadYamlFile(app, configFile, env);
     app.container.singleton(new Configuration(app));

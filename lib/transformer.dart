@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:barback/barback.dart';
 import 'package:analyzer/analyzer.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:file/local.dart';
 import 'angel_configuration.dart';
 
 class ConfigurationTransformer extends Transformer {
@@ -17,9 +18,11 @@ class ConfigurationTransformer extends Transformer {
     try {
       var app = new Angel();
 
-      await app.configure(loadConfigurationFile(
-          directoryPath: _settings.configuration["dir"] ?? "./config",
-          overrideEnvironmentName: _settings.configuration["env"]));
+      await app.configure(configuration(
+        const LocalFileSystem(),
+        directoryPath: _settings.configuration["dir"] ?? "./config",
+        overrideEnvironmentName: _settings.configuration["env"],
+      ));
 
       var text = await transform.primaryInput.readAsString();
       var compilationUnit = parseCompilationUnit(text);

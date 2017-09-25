@@ -1,4 +1,4 @@
-# Angel Configuration
+# configuration
 
 [![Pub](https://img.shields.io/pub/v/angel_configuration.svg)](https://pub.dartlang.org/packages/angel_configuration)
 [![build status](https://travis-ci.org/angel-dart/configuration.svg)](https://travis-ci.org/angel-dart/configuration)
@@ -7,7 +7,7 @@ Automatic YAML configuration loader for Angel.
 
 # About
 Any web app needs different configuration for development and production. This plugin will search
-for a `config/default.yaml` file. If it is found, configuration from it is loaded into `app.properties`.
+for a `config/default.yaml` file. If it is found, configuration from it is loaded into `app.configuration`.
 Then, it will look for a `config/$ANGEL_ENV` file. (i.e. config/development.yaml). If this found, all of its
 configuration be loaded, and will override anything loaded from the `default.yaml` file. This allows for your
 app to work under different conditions without you re-coding anything. :)
@@ -42,12 +42,12 @@ If a `.env` file is present in your configuration directory, then it will be loa
 applying YAML configuration.
 
 **Server-side**
-Call `loadConfigurationFile()`. The loaded properties will be available in your application's
-`properties` map, which means you can access them like normal instance members.
+Call `configuration()`. The loaded configuration will be available in your application's
+`configuration` map, which means you can access them like normal instance members.
 
 ```dart
 main() {
-  print(app.foo == app.properties['foo']); // true
+  print(app.foo == app.configuration['foo']); // true
 }
 ```
 
@@ -58,10 +58,13 @@ the same way:
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_configuration/angel_configuration.dart';
+import 'package:file/local.dart';
 
 main() async {
-    Angel angel = new Angel();
-    angel.configure(loadConfigurationFile()); // It's that easy!
+    var app = new Angel();
+    var fileSystem = const LocalFileSystem();
+    
+    await app.configure(configuration(fileSystem)); // It's that easy!
     
     app.get('/foo', (Configuration config) {
       return config.some_key;
@@ -69,7 +72,7 @@ main() async {
 }
 ```
 
-`loadConfigurationFile` also accepts a `sourceDirectory` or `overrideEnvironmentName` parameter.
+`configuration` also accepts a `sourceDirectory` or `overrideEnvironmentName` parameter.
 The former will allow you to search in a directory other than `config`, and the latter lets you
 override `$ANGEL_ENV` by specifying a specific configuration name to look for (i.e. `production`).
 
