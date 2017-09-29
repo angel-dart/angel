@@ -1,0 +1,15 @@
+name: jael
+version: 1.0.0-alpha
+description:  A simple server-side HTML templating engine for Dart.
+author: Tobe O <thosakwe@gmail.com>
+homepage:
+environment:
+  sdk: ">=1.19.0"
+dependencies:
+  charcode: ^1.0.0
+  code_buffer: ^1.0.0
+  source_span: ^1.0.0
+  string_scanner: ^1.0.0
+  symbol_table: ^1.0.0
+dev_dependencies:
+  test: ^0.12.0
