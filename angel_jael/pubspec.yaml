@@ -1,0 +1,16 @@
+name: angel_jael
+dependencies:
+  angel_framework: ^1.0.0-dev
+  code_buffer: ^1.0.0
+  file: ^2.0.0
+  jael: ^1.0.0-alpha
+  jael_preprocessor: ^1.0.0-alpha
+  symbol_table: ^1.0.0
+dev_dependencies:
+  angel_test: ^1.1.0-alpha
+  test: ^0.12.0
+dependency_overrides:
+  jael:
+    path: ../jael
+  jael_preprocessor:
+    path: ../jael_preprocessor

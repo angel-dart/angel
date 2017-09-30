@@ -38,7 +38,7 @@ class BinaryExpression extends Expression {
         return l ?? r;
       default:
         throw new UnsupportedError(
-            'Unsupported binary operator: "${operator?.span ?? "<null>"}".');
+            'Unsupported binary operator: "${operator?.span?.text ?? "<null>"}".');
     }
   }
 

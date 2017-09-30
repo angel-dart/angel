@@ -47,6 +47,7 @@ enum TokenType {
   plus,
   minus,
   elvis,
+  elvis_dot,
   lte,
   gte,
   equ,
@@ -54,4 +55,5 @@ enum TokenType {
   number,
   hex,
   string,
+  question,
 }

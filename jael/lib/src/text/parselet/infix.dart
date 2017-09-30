@@ -2,6 +2,7 @@ part of jael.src.text.parselet;
 
 const Map<TokenType, InfixParselet> infixParselets = const {
   TokenType.lParen: const CallParselet(),
+  TokenType.elvis_dot: const MemberParselet(),
   TokenType.dot: const MemberParselet(),
   TokenType.lBracket: const IndexerParselet(),
   TokenType.asterisk: const BinaryParselet(14),

@@ -9,7 +9,7 @@ main() {
 <html>
   <body>
     <h1>Hello</h1>
-    <img src=profile['avatar']>
+    <img src=profile['avatar'] />
   </body>
 </html>
 ''';
@@ -53,6 +53,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
+    //jael.scan(template, sourceUrl: 'test.jl').tokens.forEach(print);
     var document = jael.parseDocument(template, sourceUrl: 'test.jl');
     var scope = new SymbolTable(values: {
       'pokemon': const _Pokemon('Darkrai', 'Dark'),

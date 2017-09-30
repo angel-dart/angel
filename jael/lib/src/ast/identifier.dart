@@ -10,10 +10,22 @@ class Identifier extends Expression {
 
   @override
   compute(SymbolTable scope) {
-    var symbol = scope.resolve(name);
-    if (symbol == null)
-      throw new ArgumentError('The name "$name" does not exist in this scope.');
-    return scope.resolve(name).value;
+    switch(name) {
+      case 'null':
+        return null;
+      case 'true':
+        return true;
+      case 'false':
+        return false;
+      default:
+        var symbol = scope.resolve(name);
+        if (symbol == null)
+          throw new ArgumentError(
+              'The name "$name" does not exist in this scope.');
+        return scope
+            .resolve(name)
+            .value;
+    }
   }
 
   String get name => id.span.text;

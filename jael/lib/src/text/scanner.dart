@@ -146,9 +146,9 @@ class _Scanner implements Scanner {
         // Not sure how, but the following logic seems to occur
         // automatically:
         //
-        // var textToken = tokens.removeLast();
-        // var newSpan = textToken.span.expand(lastToken.span);
-        // tokens.add(new Token(TokenType.text, newSpan));
+        //var textToken = tokens.removeLast();
+        //var newSpan = textToken.span.expand(lastToken.span);
+        //tokens.add(new Token(TokenType.text, newSpan));
       } else if (lastToken != null) {
         textStart = null;
       } else if (!_scanner.isDone ?? lastToken == null) {

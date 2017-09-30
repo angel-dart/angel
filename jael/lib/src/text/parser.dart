@@ -300,6 +300,16 @@ class Parser {
 
         while (precedence < _nextPrecedence()) {
           _current = scanner.tokens[++_index];
+
+          if (_current.type == TokenType.slash && peek()?.type == TokenType.gt) {
+            // Handle `/>`
+            //
+            // Don't register this as an infix expression.
+            // Instead, backtrack, and return the current expression.
+            _index--;
+            return left;
+          }
+
           var infix = infixParselets[_current.type];
           var newLeft = infix.parse(this, left, _current);
 

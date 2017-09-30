@@ -65,7 +65,7 @@ class Renderer {
         msg = value.keys.fold<StringBuffer>(new StringBuffer(), (buf, k) {
           var v = value[k];
           if (v == null) return buf;
-          return buf..write('$k=$v;');
+          return buf..write('$k: $v;');
         }).toString();
       } else {
         msg = value.toString();
