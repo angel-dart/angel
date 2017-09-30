@@ -1,8 +1,8 @@
 name: jael
-version: 1.0.0-alpha
+version: 1.0.0-alpha+1
 description:  A simple server-side HTML templating engine for Dart.
 author: Tobe O <thosakwe@gmail.com>
-homepage:
+homepage: https://github.com/angel-dart/jael/tree/master/jael
 environment:
   sdk: ">=1.19.0"
 dependencies:

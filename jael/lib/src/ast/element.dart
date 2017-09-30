@@ -17,6 +17,7 @@ class TextNode extends ElementChild {
 
 abstract class Element extends ElementChild {
   static const List<String> selfClosing = const [
+    'include',
     'base',
     'basefont',
     'frame',

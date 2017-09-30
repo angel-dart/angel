@@ -7,8 +7,12 @@
       <excludeFolder url="file://$MODULE_DIR$/jael/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/jael/build" />
     </content>
-    <content url="file://$MODULE_DIR$/jael_preprocessor" />
+    <content url="file://$MODULE_DIR$/jael_preprocessor">
+      <excludeFolder url="file://$MODULE_DIR$/jael_preprocessor/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/jael_preprocessor/build" />
+    </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>
