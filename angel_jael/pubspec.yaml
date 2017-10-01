@@ -1,4 +1,10 @@
 name: angel_jael
+version: 1.0.0-alpha
+description: Angel support for the Jael templating engine.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/jael/tree/master/jael
+environment:
+  sdk: ">=1.19.0"
 dependencies:
   angel_framework: ^1.0.0-dev
   code_buffer: ^1.0.0
@@ -9,8 +15,3 @@ dependencies:
 dev_dependencies:
   angel_test: ^1.1.0-alpha
   test: ^0.12.0
-dependency_overrides:
-  jael:
-    path: ../jael
-  jael_preprocessor:
-    path: ../jael_preprocessor
