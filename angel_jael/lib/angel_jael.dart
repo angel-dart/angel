@@ -6,24 +6,39 @@ import 'package:jael/jael.dart';
 import 'package:jael_preprocessor/jael_preprocessor.dart';
 import 'package:symbol_table/symbol_table.dart';
 
+/// Configures an Angel server to use Jael to render templates.
+///
+/// To enable "minified" output, you need to override the [createBuffer] function,
+/// to instantiate a [CodeBuffer] that emits no spaces or line breaks.
 AngelConfigurer jael(Directory viewsDirectory,
-    {String fileExtension, CodeBuffer createBuffer()}) {
+    {String fileExtension, bool cacheViews: false, CodeBuffer createBuffer()}) {
+  var cache = <String, Document>{};
   fileExtension ??= '.jl';
   createBuffer ??= () => new CodeBuffer();
 
   return (Angel app) async {
     app.viewGenerator = (String name, [Map locals]) async {
-      var file = viewsDirectory.childFile(name + fileExtension);
-      var contents = await file.readAsString();
       var errors = <JaelError>[];
-      var doc =
-          parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
-      var processed = doc;
+      Document processed;
 
-      try {
-        processed = await resolve(doc, viewsDirectory, onError: errors.add);
-      } catch (_) {
-        // Ignore these errors, so that we can show syntax errors.
+      if (cacheViews == true && cache.containsKey(name)) {
+        processed = cache[name];
+      } else {
+        var file = viewsDirectory.childFile(name + fileExtension);
+        var contents = await file.readAsString();
+        var doc =
+        parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
+        processed = doc;
+
+        try {
+          processed = await resolve(doc, viewsDirectory, onError: errors.add);
+        } catch (_) {
+          // Ignore these errors, so that we can show syntax errors.
+        }
+
+        if (cacheViews == true) {
+          cache[name] = processed;
+        }
       }
 
       var buf = createBuffer();

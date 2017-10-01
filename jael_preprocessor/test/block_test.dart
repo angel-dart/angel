@@ -21,7 +21,7 @@ main() {
 
     // c.jl
     fileSystem.file('c.jl').writeAsStringSync(
-        '<extend src="b.jl"><block name="greeting">Goodbye</block></extend>');
+        '<extend src="b.jl"><block name="greeting"><block name="greeting"></block>Goodbye</block></extend>');
 
     // d.jl
     fileSystem.file('d.jl').writeAsStringSync(
@@ -50,7 +50,7 @@ main() {
     '''.trim());
   });
 
-  test('blocks can be overwritten', () async {
+  test('block resolution is recursive', () async {
     var file = fileSystem.file('d.jl');
     var original = jael.parseDocument(await file.readAsString(),
         sourceUrl: file.uri, onError: (e) => throw e);
@@ -67,7 +67,7 @@ main() {
   <b>
     a.jl
   </b>
-  Saluton!
+  Saluton!Goodbye
 </i>
     '''.trim());
   });

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:file/file.dart';
 import 'package:jael/jael.dart';
 
@@ -10,10 +11,15 @@ Future<Document> resolve(Document document, Directory currentDirectory,
   // Resolve all includes...
   var includesResolved =
       await resolveIncludes(document, currentDirectory, onError);
+  return await applyInheritance(includesResolved, currentDirectory, onError);
+}
 
-  if (includesResolved.root.tagName.name != 'extend') return includesResolved;
+/// Folds any `extend` declarations.
+Future<Document> applyInheritance(Document document, Directory currentDirectory,
+    void onError(JaelError error)) async {
+  if (document.root.tagName.name != 'extend') return document;
 
-  var element = includesResolved.root;
+  var element = document.root;
   var attr = element.attributes
       .firstWhere((a) => a.name.name == 'src', orElse: () => null);
   if (attr == null) {
@@ -27,43 +33,92 @@ Future<Document> resolve(Document document, Directory currentDirectory,
         element.tagName.span));
     return null;
   } else {
-    var src = (attr.value as StringLiteral).value;
-    var file =
-        currentDirectory.fileSystem.file(currentDirectory.uri.resolve(src));
-    var contents = await file.readAsString();
-    var doc = parseDocument(contents, sourceUrl: file.uri, onError: onError);
-    var processed = await resolve(
-        doc, currentDirectory.fileSystem.directory(file.dirname),
-        onError: onError);
+    // First, we need to identify the root template.
+    var chain = new Queue<Document>();
 
-    Map<String, Element> blocks = {};
-    var blockElements = element.children
-        .where((e) => e is Element && e.tagName.name == 'block');
-
-    for (Element blockElement in blockElements) {
-      var nameAttr = blockElement.attributes
-          .firstWhere((a) => a.name.name == 'name', orElse: () => null);
-      if (nameAttr == null) {
-        onError(new JaelError(JaelErrorSeverity.warning,
-            'Missing "name" attribute in "block" tag.', blockElement.span));
-      } else if (nameAttr.value is! StringLiteral) {
-        onError(new JaelError(
-            JaelErrorSeverity.warning,
-            'The "name" attribute in an "block" tag must be a string literal.',
-            nameAttr.span));
-      } else {
-        var name = (nameAttr.value as StringLiteral).value;
-        blocks[name] = blockElement;
-      }
+    while (document != null) {
+      chain.addFirst(document);
+      var parent = getParent(document, onError);
+      if (parent == null) break;
+      var file = currentDirectory.fileSystem
+          .file(currentDirectory.uri.resolve(parent));
+      var contents = await file.readAsString();
+      document = parseDocument(contents, sourceUrl: file.uri, onError: onError);
+      if (document != null)
+        document = await resolveIncludes(document, file.parent, onError);
     }
 
+    // Then, for each referenced template, in order, transform the last template
+    // by filling in blocks.
+    document = chain.removeFirst();
+
+    while (chain.isNotEmpty) {
+      var child = chain.removeFirst();
+      var blocks = extractBlockDeclarations(child.root, onError);
+      var blocksExpanded =
+          await expandBlocks(document.root, blocks, currentDirectory, onError);
+      document =
+          new Document(child.doctype ?? document.doctype, blocksExpanded);
+    }
+
+    // Fill in any remaining blocks
     var blocksExpanded =
-        await _expandBlocks(processed.root, blocks, currentDirectory, onError);
-    return new Document(document.doctype ?? processed.doctype, blocksExpanded);
+        await expandBlocks(document.root, {}, currentDirectory, onError);
+    return new Document(document.doctype, blocksExpanded);
   }
 }
 
-Future<Element> _expandBlocks(Element element, Map<String, Element> blocks,
+/// Extracts any `block` declarations.
+Map<String, Element> extractBlockDeclarations(
+    Element element, void onError(JaelError error)) {
+  Map<String, Element> blocks = {};
+  var blockElements =
+      element.children.where((e) => e is Element && e.tagName.name == 'block');
+
+  for (Element blockElement in blockElements) {
+    var nameAttr = blockElement.attributes
+        .firstWhere((a) => a.name.name == 'name', orElse: () => null);
+    if (nameAttr == null) {
+      onError(new JaelError(JaelErrorSeverity.warning,
+          'Missing "name" attribute in "block" tag.', blockElement.span));
+    } else if (nameAttr.value is! StringLiteral) {
+      onError(new JaelError(
+          JaelErrorSeverity.warning,
+          'The "name" attribute in an "block" tag must be a string literal.',
+          nameAttr.span));
+    } else {
+      var name = (nameAttr.value as StringLiteral).value;
+      blocks[name] = blockElement;
+    }
+  }
+
+  return blocks;
+}
+
+/// Finds the name of the parent template.
+String getParent(Document document, void onError(JaelError error)) {
+  var element = document.root;
+  if (element.tagName.name != 'extend') return null;
+
+  var attr = element.attributes
+      .firstWhere((a) => a.name.name == 'src', orElse: () => null);
+  if (attr == null) {
+    onError(new JaelError(JaelErrorSeverity.warning,
+        'Missing "src" attribute in "extend" tag.', element.tagName.span));
+    return null;
+  } else if (attr.value is! StringLiteral) {
+    onError(new JaelError(
+        JaelErrorSeverity.warning,
+        'The "src" attribute in an "extend" tag must be a string literal.',
+        element.tagName.span));
+    return null;
+  } else {
+    return (attr.value as StringLiteral).value;
+  }
+}
+
+/// Replaces any `block` tags within the element.
+Future<Element> expandBlocks(Element element, Map<String, Element> blocks,
     Directory currentDirectory, void onError(JaelError error)) async {
   if (element is SelfClosingElement)
     return element;
@@ -80,13 +135,11 @@ Future<Element> _expandBlocks(Element element, Map<String, Element> blocks,
           if (child.tagName.name != 'block') {
             expanded.add(child);
           } else {
-            var nameAttr =
-                child.attributes.firstWhere((a) => a.name.name == 'name', orElse: () => null);
+            var nameAttr = child.attributes
+                .firstWhere((a) => a.name.name == 'name', orElse: () => null);
             if (nameAttr == null) {
-              onError(new JaelError(
-                  JaelErrorSeverity.warning,
-                  'Missing "name" attribute in "block" tag.',
-                  child.span));
+              onError(new JaelError(JaelErrorSeverity.warning,
+                  'Missing "name" attribute in "block" tag.', child.span));
             } else if (nameAttr.value is! StringLiteral) {
               onError(new JaelError(
                   JaelErrorSeverity.warning,
@@ -117,7 +170,7 @@ Future<Element> _expandBlocks(Element element, Map<String, Element> blocks,
     // Resolve all includes...
     expanded = await Future.wait(expanded.map((c) {
       if (c is! Element) return new Future.value(c);
-      return _expandIncludes(c, currentDirectory, onError);
+      return expandBlocks(c, blocks, currentDirectory, onError);
     }));
 
     return new RegularElement(
