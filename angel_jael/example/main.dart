@@ -4,14 +4,22 @@ import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel();
+  var app = new Angel()..lazyParseBodies = true;
   var fileSystem = const LocalFileSystem();
 
   await app.configure(
     jael(fileSystem.directory('views')),
   );
 
-  app.get('/', (res) => res.render('index', {'title': 'ESKETTIT'}));
+  app.get('/',
+      (res) => res.render('index', {'title': 'Sample App', 'message': null}));
+
+  app.post('/', (RequestContext req, res) async {
+    var body = await req.lazyBody();
+    var msg = body['message'] ?? '<unknown>';
+    return await res
+        .render('index', {'title': 'Form Submission', 'message': msg});
+  });
 
   app.use(() => throw new AngelHttpException.notFound());
 

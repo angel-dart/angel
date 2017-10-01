@@ -12,8 +12,5 @@
 <block name="content">
     <i>Content goes here.</i>
 </block>
-<script>
-    window.alert("a");
-</script>
 </body>
 </html>
