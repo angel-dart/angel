@@ -16,8 +16,44 @@ const Map<TokenType, InfixParselet> infixParselets = const {
   TokenType.gte: const BinaryParselet(11),
   TokenType.equ: const BinaryParselet(10),
   TokenType.nequ: const BinaryParselet(10),
+  TokenType.question: const ConditionalParselet(),
   TokenType.equals: const BinaryParselet(3),
 };
+
+class ConditionalParselet implements InfixParselet {
+  @override
+  int get precedence => 4;
+
+  const ConditionalParselet();
+
+  @override
+  Expression parse(Parser parser, Expression left, Token token) {
+    var ifTrue = parser.parseExpression(0);
+
+    if (ifTrue == null) {
+      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+          'Missing expression in conditional expression.', token.span));
+      return null;
+    }
+
+    if (!parser.next(TokenType.colon)) {
+      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+          'Missing ":" in conditional expression.', ifTrue.span));
+      return null;
+    }
+
+    var colon = parser.current;
+    var ifFalse = parser.parseExpression(0);
+
+    if (ifFalse == null) {
+      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+          'Missing expression in conditional expression.', colon.span));
+      return null;
+    }
+
+    return new Conditional(left, token, ifTrue, colon, ifFalse);
+  }
+}
 
 class BinaryParselet implements InfixParselet {
   final int precedence;

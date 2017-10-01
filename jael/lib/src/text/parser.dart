@@ -68,9 +68,7 @@ class Parser {
   StringLiteral implicitString() {
     if (next(TokenType.string)) {
       return prefixParselets[TokenType.string].parse(this, _current);
-    } else if (next(TokenType.text)) {
-
-    }
+    } else if (next(TokenType.text)) {}
 
     return null;
   }
@@ -85,8 +83,10 @@ class Parser {
     }
     var doctype = _current, html = parseIdentifier();
     if (html?.span?.text?.toLowerCase() != 'html') {
-      errors.add(new JaelError(JaelErrorSeverity.error,
-          'Expected "html" in doctype declaration.', html?.span ?? doctype.span));
+      errors.add(new JaelError(
+          JaelErrorSeverity.error,
+          'Expected "html" in doctype declaration.',
+          html?.span ?? doctype.span));
       return null;
     }
 
@@ -102,8 +102,10 @@ class Parser {
     }
 
     if (public?.span?.text?.toLowerCase() != 'public') {
-      errors.add(new JaelError(JaelErrorSeverity.error,
-          'Expected "public" in doctype declaration.', public?.span ?? html.span));
+      errors.add(new JaelError(
+          JaelErrorSeverity.error,
+          'Expected "public" in doctype declaration.',
+          public?.span ?? html.span));
       return null;
     }
 
@@ -138,12 +140,16 @@ class Parser {
       parseHtmlComment() ??
       parseInterpolation() ??
       parseText() ??
+      parseScriptTag() ??
       parseElement();
 
   HtmlComment parseHtmlComment() =>
       next(TokenType.htmlComment) ? new HtmlComment(_current) : null;
 
   Text parseText() => next(TokenType.text) ? new Text(_current) : null;
+
+  ScriptTag parseScriptTag() =>
+      next(TokenType.script_tag) ? new ScriptTag(_current) : null;
 
   Interpolation parseInterpolation() {
     if (!next(TokenType.doubleCurlyL)) return null;
@@ -301,7 +307,8 @@ class Parser {
         while (precedence < _nextPrecedence()) {
           _current = scanner.tokens[++_index];
 
-          if (_current.type == TokenType.slash && peek()?.type == TokenType.gt) {
+          if (_current.type == TokenType.slash &&
+              peek()?.type == TokenType.gt) {
             // Handle `/>`
             //
             // Don't register this as an infix expression.
@@ -314,8 +321,7 @@ class Parser {
           var newLeft = infix.parse(this, left, _current);
 
           if (newLeft == null) {
-            if (_current.type == TokenType.gt)
-              _index--;
+            if (_current.type == TokenType.gt) _index--;
             return left;
           }
           left = newLeft;

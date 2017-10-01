@@ -3,6 +3,7 @@ export 'ast_node.dart';
 export 'attribute.dart';
 export 'binary.dart';
 export 'call.dart';
+export 'conditional.dart';
 export 'document.dart';
 export 'element.dart';
 export 'error.dart';

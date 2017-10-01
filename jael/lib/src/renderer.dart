@@ -166,6 +166,8 @@ class Renderer {
         buffer.write(child.span.text.trimRight());
       else
         buffer.write(child.span.text);
+    } else if (child is ScriptTag) {
+      buffer.writeln(child.script_tag.span.text);
     } else if (child is Interpolation) {
       var value = child.expression.compute(scope);
 
@@ -176,7 +178,7 @@ class Renderer {
           buffer.write(HTML_ESCAPE.convert(value.toString()));
       }
     } else if (child is Element) {
-      buffer.writeln();
+      if (buffer?.lastLine?.text?.isNotEmpty == true) buffer.writeln();
       renderElement(child, buffer, scope, html5);
     }
   }

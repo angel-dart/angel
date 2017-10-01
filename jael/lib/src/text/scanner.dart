@@ -30,6 +30,7 @@ final Map<Pattern, TokenType> _htmlPatterns = {
   '=': TokenType.equals,
   _string1: TokenType.string,
   _string2: TokenType.string,
+  new RegExp(r'<script[^>]*>[^$]*</script>'): TokenType.script_tag,
   new RegExp(r'([A-Za-z][A-Za-z0-9]*-)*([A-Za-z][A-Za-z0-9]*)'): TokenType.id,
 };
 
