@@ -77,5 +77,7 @@ main() async {
   var server = await app.startServer(null, 3000);
   print('Listening at http://${server.address.address}:${server.port}');
 }
-
 ```
+
+To apply additional transforms to parsed documents, provide a
+set of `patch` functions, like in `package:jael_preprocessor`.

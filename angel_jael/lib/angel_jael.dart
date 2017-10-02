@@ -10,8 +10,10 @@ import 'package:symbol_table/symbol_table.dart';
 ///
 /// To enable "minified" output, you need to override the [createBuffer] function,
 /// to instantiate a [CodeBuffer] that emits no spaces or line breaks.
+///
+/// To apply additional transforms to parsed documents, provide a set of [patch] functions.
 AngelConfigurer jael(Directory viewsDirectory,
-    {String fileExtension, bool cacheViews: false, CodeBuffer createBuffer()}) {
+    {String fileExtension, bool cacheViews: false, Iterable<Patcher> patch, CodeBuffer createBuffer()}) {
   var cache = <String, Document>{};
   fileExtension ??= '.jl';
   createBuffer ??= () => new CodeBuffer();
@@ -31,7 +33,7 @@ AngelConfigurer jael(Directory viewsDirectory,
         processed = doc;
 
         try {
-          processed = await resolve(doc, viewsDirectory, onError: errors.add);
+          processed = await resolve(doc, viewsDirectory, patch: patch, onError: errors.add);
         } catch (_) {
           // Ignore these errors, so that we can show syntax errors.
         }
