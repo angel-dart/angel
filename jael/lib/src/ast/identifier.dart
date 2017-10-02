@@ -19,9 +19,10 @@ class Identifier extends Expression {
         return false;
       default:
         var symbol = scope.resolve(name);
-        if (symbol == null)
+        if (symbol == null) {
           throw new ArgumentError(
               'The name "$name" does not exist in this scope.');
+        }
         return scope
             .resolve(name)
             .value;

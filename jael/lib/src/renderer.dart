@@ -35,22 +35,27 @@ class Renderer {
 
   void renderElement(
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
-    if (element.attributes.any((a) => a.name.name == 'for-each')) {
-      renderForeach(element, buffer, scope, html5);
+    var childScope = scope.createChild();
+
+    if (element.attributes.any((a) => a.name == 'for-each')) {
+      renderForeach(element, buffer, childScope, html5);
       return;
-    } else if (element.attributes.any((a) => a.name.name == 'if')) {
-      renderIf(element, buffer, scope, html5);
+    } else if (element.attributes.any((a) => a.name == 'if')) {
+      renderIf(element, buffer, childScope, html5);
+      return;
+    } else if (element.tagName.name == 'declare') {
+      renderDeclare(element, buffer, childScope, html5);
       return;
     }
 
     buffer..write('<')..write(element.tagName.name);
 
     for (var attribute in element.attributes) {
-      var value = attribute.value?.compute(scope);
+      var value = attribute.value?.compute(childScope);
 
       if (value == false || value == null) continue;
 
-      buffer.write(' ${attribute.name.name}');
+      buffer.write(' ${attribute.name}');
 
       if (value == true)
         continue;
@@ -71,7 +76,7 @@ class Renderer {
         msg = value.toString();
       }
 
-      buffer.write(HTML_ESCAPE.convert(msg));
+      buffer.write(attribute.isRaw ? msg : HTML_ESCAPE.convert(msg));
       buffer.write('"');
     }
 
@@ -87,7 +92,7 @@ class Renderer {
       for (int i = 0; i < element.children.length; i++) {
         var child = element.children.elementAt(i);
         renderElementChild(
-            child, buffer, scope, html5, i, element.children.length);
+            child, buffer, childScope, html5, i, element.children.length);
       }
 
       buffer.writeln();
@@ -98,15 +103,14 @@ class Renderer {
 
   void renderForeach(
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
-    var attribute =
-        element.attributes.singleWhere((a) => a.name.name == 'for-each');
+    var attribute = element.attributes.singleWhere((a) => a.name == 'for-each');
     if (attribute.value == null) return;
 
     var asAttribute = element.attributes
-        .firstWhere((a) => a.name.name == 'as', orElse: () => null);
+        .firstWhere((a) => a.name == 'as', orElse: () => null);
     var alias = asAttribute?.value?.compute(scope) ?? 'item';
-    var otherAttributes = element.attributes
-        .where((a) => a.name.name != 'for-each' && a.name.name != 'as');
+    var otherAttributes =
+        element.attributes.where((a) => a.name != 'for-each' && a.name != 'as');
     Element strippedElement;
 
     if (element is SelfClosingElement)
@@ -132,11 +136,11 @@ class Renderer {
 
   void renderIf(
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
-    var attribute = element.attributes.singleWhere((a) => a.name.name == 'if');
+    var attribute = element.attributes.singleWhere((a) => a.name == 'if');
 
     if (!attribute.value.compute(scope)) return;
 
-    var otherAttributes = element.attributes.where((a) => a.name.name != 'if');
+    var otherAttributes = element.attributes.where((a) => a.name != 'if');
     Element strippedElement;
 
     if (element is SelfClosingElement)
@@ -155,6 +159,19 @@ class Renderer {
           element.gt2);
 
     renderElement(strippedElement, buffer, scope, html5);
+  }
+
+  void renderDeclare(Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
+    for (var attribute in element.attributes) {
+      scope.add(attribute.name,
+          value: attribute.value?.compute(scope), constant: true);
+    }
+
+    for (int i = 0; i < element.children.length; i++) {
+      var child = element.children.elementAt(i);
+      renderElementChild(
+          child, buffer, scope, html5, i, element.children.length);
+    }
   }
 
   void renderElementChild(ElementChild child, CodeBuffer buffer,

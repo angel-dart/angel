@@ -161,6 +161,111 @@ main() {
     '''
             .trim());
   });
+
+  test('declare', () {
+    const template = '''
+<div>
+ <declare one=1 two=2 three=3>
+   <ul>
+    <li>{{one}}</li>
+    <li>{{two}}</li>
+    <li>{{three}}</li>
+   </ul>
+   <ul>
+    <declare three=4>
+      <li>{{one}}</li>
+      <li>{{two}}</li>
+      <li>{{three}}</li>
+    </declare>
+   </ul>
+ </declare>
+</div>
+''';
+
+    var buf = new CodeBuffer();
+    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var scope = new SymbolTable();
+
+    const jael.Renderer().render(document, buf, scope);
+    print(buf);
+
+    expect(
+        buf.toString(),
+        '''
+<div>
+  <ul>
+    <li>
+      1
+    </li>
+    <li>
+      2
+    </li>
+    <li>
+      3
+    </li>
+  </ul>
+  <ul>
+    <li>
+      1
+    </li>
+    <li>
+      2
+    </li>
+    <li>
+      4
+    </li>
+  </ul>
+</div>
+'''
+            .trim());
+  });
+
+  test('unescaped attr/interp', () {
+    const template = '''
+<div>
+  <img src!="<SCARY XSS>" />
+  {{- "<MORE SCARY XSS>" }}
+</div>
+''';
+
+    var buf = new CodeBuffer();
+    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var scope = new SymbolTable();
+
+    const jael.Renderer().render(document, buf, scope);
+    print(buf);
+
+    expect(
+        buf.toString(),
+        '''
+<div>
+  <img src="<SCARY XSS>">
+  <MORE SCARY XSS>
+</div>
+'''
+            .trim());
+  });
+
+  test('quoted attribute name', () {
+    const template = '''
+<button '(click)'="myEventHandler(\$event)"></button>
+''';
+
+    var buf = new CodeBuffer();
+    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var scope = new SymbolTable();
+
+    const jael.Renderer().render(document, buf, scope);
+    print(buf);
+
+    expect(
+        buf.toString(),
+        '''
+<button (click)="myEventHandler(\$event)">
+</button>
+'''
+            .trim());
+  });
 }
 
 const List<_Pokemon> starters = const [

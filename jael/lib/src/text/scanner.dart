@@ -28,6 +28,7 @@ final Map<Pattern, TokenType> _htmlPatterns = {
   '>': TokenType.gt,
   '/': TokenType.slash,
   '=': TokenType.equals,
+  '!=': TokenType.nequ,
   _string1: TokenType.string,
   _string2: TokenType.string,
   new RegExp(r'<script[^>]*>[^$]*</script>'): TokenType.script_tag,
@@ -123,7 +124,7 @@ class _Scanner implements Scanner {
 
       var lastToken = _scanFrom(_htmlPatterns, textStart);
 
-      if (lastToken?.type == TokenType.equals) {
+      if (lastToken?.type == TokenType.equals || lastToken?.type == TokenType.nequ) {
         textStart = null;
         scanExpressionTokens();
         return;

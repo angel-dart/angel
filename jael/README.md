@@ -47,4 +47,4 @@ void myFunction() {
 ```
 
 Pre-processing (i.e. handling of blocks and includes) is handled
-by `package:jael_processor.`.
+by `package:jael_preprocessor.`.

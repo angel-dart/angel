@@ -3,15 +3,29 @@ import 'dart:collection';
 import 'package:file/file.dart';
 import 'package:jael/jael.dart';
 
+/// Modifies a Jael document.
+typedef FutureOr<Document> Patcher(Document document, Directory currentDirectory, void onError(JaelError));
+
 /// Expands all `block[name]` tags within the template, replacing them with the correct content.
+///
+/// To apply additional patches to resolved documents, provide a set of [patch]
+/// functions.
 Future<Document> resolve(Document document, Directory currentDirectory,
-    {void onError(JaelError error)}) async {
+    {void onError(JaelError error), Iterable<Patcher> patch}) async {
   onError ?? (e) => throw e;
 
   // Resolve all includes...
   var includesResolved =
       await resolveIncludes(document, currentDirectory, onError);
-  return await applyInheritance(includesResolved, currentDirectory, onError);
+  var patched = await applyInheritance(includesResolved, currentDirectory, onError);
+
+  if (patch?.isNotEmpty != true) return patched;
+
+  for (var p in patch) {
+    patched = await p(patched, currentDirectory, onError);
+  }
+
+  return patched;
 }
 
 /// Folds any `extend` declarations.

@@ -280,21 +280,36 @@ class Parser {
   }
 
   Attribute parseAttribute() {
-    var name = parseIdentifier();
-    if (name == null) return null;
+    Identifier id;
+    StringLiteral string;
 
-    if (!next(TokenType.equals)) return new Attribute(name, null, null);
+    if ((id = parseIdentifier()) != null) {
+      // Nothing
+    } else if (next(TokenType.string)) {
+      string = new StringLiteral(_current, StringLiteral.parseValue(_current));
+    } else {
+      return null;
+    }
 
-    var equals = _current;
+    Token equals, nequ;
+
+    if (next(TokenType.equals)) {
+      equals = _current;
+    } else if (next(TokenType.nequ)) {
+      nequ = _current;
+    } else {
+      return new Attribute(id, string, null, null, null);
+    }
+
     var value = parseExpression(0);
 
     if (value == null) {
       errors.add(new JaelError(JaelErrorSeverity.error,
-          'Missing expression in attribute.', equals.span));
+          'Missing expression in attribute.', equals?.span ?? nequ.span));
       return null;
     }
 
-    return new Attribute(name, equals, value);
+    return new Attribute(id, string, equals, nequ, value);
   }
 
   Expression parseExpression(int precedence) {
