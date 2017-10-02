@@ -15,6 +15,13 @@ Though its syntax is but a superset of HTML, it supports features such as:
 Jael is a good choice for applications of any scale, especially when the development team is small,
 or the time invested in building an SPA would be too much.
 
+## Documentation
+Each of the [packages within this repository](#this-repository) contains
+some sort of documentation.
+
+Documentation for Jael syntax and directives can be found in the
+[wiki](https://github.com/angel-dart/jael/wiki).
+
 ## This Repository
 Within this repository are three packages:
 
