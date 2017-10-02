@@ -23,7 +23,6 @@ enum TokenType {
   slash,
   equals,
   id,
-  script_tag,
   text,
 
   // Keywords

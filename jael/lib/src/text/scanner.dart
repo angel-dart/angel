@@ -31,7 +31,6 @@ final Map<Pattern, TokenType> _htmlPatterns = {
   '!=': TokenType.nequ,
   _string1: TokenType.string,
   _string2: TokenType.string,
-  new RegExp(r'<script[^>]*>[^$]*</script>'): TokenType.script_tag,
   new RegExp(r'([A-Za-z][A-Za-z0-9]*-)*([A-Za-z][A-Za-z0-9]*)'): TokenType.id,
 };
 
@@ -124,7 +123,8 @@ class _Scanner implements Scanner {
 
       var lastToken = _scanFrom(_htmlPatterns, textStart);
 
-      if (lastToken?.type == TokenType.equals || lastToken?.type == TokenType.nequ) {
+      if (lastToken?.type == TokenType.equals ||
+          lastToken?.type == TokenType.nequ) {
         textStart = null;
         scanExpressionTokens();
         return;
@@ -138,10 +138,11 @@ class _Scanner implements Scanner {
         // Fold in the ID into a text node...
         tokens.removeLast();
         textStart = state;
-      } else if (lastToken?.type == TokenType.id &&
+      } else if ((lastToken?.type == TokenType.id ||
+              lastToken?.type == TokenType.string) &&
           tokens.length >= 2 &&
           tokens[tokens.length - 2].type == TokenType.text) {
-        // Append the ID into the old text node
+        // Append the ID/string into the old text node
         tokens.removeLast();
         tokens.removeLast();
 

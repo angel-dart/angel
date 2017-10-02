@@ -15,15 +15,6 @@ class TextNode extends ElementChild {
   FileSpan get span => text.span;
 }
 
-class ScriptTag extends ElementChild {
-  final Token script_tag;
-
-  ScriptTag(this.script_tag);
-
-  @override
-  FileSpan get span => script_tag.span;
-}
-
 abstract class Element extends ElementChild {
   static const List<String> selfClosing = const [
     'include',

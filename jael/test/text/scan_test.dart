@@ -34,7 +34,9 @@ main() {
   });
 
   test('mixed', () {
-    var tokens = scan('<ul number=1 + 2>three{{four > five.six}}</ul>', sourceUrl: 'test.jl').tokens;
+    var tokens = scan('<ul number=1 + 2>three{{four > five.six}}</ul>',
+            sourceUrl: 'test.jl')
+        .tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(20));
@@ -58,5 +60,29 @@ main() {
     expect(tokens[17], isToken(TokenType.slash));
     expect(tokens[18], isToken(TokenType.id, 'ul'));
     expect(tokens[19], isToken(TokenType.gt));
+  });
+
+  test('script tag interpolation', () {
+    var tokens = scan(
+      '''
+<script>
+  window.alert('a string');
+</script>
+''',
+      sourceUrl: 'test.jl',
+    )
+        .tokens;
+    tokens.forEach(print);
+
+    expect(tokens, hasLength(8));
+    expect(tokens[0], isToken(TokenType.lt));
+    expect(tokens[1], isToken(TokenType.id, 'script'));
+    expect(tokens[2], isToken(TokenType.gt));
+    expect(
+        tokens[3], isToken(TokenType.text, "\n  window.alert('a string');\n"));
+    expect(tokens[4], isToken(TokenType.lt));
+    expect(tokens[5], isToken(TokenType.slash));
+    expect(tokens[6], isToken(TokenType.id, 'script'));
+    expect(tokens[7], isToken(TokenType.gt));
   });
 }

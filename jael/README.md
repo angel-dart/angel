@@ -11,7 +11,7 @@ In your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  jael: ^1.0.0-alpha
+  jael: ^1.0.0-beta
 ```
 
 # API

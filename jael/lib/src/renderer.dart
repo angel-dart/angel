@@ -224,8 +224,6 @@ class Renderer {
         buffer.write(child.span.text.trimRight());
       else
         buffer.write(child.span.text);
-    } else if (child is ScriptTag) {
-      buffer.writeln(child.script_tag.span.text);
     } else if (child is Interpolation) {
       var value = child.expression.compute(scope);
 

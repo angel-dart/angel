@@ -12,5 +12,8 @@
 <block name="content">
     <i>Content goes here.</i>
 </block>
+<script>
+    console.info('JAEL :)');
+</script>
 </body>
 </html>

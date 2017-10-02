@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_jael/angel_jael.dart';
 import 'package:file/local.dart';
@@ -16,9 +17,13 @@ main() async {
 
   app.post('/', (RequestContext req, res) async {
     var body = await req.lazyBody();
+    print('Body: $body');
     var msg = body['message'] ?? '<unknown>';
-    return await res
-        .render('index', {'title': 'Form Submission', 'message': msg});
+    return await res.render('index', {
+      'title': 'Form Submission',
+      'message': msg,
+      'json_message': JSON.encode(msg),
+    });
   });
 
   app.use(() => throw new AngelHttpException.notFound());

@@ -140,16 +140,12 @@ class Parser {
       parseHtmlComment() ??
       parseInterpolation() ??
       parseText() ??
-      parseScriptTag() ??
       parseElement();
 
   HtmlComment parseHtmlComment() =>
       next(TokenType.htmlComment) ? new HtmlComment(_current) : null;
 
   Text parseText() => next(TokenType.text) ? new Text(_current) : null;
-
-  ScriptTag parseScriptTag() =>
-      next(TokenType.script_tag) ? new ScriptTag(_current) : null;
 
   Interpolation parseInterpolation() {
     if (!next(TokenType.doubleCurlyL)) return null;
