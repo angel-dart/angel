@@ -46,6 +46,9 @@ class Renderer {
     } else if (element.tagName.name == 'declare') {
       renderDeclare(element, buffer, childScope, html5);
       return;
+    } else if (element.tagName.name == 'switch') {
+      renderSwitch(element, buffer, childScope, html5);
+      return;
     }
 
     buffer..write('<')..write(element.tagName.name);
@@ -161,7 +164,8 @@ class Renderer {
     renderElement(strippedElement, buffer, scope, html5);
   }
 
-  void renderDeclare(Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
+  void renderDeclare(
+      Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     for (var attribute in element.attributes) {
       scope.add(attribute.name,
           value: attribute.value?.compute(scope), constant: true);
@@ -171,6 +175,43 @@ class Renderer {
       var child = element.children.elementAt(i);
       renderElementChild(
           child, buffer, scope, html5, i, element.children.length);
+    }
+  }
+
+  void renderSwitch(
+      Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
+    var value = element.attributes
+        .firstWhere((a) => a.name == 'value', orElse: () => null)
+        ?.value
+        ?.compute(scope);
+
+    var cases =
+        element.children.where((c) => c is Element && c.tagName.name == 'case');
+
+    for (Element child in cases) {
+      var comparison = child.attributes
+          .firstWhere((a) => a.name == 'value', orElse: () => null)
+          ?.value
+          ?.compute(scope);
+      if (comparison == value) {
+        for (int i = 0; i < child.children.length; i++) {
+          var c = child.children.elementAt(i);
+          renderElementChild(c, buffer, scope, html5, i, child.children.length);
+        }
+
+        return;
+      }
+    }
+
+    Element defaultCase = element.children.firstWhere(
+        (c) => c is Element && c.tagName.name == 'default',
+        orElse: () => null);
+    if (defaultCase != null) {
+      for (int i = 0; i < defaultCase.children.length; i++) {
+        var child = defaultCase.children.elementAt(i);
+        renderElementChild(
+            child, buffer, scope, html5, i, defaultCase.children.length);
+      }
     }
   }
 

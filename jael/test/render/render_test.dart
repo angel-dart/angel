@@ -266,6 +266,60 @@ main() {
 '''
             .trim());
   });
+
+  test('switch', () {
+    const template = '''
+<switch value=account.isDisabled>
+  <case value=true>
+    BAN HAMMER LOLOL
+  </case>
+  <case value=false>
+    You are in good standing.
+  </case>
+  <default>
+    Weird...
+  </default>
+</switch>
+''';
+
+    var buf = new CodeBuffer();
+    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var scope = new SymbolTable(values: {
+      'account': new _Account(isDisabled: true),
+    });
+
+    const jael.Renderer().render(document, buf, scope);
+    print(buf);
+
+    expect(buf.toString().trim(), 'BAN HAMMER LOLOL');
+  });
+
+  test('default', () {
+    const template = '''
+<switch value=account.isDisabled>
+  <case value=true>
+    BAN HAMMER LOLOL
+  </case>
+  <case value=false>
+    You are in good standing.
+  </case>
+  <default>
+    Weird...
+  </default>
+</switch>
+''';
+
+    var buf = new CodeBuffer();
+    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var scope = new SymbolTable(values: {
+      'account': new _Account(isDisabled: null),
+    });
+
+    const jael.Renderer().render(document, buf, scope);
+    print(buf);
+
+    expect(buf.toString().trim(), 'Weird...');
+  });
 }
 
 const List<_Pokemon> starters = const [
@@ -278,4 +332,10 @@ class _Pokemon {
   final String name, type;
 
   const _Pokemon(this.name, this.type);
+}
+
+class _Account {
+  final bool isDisabled;
+
+  _Account({this.isDisabled});
 }
