@@ -35,7 +35,7 @@ Future<Document> applyInheritance(Document document, Directory currentDirectory,
 
   var element = document.root;
   var attr = element.attributes
-      .firstWhere((a) => a.name.name == 'src', orElse: () => null);
+      .firstWhere((a) => a.name == 'src', orElse: () => null);
   if (attr == null) {
     onError(new JaelError(JaelErrorSeverity.warning,
         'Missing "src" attribute in "extend" tag.', element.tagName.span));
@@ -91,7 +91,7 @@ Map<String, Element> extractBlockDeclarations(
 
   for (Element blockElement in blockElements) {
     var nameAttr = blockElement.attributes
-        .firstWhere((a) => a.name.name == 'name', orElse: () => null);
+        .firstWhere((a) => a.name == 'name', orElse: () => null);
     if (nameAttr == null) {
       onError(new JaelError(JaelErrorSeverity.warning,
           'Missing "name" attribute in "block" tag.', blockElement.span));
@@ -115,7 +115,7 @@ String getParent(Document document, void onError(JaelError error)) {
   if (element.tagName.name != 'extend') return null;
 
   var attr = element.attributes
-      .firstWhere((a) => a.name.name == 'src', orElse: () => null);
+      .firstWhere((a) => a.name == 'src', orElse: () => null);
   if (attr == null) {
     onError(new JaelError(JaelErrorSeverity.warning,
         'Missing "src" attribute in "extend" tag.', element.tagName.span));
@@ -150,7 +150,7 @@ Future<Element> expandBlocks(Element element, Map<String, Element> blocks,
             expanded.add(child);
           } else {
             var nameAttr = child.attributes
-                .firstWhere((a) => a.name.name == 'name', orElse: () => null);
+                .firstWhere((a) => a.name == 'name', orElse: () => null);
             if (nameAttr == null) {
               onError(new JaelError(JaelErrorSeverity.warning,
                   'Missing "name" attribute in "block" tag.', child.span));
@@ -243,7 +243,7 @@ Future<Element> _expandIncludes(Element element, Directory currentDirectory,
   }
 
   var attr = element.attributes
-      .firstWhere((a) => a.name.name == 'src', orElse: () => null);
+      .firstWhere((a) => a.name == 'src', orElse: () => null);
   if (attr == null) {
     onError(new JaelError(JaelErrorSeverity.warning,
         'Missing "src" attribute in "include" tag.', element.tagName.span));
