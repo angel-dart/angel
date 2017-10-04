@@ -12,7 +12,6 @@ import 'package:json_god/json_god.dart' as god;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
-import '../safe_stream_controller.dart';
 import 'angel_base.dart';
 import 'controller.dart';
 import 'request_context.dart';
@@ -23,16 +22,13 @@ import 'service.dart';
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A function that binds an [Angel] server to an Internet address and port.
-typedef Future<HttpServer> ServerGenerator(InternetAddress address, int port);
+typedef Future<HttpServer> ServerGenerator(address, int port);
 
 /// A function that configures an [Angel] server in some way.
 typedef Future AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
-  final SafeCtrl<Controller> _onController =
-      new SafeCtrl<Controller>.broadcast();
-
   final List<Angel> _children = [];
   final Map<String, Tuple3<MiddlewarePipeline, Map, Match>> _handlerCache = {};
 
@@ -65,6 +61,11 @@ class Angel extends AngelBase {
   /// All child application mounted on this instance.
   List<Angel> get children => new List<Angel>.unmodifiable(_children);
 
+  final Map<Pattern, Controller> _controllers = {};
+
+  /// A set of [Controller] objects that have been loaded into the application.
+  Map<Pattern, Controller> get controllers => _controllers;
+
   /// Indicates whether the application is running in a production environment.
   ///
   /// The criteria for this is the `ANGEL_ENV` environment variable being set to
@@ -81,11 +82,6 @@ class Angel extends AngelBase {
 
   /// The function used to bind this instance to an HTTP server.
   ServerGenerator get serverGenerator => _serverGenerator;
-
-  /// Fired whenever a controller is added to this instance.
-  ///
-  /// **NOTE**: This is a broadcast stream.
-  Stream<Controller> get onController => _onController.stream;
 
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
@@ -108,9 +104,32 @@ class Angel extends AngelBase {
   /// These will only not run if a response's `willCloseItself` is set to `true`.
   final List<RequestHandler> responseFinalizers = [];
 
+  /// Use [configuration] instead.
+  @deprecated
+  Map get properties {
+    try {
+      throw new Error();
+    } catch (e, st) {
+      logger?.warning(
+        '`properties` is deprecated, and should not be used.',
+        new UnsupportedError('`properties` is deprecated.'),
+        st,
+      );
+    }
+    return configuration;
+  }
+
   /// The handler currently configured to run on [AngelHttpException]s.
   Function(AngelHttpException e, RequestContext req, ResponseContext res)
-      errorHandler = (AngelHttpException e, req, ResponseContext res) {
+      errorHandler =
+      (AngelHttpException e, RequestContext req, ResponseContext res) {
+    if (!req.accepts('text/html') &&
+        (req.accepts('application/json') ||
+            req.accepts('application/javascript'))) {
+      res.json(e.toJson());
+      return;
+    }
+
     res.headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
@@ -130,7 +149,7 @@ class Angel extends AngelBase {
   /// Starts the server.
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
-  Future<HttpServer> startServer([InternetAddress address, int port]) async {
+  Future<HttpServer> startServer([address, int port]) async {
     var host = address ?? InternetAddress.LOOPBACK_IP_V4;
     this.httpServer = await _serverGenerator(host, port ?? 0);
 
@@ -184,8 +203,6 @@ class Angel extends AngelBase {
       server = httpServer;
       await httpServer.close(force: true);
     }
-
-    _onController.close();
 
     await Future.forEach(services.values, (Service service) async {
       await service.close();
@@ -330,18 +347,7 @@ class Angel extends AngelBase {
     }
 
     res.statusCode = e.statusCode;
-
-    if (req.headers.value(HttpHeaders.ACCEPT) == null ||
-        req.acceptsAll ||
-        req.accepts(ContentType.JSON) ||
-        req.accepts('application/javascript')) {
-      res.serialize(e.toMap(),
-          contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-              ContentType.JSON.mimeType);
-    } else {
-      await errorHandler(e, req, res);
-    }
-
+    await errorHandler(e, req, res);
     res.end();
     return await sendResponse(request, req, res,
         ignoreFinalizers: ignoreFinalizers == true);
@@ -349,12 +355,12 @@ class Angel extends AngelBase {
 
   /// Handles a single request.
   Future handleRequest(HttpRequest request) async {
+    var req = await createRequestContext(request);
+    var res = await createResponseContext(request.response, req);
     var zoneSpec = await createZoneForRequest(request, req, res);
     var zone = Zone.current.fork(specification: zoneSpec);
 
     return zone.run(() async {
-      var req = await createRequestContext(request);
-      var res = await createResponseContext(request.response, req);
       String requestedUrl;
 
       // Faster way to get path
@@ -377,7 +383,7 @@ class Angel extends AngelBase {
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      var tuple = _handlerCache.putIfAbsent(requestedUrl, () {
+      var tuple = _handlerCache.putIfAbsent('${req.method}:$requestedUrl', () {
         Router r = isProduction ? (_flattened ??= flatten(this)) : this;
         var resolved =
             r.resolveAll(requestedUrl, requestedUrl, method: req.method);
@@ -439,10 +445,6 @@ class Angel extends AngelBase {
       }
 
       void _walk(Router router) {
-        if (router is Angel) {
-          router..before.forEach(_add)..after.forEach(_add);
-        }
-
         router.requestMiddleware.forEach((k, v) => _add(v));
         router.middleware.forEach(_add);
         router.routes.forEach((r) {
@@ -553,9 +555,6 @@ class Angel extends AngelBase {
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) async {
     await configurer(this);
-
-    if (configurer is Controller)
-      _onController.add(controllers[configurer.findExpose().path] = configurer);
   }
 
   /// Mounts the child on this router. If [routable] is `null`,
@@ -589,18 +588,14 @@ class Angel extends AngelBase {
         });
       }
 
-      routable.controllers.forEach((k, v) {
+      routable._controllers.forEach((k, v) {
         var tail = k.toString().replaceAll(_straySlashes, '');
-        controllers['$head/$tail'.replaceAll(_straySlashes, '')] = v;
+        _controllers['$head/$tail'.replaceAll(_straySlashes, '')] = v;
       });
 
       routable.services.forEach((k, v) {
         var tail = k.toString().replaceAll(_straySlashes, '');
         services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
-      });
-
-      _onController.whenInitialized(() {
-        routable.onController.listen(_onController.add);
       });
     }
 

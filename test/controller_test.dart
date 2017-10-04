@@ -43,13 +43,13 @@ main() {
 
   setUp(() async {
     app = new Angel();
-    app.registerMiddleware("foo", (req, res) async => res.write("Hello, "));
-    app.registerMiddleware("bar", (req, res) async => res.write("world!"));
+    app.requestMiddleware["foo"] = (req, res) async => res.write("Hello, ");
+    app.requestMiddleware["bar"] = (req, res) async => res.write("world!");
     app.get(
         "/redirect",
         (req, ResponseContext res) async =>
             res.redirectToAction("TodoController@foo", {"foo": "world"}));
-    await app.configure(ctrl = new TodoController());
+    await app.configure((ctrl = new TodoController()).configureServer);
 
     print(app.controllers);
     app.dumpTree();
@@ -71,7 +71,7 @@ main() {
   test('require expose', () async {
     try {
       var app = new Angel();
-      await app.configure(new NoExposeController());
+      await app.configure(new NoExposeController().configureServer);
       throw 'Should require @Expose';
     } on Exception {
       // :)
@@ -93,7 +93,7 @@ main() {
 
   test('optional name', () async {
     var app = new Angel();
-    await app.configure(new NamedController());
+    await app.configure(new NamedController().configureServer);
     expect(app.controllers['foo'], new isInstanceOf<NamedController>());
   });
 

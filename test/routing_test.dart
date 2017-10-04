@@ -1,7 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';
 
 @Middleware(const ['interceptor'])
@@ -33,16 +33,15 @@ main() {
       app.lazyParseBodies = app.isProduction;
     });
 
-    app
-      ..registerMiddleware('interceptor', (req, res) async {
+    app.requestMiddleware
+      ..['interceptor'] = (req, res) async {
         res.write('Middleware');
         return false;
-      })
-      ..registerMiddleware('intercept_service',
-          (RequestContext req, res) async {
+      }
+      ..['intercept_service'] = (RequestContext req, res) async {
         res.write("Service with ");
         return true;
-      });
+      };
 
     todos.get('/action/:action', (req, res) => res.json(req.params));
 
@@ -75,8 +74,12 @@ main() {
       return "Logged";
     });
 
+    app.get('/method', () => 'Only GET');
+    app.post('/method', () => 'Only POST');
+
     app.use('/query', new QueryService());
-    app.get('*', 'MJ');
+
+    app.use('MJ');
 
     app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
@@ -103,7 +106,7 @@ main() {
   test('Can match url with multiple parameters', () async {
     var response = await client.get('$url/name/HELLO/last/WORLD');
     print('Response: ${response.body}');
-    var json = god.deserialize(response.body);
+    var json = JSON.decode(response.body);
     expect(json, new isInstanceOf<Map<String, String>>());
     expect(json['first'], equals('HELLO'));
     expect(json['last'], equals('WORLD'));
@@ -111,13 +114,13 @@ main() {
 
   test('Can nest another Angel instance', () async {
     var response = await client.post('$url/nes/ted/foo');
-    var json = god.deserialize(response.body);
+    var json = JSON.decode(response.body);
     expect(json['route'], equals('foo'));
   });
 
   test('Can parse parameters from a nested Angel instance', () async {
     var response = await client.get('$url/todos/1337/action/test');
-    var json = god.deserialize(response.body);
+    var json = JSON.decode(response.body);
     print('JSON: $json');
     expect(json['id'], equals('1337'));
     expect(json['action'], equals('test'));
@@ -136,10 +139,10 @@ main() {
 
   test('Can serialize function result as JSON', () async {
     Map headers = {'Content-Type': 'application/json'};
-    String postData = god.serialize({'it': 'works'});
+    String postData = JSON.encode({'it': 'works'});
     var response =
         await client.post("$url/lambda", headers: headers, body: postData);
-    expect(god.deserialize(response.body)['it'], equals('works'));
+    expect(JSON.decode(response.body)['it'], equals('works'));
   });
 
   test('Fallback routes', () async {
@@ -158,17 +161,31 @@ main() {
   test('Redirect to named routes', () async {
     var response = await client.get('$url/named');
     print(response.body);
-    expect(god.deserialize(response.body), equals('Hello tests'));
+    expect(JSON.decode(response.body), equals('Hello tests'));
   });
 
   test('Match routes, even with query params', () async {
     var response =
         await client.get("$url/log?foo=bar&bar=baz&baz.foo=bar&baz.bar=foo");
     print(response.body);
-    expect(god.deserialize(response.body), equals('Logged'));
+    expect(JSON.decode(response.body), equals('Logged'));
 
     response = await client.get("$url/query/foo?bar=baz");
     print(response.body);
     expect(response.body, equals("Service with Middleware"));
+  });
+
+  test('only match route with matching method', () async {
+    var response = await client.get("$url/method");
+    print(response.body);
+    expect(response.body, '"Only GET"');
+
+    response = await client.post("$url/method");
+    print(response.body);
+    expect(response.body, '"Only POST"');
+
+    response = await client.patch("$url/method");
+    print(response.body);
+    expect(response.body, '"MJ"');
   });
 }

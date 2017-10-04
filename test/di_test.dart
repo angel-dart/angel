@@ -25,8 +25,8 @@ main() {
     app.get("/errands", (Todo singleton) => singleton);
     app.get("/errands3",
         ({Errand singleton, Todo foo, RequestContext req}) => singleton.text);
-    await app.configure(new SingletonController());
-    await app.configure(new ErrandController());
+    await app.configure(new SingletonController().configureServer);
+    await app.configure(new ErrandController().configureServer);
 
     server = await app.startServer();
     url = "http://${server.address.host}:${server.port}";

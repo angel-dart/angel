@@ -15,7 +15,6 @@ import 'server_test.dart' as server;
 import 'services_test.dart' as services;
 import 'streaming_test.dart' as streaming;
 import 'typed_service_test.dart' as typed_service;
-import 'util_test.dart' as util;
 import 'view_generator_test.dart' as view_generator;
 import 'package:test/test.dart';
 
@@ -38,6 +37,5 @@ main() {
   group('services', services.main);
   group('streaming', streaming.main);
   group('typed_service', typed_service.main);
-  group('util', util.main);
   group('view generator', view_generator.main);
 }

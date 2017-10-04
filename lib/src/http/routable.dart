@@ -5,7 +5,6 @@ import 'package:angel_route/angel_route.dart';
 import 'package:meta/meta.dart';
 import '../util.dart';
 import 'angel_base.dart';
-import 'controller.dart';
 import 'hooked_service.dart';
 import 'metadata.dart';
 import 'request_context.dart';
@@ -35,21 +34,17 @@ RequestMiddleware waterfall(List handlers) {
 
 /// A routable server that can handle dynamic requests.
 class Routable extends Router {
-  final Map<Pattern, Controller> _controllers = {};
   final Map<Pattern, Service> _services = {};
   final Map configuration = {};
 
-  Routable({bool debug: false}) : super(debug: debug);
+  Routable() : super();
 
   /// Additional filters to be run on designated requests.
   @override
-  final Map<String, RequestMiddleware> requestMiddleware = {};
+  final Map<String, RequestHandler> requestMiddleware = {};
 
   /// A set of [Service] objects that have been mapped into routes.
   Map<Pattern, Service> get services => _services;
-
-  /// A set of [Controller] objects that have been loaded into the application.
-  Map<Pattern, Controller> get controllers => _controllers;
 
   StreamController<Service> _onService =
       new StreamController<Service>.broadcast();
@@ -68,9 +63,6 @@ class Routable extends Router {
   Service service(Pattern path) =>
       _services[path] ??
       _services[path.toString().replaceAll(_straySlashes, '')];
-
-  /// Retrieves the controller with the given name.
-  Controller controller(String name) => controllers[name];
 
   @override
   Route addRoute(String method, Pattern path, Object handler,

@@ -10,16 +10,6 @@ final Uri $foo = Uri.parse('http://localhost:3000/foo');
 
 /// Additional tests to improve coverage of server.dart
 main() {
-  group('streams fired', () {
-    test('oncontroller fired', () async {
-      var app = new Angel();
-      var ctrl = new FooController();
-      var f = app.onController.first;
-      await app.configure(ctrl);
-      expect(await f, ctrl);
-    });
-  });
-
   group('scoping', () {
     var parent = new Angel()..configuration['two'] = 2;
     var child = new Angel();
@@ -168,7 +158,8 @@ main() {
     tearDown(() => app.close());
 
     test('can send json', () async {
-      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'));
+      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
+        ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
       rq.close();
       await app.handleRequest(rq);
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
@@ -177,7 +168,8 @@ main() {
     });
 
     test('can throw in finalizer', () async {
-      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'));
+      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
+        ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
       rq.close();
       await app.handleRequest(rq);
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);

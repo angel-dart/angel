@@ -262,7 +262,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
           "Controller redirects must take the form of 'Controller@action'. You gave: $action");
 
     Controller controller =
-        app.controller(split[0].replaceAll(_straySlashes, ''));
+        app.controllers[split[0].replaceAll(_straySlashes, '')];
 
     if (controller == null)
       throw new Exception("Could not find a controller named '${split[0]}'");
@@ -336,6 +336,10 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
     if (_isClosed && !_useStream) throw _closed();
     bool firstStream = _useStream == false;
     willCloseItself = _useStream = _isClosed = true;
+
+    if (_correspondingRequest?.injections?.containsKey(Stopwatch) == true) {
+      (_correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
+    }
 
     Stream<List<int>> output = stream;
 

@@ -42,10 +42,10 @@ serverMain(_) async {
     ..lazyParseBodies = true
     ..injectSerializer(JSON.encode);
 
-  app.fatalErrorStream.listen((e) {
-    print(e.error);
-    print(e.stack);
-  });
+  app.errorHandler = (e, req, res) {
+    print(e.message ?? e.error ?? e);
+    print(e.stackTrace);
+  };
 
   await app.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
 }

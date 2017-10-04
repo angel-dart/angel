@@ -1,3 +1,12 @@
+# 1.1.0-alpha+5
+* Closed [#166](https://github.com/angel-dart/framework/issues/166), killing any hanging `Stopwatch` instances when streaming.
+* Removed `AngelPlugin` and `AngelMiddleware`, as well as the `@proxy` annotations from `Angel` and `RequestContext`.
+* Officially deprecated `properties` in `Angel`.
+* Fixed a bug where cached routes would not heed the request method. [#173](https://github.com/angel-dart/framework/issues/173)
+* Reworked error handling logic; now, errors will not automatically default to sending JSON.
+* Removed the `onController` stream from `Angel`.
+* Controllers now longer use `call`, which has now been renamed to `configureServer`.
+
 # 1.1.0-alpha+4
 * Made `injections` in `RequestContext` private.
 * Renamed `properties` in `AngelBase` to `configuration`.

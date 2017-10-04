@@ -31,7 +31,7 @@ class Controller {
   Controller({this.debug: false, this.injectSingleton: true});
 
   @mustCallSuper
-  Future call(Angel app) async {
+  Future configureServer(Angel app) async {
     _app = app;
 
     if (injectSingleton != false) _app.container.singleton(this);
@@ -45,7 +45,7 @@ class Controller {
           "All controllers must carry an @Expose() declaration.");
     }
 
-    var routable = new Routable(debug: debug);
+    var routable = new Routable();
     app.use(exposeDecl.path, routable);
     TypeMirror typeMirror = reflectType(this.runtimeType);
     String name = exposeDecl.as?.isNotEmpty == true

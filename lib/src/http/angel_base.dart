@@ -2,14 +2,12 @@ library angel_framework.http.angel_base;
 
 import 'dart:async';
 import 'package:container/container.dart';
-import '../fast_name_from_symbol.dart';
 import 'routable.dart';
 
 /// A function that asynchronously generates a view from the given path and data.
 typedef Future<String> ViewGenerator(String path, [Map data]);
 
 /// Base class for Angel servers. Do not bother extending this.
-@proxy
 class AngelBase extends Routable {
   Container _container = new Container();
 
@@ -32,22 +30,4 @@ class AngelBase extends Routable {
   /// Called by [ResponseContext]@`render`.
   ViewGenerator viewGenerator = (String view, [Map data]) async =>
       "No view engine has been configured yet.";
-
-  operator [](key) => configuration[key];
-  operator []=(key, value) => configuration[key] = value;
-
-  noSuchMethod(Invocation invocation) {
-    if (invocation.memberName != null) {
-      String name = fastNameFromSymbol(invocation.memberName);
-
-      if (invocation.isMethod) {
-        return Function.apply(configuration[name], invocation.positionalArguments,
-            invocation.namedArguments);
-      } else if (invocation.isGetter) {
-        return configuration[name];
-      }
-    }
-
-    return super.noSuchMethod(invocation);
-  }
 }
