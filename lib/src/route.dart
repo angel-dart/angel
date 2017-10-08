@@ -237,8 +237,8 @@ class Route {
         .replaceAll(_rgxEnd, '')
         .replaceAll(_rgxStraySlashes, '');
     final String pattern2 = child.matcher.pattern
-        .replaceAll(_rgxStart, '')
-        .replaceAll(_rgxStraySlashes, '');
+            .replaceAll(_rgxStart, '')
+            .replaceAll(_rgxStraySlashes, '');
 
     final route = new Route('$path1/$path2',
         children: child.children,
@@ -246,7 +246,7 @@ class Route {
         method: child.method,
         name: child.name);
 
-    String separator = (pattern1.isEmpty || pattern1 == '^') ? '' : '\\/';
+    String separator = (pattern1.isEmpty || pattern1 == '^' || pattern2 == r'$') ? '' : '\\/';
 
     parent._children.add(route
       .._matcher = new RegExp('$pattern1$separator$pattern2')
@@ -340,7 +340,7 @@ class Route {
     Map<String, String> result = {};
 
     Iterable<String> values =
-    _parseParameters(requestPath.replaceAll(_straySlashes, ''));
+        _parseParameters(requestPath.replaceAll(_straySlashes, ''));
 
     // _printDebug(
     //    'Searched request path $requestPath and found these values: $values');
@@ -482,7 +482,7 @@ class Route {
 
         if (match != null) {
           final subPath =
-          path.replaceFirst(match[0], '').replaceAll(_straySlashes, '');
+              path.replaceFirst(match[0], '').replaceAll(_straySlashes, '');
           // _printDebug("Subdir path: $subPath");
 
           for (Route child in route.children) {
@@ -505,12 +505,12 @@ class Route {
         // _printDebug(
         //    'Trying to match full $_fullPath for ${route.path} on ${this.path}');
         if ((route.match(_fullPath) != null ||
-            route._resolver.firstMatch(_fullPath) != null) &&
+                route._resolver.firstMatch(_fullPath) != null) &&
             _filter(route)) {
           // _printDebug('Matched full path!');
           return route.resolve('');
         } else if ((route.match('/$_fullPath') != null ||
-            route._resolver.firstMatch('/$_fullPath') != null) &&
+                route._resolver.firstMatch('/$_fullPath') != null) &&
             _filter(route)) {
           // _printDebug('Matched full path (with a leading slash!)');
           return route.resolve('');

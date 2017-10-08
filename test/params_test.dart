@@ -30,7 +30,7 @@ main() {
   });
 
   group('group', () {
-    test('root', () => expectParams('/book/1337', {'id': '1337'}));
+    //test('root', () => expectParams('/book/1337', {'id': '1337'}));
     test('path', () => expectParams('/book/1337/reviews', {'id': '1337'}));
     test(
         'two params',

@@ -33,11 +33,20 @@ class Router {
   Map<String, dynamic> requestMiddleware = {};
 
   List<Route> get routes {
-    var result = []..addAll(_routes);
+    return _routes.fold<List<Route>>([], (out, route) {
+      if (route is SymlinkRoute) {
+        var childRoutes = route.router.routes.fold<List<Route>>([], (out, r) {
+          return out
+            ..add(
+              route.path.isEmpty ? r : new Route.join(route, r),
+            );
+        });
 
-    for (var piped in _chained) result.addAll(piped.routes);
-
-    return new List<Route>.unmodifiable(result);
+        return out..addAll(childRoutes);
+      } else {
+        return out..add(route);
+      }
+    });
   }
 
   /// Provide a `root` to make this Router revolve around a pre-defined route.
@@ -60,12 +69,6 @@ class Router {
     return route.._path = _pathify(path);
   }
 
-  _ChainedRouter _addChained(_ChainedRouter piped) {
-    // mount('/', piped);
-    _chained.add(piped);
-    return piped;
-  }
-
   /// Prepends the given middleware to any routes created
   /// by the resulting router.
   ///
@@ -74,7 +77,9 @@ class Router {
   /// The resulting router can be chained, too.
   _ChainedRouter chain(middleware) {
     var piped = new _ChainedRouter(this, middleware);
-    return _addChained(piped);
+    var route = new SymlinkRoute('/', '/', piped);
+    _routes.add(route);
+    return piped;
   }
 
   /// Returns a [Router] with a duplicated version of this tree.
@@ -264,9 +269,9 @@ class Router {
     final cleanAbsolute = absolute.replaceAll(_straySlashes, '');
     final cleanRelative = relative.replaceAll(_straySlashes, '');
     final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
-    //_printDebug(
+    //print(
     //   'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
-    // _printDebug('Path segments: ${segments.toList()}');
+    //print('Path segments: ${segments.toList()}');
 
     for (Route route in routes) {
       if (route is SymlinkRoute && route._head != null && segments.isNotEmpty) {
@@ -283,7 +288,7 @@ class Router {
                 .replaceAll(_straySlashes, '');
 
             if (cleaned.isEmpty) {
-              // _printDebug(
+              //print(
               //    'Matched relative "$cleanRelative" to head ${route._head
               //    .pattern} on $route. Tail: "$tail"');
               route.router.debug = route.router.debug || debug;
@@ -318,7 +323,7 @@ class Router {
       }
     }
 
-    // _printDebug('Could not resolve path "/$cleanRelative".');
+    //print('Could not resolve path "/$cleanRelative".');
     return null;
   }
 
@@ -431,8 +436,10 @@ class _ChainedRouter extends Router {
   @override
   Route addRoute(String method, Pattern path, handler,
       {List middleware: const []}) {
-    return super.addRoute(method, path, handler,
+    var route = super.addRoute(method, path, handler,
         middleware: []..addAll(_handlers)..addAll(middleware ?? []));
+    //_root._routes.add(route);
+    return route;
   }
 
   SymlinkRoute group(Pattern path, void callback(Router router),
@@ -451,6 +458,7 @@ class _ChainedRouter extends Router {
     final route =
         super.mount(path, router, hooked: hooked, namespace: namespace);
     route.router._middleware.insertAll(0, _handlers);
+    //_root._routes.add(route);
     return route;
   }
 
@@ -460,6 +468,8 @@ class _ChainedRouter extends Router {
     piped._handlers.addAll([]
       ..addAll(_handlers)
       ..addAll(middleware is Iterable ? middleware : [middleware]));
-    return _addChained(piped);
+    var route = new SymlinkRoute('/', '/', piped);
+    _routes.add(route);
+    return piped;
   }
 }
