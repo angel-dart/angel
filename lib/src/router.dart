@@ -2,6 +2,7 @@ library angel_route.src.router;
 
 import 'extensible.dart';
 import 'routing_exception.dart';
+import '../string_util.dart';
 part 'symlink_route.dart';
 part 'route.dart';
 part 'routing_result.dart';
@@ -266,8 +267,8 @@ class Router {
   /// with the given method.
   RoutingResult resolve(String absolute, String relative,
       {String method: 'GET'}) {
-    final cleanAbsolute = absolute.replaceAll(_straySlashes, '');
-    final cleanRelative = relative.replaceAll(_straySlashes, '');
+    final cleanAbsolute = stripStraySlashes(absolute);
+    final cleanRelative = stripStraySlashes(relative);
     final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
     //print(
     //   'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
@@ -283,9 +284,9 @@ class Router {
 
           if (match != null) {
             final cleaned = s.join('/').replaceFirst(match[0], '');
-            final tail = cleanRelative
-                .replaceAll(route._head, '')
-                .replaceAll(_straySlashes, '');
+            var tail = cleanRelative
+                .replaceAll(route._head, '');
+            tail = stripStraySlashes(tail);
 
             if (cleaned.isEmpty) {
               //print(
