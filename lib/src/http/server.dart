@@ -347,7 +347,8 @@ class Angel extends AngelBase {
     }
 
     res.statusCode = e.statusCode;
-    await errorHandler(e, req, res);
+    var result = await errorHandler(e, req, res);
+    await executeHandler(result, req, res);
     res.end();
     return await sendResponse(request, req, res,
         ignoreFinalizers: ignoreFinalizers == true);
@@ -360,7 +361,7 @@ class Angel extends AngelBase {
     var zoneSpec = await createZoneForRequest(request, req, res);
     var zone = Zone.current.fork(specification: zoneSpec);
 
-    return zone.run(() async {
+    return zone.runGuarded(() async {
       String requestedUrl;
 
       // Faster way to get path
@@ -387,6 +388,7 @@ class Angel extends AngelBase {
         Router r = isProduction ? (_flattened ??= flatten(this)) : this;
         var resolved =
             r.resolveAll(requestedUrl, requestedUrl, method: req.method);
+
         return new Tuple3(
           new MiddlewarePipeline(resolved),
           resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
@@ -425,6 +427,15 @@ class Angel extends AngelBase {
           ignoreFinalizers: true,
         );
       }
+    }).catchError((error, stackTrace) {
+      var e = new AngelHttpException(error,
+          stackTrace: stackTrace, message: error?.toString());
+
+      if (logger != null) {
+        logger.severe(e.message ?? e.toString(), error, stackTrace);
+      }
+
+      return handleAngelHttpException(e, stackTrace, req, res, request);
     });
   }
 
@@ -612,19 +623,6 @@ class Angel extends AngelBase {
 
     createZoneForRequest = (request, req, res) async {
       return new ZoneSpecification(
-        handleUncaughtError: (Zone self, ZoneDelegate parent, Zone zone, error,
-            StackTrace stackTrace) {
-          var e = new AngelHttpException(error,
-              stackTrace: stackTrace, message: error?.toString());
-          return handleAngelHttpException(
-            e,
-            stackTrace,
-            req,
-            res,
-            request,
-            ignoreFinalizers: true,
-          );
-        },
         print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
           if (logger != null) {
             logger.info(line);

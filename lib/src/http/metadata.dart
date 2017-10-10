@@ -1,6 +1,8 @@
 library angel_framework.http.metadata;
 
 import 'hooked_service.dart' show HookedServiceEventListener;
+import 'package:angel_http_exception/angel_http_exception.dart';
+import 'request_context.dart';
 
 /// Annotation to map middleware onto a handler.
 class Middleware {
@@ -30,4 +32,106 @@ class Expose {
       this.middleware: const [],
       this.as: null,
       this.allowNull: const []});
+}
+
+/// Used to apply special dependency injections or functionality to a function parameter.
+class Parameter {
+  /// Inject the value of a request cookie.
+  final String cookie;
+
+  /// Inject the value of a request header.
+  final String header;
+
+  /// Inject the value of a key from the session.
+  final String session;
+
+  /// Inject the value of a key from the query.
+  final String query;
+
+  /// Only execute the handler if the value of this parameter matches the given value.
+  final match;
+
+  /// Specify a default value.
+  final defaultValue;
+
+  /// If `true` (default), then an error will be thrown if this parameter is not present.
+  final bool required;
+
+  const Parameter(
+      {this.cookie,
+      this.query,
+      this.header,
+      this.session,
+      this.match,
+      this.defaultValue,
+      this.required});
+
+  /// Returns an error that can be thrown when the parameter is not present.
+  get error {
+    if (cookie?.isNotEmpty == true)
+      return new AngelHttpException.badRequest(
+          message: 'Missing required cookie "$cookie".');
+    if (header?.isNotEmpty == true)
+      return new AngelHttpException.badRequest(
+          message: 'Missing required header "$header".');
+    if (query?.isNotEmpty == true)
+      return new AngelHttpException.badRequest(
+          message: 'Missing required query parameter "$query".');
+    if (session?.isNotEmpty == true)
+      return new StateError(
+          'Session does not contain required key "$session".');
+  }
+
+  /// Obtains a value for this parameter from a [RequestContext].
+  getValue(RequestContext req) {
+    if (cookie?.isNotEmpty == true)
+      return req.cookies.firstWhere((c) => c.name == cookie)?.value ??
+          defaultValue;
+    if (header?.isNotEmpty == true)
+      return req.headers.value(header) ?? defaultValue;
+    if (session?.isNotEmpty == true)
+      return req.session[session] ?? defaultValue;
+    if (query?.isNotEmpty == true) return req.query[query] ?? defaultValue;
+    return defaultValue;
+  }
+}
+
+/// Shortcut for declaring a request header [Parameter].
+class Header extends Parameter {
+  const Header(String header, {match, defaultValue, bool required: true})
+      : super(
+            header: header,
+            match: match,
+            defaultValue: defaultValue,
+            required: required);
+}
+
+/// Shortcut for declaring a request session [Parameter].
+class Session extends Parameter {
+  const Session(String session, {match, defaultValue, bool required: true})
+      : super(
+            session: session,
+            match: match,
+            defaultValue: defaultValue,
+            required: required);
+}
+
+/// Shortcut for declaring a request query [Parameter].
+class Query extends Parameter {
+  const Query(String query, {match, defaultValue, bool required: true})
+      : super(
+            query: query,
+            match: match,
+            defaultValue: defaultValue,
+            required: required);
+}
+
+/// Shortcut for declaring a request cookie [Parameter].
+class CookieValue extends Parameter {
+  const CookieValue(String cookie, {match, defaultValue, bool required: true})
+      : super(
+            cookie: cookie,
+            match: match,
+            defaultValue: defaultValue,
+            required: required);
 }

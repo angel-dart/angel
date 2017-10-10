@@ -12,76 +12,84 @@ RequestHandler createDynamicHandler(handler,
   return handleContained(handler, injection);
 }
 
+resolveInjection(requirement, InjectionRequest injection, RequestContext req,
+    ResponseContext res, bool throwOnUnresolved) {
+  var propFromApp;
+
+  if (requirement == RequestContext) {
+    return req;
+  } else if (requirement == ResponseContext) {
+    return res;
+  } else if (requirement is String &&
+      injection.parameters.containsKey(requirement)) {
+    var param = injection.parameters[requirement];
+    var value = param.getValue(req);
+    if (value == null && param.required != false) throw param.error;
+    return value;
+  } else if (requirement is String) {
+    if (req.params.containsKey(requirement)) {
+      return req.params[requirement];
+    } else if (req._injections.containsKey(requirement))
+      return req._injections[requirement];
+    else if (req.properties.containsKey(requirement))
+      return req.properties[requirement];
+    else if ((propFromApp = req.app.findProperty(requirement)) != null)
+      return propFromApp;
+    else if (injection.optional.contains(requirement))
+      return null;
+    else if (throwOnUnresolved) {
+      throw new ArgumentError(
+          "Cannot resolve parameter '$requirement' within handler.");
+    }
+  } else if (requirement is List &&
+      requirement.length == 2 &&
+      requirement.first is String &&
+      requirement.last is Type) {
+    String key = requirement.first;
+    Type type = requirement.last;
+    if (req.params.containsKey(key) ||
+        req._injections.containsKey(key) ||
+        req.properties.containsKey(key) ||
+        req.app.configuration.containsKey(key) ||
+        _primitiveTypes.contains(type)) {
+      return resolveInjection(key, injection, req, res, throwOnUnresolved);
+    } else
+      return resolveInjection(type, injection, req, res, throwOnUnresolved);
+  } else if (requirement is Type && requirement != dynamic) {
+    if (req._injections.containsKey(requirement))
+      return req._injections[requirement];
+    else
+      return req.app.container.make(requirement);
+  } else if (throwOnUnresolved) {
+    throw new ArgumentError(
+        '$requirement cannot be injected into a request handler.');
+  }
+}
+
+/// Checks if an [InjectionRequest] can be sufficiently executed within the current request/response context.
+bool suitableForInjection(RequestContext req, ResponseContext res, InjectionRequest injection) {
+  return injection.parameters.values.any((p) {
+    if (p.match == null) return false;
+    var value = p.getValue(req);
+    return value == p.match;
+  });
+}
+
 /// Handles a request with a DI-enabled handler.
 RequestHandler handleContained(handler, InjectionRequest injection) {
   return (RequestContext req, ResponseContext res) async {
+    if (injection.parameters.isNotEmpty && injection.parameters.values.any((p) => p.match != null) && !suitableForInjection(req, res, injection))
+      return true;
+
     List args = [];
 
-    void inject(requirement) {
-      var propFromApp;
-
-      if (requirement == RequestContext) {
-        args.add(req);
-      } else if (requirement == ResponseContext) {
-        args.add(res);
-      } else if (requirement is String) {
-        if (req.params.containsKey(requirement)) {
-          args.add(req.params[requirement]);
-        } else if (req._injections.containsKey(requirement))
-          args.add(req._injections[requirement]);
-        else if (req.properties.containsKey(requirement))
-          args.add(req.properties[requirement]);
-        else if ((propFromApp = req.app.findProperty(requirement)) != null)
-          args.add(propFromApp);
-        else if (injection.optional.contains(requirement))
-          args.add(null);
-        else {
-          throw new ArgumentError(
-              "Cannot resolve parameter '$requirement' within handler.");
-        }
-      } else if (requirement is List &&
-          requirement.length == 2 &&
-          requirement.first is String &&
-          requirement.last is Type) {
-        String key = requirement.first;
-        Type type = requirement.last;
-        if (req.params.containsKey(key) ||
-            req._injections.containsKey(key) ||
-            req.properties.containsKey(key) ||
-            req.app.configuration.containsKey(key) ||
-            _primitiveTypes.contains(type)) {
-          inject(key);
-        } else
-          inject(type);
-      } else if (requirement is Type && requirement != dynamic) {
-        if (req._injections.containsKey(requirement))
-          args.add(req._injections[requirement]);
-        else
-          args.add(req.app.container.make(requirement));
-      } else {
-        throw new ArgumentError(
-            '$requirement cannot be injected into a request handler.');
-      }
-    }
-
     Map<Symbol, dynamic> named = {};
-    injection.required.forEach(inject);
+    args.addAll(injection.required
+        .map((r) => resolveInjection(r, injection, req, res, true)));
 
     injection.named.forEach((k, v) {
       var name = new Symbol(k);
-      if (req.params.containsKey(k))
-        named[name] = v;
-      else if (req._injections.containsKey(k))
-        named[name] = v;
-      else if (req._injections.containsKey(v) && v != dynamic)
-        named[name] = v;
-      else {
-        try {
-          named[name] = req.app.container.make(v);
-        } catch (e) {
-          named[name] = null;
-        }
-      }
+      named[name] = resolveInjection([k, v], injection, req, res, false);
     });
 
     var result = Function.apply(handler, args, named);
@@ -106,13 +114,23 @@ class InjectionRequest {
   /// A list of the arguments that can be null in a DI-enabled method.
   final List<String> optional;
 
-  const InjectionRequest.constant({this.named, this.required, this.optional});
+  /// Extended parameter definitions.
+  final Map<String, Parameter> parameters;
+
+  const InjectionRequest.constant(
+      {this.named: const {},
+      this.required: const [],
+      this.optional: const [],
+      this.parameters: const {}});
 
   InjectionRequest()
       : named = {},
         required = [],
-        optional = [];
+        optional = [],
+        parameters = {};
 }
+
+final TypeMirror _Parameter = reflectType(Parameter);
 
 /// Predetermines what needs to be injected for a handler to run.
 InjectionRequest preInject(Function handler) {
@@ -126,6 +144,22 @@ InjectionRequest preInject(Function handler) {
   for (var parameter in closureMirror.function.parameters) {
     var name = MirrorSystem.getName(parameter.simpleName);
     var type = parameter.type.reflectedType;
+
+    var p = parameter.metadata
+        .firstWhere((m) => m.type.isAssignableTo(_Parameter),
+            orElse: () => null)
+        ?.reflectee as Parameter;
+    if (p != null) {
+      injection.parameters[name] = new Parameter(
+        cookie: p.cookie,
+        header: p.header,
+        query: p.query,
+        session: p.session,
+        match: p.match,
+        defaultValue: p.defaultValue,
+        required: parameter.isNamed ? false : p.required != false,
+      );
+    }
 
     if (!parameter.isNamed) {
       if (parameter.isOptional) injection.optional.add(name);

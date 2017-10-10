@@ -6,6 +6,7 @@ import 'encoders_buffer_test.dart' as encoders_buffer;
 import 'exception_test.dart' as exception;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
+import 'parameter_meta_test.dart' as parameter_meta;
 import 'precontained_test.dart' as precontained;
 import 'primitives_test.dart' as primitives;
 import 'repeat_request_test.dart' as repeat_request;
@@ -28,6 +29,7 @@ main() {
   group('exception', exception.main);
   group('general', general.main);
   group('hooked', hooked.main);
+  group('parameter_meta', parameter_meta.main);
   group('precontained', precontained.main);
   group('primitives', primitives.main);
   group('repeat request', repeat_request.main);

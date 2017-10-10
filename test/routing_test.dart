@@ -79,6 +79,15 @@ main() {
 
     app.use('/query', new QueryService());
 
+    RequestMiddleware write(String message) {
+      return (req, res) async {
+        res.write(message);
+        return true;
+      };
+    }
+
+    app.chain(write('a')).chain([write('b'), write('c')]).get('/chained', () => false);
+
     app.use('MJ');
 
     app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
@@ -110,6 +119,11 @@ main() {
     expect(json, new isInstanceOf<Map<String, String>>());
     expect(json['first'], equals('HELLO'));
     expect(json['last'], equals('WORLD'));
+  });
+
+  test('Chained routes', () async {
+    var response = await client.get("$url/chained");
+    expect(response.body, equals('abc'));
   });
 
   test('Can nest another Angel instance', () async {

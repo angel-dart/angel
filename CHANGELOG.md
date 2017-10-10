@@ -1,3 +1,6 @@
+# 1.1.0-alpha+6
+* Added `@Parameter()` annotations, with support for pattern matching.
+
 # 1.1.0-alpha+5
 * Closed [#166](https://github.com/angel-dart/framework/issues/166), killing any hanging `Stopwatch` instances when streaming.
 * Removed `AngelPlugin` and `AngelMiddleware`, as well as the `@proxy` annotations from `Angel` and `RequestContext`.
