@@ -1,6 +1,6 @@
 # body_parser
 [![Pub](https://img.shields.io/pub/v/body_parser.svg)](https://pub.dartlang.org/packages/body_parser)
-![build status](https://travis-ci.org/thosakwe/body_parser.svg)
+[![build status](https://travis-ci.org/angel-dart/body_parser.svg)](https://travis-ci.org/angel-dart/body_parser)
 
 Parse request bodies and query strings in Dart, as well multipart/form-data uploads. No external
 dependencies required.

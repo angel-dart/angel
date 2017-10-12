@@ -1,43 +1,39 @@
-### VisualStudioCode template
-.settings
-
+# Created by .ignore support plugin (hsz.mobi)
 ### JetBrains template
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
-
-*.iml
-
-## Directory-based project format:
-.idea
-/Test Results - Run_All_Tests.html
-# if you remove the above rule, at least ignore the following:
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
-# .idea/workspace.xml
-# .idea/tasks.xml
-# .idea/dictionaries
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
 
 # Sensitive or high-churn files:
-# .idea/dataSources.ids
-# .idea/dataSources.xml
-# .idea/sqlDataSources.xml
-# .idea/dynamic.xml
-# .idea/uiDesigner.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.xml
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
 
 # Gradle:
-# .idea/gradle.xml
-# .idea/libraries
+.idea/**/gradle.xml
+.idea/**/libraries
+
+# CMake
+cmake-build-debug/
 
 # Mongo Explorer plugin:
-# .idea/mongoSettings.xml
+.idea/**/mongoSettings.xml
 
 ## File-based project format:
-*.ipr
 *.iws
 
 ## Plugin-specific files:
 
 # IntelliJ
-/out/
+out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
@@ -45,27 +41,24 @@
 # JIRA plugin
 atlassian-ide-plugin.xml
 
+# Cursive Clojure plugin
+.idea/replstate.xml
+
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
-
+fabric.properties
 ### Dart template
-# Don't commit the following directories created by pub.
-.buildlog
+# See https://www.dartlang.org/tools/private-files.html
+
+# Files and directories created by pub
+.packages
 .pub/
 build/
-packages
-.packages
-
-# Or the files created by dart2js.
-*.dart.js
-*.js_
-*.js.deps
-*.js.map
-
-# Include when developing application packages.
+# If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
 
-doc/api
-
+# Directory created by dartdoc
+# If you don't generate documentation locally you can remove this line.
+doc/api/

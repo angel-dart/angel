@@ -19,16 +19,20 @@ Future<BodyParseResult> parseBody(HttpRequest request,
     {bool storeOriginalBuffer: false}) async {
   var result = new _BodyParseResultImpl();
 
-  Future<List<int>> getBytes() async {
-    return await request.fold(<int>[], (a, b) => a..addAll(b));
+  Future<List<int>> getBytes() {
+    return request
+        .fold<BytesBuilder>(new BytesBuilder(copy: false), (a, b) => a..add(b))
+        .then((b) => b.takeBytes());
   }
 
-  Future<String> getBody() async {
+  Future<String> getBody() {
     if (storeOriginalBuffer) {
-      List<int> bytes = await getBytes();
-      return Uri.decodeFull(UTF8.decode(result.originalBuffer = bytes));
+      return getBytes().then((bytes) {
+        result.originalBuffer = bytes;
+        return UTF8.decode(bytes);
+      });
     } else
-      return await request.transform(UTF8.decoder).join().then(Uri.decodeFull);
+      return request.transform(UTF8.decoder).join();
   }
 
   try {
@@ -56,7 +60,8 @@ Future<BodyParseResult> parseBody(HttpRequest request,
         await for (HttpMultipartFormData part in parts) {
           if (part.isBinary ||
               part.contentDisposition.parameters.containsKey("filename")) {
-            BytesBuilder builder = await part.fold(new BytesBuilder(),
+            BytesBuilder builder = await part.fold(
+                new BytesBuilder(copy: false),
                 (BytesBuilder b, d) => b..add(d is! String ? d : d.codeUnits));
             var upload = new FileUploadInfo(
                 mimeType: part.contentType.mimeType,
