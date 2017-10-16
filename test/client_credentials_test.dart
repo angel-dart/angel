@@ -65,7 +65,7 @@ main() {
     );
 
     print('Response: ${response.body}');
-    expect(response, hasStatus(401));
+    expect(response, hasStatus(400));
   });
 
   test('force correct secret', () async {
@@ -80,7 +80,7 @@ main() {
     );
 
     print('Response: ${response.body}');
-    expect(response, hasStatus(401));
+    expect(response, hasStatus(400));
   });
 }
 

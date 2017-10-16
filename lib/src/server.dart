@@ -66,7 +66,7 @@ abstract class AuthorizationServer<Client, User> {
         'Authorization code grants are not supported.',
         state,
       ),
-      statusCode: 405,
+      statusCode: 400,
     );
   }
 
@@ -87,7 +87,7 @@ abstract class AuthorizationServer<Client, User> {
         'Authorization code grants are not supported.',
         state,
       ),
-      statusCode: 405,
+      statusCode: 400,
     );
   }
 
@@ -103,7 +103,7 @@ abstract class AuthorizationServer<Client, User> {
         'Authorization code grants are not supported.',
         req.query['state'] ?? '',
       ),
-      statusCode: 405,
+      statusCode: 400,
     );
   }
 
@@ -120,7 +120,7 @@ abstract class AuthorizationServer<Client, User> {
         'Refreshing authorization tokens is not supported.',
         req.body['state'] ?? '',
       ),
-      statusCode: 405,
+      statusCode: 400,
     );
   }
 
@@ -138,7 +138,7 @@ abstract class AuthorizationServer<Client, User> {
         'Resource owner password credentials grants are not supported.',
         req.body['state'] ?? '',
       ),
-      statusCode: 405,
+      statusCode: 400,
     );
   }
 
@@ -151,7 +151,7 @@ abstract class AuthorizationServer<Client, User> {
         'Client credentials grants are not supported.',
         req.body['state'] ?? '',
       ),
-      statusCode: 405,
+      statusCode: 400,
     );
   }
 
@@ -319,7 +319,7 @@ abstract class AuthorizationServer<Client, User> {
                 'Invalid "client_id" parameter.',
                 state,
               ),
-              statusCode: 401,
+              statusCode: 400,
             );
           }
 
@@ -330,7 +330,7 @@ abstract class AuthorizationServer<Client, User> {
                 'Invalid "client_secret" parameter.',
                 state,
               ),
-              statusCode: 401,
+              statusCode: 400,
             );
           }
         }
