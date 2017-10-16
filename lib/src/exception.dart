@@ -1,36 +1,62 @@
 import 'package:angel_http_exception/angel_http_exception.dart';
 
+/// An Angel-friendly wrapper around OAuth2 [ErrorResponse] instances.
 class AuthorizationException extends AngelHttpException {
   final ErrorResponse errorResponse;
 
   AuthorizationException(this.errorResponse,
-      {StackTrace stackTrace, int statusCode})
-      : super(errorResponse,
+      {StackTrace stackTrace, int statusCode, error})
+      : super(error ?? errorResponse,
             stackTrace: stackTrace, message: '', statusCode: statusCode ?? 401);
+
+  @override
+  Map toJson() {
+   var m = {
+     'error': errorResponse.code,
+     'error_description': errorResponse.description,
+   };
+
+   if (errorResponse.uri != null)
+     m['error_uri'] = errorResponse.uri.toString();
+
+   return m;
+  }
 }
 
+/// Represents an OAuth2 authentication error.
 class ErrorResponse {
-  final String code, description;
+  /// The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.
+  static const String invalidRequest = 'invalid_request';
 
-  // Taken from https://www.docusign.com/p/RESTAPIGuide/Content/OAuth2/OAuth2%20Response%20Codes.htm
-  // TODO: Use original error messages
-  static const ErrorResponse invalidRequest = const ErrorResponse(
-          'invalid_request',
-          'The request was malformed, or contains unsupported parameters.'),
-      invalidClient = const ErrorResponse(
-          'invalid_client', 'The client authentication failed.'),
-      invalidGrant = const ErrorResponse(
-          'invalid_grant', 'The provided authorization is invalid.'),
-      unauthorizedClient = const ErrorResponse('unauthorized_client',
-          'The client application is not allowed to use this grant_type.'),
-      unauthorizedGrantType = const ErrorResponse('unsupported_grant_type',
-          'A grant_type other than “password” was used in the request.'),
-      invalidScope = const ErrorResponse(
-          'invalid_scope', 'One or more of the scopes you provided was invalid.'),
-      unsupportedTokenType = const ErrorResponse('unsupported_token_type',
-          'The client tried to revoke an access token on a server not supporting this feature.'),
-      invalidToken = const ErrorResponse(
-          'invalid_token', 'The presented token is invalid.');
+  /// The client is not authorized to request an authorization code using this method.
+  static const String unauthorizedClient = 'unauthorized_client';
 
-  const ErrorResponse(this.code, this.description);
+  /// The resource owner or authorization server denied the request.
+  static const String accessDenied = 'access_denied';
+
+  /// The authorization server does not support obtaining an authorization code using this method.
+  static const String unsupportedResponseType = 'unsupported_response_type';
+
+  /// The requested scope is invalid, unknown, or malformed.
+  static const String invalidScope = 'invalid_scope';
+
+  /// The authorization server encountered an unexpected condition that prevented it from fulfilling the request.
+  static const String serverError = 'server_error';
+
+  /// The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  static const String temporarilyUnavailable = 'temporarily_unavailable';
+
+  /// A short string representing the error.
+  final String code;
+
+  /// A relatively detailed description of the source of the error.
+  final String description;
+
+  /// An optional [Uri] directing users to more information about the error.
+  final Uri uri;
+
+  /// The exact value received from the client, if a "state" parameter was present in the client authorization request.
+  final String state;
+
+  const ErrorResponse(this.code, this.description, this.state, {this.uri});
 }

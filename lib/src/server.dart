@@ -1,16 +1,29 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'exception.dart';
 import 'response.dart';
 import 'token_type.dart';
 
-String _getParam(RequestContext req, String name, {bool body: false}) {
+/// A request handler that performs an arbitrary authorization token grant.
+typedef Future<AuthorizationTokenResponse> ExtensionGrant(
+    RequestContext req, ResponseContext res);
+
+String _getParam(RequestContext req, String name, String state,
+    {bool body: false}) {
   var map = body == true ? req.body : req.query;
   var value = map.containsKey(name) ? map[name]?.toString() : null;
 
-  if (value?.isNotEmpty != true)
-    throw new AngelHttpException.badRequest(
-        message: "Missing required parameter '$name'.");
+  if (value?.isNotEmpty != true) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.invalidRequest,
+        'Missing required parameter "$name".',
+        state,
+      ),
+      statusCode: 400,
+    );
+  }
 
   return value;
 }
@@ -20,100 +33,366 @@ Iterable<String> _getScopes(RequestContext req, {bool body: false}) {
   return map['scope']?.toString()?.split(' ') ?? [];
 }
 
-abstract class Server<Client, User> {
-  const Server();
+/// An OAuth2 authorization server, which issues access tokens to third parties.
+abstract class AuthorizationServer<Client, User> {
+  const AuthorizationServer();
+
+  static const String _internalServerError =
+      'An internal server error occurred.';
+
+  /// A [Map] of custom authorization token grants. Use this to handle custom grant types, perhaps even your own.
+  Map<String, ExtensionGrant> get extensionGrants => {};
 
   /// Finds the [Client] application associated with the given [clientId].
   FutureOr<Client> findClient(String clientId);
 
+  // TODO: Is this ever used???
+  /// Verify that a [client] is the one identified by the [clientSecret].
   Future<bool> verifyClient(Client client, String clientSecret);
 
-  Future<String> authCodeGrant(Client client, String redirectUri, User user,
-      Iterable<String> scopes, String state);
+  /// Prompt the currently logged-in user to grant or deny access to the [client].
+  ///
+  /// In many applications, this will entail showing a dialog to the user in question.
+  requestAuthorizationCode(
+      Client client,
+      String redirectUri,
+      Iterable<String> scopes,
+      String state,
+      RequestContext req,
+      ResponseContext res) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Authorization code grants are not supported.',
+        state,
+      ),
+      statusCode: 405,
+    );
+  }
 
-  authorize(Client client, String redirectUri, Iterable<String> scopes,
-      String state, RequestContext req, ResponseContext res);
+  /// Create an implicit authorization token.
+  ///
+  /// Note that in cases where this is called, there is no guarantee
+  /// that the user agent has not been compromised.
+  Future<AuthorizationTokenResponse> implicitGrant(
+      Client client,
+      String redirectUri,
+      Iterable<String> scopes,
+      String state,
+      RequestContext req,
+      ResponseContext res) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Authorization code grants are not supported.',
+        state,
+      ),
+      statusCode: 405,
+    );
+  }
 
-  Future<AuthorizationCodeResponse> exchangeAuthCodeForAccessToken(
+  /// Exchanges an authorization code for an authorization token.
+  Future<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
       String authCode,
       String redirectUri,
       RequestContext req,
-      ResponseContext res);
+      ResponseContext res) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Authorization code grants are not supported.',
+        req.query['state'] ?? '',
+      ),
+      statusCode: 405,
+    );
+  }
 
+  /// Refresh an authorization token.
+  Future<AuthorizationTokenResponse> refreshAuthorizationToken(
+      Client client,
+      String refreshToken,
+      Iterable<String> scopes,
+      RequestContext req,
+      ResponseContext res) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Refreshing authorization tokens is not supported.',
+        req.body['state'] ?? '',
+      ),
+      statusCode: 405,
+    );
+  }
+
+  /// Issue an authorization token to a user after authenticating them via [username] and [password].
+  Future<AuthorizationTokenResponse> resourceOwnerPasswordCredentialsGrant(
+      Client client,
+      String username,
+      String password,
+      Iterable<String> scopes,
+      RequestContext req,
+      ResponseContext res) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Resource owner password credentials grants are not supported.',
+        req.body['state'] ?? '',
+      ),
+      statusCode: 405,
+    );
+  }
+
+  /// Performs a client credentials grant. Only use this in situations where the client is 100% trusted.
+  Future<AuthorizationTokenResponse> clientCredentialsGrant(
+      Client client, RequestContext req, ResponseContext res) {
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Client credentials grants are not supported.',
+        req.body['state'] ?? '',
+      ),
+      statusCode: 405,
+    );
+  }
+
+  /// A request handler that invokes the correct logic, depending on which type
+  /// of grant the client is requesting.
   Future authorizationEndpoint(RequestContext req, ResponseContext res) async {
-    var responseType = _getParam(req, 'response_type');
+    String state = '';
 
-    if (responseType != 'code')
-      throw new AngelHttpException.badRequest(
-          message: "Invalid response_type, expected 'code'.");
+    try {
+      state = req.query['state']?.toString() ?? '';
+      var responseType = _getParam(req, 'response_type', state);
 
-    // Ensure client ID
-    var clientId = _getParam(req, 'client_id');
+      if (responseType == 'code') {
+        // Ensure client ID
+        // TODO: Handle confidential clients
+        var clientId = _getParam(req, 'client_id', state);
 
-    // Find client
-    var client = await findClient(clientId);
+        // Find client
+        var client = await findClient(clientId);
 
-    if (client == null)
-      throw new AuthorizationException(ErrorResponse.invalidClient);
+        if (client == null) {
+          throw new AuthorizationException(new ErrorResponse(
+            ErrorResponse.unauthorizedClient,
+            'Unknown client "$clientId".',
+            state,
+          ));
+        }
 
-    // Grab redirect URI
-    var redirectUri = _getParam(req, 'redirect_uri');
+        // Grab redirect URI
+        var redirectUri = _getParam(req, 'redirect_uri', state);
 
-    // Grab scopes
-    var scopes = _getScopes(req);
+        // Grab scopes
+        var scopes = _getScopes(req);
 
-    var state = req.query['state']?.toString() ?? '';
+        return await requestAuthorizationCode(
+            client, redirectUri, scopes, state, req, res);
+      }
 
-    return await authorize(client, redirectUri, scopes, state, req, res);
+      if (responseType == 'token') {
+        var clientId = _getParam(req, 'client_id', state);
+        var client = await findClient(clientId);
+
+        if (client == null) {
+          throw new AuthorizationException(new ErrorResponse(
+            ErrorResponse.unauthorizedClient,
+            'Unknown client "$clientId".',
+            state,
+          ));
+        }
+
+        var redirectUri = _getParam(req, 'redirect_uri', state);
+
+        // Grab scopes
+        var scopes = _getScopes(req);
+        var token =
+            await implicitGrant(client, redirectUri, scopes, state, req, res);
+
+        Uri target;
+
+        try {
+          target = Uri.parse(redirectUri);
+          var queryParameters = <String, String>{};
+
+          queryParameters.addAll({
+            'access_token': token.accessToken,
+            'token_type': 'bearer',
+            'state': state,
+          });
+
+          if (token.expiresIn != null)
+            queryParameters['expires_in'] = token.expiresIn.toString();
+
+          if (token.scope != null)
+            queryParameters['scope'] = token.scope.join(' ');
+
+          var fragment = queryParameters.keys
+              .fold<StringBuffer>(new StringBuffer(), (buf, k) {
+            if (buf.isNotEmpty) buf.write('&');
+            return buf
+              ..write(
+                '$k=' + Uri.encodeComponent(queryParameters[k]),
+              );
+          }).toString();
+
+          target = target.replace(fragment: fragment);
+          res.redirect(target.toString());
+          return false;
+        } on FormatException {
+          throw new AuthorizationException(
+              new ErrorResponse(
+                ErrorResponse.invalidRequest,
+                'Invalid URI provided as "redirect_uri" parameter',
+                state,
+              ),
+              statusCode: 400);
+        }
+      }
+
+      throw new AuthorizationException(
+          new ErrorResponse(
+            ErrorResponse.invalidRequest,
+            'Invalid or no "response_type" parameter provided',
+            state,
+          ),
+          statusCode: 400);
+    } on AngelHttpException {
+      rethrow;
+    } catch (e, st) {
+      throw new AuthorizationException(
+        new ErrorResponse(
+          ErrorResponse.serverError,
+          _internalServerError,
+          state,
+        ),
+        error: e,
+        statusCode: 500,
+        stackTrace: st,
+      );
+    }
   }
 
+  static final RegExp _rgxBasic = new RegExp(r'Basic ([^$]+)');
+  static final RegExp _rgxBasicAuth = new RegExp(r'([^:]*):([^$]*)');
+
+  /// A request handler that either exchanges authorization codes for authorization tokens,
+  /// or refreshes authorization tokens.
   Future tokenEndpoint(RequestContext req, ResponseContext res) async {
-    await req.parse();
+    String state = '';
+    Client client;
 
-    var grantType = _getParam(req, 'grant_type', body: true);
+    try {
+      AuthorizationTokenResponse response;
+      await req.parse();
 
-    if (grantType != 'authorization_code')
-      throw new AngelHttpException.badRequest(
-          message: "Invalid grant_type; expected 'authorization_code'.");
+      state = req.body['state'] ?? '';
 
-    var code = _getParam(req, 'code', body: true);
-    var redirectUri = _getParam(req, 'redirect_uri', body: true);
+      var grantType = _getParam(req, 'grant_type', state, body: true);
 
-    var response =
-        await exchangeAuthCodeForAccessToken(code, redirectUri, req, res);
-    return {'token_type': TokenType.bearer}..addAll(response.toJson());
-  }
+      if (grantType != 'authorization_code') {
+        var match =
+            _rgxBasic.firstMatch(req.headers.value('authorization') ?? '');
 
-  Future handleFormSubmission(RequestContext req, ResponseContext res) async {
-    await req.parse();
+        if (match != null) {
+          match = _rgxBasicAuth
+              .firstMatch(new String.fromCharCodes(BASE64URL.decode(match[1])));
+        }
 
-    // Ensure client ID
-    var clientId = _getParam(req, 'client_id', body: true);
+        if (match == null) {
+          throw new AuthorizationException(
+            new ErrorResponse(
+              ErrorResponse.unauthorizedClient,
+              'Invalid or no "Authorization" header.',
+              state,
+            ),
+            statusCode: 400,
+          );
+        } else {
+          var clientId = match[1], clientSecret = match[2];
+          client = await findClient(clientId);
 
-    // Find client
-    var client = await findClient(clientId);
+          if (client == null) {
+            throw new AuthorizationException(
+              new ErrorResponse(
+                ErrorResponse.unauthorizedClient,
+                'Invalid "client_id" parameter.',
+                state,
+              ),
+              statusCode: 401,
+            );
+          }
 
-    if (client == null)
-      throw new AuthorizationException(ErrorResponse.invalidClient);
+          if (!await verifyClient(client, clientSecret)) {
+            throw new AuthorizationException(
+              new ErrorResponse(
+                ErrorResponse.unauthorizedClient,
+                'Invalid "client_secret" parameter.',
+                state,
+              ),
+              statusCode: 401,
+            );
+          }
+        }
+      }
 
-    // Verify client secret
-    var clientSecret = _getParam(req, 'client_secret', body: true);
+      if (grantType == 'authorization_code') {
+        var code = _getParam(req, 'code', state, body: true);
+        var redirectUri = _getParam(req, 'redirect_uri', state, body: true);
+        response = await exchangeAuthorizationCodeForToken(
+            code, redirectUri, req, res);
+      } else if (grantType == 'refresh_token') {
+        var refreshToken = _getParam(req, 'refresh_token', state, body: true);
+        var scopes = _getScopes(req);
+        response = await refreshAuthorizationToken(
+            client, refreshToken, scopes, req, res);
+      } else if (grantType == 'password') {
+        var username = _getParam(req, 'username', state, body: true);
+        var password = _getParam(req, 'password', state, body: true);
+        var scopes = _getScopes(req);
+        response = await resourceOwnerPasswordCredentialsGrant(
+            client, username, password, scopes, req, res);
+      } else if (grantType == 'client_credentials') {
+        response = await clientCredentialsGrant(client, req, res);
 
-    if (!await verifyClient(client, clientSecret))
-      throw new AuthorizationException(ErrorResponse.invalidClient);
+        if (response.refreshToken != null) {
+          // Remove refresh token
+          response = new AuthorizationTokenResponse(
+            response.accessToken,
+            expiresIn: response.expiresIn,
+            scope: response.scope,
+          );
+        }
+      } else if (extensionGrants.containsKey(grantType)) {
+        response = await extensionGrants[grantType](req, res);
+      }
 
-    // Grab redirect URI
-    var redirectUri = _getParam(req, 'redirect_uri', body: true);
+      if (response != null) {
+        return {'token_type': AuthorizationTokenType.bearer}
+          ..addAll(response.toJson());
+      }
 
-    // Grab scopes
-    var scopes = _getScopes(req, body: true);
-
-    var state = req.query['state']?.toString() ?? '';
-
-    var authCode = await authCodeGrant(
-        client, redirectUri, req.properties['user'], scopes, state);
-    res.headers['content-type'] = 'application/x-www-form-urlencoded';
-    res.write('code=' + Uri.encodeComponent(authCode));
-    if (state.isNotEmpty) res.write('&state=' + Uri.encodeComponent(state));
+      throw new AuthorizationException(
+        new ErrorResponse(
+          ErrorResponse.invalidRequest,
+          'Invalid or no "grant_type" parameter provided',
+          state,
+        ),
+        statusCode: 400,
+      );
+    } on AngelHttpException {
+      rethrow;
+    } catch (e, st) {
+      throw new AuthorizationException(
+        new ErrorResponse(
+          ErrorResponse.serverError,
+          _internalServerError,
+          state,
+        ),
+        error: e,
+        statusCode: 500,
+        stackTrace: st,
+      );
+    }
   }
 }

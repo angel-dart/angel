@@ -1,4 +1,4 @@
-# auth_oauth2
+# oauth2
 A class containing handlers that can be used within
 [Angel](https://angel-dart.github.io/) to build a spec-compliant
 OAuth 2.0 server.
@@ -21,7 +21,7 @@ Define a server class as such:
 ```dart
 import 'package:angel_oauth2/angel_oauth2.dart' as oauth2;
 
-class MyServer extends oauth2.Server<Client, User> {}
+class MyServer extends oauth2.AuthorizationServer<Client, User> {}
 ```
 
 Then, implement the `findClient` and `verifyClient` to ensure that the
@@ -29,7 +29,7 @@ server class can not only identify a client application via a `client_id`,
 but that it can also verify its identity via a `client_secret`.
 
 ```dart
-class _Server extends Server<PseudoApplication, Map> {
+class _Server extends AuthorizationServer<PseudoApplication, Map> {
   final Uuid _uuid = new Uuid();
 
   @override
@@ -50,7 +50,7 @@ authorization endpoint. In most cases, you will want to show a dialog:
 
 ```dart
 @override
-Future authorize(
+Future requestAuthorizationCode(
   PseudoApplication client,
   String redirectUri,
   Iterable<String> scopes,
@@ -87,4 +87,15 @@ void pseudoCode() {
 }
 ```
 
-Naturally, 
+The `authorizationEndpoint` and `tokenEndpoint` handle all OAuth2 grant types.
+
+## Other Grants
+By default, all OAuth2 grant methods will throw a `405 Method Not Allowed` error.
+To support any specific grant type, all you need to do is implement the method.
+The following are available, not including authorization code grant support (mentioned above):
+* `implicitGrant`
+* `resourceOwnerPasswordCredentialsGrant`
+* `clientCredentialsGrant`
+
+Read the [OAuth2 specification](https://tools.ietf.org/html/rfc6749)
+for in-depth information on each grant type.

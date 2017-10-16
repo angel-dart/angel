@@ -6,7 +6,7 @@ version: 1.0.0-alpha
 environment:
   sdk: ">=1.19.0"
 dependencies: 
-  angel_auth: ^1.1.0-alpha
+  angel_framework: ^1.0.0-dev
 dev_dependencies: 
   angel_test: ^1.1.0-alpha
   oauth2: ^1.0.0

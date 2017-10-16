@@ -115,7 +115,7 @@ main() {
   });
 }
 
-class _Server extends Server<PseudoApplication, Map> {
+class _Server extends AuthorizationServer<PseudoApplication, Map> {
   final Uuid _uuid = new Uuid();
 
   @override
@@ -130,7 +130,7 @@ class _Server extends Server<PseudoApplication, Map> {
   }
 
   @override
-  Future authorize(
+  Future requestAuthorizationCode(
       PseudoApplication client,
       String redirectUri,
       Iterable<String> scopes,
@@ -151,13 +151,7 @@ class _Server extends Server<PseudoApplication, Map> {
   }
 
   @override
-  Future<String> authCodeGrant(PseudoApplication client, String redirectUri,
-      Map user, Iterable<String> scopes, String state) {
-    throw new UnsupportedError('Nope');
-  }
-
-  @override
-  Future<AuthorizationCodeResponse> exchangeAuthCodeForAccessToken(
+  Future<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
       String authCode,
       String redirectUri,
       RequestContext req,
@@ -165,7 +159,7 @@ class _Server extends Server<PseudoApplication, Map> {
     var authCodes = req.grab<Map<String, String>>('authCodes');
     var state = authCodes[authCode];
     var refreshToken = state == 'can_refresh' ? '${authCode}_refresh' : null;
-    return new AuthorizationCodeResponse('${authCode}_access',
+    return new AuthorizationTokenResponse('${authCode}_access',
         refreshToken: refreshToken);
   }
 }
