@@ -13,7 +13,11 @@ import 'package:symbol_table/symbol_table.dart';
 ///
 /// To apply additional transforms to parsed documents, provide a set of [patch] functions.
 AngelConfigurer jael(Directory viewsDirectory,
-    {String fileExtension, bool cacheViews: false, Iterable<Patcher> patch, CodeBuffer createBuffer()}) {
+    {String fileExtension,
+    bool strictResolution: false,
+    bool cacheViews: false,
+    Iterable<Patcher> patch,
+    CodeBuffer createBuffer()}) {
   var cache = <String, Document>{};
   fileExtension ??= '.jl';
   createBuffer ??= () => new CodeBuffer();
@@ -29,11 +33,12 @@ AngelConfigurer jael(Directory viewsDirectory,
         var file = viewsDirectory.childFile(name + fileExtension);
         var contents = await file.readAsString();
         var doc =
-        parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
+            parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
         processed = doc;
 
         try {
-          processed = await resolve(doc, viewsDirectory, patch: patch, onError: errors.add);
+          processed = await resolve(doc, viewsDirectory,
+              patch: patch, onError: errors.add);
         } catch (_) {
           // Ignore these errors, so that we can show syntax errors.
         }
@@ -48,7 +53,8 @@ AngelConfigurer jael(Directory viewsDirectory,
 
       if (errors.isEmpty) {
         try {
-          const Renderer().render(processed, buf, scope);
+          const Renderer().render(processed, buf, scope,
+              strictResolution: strictResolution == true);
           return buf.toString();
         } on JaelError catch (e) {
           errors.add(e);
