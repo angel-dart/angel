@@ -1,6 +1,7 @@
 part of jael.src.text.parselet;
 
 const Map<TokenType, PrefixParselet> prefixParselets = const {
+  TokenType.exclamation: const NotParselet(),
   TokenType.$new: const NewParselet(),
   TokenType.number: const NumberParselet(),
   TokenType.hex: const HexParselet(),
@@ -10,6 +11,22 @@ const Map<TokenType, PrefixParselet> prefixParselets = const {
   TokenType.id: const IdentifierParselet(),
   TokenType.lParen: const ParenthesisParselet(),
 };
+
+class NotParselet implements PrefixParselet {
+  const NotParselet();
+
+  @override
+  Expression parse(Parser parser, Token token) {
+    var expression = parser.parseExpression(0);
+
+    if (expression == null) {
+      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+          'Missing expression after "!" in negation expression.', token.span));
+    }
+
+    return new Negation(token, expression);
+  }
+}
 
 class NewParselet implements PrefixParselet {
   const NewParselet();

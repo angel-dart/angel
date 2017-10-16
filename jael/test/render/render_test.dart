@@ -9,19 +9,28 @@ main() {
 <html>
   <body>
     <h1>Hello</h1>
-    <img src=profile['avatar'] />
+    <img ready="always" data-img-src=profile['avatar'] />
   </body>
 </html>
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
-    var scope = new SymbolTable(values: {
-      'profile': {
-        'avatar': 'thosakwe.png',
-      }
-    });
+    jael.Document document;
+    SymbolTable scope;
 
+    try {
+      document = jael.parseDocument(template, sourceUrl: 'test.jl');
+      scope = new SymbolTable(values: {
+        'profile': {
+          'avatar': 'thosakwe.png',
+        }
+      });
+    } on jael.JaelError catch(e) {
+      print(e);
+      print(e.stackTrace);
+    }
+
+    expect(document, isNotNull);
     const jael.Renderer().render(document, buf, scope);
     print(buf);
 
@@ -33,7 +42,7 @@ main() {
     <h1>
       Hello
     </h1>
-    <img src="thosakwe.png">
+    <img ready="always" data-img-src="thosakwe.png">
   </body>
 </html>
     '''

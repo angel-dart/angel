@@ -27,7 +27,13 @@ Document parseDocument(String text,
 class Renderer {
   const Renderer();
 
-  void render(Document document, CodeBuffer buffer, SymbolTable scope) {
+  /// Renders a [document] into the [buffer] as HTML.
+  ///
+  /// If [strictResolution] is `false` (default: `true`), then undefined identifiers will return `null`
+  /// instead of throwing.
+  void render(Document document, CodeBuffer buffer, SymbolTable scope, {bool strictResolution: true}) {
+    scope.add('!strict!', value: strictResolution != false);
+
     if (document.doctype != null) buffer.writeln(document.doctype.span.text);
     renderElement(
         document.root, buffer, scope, document.doctype?.public == null);

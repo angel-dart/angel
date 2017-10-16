@@ -3,6 +3,7 @@ import '../ast/ast.dart';
 
 final RegExp _whitespace = new RegExp(r'[ \n\r\t]+');
 
+final RegExp _id = new RegExp(r'(([A-Za-z][A-Za-z0-9]*-)*([A-Za-z][A-Za-z0-9]*))');
 final RegExp _string1 = new RegExp(
     r"'((\\(['\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^'\\]))*'");
 final RegExp _string2 = new RegExp(
@@ -31,7 +32,7 @@ final Map<Pattern, TokenType> _htmlPatterns = {
   '!=': TokenType.nequ,
   _string1: TokenType.string,
   _string2: TokenType.string,
-  new RegExp(r'(([A-Za-z][A-Za-z0-9]*-)*([A-Za-z][A-Za-z0-9]*))'): TokenType.id,
+  _id: TokenType.id,
 };
 
 final Map<Pattern, TokenType> _expressionPatterns = {
@@ -45,7 +46,10 @@ final Map<Pattern, TokenType> _expressionPatterns = {
   ':': TokenType.colon,
   ',': TokenType.comma,
   '.': TokenType.dot,
+  '??': TokenType.elvis,
+  '?.': TokenType.elvis_dot,
   '=': TokenType.equals,
+  '!': TokenType.exclamation,
   '-': TokenType.minus,
   '%': TokenType.percent,
   '+': TokenType.plus,
@@ -67,7 +71,7 @@ final Map<Pattern, TokenType> _expressionPatterns = {
   new RegExp(r'0x[A-Fa-f0-9]+'): TokenType.hex,
   _string1: TokenType.string,
   _string2: TokenType.string,
-  new RegExp('[A-Za-z_\\\$][A-Za-z0-9_\\\$]*'): TokenType.id,
+  _id: TokenType.id,
 };
 
 class _Scanner implements Scanner {

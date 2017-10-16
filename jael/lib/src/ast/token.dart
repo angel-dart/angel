@@ -43,6 +43,7 @@ enum TokenType {
   colon,
   comma,
   dot,
+  exclamation,
   percent,
   plus,
   minus,

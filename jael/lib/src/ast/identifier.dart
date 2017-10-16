@@ -20,6 +20,8 @@ class Identifier extends Expression {
       default:
         var symbol = scope.resolve(name);
         if (symbol == null) {
+          if (scope.resolve('!strict!')?.value == false)
+            return null;
           throw new ArgumentError(
               'The name "$name" does not exist in this scope.');
         }

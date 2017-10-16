@@ -18,6 +18,7 @@ const Map<TokenType, InfixParselet> infixParselets = const {
   TokenType.nequ: const BinaryParselet(10),
   TokenType.question: const ConditionalParselet(),
   TokenType.equals: const BinaryParselet(3),
+  TokenType.elvis: const BinaryParselet(3),
 };
 
 class ConditionalParselet implements InfixParselet {
