@@ -65,7 +65,7 @@ main() {
   test('script tag interpolation', () {
     var tokens = scan(
       '''
-<script>
+<script aria-label="script">
   window.alert('a string');
 </script>
 ''',
@@ -74,15 +74,18 @@ main() {
         .tokens;
     tokens.forEach(print);
 
-    expect(tokens, hasLength(8));
+    expect(tokens, hasLength(11));
     expect(tokens[0], isToken(TokenType.lt));
     expect(tokens[1], isToken(TokenType.id, 'script'));
-    expect(tokens[2], isToken(TokenType.gt));
+    expect(tokens[2], isToken(TokenType.id, 'aria-label'));
+    expect(tokens[3], isToken(TokenType.equals));
+    expect(tokens[4], isToken(TokenType.string));
+    expect(tokens[5], isToken(TokenType.gt));
     expect(
-        tokens[3], isToken(TokenType.text, "\n  window.alert('a string');\n"));
-    expect(tokens[4], isToken(TokenType.lt));
-    expect(tokens[5], isToken(TokenType.slash));
-    expect(tokens[6], isToken(TokenType.id, 'script'));
-    expect(tokens[7], isToken(TokenType.gt));
+        tokens[6], isToken(TokenType.text, "\n  window.alert('a string');\n"));
+    expect(tokens[7], isToken(TokenType.lt));
+    expect(tokens[8], isToken(TokenType.slash));
+    expect(tokens[9], isToken(TokenType.id, 'script'));
+    expect(tokens[10], isToken(TokenType.gt));
   });
 }

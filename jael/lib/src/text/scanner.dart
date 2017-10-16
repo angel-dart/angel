@@ -31,7 +31,7 @@ final Map<Pattern, TokenType> _htmlPatterns = {
   '!=': TokenType.nequ,
   _string1: TokenType.string,
   _string2: TokenType.string,
-  new RegExp(r'([A-Za-z][A-Za-z0-9]*-)*([A-Za-z][A-Za-z0-9]*)'): TokenType.id,
+  new RegExp(r'(([A-Za-z][A-Za-z0-9]*-)*([A-Za-z][A-Za-z0-9]*))'): TokenType.id,
 };
 
 final Map<Pattern, TokenType> _expressionPatterns = {
