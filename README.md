@@ -1,4 +1,7 @@
 # oauth2
+[![Pub](https://img.shields.io/pub/v/angel_oauth2.svg)](https://pub.dartlang.org/packages/angel_oauth2)
+[![build status](https://travis-ci.org/angel-dart/oauth2.svg)](https://travis-ci.org/angel-dart/oauth2)
+
 A class containing handlers that can be used within
 [Angel](https://angel-dart.github.io/) to build a spec-compliant
 OAuth 2.0 server.
