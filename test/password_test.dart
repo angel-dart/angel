@@ -1,75 +1,85 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_test/angel_test.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
-import 'package:angel_validate/angel_validate.dart';
+import 'package:logging/logging.dart';
+import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:test/test.dart';
 import 'common.dart';
 
 main() {
-  TestClient client;
+  Angel app;
+  Uri tokenEndpoint;
 
   setUp(() async {
-    var app = new Angel()..lazyParseBodies = true;
-    var oauth2 = new _AuthorizationServer();
+    app = new Angel()..lazyParseBodies = true;
+    var auth = new _AuthorizationServer();
 
     app.group('/oauth2', (router) {
       router
-        ..get('/authorize', oauth2.authorizationEndpoint)
-        ..post('/token', oauth2.tokenEndpoint);
+        ..get('/authorize', auth.authorizationEndpoint)
+        ..post('/token', auth.tokenEndpoint);
     });
 
     app.errorHandler = (e, req, res) async {
       res.json(e.toJson());
     };
 
-    client = await connectTo(app);
+    app.logger = new Logger('password_test')..onRecord.listen(print);
+
+    var server = await app.startServer();
+    var url = 'http://${server.address.address}:${server.port}';
+    tokenEndpoint = Uri.parse('$url/oauth2/token');
   });
 
-  tearDown(() => client.close());
+  tearDown(() => app.close());
 
   test('authenticate via username+password', () async {
-    var response = await client.post(
-      '/oauth2/token',
-      headers: {
-        'Authorization': 'Basic ' + BASE64URL.encode('foo:bar'.codeUnits),
-      },
-      body: {
-        'grant_type': 'password',
-        'username': 'michael',
-        'password': 'jackson',
-      },
+    var client = await oauth2.resourceOwnerPasswordGrant(
+      tokenEndpoint,
+      'michael',
+      'jackson',
+      identifier: 'foo',
+      secret: 'bar',
     );
-
-    print('Response: ${response.body}');
-
-    expect(response, allOf(
-      hasStatus(200),
-      hasContentType(ContentType.JSON),
-      hasValidBody(new Validator({
-        'token_type': equals('bearer'),
-        'access_token': equals('foo'),
-      })),
-    ));
+    print(client.credentials.toJson());
+    client.close();
+    expect(client.credentials.accessToken, 'foo');
+    expect(client.credentials.refreshToken, 'bar');
   });
 
   test('force correct username+password', () async {
-    var response = await client.post(
-      '/oauth2/token',
-      headers: {
-        'Authorization': 'Basic ' + BASE64URL.encode('foo:bar'.codeUnits),
-      },
-      body: {
-        'grant_type': 'password',
-        'username': 'michael',
-        'password': 'jordan',
-      },
-    );
+    oauth2.Client client;
 
-    print('Response: ${response.body}');
-    expect(response, hasStatus(401));
+    try {
+      client = await oauth2.resourceOwnerPasswordGrant(
+        tokenEndpoint,
+        'michael',
+        'jordan',
+        identifier: 'foo',
+        secret: 'bar',
+      );
+
+      throw new StateError('should fail');
+    } on oauth2.AuthorizationException catch (e) {
+      expect(e.error, ErrorResponse.accessDenied);
+    } finally {
+      client?.close();
+    }
+  });
+
+  test('can refresh token', () async {
+    var client = await oauth2.resourceOwnerPasswordGrant(
+      tokenEndpoint,
+      'michael',
+      'jackson',
+      identifier: 'foo',
+      secret: 'bar',
+    );
+    client = await client.refreshCredentials();
+    print(client.credentials.toJson());
+    client.close();
+    expect(client.credentials.accessToken, 'baz');
+    expect(client.credentials.refreshToken, 'bar');
   });
 }
 
@@ -84,6 +94,16 @@ class _AuthorizationServer
   Future<bool> verifyClient(
       PseudoApplication client, String clientSecret) async {
     return client.secret == clientSecret;
+  }
+
+  @override
+  Future<AuthorizationTokenResponse> refreshAuthorizationToken(
+      PseudoApplication client,
+      String refreshToken,
+      Iterable<String> scopes,
+      RequestContext req,
+      ResponseContext res) async {
+    return new AuthorizationTokenResponse('baz', refreshToken: 'bar');
   }
 
   @override
@@ -109,6 +129,6 @@ class _AuthorizationServer
       );
     }
 
-    return new AuthorizationTokenResponse('foo');
+    return new AuthorizationTokenResponse('foo', refreshToken: 'bar');
   }
 }
