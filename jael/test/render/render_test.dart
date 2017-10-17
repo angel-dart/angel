@@ -10,6 +10,7 @@ main() {
   <body>
     <h1>Hello</h1>
     <img ready="always" data-img-src=profile['avatar'] />
+    <input name="csrf_token" type="hidden" value=csrf_token>
   </body>
 </html>
 ''';
@@ -21,6 +22,7 @@ main() {
     try {
       document = jael.parseDocument(template, sourceUrl: 'test.jl');
       scope = new SymbolTable(values: {
+        'csrf_token': 'foo',
         'profile': {
           'avatar': 'thosakwe.png',
         }
@@ -43,6 +45,7 @@ main() {
       Hello
     </h1>
     <img ready="always" data-img-src="thosakwe.png">
+    <input name="csrf_token" type="hidden" value="foo">
   </body>
 </html>
     '''
