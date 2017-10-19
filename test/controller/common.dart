@@ -20,6 +20,8 @@ const Game JOHN_VS_BOB = const Game(playerOne: 'John', playerTwo: 'Bob');
 
 @Expose('/game')
 class GameController extends WebSocketController {
+  GameController(AngelWebSocket ws) : super(ws);
+
   @ExposeWs('search')
   search(WebSocketContext socket) async {
     print('User is searching for a game...');

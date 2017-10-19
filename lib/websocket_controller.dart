@@ -9,13 +9,15 @@ class ExposeWs {
 
 /// A special controller that also supports WebSockets.
 class WebSocketController extends Controller {
+  final AngelWebSocket ws;
+
   Map<String, MethodMirror> _handlers = {};
   Map<String, Symbol> _handlerSymbols = {};
 
   /// The plug-in instance powering this controller.
   AngelWebSocket plugin;
 
-  WebSocketController() : super();
+  WebSocketController(this.ws) : super();
 
   /// Sends an event to all clients.
   void broadcast(String eventName, data, {filter(WebSocketContext socket)}) {
@@ -36,8 +38,8 @@ class WebSocketController extends Controller {
   onData(data, WebSocketContext socket) {}
 
   @override
-  Future call(Angel app) async {
-    if (findExpose() != null) await super.call(app);
+  Future configureServer(Angel app) async {
+    if (findExpose() != null) await super.configureServer(app);
 
     InstanceMirror instanceMirror = reflect(this);
     ClassMirror classMirror = reflectClass(this.runtimeType);
@@ -54,8 +56,6 @@ class WebSocketController extends Controller {
         }
       }
     });
-
-    AngelWebSocket ws = app.container.make(AngelWebSocket);
 
     ws.onConnection.listen((socket) async {
       socket.request

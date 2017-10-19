@@ -90,8 +90,8 @@ class AngelWebSocket {
       event.eventName = "$path::${event.eventName}";
 
       _filter(WebSocketContext socket) {
-        if (e.service.properties.containsKey('ws:filter'))
-          return e.service.properties['ws:filter'](e, socket);
+        if (e.service.configuration.containsKey('ws:filter'))
+          return e.service.configuration['ws:filter'](e, socket);
         else if (e.params != null && e.params.containsKey('ws:filter'))
           return e.params['ws:filter'](e, socket);
         else

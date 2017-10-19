@@ -23,7 +23,7 @@ main() {
 
     await app.configure(websockets.configureServer);
     app.all('/ws', websockets.handleRequest);
-    await app.configure(new GameController());
+    await app.configure(new GameController(websockets).configureServer);
     app.logger = new Logger('angel_auth')..onRecord.listen(print);
 
     server = await app.startServer();

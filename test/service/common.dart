@@ -13,7 +13,7 @@ class Todo extends Model {
 
 class TodoService extends TypedService<Todo> {
   TodoService() : super(new MapService()) {
-    properties['ws:filter'] = (HookedServiceEvent e, WebSocketContext socket) {
+    configuration['ws:filter'] = (HookedServiceEvent e, WebSocketContext socket) {
       print('Hello, service filter world!');
       return true;
     };
