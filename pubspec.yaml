@@ -14,6 +14,7 @@ dependencies:
   angel_hot: ^1.1.0-alpha # Hot-reloading support. :)
   angel_jael: ^1.0.0-alpha # Server-side templating engine
   angel_static: ^1.3.0-alpha # Static file server
+  angel_validate: ^1.0.0 # Allows for validation of input data
 dev_dependencies:
   angel_serialize_generator: ^1.0.0-alpha # Generates serialization code for models.
   angel_test: ^1.1.0-alpha # Utilities for testing Angel servers.
