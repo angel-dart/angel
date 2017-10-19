@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:angel_compress/angel_compress.dart';
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_hot/angel_hot.dart';
+import 'package:logging/logging.dart';
 import 'src/foo.dart';
 
 main() async {
@@ -20,19 +19,30 @@ main() async {
 }
 
 Future<Angel> createServer() async {
-  // Max speed???
   var app = new Angel();
 
   app.lazyParseBodies = true;
   app.injectSerializer(JSON.encode);
 
+  // Edit this line, and then refresh the page in your browser!
   app.get('/', {'hello': 'hot world!'});
   app.get('/foo', new Foo(bar: 'baz'));
 
-  app.after.add(() => throw new AngelHttpException.notFound());
+  app.use(() => throw new AngelHttpException.notFound());
 
-  app.responseFinalizers.add(gzip());
-  //await app.configure(cacheResponses());
-  await app.configure(logRequests());
+  app.injectEncoders({
+    'gzip': GZIP.encoder,
+    'deflate': ZLIB.encoder,
+  });
+
+  app.logger = new Logger('angel')
+  ..onRecord.listen((rec) {
+    print(rec);
+    if (rec.error != null) {
+      print(rec.error);
+      print(rec.stackTrace);
+    }
+  });
+
   return app;
 }

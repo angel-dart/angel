@@ -11,7 +11,6 @@ In your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  angel_framework: ^1.0.0
   angel_hot: ^1.0.0
 ```
 

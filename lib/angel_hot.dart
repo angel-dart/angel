@@ -11,9 +11,7 @@ import 'package:html_builder/html_builder.dart';
 import 'package:vm_service_client/vm_service_client.dart';
 import 'package:watcher/watcher.dart';
 
-/// A typedef over a function that returns a fresh [Angel] instance, whether synchronously or asynchronously.
-typedef FutureOr<Angel> AngelGenerator();
-
+/// A utility class that watches the filesystem for changes, and starts new instances of an Angel server.
 class HotReloader {
   VMServiceClient _client;
   final StreamController<WatchEvent> _onChange =
@@ -25,7 +23,7 @@ class HotReloader {
   Duration _timeout;
 
   /// Invoked to load a new instance of [Angel] on file changes.
-  final AngelGenerator generator;
+  final FutureOr<Angel> Function() generator;
 
   /// Fires whenever a file change. You might consider using this to trigger
   /// page reloads in a client.
@@ -105,7 +103,7 @@ class HotReloader {
 
   Future<Angel> _generateServer() async {
     var s = await generator() as Angel;
-    await Future.forEach(s.justBeforeStart, s.configure);
+    await Future.forEach(s.startupHooks, s.configure);
     s.optimizeForProduction();
     return s;
   }
@@ -214,14 +212,14 @@ class HotReloader {
 
         for (var client in ws.clients) {
           try {
-            client.io.close(WebSocketStatus.GOING_AWAY);
+            await client.close(WebSocketStatus.GOING_AWAY);
           } catch (e) {
             stderr.writeln(
                 'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
           }
         }
 
-        Future.forEach(old.justBeforeStop, old.configure);
+        Future.forEach(old.shutdownHooks, old.configure);
       });
     }
 
