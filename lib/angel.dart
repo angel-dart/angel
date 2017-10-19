@@ -2,23 +2,20 @@
 library angel;
 
 import 'dart:async';
-import 'package:angel_common/angel_common.dart';
+import 'package:angel_cors/angel_cors.dart';
+import 'package:angel_framework/angel_framework.dart';
+import 'package:file/local.dart';
 import 'src/config/config.dart' as configuration;
 import 'src/routes/routes.dart' as routes;
 import 'src/services/services.dart' as services;
 
-/// Creates and configures the server instance.
-Future<Angel> createServer() async {
-  /// Passing `startShared` to the constructor allows us to start multiple
-  /// instances of our application concurrently, listening on a single port.
-  ///
-  /// This effectively lets us multi-thread the application.
-  var app = new Angel.custom(startShared);
+/// Configures the server instance.
+Future configureServer(Angel app) async {
+  // Enable CORS
+  app.use(cors());
 
-  /// Set up our application, using three plug-ins defined with this project.
-  await app.configure(configuration.configureServer);
+  // Set up our application, using the plug-ins defined with this project.
+  await app.configure(configuration.configureServer(const LocalFileSystem()));
   await app.configure(services.configureServer);
-  await app.configure(routes.configureServer);
-
-  return app;
+  await app.configure(routes.configureServer(const LocalFileSystem()));
 }

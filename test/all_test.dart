@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:angel/angel.dart';
+import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:test/test.dart';
 
@@ -23,7 +23,9 @@ main() async {
   TestClient client;
 
   setUp(() async {
-    var app = await createServer();
+    var app = new Angel();
+    await app.configure(configureServer);
+
     client = await connectTo(app);
   });
 
@@ -31,12 +33,11 @@ main() async {
     await client.close();
   });
 
-  test('index users', () async {
+  test('index returns 200', () async {
     // Request a resource at the given path.
-    var response = await client.get('/api/users');
+    var response = await client.get('/');
 
-    // By default, we locked this away from the Internet...
-    // Expect a 403 response.
-    expect(response, hasStatus(HttpStatus.FORBIDDEN));
+    // Expect a 200 response.
+    expect(response, hasStatus(200));
   });
 }

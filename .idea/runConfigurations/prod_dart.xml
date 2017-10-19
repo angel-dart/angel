@@ -1,10 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Multi-Threaded Server (PRODUCTION)" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+  <configuration default="false" name="prod.dart" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true" nameIsGenerated="true">
     <option name="checkedMode" value="false" />
     <option name="envs">
       <entry key="ANGEL_ENV" value="production" />
     </option>
-    <option name="filePath" value="$PROJECT_DIR$/bin/scaled_server.dart" />
+    <option name="filePath" value="$PROJECT_DIR$/bin/prod.dart" />
     <option name="workingDirectory" value="$PROJECT_DIR$" />
     <method />
   </configuration>

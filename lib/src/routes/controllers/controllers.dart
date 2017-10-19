@@ -1,9 +1,8 @@
-library angel.routes.controllers;
+library angel.src.routes.controllers;
 
-import 'package:angel_common/angel_common.dart';
-import 'auth.dart';
+import 'dart:async';
+import 'package:angel_framework/angel_framework.dart';
 
-configureServer(Angel app) async {
+Future configureServer(Angel app) async {
   /// Controllers will not function unless wired to the application!
-  await app.configure(new AuthController());
 }
