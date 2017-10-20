@@ -69,6 +69,7 @@ class InstallCommand extends Command {
 
         if (!await packageDir.exists())
           throw 'No add-on named "$packageName" is installed. You might need to run `angel install --update`.';
+        print('Installing $packageName...');
 
         Map<String, dynamic> values = {
           'project_name': pubspec.name,
@@ -77,9 +78,30 @@ class InstallCommand extends Command {
 
         List<Glob> globs = [];
 
+        var projectPubspec = await PubSpec.load(packageDir);
+        var deps = projectPubspec.dependencies.keys
+            .map((k) {
+          var dep = projectPubspec.dependencies[k];
+          if (dep is HostedReference)
+            return new MakerDependency(
+                k, dep.versionConstraint.toString());
+          return null;
+        })
+            .where((d) => d != null)
+            .toList();
+
+        deps.addAll(projectPubspec.devDependencies.keys.map((k) {
+          var dep = projectPubspec.devDependencies[k];
+          if (dep is HostedReference)
+            return new MakerDependency(k, dep.versionConstraint.toString(),
+                dev: true);
+          return null;
+        }).where((d) => d != null));
+
+        await depend(deps);
+
         var promptFile =
             new File.fromUri(packageDir.uri.resolve('angel_cli.yaml'));
-        var projectPubspec = await PubSpec.load(packageDir);
 
         if (await promptFile.exists()) {
           var contents = await promptFile.readAsString();
@@ -120,27 +142,6 @@ class InstallCommand extends Command {
               }
             }
           }
-
-          var deps = projectPubspec.dependencies.keys
-              .map((k) {
-                var dep = projectPubspec.dependencies[k];
-                if (dep is HostedReference)
-                  return new MakerDependency(
-                      k, dep.versionConstraint.toString());
-                return null;
-              })
-              .where((d) => d != null)
-              .toList();
-
-          deps.addAll(projectPubspec.devDependencies.keys.map((k) {
-            var dep = projectPubspec.devDependencies[k];
-            if (dep is HostedReference)
-              return new MakerDependency(k, dep.versionConstraint.toString(),
-                  dev: true);
-            return null;
-          }).where((d) => d != null));
-
-          await depend(deps);
         }
 
         Future merge(Directory src, Directory dst, String prefix) async {
