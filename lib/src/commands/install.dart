@@ -121,12 +121,25 @@ class InstallCommand extends Command {
             }
           }
 
-          var deps = projectPubspec.dependencies.keys.map((k) {
-            var dep = projectPubspec.dependencies[k];
+          var deps = projectPubspec.dependencies.keys
+              .map((k) {
+                var dep = projectPubspec.dependencies[k];
+                if (dep is HostedReference)
+                  return new MakerDependency(
+                      k, dep.versionConstraint.toString());
+                return null;
+              })
+              .where((d) => d != null)
+              .toList();
+
+          deps.addAll(projectPubspec.devDependencies.keys.map((k) {
+            var dep = projectPubspec.devDependencies[k];
             if (dep is HostedReference)
-              return new MakerDependency(k, dep.versionConstraint.toString());
+              return new MakerDependency(k, dep.versionConstraint.toString(),
+                  dev: true);
             return null;
-          }).where((d) => d != null);
+          }).where((d) => d != null));
+
           await depend(deps);
         }
 
