@@ -59,8 +59,10 @@ class UpdateCommand extends Command {
         }
       } else
         stdout.writeln('No update available.');
-    } catch (e) {
+    } catch (e, st) {
       stdout.writeln('Failed to check for update.');
+      stderr.writeln(e);
+      stderr.writeln(st);
     }
   }
 }
