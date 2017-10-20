@@ -4,21 +4,11 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/bin/packages" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/packages" />
       <excludeFolder url="file://$MODULE_DIR$/sample_project/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/bin/packages" />
       <excludeFolder url="file://$MODULE_DIR$/sample_project/build" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/test/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/test/services/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/tool/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/web/images/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/sample_project/web/packages" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/packages" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

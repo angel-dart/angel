@@ -2,7 +2,7 @@ author: "Tobe O <thosakwe@gmail.com>"
 description: "Command-line tools for the Angel framework."
 homepage: "https://github.com/angel-dart/angel_cli"
 name: "angel_cli"
-version: 1.1.5+2
+version: 1.2.0
 dependencies: 
   # analyzer: "^0.29.0"
   args: ^0.13.4
@@ -10,9 +10,11 @@ dependencies:
   console: "^2.2.3"
   dart_style: ^1.0.0
   glob: "^1.1.0"
+  homedir: ^0.0.4
   http: ^0.11.3
   id: "^1.0.0"
   inflection: "^0.4.1"
+  mustache4dart: ^2.1.0
   pubspec: "^0.0.14"
   random_string: "^0.0.1"
   recase: "^1.0.0"

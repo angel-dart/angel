@@ -19,7 +19,14 @@ class InitCommand extends Command {
       "Initializes a new Angel project in the current directory.";
 
   InitCommand() {
-    argParser.addFlag('pub-get', defaultsTo: true);
+    argParser
+      ..addFlag('pub-get', defaultsTo: true)
+      ..addFlag(
+        'legacy',
+        help:
+            'Generate a project using Angel 1.0.x boilerplates, rather than 1.1.x+.',
+        negatable: false,
+      );
   }
 
   @override
@@ -60,7 +67,7 @@ class InitCommand extends Command {
       ..text('\nCongratulations! You are ready to start developing with Angel!')
       ..text('\nTo start the server (with file watching), run ')
       ..magenta()
-      ..text('`dart bin/server.dart`')
+      ..text(argResults['legacy'] ? '`dart bin/server.dart`' : '`dart bin/dev.dart`')
       ..normal()
       ..text(' in your terminal.')
       ..text('\n\nFind more documentation about Angel:')
@@ -122,7 +129,9 @@ class InitCommand extends Command {
       }
 
       print('Choose a project type before continuing:');
-      var boilerplateChooser = new Chooser<BoilerplateInfo>(allBoilerplates);
+      var boilerplateChooser = new Chooser<BoilerplateInfo>(
+        argResults['legacy'] ? legacyBoilerplates : boilerplates,
+      );
       var boilerplate = await boilerplateChooser.choose();
 
       print(
@@ -135,6 +144,17 @@ class InitCommand extends Command {
 
       if (await git.exitCode != 0) {
         throw new Exception("Could not clone repo.");
+      }
+
+      if (boilerplate.ref != null) {
+        git = await Process.start("git", ["checkout", boilerplate.ref]);
+
+        stdout.addStream(git.stdout);
+        stderr.addStream(git.stderr);
+
+        if (await git.exitCode != 0) {
+          throw new Exception("Could not checkout branch ${boilerplate.ref}.");
+        }
       }
 
       var gitDir = new Directory.fromUri(projectDir.uri.resolve(".git"));
@@ -176,30 +196,45 @@ preBuild(Directory projectDir) async {
 }
 
 const BoilerplateInfo fullApplicationBoilerplate = const BoilerplateInfo(
-    'Full Application',
-    'A complete project including authentication, multi-threading, and more.',
-    'https://github.com/angel-dart/angel.git');
+  'Full Application',
+  'A complete project including authentication, multi-threading, and more.',
+  'https://github.com/angel-dart/angel.git',
+  ref: '1.0.x',
+);
 
 const BoilerplateInfo lightBoilerplate = const BoilerplateInfo(
-    'Light',
-    'Minimal starting point for new users.',
-    'https://github.com/angel-dart/boilerplate_light.git');
+  'Light',
+  'Minimal starting point for new users.',
+  'https://github.com/angel-dart/boilerplate_light.git',
+);
 
 const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
-    'ORM',
-    "A starting point for applications that use Angel's ORM.",
-    'https://github.com/angel-dart/boilerplate_orm.git');
+  'ORM',
+  "A starting point for applications that use Angel's ORM.",
+  'https://github.com/angel-dart/boilerplate_orm.git',
+);
 
-const List<BoilerplateInfo> allBoilerplates = const [
+const List<BoilerplateInfo> legacyBoilerplates = const [
   fullApplicationBoilerplate,
   lightBoilerplate,
   ormBoilerplate
 ];
 
-class BoilerplateInfo {
-  final String name, description, url;
+const BoilerplateInfo basicBoilerplate = const BoilerplateInfo(
+  'Basic',
+  'Minimal starting point - A simple server with only a few additional packages.',
+  'https://github.com/angel-dart/angel.git',
+);
 
-  const BoilerplateInfo(this.name, this.description, this.url);
+const List<BoilerplateInfo> boilerplates = const [
+  basicBoilerplate,
+  ormBoilerplate,
+];
+
+class BoilerplateInfo {
+  final String name, description, url, ref;
+
+  const BoilerplateInfo(this.name, this.description, this.url, {this.ref});
 
   @override
   String toString() => '$name ($description)';

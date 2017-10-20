@@ -17,6 +17,7 @@ main(List<String> args) async {
     ..addCommand(new KeyCommand())
     ..addCommand(new ServiceCommand())
     ..addCommand(new InitCommand())
+    ..addCommand(new InstallCommand())
     ..addCommand(new TestCommand())
     ..addCommand(new PluginCommand())
     ..addCommand(new StartCommand())

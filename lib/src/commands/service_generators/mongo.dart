@@ -21,7 +21,10 @@ class MongoServiceGenerator extends ServiceGenerator {
 
   @override
   void applyToLibrary(LibraryBuilder library, String name, String lower) {
-    library.addMember(new ImportBuilder('package:mongo_dart/mongo_dart.dart'));
+    library.addMembers([
+      new ImportBuilder('package:angel_mongo/angel_mongo.dart'),
+      new ImportBuilder('package:mongo_dart/mongo_dart.dart'),
+    ]);
   }
 
   @override
