@@ -47,7 +47,7 @@ class InstallCommand extends Command {
   @override
   run() async {
     if (argResults['wipe']) {
-      if (await installRepo.exists()) await installRepo.delete();
+      if (await installRepo.exists()) await installRepo.delete(recursive: true);
     } else if (argResults['list']) {
       var addons = await list();
       print('${addons.length} add-on(s) installed:');
