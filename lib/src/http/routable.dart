@@ -39,6 +39,13 @@ class Routable extends Router {
 
   Routable() : super();
 
+  Future close() async {
+    _services.clear();
+    configuration.clear();
+    requestMiddleware.clear();
+    _onService.close();
+  }
+
   /// Additional filters to be run on designated requests.
   @override
   final Map<String, RequestHandler> requestMiddleware = {};

@@ -4,24 +4,20 @@ library performance.hello;
 import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:logging/logging.dart';
+import 'package:angel_framework/metrics.dart';
 
 main() {
-  for (int i = 0; i < Platform.numberOfProcessors - 1; i++)
+  for (int i = 0; i < Platform.numberOfProcessors - 1; i++) {
     Isolate.spawn(start, i + 1);
+  }
+
   start(0);
 }
 
 void start(int id) {
-  var app = new Angel.custom(startShared)
+  var app = new AngelMetrics.custom(startShared)
     ..lazyParseBodies = true
-    ..get('/', (req, res) => res.write('Hello, world!'))
-    ..optimizeForProduction(force: true)
-    ..logger = (new Logger('streaming_test')
-      ..onRecord.listen((rec) {
-        print(rec);
-        if (rec.stackTrace != null) print(rec.stackTrace);
-      }));
+    ..get('/', (req, res) => res.write('Hello, world!'));
 
   var oldHandler = app.errorHandler;
   app.errorHandler = (e, req, res) {

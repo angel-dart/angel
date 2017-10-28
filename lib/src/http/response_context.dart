@@ -3,7 +3,6 @@ library angel_framework.http.response_context;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
@@ -158,11 +157,24 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
     return f;
   }
 
+  /// Disposes of all resources.
+  Future dispose() async {
+    await close();
+    properties.clear();
+    encoders.clear();
+    _buffer.clear();
+    cookies.clear();
+    app = null;
+    _headers.clear();
+    serializer = null;
+  }
+
   /// Prevents further request handlers from running on the response, except for response finalizers.
   ///
   /// To disable response finalizers, see [willCloseItself].
   void end() {
     _isOpen = false;
+    if (_done?.isCompleted == false) _done.complete();
   }
 
   /// Serializes JSON to the response.
@@ -434,14 +446,16 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 }
 
 abstract class _LockableBytesBuilder extends BytesBuilder {
-  factory _LockableBytesBuilder() => new _LockableBytesBuilderImpl();
+  factory _LockableBytesBuilder() {
+    return new _LockableBytesBuilderImpl();
+  }
 
   void _lock();
 }
 
 class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
+  final BytesBuilder _buf = new BytesBuilder(copy: false);
   bool _closed = false;
-  Uint8List _data = new Uint8List(0);
 
   StateError _deny() =>
       new StateError('Cannot modified a closed response\'s buffer.');
@@ -455,70 +469,37 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
   void add(List<int> bytes) {
     if (_closed)
       throw _deny();
-    else if (bytes.isNotEmpty) {
-      int len = _data.length + bytes.length;
-      var d = new Uint8List(len);
-
-      for (int i = 0; i < _data.length; i++) {
-        d[i] = _data[i];
-      }
-
-      for (int i = 0; i < bytes.length; i++) {
-        d[i + _data.length] = bytes[i];
-      }
-
-      _data = d;
-    }
+    else _buf.add(bytes);
   }
 
   @override
   void addByte(int byte) {
     if (_closed)
       throw _deny();
-    else {
-      int len = _data.length + 1;
-      var d = new Uint8List(len);
-
-      for (int i = 0; i < _data.length; i++) {
-        d[i] = _data[i];
-      }
-
-      d[_data.length] = byte;
-      _data = d;
-    }
+    else _buf.addByte(byte);
   }
 
   @override
   void clear() {
-    if (_closed)
-      throw _deny();
-    else {
-      for (int i = 0; i < _data.length; i++) _data[i] = 0;
-    }
+    _buf.clear();
   }
 
   @override
-  bool get isEmpty => _data.isEmpty;
+  bool get isEmpty => _buf.isEmpty;
 
   @override
-  bool get isNotEmpty => _data.isNotEmpty;
+  bool get isNotEmpty => _buf.isNotEmpty;
 
   @override
-  int get length => _data.length;
+  int get length => _buf.length;
 
   @override
   List<int> takeBytes() {
-    if (_closed)
-      return toBytes();
-    else {
-      var r = new Uint8List.fromList(_data);
-      clear();
-      return r;
-    }
+    return _buf.takeBytes();
   }
 
   @override
   List<int> toBytes() {
-    return _data;
+    return _buf.toBytes();
   }
 }

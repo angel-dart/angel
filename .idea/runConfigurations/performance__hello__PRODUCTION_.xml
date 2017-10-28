@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="performance::hello (PRODUCTION)" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="checkedMode" value="false" />
+    <option name="envs">
+      <entry key="ANGEL_ENV" value="production" />
+    </option>
+    <option name="filePath" value="$PROJECT_DIR$/performance/hello/main.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$" />
+    <method />
+  </configuration>
+</component>

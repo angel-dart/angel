@@ -30,11 +30,12 @@ typedef Future AngelConfigurer(Angel app);
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
   final List<Angel> _children = [];
-  final Map<String, Tuple3<MiddlewarePipeline, Map, Match>> _handlerCache = {};
+  final Map<String, Tuple3<List, Map, Match>> _handlerCache = {};
 
   Router _flattened;
-  bool _isProduction;
+  bool _isProduction = false;
   Angel _parent;
+  StreamSubscription<HttpRequest> _sub;
   ServerGenerator _serverGenerator = HttpServer.bind;
 
   /// A global Map of converters that can transform responses bodies.
@@ -74,10 +75,7 @@ class Angel extends AngelBase {
   /// This value is memoized the first time you call it, so do not change environment
   /// configuration at runtime!
   bool get isProduction {
-    if (_isProduction != null)
-      return _isProduction;
-    else
-      return _isProduction = Platform.environment['ANGEL_ENV'] == 'production';
+    return _isProduction ??= (Platform.environment['ANGEL_ENV'] == 'production');
   }
 
   /// The function used to bind this instance to an HTTP server.
@@ -158,7 +156,8 @@ class Angel extends AngelBase {
     }
 
     optimizeForProduction();
-    return httpServer..listen(handleRequest);
+    _sub = httpServer.listen(handleRequest);
+    return httpServer;
   }
 
   @override
@@ -196,8 +195,12 @@ class Angel extends AngelBase {
   }
 
   /// Shuts down the server, and closes any open [StreamController]s.
+  ///
+  /// The server will be **COMPLETE DEFUNCT** after this operation!
   Future<HttpServer> close() async {
     HttpServer server;
+
+    _sub?.cancel();
 
     if (httpServer != null) {
       server = httpServer;
@@ -209,6 +212,20 @@ class Angel extends AngelBase {
     });
 
     for (var plugin in shutdownHooks) await plugin(this);
+
+    await super.close();
+    _preContained.clear();
+    _handlerCache.clear();
+    _injections.clear();
+    encoders.clear();
+    _serializer = god.serialize;
+    _children.clear();
+    _parent = null;
+    logger = null;
+    startupHooks.clear();
+    shutdownHooks.clear();
+    responseFinalizers.clear();
+    _flattened = null;
 
     return server;
   }
@@ -291,9 +308,12 @@ class Angel extends AngelBase {
   /// Runs some [handler]. Returns `true` if request execution should continue.
   Future<bool> executeHandler(
       handler, RequestContext req, ResponseContext res) async {
+    if (handler == null) return false;
     var result = await getHandlerResult(handler, req, res);
 
-    if (result is bool) {
+    if (result == null)
+      return false;
+    else if (result is bool) {
       return result;
     } else if (result != null) {
       res.serialize(result,
@@ -384,30 +404,36 @@ class Angel extends AngelBase {
 
       if (requestedUrl.isEmpty) requestedUrl = '/';
 
-      var tuple = _handlerCache.putIfAbsent('${req.method}:$requestedUrl', () {
+      Tuple3<List, Map, Match> resolveTuple() {
         Router r = isProduction ? (_flattened ??= flatten(this)) : this;
         var resolved =
             r.resolveAll(requestedUrl, requestedUrl, method: req.method);
 
         return new Tuple3(
-          new MiddlewarePipeline(resolved),
+          new MiddlewarePipeline(resolved).handlers,
           resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
           resolved.isEmpty ? null : resolved.first.route.match(requestedUrl),
         );
-      });
+      }
+
+      var tuple = isProduction
+          ? _handlerCache.putIfAbsent(
+              '${req.method}:$requestedUrl', resolveTuple)
+          : resolveTuple();
 
       req.inject(Zone, zone);
       req.inject(ZoneSpecification, zoneSpec);
-      req.inject(MiddlewarePipeline, tuple.item1);
       req.params.addAll(tuple.item2);
       req.inject(Match, tuple.item3);
-      req.inject(Stopwatch, new Stopwatch()..start());
 
-      var pipeline = tuple.item1.handlers;
+      if (logger != null) req.inject(Stopwatch, new Stopwatch()..start());
+
+      var pipeline = tuple.item1;
 
       for (var handler in pipeline) {
         try {
-          if (!await executeHandler(handler, req, res)) break;
+          if (handler == null || !await executeHandler(handler, req, res))
+            break;
         } on AngelHttpException catch (e, st) {
           e.stackTrace ??= st;
           return await handleAngelHttpException(e, st, req, res, request);
@@ -436,6 +462,11 @@ class Angel extends AngelBase {
       }
 
       return handleAngelHttpException(e, stackTrace, req, res, request);
+    }).whenComplete(() {
+      scheduleMicrotask(() {
+        req.close();
+        res.dispose();
+      });
     });
   }
 

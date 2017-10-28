@@ -686,6 +686,7 @@ class HookedServiceEventDispatcher {
 
   void _close() {
     _ctrl.forEach((c) => c.close());
+    listeners.clear();
   }
 
   /// Fires an event, and returns it once it is either canceled, or all listeners have run.

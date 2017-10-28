@@ -3,7 +3,6 @@ library angel_framework.http.request_context;
 import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
-import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:body_parser/body_parser.dart';
 import 'package:charcode/charcode.dart';
 import 'metadata.dart';
@@ -214,6 +213,11 @@ class RequestContext {
 
   /// Shorthand to add to [_injections].
   void inject(type, value) {
+    if (!app.isProduction && type is Type) {
+      if (!reflect(value).type.isAssignableTo(reflectType(type)))
+        throw new ArgumentError('Cannot inject $value (${value.runtimeType}) as an instance of $type.');
+    }
+
     _injections[type] = value;
   }
 
@@ -277,5 +281,20 @@ class RequestContext {
       _provisionalQuery = null;
     return _body = await parseBody(io,
         storeOriginalBuffer: app.storeOriginalBuffer == true);
+  }
+
+  /// Disposes of all resources.
+  Future close() async {
+    _body = null;
+    _acceptsAllCache = null;
+    _acceptHeaderCache = null;
+    _io = null;
+    _override = _path = null;
+    _contentType = null;
+    _provisionalQuery?.clear();
+    properties.clear();
+    _injections.clear();
+    serviceParams.clear();
+    params.clear();
   }
 }
