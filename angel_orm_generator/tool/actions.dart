@@ -55,6 +55,14 @@ final List<BuildAction> actions = [
     inputs: allModels,
   ),
   new BuildAction(
+    new LibraryBuilder(
+      const MigrationGenerator(),
+      generatedExtension: '.migration.g.dart',
+    ),
+    packageName,
+    inputs: allModels,
+  ),
+  new BuildAction(
     const SqlMigrationBuilder(
       temporary: true,
     ),

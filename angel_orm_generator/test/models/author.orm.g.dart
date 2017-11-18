@@ -120,7 +120,7 @@ class AuthorQuery {
   }
 
   Stream<Author> update(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) {
+      {String name: 'Tobe Osakwe', DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
         'UPDATE "authors" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
@@ -171,7 +171,9 @@ class AuthorQuery {
   }
 
   static Future<Author> insert(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) async {
+      {String name: 'Tobe Osakwe',
+      DateTime createdAt,
+      DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
         'INSERT INTO "authors" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',

@@ -1,5 +1,5 @@
 CREATE TEMPORARY TABLE "legs" (
-  "id" serial,
+  "id" varchar,
   "name" varchar,
   "created_at" timestamp,
   "updated_at" timestamp,

@@ -1,5 +1,5 @@
 CREATE TEMPORARY TABLE "users" (
-  "id" serial,
+  "id" varchar,
   "username" varchar,
   "password" varchar,
   "email" varchar,

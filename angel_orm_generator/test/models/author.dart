@@ -8,5 +8,6 @@ part 'author.g.dart';
 @serializable
 @orm
 class _Author extends Model {
+  @Column(length: 255, index: IndexType.UNIQUE, defaultValue: 'Tobe Osakwe')
   String name;
 }

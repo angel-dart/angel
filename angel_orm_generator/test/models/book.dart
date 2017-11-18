@@ -11,6 +11,7 @@ part 'book.g.dart';
 class _Book extends Model {
   @belongsTo
   Author author;
+
   int authorId;
   String name;
 }

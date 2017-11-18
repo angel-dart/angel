@@ -1,86 +1,65 @@
 import 'dart:async';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
+import 'package:code_builder/dart/core.dart';
+import 'package:code_builder/code_builder.dart';
+import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
-import 'package:source_gen/source_gen.dart';
 import 'postgres_build_context.dart';
 
-class SqlMigrationBuilder implements Builder {
+class MigrationGenerator extends GeneratorForAnnotation<ORM> {
+  static final ParameterBuilder _schemaParam = parameter('schema', [
+    new TypeBuilder('Schema'),
+  ]);
+  static final ReferenceBuilder _schema = reference('schema');
+
   /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
 
   /// If `true` (default), then the schema will automatically add id, created_at and updated_at fields.
   final bool autoIdAndDateFields;
 
-  /// If `true` (default: `false`), then the resulting schema will generate a `TEMPORARY` table.
-  final bool temporary;
-
-  const SqlMigrationBuilder(
-      {this.autoSnakeCaseNames: true,
-      this.autoIdAndDateFields: true,
-      this.temporary: false});
+  const MigrationGenerator(
+      {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
 
   @override
-  Map<String, List<String>> get buildExtensions => {
-        '.dart': ['.up.g.sql', '.down.g.sql']
-      };
+  Future<String> generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) async {
+    if (buildStep.inputId.path.contains('.migration.g.dart')) {
+      return null;
+    }
 
-  @override
-  Future build(BuildStep buildStep) async {
+    if (element is! ClassElement)
+      throw 'Only classes can be annotated with @ORM().';
     var resolver = await buildStep.resolver;
-    var up = new StringBuffer();
-    var down = new StringBuffer();
-
-    if (!await resolver.isLibrary(buildStep.inputId)) {
-      return;
-    }
-
-    var lib = await resolver.libraryFor(buildStep.inputId);
-    var elements = lib.definingCompilationUnit.unit.declarations;
-
-    if (!elements.any(
-        (el) => ormTypeChecker.firstAnnotationOf(el.element) != null)) return;
-
-    await generateSqlMigrations(lib, resolver, buildStep, up, down);
-    buildStep.writeAsString(
-        buildStep.inputId.changeExtension('.up.g.sql'), up.toString());
-    buildStep.writeAsString(
-        buildStep.inputId.changeExtension('.down.g.sql'), down.toString());
+    var ctx = await buildContext(element, reviveOrm(annotation), buildStep,
+        resolver, autoSnakeCaseNames != false, autoIdAndDateFields != false);
+    var lib = generateMigrationLibrary(ctx, element, resolver, buildStep);
+    if (lib == null) return null;
+    return prettyToSource(lib.buildAst());
   }
 
-  Future generateSqlMigrations(LibraryElement libraryElement, Resolver resolver,
-      BuildStep buildStep, StringBuffer up, StringBuffer down) async {
-    List<String> done = [];
-    for (var element
-        in libraryElement.definingCompilationUnit.unit.declarations) {
-      if (element is ClassDeclaration && !done.contains(element.name)) {
-        var ann = ormTypeChecker.firstAnnotationOf(element.element);
-        if (ann != null) {
-          var ctx = await buildContext(
-              element.element,
-              reviveOrm(new ConstantReader(ann)),
-              buildStep,
-              resolver,
-              autoSnakeCaseNames != false,
-              autoIdAndDateFields != false);
-          buildUpMigration(ctx, up);
-          buildDownMigration(ctx, down);
-          done.add(element.name.name);
-        }
-      }
-    }
+  LibraryBuilder generateMigrationLibrary(PostgresBuildContext ctx,
+      ClassElement element, Resolver resolver, BuildStep buildStep) {
+    var lib = new LibraryBuilder()
+      ..addDirective(
+          new ImportBuilder('package:angel_migration/angel_migration.dart'));
+
+    var clazz = new ClassBuilder('${ctx.modelClassName}Migration',
+        asExtends: new TypeBuilder('Migration'));
+    clazz..addMethod(buildUpMigration(ctx))..addMethod(buildDownMigration(ctx));
+
+    return lib..addMember(clazz);
   }
 
-  void buildUpMigration(PostgresBuildContext ctx, StringBuffer buf) {
-    if (temporary == true)
-      buf.writeln('CREATE TEMPORARY TABLE "${ctx.tableName}" (');
-    else
-      buf.writeln('CREATE TABLE "${ctx.tableName}" (');
+  MethodBuilder buildUpMigration(PostgresBuildContext ctx) {
+    var meth = new MethodBuilder('up')..addPositional(_schemaParam);
+    var closure = new MethodBuilder.closure()
+      ..addPositional(parameter('table'));
+    var table = reference('table');
 
     List<String> dup = [];
-    int i = 0;
     ctx.columnInfo.forEach((name, col) {
       var key = ctx.resolveFieldName(name);
 
@@ -96,70 +75,121 @@ class SqlMigrationBuilder implements Builder {
         }
 
         dup.add(key);
-        if (i++ > 0) buf.writeln(',');
       }
 
-      buf.write('  "$key" ${col.type.name}');
+      String methodName;
+      List<ExpressionBuilder> positional = [literal(key)];
+      Map<String, ExpressionBuilder> named = {};
 
-      if (col.index == IndexType.PRIMARY_KEY)
-        buf.write(' PRIMARY KEY');
-      else if (col.index == IndexType.UNIQUE) buf.write(' UNIQUE');
+      if (autoIdAndDateFields != false && name == 'id')
+        methodName = 'serial';
 
-      if (col.nullable != true) buf.write(' NOT NULLABLE');
+      if (methodName == null) {
+        switch (col.type) {
+          case ColumnType.VAR_CHAR:
+            methodName = 'varchar';
+            if (col.length != null) named['length'] = literal(col.length);
+            break;
+          case ColumnType.SERIAL:
+            methodName = 'serial';
+            break;
+          case ColumnType.INT:
+            methodName = 'integer';
+            break;
+          case ColumnType.FLOAT:
+            methodName = 'float';
+            break;
+          case ColumnType.NUMERIC:
+            methodName = 'numeric';
+            break;
+          case ColumnType.BOOLEAN:
+            methodName = 'boolean';
+            break;
+          case ColumnType.DATE:
+            methodName = 'date';
+            break;
+          case ColumnType.DATE_TIME:
+            methodName = 'dateTime';
+            break;
+          case ColumnType.TIME_STAMP:
+            methodName = 'timeStamp';
+            break;
+          default:
+            ExpressionBuilder provColumn;
+            var colType = new TypeBuilder('Column');
+            var columnTypeType = new TypeBuilder('ColumnType');
+
+            if (col.length == null) {
+              methodName = 'declare';
+              provColumn = columnTypeType.newInstance([
+                literal(col.type.name),
+              ]);
+            } else {
+              methodName = 'declareColumn';
+              provColumn = colType.newInstance([], named: {
+                'type': columnTypeType.newInstance([
+                  literal(col.type.name),
+                ]),
+                'length': literal(col.length),
+              });
+            }
+
+            positional.add(provColumn);
+            break;
+        }
+      }
+
+      var field = table.invoke(methodName, positional, namedArguments: named);
+      var cascade = <ExpressionBuilder Function(ExpressionBuilder)>[];
+
+      if (col.defaultValue != null) {
+        cascade.add((e) => e.invoke('defaultsTo', [literal(col.defaultValue)]));
+      }
+
+      if (col.index == IndexType.PRIMARY_KEY ||
+          (autoIdAndDateFields != false && name == 'id'))
+        cascade.add((e) => e.invoke('primaryKey', []));
+      else if (col.index == IndexType.UNIQUE)
+        cascade.add((e) => e.invoke('unique', []));
+
+      if (col.nullable != true) cascade.add((e) => e.invoke('notNull', []));
+
+      field = cascade.isEmpty
+          ? field
+          : field.cascade((e) => cascade.map((f) => f(e)).toList());
+      closure.addStatement(field);
     });
 
-    // Relations
     ctx.relationships.forEach((name, r) {
       var relationship = ctx.populateRelationship(name);
 
       if (relationship.isBelongsTo) {
         var key = relationship.localKey;
 
-        if (dup.contains(key))
-          return;
-        else {
-          dup.add(key);
-          if (i++ > 0) buf.writeln(',');
-        }
-
-        buf.write(
-            '  "${relationship.localKey}" int REFERENCES ${relationship.foreignTable}(${relationship.foreignKey})');
+        var field = table.invoke('integer', [literal(key)]);
+        // .references('user', 'id').onDeleteCascade()
+        var ref = field.invoke('references', [
+          literal(relationship.foreignTable),
+          literal(relationship.foreignKey),
+        ]);
         if (relationship.cascadeOnDelete != false && relationship.isSingular)
-          buf.write(' ON DELETE CASCADE');
+          ref = ref.invoke('onDeleteCascade', []);
+        return closure.addStatement(ref);
       }
     });
 
-    // Primary keys, unique
-    bool hasPrimary = false;
-    ctx.fields.forEach((f) {
-      var col = ctx.columnInfo[f.name];
-      if (col != null) {
-        var name = ctx.resolveFieldName(f.name);
-        if (col.index == IndexType.UNIQUE) {
-          if (i++ > 0) buf.writeln(',');
-          buf.write('  UNIQUE($name)');
-        } else if (col.index == IndexType.PRIMARY_KEY) {
-          if (i++ > 0) buf.writeln(',');
-          hasPrimary = true;
-          buf.write('  PRIMARY KEY($name)');
-        }
-      }
-    });
-
-    if (!hasPrimary) {
-      var idField =
-          ctx.fields.firstWhere((f) => f.name == 'id', orElse: () => null);
-      if (idField != null) {
-        if (i++ > 0) buf.writeln(',');
-        buf.write('  PRIMARY KEY(id)');
-      }
-    }
-
-    buf.writeln();
-    buf.writeln(');');
+    meth.addStatement(_schema.invoke('create', [
+      literal(ctx.tableName),
+      closure,
+    ]));
+    return meth..addAnnotation(lib$core.override);
   }
 
-  void buildDownMigration(PostgresBuildContext ctx, StringBuffer buf) {
-    buf.writeln('DROP TABLE "${ctx.tableName}";');
+  MethodBuilder buildDownMigration(PostgresBuildContext ctx) {
+    return method('down', [
+      _schemaParam,
+      _schema.invoke('drop', [literal(ctx.tableName)]),
+    ])
+      ..addAnnotation(lib$core.override);
   }
 }

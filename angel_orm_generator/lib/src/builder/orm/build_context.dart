@@ -142,6 +142,16 @@ Future<PostgresBuildContext> buildContext(
       );
     }
 
+    if (column != null) {
+      column = new Column(
+        nullable: column.nullable,
+        length: column.length,
+        index: column.index,
+        defaultValue: column.defaultValue,
+        type: inferColumnType(field.type),
+      );
+    }
+
     if (column?.type == null)
       throw 'Cannot infer SQL column type for field "${field.name}" with type "${field.type.name}".';
     ctx.columnInfo[field.name] = column;

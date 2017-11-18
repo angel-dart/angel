@@ -4,15 +4,14 @@
     <content url="file://$MODULE_DIR$/angel_orm">
       <excludeFolder url="file://$MODULE_DIR$/angel_orm/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_orm/build" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_orm/packages" />
     </content>
     <content url="file://$MODULE_DIR$/angel_orm_generator">
       <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/build" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/test/models/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/test/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/tool/packages" />
+    </content>
+    <content url="file://$MODULE_DIR$/external">
+      <excludeFolder url="file://$MODULE_DIR$/external/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/external/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

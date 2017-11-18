@@ -1,5 +1,5 @@
 name: angel_orm
-version: 1.0.0-alpha+7
+version: 1.0.0-alpha+8
 description: Runtime support for Angel's ORM.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/orm
