@@ -15,7 +15,7 @@ String formatDateForHttp(DateTime dt) => _fmt.format(dt.toUtc()) + ' GMT';
 
 /// Generates a weak ETag from the given buffer.
 String weakEtag(List<int> buf) {
-  return 'W/${buf.length}' + BASE64URL.encode(buf);
+  return 'W/${buf.length}' + BASE64URL.encode(buf.take(50).toList());
 }
 
 /// Returns a string representation of the given [CacheAccessLevel].

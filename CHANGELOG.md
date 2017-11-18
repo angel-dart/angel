@@ -1,3 +1,6 @@
+# 1.3.0-alpha+1
+* ETags once again only encode the first 50 bytes of files. Resolves [#27](https://github.com/angel-dart/static/issues/27).
+
 # 1.3.0-alpha
 * Removed file transformers.
 * `VirtualDirectory` is no longer an `AngelPlugin`, and instead exposes a `handleRequest` middleware.
