@@ -43,6 +43,7 @@ abstract class BrowserRouter extends Router {
 }
 
 abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
+  bool _listening = false;
   Route _current;
   StreamController<RoutingResult> _onResolve =
       new StreamController<RoutingResult>();
@@ -83,6 +84,16 @@ abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
       $a.attributes['dynamic'] = 'true';
     }
   }
+
+  void _listen();
+
+  @override
+  void listen() {
+    if (_listening)
+      throw new StateError('The router is already listening for page changes.');
+    _listening = true;
+    _listen();
+  }
 }
 
 class _HashRouter extends _BrowserRouterImpl {
@@ -121,7 +132,7 @@ class _HashRouter extends _BrowserRouterImpl {
   }
 
   @override
-  void listen() {
+  void _listen() {
     window.onHashChange.listen(handleHash);
     handleHash();
   }
@@ -184,7 +195,7 @@ class _PushStateRouter extends _BrowserRouterImpl {
   }
 
   @override
-  void listen() {
+  void _listen() {
     window.onPopState.listen((e) {
       handleState(e.state);
     });

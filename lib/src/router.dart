@@ -253,7 +253,8 @@ class Router {
         : segments.join('/');
   }
 
-  /// Assigns a middleware to a name for convenience.
+  /// Manually assign via [requestMiddleware] instead.
+  @deprecated
   registerMiddleware(String name, middleware) {
     requestMiddleware[name] = middleware;
   }

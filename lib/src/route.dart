@@ -354,7 +354,7 @@ class Route {
     for (int i = 0; i < matches.length && i < values.length; i++) {
       Match match = matches.elementAt(i);
       String paramName = match.group(1);
-      String value = values.elementAt(i);
+      String value = Uri.decodeComponent(values.elementAt(i));
       // _printDebug('Setting param "$paramName" to "$value"...');
       result[paramName] = value;
     }
