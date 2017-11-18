@@ -3,6 +3,8 @@ description: Mustache view generator for Angel.
 author: thosakwe <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_mustache
 version: 1.1.0
+environment:
+  sdk: ">=1.19.0"
 dependencies:
   angel_framework: "^1.1.0-alpha"
   file: ^2.0.0
