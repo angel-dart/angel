@@ -1,12 +1,11 @@
-import 'dart:io';
+import 'dart:async';
 import 'dart:collection';
-import 'package:path/path.dart' as path;
+import 'package:file/file.dart';
 
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mustache/src/mustache_context.dart';
 
-class MustacheCacheController {
-
+class MustacheViewCache {
   /**
    * The context for which views and partials are
    * served from.
@@ -16,9 +15,9 @@ class MustacheCacheController {
   HashMap<String, String> viewCache = new HashMap();
   HashMap<String, String> partialCache = new HashMap();
 
-  MustacheCacheController([this.context]);
+  MustacheViewCache([this.context]);
 
-  get_view(String viewName, Angel app) async {
+  Future<String> getView(String viewName, Angel app) async {
     if (app.isProduction) {
       if (viewCache.containsKey(viewName)) {
         return viewCache[viewName];
@@ -27,7 +26,7 @@ class MustacheCacheController {
 
     File viewFile = context.resolveView(viewName);
 
-    if (await viewFile.exists()) {
+    if (viewFile.existsSync()) {
       String viewTemplate = await viewFile.readAsString();
       if (app.isProduction) {
         this.viewCache[viewName] = viewTemplate;
@@ -38,7 +37,7 @@ class MustacheCacheController {
           'View "$viewName" was not found.', viewFile.path);
   }
 
-  get_partial(String partialName, Angel app) {
+  String getPartialSync(String partialName, Angel app) {
     if (app.isProduction) {
       if (partialCache.containsKey(partialName)) {
         return partialCache[partialName];
