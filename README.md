@@ -25,9 +25,10 @@ dev_dependencies:
   build_runner: ^0.5.0
 ```
 
-`package:angel_orm_generator` exports two classes that you can include
+`package:angel_orm_generator` exports three classes that you can include
 in a `package:build` flow:
 * `PostgresOrmGenerator` - Fueled by `package:source_gen`; include this within a `LibraryBuilder`.
+* `MigrationGenerator` - Builds a [`package:angel_migration`](https://github.com/angel-dart/migration) migration for your models automatically.
 * `SqlMigrationBuilder` - This is its own `Builder`; it generates a SQL schema, as well as a SQL script to drop a generated table.
 
 You should pass an `List<String>` containing your project's models.
