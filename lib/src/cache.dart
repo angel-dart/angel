@@ -60,13 +60,15 @@ class CachingVirtualDirectory extends VirtualDirectory {
       this.noCache: false,
       this.onlyInProduction: false,
       this.useEtags: true,
+      bool allowDirectoryListing,
       String publicPath,
       callback(File file, RequestContext req, ResponseContext res)})
       : super(app, fileSystem,
             source: source,
             indexFileNames: indexFileNames ?? ['index.html'],
             publicPath: publicPath ?? '/',
-            callback: callback);
+            callback: callback,
+            allowDirectoryListing: allowDirectoryListing);
 
   @override
   Future<bool> serveFile(

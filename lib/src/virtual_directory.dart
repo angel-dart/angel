@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
 import 'package:mime/mime.dart';
+import 'package:path/path.dart' as p;
 
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
@@ -42,11 +43,15 @@ class VirtualDirectory {
   /// An optional public path to map requests to.
   final String publicPath;
 
+  /// If `true` (default: `false`), then if a directory does not contain any of the specific [indexFileNames], a default directory listing will be served.
+  final bool allowDirectoryListing;
+
   VirtualDirectory(this.app, this.fileSystem,
       {Directory source,
       this.indexFileNames: const ['index.html'],
       this.publicPath: '/',
-      this.callback}) {
+      this.callback,
+      this.allowDirectoryListing: false}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
     if (source != null) {
       _source = source;
@@ -68,13 +73,22 @@ class VirtualDirectory {
   }
 
   /// A handler that serves the file at the given path, unless the user has requested that path.
-  RequestMiddleware pushState(String path) {
+  ///
+  /// You can also limit this functionality to specific values of the `Accept` header, ex. `text/html`.
+  /// If [accepts] is `null`, OR at least one of the content types in [accepts] is present,
+  /// the view will be served.
+  RequestMiddleware pushState(String path, {Iterable accepts}) {
     var vPath = path.replaceAll(_straySlashes, '');
     if (_prefix?.isNotEmpty == true) vPath = '$_prefix/$vPath';
 
     return (RequestContext req, ResponseContext res) {
       var path = req.path.replaceAll(_straySlashes, '');
       if (path == vPath) return new Future<bool>.value(true);
+
+      if (accepts?.isNotEmpty == true) {
+        if (!accepts.any(req.accepts)) return new Future<bool>.value(true);
+      }
+
       return servePath(vPath, req, res);
     };
   }
@@ -93,15 +107,15 @@ class VirtualDirectory {
 
     var absolute = source.absolute.uri.resolve(path).toFilePath();
     var stat = await fileSystem.stat(absolute);
-    return await serveStat(absolute, stat, req, res);
+    return await serveStat(absolute, path, stat, req, res);
   }
 
   /// Writes the file at the path given by the [stat] to a response.
-  Future<bool> serveStat(String absolute, FileStat stat, RequestContext req,
+  Future<bool> serveStat(String absolute, String relative, FileStat stat, RequestContext req,
       ResponseContext res) async {
     if (stat.type == FileSystemEntityType.DIRECTORY)
       return await serveDirectory(
-          fileSystem.directory(absolute), stat, req, res);
+          fileSystem.directory(absolute), relative, stat, req, res);
     else if (stat.type == FileSystemEntityType.FILE)
       return await serveFile(fileSystem.file(absolute), stat, req, res);
     else if (stat.type == FileSystemEntityType.LINK) {
@@ -112,7 +126,7 @@ class VirtualDirectory {
   }
 
   /// Serves the index file of a [directory], if it exists.
-  Future<bool> serveDirectory(Directory directory, FileStat stat,
+  Future<bool> serveDirectory(Directory directory, String relative, FileStat stat,
       RequestContext req, ResponseContext res) async {
     for (String indexFileName in indexFileNames) {
       final index =
@@ -120,6 +134,60 @@ class VirtualDirectory {
       if (await index.exists()) {
         return await serveFile(index, stat, req, res);
       }
+    }
+
+    if (allowDirectoryListing == true) {
+      res.headers['content-type'] = 'text/html';
+      res
+        ..write('<!DOCTYPE html>')
+        ..write('<html>')
+        ..write(
+            '<head><meta name="viewport" content="width=device-width,initial-scale=1">')
+        ..write('<style>ul { list-style-type: none; }</style>')
+        ..write('</head></html><body>');
+
+      res.write('<li><a href="..">..</a></li>');
+
+      List<FileSystemEntity> entities = await directory
+          .list(followLinks: false)
+          .toList()
+          .then((l) => new List.from(l));
+      entities.sort((a, b) {
+        if (a is Directory) {
+          if (b is Directory) return a.path.compareTo(b.path);
+          return -1;
+        } else if (a is File) {
+          if (b is Directory)
+            return 1;
+          else if (b is File) return a.path.compareTo(b.path);
+          return -1;
+        } else if (b is Link) return a.path.compareTo(b.path);
+
+        return 1;
+      });
+
+      for (var entity in entities) {
+        var stub = p.basename(entity.path);
+        var href = stub;
+        String type;
+
+        if (entity is File)
+          type = '[File]';
+        else if (entity is Directory)
+          type = '[Directory]';
+        else if (entity is Link) type = '[Link]';
+
+        if (relative.isNotEmpty)
+          href = '/' +  relative + '/' + stub;
+
+        if (entity is Directory)
+          href += '/';
+
+        res.write('<li><a href="$href">$type $stub</a></li>');
+      }
+
+      res..write('</body></html>');
+      return false;
     }
 
     return true;
