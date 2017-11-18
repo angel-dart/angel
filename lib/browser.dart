@@ -75,8 +75,7 @@ class WebSockets extends BaseWebSocketClient {
           return completer.complete(new HtmlWebSocketChannel(socket));
       })
       ..onError.listen((e) {
-        var err = e as ErrorEvent;
-        if (!completer.isCompleted) return completer.completeError(err.error);
+        if (!completer.isCompleted) return completer.completeError(e is ErrorEvent ? e.error : e);
       });
 
     return completer.future;

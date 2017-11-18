@@ -25,7 +25,8 @@ main() async {
 
   var ws = new AngelWebSocket();
   
-  // Apply configuration
+  // This is a plug-in. It hooks all your services,
+  // to automatically broadcast events.
   await app.configure(ws.configureServer);
   
   // Listen for requests at `/ws`.
@@ -58,6 +59,9 @@ import "package:angel_websocket/server.dart";
 
 @Expose("/")
 class MyController extends WebSocketController {
+  // A reference to the WebSocket plug-in is required.
+  MyController(AngelWebSocket ws):super(ws);
+  
   @override
   void onConnect(WebSocketContext socket) {
     // On connect...
