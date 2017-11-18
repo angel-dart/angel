@@ -1,3 +1,10 @@
+# 1.1.0-alpha+8
+* Added an `autoIdAndDateFields` flag to `MapService`. Finally.
+
+# 1.1.0-alpha+7
+* Made `handlerCache` public.
+* Added `AngelMetrics`.
+
 # 1.1.0-alpha+6
 * Added `@Parameter()` annotations, with support for pattern matching.
 

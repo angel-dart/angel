@@ -78,8 +78,7 @@ class SingletonController extends Controller {
 @Expose("/errands4")
 class ErrandController extends Controller {
   @Expose("/")
-  errand(Errand errand, MiddlewarePipeline pipeline) {
-    expect(pipeline, isNotNull);
+  errand(Errand errand) {
     return errand.text;
   }
 }

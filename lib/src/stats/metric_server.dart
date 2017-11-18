@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:logging/logging.dart';
 import '../http/http.dart';
 import 'stats.dart';
 
@@ -16,42 +15,51 @@ class AngelMetrics extends Angel {
       var spec = await zoneBuilder(request, req, res);
       return new ZoneSpecification.from(
         spec,
-        run: (Zone self, ZoneDelegate parent, Zone zone, f()) {
-          var sw = new Stopwatch();
-          //print('--- ${req.method} ${req.uri}: $f');
-          sw.start();
-
-          void whenDone() {
-            sw.stop();
-            var ms = sw.elapsedMilliseconds;
-            parent.print(
-                zone, '--- ${req.method} ${req.uri} DONE after ${ms}ms: $f');
-          }
-
-          var r = parent.run(zone, f);
-
-          if (r is Future) {
-            return r.then((x) {
-              whenDone();
-              return x;
-            });
-          }
-
-          whenDone();
-          return r;
-        },
       );
     };
 
-    logger = new Logger('angel_metrics')
-      ..onRecord.listen((rec) {
-        print(rec);
+    get('/metrics', (req, res) {
+      res.contentType = ContentType.HTML;
 
-        if (rec.error != null) {
-          print(rec.error);
-          print(rec.stackTrace);
-        }
-      });
+      var rows = stats.all.map((stat) {
+        return '''<tr>
+              <td>${stat.name}</td>
+              <td>${stat.iterations}</td>
+              <td>${stat.sum}ms</td>
+              <td>${stat.average.toStringAsFixed(2)}ms</td>
+            </tr>''';
+      }).join();
+
+      res.write('''
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Metrics</title>
+          </head>
+          <body>
+            <h1>Metrics</h1>
+            <i>Updated every 5 seconds</i>
+            <table>
+              <thead>
+                <tr>
+                  <th>Stat</th>
+                  <th># Iterations</th>
+                  <th>Total (ms)</th>
+                  <th>Average (ms)</th>
+                </tr>
+              </thead>
+              <tbody>$rows</tbody>
+            </table>
+            <script>
+              window.setTimeout(function() {
+                window.location.reload();
+              }, 5000);
+            </script>
+          </body>
+        </html>
+        ''');
+    });
   }
 
   factory AngelMetrics.custom(ServerGenerator serverGenerator) {
@@ -101,7 +109,9 @@ class AngelMetrics extends Angel {
 
   @override
   Future handleRequest(HttpRequest request) {
-    return stats.handleRequest.run(() => super.handleRequest(request));
+    return stats.handleRequest.run(() async {
+      await super.handleRequest(request);
+    });
   }
 
   @override
@@ -136,6 +146,11 @@ class AngelMetricsStats {
     all = [
       createRequestContext,
       createResponseContext,
+      executeHandler,
+      getHandlerResult,
+      runContained,
+      sendResponse,
+      handleRequest,
     ];
   }
 
@@ -148,6 +163,10 @@ class AngelMetricsStats {
   final Stats sendResponse = new Stats('sendResponse');
 
   List<Stats> all;
+
+  void add(Stats stats) {
+    all.add(stats);
+  }
 
   void log() {
     all.forEach((s) => s.log());

@@ -43,8 +43,14 @@ main() {
 
   setUp(() async {
     app = new Angel();
-    app.requestMiddleware["foo"] = (req, res) async => res.write("Hello, ");
-    app.requestMiddleware["bar"] = (req, res) async => res.write("world!");
+    app.requestMiddleware["foo"] = (req, res) async {
+      res.write("Hello, ");
+      return true;
+    };
+    app.requestMiddleware["bar"] = (req, res) async {
+      res.write("world!");
+      return true;
+    };
     app.get(
         "/redirect",
         (req, ResponseContext res) async =>
@@ -102,7 +108,7 @@ main() {
     var response = await client.get("$url/todos/0");
     print('Response: ${response.body}');
 
-    expect(rgx.firstMatch(response.body).start, equals(0));
+    expect(rgx.firstMatch(response.body)?.start, equals(0));
 
     Map todo = JSON.decode(response.body.replaceAll(rgx, ""));
     print("Todo: $todo");

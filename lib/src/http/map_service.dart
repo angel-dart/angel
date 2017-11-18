@@ -12,9 +12,16 @@ class MapService extends Service {
   /// If set to `true`, parameters in `req.query` are applied to the database query.
   final bool allowQuery;
 
+  /// If set to `true` (default), then the service will manage an `id` string and `createdAt` and `updatedAt` fields.
+  final bool autoIdAndDateFields;
+
   final List<Map<String, dynamic>> items = [];
 
-  MapService({this.allowRemoveAll: false, this.allowQuery: true}) : super();
+  MapService(
+      {this.allowRemoveAll: false,
+      this.allowQuery: true,
+      this.autoIdAndDateFields: true})
+      : super();
 
   _matchesId(id) {
     return (Map item) => item['id'] != null && item['id'] == id?.toString();
@@ -53,10 +60,14 @@ class MapService extends Service {
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
     var now = new DateTime.now();
-    var result = data
-      ..['id'] = items.length.toString()
-      ..['createdAt'] = now
-      ..['updatedAt'] = now;
+    var result = data;
+
+    if (autoIdAndDateFields == true) {
+      result
+        ..['id'] = items.length.toString()
+        ..['createdAt'] = now
+        ..['updatedAt'] = now;
+    }
     items.add(result);
     return result;
   }
@@ -70,9 +81,10 @@ class MapService extends Service {
     if (!items.any(_matchesId(id))) return await create(data, params);
 
     var item = await read(id);
-    return item
-      ..addAll(data)
-      ..['updatedAt'] = new DateTime.now();
+    var result = item..addAll(data);
+
+    if (autoIdAndDateFields == true) result..['updatedAt'] = new DateTime.now();
+    return result;
   }
 
   @override
@@ -89,10 +101,13 @@ class MapService extends Service {
       throw new AngelHttpException.notFound(
           message: 'No record found for ID $id');
 
-    var result = data
-      ..['id'] = id?.toString()
-      ..['createdAt'] = old['createdAt']
-      ..['updatedAt'] = new DateTime.now();
+    var result = data;
+    if (autoIdAndDateFields == true) {
+      result
+        ..['id'] = id?.toString()
+        ..['createdAt'] = old['createdAt']
+        ..['updatedAt'] = new DateTime.now();
+    }
     items.add(result);
     return result;
   }

@@ -12,6 +12,10 @@ class Stats {
 
   double get average => _average ?? (_total / _count);
 
+  int get iterations => _count;
+
+  int get sum => _total;
+
   void log() {
     print('$name: $average avg.');
   }
@@ -31,7 +35,7 @@ class Stats {
       sw.stop();
       var ms = sw.elapsedMilliseconds;
       add(ms);
-      print('--- $name DONE after ${ms}ms');
+      //print('--- $name DONE after ${ms}ms');
     }
 
     var r = f();

@@ -30,7 +30,7 @@ typedef Future AngelConfigurer(Angel app);
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
   final List<Angel> _children = [];
-  final Map<String, Tuple3<List, Map, Match>> _handlerCache = {};
+  final Map<String, Tuple3<List, Map, Match>> handlerCache = {};
 
   Router _flattened;
   bool _isProduction = false;
@@ -215,7 +215,7 @@ class Angel extends AngelBase {
 
     await super.close();
     _preContained.clear();
-    _handlerCache.clear();
+    handlerCache.clear();
     _injections.clear();
     encoders.clear();
     _serializer = god.serialize;
@@ -417,7 +417,7 @@ class Angel extends AngelBase {
       }
 
       var tuple = isProduction
-          ? _handlerCache.putIfAbsent(
+          ? handlerCache.putIfAbsent(
               '${req.method}:$requestedUrl', resolveTuple)
           : resolveTuple();
 
