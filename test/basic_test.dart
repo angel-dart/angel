@@ -12,7 +12,7 @@ main() {
 
   setUp(() async {
     app = new Angel()
-      ..before.add(cors())
+      ..before.add(cors(new CorsOptions()))
       ..post('/', (req, res) async {
         res.write('hello world');
         return false;
@@ -42,9 +42,8 @@ main() {
   });
 
   test('mirror headers', () async {
-    final response = await client.post(url, headers: {
-      'access-control-request-headers': 'foo'
-    });
+    final response = await client
+        .post(url, headers: {'access-control-request-headers': 'foo'});
     expect(response.statusCode, equals(200));
     print('Response: ${response.body}');
     print('Headers: ${response.headers}');

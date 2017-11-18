@@ -9,13 +9,14 @@ export 'src/cors_options.dart';
 typedef bool CorsFilter(String origin);
 
 bool _isOriginAllowed(String origin, allowedOrigin) {
+  allowedOrigin ??= [];
   if (allowedOrigin is List) {
     return allowedOrigin.any((x) => _isOriginAllowed(origin, x));
   } else if (allowedOrigin is String) {
     return origin == allowedOrigin;
   } else if (allowedOrigin is RegExp) {
-    return allowedOrigin.hasMatch(origin);
-  } else if (allowedOrigin is CorsFilter) {
+    return origin != null && allowedOrigin.hasMatch(origin);
+  } else if (origin != null && allowedOrigin is CorsFilter) {
     return allowedOrigin(origin);
   } else {
     return allowedOrigin != false;
@@ -29,7 +30,7 @@ RequestMiddleware cors([CorsOptions options]) {
   return (RequestContext req, ResponseContext res) async {
     // Access-Control-Allow-Credentials
     if (opts.credentials == true) {
-      res.heades['Access-Control-Allow-Credentials'] = 'true';
+      res.headers['Access-Control-Allow-Credentials'] = 'true';
     }
 
     // Access-Control-Allow-Headers
