@@ -48,6 +48,8 @@ main() {
     await app.configure(ws.configureServer);
     app.all('/ws', ws.handleRequest);
 
+    app.errorHandler = (e, req, res) => e.toJson();
+
     client = await connectTo(app);
   });
 
@@ -71,6 +73,7 @@ main() {
 
     test('isAngelHttpException', () async {
       var res = await client.get('/error');
+      print(res.body);
       expect(res, isAngelHttpException());
       expect(
           res,

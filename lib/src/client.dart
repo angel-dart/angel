@@ -23,7 +23,7 @@ final Uuid _uuid = new Uuid();
 Future<TestClient> connectTo(Angel app,
     {Map initialSession, bool autoDecodeGzip: true}) async {
   if (!app.isProduction)
-    app.properties.putIfAbsent('testMode', () => true);
+    app.configuration.putIfAbsent('testMode', () => true);
 
   for (var plugin in app.startupHooks)
     await plugin(app);
@@ -52,7 +52,10 @@ class TestClient extends client.BaseAngelClient {
 
   TestClient(this.server, {this.autoDecodeGzip: true}) : super(new http.Client(), '/');
 
-  Future close() => server.close();
+  Future close() {
+    this.client.close();
+    return server.close();
+  }
 
   /// Opens a WebSockets connection to the server. This will automatically bind the server
   /// over HTTP, if it is not already listening. Unfortunately, WebSockets cannot be mocked (yet!).
