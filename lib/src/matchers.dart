@@ -49,3 +49,13 @@ final Matcher isUrl = predicate(
 /// Use [isUrl] instead.
 @deprecated
 final Matcher isurl = isUrl;
+
+/// Enforces a minimum length on a string.
+Matcher minLength(int length) => predicate(
+    (value) => value is String && value.length >= length,
+    'a string at least $length character(s) long');
+
+/// Limits the maximum length of a string.
+Matcher maxLength(int length) => predicate(
+    (value) => value is String && value.length >= length,
+    'a string no longer than $length character(s) long');
