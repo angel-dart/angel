@@ -48,18 +48,19 @@ class MigrationGenerator extends GeneratorForAnnotation<ORM> {
 
     var clazz = new ClassBuilder('${ctx.modelClassName}Migration',
         asExtends: new TypeBuilder('Migration'));
-    clazz..addMethod(buildUpMigration(ctx))..addMethod(buildDownMigration(ctx));
+    clazz..addMethod(buildUpMigration(ctx, lib))..addMethod(buildDownMigration(ctx));
 
     return lib..addMember(clazz);
   }
 
-  MethodBuilder buildUpMigration(PostgresBuildContext ctx) {
+  MethodBuilder buildUpMigration(PostgresBuildContext ctx, LibraryBuilder lib) {
     var meth = new MethodBuilder('up')..addPositional(_schemaParam);
     var closure = new MethodBuilder.closure()
       ..addPositional(parameter('table'));
     var table = reference('table');
 
     List<String> dup = [];
+    bool hasOrmImport = false;
     ctx.columnInfo.forEach((name, col) {
       var key = ctx.resolveFieldName(name);
 
@@ -81,8 +82,7 @@ class MigrationGenerator extends GeneratorForAnnotation<ORM> {
       List<ExpressionBuilder> positional = [literal(key)];
       Map<String, ExpressionBuilder> named = {};
 
-      if (autoIdAndDateFields != false && name == 'id')
-        methodName = 'serial';
+      if (autoIdAndDateFields != false && name == 'id') methodName = 'serial';
 
       if (methodName == null) {
         switch (col.type) {
@@ -115,6 +115,11 @@ class MigrationGenerator extends GeneratorForAnnotation<ORM> {
             methodName = 'timeStamp';
             break;
           default:
+            if (!hasOrmImport) {
+              hasOrmImport = true;
+              lib.addDirective(new ImportBuilder('package:angel_orm/angel_orm.dart'));
+            }
+
             ExpressionBuilder provColumn;
             var colType = new TypeBuilder('Column');
             var columnTypeType = new TypeBuilder('ColumnType');

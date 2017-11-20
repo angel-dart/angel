@@ -1,6 +1,6 @@
 CREATE TEMPORARY TABLE "trees" (
-  "id" varchar,
-  "rings" int UNIQUE,
+  "id" serial,
+  "rings" smallint UNIQUE,
   "created_at" timestamp,
   "updated_at" timestamp,
   UNIQUE(rings),

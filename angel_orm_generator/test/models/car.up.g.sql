@@ -1,5 +1,5 @@
 CREATE TEMPORARY TABLE "cars" (
-  "id" varchar,
+  "id" serial,
   "make" varchar,
   "description" varchar,
   "family_friendly" boolean,

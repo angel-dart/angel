@@ -142,7 +142,7 @@ Future<PostgresBuildContext> buildContext(
       );
     }
 
-    if (column != null) {
+    if (column != null && column.type == null) {
       column = new Column(
         nullable: column.nullable,
         length: column.length,

@@ -1,5 +1,5 @@
 CREATE TEMPORARY TABLE "fruits" (
-  "id" varchar,
+  "id" serial,
   "tree_id" int,
   "common_name" varchar,
   "created_at" timestamp,

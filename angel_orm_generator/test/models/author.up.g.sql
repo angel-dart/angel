@@ -1,5 +1,5 @@
 CREATE TEMPORARY TABLE "authors" (
-  "id" varchar,
+  "id" serial,
   "name" varchar UNIQUE,
   "created_at" timestamp,
   "updated_at" timestamp,
