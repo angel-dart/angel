@@ -83,6 +83,7 @@ class ColumnType {
   static const ColumnType DATE = const ColumnType('date');
   static const ColumnType TIME = const ColumnType('time');
   static const ColumnType TIME_STAMP = const ColumnType('timestamp');
+  static const ColumnType TIME_STAMP_WITH_TIME_ZONE = const ColumnType('timestamp with time zone');
 
   // Strings
   static const ColumnType CHAR = const ColumnType('char');

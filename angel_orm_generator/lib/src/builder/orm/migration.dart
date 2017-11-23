@@ -177,6 +177,7 @@ class MigrationGenerator extends GeneratorForAnnotation<ORM> {
           literal(relationship.foreignTable),
           literal(relationship.foreignKey),
         ]);
+
         if (relationship.cascadeOnDelete != false && relationship.isSingular)
           ref = ref.invoke('onDeleteCascade', []);
         return closure.addStatement(ref);
