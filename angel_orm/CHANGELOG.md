@@ -1,3 +1,6 @@
+# 1.0.0-alpha+10
+* Split into `angel_orm.dart` and `server.dart`. Prevents DDC failures.
+
 # 1.0.0-alpha+7
 * Added a `@belongsToMany` annotation class.
 * Resolved [#20](https://github.com/angel-dart/orm/issues/20). The
