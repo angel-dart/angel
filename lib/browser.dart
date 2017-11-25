@@ -35,7 +35,7 @@ class WebSockets extends BaseWebSocketClient {
     var wnd = window.open(url, 'angel_client_auth_popup');
 
     Timer t;
-    StreamSubscription<CustomEvent> sub;
+    StreamSubscription<Event> sub;
     t = new Timer.periodic(new Duration(milliseconds: 500), (timer) {
       if (!ctrl.isClosed) {
         if (wnd.closed) {
