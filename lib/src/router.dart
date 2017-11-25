@@ -1,6 +1,5 @@
 library angel_route.src.router;
 
-import 'extensible.dart';
 import 'routing_exception.dart';
 import '../string_util.dart';
 part 'symlink_route.dart';
@@ -266,11 +265,14 @@ class Router {
 
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
-  RoutingResult resolve(String absolute, String relative,
-      {String method: 'GET'}) {
-    final cleanAbsolute = stripStraySlashes(absolute);
-    final cleanRelative = stripStraySlashes(relative);
+  bool resolve(String absolute, String relative, List<RoutingResult> out,
+      {String method: 'GET', bool strip: true}) {
+    final cleanAbsolute =
+        strip == false ? absolute : stripStraySlashes(absolute);
+    final cleanRelative =
+        strip == false ? relative : stripStraySlashes(relative);
     final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
+    bool success = false;
     //print(
     //   'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
     //print('Path segments: ${segments.toList()}');
@@ -285,8 +287,7 @@ class Router {
 
           if (match != null) {
             final cleaned = s.join('/').replaceFirst(match[0], '');
-            var tail = cleanRelative
-                .replaceAll(route._head, '');
+            var tail = cleanRelative.replaceAll(route._head, '');
             tail = stripStraySlashes(tail);
 
             if (cleaned.isEmpty) {
@@ -294,9 +295,10 @@ class Router {
               //    'Matched relative "$cleanRelative" to head ${route._head
               //    .pattern} on $route. Tail: "$tail"');
               route.router.debug = route.router.debug || debug;
-              final nested =
-                  route.router.resolve(cleanAbsolute, tail, method: method);
-              return _dumpResult(
+              var nested = <RoutingResult>[];
+              route.router.resolve(cleanAbsolute, tail, nested,
+                  method: method, strip: false);
+              var result = _dumpResult(
                   cleanRelative,
                   new RoutingResult(
                       match: match,
@@ -305,6 +307,8 @@ class Router {
                       shallowRoute: route,
                       shallowRouter: this,
                       tail: tail));
+              out.add(result);
+              success = true;
             }
           }
         }
@@ -314,39 +318,35 @@ class Router {
         final match = route.match(cleanRelative);
 
         if (match != null) {
-          return _dumpResult(
+          var result = _dumpResult(
               cleanRelative,
               new RoutingResult(
                   match: match,
                   params: route.parseParameters(cleanRelative),
                   shallowRoute: route,
                   shallowRouter: this));
+          out.add(result);
+          success = true;
         }
       }
     }
 
     //print('Could not resolve path "/$cleanRelative".');
-    return null;
+    return success;
   }
 
   /// Returns the result of [resolve] with [path] passed as
   /// both `absolute` and `relative`.
-  RoutingResult resolveAbsolute(String path, {String method: 'GET'}) =>
-      resolve(path, path, method: method);
+  Iterable<RoutingResult> resolveAbsolute(String path,
+          {String method: 'GET', bool strip: true}) =>
+      resolveAll(path, path, method: method, strip: strip);
 
   /// Finds every possible [Route] that matches the given path,
   /// with the given method.
   Iterable<RoutingResult> resolveAll(String absolute, String relative,
-      {String method: 'GET'}) {
-    final router = clone();
+      {String method: 'GET', bool strip: true}) {
     final List<RoutingResult> results = [];
-    var result = router.resolve(absolute, relative, method: method);
-
-    while (result != null) {
-      results.add(result);
-      result.router._routes.remove(result.route);
-      result = router.resolve(absolute, relative, method: method);
-    }
+    resolve(absolute, relative, results, method: method, strip: strip);
 
     // _printDebug(
     //    'Results of $method "/${absolute.replaceAll(_straySlashes, '')}": ${results.map((r) => r.route).toList()}');

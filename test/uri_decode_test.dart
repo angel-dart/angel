@@ -8,7 +8,7 @@ void main() {
     var encoded =
         '/a/' + Uri.encodeComponent('<<<') + '/b/' + Uri.encodeComponent('???');
     print(encoded);
-    var result = router.resolveAbsolute(encoded);
+    var result = router.resolveAbsolute(encoded).first;
     print(result.allParams);
     expect(result.allParams, {
       'a': '<<<',

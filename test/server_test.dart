@@ -83,8 +83,8 @@ main() {
       final res = req.response;
 
       // Easy middleware pipeline
-      final results = router.resolveAll(req.uri.toString(), req.uri.toString(),
-          method: req.method);
+      final results =
+          router.resolveAbsolute(req.uri.toString(), method: req.method);
       final pipeline = new MiddlewarePipeline(results);
 
       if (pipeline.handlers.isEmpty) {

@@ -108,7 +108,7 @@ class _HashRouter extends _BrowserRouterImpl {
 
   void handleHash([_]) {
     final path = window.location.hash.replaceAll(_hash, '');
-    final resolved = resolveAbsolute(path);
+    final resolved = resolveAbsolute(path).first;
 
     if (resolved == null) {
       _onResolve.add(null);
@@ -120,7 +120,7 @@ class _HashRouter extends _BrowserRouterImpl {
   }
 
   void handlePath(String path) {
-    final resolved = resolveAbsolute(path);
+    final resolved = resolveAbsolute(path).first;
 
     if (resolved == null) {
       _onResolve.add(null);
@@ -153,7 +153,7 @@ class _PushStateRouter extends _BrowserRouterImpl {
 
   @override
   void _goTo(String uri) {
-    final resolved = resolveAbsolute(uri);
+    final resolved = resolveAbsolute(uri).first;
     var relativeUri = uri;
 
     if (_basePath?.isNotEmpty == true) {
@@ -177,13 +177,12 @@ class _PushStateRouter extends _BrowserRouterImpl {
   void handleState(state) {
     if (state is Map && state.containsKey('path')) {
       var path = state['path'];
-      final resolved = resolveAbsolute(path);
+      final resolved = resolveAbsolute(path).first;
 
       if (resolved != null && resolved.route != _current) {
         //properties.addAll(state['properties'] ?? {});
         _onResolve.add(resolved);
-        _onRoute.add(_current = resolved.route
-          ..state.properties.addAll(state['params'] ?? {}));
+        _onRoute.add(_current = resolved.route);
       } else {
         _onResolve.add(null);
         _onRoute.add(_current = null);

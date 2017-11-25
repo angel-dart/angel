@@ -76,9 +76,6 @@ class Route {
   /// The virtual path on which this route is mounted.
   String get path => _path;
 
-  /// Arbitrary state attached to this route.
-  final Extensible state = new Extensible();
-
   /// The [Route] at the top of the hierarchy this route is found in.
   Route get absoluteParent {
     Route result = this;
@@ -314,8 +311,7 @@ class Route {
       .._path = _path
       .._pathified = _pathified
       .._resolver = _resolver
-      .._stub = _stub
-      ..state.properties.addAll(state.properties);
+      .._stub = _stub;
   }
 
   /// Generates a URI to this route with the given parameters.

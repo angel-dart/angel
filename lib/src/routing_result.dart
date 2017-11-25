@@ -6,7 +6,7 @@ class RoutingResult {
   final Match match;
 
   /// A nested instance, if a sub-path was matched.
-  final RoutingResult nested;
+  final Iterable<RoutingResult> nested;
 
   /// All route params matching this route on the current sub-path.
   final Map<String, dynamic> params = {};
@@ -28,7 +28,7 @@ class RoutingResult {
   RoutingResult get deepest {
     var search = this;
 
-    while (search.nested != null) search = search.nested;
+    while (search?.nested?.isNotEmpty == true) search = search.nested.first;
 
     return search;
   }
@@ -47,12 +47,17 @@ class RoutingResult {
   /// All handlers on this sub-path and its children.
   List get allHandlers {
     final handlers = [];
-    var search = this;
 
-    while (search != null) {
-      handlers.addAll(search.handlers);
-      search = search.nested;
+    void crawl(RoutingResult result) {
+      handlers.addAll(result.handlers);
+
+      if (result.nested?.isNotEmpty == true) {
+        for (var r in result.nested)
+          crawl(r);
+      }
     }
+
+    crawl(this);
 
     return handlers;
   }
@@ -60,13 +65,17 @@ class RoutingResult {
   /// All parameters on this sub-path and its children.
   Map<String, dynamic> get allParams {
     final Map<String, dynamic> params = {};
-    var search = this;
 
-    while (search != null) {
-      params.addAll(search.params);
-      search = search.nested;
+    void crawl(RoutingResult result) {
+      params.addAll(result.params);
+
+      if (result.nested?.isNotEmpty == true) {
+        for (var r in result.nested)
+          crawl(r);
+      }
     }
 
+    crawl(this);
     return params;
   }
 
