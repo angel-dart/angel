@@ -16,10 +16,12 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
 class Router {
-  final List<_ChainedRouter> _chained = [];
+  final Map<String, Iterable<RoutingResult>> _cache = {};
+  //final List<_ChainedRouter> _chained = [];
   final List _middleware = [];
   final Map<Pattern, Router> _mounted = {};
   final List<Route> _routes = [];
+  bool _useCache = false;
 
   /// Set to `true` to print verbose debug output when interacting with this route.
   bool debug = false;
@@ -53,11 +55,19 @@ class Router {
   /// Not recommended.
   Router({this.debug: false});
 
+  /// Enables the use of a cache to eliminate the overhead of consecutive resolutions of the same path.
+  void enableCache() {
+    _useCache = true;
+  }
+
   /// Adds a route that responds to the given path
   /// for requests with the given method (case-insensitive).
   /// Provide '*' as the method to respond to all methods.
   Route addRoute(String method, Pattern path, Object handler,
       {List middleware: const []}) {
+    if (_useCache == true)
+      throw new StateError('Cannot add routes after caching is enabled.');
+
     // Check if any mounted routers can match this
     final handlers = [handler];
 
@@ -258,26 +268,22 @@ class Router {
     requestMiddleware[name] = middleware;
   }
 
-  RoutingResult _dumpResult(String path, RoutingResult result) {
-    // _printDebug('Resolved "/$path" to ${result.route}');
-    return result;
-  }
-
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
   bool resolve(String absolute, String relative, List<RoutingResult> out,
       {String method: 'GET', bool strip: true}) {
-    final cleanAbsolute =
-        strip == false ? absolute : stripStraySlashes(absolute);
+    //final cleanAbsolute =
+    //   strip == false ? absolute : stripStraySlashes(absolute);
     final cleanRelative =
         strip == false ? relative : stripStraySlashes(relative);
-    final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
+    //final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
     bool success = false;
     //print(
     //   'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
     //print('Path segments: ${segments.toList()}');
 
     for (Route route in routes) {
+      /* // No longer necessary
       if (route is SymlinkRoute && route._head != null && segments.isNotEmpty) {
         final s = [];
 
@@ -313,18 +319,17 @@ class Router {
           }
         }
       }
+      */
 
       if (route.method == '*' || route.method == method) {
         final match = route.match(cleanRelative);
 
         if (match != null) {
-          var result = _dumpResult(
-              cleanRelative,
-              new RoutingResult(
-                  match: match,
-                  params: route.parseParameters(cleanRelative),
-                  shallowRoute: route,
-                  shallowRouter: this));
+          var result = new RoutingResult(
+              match: match,
+              params: route.parseParameters(cleanRelative),
+              shallowRoute: route,
+              shallowRouter: this);
           out.add(result);
           success = true;
         }
@@ -344,6 +349,16 @@ class Router {
   /// Finds every possible [Route] that matches the given path,
   /// with the given method.
   Iterable<RoutingResult> resolveAll(String absolute, String relative,
+      {String method: 'GET', bool strip: true}) {
+    if (_useCache == true) {
+      return _cache.putIfAbsent(absolute,
+          () => _resolveAll(absolute, relative, method: method, strip: strip));
+    }
+
+    return _resolveAll(absolute, relative, method: method, strip: strip);
+  }
+
+  Iterable<RoutingResult> _resolveAll(String absolute, String relative,
       {String method: 'GET', bool strip: true}) {
     final List<RoutingResult> results = [];
     resolve(absolute, relative, results, method: method, strip: strip);
@@ -474,4 +489,33 @@ class _ChainedRouter extends Router {
     _routes.add(route);
     return piped;
   }
+}
+
+/// Optimizes a router by condensing all its routes into one level.
+Router flatten(Router router) {
+  var flattened = new Router(debug: router.debug == true)
+    ..requestMiddleware.addAll(router.requestMiddleware)
+    ..enableCache();
+
+  for (var route in router.routes) {
+    if (route is SymlinkRoute) {
+      var base = route.path.replaceAll(_straySlashes, '');
+      var child = flatten(route.router);
+      flattened.requestMiddleware.addAll(child.requestMiddleware);
+
+      for (var route in child.routes) {
+        var path = route.path.replaceAll(_straySlashes, '');
+        var joined = '$base/$path'.replaceAll(_straySlashes, '');
+        flattened.addRoute(route.method, joined.replaceAll(_straySlashes, ''),
+            route.handlers.last,
+            middleware:
+                route.handlers.take(route.handlers.length - 1).toList());
+      }
+    } else {
+      flattened.addRoute(route.method, route.path, route.handlers.last,
+          middleware: route.handlers.take(route.handlers.length - 1).toList());
+    }
+  }
+
+  return flattened;
 }

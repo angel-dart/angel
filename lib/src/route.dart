@@ -39,6 +39,7 @@ String _pathify(String path) {
 
 /// Represents a virtual location within an application.
 class Route {
+  final Map<String, Match> _cache = {};
   final List<Route> _children = [];
   final List _handlers = [];
   RegExp _head;
@@ -329,7 +330,7 @@ class Route {
 
   /// Attempts to match a path against this route.
   Match match(String path) =>
-      matcher.firstMatch(path.replaceAll(_straySlashes, ''));
+      _cache.putIfAbsent(path, () => matcher.firstMatch(path.replaceAll(_straySlashes, '')));
 
   /// Extracts route parameters from a given path.
   Map<String, String> parseParameters(String requestPath) {

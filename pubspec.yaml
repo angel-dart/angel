@@ -1,6 +1,6 @@
 name: angel_route
 description: A powerful, isomorphic routing library for Dart.
-version: 2.0.0
+version: 2.0.2
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_route
 dev_dependencies:
