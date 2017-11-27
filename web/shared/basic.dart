@@ -25,8 +25,8 @@ basic(BrowserRouter router) {
   router.get('a', 'a handler');
 
   router.group('b', (router) {
-    router.get('a', 'b/a handler').as('b/a');
-    router.get('b', 'b/b handler', middleware: ['b/b middleware']).as('b/b');
+    router.get('a', 'b/a handler').name = 'b/a';
+    router.get('b', 'b/b handler', middleware: ['b/b middleware']).name = 'b/b';
   }, middleware: ['b middleware']);
 
   router.get('c', 'c handler');

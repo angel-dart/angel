@@ -1,7 +1,11 @@
 library angel_route.src.router;
 
+import 'package:combinator/combinator.dart';
+import 'package:meta/meta.dart';
+import 'package:string_scanner/string_scanner.dart';
 import 'routing_exception.dart';
 import '../string_util.dart';
+part 'grammar.dart';
 part 'symlink_route.dart';
 part 'route.dart';
 part 'routing_result.dart';
@@ -63,7 +67,7 @@ class Router {
   /// Adds a route that responds to the given path
   /// for requests with the given method (case-insensitive).
   /// Provide '*' as the method to respond to all methods.
-  Route addRoute(String method, Pattern path, Object handler,
+  Route addRoute(String method, String path, Object handler,
       {List middleware: const []}) {
     if (_useCache == true)
       throw new StateError('Cannot add routes after caching is enabled.');
@@ -73,10 +77,9 @@ class Router {
 
     if (middleware != null) handlers.insertAll(0, middleware);
 
-    final route =
-        new Route(path, debug: debug, method: method, handlers: handlers);
+    final route = new Route(path, method: method, handlers: handlers);
     _routes.add(route);
-    return route.._path = _pathify(path);
+    return route;
   }
 
   /// Prepends the given middleware to any routes created
@@ -87,7 +90,7 @@ class Router {
   /// The resulting router can be chained, too.
   _ChainedRouter chain(middleware) {
     var piped = new _ChainedRouter(this, middleware);
-    var route = new SymlinkRoute('/', '/', piped);
+    var route = new SymlinkRoute('/', piped);
     _routes.add(route);
     return piped;
   }
@@ -103,8 +106,7 @@ class Router {
       } else if (route is SymlinkRoute) {
         final newRouter = route.router.clone();
         newMounted[route.path] = newRouter;
-        final symlink = new SymlinkRoute(route.path, route.pattern, newRouter)
-          .._head = route._head;
+        final symlink = new SymlinkRoute(route.path, newRouter);
         router._routes.add(symlink);
       }
     }
@@ -117,8 +119,7 @@ class Router {
   void dumpTree(
       {callback(String tree),
       String header: 'Dumping route tree:',
-      String tab: '  ',
-      bool showMatchers: false}) {
+      String tab: '  '}) {
     final buf = new StringBuffer();
     int tabs = 0;
 
@@ -138,14 +139,14 @@ class Router {
 
       for (Route route in router.routes) {
         indent();
-        buf.write('- ${route.path.isNotEmpty ? route.path : '/'}');
+        buf.write('- ');
+        if (route is! SymlinkRoute) buf.write('${route.method} ');
+        buf.write('${route.path.isNotEmpty ? route.path : '/'}');
 
         if (route is SymlinkRoute) {
           buf.writeln();
           dumpRouter(route.router);
         } else {
-          if (showMatchers) buf.write(' (${route.matcher.pattern})');
-
           buf.writeln(' => ${route.handlers.length} handler(s)');
         }
       }
@@ -163,13 +164,13 @@ class Router {
   ///
   /// Returns the created route.
   /// You can also register middleware within the router.
-  SymlinkRoute group(Pattern path, void callback(Router router),
+  SymlinkRoute group(String path, void callback(Router router),
       {Iterable middleware: const [],
       String name: null,
       String namespace: null}) {
     final router = new Router().._middleware.addAll(middleware);
     callback(router..debug = debug);
-    return mount(path, router, namespace: namespace).._name = name;
+    return mount(path, router, namespace: namespace)..name = name;
   }
 
   /// Generates a URI string based on the given input.
@@ -224,17 +225,24 @@ class Router {
         }
 
         // Search by path
-        for (Route route in search.routes) {
-          if (route.match(param) != null) {
-            segments.add(route.path.replaceAll(_straySlashes, ''));
-            lastRoute = route;
+        if (!resolved) {
+          var scanner = new SpanScanner(param.replaceAll(_straySlashes, ''));
+          for (Route route in search.routes) {
+            int pos = scanner.position;
+            if (route.parser
+                .parse(scanner)
+                .successful && scanner.isDone) {
+              segments.add(route.path.replaceAll(_straySlashes, ''));
+              lastRoute = route;
 
-            if (route is SymlinkRoute) {
-              search = route.router;
-            }
+              if (route is SymlinkRoute) {
+                search = route.router;
+              }
 
-            resolved = true;
-            break;
+              resolved = true;
+              break;
+            } else
+              scanner.position = pos;
           }
         }
 
@@ -272,72 +280,44 @@ class Router {
   /// with the given method.
   bool resolve(String absolute, String relative, List<RoutingResult> out,
       {String method: 'GET', bool strip: true}) {
-    //final cleanAbsolute =
-    //   strip == false ? absolute : stripStraySlashes(absolute);
     final cleanRelative =
         strip == false ? relative : stripStraySlashes(relative);
-    //final segments = cleanRelative.split('/').where((str) => str.isNotEmpty);
-    bool success = false;
-    //print(
-    //   'Now resolving $method "/$cleanRelative", absolute: $cleanAbsolute');
-    //print('Path segments: ${segments.toList()}');
+    var scanner = new SpanScanner(cleanRelative);
 
-    for (Route route in routes) {
-      /* // No longer necessary
-      if (route is SymlinkRoute && route._head != null && segments.isNotEmpty) {
-        final s = [];
+    bool crawl(Router r) {
+      bool success = false;
 
-        for (String seg in segments) {
-          s.add(seg);
-          final match = route._head.firstMatch(s.join('/'));
+      for (Route route in r.routes) {
+        int pos = scanner.position;
 
-          if (match != null) {
-            final cleaned = s.join('/').replaceFirst(match[0], '');
-            var tail = cleanRelative.replaceAll(route._head, '');
-            tail = stripStraySlashes(tail);
-
-            if (cleaned.isEmpty) {
-              //print(
-              //    'Matched relative "$cleanRelative" to head ${route._head
-              //    .pattern} on $route. Tail: "$tail"');
-              route.router.debug = route.router.debug || debug;
-              var nested = <RoutingResult>[];
-              route.router.resolve(cleanAbsolute, tail, nested,
-                  method: method, strip: false);
-              var result = _dumpResult(
-                  cleanRelative,
-                  new RoutingResult(
-                      match: match,
-                      nested: nested,
-                      params: route.parseParameters(match[0]),
-                      shallowRoute: route,
-                      shallowRouter: this,
-                      tail: tail));
-              out.add(result);
-              success = true;
-            }
+        if (route is SymlinkRoute) {
+          if (route.parser.parse(scanner).successful) {
+            var s = crawl(route.router);
+            if (s) success = true;
           }
+
+          scanner.position = pos;
+        } else if (route.method == '*' || route.method == method) {
+          var parseResult = route.parser.parse(scanner);
+
+          if (parseResult.successful && scanner.isDone) {
+            var result = new RoutingResult(
+                parseResult: parseResult,
+                params: parseResult.value,
+                shallowRoute: route,
+                shallowRouter: this);
+            out.add(result);
+            success = true;
+          }
+
+          scanner.position = pos;
         }
       }
-      */
 
-      if (route.method == '*' || route.method == method) {
-        final match = route.match(cleanRelative);
-
-        if (match != null) {
-          var result = new RoutingResult(
-              match: match,
-              params: route.parseParameters(cleanRelative),
-              shallowRoute: route,
-              shallowRouter: this);
-          out.add(result);
-          success = true;
-        }
-      }
+      return success;
     }
 
-    //print('Could not resolve path "/$cleanRelative".');
-    return success;
+    return crawl(this);
   }
 
   /// Returns the result of [resolve] with [path] passed as
@@ -378,7 +358,7 @@ class Router {
   /// For example, if the [Router] has a middleware 'y', and the `namespace`
   /// is 'x', then that middleware will be available as 'x.y' in the main router.
   /// These namespaces can be nested.
-  SymlinkRoute mount(Pattern path, Router router,
+  SymlinkRoute mount(String path, Router router,
       {bool hooked: true, String namespace: null}) {
     // Let's copy middleware, heeding the optional middleware namespace.
     String middlewarePrefix = namespace != null ? "$namespace." : "";
@@ -389,52 +369,51 @@ class Router {
           copiedMiddleware[middlewareName];
     }
 
-    final route =
-        new SymlinkRoute(path, path, router..debug = debug || router.debug);
+    final route = new SymlinkRoute(path, router);
     _mounted[route.path] = router;
     _routes.add(route);
-    route._head = new RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));
+    //route._head = new RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));
 
-    return route.._name = namespace;
+    return route..name = namespace;
   }
 
   /// Adds a route that responds to any request matching the given path.
-  Route all(Pattern path, Object handler, {List middleware}) {
+  Route all(String path, Object handler, {List middleware}) {
     return addRoute('*', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a DELETE request.
-  Route delete(Pattern path, Object handler, {List middleware}) {
+  Route delete(String path, Object handler, {List middleware}) {
     return addRoute('DELETE', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a GET request.
-  Route get(Pattern path, Object handler, {List middleware}) {
+  Route get(String path, Object handler, {List middleware}) {
     return addRoute('GET', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a HEAD request.
-  Route head(Pattern path, Object handler, {List middleware}) {
+  Route head(String path, Object handler, {List middleware}) {
     return addRoute('HEAD', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a OPTIONS request.
-  Route options(Pattern path, Object handler, {List middleware}) {
+  Route options(String path, Object handler, {List middleware}) {
     return addRoute('OPTIONS', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a POST request.
-  Route post(Pattern path, Object handler, {List middleware}) {
+  Route post(String path, Object handler, {List middleware}) {
     return addRoute('POST', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a PATCH request.
-  Route patch(Pattern path, Object handler, {List middleware}) {
+  Route patch(String path, Object handler, {List middleware}) {
     return addRoute('PATCH', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a PUT request.
-  Route put(Pattern path, Object handler, {List middleware}) {
+  Route put(String path, Object handler, {List middleware}) {
     return addRoute('PUT', path, handler, middleware: middleware);
   }
 }
@@ -451,7 +430,7 @@ class _ChainedRouter extends Router {
   }
 
   @override
-  Route addRoute(String method, Pattern path, handler,
+  Route addRoute(String method, String path, handler,
       {List middleware: const []}) {
     var route = super.addRoute(method, path, handler,
         middleware: []..addAll(_handlers)..addAll(middleware ?? []));
@@ -459,18 +438,18 @@ class _ChainedRouter extends Router {
     return route;
   }
 
-  SymlinkRoute group(Pattern path, void callback(Router router),
+  SymlinkRoute group(String path, void callback(Router router),
       {Iterable middleware: const [],
       String name: null,
       String namespace: null}) {
     final router =
         new _ChainedRouter(_root, []..addAll(_handlers)..addAll(middleware));
     callback(router..debug = debug);
-    return mount(path, router, namespace: namespace).._name = name;
+    return mount(path, router, namespace: namespace)..name = name;
   }
 
   @override
-  SymlinkRoute mount(Pattern path, Router router,
+  SymlinkRoute mount(String path, Router router,
       {bool hooked: true, String namespace: null}) {
     final route =
         super.mount(path, router, hooked: hooked, namespace: namespace);
@@ -485,7 +464,7 @@ class _ChainedRouter extends Router {
     piped._handlers.addAll([]
       ..addAll(_handlers)
       ..addAll(middleware is Iterable ? middleware : [middleware]));
-    var route = new SymlinkRoute('/', '/', piped);
+    var route = new SymlinkRoute('/', piped);
     _routes.add(route);
     return piped;
   }

@@ -4,9 +4,9 @@ import 'package:test/test.dart';
 main() {
   final router = new Router();
 
-  router.get('/', 'GET').as('root');
+  router.get('/', 'GET').name = 'root';
   router.get('/user/:id', 'GET');
-  router.get('/first/:first/last/:last', 'GET').as('full_name');
+  router.get('/first/:first/last/:last', 'GET').name = 'full_name';
 
   navigate(params) {
     final uri = router.navigate(params);
@@ -14,7 +14,7 @@ main() {
     return uri;
   }
 
-  router.dumpTree(showMatchers: true);
+  router.dumpTree();
 
   group('top-level', () {
     test('named', () {

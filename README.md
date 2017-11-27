@@ -68,25 +68,6 @@ needs a lot of flexibility with which to handle requests.
 
 ```dart
 main() {
-    final foo = new Route('/');
-    final bar = foo.child('bar');
-    final baz = foo.child('baz');
-    
-    final a = bar.child('a');
-    
-    /*
-     * Relative paths:
-     * a.resolve('../baz') = baz;
-     * bar.resolve('a') = a;
-     * 
-     * Absolute paths:
-     * a.resolve('/bar/a') = a;
-     */
-}
-```
-
-```dart
-main() {
   final router = new Router();
   
   router

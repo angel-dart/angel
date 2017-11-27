@@ -2,8 +2,8 @@ part of angel_route.src.router;
 
 /// Represents a complex result of navigating to a path.
 class RoutingResult {
-  /// The Regex match that matched the given sub-path.
-  final Match match;
+  /// The parse result that matched the given sub-path.
+  final ParseResult<Map<String, String>> parseResult;
 
   /// A nested instance, if a sub-path was matched.
   final Iterable<RoutingResult> nested;
@@ -80,7 +80,7 @@ class RoutingResult {
   }
 
   RoutingResult(
-      {this.match,
+      {this.parseResult,
       Map<String, dynamic> params: const {},
       this.nested,
       this.shallowRoute,
