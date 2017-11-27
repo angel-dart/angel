@@ -229,9 +229,7 @@ class Router {
           var scanner = new SpanScanner(param.replaceAll(_straySlashes, ''));
           for (Route route in search.routes) {
             int pos = scanner.position;
-            if (route.parser
-                .parse(scanner)
-                .successful && scanner.isDone) {
+            if (route.parser.parse(scanner).successful && scanner.isDone) {
               segments.add(route.path.replaceAll(_straySlashes, ''));
               lastRoute = route;
 
@@ -473,8 +471,7 @@ class _ChainedRouter extends Router {
 /// Optimizes a router by condensing all its routes into one level.
 Router flatten(Router router) {
   var flattened = new Router(debug: router.debug == true)
-    ..requestMiddleware.addAll(router.requestMiddleware)
-    ..enableCache();
+    ..requestMiddleware.addAll(router.requestMiddleware);
 
   for (var route in router.routes) {
     if (route is SymlinkRoute) {
@@ -496,5 +493,5 @@ Router flatten(Router router) {
     }
   }
 
-  return flattened;
+  return flattened..enableCache();
 }
