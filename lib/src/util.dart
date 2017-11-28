@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:mirrors';
 
+final RegExp straySlashes = new RegExp(r'(^/+)|(/+$)');
+
 matchingAnnotation(List<InstanceMirror> metadata, Type T) {
   for (InstanceMirror metaDatum in metadata) {
     if (metaDatum.hasReflectee) {

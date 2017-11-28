@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
+import 'package:pool/pool.dart';
 import 'server.dart' show Angel;
 import 'controller.dart';
 import 'request_context.dart';
@@ -337,6 +338,31 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
       buffer.add(data);
   }
 
+  /// Configure the response to write directly to the output stream, instead of buffering.
+  bool useStream() {
+    if (!_useStream) {
+      // If this is the first stream added to this response,
+      // then add headers, status code, etc.
+      io
+        ..statusCode = statusCode
+        ..cookies.addAll(cookies);
+      headers.forEach(io.headers.set);
+      willCloseItself = _useStream = _isClosed = true;
+
+      if (_correspondingRequest?.injections?.containsKey(Stopwatch) == true) {
+        (_correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
+      }
+
+      if (_correspondingRequest?.injections?.containsKey(PoolResource) == true) {
+        (_correspondingRequest.injections[PoolResource] as PoolResource).release();
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
   /// Adds a stream directly the underlying dart:[io] response.
   ///
   /// This will also set [willCloseItself] to `true`, thus canceling out response finalizers.
@@ -346,23 +372,9 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   @override
   Future addStream(Stream<List<int>> stream) {
     if (_isClosed && !_useStream) throw _closed();
-    bool firstStream = _useStream == false;
-    willCloseItself = _useStream = _isClosed = true;
-
-    if (_correspondingRequest?.injections?.containsKey(Stopwatch) == true) {
-      (_correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
-    }
+    var firstStream = useStream();
 
     Stream<List<int>> output = stream;
-
-    if (firstStream) {
-      // If this is the first stream added to this response,
-      // then add headers, status code, etc.
-      io
-        ..statusCode = statusCode
-        ..cookies.addAll(cookies);
-      headers.forEach(io.headers.set);
-    }
 
     if (encoders.isNotEmpty && correspondingRequest != null) {
       var allowedEncodings =

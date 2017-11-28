@@ -49,8 +49,8 @@ main() {
 
     ted = nested.post('/ted/:route', (RequestContext req, res) {
       print('Params: ${req.params}');
-      print(
-          'Path: ${ted.path}, matcher: ${ted.matcher.pattern}, uri: ${req.path}');
+      print('Path: ${ted.path}, uri: ${req.path}');
+      print('matcher: ${ted.parser}');
       return req.params;
     });
 
@@ -65,7 +65,7 @@ main() {
     app
         .get('/greet/:name',
             (RequestContext req, res) async => "Hello ${req.params['name']}")
-        .as('Named routes');
+        .name = 'Named routes';
     app.get('/named', (req, ResponseContext res) async {
       res.redirectTo('Named routes', {'name': 'tests'});
     });
@@ -86,7 +86,9 @@ main() {
       };
     }
 
-    app.chain(write('a')).chain([write('b'), write('c')]).get('/chained', () => false);
+    app
+        .chain(write('a'))
+        .chain([write('b'), write('c')]).get('/chained', () => false);
 
     app.use('MJ');
 
@@ -165,7 +167,7 @@ main() {
   });
 
   test('Can name routes', () {
-    Route foo = new Route('/framework/:id', name: 'frm');
+    Route foo = app.get('/framework/:id', [])..name = 'frm';
     print('Foo: $foo');
     String uri = foo.makeUri({'id': 'angel'});
     print(uri);

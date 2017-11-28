@@ -64,6 +64,7 @@ class Routable extends Router {
   /// Assigns a middleware to a name for convenience.
   @override
   registerMiddleware(String name, @checked RequestHandler middleware) =>
+      // ignore: deprecated_member_use
       super.registerMiddleware(name, middleware);
 
   /// Retrieves the service assigned to the given path.

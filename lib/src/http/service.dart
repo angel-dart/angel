@@ -35,6 +35,11 @@ class Providers {
 
   @override
   bool operator ==(other) => other is Providers && other.via == via;
+
+  @override
+  String toString() {
+    return 'via:$via';
+  }
 }
 
 /// A front-facing interface that can present data to and operate on data on behalf of the user.

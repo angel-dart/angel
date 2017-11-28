@@ -5,20 +5,39 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/metrics.dart';
 
-main() {
+main() async {
+  var isolates = <Isolate>[];
+
   for (int i = 0; i < Platform.numberOfProcessors; i++) {
-    Isolate.spawn(start, i + 1);
+    isolates.add(await Isolate.spawn(start, i + 1));
   }
 
-  start(0);
+  await Future.wait(isolates.map((i) {
+    var rcv = new ReceivePort();
+    i.addOnExitListener(rcv.sendPort);
+    return rcv.first;
+  }));
+  //start(0);
 }
 
 void start(int id) {
-  var app = new AngelMetrics.custom(startShared)
-    ..lazyParseBodies = true
-    ..get('/', (req, res) => res.write('Hello, world!'));
+  var app = new Angel.custom(startShared)..lazyParseBodies = true;
+
+  if (true) {
+    app.get('/', (req, ResponseContext res) {
+      res.willCloseItself = true;
+      res.io
+        ..write('Hello, world!')
+        ..close();
+      return false;
+    });
+  } else {
+    app.get('/', (req, ResponseContext res) {
+      res.useStream();
+      res.write('Hello, world!');
+    });
+  }
 
   var oldHandler = app.errorHandler;
   app.errorHandler = (e, req, res) {

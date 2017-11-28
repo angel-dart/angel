@@ -1,16 +1,17 @@
 library angel_framework.http.server;
 
 import 'dart:async';
+import 'dart:collection' show HashMap;
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_http_exception/angel_http_exception.dart';
-import 'package:angel_route/angel_route.dart' hide Extensible;
-import 'package:charcode/charcode.dart';
+import 'package:angel_route/angel_route.dart';
+import 'package:combinator/combinator.dart';
 export 'package:container/container.dart';
-import 'package:flatten/flatten.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:pool/pool.dart';
 import 'package:tuple/tuple.dart';
 import 'angel_base.dart';
 import 'controller.dart';
@@ -30,11 +31,13 @@ typedef Future AngelConfigurer(Angel app);
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
   final List<Angel> _children = [];
-  final Map<String, Tuple3<List, Map, Match>> handlerCache = {};
+  final Map<String, Tuple3<List, Map, ParseResult<Map<String, String>>>>
+      handlerCache = new HashMap();
 
   Router _flattened;
-  bool _isProduction = false;
+  bool _isProduction;
   Angel _parent;
+  Pool _pool;
   StreamSubscription<HttpRequest> _sub;
   ServerGenerator _serverGenerator = HttpServer.bind;
 
@@ -75,7 +78,8 @@ class Angel extends AngelBase {
   /// This value is memoized the first time you call it, so do not change environment
   /// configuration at runtime!
   bool get isProduction {
-    return _isProduction ??= (Platform.environment['ANGEL_ENV'] == 'production');
+    return _isProduction ??=
+        (Platform.environment['ANGEL_ENV'] == 'production');
   }
 
   /// The function used to bind this instance to an HTTP server.
@@ -237,7 +241,7 @@ class Angel extends AngelBase {
       String tab: '  ',
       bool showMatchers: false}) {
     if (isProduction) {
-      if (_flattened == null) _flattened = flatten(this);
+      _flattened ??= flatten(this);
 
       _flattened.dumpTree(
           callback: callback,
@@ -246,8 +250,7 @@ class Angel extends AngelBase {
               : (isProduction
                   ? 'Dumping flattened route tree:'
                   : 'Dumping route tree:'),
-          tab: tab ?? '  ',
-          showMatchers: showMatchers == true);
+          tab: tab ?? '  ');
     } else {
       super.dumpTree(
           callback: callback,
@@ -256,8 +259,7 @@ class Angel extends AngelBase {
               : (isProduction
                   ? 'Dumping flattened route tree:'
                   : 'Dumping route tree:'),
-          tab: tab ?? '  ',
-          showMatchers: showMatchers == true);
+          tab: tab ?? '  ');
     }
   }
 
@@ -308,7 +310,6 @@ class Angel extends AngelBase {
   /// Runs some [handler]. Returns `true` if request execution should continue.
   Future<bool> executeHandler(
       handler, RequestContext req, ResponseContext res) async {
-    if (handler == null) return false;
     var result = await getHandlerResult(handler, req, res);
 
     if (result == null)
@@ -325,8 +326,11 @@ class Angel extends AngelBase {
   }
 
   Future<RequestContext> createRequestContext(HttpRequest request) {
-    return RequestContext.from(request, this).then((req) {
-      _injections.forEach(req.inject);
+    var path = request.uri.path.replaceAll(_straySlashes, '');
+    if (path.length == 0) path = '/';
+    return RequestContext.from(request, this, path).then((req) async {
+      if (_pool != null) req.inject(PoolResource, await _pool.request());
+      if (_injections.isNotEmpty) _injections.forEach(req.inject);
       return req;
     });
   }
@@ -378,53 +382,32 @@ class Angel extends AngelBase {
   Future handleRequest(HttpRequest request) async {
     var req = await createRequestContext(request);
     var res = await createResponseContext(request.response, req);
-    var zoneSpec = await createZoneForRequest(request, req, res);
-    var zone = Zone.current.fork(specification: zoneSpec);
 
-    return zone.runGuarded(() async {
-      String requestedUrl;
+    try {
+      var path = req.path;
+      if (path == '/') path = '';
 
-      // Faster way to get path
-      List<int> _path = request.uri.path.codeUnits;
-
-      // Remove trailing slashes
-      int lastSlash = -1;
-
-      for (int i = _path.length - 1; i >= 0; i--) {
-        if (_path[i] == $slash)
-          lastSlash = i;
-        else
-          break;
-      }
-
-      if (lastSlash > -1)
-        requestedUrl = new String.fromCharCodes(_path.take(lastSlash));
-      else
-        requestedUrl = new String.fromCharCodes(_path);
-
-      if (requestedUrl.isEmpty) requestedUrl = '/';
-
-      Tuple3<List, Map, Match> resolveTuple() {
-        Router r = isProduction ? (_flattened ??= flatten(this)) : this;
+      Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
+        Router r = _flattened ?? this;
         var resolved =
-            r.resolveAll(requestedUrl, requestedUrl, method: req.method);
+            r.resolveAbsolute(path, method: req.method, strip: false);
 
         return new Tuple3(
           new MiddlewarePipeline(resolved).handlers,
           resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
-          resolved.isEmpty ? null : resolved.first.route.match(requestedUrl),
+          resolved.isEmpty ? null : resolved.first.parseResult,
         );
       }
 
+      var cacheKey = req.method + path;
       var tuple = isProduction
-          ? handlerCache.putIfAbsent(
-              '${req.method}:$requestedUrl', resolveTuple)
+          ? handlerCache.putIfAbsent(cacheKey, resolveTuple)
           : resolveTuple();
 
-      req.inject(Zone, zone);
-      req.inject(ZoneSpecification, zoneSpec);
+      //req.inject(Zone, zone);
+      //req.inject(ZoneSpecification, zoneSpec);
       req.params.addAll(tuple.item2);
-      req.inject(Match, tuple.item3);
+      req.inject(ParseResult, tuple.item3);
 
       if (logger != null) req.inject(Stopwatch, new Stopwatch()..start());
 
@@ -453,7 +436,15 @@ class Angel extends AngelBase {
           ignoreFinalizers: true,
         );
       }
-    }).catchError((error, stackTrace) {
+    } on FormatException catch (error, stackTrace) {
+      var e = new AngelHttpException.badRequest(message: error.message);
+
+      if (logger != null) {
+        logger.severe(e.message ?? e.toString(), error, stackTrace);
+      }
+
+      return await handleAngelHttpException(e, stackTrace, req, res, request);
+    } catch (error, stackTrace) {
       var e = new AngelHttpException(error,
           stackTrace: stackTrace, message: error?.toString());
 
@@ -461,13 +452,10 @@ class Angel extends AngelBase {
         logger.severe(e.message ?? e.toString(), error, stackTrace);
       }
 
-      return handleAngelHttpException(e, stackTrace, req, res, request);
-    }).whenComplete(() {
-      scheduleMicrotask(() {
-        req.close();
-        res.dispose();
-      });
-    });
+      return await handleAngelHttpException(e, stackTrace, req, res, request);
+    } finally {
+      res.dispose();
+    }
   }
 
   /// Runs several optimizations, *if* [isProduction] is `true`.
@@ -495,7 +483,7 @@ class Angel extends AngelBase {
         });
       }
 
-      if (_flattened == null) _flattened = flatten(this);
+      _flattened ??= flatten(this);
 
       _walk(_flattened);
 
@@ -528,34 +516,34 @@ class Angel extends AngelBase {
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
-    if (res.willCloseItself) {
-      return new Future.value();
-    } else {
-      Future finalizers = ignoreFinalizers == true
-          ? new Future.value()
-          : responseFinalizers.fold<Future>(
-              new Future.value(), (out, f) => out.then((_) => f(req, res)));
+    if (res.willCloseItself) return new Future.value();
 
-      if (res.isOpen) res.end();
+    Future finalizers = ignoreFinalizers == true
+        ? new Future.value()
+        : responseFinalizers.fold<Future>(
+            new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
-      for (var key in res.headers.keys) {
-        request.response.headers.add(key, res.headers[key]);
-      }
+    if (res.isOpen) res.end();
 
-      request.response.contentLength = res.buffer.length;
-      request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
+    for (var key in res.headers.keys) {
+      request.response.headers.add(key, res.headers[key]);
+    }
 
-      List<int> outputBuffer = res.buffer.toBytes();
+    request.response.contentLength = res.buffer.length;
+    request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
 
-      if (res.encoders.isNotEmpty) {
-        var allowedEncodings =
-            (req.headers[HttpHeaders.ACCEPT_ENCODING] ?? []).map((str) {
-          // Ignore quality specifications in accept-encoding
-          // ex. gzip;q=0.8
-          if (!str.contains(';')) return str;
-          return str.split(';')[0];
-        });
+    List<int> outputBuffer = res.buffer.toBytes();
 
+    if (res.encoders.isNotEmpty) {
+      var allowedEncodings =
+          req.headers[HttpHeaders.ACCEPT_ENCODING]?.map((str) {
+        // Ignore quality specifications in accept-encoding
+        // ex. gzip;q=0.8
+        if (!str.contains(';')) return str;
+        return str.split(';')[0];
+      });
+
+      if (allowedEncodings != null) {
         for (var encodingName in allowedEncodings) {
           Converter<List<int>, List<int>> encoder;
           String key = encodingName;
@@ -574,24 +562,38 @@ class Angel extends AngelBase {
           }
         }
       }
-
-      request.response
-        ..statusCode = res.statusCode
-        ..cookies.addAll(res.cookies)
-        ..add(outputBuffer);
-
-      return finalizers.then((_) => request.response.close()).then((_) {
-        if (logger != null) {
-          var sw = req.grab<Stopwatch>(Stopwatch);
-
-          if (sw.isRunning) {
-            sw?.stop();
-            logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
-                    ?.elapsedMilliseconds ?? 'unknown'} ms)");
-          }
-        }
-      });
     }
+
+    request.response
+      ..statusCode = res.statusCode
+      ..cookies.addAll(res.cookies)
+      ..add(outputBuffer);
+
+    return finalizers.then((_) async {
+      request.response.close();
+
+      if (req.injections.containsKey(PoolResource)) {
+        req.injections[PoolResource].release();
+      }
+
+      if (logger != null) {
+        var sw = req.grab<Stopwatch>(Stopwatch);
+
+        if (sw.isRunning) {
+          sw?.stop();
+          logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
+              ?.elapsedMilliseconds ?? 'unknown'} ms)");
+        }
+      }
+    });
+  }
+
+  /// Limits the maximum number of requests to be handled concurrently by this instance.
+  ///
+  /// You can optionally provide a [timeout] to limit the amount of time a request can be
+  /// handled before.
+  void throttle(int maxConcurrentRequests, {Duration timeout}) {
+    _pool = new Pool(maxConcurrentRequests, timeout: timeout);
   }
 
   /// Applies an [AngelConfigurer] to this instance.
@@ -651,18 +653,19 @@ class Angel extends AngelBase {
   /// Default constructor. ;)
   Angel() : super() {
     bootstrapContainer();
+    createZoneForRequest = defaultZoneCreator;
+  }
 
-    createZoneForRequest = (request, req, res) async {
-      return new ZoneSpecification(
-        print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-          if (logger != null) {
-            logger.info(line);
-          } else {
-            return parent.print(zone, line);
-          }
-        },
-      );
-    };
+  Future<ZoneSpecification> defaultZoneCreator(request, req, res) async {
+    return new ZoneSpecification(
+      print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+        if (logger != null) {
+          logger.info(line);
+        } else {
+          return parent.print(zone, line);
+        }
+      },
+    );
   }
 
   /// An instance mounted on a server started by the [serverGenerator].

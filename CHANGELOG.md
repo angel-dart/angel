@@ -1,3 +1,15 @@
+# 1.1.0-alpha+9
+* Fixed a bug that prevented `isProduction` from ever returning `true`.
+    * This enabled caching, which greatly improved performance.
+* Requests no longer have independent zones, which greatly improved performance.
+* `FormatException`, when caught, is automatically transformed in a `400` error response.
+* Added `extension` to `RequestContext`.
+* Added `strict` to `RequestContext#accepts`.
+* Added a `toString` override for the `Providers` class.
+* Returned to `RegExp` for stripping stray slashes.
+* The request path is now only parsed once.
+* Optimized the parsing of the `ACCEPT_ENCODING` header.
+
 # 1.1.0-alpha+8
 * Added an `autoIdAndDateFields` flag to `MapService`. Finally.
 

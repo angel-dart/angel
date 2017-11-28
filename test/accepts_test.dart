@@ -34,6 +34,12 @@ main() {
     expect(req.accepts('text/html'), isTrue);
   });
 
+  test('strict', () async {
+    var req = await acceptContentTypes(['text/html', "*/*"]);
+    expect(req.accepts(ContentType.HTML), isTrue);
+    expect(req.accepts(ContentType.JSON, strict: true), isFalse);
+  });
+
   group('disallow null', () {
     RequestContext req;
 

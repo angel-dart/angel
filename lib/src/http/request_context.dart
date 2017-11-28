@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:body_parser/body_parser.dart';
-import 'package:charcode/charcode.dart';
+import 'package:path/path.dart' as p;
 import 'metadata.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -13,7 +13,7 @@ part 'injection.dart';
 
 /// A convenience wrapper around an incoming HTTP request.
 class RequestContext {
-  String _acceptHeaderCache;
+  String _acceptHeaderCache, _extensionCache;
   bool _acceptsAllCache;
   BodyParseResult _body;
   ContentType _contentType;
@@ -39,9 +39,10 @@ class RequestContext {
   String get hostname => io.headers.value(HttpHeaders.HOST);
 
   final Map _injections = {};
+  Map _injectionsCache;
 
   /// A [Map] of singletons injected via [inject]. *Read-only*.
-  Map get injections => new Map.unmodifiable(_injections);
+  Map get injections => _injectionsCache ??= new Map.unmodifiable(_injections);
 
   /// The underlying [HttpRequest] instance underneath this context.
   HttpRequest get io => _io;
@@ -135,8 +136,13 @@ class RequestContext {
       io.headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
       'xmlhttprequest';
 
+  /// Returns the file extension of the requested path, if any.
+  ///
+  /// Includes the leading `.`, if there is one.
+  String get extension => _extensionCache ??= p.extension(uri.path);
+
   /// Magically transforms an [HttpRequest] into a [RequestContext].
-  static Future<RequestContext> from(HttpRequest request, Angel app) async {
+  static Future<RequestContext> from(HttpRequest request, Angel app, String path) async {
     RequestContext ctx = new RequestContext();
 
     String override = request.method;
@@ -150,6 +156,7 @@ class RequestContext {
     ctx._contentType = request.headers.contentType;
     ctx._override = override;
 
+    /*
     // Faster way to get path
     List<int> _path = [];
 
@@ -175,6 +182,9 @@ class RequestContext {
       ctx._path = new String.fromCharCodes(_path.take(lastSlash));
     else
       ctx._path = new String.fromCharCodes(_path);
+      */
+
+    ctx._path = path;
     ctx._io = request;
 
     if (app.lazyParseBodies != true) {
@@ -219,17 +229,19 @@ class RequestContext {
     }
 
     _injections[type] = value;
+    _injectionsCache = null;
   }
 
   /// Returns `true` if the client's `Accept` header indicates that the given [contentType] is considered a valid response.
   ///
   /// You cannot provide a `null` [contentType].
   /// If the `Accept` header's value is `*/*`, this method will always return `true`.
+  /// To ignore the wildcard (`*/*`), pass [strict] as `true`.
   ///
   /// [contentType] can be either of the following:
   /// * A [ContentType], in which case the `Accept` header will be compared against its `mimeType` property.
   /// * Any other Dart value, in which case the `Accept` header will be compared against the result of a `toString()` call.
-  bool accepts(contentType) {
+  bool accepts(contentType, {bool strict: false}) {
     var contentTypeString = contentType is ContentType
         ? contentType.mimeType
         : contentType?.toString();
@@ -242,7 +254,7 @@ class RequestContext {
 
     if (_acceptHeaderCache == null)
       return false;
-    else if (_acceptHeaderCache.contains('*/*'))
+    else if (strict != true && _acceptHeaderCache.contains('*/*'))
       return true;
     else
       return _acceptHeaderCache.contains(contentTypeString);

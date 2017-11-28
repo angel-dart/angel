@@ -22,7 +22,8 @@ class AngelMetrics extends Angel {
       res.contentType = ContentType.HTML;
 
       var rows = stats.all.map((stat) {
-        return '''<tr>
+        return '''
+          <tr>
               <td>${stat.name}</td>
               <td>${stat.iterations}</td>
               <td>${stat.sum}ms</td>
@@ -108,6 +109,13 @@ class AngelMetrics extends Angel {
   }
 
   @override
+  Iterable<RoutingResult> resolveAll(String absolute, String relative,
+      {String method: 'GET', bool strip: true}) {
+    return stats.resolveAll
+        .run(() => super.resolveAll(absolute, relative, method: method, strip: strip));
+  }
+
+  @override
   Future handleRequest(HttpRequest request) {
     return stats.handleRequest.run(() async {
       await super.handleRequest(request);
@@ -146,6 +154,7 @@ class AngelMetricsStats {
     all = [
       createRequestContext,
       createResponseContext,
+      resolveAll,
       executeHandler,
       getHandlerResult,
       runContained,
@@ -156,6 +165,7 @@ class AngelMetricsStats {
 
   final Stats createRequestContext = new Stats('createRequestContext');
   final Stats createResponseContext = new Stats('createResponseContext');
+  final Stats resolveAll = new Stats('resolveAll');
   final Stats handleRequest = new Stats('handleRequest');
   final Stats executeHandler = new Stats('executeHandler');
   final Stats getHandlerResult = new Stats('getHandlerResult');

@@ -4,6 +4,7 @@ import 'controller_test.dart' as controller;
 import 'di_test.dart' as di;
 import 'encoders_buffer_test.dart' as encoders_buffer;
 import 'exception_test.dart' as exception;
+import 'extension_test.dart' as extension;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
 import 'parameter_meta_test.dart' as parameter_meta;
@@ -27,6 +28,7 @@ main() {
   group('di', di.main);
   group('encoders_buffer', encoders_buffer.main);
   group('exception', exception.main);
+  group('extension', extension.main);
   group('general', general.main);
   group('hooked', hooked.main);
   group('parameter_meta', parameter_meta.main);
