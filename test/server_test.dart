@@ -11,7 +11,7 @@ const List<Map<String, String>> people = const [
 main() {
   http.Client client;
 
-  final Router router = new Router(debug: true);
+  final Router router = new Router();
   HttpServer server;
   String url;
 

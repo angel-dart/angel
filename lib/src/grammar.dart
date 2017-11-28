@@ -1,6 +1,6 @@
 part of angel_route.src.router;
 
-class _RouteGrammar {
+class RouteGrammar {
   static final Parser<String> notSlash =
       match(new RegExp(r'[^/]+')).value((r) => r.span.text);
   static final Parser<RegExp> regExp = new _RegExpParser();
@@ -8,27 +8,27 @@ class _RouteGrammar {
       match(new RegExp(r':([A-Za-z0-9_]+)'))
           .value((r) => r.span.text.substring(1));
 
-  static final Parser<_ParameterSegment> parameterSegment = chain([
+  static final Parser<ParameterSegment> parameterSegment = chain([
     parameterName,
     match('?').value((r) => true).opt(),
     regExp.opt(),
   ]).map((r) {
-    var s = new _ParameterSegment(r.value[0], r.value[2]);
-    return r.value[1] == true ? new _OptionalSegment(s) : s;
+    var s = new ParameterSegment(r.value[0], r.value[2]);
+    return r.value[1] == true ? new OptionalSegment(s) : s;
   });
 
-  static final Parser<_WildcardSegment> wildcardSegment =
-      match('*').value((r) => new _WildcardSegment());
+  static final Parser<WildcardSegment> wildcardSegment =
+      match('*').value((r) => new WildcardSegment());
 
-  static final Parser<_ConstantSegment> constantSegment =
-      notSlash.map((r) => new _ConstantSegment(r.value));
+  static final Parser<ConstantSegment> constantSegment =
+      notSlash.map((r) => new ConstantSegment(r.value));
 
-  static final Parser<_RouteSegment> routeSegment =
+  static final Parser<RouteSegment> routeSegment =
       any([parameterSegment, wildcardSegment, constantSegment]);
 
-  static final Parser<_RouteDefinition> routeDefinition = routeSegment
+  static final Parser<RouteDefinition> routeDefinition = routeSegment
       .separatedBy(match('/'))
-      .map((r) => new _RouteDefinition(r.value ?? []))
+      .map((r) => new RouteDefinition(r.value ?? []))
       .surroundedBy(match('/').star().opt());
 }
 
@@ -43,34 +43,37 @@ class _RegExpParser extends Parser<RegExp> {
   }
 }
 
-class _RouteDefinition {
-  final List<_RouteSegment> segments;
+class RouteDefinition {
+  final List<RouteSegment> segments;
 
-  _RouteDefinition(this.segments);
+  RouteDefinition(this.segments);
 
-  Parser<Map<String, String>> compile() {
-    Parser<Map<String, String>> out;
+  Parser<Map<String, dynamic>> compile() {
+    Parser<Map<String, dynamic>> out;
 
-    for (var s in segments) {
+    for (int i = 0; i < segments.length; i++) {
+      var s = segments[i];
+      bool isLast = i == segments.length - 1;
       if (out == null)
-        out = s.compile();
+        out = s.compile(isLast);
       else
-        out = s.compileNext(out.then(match('/')).index(0));
+        out = s.compileNext(out.then(match('/')).index(0), isLast);
     }
 
     return out;
   }
 }
 
-abstract class _RouteSegment {
-  Parser<Map<String, String>> compile();
-  Parser<Map<String, String>> compileNext(Parser<Map<String, String>> p);
+abstract class RouteSegment {
+  Parser<Map<String, dynamic>> compile(bool isLast);
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast);
 }
 
-class _ConstantSegment extends _RouteSegment {
+class ConstantSegment extends RouteSegment {
   final String text;
 
-  _ConstantSegment(this.text);
+  ConstantSegment(this.text);
 
   @override
   String toString() {
@@ -78,41 +81,44 @@ class _ConstantSegment extends _RouteSegment {
   }
 
   @override
-  Parser<Map<String, String>> compile() {
+  Parser<Map<String, dynamic>> compile(bool isLast) {
     return match(text).value((r) => {});
   }
 
   @override
-  Parser<Map<String, String>> compileNext(Parser<Map<String, String>> p) {
-    return p.then(compile()).index(0);
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast) {
+    return p.then(compile(isLast)).index(0);
   }
 }
 
-class _WildcardSegment extends _RouteSegment {
+class WildcardSegment extends RouteSegment {
   @override
   String toString() {
     return 'Wildcard segment';
   }
 
-  Parser<Map<String, String>> _compile() {
+  Parser<Map<String, dynamic>> _compile(bool isLast) {
+    if (isLast) return match(new RegExp(r'.*'));
     return match(new RegExp(r'[^/]*'));
   }
 
   @override
-  Parser<Map<String, String>> compile() {
-    return _compile().map((r) => {});
+  Parser<Map<String, dynamic>> compile(bool isLast) {
+    return _compile(isLast).map((r) => {});
   }
 
   @override
-  Parser<Map<String, String>> compileNext(Parser<Map<String, String>> p) {
-    return p.then(_compile()).index(0);
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast) {
+    return p.then(_compile(isLast)).index(0);
   }
 }
 
-class _OptionalSegment extends _ParameterSegment {
-  final _ParameterSegment parameter;
+class OptionalSegment extends ParameterSegment {
+  final ParameterSegment parameter;
 
-  _OptionalSegment(this.parameter) : super(parameter.name, parameter.regExp);
+  OptionalSegment(this.parameter) : super(parameter.name, parameter.regExp);
 
   @override
   String toString() {
@@ -120,12 +126,13 @@ class _OptionalSegment extends _ParameterSegment {
   }
 
   @override
-  Parser<Map<String, String>> compile() {
-    return super.compile().opt();
+  Parser<Map<String, dynamic>> compile(bool isLast) {
+    return super.compile(isLast).opt();
   }
 
   @override
-  Parser<Map<String, String>> compileNext(Parser<Map<String, String>> p) {
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast) {
     return p.then(_compile().opt()).map((r) {
       if (r.value[1] == null) return r.value[0];
       return r.value[0]..addAll({name: Uri.decodeComponent(r.value[1])});
@@ -133,11 +140,11 @@ class _OptionalSegment extends _ParameterSegment {
   }
 }
 
-class _ParameterSegment extends _RouteSegment {
+class ParameterSegment extends RouteSegment {
   final String name;
   final RegExp regExp;
 
-  _ParameterSegment(this.name, this.regExp);
+  ParameterSegment(this.name, this.regExp);
 
   @override
   String toString() {
@@ -145,19 +152,20 @@ class _ParameterSegment extends _RouteSegment {
     return 'Param: $name';
   }
 
-  Parser<Map<String, String>> _compile() {
+  Parser<Map<String, dynamic>> _compile() {
     return regExp != null
         ? match(regExp).value((r) => r.span.text)
-        : _RouteGrammar.notSlash;
+        : RouteGrammar.notSlash;
   }
 
   @override
-  Parser<Map<String, String>> compile() {
+  Parser<Map<String, dynamic>> compile(bool isLast) {
     return _compile().map((r) => {name: Uri.decodeComponent(r.span.text)});
   }
 
   @override
-  Parser<Map<String, String>> compileNext(Parser<Map<String, String>> p) {
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast) {
     return p.then(_compile()).map((r) {
       return r.value[0]..addAll({name: Uri.decodeComponent(r.value[1])});
     });

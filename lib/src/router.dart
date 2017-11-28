@@ -27,9 +27,6 @@ class Router {
   final List<Route> _routes = [];
   bool _useCache = false;
 
-  /// Set to `true` to print verbose debug output when interacting with this route.
-  bool debug = false;
-
   List get middleware => new List.unmodifiable(_middleware);
 
   Map<Pattern, Router> get mounted =>
@@ -57,7 +54,7 @@ class Router {
 
   /// Provide a `root` to make this Router revolve around a pre-defined route.
   /// Not recommended.
-  Router({this.debug: false});
+  Router();
 
   /// Enables the use of a cache to eliminate the overhead of consecutive resolutions of the same path.
   void enableCache() {
@@ -97,7 +94,7 @@ class Router {
 
   /// Returns a [Router] with a duplicated version of this tree.
   Router clone() {
-    final router = new Router(debug: debug);
+    final router = new Router();
     final newMounted = new Map<Pattern, Router>.from(mounted);
 
     for (Route route in routes) {
@@ -169,7 +166,7 @@ class Router {
       String name: null,
       String namespace: null}) {
     final router = new Router().._middleware.addAll(middleware);
-    callback(router..debug = debug);
+    callback(router);
     return mount(path, router, namespace: namespace)..name = name;
   }
 
@@ -442,7 +439,7 @@ class _ChainedRouter extends Router {
       String namespace: null}) {
     final router =
         new _ChainedRouter(_root, []..addAll(_handlers)..addAll(middleware));
-    callback(router..debug = debug);
+    callback(router);
     return mount(path, router, namespace: namespace)..name = name;
   }
 
@@ -470,7 +467,7 @@ class _ChainedRouter extends Router {
 
 /// Optimizes a router by condensing all its routes into one level.
 Router flatten(Router router) {
-  var flattened = new Router(debug: router.debug == true)
+  var flattened = new Router()
     ..requestMiddleware.addAll(router.requestMiddleware);
 
   for (var route in router.routes) {

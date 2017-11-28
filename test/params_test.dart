@@ -2,7 +2,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  final router = new Router(debug: true)
+  final router = new Router()
     ..get('/hello', '')
     ..get('/user/:id', '');
 
@@ -11,7 +11,7 @@ main() {
     router.get('/readers/:readerId', '');
   });
 
-  router.mount('/color', new Router(debug: true)..get('/:name/shades', ''));
+  router.mount('/color', new Router()..get('/:name/shades', ''));
 
   setUp(router.dumpTree);
 

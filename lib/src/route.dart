@@ -5,13 +5,13 @@ class Route {
   final String method;
   final String path;
   final List handlers;
-  final Map<String, Map<String, String>> _cache = {};
-  final _RouteDefinition _routeDefinition;
+  final Map<String, Map<String, dynamic>> _cache = {};
+  final RouteDefinition _routeDefinition;
   String name;
-  Parser<Map<String, String>> _parser;
+  Parser<Map<String, dynamic>> _parser;
 
   Route(this.path, {@required this.method, @required this.handlers})
-      : _routeDefinition = _RouteGrammar.routeDefinition
+      : _routeDefinition = RouteGrammar.routeDefinition
             .parse(new SpanScanner(path.replaceAll(_straySlashes, '')))
             .value {
     if (_routeDefinition.segments.isEmpty) _parser = match('').value((r) => {});
@@ -24,7 +24,7 @@ class Route {
         method: b.method, handlers: b.handlers);
   }
 
-  Parser<Map<String, String>> get parser =>
+  Parser<Map<String, dynamic>> get parser =>
       _parser ??= _routeDefinition.compile();
 
 
@@ -50,9 +50,9 @@ class Route {
 
     for (var seg in _routeDefinition.segments) {
       if (i++ > 0) b.write('/');
-      if (seg is _ConstantSegment)
+      if (seg is ConstantSegment)
         b.write(seg.text);
-      else if (seg is _ParameterSegment) {
+      else if (seg is ParameterSegment) {
         if (!params.containsKey(seg.name))
           throw new ArgumentError('Missing parameter "${seg.name}".');
         b.write(params[seg.name]);
