@@ -1,4 +1,7 @@
-# 1.3.1
+# 1.3.0
+* `pushState` uses `strict` mode when `accepts` is passed.
+
+# 1.3.0-alpha+2
 * Added an `accepts` option to `pushState`.
 * Added optional directory listings.
 

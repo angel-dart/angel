@@ -86,7 +86,7 @@ class VirtualDirectory {
       if (path == vPath) return new Future<bool>.value(true);
 
       if (accepts?.isNotEmpty == true) {
-        if (!accepts.any(req.accepts)) return new Future<bool>.value(true);
+        if (!accepts.any((x) => req.accepts(x, strict: true))) return new Future<bool>.value(true);
       }
 
       return servePath(vPath, req, res);
