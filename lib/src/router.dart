@@ -329,7 +329,7 @@ class Router {
   Iterable<RoutingResult> resolveAll(String absolute, String relative,
       {String method: 'GET', bool strip: true}) {
     if (_useCache == true) {
-      return _cache.putIfAbsent(absolute,
+      return _cache.putIfAbsent('$method$absolute',
           () => _resolveAll(absolute, relative, method: method, strip: strip));
     }
 
