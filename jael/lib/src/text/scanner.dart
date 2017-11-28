@@ -1,3 +1,4 @@
+import 'package:charcode/ascii.dart';
 import 'package:string_scanner/string_scanner.dart';
 import '../ast/ast.dart';
 
@@ -127,7 +128,27 @@ class _Scanner implements Scanner {
 
       var lastToken = _scanFrom(_htmlPatterns, textStart);
 
-      if (lastToken?.type == TokenType.equals ||
+      if (lastToken?.type == TokenType.gt) {
+        if (!_scanner.isDone) {
+          var state = _scanner.state;
+          var ch = _scanner.peekChar();
+
+          if (ch != $space && ch != $cr && ch != $lf && ch != $tab) {
+            while (!_scanner.isDone) {
+              var ch = _scanner.peekChar();
+
+              if (ch == $lt || (ch == $open_brace && _scanner.peekChar() == $open_brace)) {
+                var span = _scanner.spanFrom(state);
+                tokens.add(new Token(TokenType.text, span));
+                break;
+              } else
+                _scanner.readChar();
+            }
+          }
+        }
+      }
+
+      else if (lastToken?.type == TokenType.equals ||
           lastToken?.type == TokenType.nequ) {
         textStart = null;
         scanExpressionTokens();

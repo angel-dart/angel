@@ -18,6 +18,21 @@ main() {
     expect(tokens[6], isToken(TokenType.gt));
   });
 
+  test('single quotes', () {
+    var tokens = scan('<p>It\'s lit</p>', sourceUrl: 'test.jl').tokens;
+    tokens.forEach(print);
+
+    expect(tokens, hasLength(8));
+    expect(tokens[0], isToken(TokenType.lt));
+    expect(tokens[1], isToken(TokenType.id, 'p'));
+    expect(tokens[2], isToken(TokenType.gt));
+    expect(tokens[3], isToken(TokenType.text, 'It\'s lit'));
+    expect(tokens[4], isToken(TokenType.lt));
+    expect(tokens[5], isToken(TokenType.slash));
+    expect(tokens[6], isToken(TokenType.id, 'p'));
+    expect(tokens[7], isToken(TokenType.gt));
+  });
+
   test('text node', () {
     var tokens = scan('<p>Hello\nworld</p>', sourceUrl: 'test.jl').tokens;
     tokens.forEach(print);
