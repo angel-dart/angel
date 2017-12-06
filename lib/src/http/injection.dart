@@ -67,7 +67,8 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
 }
 
 /// Checks if an [InjectionRequest] can be sufficiently executed within the current request/response context.
-bool suitableForInjection(RequestContext req, ResponseContext res, InjectionRequest injection) {
+bool suitableForInjection(
+    RequestContext req, ResponseContext res, InjectionRequest injection) {
   return injection.parameters.values.any((p) {
     if (p.match == null) return false;
     var value = p.getValue(req);
@@ -78,8 +79,9 @@ bool suitableForInjection(RequestContext req, ResponseContext res, InjectionRequ
 /// Handles a request with a DI-enabled handler.
 RequestHandler handleContained(handler, InjectionRequest injection) {
   return (RequestContext req, ResponseContext res) async {
-    if (injection.parameters.isNotEmpty && injection.parameters.values.any((p) => p.match != null) && !suitableForInjection(req, res, injection))
-      return true;
+    if (injection.parameters.isNotEmpty &&
+        injection.parameters.values.any((p) => p.match != null) &&
+        !suitableForInjection(req, res, injection)) return true;
 
     List args = [];
 

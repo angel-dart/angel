@@ -142,7 +142,8 @@ class RequestContext {
   String get extension => _extensionCache ??= p.extension(uri.path);
 
   /// Magically transforms an [HttpRequest] into a [RequestContext].
-  static Future<RequestContext> from(HttpRequest request, Angel app, String path) async {
+  static Future<RequestContext> from(
+      HttpRequest request, Angel app, String path) async {
     RequestContext ctx = new RequestContext();
 
     String override = request.method;
@@ -225,7 +226,8 @@ class RequestContext {
   void inject(type, value) {
     if (!app.isProduction && type is Type) {
       if (!reflect(value).type.isAssignableTo(reflectType(type)))
-        throw new ArgumentError('Cannot inject $value (${value.runtimeType}) as an instance of $type.');
+        throw new ArgumentError(
+            'Cannot inject $value (${value.runtimeType}) as an instance of $type.');
     }
 
     _injections[type] = value;

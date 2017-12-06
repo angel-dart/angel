@@ -1,3 +1,6 @@
+# 1.1.0
+* The default `errorHandler` now only sends HTML if the user explicitly accepts it.
+
 # 1.1.0-alpha+9
 * Fixed a bug that prevented `isProduction` from ever returning `true`.
     * This enabled caching, which greatly improved performance.

@@ -353,8 +353,10 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
         (_correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
       }
 
-      if (_correspondingRequest?.injections?.containsKey(PoolResource) == true) {
-        (_correspondingRequest.injections[PoolResource] as PoolResource).release();
+      if (_correspondingRequest?.injections?.containsKey(PoolResource) ==
+          true) {
+        (_correspondingRequest.injections[PoolResource] as PoolResource)
+            .release();
       }
 
       return true;
@@ -481,14 +483,16 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
   void add(List<int> bytes) {
     if (_closed)
       throw _deny();
-    else _buf.add(bytes);
+    else
+      _buf.add(bytes);
   }
 
   @override
   void addByte(int byte) {
     if (_closed)
       throw _deny();
-    else _buf.addByte(byte);
+    else
+      _buf.addByte(byte);
   }
 
   @override

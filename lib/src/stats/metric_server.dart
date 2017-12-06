@@ -111,8 +111,8 @@ class AngelMetrics extends Angel {
   @override
   Iterable<RoutingResult> resolveAll(String absolute, String relative,
       {String method: 'GET', bool strip: true}) {
-    return stats.resolveAll
-        .run(() => super.resolveAll(absolute, relative, method: method, strip: strip));
+    return stats.resolveAll.run(() =>
+        super.resolveAll(absolute, relative, method: method, strip: strip));
   }
 
   @override

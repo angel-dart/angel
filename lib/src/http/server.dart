@@ -125,7 +125,7 @@ class Angel extends AngelBase {
   Function(AngelHttpException e, RequestContext req, ResponseContext res)
       errorHandler =
       (AngelHttpException e, RequestContext req, ResponseContext res) {
-    if (!req.accepts('text/html') &&
+    if (!req.accepts('text/html', strict: true) &&
         (req.accepts('application/json') ||
             req.accepts('application/javascript'))) {
       res.json(e.toJson());
