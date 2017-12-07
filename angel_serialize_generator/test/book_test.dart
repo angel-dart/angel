@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:test/test.dart';
+import 'models/author.dart';
 import 'models/book.dart';
 
 const String DEATHLY_HALLOWS_ISBN = '0-545-01022-5';

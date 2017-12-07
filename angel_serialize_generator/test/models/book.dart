@@ -9,18 +9,3 @@ abstract class _Book extends Model {
   String author, title, description;
   int pageCount;
 }
-
-@serializable
-abstract class _Author extends Model {
-  String name;
-  int age;
-  List<_Book> books;
-  _Book newestBook;
-  @exclude
-  String secret;
-}
-
-@serializable
-abstract class _Library extends Model {
-  Map<String, _Book> collection;
-}

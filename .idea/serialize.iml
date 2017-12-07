@@ -4,15 +4,10 @@
     <content url="file://$MODULE_DIR$/angel_serialize">
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize/build" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_serialize/packages" />
     </content>
     <content url="file://$MODULE_DIR$/angel_serialize_generator">
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/build" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/test/models/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/test/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/tool/packages" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
