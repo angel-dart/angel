@@ -1,8 +1,8 @@
 name: angel_oauth2
 author: Tobe O <thosakwe@gmail.com>
 description: angel_auth strategy for in-house OAuth2 login.
-homepage: https://github.com/thosakwe/oauth2_server.git
-version: 1.0.0-alpha+1
+homepage: https://github.com/angel-dart/oauth2.git
+version: 1.0.0
 environment:
   sdk: ">=1.19.0"
 dependencies: 
