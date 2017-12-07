@@ -255,3 +255,15 @@ class FruitQueryWhere {
         : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }
+
+class FruitFields {
+  static const id = 'id';
+
+  static const treeId = 'tree_id';
+
+  static const commonName = 'common_name';
+
+  static const createdAt = 'created_at';
+
+  static const updatedAt = 'updated_at';
+}

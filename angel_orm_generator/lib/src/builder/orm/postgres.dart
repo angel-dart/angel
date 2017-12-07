@@ -6,6 +6,7 @@ import 'package:build/build.dart';
 import 'package:code_builder/dart/async.dart';
 import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
+import 'package:inflection/inflection.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
@@ -100,8 +101,12 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
     for (var element in contexts.keys) {
       if (!done.contains(element.name)) {
         var ctx = contexts[element];
-        lib.addMember(await buildQueryClass(ctx));
+        var queryClass = await buildQueryClass(ctx);
+        if (ctx.joins.isNotEmpty)
+          await buildJoins(queryClass, lib, ctx, resolver, buildStep);
+        lib.addMember(queryClass);
         lib.addMember(buildWhereClass(ctx));
+        lib.addMember(buildFieldClass(ctx));
         done.add(element.name);
       }
     }
@@ -252,8 +257,10 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
     // Write prefix, or default to SELECT
     var prefix = reference('prefix');
     meth.addStatement(buf.invoke('write', [
-      prefix.notEquals(literal(null)).ternary(prefix,
-          literal('SELECT ${await computeSelector(ctx)} FROM "${ctx.tableName}"'))
+      prefix.notEquals(literal(null)).ternary(
+          prefix,
+          literal(
+              'SELECT ${await computeSelector(ctx)} FROM "${ctx.tableName}"'))
     ]));
 
     var relationsIfThen = ifThen(prefix.equals(literal(null)));
@@ -965,5 +972,71 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
     clazz.addMethod(toWhereClause);
 
     return clazz;
+  }
+
+  ClassBuilder buildFieldClass(PostgresBuildContext ctx) {
+    var clazz = new ClassBuilder(ctx.reCase.pascalCase + 'Fields');
+
+    for (var field in ctx.fields) {
+      clazz.addField(
+          varConst(field.name,
+              value: literal(ctx.resolveFieldName(field.name))),
+          asStatic: true);
+    }
+
+    return clazz;
+  }
+
+  Future buildJoins(ClassBuilder queryClass, LibraryBuilder lib,
+      PostgresBuildContext ctx, Resolver resolver, BuildStep buildStep) async {
+    Map<int, PostgresBuildContext> contexts = {};
+    Map<PostgresBuildContext, Map<String, JoinContext>> targets = {};
+
+    for (var fieldName in ctx.joins.keys) {
+      print('${ctx.originalClassName}:$fieldName');
+      var joins = ctx.joins[fieldName];
+
+      for (var join in joins) {
+        PostgresBuildContext refType;
+
+        if (contexts.containsKey(join.type.hashCode))
+          refType = contexts[join.type.hashCode];
+        else {
+          var clazz = join.type.element as ClassElement;
+          var annotation = ormTypeChecker.firstAnnotationOf(join.type.element);
+          var ctx = await buildContext(
+            clazz,
+            reviveOrm(new ConstantReader(annotation)),
+            buildStep,
+            resolver,
+            autoSnakeCaseNames,
+            autoIdAndDateFields,
+          );
+          contexts[join.type.hashCode] = refType = ctx;
+        }
+
+        var targetMap = targets.putIfAbsent(refType, () => {});
+        var localFieldName = ctx.resolveFieldName(fieldName);
+        targetMap.putIfAbsent(localFieldName, () => join);
+      }
+    }
+
+    if (targets.isNotEmpty) {
+      /*
+        var result = await OrderQuery.joinCustomers(
+          connection,
+          OrderQueryFields.customerId
+        );
+      */
+
+      for (var refType in targets.keys) {
+        var refTypeRc = new ReCase(pluralize(refType.modelClassName));
+        var refTypePlural = refTypeRc.pascalCase;
+        var joinMethod = new MethodBuilder('join$refTypePlural');
+        queryClass.addMethod(joinMethod, asStatic: true);
+        joinMethod.addPositional(
+            parameter('connection', [ctx.postgreSQLConnectionBuilder]));
+      }
+    }
   }
 }

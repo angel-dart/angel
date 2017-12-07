@@ -241,3 +241,13 @@ class AuthorQueryWhere {
         : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }
+
+class AuthorFields {
+  static const id = 'id';
+
+  static const name = 'name';
+
+  static const createdAt = 'created_at';
+
+  static const updatedAt = 'updated_at';
+}

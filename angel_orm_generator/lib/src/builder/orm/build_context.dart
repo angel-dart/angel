@@ -99,7 +99,7 @@ Future<PostgresBuildContext> buildContext(
   var raw = await serialize.buildContext(clazz, null, buildStep, resolver,
       autoSnakeCaseNames != false, autoIdAndDateFields != false);
   var ctx = await PostgresBuildContext.create(
-      raw, annotation, resolver, buildStep,
+      clazz, raw, annotation, resolver, buildStep,
       tableName: (annotation.tableName?.isNotEmpty == true)
           ? annotation.tableName
           : pluralize(new ReCase(clazz.name).snakeCase),
@@ -110,6 +110,19 @@ Future<PostgresBuildContext> buildContext(
 
   for (var field in raw.fields) {
     fieldNames.add(field.name);
+
+    // Check for joins.
+    var canJoins = canJoinTypeChecker.annotationsOf(field);
+
+    for (var ann in canJoins) {
+      var cr = new ConstantReader(ann);
+      ctx.joins[field.name] ??= [];
+      ctx.joins[field.name].add(new JoinContext(
+        resolveModelAncestor(cr.read('type').typeValue),
+        cr.read('foreignKey').stringValue,
+      ));
+    }
+
     // Check for relationship. If so, skip.
     var relationshipAnnotation =
         relationshipTypeChecker.firstAnnotationOf(field);

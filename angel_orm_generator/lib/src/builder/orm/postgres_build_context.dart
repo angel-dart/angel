@@ -3,6 +3,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/generated/resolver.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/context.dart';
 import 'package:build/build.dart';
@@ -11,6 +12,33 @@ import 'package:inflection/inflection.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'build_context.dart';
+
+const TypeChecker canJoinTypeChecker = const TypeChecker.fromRuntime(CanJoin);
+
+DartType resolveModelAncestor(DartType type) {
+  DartType refType = type;
+
+  while (refType != null) {
+    if (!const TypeChecker.fromRuntime(Model).isAssignableFromType(refType)) {
+      var parent = (refType.element as ClassElement).allSupertypes[0];
+      if (parent != refType)
+        refType = parent;
+      else
+        refType = null;
+    } else
+      break;
+  }
+
+  if (refType != null) return refType;
+
+  throw '${type.name} does not extend Model.';
+}
+
+class JoinContext {
+  final DartType type;
+  final String foreignKey;
+  JoinContext(this.type, this.foreignKey);
+}
 
 class PostgresBuildContext extends BuildContext {
   LibraryElement _libraryCache;
@@ -23,28 +51,36 @@ class PostgresBuildContext extends BuildContext {
   final Map<String, Relationship> _populatedRelationships = {};
   final Map<String, Column> columnInfo = {};
   final Map<String, IndexType> indices = {};
+  final Map<String, List<JoinContext>> joins = {};
   final Map<String, Relationship> relationships = {};
   final bool autoSnakeCaseNames, autoIdAndDateFields;
   final String tableName;
   final ORM ormAnnotation;
+  final ClassElement element;
   final BuildContext raw;
   final Resolver resolver;
   final BuildStep buildStep;
+  ReCase _reCase;
   String primaryKeyName = 'id';
 
   PostgresBuildContext._(
-      this.raw, this.ormAnnotation, this.resolver, this.buildStep,
+      this.element, this.raw, this.ormAnnotation, this.resolver, this.buildStep,
       {this.tableName, this.autoSnakeCaseNames, this.autoIdAndDateFields})
       : super(raw.annotation,
             originalClassName: raw.originalClassName,
             sourceFilename: raw.sourceFilename);
 
-  static Future<PostgresBuildContext> create(BuildContext raw,
-      ORM ormAnnotation, Resolver resolver, BuildStep buildStep,
+  static Future<PostgresBuildContext> create(
+      ClassElement element,
+      BuildContext raw,
+      ORM ormAnnotation,
+      Resolver resolver,
+      BuildStep buildStep,
       {String tableName,
       bool autoSnakeCaseNames,
       bool autoIdAndDateFields}) async {
     var ctx = new PostgresBuildContext._(
+      element,
       raw,
       ormAnnotation,
       resolver,
@@ -61,6 +97,8 @@ class PostgresBuildContext extends BuildContext {
   }
 
   final List<FieldElement> fields = [], relationshipFields = [];
+
+  ReCase get reCase => _reCase ?? new ReCase(modelClassName);
 
   TypeBuilder get modelClassBuilder =>
       _modelClassBuilder ??= new TypeBuilder(modelClassName);
@@ -178,6 +216,11 @@ class PostgresBuildContext extends BuildContext {
         throw new UnsupportedError(
             'Invalid relationship type: ${relationship.type}');
     });
+  }
+
+  @override
+  String toString() {
+    return 'PostgresBuildContext: $originalClassName';
   }
 }
 

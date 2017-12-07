@@ -263,3 +263,15 @@ class BookQueryWhere {
         : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }
+
+class BookFields {
+  static const id = 'id';
+
+  static const name = 'name';
+
+  static const createdAt = 'created_at';
+
+  static const updatedAt = 'updated_at';
+
+  static const authorId = 'author_id';
+}

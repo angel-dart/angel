@@ -7,11 +7,10 @@
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
-import 'leg.dart';
-import 'foot.orm.g.dart';
+import 'customer.dart';
 
-class LegQuery {
-  final Map<LegQuery, bool> _unions = {};
+class CustomerQuery {
+  final Map<CustomerQuery, bool> _unions = {};
 
   String _sortKey;
 
@@ -21,29 +20,29 @@ class LegQuery {
 
   int offset;
 
-  final List<LegQueryWhere> _or = [];
+  final List<CustomerQueryWhere> _or = [];
 
-  final LegQueryWhere where = new LegQueryWhere();
+  final CustomerQueryWhere where = new CustomerQueryWhere();
 
-  void union(LegQuery query) {
+  void union(CustomerQuery query) {
     _unions[query] = false;
   }
 
-  void unionAll(LegQuery query) {
+  void unionAll(CustomerQuery query) {
     _unions[query] = true;
   }
 
   void sortDescending(String key) {
     _sortMode = 'Descending';
-    _sortKey = ('legs.' + key);
+    _sortKey = ('' + key);
   }
 
   void sortAscending(String key) {
     _sortMode = 'Ascending';
-    _sortKey = ('legs.' + key);
+    _sortKey = ('' + key);
   }
 
-  void or(LegQueryWhere selector) {
+  void or(CustomerQueryWhere selector) {
     _or.add(selector);
   }
 
@@ -51,10 +50,8 @@ class LegQuery {
     var buf = new StringBuffer();
     buf.write(prefix != null
         ? prefix
-        : 'SELECT legs.id, legs.name, legs.created_at, legs.updated_at, foots.id, foots.leg_id, foots.n_toes, foots.created_at, foots.updated_at FROM "legs"');
-    if (prefix == null) {
-      buf.write(' LEFT OUTER JOIN foots ON legs.id = foots.leg_id');
-    }
+        : 'SELECT id, created_at, updated_at FROM "customers"');
+    if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(' ' + whereClause);
@@ -92,29 +89,17 @@ class LegQuery {
     return buf.toString();
   }
 
-  static Leg parseRow(List row) {
-    var result = new Leg.fromJson({
-      'id': row[0].toString(),
-      'name': row[1],
-      'created_at': row[2],
-      'updated_at': row[3]
-    });
-    if (row.length > 4) {
-      result.foot =
-          FootQuery.parseRow([row[4], row[5], row[6], row[7], row[8]]);
-    }
+  static Customer parseRow(List row) {
+    var result = new Customer.fromJson(
+        {'id': row[0].toString(), 'created_at': row[1], 'updated_at': row[2]});
     return result;
   }
 
-  Stream<Leg> get(PostgreSQLConnection connection) {
-    StreamController<Leg> ctrl = new StreamController<Leg>();
+  Stream<Customer> get(PostgreSQLConnection connection) {
+    StreamController<Customer> ctrl = new StreamController<Customer>();
     connection.query(toSql()).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
-        var footQuery = new FootQuery();
-        footQuery.where.id.equals(row[0]);
-        parsed.foot =
-            await footQuery.get(connection).first.catchError((_) => null);
         return parsed;
       });
       var output = await Future.wait(futures);
@@ -124,35 +109,30 @@ class LegQuery {
     return ctrl.stream;
   }
 
-  static Future<Leg> getOne(int id, PostgreSQLConnection connection) {
-    var query = new LegQuery();
+  static Future<Customer> getOne(int id, PostgreSQLConnection connection) {
+    var query = new CustomerQuery();
     query.where.id.equals(id);
     return query.get(connection).first.catchError((_) => null);
   }
 
-  Stream<Leg> update(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) {
+  Stream<Customer> update(PostgreSQLConnection connection,
+      {DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "legs" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "customers" SET ("created_at", "updated_at") = (@createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();
-    var ctrl = new StreamController<Leg>();
+    var ctrl = new StreamController<Customer>();
     connection.query(
-        buf.toString() + ' RETURNING "id", "name", "created_at", "updated_at";',
+        buf.toString() + ' RETURNING "id", "created_at", "updated_at";',
         substitutionValues: {
-          'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         }).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
-        var footQuery = new FootQuery();
-        footQuery.where.id.equals(row[0]);
-        parsed.foot =
-            await footQuery.get(connection).first.catchError((_) => null);
         return parsed;
       });
       var output = await Future.wait(futures);
@@ -162,18 +142,14 @@ class LegQuery {
     return ctrl.stream;
   }
 
-  Stream<Leg> delete(PostgreSQLConnection connection) {
-    StreamController<Leg> ctrl = new StreamController<Leg>();
+  Stream<Customer> delete(PostgreSQLConnection connection) {
+    StreamController<Customer> ctrl = new StreamController<Customer>();
     connection
-        .query(toSql('DELETE FROM "legs"') +
-            ' RETURNING "id", "name", "created_at", "updated_at";')
+        .query(toSql('DELETE FROM "customers"') +
+            ' RETURNING "id", "created_at", "updated_at";')
         .then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
-        var footQuery = new FootQuery();
-        footQuery.where.id.equals(row[0]);
-        parsed.foot =
-            await footQuery.get(connection).first.catchError((_) => null);
         return parsed;
       });
       var output = await Future.wait(futures);
@@ -183,66 +159,59 @@ class LegQuery {
     return ctrl.stream;
   }
 
-  static Future<Leg> deleteOne(int id, PostgreSQLConnection connection) {
-    var query = new LegQuery();
+  static Future<Customer> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new CustomerQuery();
     query.where.id.equals(id);
     return query.delete(connection).first;
   }
 
-  static Future<Leg> insert(PostgreSQLConnection connection,
-      {String name, DateTime createdAt, DateTime updatedAt}) async {
+  static Future<Customer> insert(PostgreSQLConnection connection,
+      {DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "legs" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
+        'INSERT INTO "customers" ("created_at", "updated_at") VALUES (@createdAt, @updatedAt) RETURNING "id", "created_at", "updated_at";',
         substitutionValues: {
-          'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
     var output = parseRow(result[0]);
-    var footQuery = new FootQuery();
-    footQuery.where.id.equals(result[0][0]);
-    output.foot = await footQuery.get(connection).first.catchError((_) => null);
     return output;
   }
 
-  static Future<Leg> insertLeg(PostgreSQLConnection connection, Leg leg) {
-    return LegQuery.insert(connection,
-        name: leg.name, createdAt: leg.createdAt, updatedAt: leg.updatedAt);
+  static Future<Customer> insertCustomer(
+      PostgreSQLConnection connection, Customer customer) {
+    return CustomerQuery.insert(connection,
+        createdAt: customer.createdAt, updatedAt: customer.updatedAt);
   }
 
-  static Future<Leg> updateLeg(PostgreSQLConnection connection, Leg leg) {
-    var query = new LegQuery();
-    query.where.id.equals(int.parse(leg.id));
+  static Future<Customer> updateCustomer(
+      PostgreSQLConnection connection, Customer customer) {
+    var query = new CustomerQuery();
+    query.where.id.equals(int.parse(customer.id));
     return query
         .update(connection,
-            name: leg.name, createdAt: leg.createdAt, updatedAt: leg.updatedAt)
+            createdAt: customer.createdAt, updatedAt: customer.updatedAt)
         .first;
   }
 
-  static Stream<Leg> getAll(PostgreSQLConnection connection) =>
-      new LegQuery().get(connection);
+  static Stream<Customer> getAll(PostgreSQLConnection connection) =>
+      new CustomerQuery().get(connection);
 }
 
-class LegQueryWhere {
+class CustomerQueryWhere {
   final NumericSqlExpressionBuilder<int> id =
       new NumericSqlExpressionBuilder<int>();
 
-  final StringSqlExpressionBuilder name = new StringSqlExpressionBuilder();
-
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('legs.created_at');
+      new DateTimeSqlExpressionBuilder('customers.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('legs.updated_at');
+      new DateTimeSqlExpressionBuilder('customers.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('legs.id ' + id.compile());
-    }
-    if (name.hasValue) {
-      expressions.add('legs.name ' + name.compile());
+      expressions.add('customers.id ' + id.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());
@@ -256,10 +225,8 @@ class LegQueryWhere {
   }
 }
 
-class LegFields {
+class CustomerFields {
   static const id = 'id';
-
-  static const name = 'name';
 
   static const createdAt = 'created_at';
 

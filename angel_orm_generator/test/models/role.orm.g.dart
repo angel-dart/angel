@@ -235,3 +235,13 @@ class RoleQueryWhere {
         : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }
+
+class RoleFields {
+  static const id = 'id';
+
+  static const name = 'name';
+
+  static const createdAt = 'created_at';
+
+  static const updatedAt = 'updated_at';
+}

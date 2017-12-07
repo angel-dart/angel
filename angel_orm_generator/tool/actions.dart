@@ -10,10 +10,12 @@ const List<String> standaloneModels = const [
   'test/models/car.dart',
   'test/models/foot.dart',
   'test/models/fruit.dart',
+  'test/models/order.dart',
   'test/models/role.dart'
 ];
 const List<String> dependentModels = const [
   'test/models/book.dart',
+  'test/models/customer.dart',
   'test/models/leg.dart',
   'test/models/tree.dart',
   'test/models/user.dart'

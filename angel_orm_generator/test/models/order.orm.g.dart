@@ -7,10 +7,10 @@
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
-import 'car.dart';
+import 'order.dart';
 
-class CarQuery {
-  final Map<CarQuery, bool> _unions = {};
+class OrderQuery {
+  final Map<OrderQuery, bool> _unions = {};
 
   String _sortKey;
 
@@ -20,15 +20,15 @@ class CarQuery {
 
   int offset;
 
-  final List<CarQueryWhere> _or = [];
+  final List<OrderQueryWhere> _or = [];
 
-  final CarQueryWhere where = new CarQueryWhere();
+  final OrderQueryWhere where = new OrderQueryWhere();
 
-  void union(CarQuery query) {
+  void union(OrderQuery query) {
     _unions[query] = false;
   }
 
-  void unionAll(CarQuery query) {
+  void unionAll(OrderQuery query) {
     _unions[query] = true;
   }
 
@@ -42,7 +42,7 @@ class CarQuery {
     _sortKey = ('' + key);
   }
 
-  void or(CarQueryWhere selector) {
+  void or(OrderQueryWhere selector) {
     _or.add(selector);
   }
 
@@ -50,7 +50,7 @@ class CarQuery {
     var buf = new StringBuffer();
     buf.write(prefix != null
         ? prefix
-        : 'SELECT id, make, description, family_friendly, recalled_at, created_at, updated_at FROM "cars"');
+        : 'SELECT id, customer_id, employee_id, order_date, shipper_id, created_at, updated_at FROM "orders"');
     if (prefix == null) {}
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
@@ -89,21 +89,21 @@ class CarQuery {
     return buf.toString();
   }
 
-  static Car parseRow(List row) {
-    var result = new Car.fromJson({
+  static Order parseRow(List row) {
+    var result = new Order.fromJson({
       'id': row[0].toString(),
-      'make': row[1],
-      'description': row[2],
-      'family_friendly': row[3],
-      'recalled_at': row[4],
+      'customer_id': row[1],
+      'employee_id': row[2],
+      'order_date': row[3],
+      'shipper_id': row[4],
       'created_at': row[5],
       'updated_at': row[6]
     });
     return result;
   }
 
-  Stream<Car> get(PostgreSQLConnection connection) {
-    StreamController<Car> ctrl = new StreamController<Car>();
+  Stream<Order> get(PostgreSQLConnection connection) {
+    StreamController<Order> ctrl = new StreamController<Order>();
     connection.query(toSql()).then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
@@ -116,35 +116,35 @@ class CarQuery {
     return ctrl.stream;
   }
 
-  static Future<Car> getOne(int id, PostgreSQLConnection connection) {
-    var query = new CarQuery();
+  static Future<Order> getOne(int id, PostgreSQLConnection connection) {
+    var query = new OrderQuery();
     query.where.id.equals(id);
     return query.get(connection).first.catchError((_) => null);
   }
 
-  Stream<Car> update(PostgreSQLConnection connection,
-      {String make,
-      String description,
-      bool familyFriendly,
-      DateTime recalledAt,
+  Stream<Order> update(PostgreSQLConnection connection,
+      {int customerId,
+      int employeeId,
+      DateTime orderDate,
+      int shipperId,
       DateTime createdAt,
       DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) ');
+        'UPDATE "orders" SET ("customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") = (@customerId, @employeeId, @orderDate, @shipperId, @createdAt, @updatedAt) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
     }
     var __ormNow__ = new DateTime.now();
-    var ctrl = new StreamController<Car>();
+    var ctrl = new StreamController<Order>();
     connection.query(
         buf.toString() +
-            ' RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
+            ' RETURNING "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
         substitutionValues: {
-          'make': make,
-          'description': description,
-          'familyFriendly': familyFriendly,
-          'recalledAt': recalledAt,
+          'customerId': customerId,
+          'employeeId': employeeId,
+          'orderDate': orderDate,
+          'shipperId': shipperId,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         }).then((rows) async {
@@ -159,11 +159,11 @@ class CarQuery {
     return ctrl.stream;
   }
 
-  Stream<Car> delete(PostgreSQLConnection connection) {
-    StreamController<Car> ctrl = new StreamController<Car>();
+  Stream<Order> delete(PostgreSQLConnection connection) {
+    StreamController<Order> ctrl = new StreamController<Order>();
     connection
-        .query(toSql('DELETE FROM "cars"') +
-            ' RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";')
+        .query(toSql('DELETE FROM "orders"') +
+            ' RETURNING "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";')
         .then((rows) async {
       var futures = rows.map((row) async {
         var parsed = parseRow(row);
@@ -176,27 +176,27 @@ class CarQuery {
     return ctrl.stream;
   }
 
-  static Future<Car> deleteOne(int id, PostgreSQLConnection connection) {
-    var query = new CarQuery();
+  static Future<Order> deleteOne(int id, PostgreSQLConnection connection) {
+    var query = new OrderQuery();
     query.where.id.equals(id);
     return query.delete(connection).first;
   }
 
-  static Future<Car> insert(PostgreSQLConnection connection,
-      {String make,
-      String description,
-      bool familyFriendly,
-      DateTime recalledAt,
+  static Future<Order> insert(PostgreSQLConnection connection,
+      {int customerId,
+      int employeeId,
+      DateTime orderDate,
+      int shipperId,
       DateTime createdAt,
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
+        'INSERT INTO "orders" ("customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") VALUES (@customerId, @employeeId, @orderDate, @shipperId, @createdAt, @updatedAt) RETURNING "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
         substitutionValues: {
-          'make': make,
-          'description': description,
-          'familyFriendly': familyFriendly,
-          'recalledAt': recalledAt,
+          'customerId': customerId,
+          'employeeId': employeeId,
+          'orderDate': orderDate,
+          'shipperId': shipperId,
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__
         });
@@ -204,71 +204,77 @@ class CarQuery {
     return output;
   }
 
-  static Future<Car> insertCar(PostgreSQLConnection connection, Car car) {
-    return CarQuery.insert(connection,
-        make: car.make,
-        description: car.description,
-        familyFriendly: car.familyFriendly,
-        recalledAt: car.recalledAt,
-        createdAt: car.createdAt,
-        updatedAt: car.updatedAt);
+  static Future<Order> insertOrder(
+      PostgreSQLConnection connection, Order order) {
+    return OrderQuery.insert(connection,
+        customerId: order.customerId,
+        employeeId: order.employeeId,
+        orderDate: order.orderDate,
+        shipperId: order.shipperId,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt);
   }
 
-  static Future<Car> updateCar(PostgreSQLConnection connection, Car car) {
-    var query = new CarQuery();
-    query.where.id.equals(int.parse(car.id));
+  static Future<Order> updateOrder(
+      PostgreSQLConnection connection, Order order) {
+    var query = new OrderQuery();
+    query.where.id.equals(int.parse(order.id));
     return query
         .update(connection,
-            make: car.make,
-            description: car.description,
-            familyFriendly: car.familyFriendly,
-            recalledAt: car.recalledAt,
-            createdAt: car.createdAt,
-            updatedAt: car.updatedAt)
+            customerId: order.customerId,
+            employeeId: order.employeeId,
+            orderDate: order.orderDate,
+            shipperId: order.shipperId,
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt)
         .first;
   }
 
-  static Stream<Car> getAll(PostgreSQLConnection connection) =>
-      new CarQuery().get(connection);
+  static Stream<Order> getAll(PostgreSQLConnection connection) =>
+      new OrderQuery().get(connection);
+
+  static joinCustomers(PostgreSQLConnection connection) {
+  }
 }
 
-class CarQueryWhere {
+class OrderQueryWhere {
   final NumericSqlExpressionBuilder<int> id =
       new NumericSqlExpressionBuilder<int>();
 
-  final StringSqlExpressionBuilder make = new StringSqlExpressionBuilder();
+  final NumericSqlExpressionBuilder<int> customerId =
+      new NumericSqlExpressionBuilder<int>();
 
-  final StringSqlExpressionBuilder description =
-      new StringSqlExpressionBuilder();
+  final NumericSqlExpressionBuilder<int> employeeId =
+      new NumericSqlExpressionBuilder<int>();
 
-  final BooleanSqlExpressionBuilder familyFriendly =
-      new BooleanSqlExpressionBuilder();
+  final DateTimeSqlExpressionBuilder orderDate =
+      new DateTimeSqlExpressionBuilder('orders.order_date');
 
-  final DateTimeSqlExpressionBuilder recalledAt =
-      new DateTimeSqlExpressionBuilder('cars.recalled_at');
+  final NumericSqlExpressionBuilder<int> shipperId =
+      new NumericSqlExpressionBuilder<int>();
 
   final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('cars.created_at');
+      new DateTimeSqlExpressionBuilder('orders.created_at');
 
   final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('cars.updated_at');
+      new DateTimeSqlExpressionBuilder('orders.updated_at');
 
   String toWhereClause({bool keyword}) {
     final List<String> expressions = [];
     if (id.hasValue) {
-      expressions.add('cars.id ' + id.compile());
+      expressions.add('orders.id ' + id.compile());
     }
-    if (make.hasValue) {
-      expressions.add('cars.make ' + make.compile());
+    if (customerId.hasValue) {
+      expressions.add('orders.customer_id ' + customerId.compile());
     }
-    if (description.hasValue) {
-      expressions.add('cars.description ' + description.compile());
+    if (employeeId.hasValue) {
+      expressions.add('orders.employee_id ' + employeeId.compile());
     }
-    if (familyFriendly.hasValue) {
-      expressions.add('cars.family_friendly ' + familyFriendly.compile());
+    if (orderDate.hasValue) {
+      expressions.add(orderDate.compile());
     }
-    if (recalledAt.hasValue) {
-      expressions.add(recalledAt.compile());
+    if (shipperId.hasValue) {
+      expressions.add('orders.shipper_id ' + shipperId.compile());
     }
     if (createdAt.hasValue) {
       expressions.add(createdAt.compile());
@@ -282,16 +288,16 @@ class CarQueryWhere {
   }
 }
 
-class CarFields {
+class OrderFields {
   static const id = 'id';
 
-  static const make = 'make';
+  static const customerId = 'customer_id';
 
-  static const description = 'description';
+  static const employeeId = 'employee_id';
 
-  static const familyFriendly = 'family_friendly';
+  static const orderDate = 'order_date';
 
-  static const recalledAt = 'recalled_at';
+  static const shipperId = 'shipper_id';
 
   static const createdAt = 'created_at';
 

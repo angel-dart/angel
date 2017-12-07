@@ -283,3 +283,17 @@ class UserQueryWhere {
         : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }
+
+class UserFields {
+  static const id = 'id';
+
+  static const username = 'username';
+
+  static const password = 'password';
+
+  static const email = 'email';
+
+  static const createdAt = 'created_at';
+
+  static const updatedAt = 'updated_at';
+}

@@ -250,3 +250,15 @@ class FootQueryWhere {
         : ((keyword != false ? 'WHERE ' : '') + expressions.join(' AND '));
   }
 }
+
+class FootFields {
+  static const id = 'id';
+
+  static const legId = 'leg_id';
+
+  static const nToes = 'n_toes';
+
+  static const createdAt = 'created_at';
+
+  static const updatedAt = 'updated_at';
+}
