@@ -1,6 +1,6 @@
 name: angel_hot
 description: Supports hot reloading of Angel servers on file changes.
-version: 1.1.0-alpha
+version: 1.1.0
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/hot
 environment:
@@ -9,10 +9,7 @@ dependencies:
   angel_framework: ^1.1.0-alpha
   angel_websocket: ^1.1.0-alpha
   html_builder: ^1.0.0
-  vm_service_client:
-    git:
-      url: git://github.com/BlackHC/vm_service_client.git
-      ref: reload_sources_poc
+  vm_service_lib: 0.3.5
 dev_dependencies:
     angel_test: ^1.0.0
     http: ^0.11.3

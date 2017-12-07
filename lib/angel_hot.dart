@@ -8,12 +8,13 @@ import 'package:angel_websocket/server.dart';
 import 'package:glob/glob.dart';
 import 'package:html_builder/elements.dart';
 import 'package:html_builder/html_builder.dart';
-import 'package:vm_service_client/vm_service_client.dart';
+import 'package:vm_service_lib/vm_service_lib.dart' as vm;
+import 'package:vm_service_lib/vm_service_lib_io.dart' as vm;
 import 'package:watcher/watcher.dart';
 
 /// A utility class that watches the filesystem for changes, and starts new instances of an Angel server.
 class HotReloader {
-  VMServiceClient _client;
+  vm.VmService _client;
   final StreamController<WatchEvent> _onChange =
       new StreamController<WatchEvent>.broadcast();
   final List _paths = [];
@@ -35,17 +36,24 @@ class HotReloader {
   /// Default: `5s`
   Duration get timeout => _timeout;
 
-  /// A URL pointing to the Dart VM service.
+  /// The Dart VM service host.
   ///
-  /// Default: `ws://localhost:8181/ws`.
-  final String vmServiceUrl;
+  /// Default: `localhost`.
+  final String vmServiceHost;
+
+  /// The port to connect to the Dart VM service.
+  ///
+  /// Default: `8181`.
+  final int vmServicePort;
 
   /// Initializes a hot reloader that proxies the server created by [generator].
   ///
   /// [paths] can contain [FileSystemEntity], [Uri], [String] and [Glob] only.
   /// URI's can be `package:` URI's as well.
   HotReloader(this.generator, Iterable paths,
-      {Duration timeout, this.vmServiceUrl: 'ws://localhost:8181/ws'}) {
+      {Duration timeout,
+      this.vmServiceHost: 'localhost',
+      this.vmServicePort: 8181}) {
     _timeout = timeout ?? new Duration(seconds: 5);
     _paths.addAll(paths ?? []);
   }
@@ -224,16 +232,15 @@ class HotReloader {
     }
 
     _server = null;
-    _client ??=
-        new VMServiceClient.connect(vmServiceUrl ?? 'ws://localhost:8181/ws');
-    var vm = await _client.getVM();
-    var mainIsolate = vm.isolates.first;
-    var runnable = await mainIsolate.loadRunnable();
-    var report = await runnable.reloadSources();
+    _client ??= await vm.vmServiceConnect(
+        vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
+    var vmachine = await _client.getVM();
+    var mainIsolate = vmachine.isolates.first;
+    var report = await _client.reloadSources(mainIsolate.id);
 
-    if (!report.status) {
+    if (!report.success) {
       stderr.writeln('Hot reload failed!!!');
-      stderr.writeln(report.message);
+      stderr.writeln(report.toString());
       exit(1);
     }
 
