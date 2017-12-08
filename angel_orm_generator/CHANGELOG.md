@@ -1,3 +1,6 @@
+# 1.0.0-alpha+6
+* `DateTime` is now `CAST` on insertion and update operations.
+
 # 1.0.0-alpha+3
 Implemented `@hasOne`, with tests. Still missing `@hasMany`.
 `belongsToMany` will likely be scrapped.

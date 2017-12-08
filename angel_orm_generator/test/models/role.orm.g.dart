@@ -122,7 +122,7 @@ class RoleQuery {
   Stream<Role> update(PostgreSQLConnection connection,
       {String name, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "roles" SET ("name", "created_at", "updated_at") = (@name, @createdAt, @updatedAt) ');
+        'UPDATE "roles" SET ("name", "created_at", "updated_at") = (@name, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -174,7 +174,7 @@ class RoleQuery {
       {String name, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "roles" ("name", "created_at", "updated_at") VALUES (@name, @createdAt, @updatedAt) RETURNING "id", "name", "created_at", "updated_at";',
+        'INSERT INTO "roles" ("name", "created_at", "updated_at") VALUES (@name, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "name", "created_at", "updated_at";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,

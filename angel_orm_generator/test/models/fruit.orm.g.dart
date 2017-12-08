@@ -123,7 +123,7 @@ class FruitQuery {
   Stream<Fruit> update(PostgreSQLConnection connection,
       {int treeId, String commonName, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "fruits" SET ("tree_id", "common_name", "created_at", "updated_at") = (@treeId, @commonName, @createdAt, @updatedAt) ');
+        'UPDATE "fruits" SET ("tree_id", "common_name", "created_at", "updated_at") = (@treeId, @commonName, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -180,7 +180,7 @@ class FruitQuery {
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "fruits" ("tree_id", "common_name", "created_at", "updated_at") VALUES (@treeId, @commonName, @createdAt, @updatedAt) RETURNING "id", "tree_id", "common_name", "created_at", "updated_at";',
+        'INSERT INTO "fruits" ("tree_id", "common_name", "created_at", "updated_at") VALUES (@treeId, @commonName, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "tree_id", "common_name", "created_at", "updated_at";',
         substitutionValues: {
           'treeId': treeId,
           'commonName': commonName,

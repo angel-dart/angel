@@ -130,7 +130,7 @@ class BookQuery {
   Stream<Book> update(PostgreSQLConnection connection,
       {String name, DateTime createdAt, DateTime updatedAt, int authorId}) {
     var buf = new StringBuffer(
-        'UPDATE "books" SET ("name", "created_at", "updated_at", "author_id") = (@name, @createdAt, @updatedAt, @authorId) ');
+        'UPDATE "books" SET ("name", "created_at", "updated_at", "author_id") = (@name, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp), @authorId) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -189,7 +189,7 @@ class BookQuery {
       int authorId}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "books" ("name", "created_at", "updated_at", "author_id") VALUES (@name, @createdAt, @updatedAt, @authorId) RETURNING "id", "name", "created_at", "updated_at", "author_id";',
+        'INSERT INTO "books" ("name", "created_at", "updated_at", "author_id") VALUES (@name, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp), @authorId) RETURNING "id", "name", "created_at", "updated_at", "author_id";',
         substitutionValues: {
           'name': name,
           'createdAt': createdAt != null ? createdAt : __ormNow__,

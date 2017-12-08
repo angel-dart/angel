@@ -135,7 +135,7 @@ class UserQuery {
       DateTime createdAt,
       DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "users" SET ("username", "password", "email", "created_at", "updated_at") = (@username, @password, @email, @createdAt, @updatedAt) ');
+        'UPDATE "users" SET ("username", "password", "email", "created_at", "updated_at") = (@username, @password, @email, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -200,7 +200,7 @@ class UserQuery {
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "users" ("username", "password", "email", "created_at", "updated_at") VALUES (@username, @password, @email, @createdAt, @updatedAt) RETURNING "id", "username", "password", "email", "created_at", "updated_at";',
+        'INSERT INTO "users" ("username", "password", "email", "created_at", "updated_at") VALUES (@username, @password, @email, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "username", "password", "email", "created_at", "updated_at";',
         substitutionValues: {
           'username': username,
           'password': password,

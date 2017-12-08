@@ -118,7 +118,7 @@ class CustomerQuery {
   Stream<Customer> update(PostgreSQLConnection connection,
       {DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "customers" SET ("created_at", "updated_at") = (@createdAt, @updatedAt) ');
+        'UPDATE "customers" SET ("created_at", "updated_at") = (CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -169,7 +169,7 @@ class CustomerQuery {
       {DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "customers" ("created_at", "updated_at") VALUES (@createdAt, @updatedAt) RETURNING "id", "created_at", "updated_at";',
+        'INSERT INTO "customers" ("created_at", "updated_at") VALUES (CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "created_at", "updated_at";',
         substitutionValues: {
           'createdAt': createdAt != null ? createdAt : __ormNow__,
           'updatedAt': updatedAt != null ? updatedAt : __ormNow__

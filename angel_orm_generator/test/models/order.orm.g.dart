@@ -130,7 +130,7 @@ class OrderQuery {
       DateTime createdAt,
       DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "orders" SET ("customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") = (@customerId, @employeeId, @orderDate, @shipperId, @createdAt, @updatedAt) ');
+        'UPDATE "orders" SET ("customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") = (@customerId, @employeeId, CAST (@orderDate AS timestamp), @shipperId, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -191,7 +191,7 @@ class OrderQuery {
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "orders" ("customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") VALUES (@customerId, @employeeId, @orderDate, @shipperId, @createdAt, @updatedAt) RETURNING "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
+        'INSERT INTO "orders" ("customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") VALUES (@customerId, @employeeId, CAST (@orderDate AS timestamp), @shipperId, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
         substitutionValues: {
           'customerId': customerId,
           'employeeId': employeeId,
@@ -233,8 +233,7 @@ class OrderQuery {
   static Stream<Order> getAll(PostgreSQLConnection connection) =>
       new OrderQuery().get(connection);
 
-  static joinCustomers(PostgreSQLConnection connection) {
-  }
+  static joinCustomers(PostgreSQLConnection connection) {}
 }
 
 class OrderQueryWhere {

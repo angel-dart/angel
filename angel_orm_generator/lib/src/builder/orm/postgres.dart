@@ -546,6 +546,14 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
         namedArguments: {'substitutionValues': map(substitutionValues)});
   }
 
+  void printField(
+      PostgresBuildContext ctx, FieldElement field, StringBuffer buf) {
+    if (dateTimeTypeChecker.isAssignableFromType(field.type))
+      buf.write('CAST (@${field.name} AS ${ctx.columnInfo[field.name].type.name})');
+    else
+      buf.write('@${field.name}');
+  }
+
   MethodBuilder buildUpdateMethod(PostgresBuildContext ctx) {
     var meth = new MethodBuilder('update',
         returnType:
@@ -572,7 +580,7 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
         return;
       else {
         if (i++ > 0) buf.write(', ');
-        buf.write('@${field.name}');
+        printField(ctx, field, buf);
       }
     });
     buf.write(') ');
@@ -678,7 +686,7 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
         return;
       else {
         if (i++ > 0) buf.write(', ');
-        buf.write('@${field.name}');
+        printField(ctx, field, buf);
       }
     });
 

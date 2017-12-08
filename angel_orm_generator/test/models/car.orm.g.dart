@@ -130,7 +130,7 @@ class CarQuery {
       DateTime createdAt,
       DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) ');
+        'UPDATE "cars" SET ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@make, @description, @familyFriendly, CAST (@recalledAt AS timestamp), CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -191,7 +191,7 @@ class CarQuery {
       DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, @recalledAt, @createdAt, @updatedAt) RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
+        'INSERT INTO "cars" ("make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@make, @description, @familyFriendly, CAST (@recalledAt AS timestamp), CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
         substitutionValues: {
           'make': make,
           'description': description,

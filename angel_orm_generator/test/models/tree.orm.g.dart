@@ -131,7 +131,7 @@ class TreeQuery {
   Stream<Tree> update(PostgreSQLConnection connection,
       {int rings, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "trees" SET ("rings", "created_at", "updated_at") = (@rings, @createdAt, @updatedAt) ');
+        'UPDATE "trees" SET ("rings", "created_at", "updated_at") = (@rings, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -192,7 +192,7 @@ class TreeQuery {
       {int rings, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "trees" ("rings", "created_at", "updated_at") VALUES (@rings, @createdAt, @updatedAt) RETURNING "id", "rings", "created_at", "updated_at";',
+        'INSERT INTO "trees" ("rings", "created_at", "updated_at") VALUES (@rings, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "rings", "created_at", "updated_at";',
         substitutionValues: {
           'rings': rings,
           'createdAt': createdAt != null ? createdAt : __ormNow__,

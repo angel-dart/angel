@@ -123,7 +123,7 @@ class FootQuery {
   Stream<Foot> update(PostgreSQLConnection connection,
       {int legId, int nToes, DateTime createdAt, DateTime updatedAt}) {
     var buf = new StringBuffer(
-        'UPDATE "foots" SET ("leg_id", "n_toes", "created_at", "updated_at") = (@legId, @nToes, @createdAt, @updatedAt) ');
+        'UPDATE "foots" SET ("leg_id", "n_toes", "created_at", "updated_at") = (@legId, @nToes, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) ');
     var whereClause = where.toWhereClause();
     if (whereClause != null) {
       buf.write(whereClause);
@@ -177,7 +177,7 @@ class FootQuery {
       {int legId, int nToes, DateTime createdAt, DateTime updatedAt}) async {
     var __ormNow__ = new DateTime.now();
     var result = await connection.query(
-        'INSERT INTO "foots" ("leg_id", "n_toes", "created_at", "updated_at") VALUES (@legId, @nToes, @createdAt, @updatedAt) RETURNING "id", "leg_id", "n_toes", "created_at", "updated_at";',
+        'INSERT INTO "foots" ("leg_id", "n_toes", "created_at", "updated_at") VALUES (@legId, @nToes, CAST (@createdAt AS timestamp), CAST (@updatedAt AS timestamp)) RETURNING "id", "leg_id", "n_toes", "created_at", "updated_at";',
         substitutionValues: {
           'legId': legId,
           'nToes': nToes,
