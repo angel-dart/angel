@@ -89,3 +89,18 @@ Logout:
 ```dart
 await app.logout();
 ```
+
+# Live Updates
+Oftentimes, you will want to update a collection based on updates from a service.
+Use `ServiceList` for this case:
+
+```dart
+build(BuildContext context) async {
+  var list = new ServiceList(app.service('api/todos'));
+  
+  return new StreamBuilder(
+    stream: list.onChange,
+    builder: _yourBuildFunction,
+  );
+}
+```

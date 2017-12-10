@@ -3,6 +3,7 @@ library angel_client;
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:http/src/response.dart' as http;
 export 'package:angel_http_exception/angel_http_exception.dart';
 
@@ -131,4 +132,81 @@ abstract class Service {
 
   /// Removes the given resource.
   Future remove(id, [Map params]);
+}
+
+/// A [List] that automatically updates itself whenever the referenced [service] fires an event.
+class ServiceList extends DelegatingList {
+  /// A field name used to compare [Map] by ID.
+  final String idField;
+
+  /// If `true` (default: `false`), then `index` events will be handled as a [Map] containing a `data` field.
+  ///
+  /// See https://github.com/angel-dart/paginate.
+  final bool asPaginated;
+
+  /// A function used to compare two items for equality.
+  final bool Function(dynamic, dynamic) compare;
+
+  final Service service;
+
+  final StreamController<ServiceList> _onChange = new StreamController();
+  final List<StreamSubscription> _subs = [];
+
+  ServiceList(this.service, {this.idField, this.asPaginated: false, this.compare}) : super([]) {
+    // Index
+    _subs.add(service.onIndexed.listen((data) {
+      var items = asPaginated == true ? data['data'] : data;
+      this..clear()..addAll(items);
+    }));
+
+    // Created
+    _subs.add(service.onCreated.listen((item) {
+      add(item);
+      _onChange.add(this);
+    }));
+
+    // Modified/Updated
+    handleModified(item) {
+      var indices = <int>[];
+
+      for (int i = 0; i < length; i++) {
+        if (compareItems(item, this[i]))
+          indices.add(i);
+      }
+
+      if (indices.isNotEmpty) {
+        for (var i in indices)
+          this[i] = item;
+
+        _onChange.add(this);
+      }
+    }
+
+    _subs.addAll([
+      service.onModified.listen(handleModified),
+      service.onUpdated.listen(handleModified),
+    ]);
+
+    // Removed
+    _subs.add(service.onRemoved.listen((item) {
+      removeWhere((x) => compareItems(item, x));
+      _onChange.add(this);
+    }));
+  }
+
+  /// Fires whenever the underlying [service] fires a change event.
+  Stream<ServiceList> get onChange => _onChange.stream;
+
+  Future close() async {
+    _onChange.close();
+  }
+
+  bool compareItems(a, b) {
+    if (compare != null)
+      return compare(a, b);
+    if (a is Map)
+      return a[idField ?? 'id'] == b[idField ?? 'id'];
+    else
+      return a == b;
+  }
 }
