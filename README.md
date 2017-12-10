@@ -163,3 +163,13 @@ main() async {
   app.authenticateViaJwt('<some-jwt>');
 }
 ```
+**Unwrapping Events**
+In several cases, it may be cumbersome or inconsistent to handle events
+as `WebSocketEvent`s. Call `unwrap` to receive a `Service` that returns the underlying `data`
+objects.
+
+```dart
+foo() async {
+  var unwrapped = app.service('api/todos').unwrap();
+}
+```

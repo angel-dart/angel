@@ -21,12 +21,12 @@ class TodoService extends TypedService<Todo> {
 }
 
 testIndex(BaseWebSocketClient client) async {
-  var Todos = client.service('api/todos');
+  var Todos = client.service('api/todos').unwrap();
   Todos.index();
 
   var indexed = await Todos.onIndexed.first;
-  print('indexed: ${indexed.toJson()}');
+  print('indexed: $indexed');
 
-  expect(indexed.data, isList);
-  expect(indexed.data, isEmpty);
+  expect(indexed, isList);
+  expect(indexed, isEmpty);
 }

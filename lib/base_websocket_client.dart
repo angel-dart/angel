@@ -136,8 +136,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   WebSocketsService service(String path,
       {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, '');
-    return new WebSocketsService(socket, this, uri,
-        deserializer: deserializer);
+    return new WebSocketsService(socket, this, uri, deserializer: deserializer);
   }
 
   /// Starts listening for data.
@@ -389,6 +388,9 @@ class WebSocketsService extends Service {
         eventName: '$path::${ACTION_REMOVE}', id: id, params: params ?? {}));
     return null;
   }
+
+  /// Returns a wrapper that queries this service, but fires the `data` of `WebSocketEvent`s, rather than the events themselves.
+  Service unwrap() => new _WebSocketsDataService(this);
 }
 
 /// Contains a dynamic Map of [WebSocketEvent] streams.
@@ -407,5 +409,83 @@ class WebSocketExtraneousEventHandler {
       _events[index] = new StreamController<WebSocketEvent>();
 
     return _events[index].stream;
+  }
+}
+
+class _WebSocketsDataService extends Service {
+  final WebSocketsService service;
+
+  Stream _onIndexed, _onRead, _onCreated, _onModified, _onUpdated, _onRemoved;
+
+  _WebSocketsDataService(this.service);
+
+  getData(WebSocketEvent e) => e.data;
+
+  @override
+  Future remove(id, [Map params]) {
+    return service.remove(id, params);
+  }
+
+  @override
+  Future update(id, data, [Map params]) {
+    return service.update(id, data, params);
+  }
+
+  @override
+  Future modify(id, data, [Map params]) {
+    return service.modify(id, data, params);
+  }
+
+  @override
+  Future create(data, [Map params]) {
+    return service.create(data, params);
+  }
+
+  @override
+  Future read(id, [Map params]) {
+    return service.read(id, params);
+  }
+
+  @override
+  Future index([Map params]) {
+    return service.index(params);
+  }
+
+  @override
+  Future close() async {}
+
+  @override
+  Angel get app {
+    return service.app;
+  }
+
+  @override
+  Stream get onRemoved {
+    return _onRemoved ??= service.onRemoved.map(getData);
+  }
+
+  @override
+  Stream get onUpdated {
+    return _onUpdated ??= service.onUpdated.map(getData);
+  }
+
+  @override
+  Stream get onModified {
+    return _onModified ??= service.onModified.map(getData);
+  }
+
+  @override
+  Stream get onCreated {
+    return _onCreated ??= service.onCreated.map(getData);
+  }
+
+  @override
+  Stream get onRead {
+    return _onRead ??= service.onRead.map(getData);
+  }
+
+  @override
+  Stream get onIndexed {
+    return _onIndexed ??= service.onIndexed.map(getData);
   }
 }
