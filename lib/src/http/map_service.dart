@@ -23,8 +23,15 @@ class MapService extends Service {
       this.autoIdAndDateFields: true})
       : super();
 
-  _matchesId(id) {
-    return (Map item) => item['id'] != null && item['id'] == id?.toString();
+  bool Function(Map) _matchesId(id) {
+    return (Map item) {
+      if (item['id'] == null)
+        return false;
+      else if (autoIdAndDateFields != false)
+        return item['id'] == id?.toString();
+      else
+        return item['id'] == id;
+    };
   }
 
   @override
