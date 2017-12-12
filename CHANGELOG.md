@@ -1,3 +1,7 @@
+# 1.1.0+2
+* Modified `handleAngelHttpException` to only run rescue code
+if the response is still open. Prevents application crashes.
+
 # 1.1.0+1
 * Modified `_matchesId` in `MapService` to support custom ID fields.
 

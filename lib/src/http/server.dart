@@ -370,10 +370,13 @@ class Angel extends AngelBase {
       }
     }
 
-    res.statusCode = e.statusCode;
-    var result = await errorHandler(e, req, res);
-    await executeHandler(result, req, res);
-    res.end();
+    if (res.isOpen) {
+      res.statusCode = e.statusCode;
+      var result = await errorHandler(e, req, res);
+      await executeHandler(result, req, res);
+      res.end();
+    }
+
     return await sendResponse(request, req, res,
         ignoreFinalizers: ignoreFinalizers == true);
   }
