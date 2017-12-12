@@ -84,7 +84,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Can we still write to this response?
-  bool get isOpen => _isOpen;
+  bool get isOpen => _isOpen && !_isClosed;
 
   /// A set of UTF-8 encoded bytes that will be written to the response.
   BytesBuilder get buffer => _buffer;
