@@ -158,12 +158,10 @@ class ServiceList extends DelegatingList {
     // Index
     _subs.add(service.onIndexed.listen((data) {
       var items = asPaginated == true ? data['data'] : data;
-      if (items.isNotEmpty) {
-        this
-          ..clear()
-          ..addAll(items);
-        _onChange.add(this);
-      }
+      this
+        ..clear()
+        ..addAll(items);
+      _onChange.add(this);
     }));
 
     // Created
