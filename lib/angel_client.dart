@@ -152,11 +152,18 @@ class ServiceList extends DelegatingList {
   final StreamController<ServiceList> _onChange = new StreamController();
   final List<StreamSubscription> _subs = [];
 
-  ServiceList(this.service, {this.idField, this.asPaginated: false, this.compare}) : super([]) {
+  ServiceList(this.service,
+      {this.idField, this.asPaginated: false, this.compare})
+      : super([]) {
     // Index
     _subs.add(service.onIndexed.listen((data) {
       var items = asPaginated == true ? data['data'] : data;
-      this..clear()..addAll(items);
+      if (items.isNotEmpty) {
+        this
+          ..clear()
+          ..addAll(items);
+        _onChange.add(this);
+      }
     }));
 
     // Created
@@ -170,13 +177,11 @@ class ServiceList extends DelegatingList {
       var indices = <int>[];
 
       for (int i = 0; i < length; i++) {
-        if (compareItems(item, this[i]))
-          indices.add(i);
+        if (compareItems(item, this[i])) indices.add(i);
       }
 
       if (indices.isNotEmpty) {
-        for (var i in indices)
-          this[i] = item;
+        for (var i in indices) this[i] = item;
 
         _onChange.add(this);
       }
@@ -202,8 +207,7 @@ class ServiceList extends DelegatingList {
   }
 
   bool compareItems(a, b) {
-    if (compare != null)
-      return compare(a, b);
+    if (compare != null) return compare(a, b);
     if (a is Map)
       return a[idField ?? 'id'] == b[idField ?? 'id'];
     else
