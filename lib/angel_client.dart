@@ -144,8 +144,10 @@ class ServiceList extends DelegatingList {
   /// See https://github.com/angel-dart/paginate.
   final bool asPaginated;
 
-  /// A function used to compare two items for equality.
-  final bool Function(dynamic, dynamic) compare;
+  /// A function used to compare the ID's two items for equality.
+  ///
+  /// Defaults to comparing the [idField] of `Map` instances.
+  final Equality _compare;
 
   final Service service;
 
@@ -153,8 +155,9 @@ class ServiceList extends DelegatingList {
   final List<StreamSubscription> _subs = [];
 
   ServiceList(this.service,
-      {this.idField, this.asPaginated: false, this.compare})
-      : super([]) {
+      {this.idField, this.asPaginated: false, Equality compare})
+      : _compare = compare ?? new EqualityBy((map) => map[idField ?? 'id']),
+        super([]) {
     // Index
     _subs.add(service.onIndexed.listen((data) {
       var items = asPaginated == true ? data['data'] : data;
@@ -175,7 +178,7 @@ class ServiceList extends DelegatingList {
       var indices = <int>[];
 
       for (int i = 0; i < length; i++) {
-        if (compareItems(item, this[i])) indices.add(i);
+        if (_compare.equals(item, this[i])) indices.add(i);
       }
 
       if (indices.isNotEmpty) {
@@ -192,7 +195,7 @@ class ServiceList extends DelegatingList {
 
     // Removed
     _subs.add(service.onRemoved.listen((item) {
-      removeWhere((x) => compareItems(item, x));
+      removeWhere((x) => _compare.equals(item, x));
       _onChange.add(this);
     }));
   }
@@ -202,13 +205,5 @@ class ServiceList extends DelegatingList {
 
   Future close() async {
     _onChange.close();
-  }
-
-  bool compareItems(a, b) {
-    if (compare != null) return compare(a, b);
-    if (a is Map)
-      return a[idField ?? 'id'] == b[idField ?? 'id'];
-    else
-      return a == b;
   }
 }

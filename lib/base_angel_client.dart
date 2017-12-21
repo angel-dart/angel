@@ -191,8 +191,7 @@ abstract class BaseAngelClient extends Angel {
   }
 
   @override
-  Service service(String path,
-      {Type type, AngelDeserializer deserializer}) {
+  Service service(String path, {Type type, AngelDeserializer deserializer}) {
     String uri = path.toString().replaceAll(straySlashes, "");
     var s = new BaseAngelService(client, this, '$basePath/$uri',
         deserializer: deserializer);
@@ -308,7 +307,10 @@ class BaseAngelService extends Service {
 
     try {
       if (_invalid(response)) {
-        throw failure(response);
+        if (_onIndexed.hasListener)
+          _onIndexed.addError(failure(response));
+        else
+          throw failure(response);
       }
 
       final json = JSON.decode(response.body);
@@ -322,7 +324,10 @@ class BaseAngelService extends Service {
       _onIndexed.add(r);
       return r;
     } catch (e, st) {
-      throw failure(response, error: e, stack: st);
+      if (_onIndexed.hasListener)
+        _onIndexed.addError(e, st);
+      else
+        throw failure(response, error: e, stack: st);
     }
   }
 
@@ -333,14 +338,20 @@ class BaseAngelService extends Service {
 
     try {
       if (_invalid(response)) {
-        throw failure(response);
+        if (_onRead.hasListener)
+          _onRead.addError(failure(response));
+        else
+          throw failure(response);
       }
 
       var r = deserialize(JSON.decode(response.body));
       _onRead.add(r);
       return r;
     } catch (e, st) {
-      throw failure(response, error: e, stack: st);
+      if (_onRead.hasListener)
+        _onRead.addError(e, st);
+      else
+        throw failure(response, error: e, stack: st);
     }
   }
 
@@ -351,14 +362,20 @@ class BaseAngelService extends Service {
 
     try {
       if (_invalid(response)) {
-        throw failure(response);
+        if (_onCreated.hasListener)
+          _onCreated.addError(failure(response));
+        else
+          throw failure(response);
       }
 
       var r = deserialize(JSON.decode(response.body));
       _onCreated.add(r);
       return r;
     } catch (e, st) {
-      throw failure(response, error: e, stack: st);
+      if (_onCreated.hasListener)
+        _onCreated.addError(e, st);
+      else
+        throw failure(response, error: e, stack: st);
     }
   }
 
@@ -369,14 +386,20 @@ class BaseAngelService extends Service {
 
     try {
       if (_invalid(response)) {
-        throw failure(response);
+        if (_onModified.hasListener)
+          _onModified.addError(failure(response));
+        else
+          throw failure(response);
       }
 
       var r = deserialize(JSON.decode(response.body));
       _onModified.add(r);
       return r;
     } catch (e, st) {
-      throw failure(response, error: e, stack: st);
+      if (_onModified.hasListener)
+        _onModified.addError(e, st);
+      else
+        throw failure(response, error: e, stack: st);
     }
   }
 
@@ -387,14 +410,20 @@ class BaseAngelService extends Service {
 
     try {
       if (_invalid(response)) {
-        throw failure(response);
+        if (_onUpdated.hasListener)
+          _onUpdated.addError(failure(response));
+        else
+          throw failure(response);
       }
 
       var r = deserialize(JSON.decode(response.body));
       _onUpdated.add(r);
       return r;
     } catch (e, st) {
-      throw failure(response, error: e, stack: st);
+      if (_onUpdated.hasListener)
+        _onUpdated.addError(e, st);
+      else
+        throw failure(response, error: e, stack: st);
     }
   }
 
@@ -405,14 +434,20 @@ class BaseAngelService extends Service {
 
     try {
       if (_invalid(response)) {
-        throw failure(response);
+        if (_onRemoved.hasListener)
+          _onRemoved.addError(failure(response));
+        else
+          throw failure(response);
       }
 
       var r = deserialize(JSON.decode(response.body));
       _onRemoved.add(r);
       return r;
     } catch (e, st) {
-      throw failure(response, error: e, stack: st);
+      if (_onRemoved.hasListener)
+        _onRemoved.addError(e, st);
+      else
+        throw failure(response, error: e, stack: st);
     }
   }
 }
