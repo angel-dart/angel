@@ -65,6 +65,9 @@ class LocalAuthStrategy extends AuthStrategy {
             ..end();
           return false;
         }
+
+        res.properties['user'] = verificationResult;
+        return true;
       }
     }
 
