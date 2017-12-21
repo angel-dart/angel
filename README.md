@@ -18,6 +18,11 @@ While not necessarily *slow*, this package makes no promises about performance.
 ```dart
 configureServer(Angel app) async {
   // Just like a normal service
-  app.use('/api/todos', new JsonFileService(new File('todos_db.json')));
+  app.use(
+    '/api/todos',
+    new JsonFileService(
+      const LocalFileSystem().file('todos_db.json')
+    ),
+  );
 }
 ```

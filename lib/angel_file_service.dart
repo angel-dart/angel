@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:file/file.dart';
 import 'package:pool/pool.dart';
 
 /// Persists in-memory changes to a file on disk.
@@ -12,10 +12,11 @@ class JsonFileService extends Service {
   final File file;
 
   JsonFileService(this.file,
-      {bool allowRemoveAll: false, bool allowQuery: true}) {
-    _store = new MapService(
-        allowRemoveAll: allowRemoveAll == true,
-        allowQuery: allowQuery != false);
+      {bool allowRemoveAll: false, bool allowQuery: true, MapService store}) {
+    _store = store ??
+        new MapService(
+            allowRemoveAll: allowRemoveAll == true,
+            allowQuery: allowQuery != false);
   }
 
   _load() async {
@@ -44,6 +45,11 @@ class JsonFileService extends Service {
     var r = await _mutex.request();
     await file.writeAsString(JSON.encode(_store.items.map(_jsonify).toList()));
     r.release();
+  }
+
+  @override
+  Future close() {
+    return _store.close();
   }
 
   @override
