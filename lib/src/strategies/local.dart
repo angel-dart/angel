@@ -57,6 +57,14 @@ class LocalAuthStrategy extends AuthStrategy {
               await verifier(usrPassMatch.group(1), usrPassMatch.group(2));
         } else
           throw new AngelHttpException.badRequest(errors: [invalidMessage]);
+
+        if (verificationResult == false || verificationResult == null) {
+          res
+            ..statusCode = 401
+            ..headers[HttpHeaders.WWW_AUTHENTICATE] = 'Basic realm="$realm"'
+            ..end();
+          return false;
+        }
       }
     }
 
@@ -81,9 +89,9 @@ class LocalAuthStrategy extends AuthStrategy {
           ..statusCode = 401
           ..headers[HttpHeaders.WWW_AUTHENTICATE] = 'Basic realm="$realm"'
           ..end();
-        return false;
-      } else
-        return false;
+      }
+
+      return false;
     } else if (verificationResult != null && verificationResult != false) {
       return verificationResult;
     } else {
