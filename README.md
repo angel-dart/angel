@@ -107,7 +107,7 @@ main() async {
 
   var Cars = app.service("api/cars");
 
-  Cars.onCreated.listen((e) => print("New car: ${e.data}"));
+  Cars.onCreated.listen((car) => print("New car: $car"));
 
   // Happens asynchronously
   Cars.create({"brand": "Toyota"});
@@ -148,10 +148,9 @@ main() async {
 
   var Cars = app.service("api/cars", type: Car);
 
-  Cars.onCreated.listen((e) {
+  Cars.onCreated.listen((Car car) {
       // Automatically deserialized into a car :)
-      Car car = e.data;
-
+      //
       // I just bought a new 2016 Toyota Camry!
       print("I just bought a new $car!");
   });
@@ -162,14 +161,3 @@ main() async {
   // Authenticate a WebSocket, if you were not already authenticated...
   app.authenticateViaJwt('<some-jwt>');
 }
-```
-**Unwrapping Events**
-In several cases, it may be cumbersome or inconsistent to handle events
-as `WebSocketEvent`s. Call `unwrap` to receive a `Service` that returns the underlying `data`
-objects.
-
-```dart
-foo() async {
-  var unwrapped = app.service('api/todos').unwrap();
-}
-```

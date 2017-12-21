@@ -240,39 +240,39 @@ class WebSocketsService extends Service {
 
   final StreamController<WebSocketEvent> _onAllEvents =
       new StreamController<WebSocketEvent>();
-  final StreamController<WebSocketEvent> _onIndexed =
-      new StreamController<WebSocketEvent>();
-  final StreamController<WebSocketEvent> _onRead =
-      new StreamController<WebSocketEvent>();
-  final StreamController<WebSocketEvent> _onCreated =
-      new StreamController<WebSocketEvent>();
-  final StreamController<WebSocketEvent> _onModified =
-      new StreamController<WebSocketEvent>();
-  final StreamController<WebSocketEvent> _onUpdated =
-      new StreamController<WebSocketEvent>();
-  final StreamController<WebSocketEvent> _onRemoved =
-      new StreamController<WebSocketEvent>();
+  final StreamController _onIndexed =
+      new StreamController();
+  final StreamController _onRead =
+      new StreamController();
+  final StreamController _onCreated =
+      new StreamController();
+  final StreamController _onModified =
+      new StreamController();
+  final StreamController _onUpdated =
+      new StreamController();
+  final StreamController _onRemoved =
+      new StreamController();
 
   /// Fired on all events.
   Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
 
   /// Fired on `index` events.
-  Stream<WebSocketEvent> get onIndexed => _onIndexed.stream;
+  Stream get onIndexed => _onIndexed.stream;
 
   /// Fired on `read` events.
-  Stream<WebSocketEvent> get onRead => _onRead.stream;
+  Stream get onRead => _onRead.stream;
 
   /// Fired on `created` events.
-  Stream<WebSocketEvent> get onCreated => _onCreated.stream;
+  Stream get onCreated => _onCreated.stream;
 
   /// Fired on `modified` events.
-  Stream<WebSocketEvent> get onModified => _onModified.stream;
+  Stream get onModified => _onModified.stream;
 
   /// Fired on `updated` events.
-  Stream<WebSocketEvent> get onUpdated => _onUpdated.stream;
+  Stream get onUpdated => _onUpdated.stream;
 
   /// Fired on `removed` events.
-  Stream<WebSocketEvent> get onRemoved => _onRemoved.stream;
+  Stream get onRemoved => _onRemoved.stream;
 
   WebSocketsService(this.socket, this.app, this.path, {this.deserializer}) {
     listen();
@@ -306,7 +306,7 @@ class WebSocketsService extends Service {
     app.onServiceEvent.listen((map) {
       if (map.containsKey(path)) {
         var event = map[path];
-        var transformed = transformEvent(event);
+        var transformed = transformEvent(event).data;
 
         _onAllEvents.add(event);
 
@@ -389,8 +389,9 @@ class WebSocketsService extends Service {
     return null;
   }
 
-  /// Returns a wrapper that queries this service, but fires the `data` of `WebSocketEvent`s, rather than the events themselves.
-  Service unwrap() => new _WebSocketsDataService(this);
+  /// No longer necessary.
+  @deprecated
+  Service unwrap() => this;
 }
 
 /// Contains a dynamic Map of [WebSocketEvent] streams.
@@ -409,83 +410,5 @@ class WebSocketExtraneousEventHandler {
       _events[index] = new StreamController<WebSocketEvent>();
 
     return _events[index].stream;
-  }
-}
-
-class _WebSocketsDataService extends Service {
-  final WebSocketsService service;
-
-  Stream _onIndexed, _onRead, _onCreated, _onModified, _onUpdated, _onRemoved;
-
-  _WebSocketsDataService(this.service);
-
-  getData(WebSocketEvent e) => e.data;
-
-  @override
-  Future remove(id, [Map params]) {
-    return service.remove(id, params);
-  }
-
-  @override
-  Future update(id, data, [Map params]) {
-    return service.update(id, data, params);
-  }
-
-  @override
-  Future modify(id, data, [Map params]) {
-    return service.modify(id, data, params);
-  }
-
-  @override
-  Future create(data, [Map params]) {
-    return service.create(data, params);
-  }
-
-  @override
-  Future read(id, [Map params]) {
-    return service.read(id, params);
-  }
-
-  @override
-  Future index([Map params]) {
-    return service.index(params);
-  }
-
-  @override
-  Future close() async {}
-
-  @override
-  Angel get app {
-    return service.app;
-  }
-
-  @override
-  Stream get onRemoved {
-    return _onRemoved ??= service.onRemoved.map(getData);
-  }
-
-  @override
-  Stream get onUpdated {
-    return _onUpdated ??= service.onUpdated.map(getData);
-  }
-
-  @override
-  Stream get onModified {
-    return _onModified ??= service.onModified.map(getData);
-  }
-
-  @override
-  Stream get onCreated {
-    return _onCreated ??= service.onCreated.map(getData);
-  }
-
-  @override
-  Stream get onRead {
-    return _onRead ??= service.onRead.map(getData);
-  }
-
-  @override
-  Stream get onIndexed {
-    return _onIndexed ??= service.onIndexed.map(getData);
   }
 }
