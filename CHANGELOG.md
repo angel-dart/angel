@@ -1,3 +1,6 @@
+# 1.1.0+1
+* Analyzer nitpick for pana
+
 # 1.1.0
 * Updated to framework v1.1.x
 * Use `package:file`

@@ -32,7 +32,7 @@ class JsonFileService extends Service {
       var contents = await file.readAsString();
 
       try {
-        var list = JSON.decode(contents) as List;
+        var list = JSON.decode(contents);
         _store.items.clear(); // Clear exist in-memory copy
         _store.items.addAll(list.map(_revive)); // Insert all new entries
       } catch (e) {
@@ -110,7 +110,7 @@ Map _jsonify(Map map) {
   return map.keys.fold<Map>({}, (out, k) => out..[k] = _safeForJson(map[k]));
 }
 
-_revive(x) {
+dynamic _revive(x) {
   if (x is Map) {
     return x.keys.fold<Map>({}, (out, k) => out..[k] = _revive(x[k]));
   } else if (x is Iterable)
