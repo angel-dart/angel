@@ -1,0 +1,6 @@
+name: angel_poll
+dependencies:
+  angel_client: ^1.0.0
+dev_dependencies:
+  angel_test: ^1.1.0
+  test: ^0.12.0
