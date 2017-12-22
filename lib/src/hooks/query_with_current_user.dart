@@ -31,8 +31,6 @@ HookedServiceEventListener queryWithCurrentUser(
         return getId(user);
       else if (user is Map)
         return user[fieldName];
-      else if (user is Extensible)
-        return user.properties[fieldName];
       else if (fieldName == 'id')
         return user.id;
       else

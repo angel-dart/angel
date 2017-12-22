@@ -20,8 +20,6 @@ HookedServiceEventListener hashPassword(
         return getPassword(user);
       else if (user is Map)
         return user[passwordField ?? 'password'];
-      else if (user is Extensible)
-        return user.properties[passwordField ?? 'password'];
       else if (passwordField == 'password')
         return user?.password;
       else
@@ -35,8 +33,6 @@ HookedServiceEventListener hashPassword(
         return setPassword(password, user);
       else if (user is Map)
         user[passwordField ?? 'password'] = password;
-      else if (user is Extensible)
-        user.properties[passwordField ?? password] = password;
       else
         reflect(user)
             .setField(new Symbol(passwordField ?? 'password'), password);

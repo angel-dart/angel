@@ -33,8 +33,6 @@ HookedServiceEventListener associateCurrentUser(
         return getId(user);
       else if (user is Map)
         return user[idField ?? 'id'];
-      else if (user is Extensible)
-        return user.properties[idField ?? 'id'];
       else if (idField == null || idField == 'id')
         return user.id;
       else
@@ -52,8 +50,6 @@ HookedServiceEventListener associateCurrentUser(
         return assignUserId(id, obj);
       else if (obj is Map)
         obj[fieldName] = id;
-      else if (obj is Extensible)
-        obj.properties[fieldName] = id;
       else if (fieldName == 'userId')
         obj.userId = id;
       else

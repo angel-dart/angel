@@ -25,8 +25,6 @@ HookedServiceEventListener restrictToOwner(
           return getId(user);
         else if (user is Map)
           return user[idField ?? 'id'];
-        else if (user is Extensible)
-          return user.properties[idField ?? 'id'];
         else if (idField == null || idField == 'id')
           return user.id;
         else
@@ -49,8 +47,6 @@ HookedServiceEventListener restrictToOwner(
             return getOwner(obj);
           else if (obj is Map)
             return obj[ownerField ?? 'userId'];
-          else if (obj is Extensible)
-            return obj.properties[ownerField ?? 'userId'];
           else if (ownerField == null || ownerField == 'userId')
             return obj.userId;
           else
