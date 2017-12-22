@@ -16,7 +16,7 @@ main() {
   setUp(() async {
     app = new Angel();
 
-    app.before.add((RequestContext req, res) async {
+    app.use((RequestContext req, res) async {
       // In real life, you'd use auth to check user roles,
       // but in this case, let's just set the user manually
       var xRoles = req.headers.value('X-Roles');

@@ -12,7 +12,7 @@ main() {
   setUp(() async {
     app = new Angel()
       ..lazyParseBodies = true
-      ..before.add((RequestContext req, res) async {
+      ..use((RequestContext req, res) async {
         var xUser = req.headers.value('X-User');
         if (xUser != null)
           req.inject('user',
@@ -25,7 +25,7 @@ main() {
       ..use('/artists', new ArtistService())
       ..use('/roled', new RoledService());
 
-    app.service('user_data')
+    (app.service('user_data') as HookedService)
       ..beforeIndexed.listen(hooks.queryWithCurrentUser())
       ..beforeCreated.listen(hooks.hashPassword());
 
@@ -34,14 +34,16 @@ main() {
       ..beforeRead.listen(hooks.restrictToOwner())
       ..beforeCreated.listen(hooks.associateCurrentUser());
 
-    app.service('roled')
+    (app.service('roled') as HookedService)
       ..beforeIndexed.listen(new Permission('foo:*').toHook())
       ..beforeRead.listen(new Permission('foo:*').toHook(owner: true));
 
-    app.fatalErrorStream.listen((e) {
-      print('Fatal: ${e.error}');
-      print(e.stack);
-    });
+    var errorHandler = app.errorHandler;
+    app.errorHandler = (e, req, res) {
+      print(e.toJson());
+      print(e.stackTrace);
+      return errorHandler(e, req, res);
+    };
 
     client = await connectTo(app);
   });
@@ -272,7 +274,7 @@ const Artist _MICHAEL_JACKSON =
 
 class RoledService extends Service {
   @override
-  index([params]) {
+  index([params]) async {
     return ['foo'];
   }
 
