@@ -63,9 +63,9 @@ class JsonFileService extends Service {
   @override
   Future<Map> create(data, [Map params]) async {
     await _load();
-    _store.items.add(data);
+    var created = await _store.create(data, params);
     await _save();
-    return data;
+    return created;
   }
 
   @override
