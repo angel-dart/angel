@@ -25,12 +25,16 @@ main() {
 
   test('once per hour', () async {
     // First request within the hour is fine
-    var response = await client.get('/once-per-hour');
+    var response = await client.get('/once-per-hour', headers: {
+      'accept': 'application/json',
+    });
     print(response.body);
     expect(response, hasBody('"OK"'));
 
     // Second request within an hour? No no no!
-    response = await client.get('/once-per-hour');
+    response = await client.get('/once-per-hour', headers: {
+      'accept': 'application/json',
+    });
     print(response.body);
     expect(response, isAngelHttpException(statusCode: 429));
   });
@@ -54,7 +58,9 @@ main() {
     expect(response, hasBody('"OK"'));
 
     // Fourth request within a minute? No no no!
-    response = await client.get('/thrice-per-minute');
+    response = await client.get('/thrice-per-minute', headers: {
+      'accept': 'application/json',
+    });
     print(response.body);
     expect(response, isAngelHttpException(statusCode: 429));
   });

@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_security/angel_security.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_validate/server.dart';
+import 'package:logging/logging.dart';
 import 'package:matcher/matcher.dart';
 import 'package:test/test.dart';
+import 'pretty_logging.dart';
 
 final Validator untrustedSchema = new Validator({'html*': isString});
 
@@ -45,7 +46,8 @@ main() async {
           </html>''');
       });
 
-    await app.configure(logRequests(new File('log.txt')));
+    app.logger = new Logger.detached('angel_security')
+      ..onRecord.listen(prettyLog);
     client = await connectTo(app);
   });
 
