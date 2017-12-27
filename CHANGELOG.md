@@ -1,3 +1,6 @@
+# 1.2.0+1
+* Removed a type annotation in `authenticateViaPopup` to prevent breaking with DDC.
+
 # 1.2.0
 * `ServiceList` now uses `Equality` from `package:collection` to compare items.
 * `Service`s will now add service errors to corresponding streams if there is a listener.
