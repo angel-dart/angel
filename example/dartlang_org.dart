@@ -19,7 +19,7 @@ main() async {
   });
 
   // Proxy any other request through to dartlang.org
-  app.after.add(angelHandler);
+  app.use(angelHandler);
 
   var server = await app.startServer(InternetAddress.LOOPBACK_IP_V4, 8080);
   print('Proxying at http://${server.address.host}:${server.port}');

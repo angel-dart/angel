@@ -12,7 +12,7 @@ import 'convert.dart';
 /// * `angel_shelf.response` - The Angel [ResponseContext].
 AngelConfigurer supportShelf() {
   return (Angel app) async {
-    app.before.add((RequestContext req, ResponseContext res) async {
+    app.use((RequestContext req, ResponseContext res) async {
       // Inject shelf.Request ;)
       req.inject(
           shelf.Request,

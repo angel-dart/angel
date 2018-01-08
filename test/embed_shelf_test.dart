@@ -38,7 +38,7 @@ main() {
 
     var app = new Angel()..lazyParseBodies = true;
     app.get('/angel', 'Angel');
-    app.after.add(embedShelf(handler, throwOnNullResponse: true));
+    app.use(embedShelf(handler, throwOnNullResponse: true));
     await app.configure(logRequests());
 
     server = await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
