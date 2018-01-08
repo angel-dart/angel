@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_client/io.dart' as c;
-import 'package:angel_diagnostics/angel_diagnostics.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_shelf/angel_shelf.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:charcode/charcode.dart';
+import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:test/test.dart';
+import 'pretty_logging.dart';
 
 main() {
   c.Angel client;
@@ -39,7 +40,7 @@ main() {
     var app = new Angel()..lazyParseBodies = true;
     app.get('/angel', 'Angel');
     app.use(embedShelf(handler, throwOnNullResponse: true));
-    await app.configure(logRequests());
+    app.logger = new Logger.detached('angel')..onRecord.listen(prettyLog);
 
     server = await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
     client =

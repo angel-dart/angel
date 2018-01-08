@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="tests in shelf" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true" nameIsGenerated="true">
+    <option name="filePath" value="$PROJECT_DIR$" />
+    <option name="scope" value="FOLDER" />
+    <option name="testRunnerOptions" value="-j 4" />
+    <method />
+  </configuration>
+</component>
