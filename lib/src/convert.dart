@@ -56,11 +56,10 @@ Future<shelf.Request> convertRequest(RequestContext request,
 /// In addition, the response's context will be available in `angelResponse.properties`
 /// as `shelf_context`.
 Future mergeShelfResponse(
-    shelf.Response shelfResponse, ResponseContext angelResponse) async {
+    shelf.Response shelfResponse, ResponseContext angelResponse) {
   angelResponse.headers.addAll(shelfResponse.headers);
   angelResponse.statusCode = shelfResponse.statusCode;
   angelResponse.properties['shelf_context'] = shelfResponse.context;
   angelResponse.properties['shelf_response'] = shelfResponse;
-  await shelfResponse.read().forEach(angelResponse.buffer.add);
-  angelResponse.end();
+  return shelfResponse.read().pipe(angelResponse);
 }

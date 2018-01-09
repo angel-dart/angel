@@ -1,5 +1,6 @@
 import 'package:console/console.dart';
 import 'package:logging/logging.dart';
+import 'package:stack_trace/stack_trace.dart';
 
 /// Prints the contents of a [LogRecord] with pretty colors.
 void prettyLog(LogRecord record) {
@@ -10,7 +11,7 @@ void prettyLog(LogRecord record) {
   if (record.error != null)
     pen(record.error.toString());
   if (record.stackTrace != null)
-    pen(record.stackTrace.toString());
+    pen(new Chain.forTrace(record.stackTrace).terse.toString());
   
   pen();
 }

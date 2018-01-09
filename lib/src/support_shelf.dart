@@ -25,10 +25,14 @@ AngelConfigurer supportShelf() {
       res.serializer = (val) {
         if (val is! shelf.Response) return oldSerializer(val);
         res.properties['shelf_response'] = val;
+        mergeShelfResponse(val, res);
         return ''; // Write nothing
       };
+
+      return true;
     });
 
+    /*
     // Merge shelf response if necessary
     app.responseFinalizers.add((RequestContext req, ResponseContext res) async {
       if (res.properties.containsKey('shelf_response')) {
@@ -36,5 +40,6 @@ AngelConfigurer supportShelf() {
         await mergeShelfResponse(shelfResponse, res);
       }
     });
+    */
   };
 }
