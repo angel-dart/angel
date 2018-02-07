@@ -276,7 +276,7 @@ class AngelHttp {
     });
   }
 
-  Future<RequestContext> createRequestContext(HttpRequest request) {
+  Future<HttpRequestContextImpl> createRequestContext(HttpRequest request) {
     var path = request.uri.path.replaceAll(_straySlashes, '');
     if (path.length == 0) path = '/';
     return HttpRequestContextImpl.from(request, app, path).then((req) async {

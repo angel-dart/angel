@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/src/http/http_request_context.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/request_context.dart" afterPath="$PROJECT_DIR$/lib/src/http/request_context.dart" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -33,8 +31,8 @@
           <file leaf-file-name="angel_http.dart" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="257">
-                  <caret line="281" column="65" lean-forward="false" selection-start-line="281" selection-start-column="65" selection-end-line="281" selection-end-column="65" />
+                <state relative-caret-position="212">
+                  <caret line="278" column="31" lean-forward="false" selection-start-line="278" selection-start-column="31" selection-end-line="278" selection-end-column="31" />
                   <folding>
                     <element signature="e#0#20#0" expanded="true" />
                   </folding>
@@ -312,7 +310,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Dart Command Line App.main.dart">
+  <component name="RunManager" selected="Dart Test.All Tests">
     <configuration name="Chained routes in routing_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
       <option name="filePath" value="$PROJECT_DIR$/test/routing_test.dart" />
       <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
@@ -615,14 +613,7 @@
       <workItem from="1513103483207" duration="18000" />
       <workItem from="1513103506825" duration="139000" />
       <workItem from="1517332581856" duration="858000" />
-      <workItem from="1517973177718" duration="6314000" />
-    </task>
-    <task id="LOCAL-00013" summary="1.0.3">
-      <created>1496752953708</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1496752953708</updated>
+      <workItem from="1517973177718" duration="6361000" />
     </task>
     <task id="LOCAL-00014" summary="1.0.3">
       <created>1497200046584</created>
@@ -960,13 +951,17 @@
       <option name="project" value="LOCAL" />
       <updated>1517978306602</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="Create HttpRequestContextImpl">
+      <created>1517979545063</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1517979545063</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="All_Tests - 2018.02.06 at 23h 24m 26s.xml">
-      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
-    </history-entry>
     <history-entry file="All_Tests - 2018.02.06 at 23h 24m 59s.xml">
       <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
     </history-entry>
@@ -994,9 +989,12 @@
     <history-entry file="All_Tests - 2018.02.06 at 23h 33m 56s.xml">
       <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
     </history-entry>
+    <history-entry file="All_Tests - 2018.02.06 at 23h 59m 25s.xml">
+      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="124350000" />
+    <option name="totallyTimeSpent" value="124397000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1055,7 +1053,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="+3" />
     <MESSAGE value="+4" />
     <MESSAGE value="+6" />
     <MESSAGE value="autoIdAndDateFields in MapService" />
@@ -1080,7 +1077,8 @@
     <MESSAGE value="Deprecated `ServerGenerator`" />
     <MESSAGE value="Updated tests to use `AngelHttp` API" />
     <MESSAGE value="Added example/main.dart" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added example/main.dart" />
+    <MESSAGE value="Create HttpRequestContextImpl" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create HttpRequestContextImpl" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1501,8 +1499,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="257">
-          <caret line="281" column="65" lean-forward="false" selection-start-line="281" selection-start-column="65" selection-end-line="281" selection-end-column="65" />
+        <state relative-caret-position="212">
+          <caret line="278" column="31" lean-forward="false" selection-start-line="278" selection-start-column="31" selection-end-line="278" selection-end-column="31" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
