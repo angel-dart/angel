@@ -20,6 +20,8 @@ main() async {
     })
     ..post('/date', () => new DateTime.now().toString());
 
-  await app.startServer();
+  var http = new AngelHttp(app);
+  var server = await app.startServer('127.0.0.1', 3000);
+  print('Listening at http://${server.address.address}:${server.port}');
 }
 ```
