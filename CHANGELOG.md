@@ -8,6 +8,7 @@ empty string.
 * Removed explicit dependence on `dart:io` for `Angel`, `RequestContext`, `ResponseContext`.
 * Created `lib/http.dart`, which exports HTTP-specific functionality.
 * `AnonymousService` now takes `FutureOr`.
+* `Service.toId` no longer only takes a `String`, and is generically-typed.
 
 # 1.1.0+3
 * Modified `ResponseContext#isOpen` to also return `false` if streaming is being used.

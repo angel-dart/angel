@@ -91,7 +91,7 @@ class Service extends Routable {
   }
 
   /// Transforms an [id] string into one acceptable by a service.
-  toId(String id) {
+  toId<T>(T id) {
     if (id == 'null' || id == null)
       return null;
     else
