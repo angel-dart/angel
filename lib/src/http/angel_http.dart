@@ -8,6 +8,7 @@ import 'package:json_god/json_god.dart' as god;
 import 'package:pool/pool.dart';
 import 'package:tuple/tuple.dart';
 import 'http_request_context.dart';
+import 'http_response_context.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'server.dart';
@@ -289,7 +290,7 @@ class AngelHttp {
   Future<ResponseContext> createResponseContext(HttpResponse response,
           [RequestContext correspondingRequest]) =>
       new Future<ResponseContext>.value(
-          new ResponseContext(response, app, correspondingRequest)
+          new HttpResponseContextImpl(response, app, correspondingRequest)
             ..serializer = (app.serializer ?? god.serialize)
             ..encoders.addAll(app.encoders ?? {}));
 

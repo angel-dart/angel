@@ -40,7 +40,6 @@ class Angel extends AngelBase {
   AngelHttp _http;
   bool _isProduction;
   Angel _parent;
-  Future<HttpServer> Function(dynamic, int) _serverGenerator = HttpServer.bind;
 
   /// A global Map of converters that can transform responses bodies.
   final Map<String, Converter<List<int>, List<int>>> encoders = {};

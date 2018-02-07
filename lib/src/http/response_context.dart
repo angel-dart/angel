@@ -23,14 +23,12 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef String ResponseSerializer(data);
 
 /// A convenience wrapper around an outgoing HTTP request.
-class ResponseContext implements StreamSink<List<int>>, StringSink {
+abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
   final BytesBuilder _buffer = new _LockableBytesBuilder();
   final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
-  final RequestContext _correspondingRequest;
 
   Completer _done;
-  bool _isOpen = true, _isClosed = false, _useStream = false;
   int _statusCode = 200;
 
   /// The [Angel] instance that is sending a response.
@@ -48,7 +46,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
 
   /// Points to the [RequestContext] corresponding to this response.
-  RequestContext get correspondingRequest => _correspondingRequest;
+  RequestContext get correspondingRequest;
 
   @override
   Future get done => (_done ?? new Completer()).future;
@@ -56,7 +54,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Headers that will be sent to the user.
   Map<String, String> get headers {
     /// If the response is closed, then this getter will return an immutable `Map`.
-    if (_isClosed)
+    if (!isOpen)
       return new Map<String, String>.unmodifiable(_headers);
     else
       return _headers;
@@ -80,20 +78,23 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   int get statusCode => _statusCode;
 
   void set statusCode(int value) {
-    if (_isClosed)
-      throw _closed();
+    if (!isOpen)
+      throw closed();
     else
       _statusCode = value ?? 200;
   }
 
   /// Can we still write to this response?
-  bool get isOpen => _isOpen && !_isClosed;
+  bool get isOpen => !!isOpen;
+
+  /// Returns `true` if a [Stream] is being written directly.
+  bool get streaming;
 
   /// A set of UTF-8 encoded bytes that will be written to the response.
   BytesBuilder get buffer => _buffer;
 
   /// The underlying [HttpResponse] under this instance.
-  final HttpResponse io;
+  HttpResponse get io;
 
   /// Gets the Content-Type header.
   ContentType get contentType {
@@ -116,25 +117,23 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
     headers[HttpHeaders.CONTENT_TYPE] = contentType.toString();
   }
 
-  ResponseContext(this.io, this.app, [this._correspondingRequest]);
-
   /// Set this to true if you will manually close the response.
   ///
   /// If `true`, all response finalizers will be skipped.
   bool willCloseItself = false;
 
-  StateError _closed() => new StateError('Cannot modify a closed response.');
+  static StateError closed() => new StateError('Cannot modify a closed response.');
 
   /// Sends a download as a response.
   Future download(File file, {String filename}) async {
-    if (!_isOpen) throw _closed();
+    if (!isOpen) throw closed();
 
     headers["Content-Disposition"] =
         'attachment; filename="${filename ?? file.path}"';
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     headers[HttpHeaders.CONTENT_LENGTH] = file.lengthSync().toString();
 
-    if (_useStream) {
+    if (streaming) {
       await file.openRead().pipe(this);
     } else {
       buffer.add(await file.readAsBytes());
@@ -143,22 +142,17 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Prevents more data from being written to the response, and locks it entire from further editing.
+  ///
+  /// This method should be overwritten, setting [streaming] to `false`, **after** a `super` call.
   Future close() {
-    var f = new Future.value();
-
-    if (_useStream) {
-      _useStream = false;
+    if (streaming) {
       _buffer?.clear();
-      f = io.close();
     } else if (_buffer is _LockableBytesBuilder) {
       (_buffer as _LockableBytesBuilder)._lock();
     }
 
-    _isOpen = _useStream = false;
-    _isClosed = true;
-
     if (_done?.isCompleted == false) _done.complete();
-    return f;
+    return new Future.value();
   }
 
   /// Disposes of all resources.
@@ -176,8 +170,9 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Prevents further request handlers from running on the response, except for response finalizers.
   ///
   /// To disable response finalizers, see [willCloseItself].
+  ///
+  /// This method should also set [!isOpen] to true.
   void end() {
-    _isOpen = false;
     if (_done?.isCompleted == false) _done.complete();
   }
 
@@ -186,7 +181,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Returns a JSONP response.
   void jsonp(value, {String callbackName: "callback", contentType}) {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
     write("$callbackName(${serializer(value)})");
 
     if (contentType != null) {
@@ -202,7 +197,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) async {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
     write(await app.viewGenerator(view, data));
     headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
     end();
@@ -216,7 +211,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   ///
   /// See [Router]#navigate for more. :)
   void redirect(url, {bool absolute: true, int code: 302}) {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
     headers
       ..[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString()
       ..[HttpHeaders.LOCATION] =
@@ -244,7 +239,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Redirects to the given named [Route].
   void redirectTo(String name, [Map params, int code]) {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
     Route _findRoute(Router r) {
       for (Route route in r.routes) {
         if (route is SymlinkRoute) {
@@ -269,7 +264,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Redirects to the given [Controller] action.
   void redirectToAction(String action, [Map params, int code]) {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
     // UserController@show
     List<String> split = action.split("@");
 
@@ -298,7 +293,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Copies a file's contents into the response buffer.
   Future sendFile(File file) async {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     buffer.add(await file.readAsBytes());
@@ -309,7 +304,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   ///
   /// [contentType] can be either a [String], or a [ContentType].
   void serialize(value, {contentType}) {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
 
     var text = serializer(value);
 
@@ -329,99 +324,39 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   ///
   /// You can optionally transform the file stream with a [codec].
   Future streamFile(File file) {
-    if (_isClosed) throw _closed();
+    if (!isOpen) throw closed();
 
     headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
     return file.openRead().pipe(this);
   }
 
-  @override
-  void add(List<int> data) {
-    if (_isClosed && !_useStream)
-      throw _closed();
-    else if (_useStream)
-      io.add(data);
-    else
-      buffer.add(data);
+  /// Releases critical resources from the [correspondingRequest].
+  void releaseCorrespondingRequest() {
+    if (correspondingRequest?.injections?.containsKey(Stopwatch) == true) {
+      (correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
+    }
+
+    if (correspondingRequest?.injections?.containsKey(PoolResource) ==
+        true) {
+      (correspondingRequest.injections[PoolResource] as PoolResource)
+          .release();
+    }
   }
 
   /// Configure the response to write directly to the output stream, instead of buffering.
-  bool useStream() {
-    if (!_useStream) {
-      // If this is the first stream added to this response,
-      // then add headers, status code, etc.
-      io
-        ..statusCode = statusCode
-        ..cookies.addAll(cookies);
-      headers.forEach(io.headers.set);
-      willCloseItself = _useStream = _isClosed = true;
+  bool useStream();
 
-      if (_correspondingRequest?.injections?.containsKey(Stopwatch) == true) {
-        (_correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
-      }
-
-      if (_correspondingRequest?.injections?.containsKey(PoolResource) ==
-          true) {
-        (_correspondingRequest.injections[PoolResource] as PoolResource)
-            .release();
-      }
-
-      return true;
-    }
-
-    return false;
-  }
-
-  /// Adds a stream directly the underlying dart:[io] response.
+  /// Adds a stream directly the underlying response.
   ///
   /// This will also set [willCloseItself] to `true`, thus canceling out response finalizers.
   ///
   /// If this instance has access to a [correspondingRequest], then it will attempt to transform
   /// the content using at most one of the response [encoders].
   @override
-  Future addStream(Stream<List<int>> stream) {
-    if (_isClosed && !_useStream) throw _closed();
-    var firstStream = useStream();
-
-    Stream<List<int>> output = stream;
-
-    if (encoders.isNotEmpty && correspondingRequest != null) {
-      var allowedEncodings =
-          (correspondingRequest.headers[HttpHeaders.ACCEPT_ENCODING] ?? [])
-              .map((str) {
-        // Ignore quality specifications in accept-encoding
-        // ex. gzip;q=0.8
-        if (!str.contains(';')) return str;
-        return str.split(';')[0];
-      });
-
-      for (var encodingName in allowedEncodings) {
-        Converter<List<int>, List<int>> encoder;
-        String key = encodingName;
-
-        if (encoders.containsKey(encodingName))
-          encoder = encoders[encodingName];
-        else if (encodingName == '*') {
-          encoder = encoders[key = encoders.keys.first];
-        }
-
-        if (encoder != null) {
-          if (firstStream) {
-            io.headers.set(HttpHeaders.CONTENT_ENCODING, key);
-          }
-
-          output = encoders[key].bind(output);
-          break;
-        }
-      }
-    }
-
-    return io.addStream(output);
-  }
+  Future addStream(Stream<List<int>> stream);
 
   @override
   void addError(Object error, [StackTrace stackTrace]) {
-    io.addError(error, stackTrace);
     if (_done?.isCompleted == false) _done.completeError(error, stackTrace);
   }
 
@@ -429,13 +364,13 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   void write(value, {Encoding encoding}) {
     encoding ??= UTF8;
 
-    if (_isClosed && !_useStream)
-      throw _closed();
-    else if (_useStream) {
+    if (!isOpen && !streaming)
+      throw closed();
+    else if (streaming) {
       if (value is List<int>)
-        io.add(value);
+        add(value);
       else
-        io.add(encoding.encode(value.toString()));
+        add(encoding.encode(value.toString()));
     } else {
       if (value is List<int>)
         buffer.add(value);
@@ -446,10 +381,10 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   @override
   void writeCharCode(int charCode) {
-    if (_isClosed && !_useStream)
-      throw _closed();
-    else if (_useStream)
-      io.add([charCode]);
+    if (!isOpen && !streaming)
+      throw closed();
+    else if (streaming)
+      add([charCode]);
     else
       buffer.addByte(charCode);
   }
