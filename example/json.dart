@@ -40,7 +40,7 @@ serverMain(_) async {
   // Performance tuning
   app
     ..lazyParseBodies = true
-    ..injectSerializer(JSON.encode);
+    ..serializer = JSON.encode;
 
   app.errorHandler = (e, req, res) {
     print(e.message ?? e.error ?? e);

@@ -54,7 +54,7 @@ class Angel extends AngelBase {
   final Map<dynamic, InjectionRequest> _preContained = {};
 
   /// A middleware to inject a serialize on every request.
-  ResponseSerializer serializer;
+  String Function(dynamic) serializer;
 
   /// A [Map] of dependency data obtained via reflection.
   ///
@@ -283,7 +283,7 @@ class Angel extends AngelBase {
 
   /// Prefer directly setting [serializer].
   @deprecated
-  void injectSerializer(ResponseSerializer serializer) {
+  void injectSerializer(String serializer(x)) {
     this.serializer = serializer;
   }
 

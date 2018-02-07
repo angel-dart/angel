@@ -17,6 +17,9 @@ final RegExp _contentType =
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// Serializes response data into a String.
+///
+/// Prefer the String Function(dynamic) syntax.
+@deprecated
 typedef String ResponseSerializer(data);
 
 /// A convenience wrapper around an outgoing HTTP request.
@@ -71,7 +74,7 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// ```dart
   /// app.injectSerializer(JSON.encode);
   /// ```
-  ResponseSerializer serializer = god.serialize;
+  String Function(dynamic) serializer = god.serialize;
 
   /// This response's status code.
   int get statusCode => _statusCode;
