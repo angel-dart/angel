@@ -308,11 +308,15 @@ class ResponseContext implements StreamSink<List<int>>, StringSink {
   void serialize(value, {contentType}) {
     if (_isClosed) throw _closed();
 
+    var text = serializer(value);
+
+    if (text.isEmpty)
+      return;
+
     if (contentType is String)
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     else if (contentType is ContentType) this.contentType = contentType;
 
-    var text = serializer(value);
     write(text);
 
     end();

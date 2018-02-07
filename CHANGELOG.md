@@ -1,3 +1,7 @@
+# 1.1.1
+* `ResponseContext` no longer automatically closes if `serializer` returns an
+empty string.
+
 # 1.1.0+3
 * Modified `ResponseContext#isOpen` to also return `false` if streaming is being used.
 
