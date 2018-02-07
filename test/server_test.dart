@@ -62,9 +62,12 @@ main() {
     app.startupHooks.add((app) async {
       app.configuration['two'] = 2;
     });
-    await app.startServer();
+
+    var http = new AngelHttp(app);
+    await http.startServer();
     expect(app.configuration['two'], 2);
     await app.close();
+    await http.close();
   });
 
   test('warning when adding routes to flattened router', () {

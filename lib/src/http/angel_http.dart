@@ -88,7 +88,13 @@ class AngelHttp {
     if (_closed) return _server;
     _closed = true;
     _sub?.cancel();
-    await app.close();
+
+    // TODO: Remove this try/catch in 1.2.0
+    try {
+      await app.close();
+    } catch(_) {
+
+    }
 
     for (var configurer in app.shutdownHooks) await app.configure(configurer);
     return _server;

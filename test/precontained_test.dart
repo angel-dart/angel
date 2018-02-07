@@ -14,7 +14,7 @@ main() {
 
     var rq = new MockHttpRequest('GET', new Uri(path: '/foo'));
     rq.close();
-    await app.handleRequest(rq);
+    await new AngelHttp(app).handleRequest(rq);
     var rs = rq.response;
     var body = await rs.transform(UTF8.decoder).join();
     expect(body, JSON.encode('bar'));

@@ -26,9 +26,9 @@ main() {
         print(e.stackTrace);
       };
 
-    await app.startServer();
+    var server = await new AngelHttp(app).startServer();
     client = new http.Client();
-    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
+    url = "http://${server.address.host}:${server.port}";
   });
 
   tearDown(() async {

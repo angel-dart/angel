@@ -22,9 +22,9 @@ main() async {
 }
 
 void start(int id) {
-  var app = new Angel.custom(startShared)..lazyParseBodies = true;
+  var app = new Angel()..lazyParseBodies = true;
+  var http = new AngelHttp.custom(app, startShared);
 
-  if (true) {
     app.get('/', (req, ResponseContext res) {
       res.willCloseItself = true;
       res.io
@@ -32,12 +32,7 @@ void start(int id) {
         ..close();
       return false;
     });
-  } else {
-    app.get('/', (req, ResponseContext res) {
-      res.useStream();
-      res.write('Hello, world!');
-    });
-  }
+
 
   var oldHandler = app.errorHandler;
   app.errorHandler = (e, req, res) {
@@ -45,7 +40,8 @@ void start(int id) {
     print(e.stackTrace);
     return oldHandler(e, req, res);
   };
-  app.startServer(InternetAddress.LOOPBACK_IP_V4, 3000).then((server) {
+
+  http.startServer(InternetAddress.LOOPBACK_IP_V4, 3000).then((server) {
     print(
         'Instance #$id listening at http://${server.address.address}:${server.port}');
   });

@@ -71,8 +71,8 @@ void encodingTests(Angel getApp()) {
 
     test('encodes if explicit', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set(HttpHeaders.ACCEPT_ENCODING, 'gzip')
-        ..close();
+        ..headers.set(HttpHeaders.ACCEPT_ENCODING, 'gzip');
+      await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
 
@@ -83,8 +83,8 @@ void encodingTests(Angel getApp()) {
 
     test('only uses one encoder', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set(HttpHeaders.ACCEPT_ENCODING, ['gzip', 'deflate'])
-        ..close();
+        ..headers.set(HttpHeaders.ACCEPT_ENCODING, ['gzip', 'deflate']);
+      await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
 

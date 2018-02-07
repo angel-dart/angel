@@ -18,7 +18,7 @@ main() {
               res.serialize({'hello': 'world'}, contentType: ContentType.HTML));
     client = new http.Client();
 
-    server = await app.startServer();
+    server = await new AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 

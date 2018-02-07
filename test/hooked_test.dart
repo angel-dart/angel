@@ -32,8 +32,8 @@ main() {
       throw e.error;
     };
 
-    server = await app.startServer();
-    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
+    server = await new AngelHttp(app).startServer();
+    url = "http://${server.address.host}:${server.port}";
   });
 
   tearDown(() async {

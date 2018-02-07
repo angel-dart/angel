@@ -95,8 +95,9 @@ main() {
     app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
     client = new http.Client();
-    await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
-    url = "http://${app.httpServer.address.host}:${app.httpServer.port}";
+    var server =
+        await new AngelHttp(app).startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+    url = "http://${server.address.host}:${server.port}";
   });
 
   tearDown(() async {

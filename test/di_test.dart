@@ -27,7 +27,7 @@ main() {
     await app.configure(new SingletonController().configureServer);
     await app.configure(new ErrandController().configureServer);
 
-    server = await app.startServer();
+    server = await new AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 

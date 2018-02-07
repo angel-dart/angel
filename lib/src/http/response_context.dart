@@ -85,7 +85,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Can we still write to this response?
-  bool get isOpen => !!isOpen;
+  bool get isOpen;
 
   /// Returns `true` if a [Stream] is being written directly.
   bool get streaming;

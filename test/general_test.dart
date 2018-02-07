@@ -16,7 +16,7 @@ main() {
       ..all('*', () => throw new AngelHttpException.notFound());
     client = new http.Client();
 
-    server = await app.startServer();
+    server = await new AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 

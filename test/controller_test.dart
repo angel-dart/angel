@@ -60,7 +60,7 @@ main() {
     print(app.controllers);
     app.dumpTree();
 
-    server = await app.startServer();
+    server = await new AngelHttp(app).startServer();
     url = 'http://${server.address.address}:${server.port}';
   });
 
@@ -92,7 +92,7 @@ main() {
           return 2;
         }, optional: ['bar']));
     var rq = new MockHttpRequest('GET', new Uri(path: 'foo'));
-    await app.handleRequest(rq);
+    await new AngelHttp(app).handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
     expect(JSON.decode(body), 2);
   });
