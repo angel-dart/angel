@@ -20,7 +20,6 @@ dependencies:
   mime: ^0.9.3
   pool: ^1.0.0
   random_string: ^0.0.1
-  recase: ^1.0.0
   tuple: ^1.0.0
 dev_dependencies:
   mock_request: ^1.0.0

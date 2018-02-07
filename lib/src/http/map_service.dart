@@ -15,13 +15,23 @@ class MapService extends Service {
   /// If set to `true` (default), then the service will manage an `id` string and `createdAt` and `updatedAt` fields.
   final bool autoIdAndDateFields;
 
+  /// If set to `true` (default), then the keys `created_at` and `updated_at` will automatically be snake_cased.
+  final bool autoSnakeCaseNames;
+
   final List<Map<String, dynamic>> items = [];
 
   MapService(
       {this.allowRemoveAll: false,
       this.allowQuery: true,
-      this.autoIdAndDateFields: true})
+      this.autoIdAndDateFields: true,
+      this.autoSnakeCaseNames: true})
       : super();
+
+  String get createdAtKey =>
+      autoSnakeCaseNames == false ? 'createdAt' : 'created_at';
+
+  String get updatedAtKey =>
+      autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at';
 
   bool Function(Map) _matchesId(id) {
     return (Map item) {
@@ -72,8 +82,8 @@ class MapService extends Service {
     if (autoIdAndDateFields == true) {
       result
         ..['id'] = items.length.toString()
-        ..['createdAt'] = now
-        ..['updatedAt'] = now;
+        ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] = now
+        ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
     items.add(result);
     return result;
@@ -90,7 +100,10 @@ class MapService extends Service {
     var item = await read(id);
     var result = item..addAll(data);
 
-    if (autoIdAndDateFields == true) result..['updatedAt'] = new DateTime.now();
+    if (autoIdAndDateFields == true)
+      result
+        ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
+            new DateTime.now();
     return result;
   }
 
@@ -112,8 +125,10 @@ class MapService extends Service {
     if (autoIdAndDateFields == true) {
       result
         ..['id'] = id?.toString()
-        ..['createdAt'] = old['createdAt']
-        ..['updatedAt'] = new DateTime.now();
+        ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] =
+            old[autoSnakeCaseNames == false ? 'createdAt' : 'created_at']
+        ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
+            new DateTime.now();
     }
     items.add(result);
     return result;
