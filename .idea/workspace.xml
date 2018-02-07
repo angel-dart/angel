@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/server.dart" afterPath="$PROJECT_DIR$/lib/src/http/server.dart" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -91,10 +92,54 @@
           <file leaf-file-name="server.dart" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="438">
-                  <caret line="229" column="6" lean-forward="false" selection-start-line="229" selection-start-column="6" selection-end-line="229" selection-end-column="6" />
+                <state relative-caret-position="377">
+                  <caret line="63" column="67" lean-forward="false" selection-start-line="63" selection-start-column="67" selection-end-line="63" selection-end-column="67" />
                   <folding>
-                    <element signature="e#38#58#0" expanded="true" />
+                    <element signature="e#1951#2006#0" expanded="false" />
+                    <element signature="e#2482#2489#0" expanded="false" />
+                    <element signature="e#2712#2789#0" expanded="false" />
+                    <element signature="e#3047#3142#0" expanded="false" />
+                    <element signature="e#3430#3484#0" expanded="false" />
+                    <element signature="e#3608#3663#0" expanded="false" />
+                    <element signature="e#3789#3830#0" expanded="false" />
+                    <element signature="e#4143#4405#0" expanded="false" />
+                    <element signature="e#5302#5324#0" expanded="false" />
+                    <element signature="e#5452#5767#0" expanded="false" />
+                    <element signature="e#5878#6225#0" expanded="false" />
+                    <element signature="e#6315#6682#0" expanded="false" />
+                    <element signature="e#6775#7013#0" expanded="false" />
+                    <element signature="e#7017#7084#0" expanded="false" />
+                    <element signature="e#7188#7866#0" expanded="false" />
+                    <element signature="e#8028#8668#0" expanded="false" />
+                    <element signature="e#8780#8815#0" expanded="false" />
+                    <element signature="e#8988#9029#0" expanded="false" />
+                    <element signature="e#9144#9183#0" expanded="false" />
+                    <element signature="e#9268#9985#0" expanded="false" />
+                    <element signature="e#10154#10655#0" expanded="false" />
+                    <element signature="e#10358#10424#0" expanded="false" />
+                    <element signature="e#10792#10845#0" expanded="false" />
+                    <element signature="e#11207#11350#0" expanded="false" />
+                    <element signature="e#11449#11582#0" expanded="false" />
+                    <element signature="e#11829#11955#0" expanded="false" />
+                    <element signature="e#12069#12115#0" expanded="false" />
+                    <element signature="e#12119#12181#0" expanded="false" />
+                    <element signature="e#12497#13129#0" expanded="false" />
+                    <element signature="e#12590#12714#0" expanded="false" />
+                    <element signature="e#12748#12993#0" expanded="false" />
+                    <element signature="e#13133#13191#0" expanded="false" />
+                    <element signature="e#13425#13600#0" expanded="false" />
+                    <element signature="e#13756#13945#0" expanded="false" />
+                    <element signature="e#14144#14199#0" expanded="false" />
+                    <element signature="e#14332#14399#0" expanded="false" />
+                    <element signature="e#14501#14540#0" expanded="false" />
+                    <element signature="e#14544#14605#0" expanded="false" />
+                    <element signature="e#15031#16106#0" expanded="false" />
+                    <element signature="e#16158#16236#0" expanded="false" />
+                    <element signature="e#16304#16566#0" expanded="false" />
+                    <element signature="e#16696#16761#0" expanded="false" />
+                    <element signature="e#16824#17018#0" expanded="false" />
+                    <element signature="e#17022#17050#0" expanded="false" />
+                    <element signature="e#17342#17761#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -140,13 +185,23 @@
           <file leaf-file-name="angel_http.dart" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="442">
-                  <caret line="219" column="5" lean-forward="true" selection-start-line="219" selection-start-column="5" selection-end-line="219" selection-end-column="5" />
+                <state relative-caret-position="152">
+                  <caret line="33" column="39" lean-forward="false" selection-start-line="33" selection-start-column="39" selection-end-line="33" selection-end-column="39" />
                   <folding>
                     <element signature="e#0#20#0" expanded="true" />
-                    <element signature="e#1190#1195#0" expanded="false" />
-                    <element signature="e#1498#1523#0" expanded="false" />
+                    <element signature="e#1191#1196#0" expanded="false" />
+                    <element signature="e#1499#1524#0" expanded="false" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="json.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/example/json.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="233">
+                  <caret line="42" column="6" lean-forward="false" selection-start-line="42" selection-start-column="6" selection-end-line="42" selection-end-column="6" />
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -290,8 +345,8 @@
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/src/http/map_service.dart" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
-        <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/server.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       </list>
     </option>
   </component>
@@ -699,14 +754,7 @@
       <workItem from="1513103483207" duration="18000" />
       <workItem from="1513103506825" duration="139000" />
       <workItem from="1517332581856" duration="858000" />
-      <workItem from="1517973177718" duration="2196000" />
-    </task>
-    <task id="LOCAL-00004" summary="Done???">
-      <created>1481389821679</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1481389821679</updated>
+      <workItem from="1517973177718" duration="2311000" />
     </task>
     <task id="LOCAL-00005" summary="findExpose">
       <created>1483150316137</created>
@@ -1044,7 +1092,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517975306169</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="Remove line that resets `Angel.serializer` on close">
+      <created>1517975399809</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1517975399809</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1080,7 +1135,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="120232000" />
+    <option name="totallyTimeSpent" value="120347000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1099,7 +1154,7 @@
       <window_info id="Tool Output" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34188035" sideWeight="0.5035524" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Dart Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31196582" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Dart Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31196582" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1139,7 +1194,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Remove reopen" />
     <MESSAGE value="1.0.8" />
     <MESSAGE value="1.0.9+1" />
     <MESSAGE value="1.1.0-alpha start" />
@@ -1164,20 +1218,14 @@
     <MESSAGE value="Created setup for AngelHttp" />
     <MESSAGE value="Basic server methods transferred to AngelHttp" />
     <MESSAGE value="Made `Angel.serializer` public" />
-    <option name="LAST_COMMIT_MESSAGE" value="Made `Angel.serializer` public" />
+    <MESSAGE value="Remove line that resets `Angel.serializer` on close" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove line that resets `Angel.serializer` on close" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///usr/local/Cellar/dart/1.24.2/libexec/lib/developer/extension.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2001">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/Cellar/dart/1.24.2/libexec/lib/developer/developer.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
@@ -1535,24 +1583,76 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
+    <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="219" column="5" lean-forward="true" selection-start-line="219" selection-start-column="5" selection-end-line="219" selection-end-column="5" />
+        <state relative-caret-position="377">
+          <caret line="63" column="67" lean-forward="false" selection-start-line="63" selection-start-column="67" selection-end-line="63" selection-end-column="67" />
           <folding>
-            <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#1190#1195#0" expanded="false" />
-            <element signature="e#1498#1523#0" expanded="false" />
+            <element signature="e#1951#2006#0" expanded="false" />
+            <element signature="e#2482#2489#0" expanded="false" />
+            <element signature="e#2712#2789#0" expanded="false" />
+            <element signature="e#3047#3142#0" expanded="false" />
+            <element signature="e#3430#3484#0" expanded="false" />
+            <element signature="e#3608#3663#0" expanded="false" />
+            <element signature="e#3789#3830#0" expanded="false" />
+            <element signature="e#4143#4405#0" expanded="false" />
+            <element signature="e#5302#5324#0" expanded="false" />
+            <element signature="e#5452#5767#0" expanded="false" />
+            <element signature="e#5878#6225#0" expanded="false" />
+            <element signature="e#6315#6682#0" expanded="false" />
+            <element signature="e#6775#7013#0" expanded="false" />
+            <element signature="e#7017#7084#0" expanded="false" />
+            <element signature="e#7188#7866#0" expanded="false" />
+            <element signature="e#8028#8668#0" expanded="false" />
+            <element signature="e#8780#8815#0" expanded="false" />
+            <element signature="e#8988#9029#0" expanded="false" />
+            <element signature="e#9144#9183#0" expanded="false" />
+            <element signature="e#9268#9985#0" expanded="false" />
+            <element signature="e#10154#10655#0" expanded="false" />
+            <element signature="e#10358#10424#0" expanded="false" />
+            <element signature="e#10792#10845#0" expanded="false" />
+            <element signature="e#11207#11350#0" expanded="false" />
+            <element signature="e#11449#11582#0" expanded="false" />
+            <element signature="e#11829#11955#0" expanded="false" />
+            <element signature="e#12069#12115#0" expanded="false" />
+            <element signature="e#12119#12181#0" expanded="false" />
+            <element signature="e#12497#13129#0" expanded="false" />
+            <element signature="e#12590#12714#0" expanded="false" />
+            <element signature="e#12748#12993#0" expanded="false" />
+            <element signature="e#13133#13191#0" expanded="false" />
+            <element signature="e#13425#13600#0" expanded="false" />
+            <element signature="e#13756#13945#0" expanded="false" />
+            <element signature="e#14144#14199#0" expanded="false" />
+            <element signature="e#14332#14399#0" expanded="false" />
+            <element signature="e#14501#14540#0" expanded="false" />
+            <element signature="e#14544#14605#0" expanded="false" />
+            <element signature="e#15031#16106#0" expanded="false" />
+            <element signature="e#16158#16236#0" expanded="false" />
+            <element signature="e#16304#16566#0" expanded="false" />
+            <element signature="e#16696#16761#0" expanded="false" />
+            <element signature="e#16824#17018#0" expanded="false" />
+            <element signature="e#17022#17050#0" expanded="false" />
+            <element signature="e#17342#17761#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
+    <entry file="file://$PROJECT_DIR$/example/json.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="229" column="6" lean-forward="false" selection-start-line="229" selection-start-column="6" selection-end-line="229" selection-end-column="6" />
+        <state relative-caret-position="233">
+          <caret line="42" column="6" lean-forward="false" selection-start-line="42" selection-start-column="6" selection-end-line="42" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="33" column="39" lean-forward="false" selection-start-line="33" selection-start-column="39" selection-end-line="33" selection-end-column="39" />
           <folding>
-            <element signature="e#38#58#0" expanded="true" />
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#1191#1196#0" expanded="false" />
+            <element signature="e#1499#1524#0" expanded="false" />
           </folding>
         </state>
       </provider>

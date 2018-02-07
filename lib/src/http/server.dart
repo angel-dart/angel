@@ -61,6 +61,9 @@ class Angel extends AngelBase {
   /// You may modify this [Map] yourself if you intend to avoid reflection entirely.
   Map<dynamic, InjectionRequest> get preContained => _preContained;
 
+  /// Returns the [flatten]ed version of this router in production.
+  Router get optimizedRouter => _flattened ?? this;
+
   /// Determines whether to allow HTTP request method overrides.
   bool allowMethodOverrides = true;
 

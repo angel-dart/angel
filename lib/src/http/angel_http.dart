@@ -31,7 +31,7 @@ class AngelHttp {
       if (path == '/') path = '';
 
       Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
-        Router r = _flattened ?? this;
+        Router r = app.optimizedRouter;
         var resolved =
         r.resolveAbsolute(path, method: req.method, strip: false);
 
