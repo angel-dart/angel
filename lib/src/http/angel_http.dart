@@ -18,15 +18,19 @@ class AngelHttp {
   final Angel app;
   bool _closed = false;
   HttpServer _server;
-  Future<HttpServer> Function(dynamic,int) _serverGenerator = HttpServer.bind;
+  Future<HttpServer> Function(dynamic, int) _serverGenerator = HttpServer.bind;
   StreamSubscription<HttpRequest> _sub;
 
   Pool _pool;
 
   AngelHttp(this.app);
 
+  /// The function used to bind this instance to an HTTP server.
+  Future<HttpServer> Function(dynamic, int) get serverGenerator => _serverGenerator;
+
   /// An instance mounted on a server started by the [serverGenerator].
-  factory AngelHttp.custom(Angel app, ServerGenerator serverGenerator) {
+  factory AngelHttp.custom(
+      Angel app, Future<HttpServer> Function(dynamic, int) serverGenerator) {
     return new AngelHttp(app).._serverGenerator = serverGenerator;
   }
 
@@ -45,10 +49,11 @@ class AngelHttp {
   /// Provide paths to a certificate chain and server key (both .pem).
   /// If no password is provided, a random one will be generated upon running
   /// the server.
-  factory AngelHttp.secure(Angel app, String certificateChainPath, String serverKeyPath,
+  factory AngelHttp.secure(
+      Angel app, String certificateChainPath, String serverKeyPath,
       {bool debug: false, String password}) {
     var certificateChain =
-    Platform.script.resolve(certificateChainPath).toFilePath();
+        Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
     var serverContext = new SecurityContext();
     serverContext.useCertificateChain(certificateChain, password: password);
@@ -99,7 +104,7 @@ class AngelHttp {
       Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
         Router r = app.optimizedRouter;
         var resolved =
-        r.resolveAbsolute(path, method: req.method, strip: false);
+            r.resolveAbsolute(path, method: req.method, strip: false);
 
         return new Tuple3(
           new MiddlewarePipeline(resolved).handlers,
@@ -203,7 +208,7 @@ class AngelHttp {
     Future finalizers = ignoreFinalizers == true
         ? new Future.value()
         : app.responseFinalizers.fold<Future>(
-        new Future.value(), (out, f) => out.then((_) => f(req, res)));
+            new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
     if (res.isOpen) res.end();
 
@@ -218,7 +223,7 @@ class AngelHttp {
 
     if (res.encoders.isNotEmpty) {
       var allowedEncodings =
-      req.headers[HttpHeaders.ACCEPT_ENCODING]?.map((str) {
+          req.headers[HttpHeaders.ACCEPT_ENCODING]?.map((str) {
         // Ignore quality specifications in accept-encoding
         // ex. gzip;q=0.8
         if (!str.contains(';')) return str;
@@ -281,7 +286,7 @@ class AngelHttp {
   }
 
   Future<ResponseContext> createResponseContext(HttpResponse response,
-      [RequestContext correspondingRequest]) =>
+          [RequestContext correspondingRequest]) =>
       new Future<ResponseContext>.value(
           new ResponseContext(response, app, correspondingRequest)
             ..serializer = (app.serializer ?? god.serialize)

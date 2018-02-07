@@ -2,6 +2,9 @@
 * `ResponseContext` no longer automatically closes if `serializer` returns an
 empty string.
 * Added `autoSnakeCaseNames` to `MapService`.
+* Deprecated `Angel.createZoneForRequest`.
+* Deprecated all `Angel` methods that directly touch an `HttpServer` or `HttpRequest`.
+* Created the `AngelHttp` class.
 
 # 1.1.0+3
 * Modified `ResponseContext#isOpen` to also return `false` if streaming is being used.

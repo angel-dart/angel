@@ -22,6 +22,9 @@ import 'service.dart';
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A function that binds an [Angel] server to an Internet address and port.
+///
+/// Prefer the Future<HttpServer> Function(dynamic, int) syntax.
+@deprecated
 typedef Future<HttpServer> ServerGenerator(address, int port);
 
 /// A function that configures an [Angel] server in some way.
@@ -37,7 +40,7 @@ class Angel extends AngelBase {
   AngelHttp _http;
   bool _isProduction;
   Angel _parent;
-  ServerGenerator _serverGenerator = HttpServer.bind;
+  Future<HttpServer> Function(dynamic, int) _serverGenerator = HttpServer.bind;
 
   /// A global Map of converters that can transform responses bodies.
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
@@ -85,8 +88,9 @@ class Angel extends AngelBase {
         (Platform.environment['ANGEL_ENV'] == 'production');
   }
 
-  /// The function used to bind this instance to an HTTP server.
-  ServerGenerator get serverGenerator => _serverGenerator;
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
+  ServerGenerator get serverGenerator => _http.serverGenerator;
 
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
@@ -497,7 +501,7 @@ class Angel extends AngelBase {
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
-  factory Angel.custom(ServerGenerator serverGenerator) {
+  factory Angel.custom(Future<HttpServer> Function(dynamic, int) serverGenerator) {
     var app = new Angel();
     return app.._http = new AngelHttp.custom(app, serverGenerator);
   }

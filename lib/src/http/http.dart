@@ -3,7 +3,6 @@ library angel_framework.http;
 
 import 'dart:async';
 import 'dart:io';
-import 'server.dart' show ServerGenerator;
 export 'package:angel_http_exception/angel_http_exception.dart';
 export 'package:angel_model/angel_model.dart';
 export 'package:angel_route/angel_route.dart';
@@ -25,8 +24,7 @@ export 'typed_service.dart';
 Future<HttpServer> startShared(address, int port) => HttpServer
     .bind(address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0, shared: true);
 
-/// Boots a secure shared server instance. Use this if launching multiple isolates
-ServerGenerator startSharedSecure(SecurityContext securityContext) {
+Future<HttpServer> Function(dynamic, int) startSharedSecure(SecurityContext securityContext) {
   return (address, int port) => HttpServer.bindSecure(
       address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0, securityContext,
       shared: true);
