@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/server.dart" afterPath="$PROJECT_DIR$/lib/src/http/server.dart" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -26,171 +26,135 @@
     <favorites_list name="framework" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file leaf-file-name="service.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/http/service.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="16" column="17" lean-forward="false" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="17" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="response_context.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/http/response_context.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="371">
-              <caret line="310" column="28" lean-forward="false" selection-start-line="310" selection-start-column="28" selection-end-line="310" selection-end-column="28" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="map_service.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/http/map_service.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="94" column="46" lean-forward="true" selection-start-line="94" selection-start-column="46" selection-end-line="94" selection-end-column="46" />
-              <folding>
-                <element signature="e#0#20#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="0">
-                <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-                <folding>
-                  <marker date="1506049250000" expanded="true" signature="588:776" ph="{...}" />
-                </folding>
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="45">
-                <caret line="3" column="45" lean-forward="false" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
-                <folding />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="server.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="409">
-              <caret line="464" column="0" lean-forward="true" selection-start-line="464" selection-start-column="0" selection-end-line="464" selection-end-column="0" />
-              <folding>
-                <element signature="e#1894#1949#0" expanded="false" />
-                <element signature="e#2304#2311#0" expanded="false" />
-                <element signature="e#2534#2611#0" expanded="false" />
-                <element signature="e#2869#2964#0" expanded="false" />
-                <element signature="e#3252#3306#0" expanded="false" />
-                <element signature="e#3430#3485#0" expanded="false" />
-                <element signature="e#3611#3652#0" expanded="false" />
-                <element signature="e#3866#4128#0" expanded="false" />
-                <element signature="e#5025#5047#0" expanded="false" />
-                <element signature="e#5175#5490#0" expanded="false" />
-                <element signature="e#5601#5948#0" expanded="false" />
-                <element signature="e#6038#6405#0" expanded="false" />
-                <element signature="e#6498#6736#0" expanded="false" />
-                <element signature="e#6740#6807#0" expanded="false" />
-                <element signature="e#6911#7587#0" expanded="false" />
-                <element signature="e#7749#8389#0" expanded="false" />
-                <element signature="e#8501#8536#0" expanded="false" />
-                <element signature="e#8709#8750#0" expanded="false" />
-                <element signature="e#8886#8921#0" expanded="false" />
-                <element signature="e#9006#9723#0" expanded="false" />
-                <element signature="e#9892#10283#0" expanded="false" />
-                <element signature="e#10352#10696#0" expanded="false" />
-                <element signature="e#10837#10854#0" expanded="false" />
-                <element signature="e#11138#11281#0" expanded="false" />
-                <element signature="e#11380#11513#0" expanded="false" />
-                <element signature="e#11731#12311#0" expanded="false" />
-                <element signature="e#12660#13030#0" expanded="false" />
-                <element signature="e#12899#12904#0" expanded="false" />
-                <element signature="e#13199#13224#0" expanded="false" />
-                <element signature="e#14842#14904#0" expanded="false" />
-                <element signature="e#15220#15852#0" expanded="false" />
-                <element signature="e#15313#15437#0" expanded="false" />
-                <element signature="e#15471#15716#0" expanded="false" />
-                <element signature="e#15856#15914#0" expanded="false" />
-                <element signature="e#16148#16323#0" expanded="false" />
-                <element signature="e#16479#16668#0" expanded="false" />
-                <element signature="e#16823#19001#0" expanded="false" />
-                <element signature="e#17538#17589#0" expanded="false" />
-                <element signature="e#19005#19091#0" expanded="false" />
-                <element signature="e#19273#19341#0" expanded="false" />
-                <element signature="e#19443#19482#0" expanded="false" />
-                <element signature="e#19486#19547#0" expanded="false" />
-                <element signature="e#19973#21048#0" expanded="false" />
-                <element signature="e#21100#21178#0" expanded="false" />
-                <element signature="e#21246#21508#0" expanded="false" />
-                <element signature="e#21638#21703#0" expanded="false" />
-                <element signature="e#21766#21960#0" expanded="false" />
-                <element signature="e#21964#21992#0" expanded="false" />
-                <element signature="e#22284#22703#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="angel_http.dart" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="51" lean-forward="false" selection-start-line="2" selection-start-column="51" selection-end-line="2" selection-end-column="51" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="services_test.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/services_test.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#22#0" expanded="true" />
-                <marker date="1511894754000" expanded="true" signature="3209:3493" ph="{...}" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hooked_test.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/hooked_test.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1980">
-              <caret line="137" column="62" lean-forward="false" selection-start-line="137" selection-start-column="62" selection-end-line="137" selection-end-column="62" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="router.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_route-2.0.3+1/lib/src/router.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4815">
-              <caret line="328" column="26" lean-forward="false" selection-start-line="328" selection-start-column="26" selection-end-line="328" selection-end-column="26" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.5">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
+          <file leaf-file-name="service.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/lib/src/http/service.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="0">
+                  <caret line="16" column="17" lean-forward="false" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="17" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="response_context.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/lib/src/http/response_context.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="371">
+                  <caret line="310" column="28" lean-forward="false" selection-start-line="310" selection-start-column="28" selection-end-line="310" selection-end-column="28" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="map_service.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/lib/src/http/map_service.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="245">
+                  <caret line="94" column="46" lean-forward="true" selection-start-line="94" selection-start-column="46" selection-end-line="94" selection-end-column="46" />
+                  <folding>
+                    <element signature="e#0#20#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/README.md">
+              <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+                <state split_layout="SPLIT">
+                  <first_editor relative-caret-position="0">
+                    <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+                    <folding>
+                      <marker date="1506049250000" expanded="true" signature="588:776" ph="{...}" />
+                    </folding>
+                  </first_editor>
+                  <second_editor />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
+              <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+                <state split_layout="SPLIT">
+                  <first_editor relative-caret-position="45">
+                    <caret line="3" column="45" lean-forward="false" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
+                    <folding />
+                  </first_editor>
+                  <second_editor />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="server.dart" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-1684">
+                  <caret line="380" column="7" lean-forward="false" selection-start-line="380" selection-start-column="7" selection-end-line="380" selection-end-column="7" />
+                  <folding>
+                    <element signature="e#38#58#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="services_test.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/services_test.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="0">
+                  <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#0#22#0" expanded="true" />
+                    <marker date="1511894754000" expanded="true" signature="3209:3493" ph="{...}" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="hooked_test.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test/hooked_test.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="1980">
+                  <caret line="137" column="62" lean-forward="false" selection-start-line="137" selection-start-column="62" selection-end-line="137" selection-end-column="62" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="router.dart" pinned="false" current-in-tab="false">
+            <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_route-2.0.3+1/lib/src/router.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="4815">
+                  <caret line="328" column="26" lean-forward="false" selection-start-line="328" selection-start-column="26" selection-end-line="328" selection-end-column="26" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file leaf-file-name="angel_http.dart" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="300">
+                  <caret line="20" column="0" lean-forward="true" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#0#20#0" expanded="true" />
+                    <element signature="e#1190#1195#0" expanded="false" />
+                    <element signature="e#1498#1523#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -201,8 +165,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>inject(</find>
-      <find>sendRe</find>
       <find>sendResponse</find>
       <find>addStream</find>
       <find>Lo</find>
@@ -231,6 +193,8 @@
       <find>((cre)|(upd))atedAt</find>
       <find>'((cre)|(upd))atedAt'</find>
       <find>handleReque</find>
+      <find>injectSeri</find>
+      <find>optimize</find>
     </findStrings>
     <replaceStrings>
       <replace>_isClosed</replace>
@@ -327,8 +291,8 @@
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/src/http/map_service.dart" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
-        <option value="$PROJECT_DIR$/lib/src/http/server.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/server.dart" />
       </list>
     </option>
   </component>
@@ -736,14 +700,7 @@
       <workItem from="1513103483207" duration="18000" />
       <workItem from="1513103506825" duration="139000" />
       <workItem from="1517332581856" duration="858000" />
-      <workItem from="1517973177718" duration="1156000" />
-    </task>
-    <task id="LOCAL-00001" summary="Re-designed exception">
-      <created>1481237183504</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1481237183504</updated>
+      <workItem from="1517973177718" duration="2011000" />
     </task>
     <task id="LOCAL-00002" summary="Core done?">
       <created>1481378740441</created>
@@ -1081,7 +1038,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517973884510</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="Created setup for AngelHttp">
+      <created>1517974351104</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1517974351105</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1117,7 +1081,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="119192000" />
+    <option name="totallyTimeSpent" value="120047000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1154,7 +1118,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32905984" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4002849" sideWeight="0.4964476" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.48005697" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23141123" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23141123" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -1176,7 +1140,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Swapped to angel_model" />
     <MESSAGE value="1.0.7+2" />
     <MESSAGE value="Working on 1.0.8, including performance tuning" />
     <MESSAGE value="Remove reopen" />
@@ -1201,7 +1164,8 @@
     <MESSAGE value="Patched ResponseContext#isOpen, bump to 1.1.0+3" />
     <MESSAGE value="Response no longer closes if `serialize` is called with an empty string" />
     <MESSAGE value="Added `autoSnakeCaseNames` to `MapService`" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added `autoSnakeCaseNames` to `MapService`" />
+    <MESSAGE value="Created setup for AngelHttp" />
+    <option name="LAST_COMMIT_MESSAGE" value="Created setup for AngelHttp" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1574,67 +1538,23 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="409">
-          <caret line="464" column="0" lean-forward="true" selection-start-line="464" selection-start-column="0" selection-end-line="464" selection-end-column="0" />
+        <state relative-caret-position="-1684">
+          <caret line="380" column="7" lean-forward="false" selection-start-line="380" selection-start-column="7" selection-end-line="380" selection-end-column="7" />
           <folding>
-            <element signature="e#1894#1949#0" expanded="false" />
-            <element signature="e#2304#2311#0" expanded="false" />
-            <element signature="e#2534#2611#0" expanded="false" />
-            <element signature="e#2869#2964#0" expanded="false" />
-            <element signature="e#3252#3306#0" expanded="false" />
-            <element signature="e#3430#3485#0" expanded="false" />
-            <element signature="e#3611#3652#0" expanded="false" />
-            <element signature="e#3866#4128#0" expanded="false" />
-            <element signature="e#5025#5047#0" expanded="false" />
-            <element signature="e#5175#5490#0" expanded="false" />
-            <element signature="e#5601#5948#0" expanded="false" />
-            <element signature="e#6038#6405#0" expanded="false" />
-            <element signature="e#6498#6736#0" expanded="false" />
-            <element signature="e#6740#6807#0" expanded="false" />
-            <element signature="e#6911#7587#0" expanded="false" />
-            <element signature="e#7749#8389#0" expanded="false" />
-            <element signature="e#8501#8536#0" expanded="false" />
-            <element signature="e#8709#8750#0" expanded="false" />
-            <element signature="e#8886#8921#0" expanded="false" />
-            <element signature="e#9006#9723#0" expanded="false" />
-            <element signature="e#9892#10283#0" expanded="false" />
-            <element signature="e#10352#10696#0" expanded="false" />
-            <element signature="e#10837#10854#0" expanded="false" />
-            <element signature="e#11138#11281#0" expanded="false" />
-            <element signature="e#11380#11513#0" expanded="false" />
-            <element signature="e#11731#12311#0" expanded="false" />
-            <element signature="e#12660#13030#0" expanded="false" />
-            <element signature="e#12899#12904#0" expanded="false" />
-            <element signature="e#13199#13224#0" expanded="false" />
-            <element signature="e#14842#14904#0" expanded="false" />
-            <element signature="e#15220#15852#0" expanded="false" />
-            <element signature="e#15313#15437#0" expanded="false" />
-            <element signature="e#15471#15716#0" expanded="false" />
-            <element signature="e#15856#15914#0" expanded="false" />
-            <element signature="e#16148#16323#0" expanded="false" />
-            <element signature="e#16479#16668#0" expanded="false" />
-            <element signature="e#16823#19001#0" expanded="false" />
-            <element signature="e#17538#17589#0" expanded="false" />
-            <element signature="e#19005#19091#0" expanded="false" />
-            <element signature="e#19273#19341#0" expanded="false" />
-            <element signature="e#19443#19482#0" expanded="false" />
-            <element signature="e#19486#19547#0" expanded="false" />
-            <element signature="e#19973#21048#0" expanded="false" />
-            <element signature="e#21100#21178#0" expanded="false" />
-            <element signature="e#21246#21508#0" expanded="false" />
-            <element signature="e#21638#21703#0" expanded="false" />
-            <element signature="e#21766#21960#0" expanded="false" />
-            <element signature="e#21964#21992#0" expanded="false" />
-            <element signature="e#22284#22703#0" expanded="false" />
+            <element signature="e#38#58#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="51" lean-forward="false" selection-start-line="2" selection-start-column="51" selection-end-line="2" selection-end-column="51" />
-          <folding />
+        <state relative-caret-position="300">
+          <caret line="20" column="0" lean-forward="true" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#1190#1195#0" expanded="false" />
+            <element signature="e#1498#1523#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>

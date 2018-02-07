@@ -14,6 +14,7 @@ import 'package:meta/meta.dart';
 import 'package:pool/pool.dart';
 import 'package:tuple/tuple.dart';
 import 'angel_base.dart';
+import 'angel_http.dart';
 import 'controller.dart';
 import 'request_context.dart';
 import 'response_context.dart';
@@ -35,9 +36,9 @@ class Angel extends AngelBase {
       handlerCache = new HashMap();
 
   Router _flattened;
+  AngelHttp _http;
   bool _isProduction;
   Angel _parent;
-  Pool _pool;
   StreamSubscription<HttpRequest> _sub;
   ServerGenerator _serverGenerator = HttpServer.bind;
 
@@ -105,6 +106,9 @@ class Angel extends AngelBase {
   ///
   /// These will only not run if a response's `willCloseItself` is set to `true`.
   final List<RequestHandler> responseFinalizers = [];
+
+  /// All global dependencies injected into the application.
+  Map get injections => _injections;
 
   /// Use [configuration] instead.
   @deprecated
@@ -275,6 +279,7 @@ class Angel extends AngelBase {
 
   /// Shortcut for adding a middleware to inject a serialize on every request.
   void injectSerializer(ResponseSerializer serializer) {
+    // TODO: Make this public
     _serializer = serializer;
   }
 
@@ -317,6 +322,8 @@ class Angel extends AngelBase {
     else if (result is bool) {
       return result;
     } else if (result != null) {
+      // TODO: Make `serialize` return a bool, return this as the value.
+      // Do this wherever applicable
       res.serialize(result,
           contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
               ContentType.JSON.mimeType);
@@ -325,22 +332,17 @@ class Angel extends AngelBase {
       return res.isOpen;
   }
 
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   Future<RequestContext> createRequestContext(HttpRequest request) {
-    var path = request.uri.path.replaceAll(_straySlashes, '');
-    if (path.length == 0) path = '/';
-    return RequestContext.from(request, this, path).then((req) async {
-      if (_pool != null) req.inject(PoolResource, await _pool.request());
-      if (_injections.isNotEmpty) _injections.forEach(req.inject);
-      return req;
-    });
+    return _http.createRequestContext(request);
   }
 
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   Future<ResponseContext> createResponseContext(HttpResponse response,
           [RequestContext correspondingRequest]) =>
-      new Future<ResponseContext>.value(
-          new ResponseContext(response, this, correspondingRequest)
-            ..serializer = (_serializer ?? god.serialize)
-            ..encoders.addAll(encoders ?? {}));
+      _http.createResponseContext(response, correspondingRequest);
 
   /// Attempts to find a middleware by the given name within this application.
   findMiddleware(key) {
@@ -354,115 +356,19 @@ class Angel extends AngelBase {
     return parent != null ? parent.findProperty(key) : null;
   }
 
-  /// Handles an [AngelHttpException].
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   Future handleAngelHttpException(AngelHttpException e, StackTrace st,
       RequestContext req, ResponseContext res, HttpRequest request,
-      {bool ignoreFinalizers: false}) async {
-    if (req == null || res == null) {
-      try {
-        logger?.severe(e, st);
-        request.response
-          ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-          ..write('500 Internal Server Error')
-          ..close();
-      } finally {
-        return null;
-      }
-    }
-
-    if (res.isOpen) {
-      res.statusCode = e.statusCode;
-      var result = await errorHandler(e, req, res);
-      await executeHandler(result, req, res);
-      res.end();
-    }
-
-    return await sendResponse(request, req, res,
+      {bool ignoreFinalizers: false}) {
+    return _http.handleAngelHttpException(e, st, req, res, request,
         ignoreFinalizers: ignoreFinalizers == true);
   }
 
-  /// Handles a single request.
-  Future handleRequest(HttpRequest request) async {
-    var req = await createRequestContext(request);
-    var res = await createResponseContext(request.response, req);
-
-    try {
-      var path = req.path;
-      if (path == '/') path = '';
-
-      Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
-        Router r = _flattened ?? this;
-        var resolved =
-            r.resolveAbsolute(path, method: req.method, strip: false);
-
-        return new Tuple3(
-          new MiddlewarePipeline(resolved).handlers,
-          resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
-          resolved.isEmpty ? null : resolved.first.parseResult,
-        );
-      }
-
-      var cacheKey = req.method + path;
-      var tuple = isProduction
-          ? handlerCache.putIfAbsent(cacheKey, resolveTuple)
-          : resolveTuple();
-
-      //req.inject(Zone, zone);
-      //req.inject(ZoneSpecification, zoneSpec);
-      req.params.addAll(tuple.item2);
-      req.inject(ParseResult, tuple.item3);
-
-      if (logger != null) req.inject(Stopwatch, new Stopwatch()..start());
-
-      var pipeline = tuple.item1;
-
-      for (var handler in pipeline) {
-        try {
-          if (handler == null || !await executeHandler(handler, req, res))
-            break;
-        } on AngelHttpException catch (e, st) {
-          e.stackTrace ??= st;
-          return await handleAngelHttpException(e, st, req, res, request);
-        }
-      }
-
-      try {
-        await sendResponse(request, req, res);
-      } on AngelHttpException catch (e, st) {
-        e.stackTrace ??= st;
-        return await handleAngelHttpException(
-          e,
-          st,
-          req,
-          res,
-          request,
-          ignoreFinalizers: true,
-        );
-      }
-    } on FormatException catch (error, stackTrace) {
-      var e = new AngelHttpException.badRequest(message: error.message);
-
-      if (logger != null) {
-        logger.severe(e.message ?? e.toString(), error, stackTrace);
-      }
-
-      return await handleAngelHttpException(e, stackTrace, req, res, request);
-    } catch (error, stackTrace) {
-      var e = new AngelHttpException(error,
-          stackTrace: stackTrace, message: error?.toString());
-
-      if (logger != null) {
-        logger.severe(e.message ?? e.toString(), error, stackTrace);
-      }
-
-      return await handleAngelHttpException(e, stackTrace, req, res, request);
-    } finally {
-      res.dispose();
-    }
-  }
-
-  Future setupRequest(RequestContext req) async {
-
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
+  Future handleRequest(HttpRequest request) {
+    return _http.handleRequest(request);
   }
 
   /// Runs several optimizations, *if* [isProduction] is `true`.
@@ -519,88 +425,18 @@ class Angel extends AngelBase {
     // return await closureMirror.apply(args).reflectee;
   }
 
-  /// Sends a response.
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
-    if (res.willCloseItself) return new Future.value();
-
-    Future finalizers = ignoreFinalizers == true
-        ? new Future.value()
-        : responseFinalizers.fold<Future>(
-            new Future.value(), (out, f) => out.then((_) => f(req, res)));
-
-    if (res.isOpen) res.end();
-
-    for (var key in res.headers.keys) {
-      request.response.headers.add(key, res.headers[key]);
-    }
-
-    request.response.contentLength = res.buffer.length;
-    request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
-
-    List<int> outputBuffer = res.buffer.toBytes();
-
-    if (res.encoders.isNotEmpty) {
-      var allowedEncodings =
-          req.headers[HttpHeaders.ACCEPT_ENCODING]?.map((str) {
-        // Ignore quality specifications in accept-encoding
-        // ex. gzip;q=0.8
-        if (!str.contains(';')) return str;
-        return str.split(';')[0];
-      });
-
-      if (allowedEncodings != null) {
-        for (var encodingName in allowedEncodings) {
-          Converter<List<int>, List<int>> encoder;
-          String key = encodingName;
-
-          if (res.encoders.containsKey(encodingName))
-            encoder = res.encoders[encodingName];
-          else if (encodingName == '*') {
-            encoder = res.encoders[key = res.encoders.keys.first];
-          }
-
-          if (encoder != null) {
-            request.response.headers.set(HttpHeaders.CONTENT_ENCODING, key);
-            outputBuffer = res.encoders[key].convert(outputBuffer);
-            request.response.contentLength = outputBuffer.length;
-            break;
-          }
-        }
-      }
-    }
-
-    request.response
-      ..statusCode = res.statusCode
-      ..cookies.addAll(res.cookies)
-      ..add(outputBuffer);
-
-    return finalizers.then((_) async {
-      request.response.close();
-
-      if (req.injections.containsKey(PoolResource)) {
-        req.injections[PoolResource].release();
-      }
-
-      if (logger != null) {
-        var sw = req.grab<Stopwatch>(Stopwatch);
-
-        if (sw.isRunning) {
-          sw?.stop();
-          logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
-              ?.elapsedMilliseconds ?? 'unknown'} ms)");
-        }
-      }
-    });
+    return _http.sendResponse(request, req, res);
   }
 
-  /// Limits the maximum number of requests to be handled concurrently by this instance.
-  ///
-  /// You can optionally provide a [timeout] to limit the amount of time a request can be
-  /// handled before.
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   void throttle(int maxConcurrentRequests, {Duration timeout}) {
-    _pool = new Pool(maxConcurrentRequests, timeout: timeout);
+    _http?.throttle(maxConcurrentRequests, timeout: timeout);
   }
 
   /// Applies an [AngelConfigurer] to this instance.
