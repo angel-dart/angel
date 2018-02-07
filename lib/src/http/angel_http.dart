@@ -16,10 +16,76 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 /// Adapts `dart:io`'s [HttpServer] to serve Angel.
 class AngelHttp {
   final Angel app;
+  bool _closed = false;
+  HttpServer _server;
+  Future<HttpServer> Function(dynamic,int) _serverGenerator = HttpServer.bind;
+  StreamSubscription<HttpRequest> _sub;
 
   Pool _pool;
 
   AngelHttp(this.app);
+
+  /// An instance mounted on a server started by the [serverGenerator].
+  factory AngelHttp.custom(Angel app, ServerGenerator serverGenerator) {
+    return new AngelHttp(app).._serverGenerator = serverGenerator;
+  }
+
+  factory AngelHttp.fromSecurityContext(Angel app, SecurityContext context) {
+    var http = new AngelHttp(app);
+
+    http._serverGenerator = (InternetAddress address, int port) async {
+      return await HttpServer.bindSecure(address, port, context);
+    };
+
+    return http;
+  }
+
+  /// Creates an HTTPS server.
+  ///
+  /// Provide paths to a certificate chain and server key (both .pem).
+  /// If no password is provided, a random one will be generated upon running
+  /// the server.
+  factory AngelHttp.secure(Angel app, String certificateChainPath, String serverKeyPath,
+      {bool debug: false, String password}) {
+    var certificateChain =
+    Platform.script.resolve(certificateChainPath).toFilePath();
+    var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
+    var serverContext = new SecurityContext();
+    serverContext.useCertificateChain(certificateChain, password: password);
+    serverContext.usePrivateKey(serverKey, password: password);
+
+    return new AngelHttp.fromSecurityContext(app, serverContext);
+  }
+
+  /// The native HttpServer running this instance.
+  HttpServer get httpServer => _server;
+
+  /// Starts the server.
+  ///
+  /// Returns false on failure; otherwise, returns the HttpServer.
+  Future<HttpServer> startServer([address, int port]) async {
+    var host = address ?? InternetAddress.LOOPBACK_IP_V4;
+    _server = await _serverGenerator(host, port ?? 0);
+
+    for (var configurer in app.startupHooks) {
+      await app.configure(configurer);
+    }
+
+    app.optimizeForProduction();
+    _sub = _server.listen(handleRequest);
+    return _server;
+  }
+
+  /// Shuts down the underlying server.
+  Future<HttpServer> close() async {
+    if (_closed) return _server;
+    _closed = true;
+    _sub?.cancel();
+    await app.close();
+
+    for (var configurer in app.shutdownHooks) await app.configure(configurer);
+    return _server;
+  }
 
   /// Handles a single request.
   Future handleRequest(HttpRequest request) async {

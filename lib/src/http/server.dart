@@ -8,7 +8,6 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 export 'package:container/container.dart';
-import 'package:json_god/json_god.dart' as god;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
@@ -38,7 +37,6 @@ class Angel extends AngelBase {
   AngelHttp _http;
   bool _isProduction;
   Angel _parent;
-  StreamSubscription<HttpRequest> _sub;
   ServerGenerator _serverGenerator = HttpServer.bind;
 
   /// A global Map of converters that can transform responses bodies.
@@ -153,23 +151,15 @@ class Angel extends AngelBase {
     res.end();
   };
 
-  /// The native HttpServer running this instancce.
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   HttpServer httpServer;
 
-  /// Starts the server.
-  ///
-  /// Returns false on failure; otherwise, returns the HttpServer.
-  Future<HttpServer> startServer([address, int port]) async {
-    var host = address ?? InternetAddress.LOOPBACK_IP_V4;
-    this.httpServer = await _serverGenerator(host, port ?? 0);
-
-    for (var configurer in startupHooks) {
-      await configure(configurer);
-    }
-
-    optimizeForProduction();
-    _sub = httpServer.listen(handleRequest);
-    return httpServer;
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
+  Future<HttpServer> startServer([address, int port]) {
+    _http ??= new AngelHttp(this);
+    return _http.startServer(address, port);
   }
 
   @override
@@ -209,21 +199,10 @@ class Angel extends AngelBase {
   /// Shuts down the server, and closes any open [StreamController]s.
   ///
   /// The server will be **COMPLETE DEFUNCT** after this operation!
-  Future<HttpServer> close() async {
-    HttpServer server;
-
-    _sub?.cancel();
-
-    if (httpServer != null) {
-      server = httpServer;
-      await httpServer.close(force: true);
-    }
-
+  Future close() async {
     await Future.forEach(services.values, (Service service) async {
       await service.close();
     });
-
-    for (var plugin in shutdownHooks) await plugin(this);
 
     await super.close();
     _preContained.clear();
@@ -238,8 +217,8 @@ class Angel extends AngelBase {
     shutdownHooks.clear();
     responseFinalizers.clear();
     _flattened = null;
-
-    return server;
+    await _http.close();
+    return _http.httpServer;
   }
 
   @override
@@ -515,35 +494,33 @@ class Angel extends AngelBase {
     );
   }
 
-  /// An instance mounted on a server started by the [serverGenerator].
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   factory Angel.custom(ServerGenerator serverGenerator) {
-    return new Angel().._serverGenerator = serverGenerator;
+    var app = new Angel();
+    return app.._http = new AngelHttp.custom(app, serverGenerator);
   }
 
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   factory Angel.fromSecurityContext(SecurityContext context) {
     var app = new Angel();
 
-    app._serverGenerator = (InternetAddress address, int port) async {
+    app._http =
+        new AngelHttp.custom(app, (InternetAddress address, int port) async {
       return await HttpServer.bindSecure(address, port, context);
-    };
+    });
 
     return app;
   }
 
-  /// Creates an HTTPS server.
-  ///
-  /// Provide paths to a certificate chain and server key (both .pem).
-  /// If no password is provided, a random one will be generated upon running
-  /// the server.
+  /// Use the serving methods in [AngelHttp] instead.
+  @deprecated
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
-      {bool debug: false, String password}) {
-    var certificateChain =
-        Platform.script.resolve(certificateChainPath).toFilePath();
-    var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
-    var serverContext = new SecurityContext();
-    serverContext.useCertificateChain(certificateChain, password: password);
-    serverContext.usePrivateKey(serverKey, password: password);
-
-    return new Angel.fromSecurityContext(serverContext);
+      {String password}) {
+    var app = new Angel();
+    return app
+      .._http = new AngelHttp.secure(app, certificateChainPath, serverKeyPath,
+          password: password);
   }
 }
