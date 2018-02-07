@@ -8,12 +8,12 @@ class AnonymousService extends Service {
   Function _index, _read, _create, _modify, _update, _remove;
 
   AnonymousService(
-      {Future index([Map params]),
-      Future read(id, [Map params]),
-      Future create(data, [Map params]),
-      Future modify(id, data, [Map params]),
-      Future update(id, data, [Map params]),
-      Future remove(id, [Map params])})
+      {FutureOr index([Map params]),
+      FutureOr read(id, [Map params]),
+      FutureOr create(data, [Map params]),
+      FutureOr modify(id, data, [Map params]),
+      FutureOr update(id, data, [Map params]),
+      FutureOr remove(id, [Map params])})
       : super() {
     _index = index;
     _read = read;
