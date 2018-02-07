@@ -12,6 +12,8 @@ export 'angel_http.dart';
 export 'anonymous_service.dart';
 export 'controller.dart';
 export 'hooked_service.dart';
+export 'http_request_context.dart';
+export 'http_response_context.dart';
 export 'map_service.dart';
 export 'metadata.dart';
 export 'request_context.dart';
