@@ -44,7 +44,7 @@ class Angel extends AngelBase {
 
   final Map _injections = {};
 
-  /// Creates a safe zone within which a request can be handled, without crashing the application.
+  @deprecated
   Future<ZoneSpecification> Function(
           HttpRequest request, RequestContext req, ResponseContext res)
       createZoneForRequest;
@@ -478,9 +478,11 @@ class Angel extends AngelBase {
   /// Default constructor. ;)
   Angel() : super() {
     bootstrapContainer();
+    // ignore: deprecated_member_use
     createZoneForRequest = defaultZoneCreator;
   }
 
+  @deprecated
   Future<ZoneSpecification> defaultZoneCreator(request, req, res) async {
     return new ZoneSpecification(
       print: (Zone self, ZoneDelegate parent, Zone zone, String line) {

@@ -31,8 +31,8 @@
           <file leaf-file-name="server.dart" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="202">
-                  <caret line="303" column="19" lean-forward="true" selection-start-line="303" selection-start-column="19" selection-end-line="303" selection-end-column="19" />
+                <state relative-caret-position="168">
+                  <caret line="44" column="29" lean-forward="true" selection-start-line="44" selection-start-column="29" selection-end-line="44" selection-end-column="29" />
                   <folding>
                     <element signature="e#38#58#0" expanded="true" />
                   </folding>
@@ -81,7 +81,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>requestedUrl</find>
       <find>cacheK</find>
       <find>resolveAl</find>
       <find>path</find>
@@ -111,6 +110,7 @@
       <find>shutdown</find>
       <find>HttpHeaders</find>
       <find>ContentType</find>
+      <find>createZ</find>
     </findStrings>
     <replaceStrings>
       <replace>_isClosed</replace>
@@ -617,14 +617,7 @@
       <workItem from="1513103483207" duration="18000" />
       <workItem from="1513103506825" duration="139000" />
       <workItem from="1517332581856" duration="858000" />
-      <workItem from="1517973177718" duration="3510000" />
-    </task>
-    <task id="LOCAL-00008" summary="1.0.2">
-      <created>1493087536575</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1493087536575</updated>
+      <workItem from="1517973177718" duration="3606000" />
     </task>
     <task id="LOCAL-00009" summary="+1">
       <created>1493088262571</created>
@@ -962,7 +955,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517976649593</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="Removed use of `HttpHeaders` in `Angel`">
+      <created>1517976712783</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1517976712783</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -998,7 +998,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="121546000" />
+    <option name="totallyTimeSpent" value="121642000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1057,7 +1057,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="1.1.0-alpha" />
     <MESSAGE value="pubspec" />
     <MESSAGE value="Logging support" />
     <MESSAGE value="Updated `use`" />
@@ -1082,7 +1081,8 @@
     <MESSAGE value="Angel._flattened is now accessible via `optimizedRouter`" />
     <MESSAGE value="Used function syntax, deprecated `ResponseSerializer` typedef" />
     <MESSAGE value="Deprecated all serving logic in `Angel`" />
-    <option name="LAST_COMMIT_MESSAGE" value="Deprecated all serving logic in `Angel`" />
+    <MESSAGE value="Removed use of `HttpHeaders` in `Angel`" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed use of `HttpHeaders` in `Angel`" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1470,8 +1470,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="303" column="19" lean-forward="true" selection-start-line="303" selection-start-column="19" selection-end-line="303" selection-end-column="19" />
+        <state relative-caret-position="168">
+          <caret line="44" column="29" lean-forward="true" selection-start-line="44" selection-start-column="29" selection-end-line="44" selection-end-column="29" />
           <folding>
             <element signature="e#38#58#0" expanded="true" />
           </folding>
