@@ -29,7 +29,8 @@ main() async {
 }
 
 serverMain(_) async {
-  var app = new Angel.custom(startShared); // Run a cluster
+  var app = new Angel();
+  var http = new AngelHttp.custom(app, startShared); // Run a cluster
 
   app.get('/', {
     "foo": "bar",
@@ -47,5 +48,6 @@ serverMain(_) async {
     print(e.stackTrace);
   };
 
-  await app.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
+  var server = await http.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
+  print('Listening at http://${server.address.address}:${server.port}');
 }
