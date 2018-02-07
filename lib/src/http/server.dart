@@ -461,6 +461,10 @@ class Angel extends AngelBase {
     }
   }
 
+  Future setupRequest(RequestContext req) async {
+
+  }
+
   /// Runs several optimizations, *if* [isProduction] is `true`.
   ///
   /// * Preprocesses all dependency injection, and eliminates the burden of reflecting handlers
