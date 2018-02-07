@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="Used function syntax, deprecated `ResponseSerializer` typedef">
+    <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/server.dart" afterPath="$PROJECT_DIR$/lib/src/http/server.dart" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -26,14 +25,14 @@
     <favorites_list name="framework" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.7132018">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
           <file leaf-file-name="server.dart" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="167">
-                  <caret line="348" column="3" lean-forward="true" selection-start-line="348" selection-start-column="3" selection-end-line="348" selection-end-column="3" />
+                <state relative-caret-position="202">
+                  <caret line="303" column="19" lean-forward="true" selection-start-line="303" selection-start-column="19" selection-end-line="303" selection-end-column="19" />
                   <folding>
                     <element signature="e#38#58#0" expanded="true" />
                   </folding>
@@ -82,8 +81,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>_injections?</find>
-      <find>createRes</find>
       <find>requestedUrl</find>
       <find>cacheK</find>
       <find>resolveAl</find>
@@ -112,6 +109,8 @@
       <find>injectSeri</find>
       <find>close</find>
       <find>shutdown</find>
+      <find>HttpHeaders</find>
+      <find>ContentType</find>
     </findStrings>
     <replaceStrings>
       <replace>_isClosed</replace>
@@ -133,6 +132,7 @@
       <replace>req.path</replace>
       <replace>req.path`</replace>
       <replace>autoSnakeCaseNames == false ? $0 : '$1ated_at'</replace>
+      <replace>'content-type'</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\thosa\Source\Angel\framework\lib</dir>
@@ -617,14 +617,7 @@
       <workItem from="1513103483207" duration="18000" />
       <workItem from="1513103506825" duration="139000" />
       <workItem from="1517332581856" duration="858000" />
-      <workItem from="1517973177718" duration="3447000" />
-    </task>
-    <task id="LOCAL-00007" summary="Fixed last batch?">
-      <created>1492278141283</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1492278141283</updated>
+      <workItem from="1517973177718" duration="3510000" />
     </task>
     <task id="LOCAL-00008" summary="1.0.2">
       <created>1493087536575</created>
@@ -962,7 +955,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517975664302</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="Deprecated all serving logic in `Angel`">
+      <created>1517976649593</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1517976649593</updated>
+    </task>
+    <option name="localTasksCounter" value="57" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -998,7 +998,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="121483000" />
+    <option name="totallyTimeSpent" value="121546000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1057,7 +1057,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="1.1.0-alpha start" />
     <MESSAGE value="1.1.0-alpha" />
     <MESSAGE value="pubspec" />
     <MESSAGE value="Logging support" />
@@ -1082,7 +1081,8 @@
     <MESSAGE value="Remove line that resets `Angel.serializer` on close" />
     <MESSAGE value="Angel._flattened is now accessible via `optimizedRouter`" />
     <MESSAGE value="Used function syntax, deprecated `ResponseSerializer` typedef" />
-    <option name="LAST_COMMIT_MESSAGE" value="Used function syntax, deprecated `ResponseSerializer` typedef" />
+    <MESSAGE value="Deprecated all serving logic in `Angel`" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deprecated all serving logic in `Angel`" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1470,8 +1470,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/http/server.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="167">
-          <caret line="348" column="3" lean-forward="true" selection-start-line="348" selection-start-column="3" selection-end-line="348" selection-end-column="3" />
+        <state relative-caret-position="202">
+          <caret line="303" column="19" lean-forward="true" selection-start-line="303" selection-start-column="19" selection-end-line="303" selection-end-column="19" />
           <folding>
             <element signature="e#38#58#0" expanded="true" />
           </folding>

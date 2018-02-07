@@ -138,7 +138,7 @@ class Angel extends AngelBase {
       return;
     }
 
-    res.headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
+    res.headers['content-type'] = 'text/html';
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
@@ -308,8 +308,7 @@ class Angel extends AngelBase {
       // TODO: Make `serialize` return a bool, return this as the value.
       // Do this wherever applicable
       res.serialize(result,
-          contentType: res.headers[HttpHeaders.CONTENT_TYPE] ??
-              ContentType.JSON.mimeType);
+          contentType: res.headers['content-type'] ?? 'application/json');
       return false;
     } else
       return res.isOpen;
