@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import '../core/core.dart';
 import 'http_request_context.dart';
-import 'request_context.dart';
-import 'response_context.dart';
-import 'server.dart';
 
 class HttpResponseContextImpl extends ResponseContext {
   /// The underlying [HttpResponse] under this instance.

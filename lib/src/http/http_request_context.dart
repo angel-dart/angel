@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:body_parser/body_parser.dart';
-import 'request_context.dart';
-import 'server.dart';
+import '../core/core.dart';
 
 /// An implementation of [RequestContext] that wraps a [HttpRequest].
 class HttpRequestContextImpl extends RequestContext {

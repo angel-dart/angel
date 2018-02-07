@@ -4,11 +4,7 @@ import 'dart:async';
 import 'dart:mirrors';
 import 'package:angel_route/angel_route.dart';
 import 'package:meta/meta.dart';
-import 'metadata.dart';
-import 'request_context.dart';
-import 'response_context.dart';
-import 'routable.dart';
-import 'server.dart' show Angel;
+import '../core/core.dart';
 
 /// Supports grouping routes with shared functionality.
 class Controller {

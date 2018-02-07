@@ -9,9 +9,7 @@ import 'package:pool/pool.dart';
 import 'package:tuple/tuple.dart';
 import 'http_request_context.dart';
 import 'http_response_context.dart';
-import 'request_context.dart';
-import 'response_context.dart';
-import 'server.dart';
+import '../core/core.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 

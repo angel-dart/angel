@@ -7,8 +7,8 @@ import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
 import 'package:pool/pool.dart';
+import '../http/http.dart';
 import 'server.dart' show Angel;
-import 'controller.dart';
 import 'request_context.dart';
 
 final RegExp _contentType =
