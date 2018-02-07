@@ -17,9 +17,11 @@ Future printResponse(MockHttpResponse rs) {
 
 main() {
   Angel app;
+  AngelHttp http;
 
   setUp(() {
     app = new Angel()..lazyParseBodies = true;
+    http = new AngelHttp(app);
 
     app.get('/cookie', (@CookieValue('token') String jwt) {
       return jwt;
@@ -61,7 +63,7 @@ main() {
     // Invalid request
     var rq = new MockHttpRequest('GET', Uri.parse('/header'))..close();
     var rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
 
     await printResponse(rs);
     expect(rs.statusCode, 400);
@@ -71,7 +73,7 @@ main() {
       ..headers.add('x-foo', 'bar')
       ..close();
     rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
 
     var body = await readResponse(rs);
     print('Body: $body');
@@ -83,7 +85,7 @@ main() {
     // Invalid request
     var rq = new MockHttpRequest('GET', Uri.parse('/session'))..close();
     var rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
 
     await printResponse(rs);
     expect(rs.statusCode, 500);
@@ -92,7 +94,7 @@ main() {
     rq.session['foo'] = 'bar';
     rq.close();
     rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
 
     await printResponse(rs);
     expect(rs.statusCode, 200);
@@ -105,7 +107,7 @@ main() {
   test('pattern matching', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/match?mode=pos'))..close();
     var rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
@@ -113,7 +115,7 @@ main() {
 
     rq = new MockHttpRequest('GET', Uri.parse('/match?mode=neg'))..close();
     rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
@@ -122,7 +124,7 @@ main() {
     // Fallback
     rq = new MockHttpRequest('GET', Uri.parse('/match?mode=ambi'))..close();
     rs = rq.response;
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);

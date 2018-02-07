@@ -100,7 +100,7 @@ main() {
   });
 
   tearDown(() async {
-    await app.httpServer.close(force: true);
+    await app.close();
     app = null;
     nested = null;
     todos = null;

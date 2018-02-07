@@ -9,9 +9,11 @@ import 'encoders_buffer_test.dart' show encodingTests;
 
 main() {
   Angel app;
+  AngelHttp http;
 
   setUp(() {
     app = new Angel();
+    http = new AngelHttp(app);
 
     app.logger = new Logger('streaming_test')
       ..onRecord.listen((rec) {
@@ -66,11 +68,11 @@ main() {
     };
   });
 
-  tearDown(() => app.close());
+  tearDown(() => http.close());
 
   _expectHelloBye(String path) async {
     var rq = new MockHttpRequest('GET', Uri.parse(path))..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
     expect(body, 'Hello, world!bye');
   }
@@ -81,7 +83,7 @@ main() {
 
   test('cannot write after close', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
 
     if (rq.response.statusCode != 32)
@@ -91,7 +93,7 @@ main() {
   test('res => addError', () async {
     try {
       var rq = new MockHttpRequest('GET', Uri.parse('/error'))..close();
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
       var body = await rq.response.transform(UTF8.decoder).join();
       throw 'addError should throw error; response: $body';
     } on StateError {

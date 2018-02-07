@@ -90,7 +90,8 @@ class Angel extends AngelBase {
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
-  ServerGenerator get serverGenerator => _http.serverGenerator;
+  ServerGenerator get serverGenerator =>
+      (_http ??= new AngelHttp(this)).serverGenerator;
 
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
@@ -157,7 +158,7 @@ class Angel extends AngelBase {
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
-  HttpServer httpServer;
+  HttpServer get httpServer => _http?.httpServer;
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
@@ -221,8 +222,8 @@ class Angel extends AngelBase {
     shutdownHooks.clear();
     responseFinalizers.clear();
     _flattened = null;
-    await _http.close();
-    return _http.httpServer;
+    await _http?.close();
+    return _http?.httpServer;
   }
 
   @override
@@ -321,14 +322,18 @@ class Angel extends AngelBase {
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
   Future<RequestContext> createRequestContext(HttpRequest request) {
+    _http ??= new AngelHttp(this);
     return _http.createRequestContext(request);
   }
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
   Future<ResponseContext> createResponseContext(HttpResponse response,
-          [RequestContext correspondingRequest]) =>
-      _http.createResponseContext(response, correspondingRequest);
+      [RequestContext correspondingRequest]) {
+    _http ??= new AngelHttp(this);
+
+    return _http.createResponseContext(response, correspondingRequest);
+  }
 
   /// Attempts to find a middleware by the given name within this application.
   findMiddleware(key) {
@@ -347,6 +352,7 @@ class Angel extends AngelBase {
   Future handleAngelHttpException(AngelHttpException e, StackTrace st,
       RequestContext req, ResponseContext res, HttpRequest request,
       {bool ignoreFinalizers: false}) {
+    _http ??= new AngelHttp(this);
     return _http.handleAngelHttpException(e, st, req, res, request,
         ignoreFinalizers: ignoreFinalizers == true);
   }
@@ -354,6 +360,7 @@ class Angel extends AngelBase {
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
   Future handleRequest(HttpRequest request) {
+    _http ??= new AngelHttp(this);
     return _http.handleRequest(request);
   }
 
@@ -416,6 +423,7 @@ class Angel extends AngelBase {
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
+    _http ??= new AngelHttp(this);
     return _http.sendResponse(request, req, res);
   }
 
@@ -501,7 +509,8 @@ class Angel extends AngelBase {
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
-  factory Angel.custom(Future<HttpServer> Function(dynamic, int) serverGenerator) {
+  factory Angel.custom(
+      Future<HttpServer> Function(dynamic, int) serverGenerator) {
     var app = new Angel();
     return app.._http = new AngelHttp.custom(app, serverGenerator);
   }

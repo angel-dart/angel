@@ -60,5 +60,6 @@ Future<RequestContext> acceptContentTypes(
   rq.headers.set(HttpHeaders.ACCEPT, headerString);
   rq.close();
   var app = new Angel();
-  return app.createRequestContext(rq);
+  var http = new AngelHttp(app);
+  return http.createRequestContext(rq);
 }

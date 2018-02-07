@@ -29,23 +29,27 @@ main() {
   });
 
   test('custom server generator', () {
-    var app = new Angel.custom(HttpServer.bind);
-    expect(app.serverGenerator, HttpServer.bind);
+    var app = new Angel();
+    var http = new AngelHttp.custom(app, HttpServer.bind);
+    expect(http.serverGenerator, HttpServer.bind);
   });
 
   test('default error handler', () async {
     var app = new Angel();
+    var http = new AngelHttp(app);
     var rq = new MockHttpRequest('GET', $foo);
     rq.close();
     var rs = rq.response;
-    var req = await app.createRequestContext(rq);
-    var res = await app.createResponseContext(rs);
+    var req = await http.createRequestContext(rq);
+    var res = await http.createResponseContext(rs);
     var e = new AngelHttpException(null,
         statusCode: 321, message: 'Hello', errors: ['foo', 'bar']);
     await app.errorHandler(e, req, res);
-    await app.sendResponse(rq, req, res);
-    expect(rs.headers.value(HttpHeaders.CONTENT_TYPE),
-        ContentType.HTML.toString());
+    await http.sendResponse(rq, req, res);
+    expect(
+      ContentType.parse(rs.headers.value(HttpHeaders.CONTENT_TYPE)).mimeType,
+      ContentType.HTML.mimeType,
+    );
     expect(rs.statusCode, e.statusCode);
     var body = await rs.transform(UTF8.decoder).join();
     expect(body, contains('<title>${e.message}</title>'));
@@ -81,24 +85,27 @@ main() {
 
   test('global injection added to injection map', () async {
     var app = new Angel()..inject('a', 'b');
+    var http = new AngelHttp(app);
     app.get('/', (String a) => a);
     var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
     expect(body, JSON.encode('b'));
   });
 
   test('global injected serializer', () async {
-    var app = new Angel()..injectSerializer((_) => 'x');
+    var app = new Angel()..serializer = (_) => 'x';
+    var http = new AngelHttp(app);
     app.get($foo.path, (req, ResponseContext res) => res.serialize(null));
     var rq = new MockHttpRequest('GET', $foo)..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var body = await rq.response.transform(UTF8.decoder).join();
     expect(body, 'x');
   });
 
   group('handler results', () {
     var app = new Angel();
+    var http = new AngelHttp(app);
     app.responseFinalizers
         .add((req, res) => throw new AngelHttpException.forbidden());
     RequestContext req;
@@ -106,8 +113,8 @@ main() {
 
     setUp(() async {
       var rq = new MockHttpRequest('GET', $foo)..close();
-      req = await app.createRequestContext(rq);
-      res = await app.createResponseContext(rq.response);
+      req = await http.createRequestContext(rq);
+      res = await http.createResponseContext(rq.response);
     });
 
     group('getHandlerResult', () {
@@ -140,12 +147,14 @@ main() {
 
   group('handleAngelHttpException', () {
     Angel app;
+    AngelHttp http;
 
     setUp(() async {
       app = new Angel();
       app.get('/wtf', () => throw new AngelHttpException.forbidden());
       app.get('/wtf2', () => throw new AngelHttpException.forbidden());
-      await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+      http = new AngelHttp(app);
+      await http.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
 
       var oldHandler = app.errorHandler;
       app.errorHandler = (e, req, res) {
@@ -161,7 +170,7 @@ main() {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
         ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
       rq.close();
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
           rq.response.headers.contentType.mimeType, ContentType.JSON.mimeType);
@@ -171,7 +180,7 @@ main() {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
         ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
       rq.close();
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
           rq.response.headers.contentType.mimeType, ContentType.JSON.mimeType);
@@ -181,7 +190,7 @@ main() {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf2'));
       rq.headers.set(HttpHeaders.ACCEPT, ContentType.HTML.toString());
       rq.close();
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
           rq.response.headers.contentType?.mimeType, ContentType.HTML.mimeType);

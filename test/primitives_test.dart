@@ -6,9 +6,11 @@ import 'package:test/test.dart';
 
 main() {
   Angel app;
+  AngelHttp http;
 
   setUp(() {
     app = new Angel()..inject('global', 305); // Pitbull!
+    http = new AngelHttp(app);
 
     app.get('/string/:string', (String string) => string);
 
@@ -33,21 +35,21 @@ main() {
 
   test('String type annotation', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/string/hello'))..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var rs = await rq.response.transform(UTF8.decoder).join();
     expect(rs, JSON.encode('hello'));
   });
 
   test('Primitive after parsed param injection', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/num/parsed/24'))..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var rs = await rq.response.transform(UTF8.decoder).join();
     expect(rs, JSON.encode(24));
   });
 
   test('globally-injected primitive', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/num/global'))..close();
-    await app.handleRequest(rq);
+    await http.handleRequest(rq);
     var rs = await rq.response.transform(UTF8.decoder).join();
     expect(rs, JSON.encode(305));
   });
@@ -56,8 +58,8 @@ main() {
     try {
       var rq = new MockHttpRequest('GET', Uri.parse('/num/unparsed/32'))
         ..close();
-      var req = await app.createRequestContext(rq);
-      var res = await app.createResponseContext(rq.response, req);
+      var req = await http.createRequestContext(rq);
+      var res = await http.createResponseContext(rq.response, req);
       await app.runContained((num unparsed) => unparsed, req, res);
       throw new StateError(
           'ArgumentError should be thrown if a parameter cannot be resolved.');

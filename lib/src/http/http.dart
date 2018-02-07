@@ -8,6 +8,7 @@ export 'package:angel_model/angel_model.dart';
 export 'package:angel_route/angel_route.dart';
 export 'package:body_parser/body_parser.dart' show FileUploadInfo;
 export 'angel_base.dart';
+export 'angel_http.dart';
 export 'anonymous_service.dart';
 export 'controller.dart';
 export 'hooked_service.dart';

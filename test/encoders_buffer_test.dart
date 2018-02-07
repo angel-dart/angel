@@ -29,15 +29,17 @@ main() {
 void encodingTests(Angel getApp()) {
   group('encoding', () {
     Angel app;
+    AngelHttp http;
 
     setUp(() {
       app = getApp();
+      http = new AngelHttp(app);
     });
 
     test('sends plaintext if no accept-encoding', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))..close();
       var rs = rq.response;
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
 
       var body = await rs.transform(UTF8.decoder).join();
       expect(body, 'Hello, world!');
@@ -48,7 +50,7 @@ void encodingTests(Angel getApp()) {
         ..headers.set(HttpHeaders.ACCEPT_ENCODING, '*')
         ..close();
       var rs = rq.response;
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
@@ -60,7 +62,7 @@ void encodingTests(Angel getApp()) {
         ..headers.set(HttpHeaders.ACCEPT_ENCODING, ['foo', 'bar', '*'])
         ..close();
       var rs = rq.response;
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
@@ -72,7 +74,7 @@ void encodingTests(Angel getApp()) {
         ..headers.set(HttpHeaders.ACCEPT_ENCODING, 'gzip')
         ..close();
       var rs = rq.response;
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
@@ -84,7 +86,7 @@ void encodingTests(Angel getApp()) {
         ..headers.set(HttpHeaders.ACCEPT_ENCODING, ['gzip', 'deflate'])
         ..close();
       var rs = rq.response;
-      await app.handleRequest(rq);
+      await http.handleRequest(rq);
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
