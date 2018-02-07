@@ -5,6 +5,7 @@ empty string.
 * Deprecated `Angel.createZoneForRequest`.
 * Deprecated all `Angel` methods that directly touch an `HttpServer` or `HttpRequest`.
 * Created the `AngelHttp` class.
+* Removed explicit dependence on `dart:io` for `Angel`, `RequestContext`, `ResponseContext`.
 
 # 1.1.0+3
 * Modified `ResponseContext#isOpen` to also return `false` if streaming is being used.
