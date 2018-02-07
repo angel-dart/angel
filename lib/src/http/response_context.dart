@@ -26,7 +26,7 @@ typedef String ResponseSerializer(data);
 abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
   final BytesBuilder _buffer = new _LockableBytesBuilder();
-  final Map<String, String> _headers = {HttpHeaders.SERVER: 'angel'};
+  final Map<String, String> _headers = {'server': 'angel'};
 
   Completer _done;
   int _statusCode = 200;
@@ -98,9 +98,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Gets the Content-Type header.
   ContentType get contentType {
-    if (!headers.containsKey(HttpHeaders.CONTENT_TYPE)) return null;
+    if (!headers.containsKey('content-type')) return null;
 
-    var header = headers[HttpHeaders.CONTENT_TYPE];
+    var header = headers['content-type'];
     var match = _contentType.firstMatch(header);
 
     if (match == null)
@@ -114,7 +114,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Sets the Content-Type header.
   void set contentType(ContentType contentType) {
-    headers[HttpHeaders.CONTENT_TYPE] = contentType.toString();
+    headers['content-type'] = contentType.toString();
   }
 
   /// Set this to true if you will manually close the response.
@@ -130,8 +130,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
     headers["Content-Disposition"] =
         'attachment; filename="${filename ?? file.path}"';
-    headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
-    headers[HttpHeaders.CONTENT_LENGTH] = file.lengthSync().toString();
+    headers['content-type'] = lookupMimeType(file.path);
+    headers['content-length'] = file.lengthSync().toString();
 
     if (streaming) {
       await file.openRead().pipe(this);
@@ -188,9 +188,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
       if (contentType is ContentType)
         this.contentType = contentType;
       else
-        headers[HttpHeaders.CONTENT_TYPE] = contentType.toString();
+        headers['content-type'] = contentType.toString();
     } else
-      headers[HttpHeaders.CONTENT_TYPE] = 'application/javascript';
+      headers['content-type'] = 'application/javascript';
 
     end();
   }
@@ -199,7 +199,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   Future render(String view, [Map data]) async {
     if (!isOpen) throw closed();
     write(await app.viewGenerator(view, data));
-    headers[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString();
+    headers['content-type'] = ContentType.HTML.toString();
     end();
   }
 
@@ -213,8 +213,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   void redirect(url, {bool absolute: true, int code: 302}) {
     if (!isOpen) throw closed();
     headers
-      ..[HttpHeaders.CONTENT_TYPE] = ContentType.HTML.toString()
-      ..[HttpHeaders.LOCATION] =
+      ..['content-type'] = ContentType.HTML.toString()
+      ..['location'] =
           url is String ? url : app.navigate(url, absolute: absolute);
     statusCode = code ?? 302;
     write('''
@@ -295,7 +295,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   Future sendFile(File file) async {
     if (!isOpen) throw closed();
 
-    headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
+    headers['content-type'] = lookupMimeType(file.path);
     buffer.add(await file.readAsBytes());
     end();
   }
@@ -312,7 +312,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
       return;
 
     if (contentType is String)
-      headers[HttpHeaders.CONTENT_TYPE] = contentType;
+      headers['content-type'] = contentType;
     else if (contentType is ContentType) this.contentType = contentType;
 
     write(text);
@@ -326,7 +326,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   Future streamFile(File file) {
     if (!isOpen) throw closed();
 
-    headers[HttpHeaders.CONTENT_TYPE] = lookupMimeType(file.path);
+    headers['content-type'] = lookupMimeType(file.path);
     return file.openRead().pipe(this);
   }
 

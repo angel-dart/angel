@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/src/http/http_response_context.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/response_context.dart" afterPath="$PROJECT_DIR$/lib/src/http/response_context.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/server.dart" afterPath="$PROJECT_DIR$/lib/src/http/server.dart" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -34,8 +31,8 @@
           <file leaf-file-name="response_context.dart" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lib/src/http/response_context.dart">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="402">
-                  <caret line="151" column="5" lean-forward="true" selection-start-line="151" selection-start-column="5" selection-end-line="151" selection-end-column="5" />
+                <state relative-caret-position="231">
+                  <caret line="26" column="28" lean-forward="true" selection-start-line="26" selection-start-column="28" selection-end-line="26" selection-end-column="28" />
                   <folding />
                 </state>
               </provider>
@@ -83,7 +80,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>dispos</find>
       <find>xhr</find>
       <find>accepts</find>
       <find>cacheKey</find>
@@ -113,6 +109,7 @@
       <find>isOpen</find>
       <find>_useStream</find>
       <find>isClosed</find>
+      <find>HttpHeaders.</find>
     </findStrings>
     <replaceStrings>
       <replace>_isClosed</replace>
@@ -140,6 +137,7 @@
       <replace>useStream</replace>
       <replace>streaming</replace>
       <replace>!isOpen</replace>
+      <replace>'server'</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\thosa\Source\Angel\framework\lib</dir>
@@ -215,8 +213,8 @@
         <option value="$PROJECT_DIR$/lib/src/http/http_request_context.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/server.dart" />
-        <option value="$PROJECT_DIR$/lib/src/http/response_context.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/http_response_context.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/response_context.dart" />
       </list>
     </option>
   </component>
@@ -630,14 +628,7 @@
       <workItem from="1513103483207" duration="18000" />
       <workItem from="1513103506825" duration="139000" />
       <workItem from="1517332581856" duration="858000" />
-      <workItem from="1517973177718" duration="7635000" />
-    </task>
-    <task id="LOCAL-00015" summary="+1">
-      <created>1497200256280</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1497200256280</updated>
+      <workItem from="1517973177718" duration="7703000" />
     </task>
     <task id="LOCAL-00016" summary="1.0.4">
       <created>1497837231709</created>
@@ -975,7 +966,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517979599468</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="Deprecated `ResponseContext.io`, added HTTP equivalent">
+      <created>1517980874143</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1517980874143</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1011,7 +1009,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="125671000" />
+    <option name="totallyTimeSpent" value="125739000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1070,7 +1068,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="+6" />
     <MESSAGE value="autoIdAndDateFields in MapService" />
     <MESSAGE value="+8" />
     <MESSAGE value="+9" />
@@ -1095,7 +1092,8 @@
     <MESSAGE value="Added example/main.dart" />
     <MESSAGE value="Create HttpRequestContextImpl" />
     <MESSAGE value="Change return type of `AngelHttp.createRequestContext`" />
-    <option name="LAST_COMMIT_MESSAGE" value="Change return type of `AngelHttp.createRequestContext`" />
+    <MESSAGE value="Deprecated `ResponseContext.io`, added HTTP equivalent" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deprecated `ResponseContext.io`, added HTTP equivalent" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1521,8 +1519,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/http/response_context.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="402">
-          <caret line="151" column="5" lean-forward="true" selection-start-line="151" selection-start-column="5" selection-end-line="151" selection-end-column="5" />
+        <state relative-caret-position="231">
+          <caret line="26" column="28" lean-forward="true" selection-start-line="26" selection-start-column="28" selection-end-line="26" selection-end-column="28" />
           <folding />
         </state>
       </provider>
