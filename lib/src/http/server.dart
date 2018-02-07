@@ -227,7 +227,7 @@ class Angel extends AngelBase {
     handlerCache.clear();
     _injections.clear();
     encoders.clear();
-    _serializer = god.serialize;
+    //_serializer = god.serialize;
     _children.clear();
     _parent = null;
     logger = null;
