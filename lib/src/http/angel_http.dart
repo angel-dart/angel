@@ -218,7 +218,7 @@ class AngelHttp {
       [RequestContext correspondingRequest]) =>
       new Future<ResponseContext>.value(
           new ResponseContext(response, app, correspondingRequest)
-            ..serializer = (_serializer ?? god.serialize)
+            ..serializer = (app.serializer ?? god.serialize)
             ..encoders.addAll(app.encoders ?? {}));
 
   /// Limits the maximum number of requests to be handled concurrently by this instance.

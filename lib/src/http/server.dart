@@ -11,7 +11,6 @@ export 'package:container/container.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:pool/pool.dart';
 import 'package:tuple/tuple.dart';
 import 'angel_base.dart';
 import 'angel_http.dart';
@@ -53,7 +52,9 @@ class Angel extends AngelBase {
       createZoneForRequest;
 
   final Map<dynamic, InjectionRequest> _preContained = {};
-  ResponseSerializer _serializer;
+
+  /// A middleware to inject a serialize on every request.
+  ResponseSerializer serializer;
 
   /// A [Map] of dependency data obtained via reflection.
   ///
@@ -277,10 +278,10 @@ class Angel extends AngelBase {
     this.encoders.addAll(encoders);
   }
 
-  /// Shortcut for adding a middleware to inject a serialize on every request.
+  /// Prefer directly setting [serializer].
+  @deprecated
   void injectSerializer(ResponseSerializer serializer) {
-    // TODO: Make this public
-    _serializer = serializer;
+    this.serializer = serializer;
   }
 
   Future getHandlerResult(
