@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:body_parser/body_parser.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'metadata.dart';
 import 'response_context.dart';
@@ -12,13 +13,10 @@ import 'server.dart' show Angel;
 part 'injection.dart';
 
 /// A convenience wrapper around an incoming HTTP request.
-class RequestContext {
+abstract class RequestContext {
   String _acceptHeaderCache, _extensionCache;
   bool _acceptsAllCache;
   BodyParseResult _body;
-  ContentType _contentType;
-  HttpRequest _io;
-  String _override, _path;
   Map _provisionalQuery;
 
   final Map properties = {};
@@ -30,13 +28,13 @@ class RequestContext {
   Angel app;
 
   /// Any cookies sent with this request.
-  List<Cookie> get cookies => io.cookies;
+  List<Cookie> get cookies;
 
   /// All HTTP headers sent with this request.
-  HttpHeaders get headers => io.headers;
+  HttpHeaders get headers;
 
   /// The requested hostname.
-  String get hostname => io.headers.value(HttpHeaders.HOST);
+  String get hostname;
 
   final Map _injections = {};
   Map _injectionsCache;
@@ -44,8 +42,9 @@ class RequestContext {
   /// A [Map] of singletons injected via [inject]. *Read-only*.
   Map get injections => _injectionsCache ??= new Map.unmodifiable(_injections);
 
-  /// The underlying [HttpRequest] instance underneath this context.
-  HttpRequest get io => _io;
+  /// This feature does not map to other adapters (i.e. HTTP/2), so it will be removed in a future version.
+  @deprecated
+  HttpRequest get io;
 
   /// The user's IP.
   String get ip => remoteAddress.address;
@@ -53,10 +52,10 @@ class RequestContext {
   /// This request's HTTP method.
   ///
   /// This may have been processed by an override. See [originalMethod] to get the real method.
-  String get method => _override ?? originalMethod;
+  String get method;
 
   /// The original HTTP verb sent to the server.
-  String get originalMethod => io.method;
+  String get originalMethod;
 
   StateError _unparsed(String type, String caps) => new StateError(
       'Cannot get the $type of an unparsed request. Use lazy${caps}() instead.');
@@ -75,7 +74,7 @@ class RequestContext {
   }
 
   /// The content type of an incoming request.
-  ContentType get contentType => _contentType;
+  ContentType get contentType;
 
   /// Any and all files sent to the server with this request.
   ///
@@ -107,7 +106,7 @@ class RequestContext {
   Map params = {};
 
   /// The requested path.
-  String get path => _path;
+  String get path;
 
   /// The parsed request query string.
   ///
@@ -123,79 +122,21 @@ class RequestContext {
   }
 
   /// The remote address requesting this resource.
-  InternetAddress get remoteAddress => io.connectionInfo.remoteAddress;
+  InternetAddress get remoteAddress;
 
   /// The user's HTTP session.
-  HttpSession get session => io.session;
+  HttpSession get session;
 
   /// The [Uri] instance representing the path this request is responding to.
-  Uri get uri => io.uri;
+  Uri get uri;
 
   /// Is this an **XMLHttpRequest**?
-  bool get xhr =>
-      io.headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
-      'xmlhttprequest';
+  bool get xhr;
 
   /// Returns the file extension of the requested path, if any.
   ///
   /// Includes the leading `.`, if there is one.
   String get extension => _extensionCache ??= p.extension(uri.path);
-
-  /// Magically transforms an [HttpRequest] into a [RequestContext].
-  static Future<RequestContext> from(
-      HttpRequest request, Angel app, String path) async {
-    RequestContext ctx = new RequestContext();
-
-    String override = request.method;
-
-    if (app.allowMethodOverrides == true)
-      override =
-          request.headers.value('x-http-method-override')?.toUpperCase() ??
-              request.method;
-
-    ctx.app = app;
-    ctx._contentType = request.headers.contentType;
-    ctx._override = override;
-
-    /*
-    // Faster way to get path
-    List<int> _path = [];
-
-    // Go up until we reach a ?
-    for (int ch in request.uri.toString().codeUnits) {
-      if (ch != $question)
-        _path.add(ch);
-      else
-        break;
-    }
-
-    // Remove trailing slashes
-    int lastSlash = -1;
-
-    for (int i = _path.length - 1; i >= 0; i--) {
-      if (_path[i] == $slash)
-        lastSlash = i;
-      else
-        break;
-    }
-
-    if (lastSlash > -1)
-      ctx._path = new String.fromCharCodes(_path.take(lastSlash));
-    else
-      ctx._path = new String.fromCharCodes(_path);
-      */
-
-    ctx._path = path;
-    ctx._io = request;
-
-    if (app.lazyParseBodies != true) {
-      ctx._body = (await parseBody(request,
-              storeOriginalBuffer: app.storeOriginalBuffer == true)) ??
-          {};
-    }
-
-    return ctx;
-  }
 
   /// Grabs an object by key or type from [params], [_injections], or
   /// [app].container. Use this to perform dependency injection
@@ -248,6 +189,7 @@ class RequestContext {
         ? contentType.mimeType
         : contentType?.toString();
 
+    // Change to assert
     if (contentTypeString == null)
       throw new ArgumentError(
           'RequestContext.accepts expects the `contentType` parameter to NOT be null.');
@@ -293,18 +235,18 @@ class RequestContext {
       return _body;
     else
       _provisionalQuery = null;
-    return _body = await parseBody(io,
-        storeOriginalBuffer: app.storeOriginalBuffer == true);
+    return _body = await parseOnce();
   }
+
+  /// Override this method to one-time parse an incoming request.
+  @virtual
+  Future<BodyParseResult> parseOnce();
 
   /// Disposes of all resources.
   Future close() async {
     _body = null;
     _acceptsAllCache = null;
     _acceptHeaderCache = null;
-    _io = null;
-    _override = _path = null;
-    _contentType = null;
     _provisionalQuery?.clear();
     properties.clear();
     _injections.clear();

@@ -7,6 +7,7 @@ import 'package:combinator/combinator.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:pool/pool.dart';
 import 'package:tuple/tuple.dart';
+import 'http_request_context.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'server.dart';
@@ -278,7 +279,7 @@ class AngelHttp {
   Future<RequestContext> createRequestContext(HttpRequest request) {
     var path = request.uri.path.replaceAll(_straySlashes, '');
     if (path.length == 0) path = '/';
-    return RequestContext.from(request, app, path).then((req) async {
+    return HttpRequestContextImpl.from(request, app, path).then((req) async {
       if (_pool != null) req.inject(PoolResource, await _pool.request());
       if (app.injections.isNotEmpty) app.injections.forEach(req.inject);
       return req;
