@@ -22,9 +22,9 @@ Angel is a full-featured server-side Web application framework for the Dart prog
 Like what you see? Please lend us a star. :star:
 
 ## Newest Tutorials
+* [Developing RESTful API's with Angel](https://thosakwe.com/developing-restful-apis-with-angel/)
 * [Serving Static Files](https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae)
 * Use With Angular2 ([article](https://dart.academy/using-angel-with-angular2/) | [video](https://www.youtube.com/watch?v=O8tCXj_lljY&feature=youtu.be))
-* [Instant REST API's - Intro to Services](https://medium.com/the-angel-framework/instant-rest-apis-and-more-an-introduction-to-angel-services-b843f3187f67)
 
 ## Installation & Setup
 *Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.*
