@@ -6,7 +6,16 @@ part of angel_serialize.test.models.author;
 // Generator: JsonModelGenerator
 // **************************************************************************
 
-class Author {
+class Author extends _Author {
+  Author(
+      {this.id,
+      this.name,
+      this.age,
+      this.books,
+      this.newestBook,
+      this.createdAt,
+      this.updatedAt});
+
   final String id;
 
   final String name;
@@ -22,7 +31,9 @@ class Author {
   final DateTime updatedAt;
 }
 
-class Library {
+class Library extends _Library {
+  Library({this.id, this.collection, this.createdAt, this.updatedAt});
+
   final String id;
 
   final Map<String, Book> collection;

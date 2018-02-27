@@ -52,9 +52,12 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     return buf.toString();
   }
 
+  /// Generate an extended model class.
   void generateClass(BuildContext ctx, FileBuilder file) {
     file.body.add(new Class((clazz) {
-      clazz.name = ctx.modelClassNameRecase.pascalCase;
+      clazz
+        ..name = ctx.modelClassNameRecase.pascalCase
+        ..extend = new Reference(ctx.originalClassName);
 
       for (var field in ctx.fields) {
         clazz.fields.add(new Field((b) {
@@ -62,6 +65,23 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             ..name = field.name
             ..modifier = FieldModifier.final$
             ..type = convertTypeReference(field.type);
+        }));
+      }
+
+      generateConstructor(ctx, clazz, file);
+    }));
+  }
+
+  /// Generate a constructor with named parameters.
+  void generateConstructor(
+      BuildContext ctx, ClassBuilder clazz, FileBuilder file) {
+    clazz.constructors.add(new Constructor((constructor) {
+      for (var field in ctx.fields) {
+        constructor.optionalParameters.add(new Parameter((b) {
+          b
+            ..name = field.name
+            ..named = true
+            ..toThis = true;
         }));
       }
     }));
