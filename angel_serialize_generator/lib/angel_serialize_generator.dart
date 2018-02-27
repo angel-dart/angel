@@ -9,6 +9,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
 import 'context.dart';
+
 part 'model.dart';
 
 class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
@@ -19,8 +20,8 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
 
   @override
-  Future<String> generateForAnnotatedElement(Element element,
-      ConstantReader reader, BuildStep buildStep) async {
+  Future<String> generateForAnnotatedElement(
+      Element element, ConstantReader reader, BuildStep buildStep) async {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
 
@@ -42,7 +43,16 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
   void generateClass(BuildContext ctx, FileBuilder file) {
     file.body.add(new Class((clazz) {
+      clazz.name = ctx.modelClassNameRecase.pascalCase;
 
+      for (var field in ctx.fields) {
+        clazz.fields.add(new Field((b) {
+          b
+            ..name = field.name
+            ..modifier = FieldModifier.final$
+            ..type = new Reference(field.type.name);
+        }));
+      }
     }));
   }
 }

@@ -6,132 +6,28 @@ part of angel_serialize.test.models.author;
 // Generator: JsonModelGenerator
 // **************************************************************************
 
-class Author extends _Author {
-  @override
-  String id;
+class Author {
+  final String id;
 
-  @override
-  String name;
+  final String name;
 
-  @override
-  int age;
+  final int age;
 
-  @override
-  List<Book> books;
+  final List books;
 
-  @override
-  Book newestBook;
+  final Book newestBook;
 
-  @override
-  DateTime createdAt;
+  final DateTime createdAt;
 
-  @override
-  DateTime updatedAt;
-
-  Author(
-      {this.id,
-      this.name,
-      this.age,
-      this.books,
-      this.newestBook,
-      this.createdAt,
-      this.updatedAt});
-
-  factory Author.fromJson(Map data) {
-    return new Author(
-        id: data['id'],
-        name: data['name'],
-        age: data['age'],
-        books: data['books'] is List
-            ? data['books']
-                .map((x) =>
-                    x == null ? null : (x is Book ? x : new Book.fromJson(x)))
-                .toList()
-            : null,
-        newestBook: data['newest_book'] == null
-            ? null
-            : (data['newest_book'] is Book
-                ? data['newest_book']
-                : new Book.fromJson(data['newest_book'])),
-        createdAt: data['created_at'] is DateTime
-            ? data['created_at']
-            : (data['created_at'] is String
-                ? DateTime.parse(data['created_at'])
-                : null),
-        updatedAt: data['updated_at'] is DateTime
-            ? data['updated_at']
-            : (data['updated_at'] is String
-                ? DateTime.parse(data['updated_at'])
-                : null));
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'age': age,
-        'books': books,
-        'newest_book': newestBook,
-        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
-        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
-      };
-
-  static Author parse(Map map) => new Author.fromJson(map);
-
-  Author clone() {
-    return new Author.fromJson(toJson());
-  }
+  final DateTime updatedAt;
 }
 
-class Library extends _Library {
-  @override
-  String id;
+class Library {
+  final String id;
 
-  @override
-  Map<String, Book> collection;
+  final Map collection;
 
-  @override
-  DateTime createdAt;
+  final DateTime createdAt;
 
-  @override
-  DateTime updatedAt;
-
-  Library({this.id, this.collection, this.createdAt, this.updatedAt});
-
-  factory Library.fromJson(Map data) {
-    return new Library(
-        id: data['id'],
-        collection: data['collection'] is Map
-            ? data['collection'].keys.fold({}, (out, k) {
-                out[k] = data['collection'][k] == null
-                    ? null
-                    : (data['collection'][k] is Book
-                        ? data['collection'][k]
-                        : new Book.fromJson(data['collection'][k]));
-                return out;
-              })
-            : null,
-        createdAt: data['created_at'] is DateTime
-            ? data['created_at']
-            : (data['created_at'] is String
-                ? DateTime.parse(data['created_at'])
-                : null),
-        updatedAt: data['updated_at'] is DateTime
-            ? data['updated_at']
-            : (data['updated_at'] is String
-                ? DateTime.parse(data['updated_at'])
-                : null));
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'collection': collection,
-        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
-        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
-      };
-
-  static Library parse(Map map) => new Library.fromJson(map);
-
-  Library clone() {
-    return new Library.fromJson(toJson());
-  }
+  final DateTime updatedAt;
 }
