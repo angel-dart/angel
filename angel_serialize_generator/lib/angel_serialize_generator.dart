@@ -69,6 +69,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       }
 
       generateConstructor(ctx, clazz, file);
+      generateChangeMethod(ctx, clazz, file);
     }));
   }
 
@@ -84,6 +85,17 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             ..toThis = true;
         }));
       }
+    }));
+  }
+
+  /// Generate a `change` method.
+  void generateChangeMethod(
+      BuildContext ctx, ClassBuilder clazz, FileBuilder file) {
+    clazz.methods.add(new Method((method) {
+      method
+        ..name = 'change'
+        ..returns = ctx.modelClassType
+      ..requiredParameters.add(new Parameter());
     }));
   }
 }

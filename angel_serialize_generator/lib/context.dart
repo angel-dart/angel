@@ -1,10 +1,12 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_serialize/angel_serialize.dart';
+import 'package:code_builder/code_builder.dart';
 import 'package:recase/recase.dart';
 
 /// A base context for building serializable classes.
 class BuildContext {
   ReCase _modelClassNameRecase;
+  TypeReference _modelClassType;
 
   /// A map of field names to resolved names from `@Alias()` declarations.
   final Map<String, String> aliases = {};
@@ -30,7 +32,11 @@ class BuildContext {
       : originalClassName;
 
   /// A [ReCase] instance reflecting on the [modelClassName].
-  ReCase get modelClassNameRecase => _modelClassNameRecase ??= new ReCase(modelClassName);
+  ReCase get modelClassNameRecase =>
+      _modelClassNameRecase ??= new ReCase(modelClassName);
+
+  TypeReference get modelClassType =>
+      _modelClassType ??= new TypeReference((b) => b.symbol = modelClassName);
 
   /// The [FieldElement] pointing to the primary key.
   FieldElement get primaryKeyField =>
