@@ -13,7 +13,7 @@ class Author {
 
   final int age;
 
-  final List books;
+  final List<Book> books;
 
   final Book newestBook;
 
@@ -25,7 +25,7 @@ class Author {
 class Library {
   final String id;
 
-  final Map collection;
+  final Map<String, Book> collection;
 
   final DateTime createdAt;
 

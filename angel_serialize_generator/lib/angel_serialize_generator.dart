@@ -12,6 +12,17 @@ import 'context.dart';
 
 part 'model.dart';
 
+/// Converts a [DartType] to a [TypeReference].
+TypeReference convertTypeReference(DartType t) {
+  return new TypeReference((b) {
+    b..symbol = t.name;
+
+    if (t is InterfaceType) {
+      b.types.addAll(t.typeArguments.map(convertTypeReference));
+    }
+  });
+}
+
 class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   final bool autoSnakeCaseNames;
   final bool autoIdAndDateFields;
@@ -50,7 +61,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
           b
             ..name = field.name
             ..modifier = FieldModifier.final$
-            ..type = new Reference(field.type.name);
+            ..type = convertTypeReference(field.type);
         }));
       }
     }));
