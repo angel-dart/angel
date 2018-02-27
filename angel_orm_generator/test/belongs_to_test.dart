@@ -12,6 +12,7 @@ import 'common.dart';
 main() {
   PostgreSQLConnection connection;
   Author rowling;
+  Author jameson;
   Book deathlyHallows;
 
   setUp(() async {
@@ -19,10 +20,11 @@ main() {
 
     // Insert an author
     rowling = await AuthorQuery.insert(connection, name: 'J.K. Rowling');
+    jameson = await AuthorQuery.insert(connection, name: 'J.K. Jameson');
 
     // And a book
     deathlyHallows = await BookQuery.insert(connection,
-        authorId: int.parse(rowling.id), name: 'Deathly Hallows');
+        authorId: int.parse(rowling.id), name: 'Deathly Hallows', partnerAuthorId: int.parse(jameson.id));
   });
 
   tearDown(() => connection.close());
