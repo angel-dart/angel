@@ -57,7 +57,8 @@ Future<BuildContext> buildContext(
 
   if (autoIdAndDateFields != false) {
     if (!fieldNames.contains('id')) {
-      var idField = new ShimFieldImpl('id', lib.context.typeProvider.stringType);
+      var idField =
+          new ShimFieldImpl('id', lib.context.typeProvider.stringType);
       ctx.fields.insert(0, idField);
       ctx.shimmed['id'] = true;
     }
@@ -78,7 +79,6 @@ Future<BuildContext> buildContext(
         ctx.shimmed[key] = true;
       }
     }
-    ;
   }
 
   return ctx;
@@ -88,5 +88,6 @@ Future<BuildContext> buildContext(
 class ShimFieldImpl extends FieldElementImpl {
   @override
   final DartType type;
+
   ShimFieldImpl(String name, this.type) : super(name, -1);
 }
