@@ -16,7 +16,7 @@ const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
 const TypeChecker serializableTypeChecker =
     const TypeChecker.fromRuntime(Serializable);
 
-// TODO: Should add id, createdAt, updatedAt...
+/// Create a [BuildContext].
 Future<BuildContext> buildContext(
     ClassElement clazz,
     Serializable annotation,
@@ -57,7 +57,7 @@ Future<BuildContext> buildContext(
 
   if (autoIdAndDateFields != false) {
     if (!fieldNames.contains('id')) {
-      var idField = new _ShimField('id', lib.context.typeProvider.stringType);
+      var idField = new ShimFieldImpl('id', lib.context.typeProvider.stringType);
       ctx.fields.insert(0, idField);
       ctx.shimmed['id'] = true;
     }
@@ -72,7 +72,7 @@ Future<BuildContext> buildContext(
           dateTime = dt.type;
         }
 
-        var field = new _ShimField(key, dateTime);
+        var field = new ShimFieldImpl(key, dateTime);
         ctx.aliases[key] = new ReCase(key).snakeCase;
         ctx.fields.add(field);
         ctx.shimmed[key] = true;
@@ -84,8 +84,9 @@ Future<BuildContext> buildContext(
   return ctx;
 }
 
-class _ShimField extends FieldElementImpl {
+/// A manually-instantiated [FieldElement].
+class ShimFieldImpl extends FieldElementImpl {
   @override
   final DartType type;
-  _ShimField(String name, this.type) : super(name, -1);
+  ShimFieldImpl(String name, this.type) : super(name, -1);
 }
