@@ -6,6 +6,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
 import 'context.dart';
@@ -24,6 +25,8 @@ TypeReference convertTypeReference(DartType t) {
 }
 
 bool isModelClass(DartType t) {
+  if (t == null) return false;
+
   if (serializableTypeChecker.hasAnnotationOf(t.element))
     return true;
 

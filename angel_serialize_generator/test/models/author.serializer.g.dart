@@ -13,7 +13,7 @@ abstract class AuthorSerializer {
       'name': name,
       'age': age,
       'books': books,
-      'newest_book': newestBook,
+      'newest_book': BookSerializer.toMap(newestBook),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String()
     };

@@ -78,7 +78,8 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         // Serialize model classes via `XSerializer.toMap`
         else if (isModelClass(field.type)) {
-
+          var rc = new ReCase(field.type.name);
+          serializedRepresentation = '${rc.pascalCase}Serializer.toMap(${field.name})';
         }
 
         buf.write("'$alias': $serializedRepresentation");
