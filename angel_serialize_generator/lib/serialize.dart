@@ -64,7 +64,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       // Add named parameters
       for (var field in ctx.fields) {
         // Skip excluded fields
-        if (ctx.excluded.containsKey(field.name)) continue;
+        if (ctx.excluded[field.name] == true) continue;
 
         var alias = ctx.resolveFieldName(field.name);
 
