@@ -24,7 +24,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
     }
 
     var lib = new File((b) {
-      generateClass(ctx, b);
+      generateClass(serializers.map((s) => s.toIntValue()).toList(), ctx, b);
     });
 
     var buf = lib.accept(new DartEmitter());
@@ -32,11 +32,54 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   /// Generate a serializer class.
-  void generateClass(BuildContext ctx, FileBuilder file) {
+  void generateClass(
+      List<int> serializers, BuildContext ctx, FileBuilder file) {
     file.body.add(new Class((clazz) {
       clazz
         ..name = '${ctx.modelClassNameRecase.pascalCase}Serializer'
         ..abstract = true;
+
+      if (serializers.contains(Serializers.map)) {
+        // TODO: Generate fromMap
+      }
+
+      if (serializers.contains(Serializers.map) ||
+          serializers.contains(Serializers.json)) {
+        generateToMapMethod(clazz, ctx, file);
+        // TODO: Generate toJson
+      }
+    }));
+  }
+
+  void generateToMapMethod(
+      ClassBuilder clazz, BuildContext ctx, FileBuilder file) {
+    clazz.methods.add(new Method((method) {
+      method
+        ..name = 'toMap'
+        ..returns = new Reference('Map<String, dynamic>');
+
+      var buf = new StringBuffer('return {');
+      int i = 0;
+
+      // Add named parameters
+      for (var field in ctx.fields) {
+        // Skip excluded fields
+        if (ctx.excluded.containsKey(field.name)) continue;
+
+        var alias = ctx.resolveFieldName(field.name);
+
+        if (i++ > 0) buf.write(', ');
+
+        String serializedRepresentation = field.name;
+
+        if (dateTimeTypeChecker.isAssignableFromType(field.type))
+          serializedRepresentation = '${field.name}.toIso8601String()';
+
+        buf.write("'$alias': $serializedRepresentation");
+      }
+
+      buf.write('};');
+      method.body = new Code(buf.toString());
     }));
   }
 }

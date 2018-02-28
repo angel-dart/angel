@@ -11,6 +11,8 @@ import 'context.dart';
 
 const TypeChecker aliasTypeChecker = const TypeChecker.fromRuntime(Alias);
 
+const TypeChecker dateTimeTypeChecker = const TypeChecker.fromRuntime(DateTime);
+
 const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
 
 const TypeChecker serializableTypeChecker =
