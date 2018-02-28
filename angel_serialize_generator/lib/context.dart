@@ -18,6 +18,8 @@ class BuildContext {
   /// A map of "synthetic" fields, i.e. `id` and `created_at` injected automatically.
   final Map<String, bool> shimmed = {};
 
+  final bool autoIdAndDateFields, autoSnakeCaseNames;
+
   final String originalClassName, sourceFilename;
 
   /// The fields declared on the original class.
@@ -28,7 +30,11 @@ class BuildContext {
   /// The name of the field that identifies data of this model type.
   String primaryKeyName = 'id';
 
-  BuildContext(this.annotation, {this.originalClassName, this.sourceFilename});
+  BuildContext(this.annotation,
+      {this.originalClassName,
+      this.sourceFilename,
+      this.autoSnakeCaseNames,
+      this.autoIdAndDateFields});
 
   /// The name of the generated class.
   String get modelClassName => originalClassName.startsWith('_')

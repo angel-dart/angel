@@ -25,9 +25,17 @@ Future<BuildContext> buildContext(
     bool autoSnakeCaseNames,
     bool autoIdAndDateFields,
     {bool heedExclude: true}) async {
+  // Check for autoIdAndDateFields, autoSnakeCaseNames
+  autoIdAndDateFields =
+      annotation.peek('autoIdAndDateFields')?.boolValue ?? autoIdAndDateFields;
+  autoSnakeCaseNames =
+      annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
+
   var ctx = new BuildContext(annotation,
       originalClassName: clazz.name,
-      sourceFilename: p.basename(buildStep.inputId.path));
+      sourceFilename: p.basename(buildStep.inputId.path),
+      autoIdAndDateFields: autoIdAndDateFields,
+      autoSnakeCaseNames: autoSnakeCaseNames);
   var lib = await resolver.libraryFor(buildStep.inputId);
   List<String> fieldNames = [];
 
@@ -56,10 +64,6 @@ Future<BuildContext> buildContext(
       ctx.fields.add(field);
     }
   }
-
-  // Check for autoIdAndDateFields, autoSnakeCaseNames
-  autoIdAndDateFields = annotation.peek('autoIdAndDateFields')?.boolValue ?? autoIdAndDateFields;
-  autoSnakeCaseNames = annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
 
   if (autoIdAndDateFields != false) {
     if (!fieldNames.contains('id')) {
