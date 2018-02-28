@@ -28,6 +28,9 @@ const Serializable serializable = const Serializable();
 
 /// The supported serialization types.
 abstract class Serializers {
+  /// All supported serialization types.
+  static const List<int> all = const [map, json];
+
   /// Enable `fromMap` and `toMap` methods on the model class.
   static const int map = 0;
 

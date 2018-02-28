@@ -10,6 +10,7 @@ import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
 import 'context.dart';
 part 'model.dart';
+part 'serialize.dart';
 
 /// Converts a [DartType] to a [TypeReference].
 TypeReference convertTypeReference(DartType t) {
