@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:test/test.dart';
 import 'models/author.dart';
 import 'models/book.dart';
 
-const String DEATHLY_HALLOWS_ISBN = '0-545-01022-5';
+const String deathlyHallowsIsbn = '0-545-01022-5';
 
 main() {
   var deathlyHallows = new Book(
@@ -22,12 +21,12 @@ main() {
       age: 51,
       books: [deathlyHallows],
       newestBook: deathlyHallows);
-  Map serializedJkRowling = JSON.decode(JSON.encode(jkRowling.toJson()));
-  Map deathlyHallowsMap = JSON.decode(JSON.encode(serializedDeathlyHallows));
+  Map serializedJkRowling = AuthorSerializer.toMap(jkRowling);
+  Map deathlyHallowsMap = BookSerializer.toMap(deathlyHallows);
   print('J.K. Rowling: $serializedJkRowling');
 
-  var library = new Library(collection: {DEATHLY_HALLOWS_ISBN: deathlyHallows});
-  var serializedLibrary = JSON.decode(JSON.encode(library.toJson()));
+  var library = new Library(collection: {deathlyHallowsIsbn: deathlyHallows});
+  var serializedLibrary = LibrarySerializer.toMap(library);
   print('Library: $serializedLibrary');
 
   group('serialization', () {
@@ -61,7 +60,7 @@ main() {
 
     test('map with @serializable class as second key is serialized', () {
       expect(serializedLibrary['collection'],
-          {DEATHLY_HALLOWS_ISBN: deathlyHallowsMap});
+          {deathlyHallowsIsbn: deathlyHallowsMap});
     });
   });
 
@@ -101,8 +100,8 @@ main() {
       test('map with @serializable class as second key is deserialized', () {
         var lib = new Library.fromJson(serializedLibrary);
         expect(lib.collection, allOf(isNotEmpty, hasLength(1)));
-        expect(lib.collection.keys.first, DEATHLY_HALLOWS_ISBN);
-        var book = lib.collection[DEATHLY_HALLOWS_ISBN];
+        expect(lib.collection.keys.first, deathlyHallowsIsbn);
+        var book = lib.collection[deathlyHallowsIsbn];
         expect(book.id, deathlyHallows.id);
         expect(book.author, deathlyHallows.author);
         expect(book.description, deathlyHallows.description);
