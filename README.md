@@ -33,6 +33,9 @@ import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 final List<BuildAction> actions = [
   new BuildAction(new PartBuilder([const JsonModelGenerator()]),
       '<package-name>',
+      inputs: const ['test/models/*.dart']),
+  new BuildAction(new PartBuilder([const SerializerGenerator()], generatedExtension: '.serializer.g.dart'),
+      '<package-name>',
       inputs: const ['test/models/*.dart'])
 ];
 ```
@@ -195,7 +198,8 @@ abstract class _Whisper extends Model {
 * As the second type argument to a `Map`
 
 In other words, the following are all legal, and will be serialized/deserialized.
-Be sure to use the underscored name of a child class (ex. `_Book`):
+You can use either the underscored name of a child class (ex. `_Book`), or the
+generated class name (ex `Book`):
 
 ```dart
 @serializable
