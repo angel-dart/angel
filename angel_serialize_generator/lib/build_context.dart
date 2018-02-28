@@ -19,7 +19,7 @@ const TypeChecker serializableTypeChecker =
 /// Create a [BuildContext].
 Future<BuildContext> buildContext(
     ClassElement clazz,
-    Serializable annotation,
+    ConstantReader annotation,
     BuildStep buildStep,
     Resolver resolver,
     bool autoSnakeCaseNames,
@@ -56,6 +56,10 @@ Future<BuildContext> buildContext(
       ctx.fields.add(field);
     }
   }
+
+  // Check for autoIdAndDateFields, autoSnakeCaseNames
+  autoIdAndDateFields = annotation.peek('autoIdAndDateFields')?.boolValue ?? autoIdAndDateFields;
+  autoSnakeCaseNames = annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
 
   if (autoIdAndDateFields != false) {
     if (!fieldNames.contains('id')) {

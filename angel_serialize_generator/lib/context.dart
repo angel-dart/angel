@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:recase/recase.dart';
+import 'package:source_gen/source_gen.dart';
 
 /// A base context for building serializable classes.
 class BuildContext {
@@ -22,7 +23,7 @@ class BuildContext {
   /// The fields declared on the original class.
   final List<FieldElement> fields = [];
 
-  final Serializable annotation;
+  final ConstantReader annotation;
 
   /// The name of the field that identifies data of this model type.
   String primaryKeyName = 'id';

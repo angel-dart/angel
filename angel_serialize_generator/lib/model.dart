@@ -1,25 +1,18 @@
 part of angel_serialize_generator;
 
 class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
-  final bool autoSnakeCaseNames;
   final bool autoIdAndDateFields;
 
-  const JsonModelGenerator(
-      {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
+  const JsonModelGenerator({this.autoIdAndDateFields: true});
 
   @override
   Future<String> generateForAnnotatedElement(
-      Element element, ConstantReader reader, BuildStep buildStep) async {
+      Element element, ConstantReader annotation, BuildStep buildStep) async {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
 
-    var ctx = await buildContext(
-        element,
-        serializable,
-        buildStep,
-        await buildStep.resolver,
-        autoSnakeCaseNames != false,
-        autoIdAndDateFields != false);
+    var ctx = await buildContext(element, annotation, buildStep,
+        await buildStep.resolver, true, autoIdAndDateFields != false);
 
     var lib = new File((b) {
       generateClass(ctx, b);
