@@ -1,6 +1,10 @@
 /// Excludes a field from being excluded.
 class Exclude {
-  const Exclude();
+  final bool canSerialize;
+
+  final bool canDeserialize;
+
+  const Exclude({this.canDeserialize: false, this.canSerialize: false});
 }
 
 const Exclude exclude = const Exclude();
