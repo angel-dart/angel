@@ -36,7 +36,9 @@ Future<BuildContext> buildContext(
       fieldNames.add(field.name);
       // Skip if annotated with @exclude
       var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(field);
-      if (excludeAnnotation != null) continue;
+
+      ctx.excluded[field.name] = excludeAnnotation != null;
+
       // Check for alias
       Alias alias;
       var aliasAnn = aliasTypeChecker.firstAnnotationOf(field);

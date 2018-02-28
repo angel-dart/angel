@@ -11,6 +11,9 @@ class BuildContext {
   /// A map of field names to resolved names from `@Alias()` declarations.
   final Map<String, String> aliases = {};
 
+  /// A map of fields that have been marked as to be excluded from serialization.
+  final Map<String, bool> excluded = {};
+
   /// A map of "synthetic" fields, i.e. `id` and `created_at` injected automatically.
   final Map<String, bool> shimmed = {};
 
