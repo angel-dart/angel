@@ -66,7 +66,7 @@ main() {
 
   group('deserialization', () {
     test('deserialization sets proper fields', () {
-      var book = new Book.fromJson(deathlyHallowsMap);
+      var book = BookSerializer.fromMap(deathlyHallowsMap);
       expect(book.id, deathlyHallows.id);
       expect(book.author, deathlyHallows.author);
       expect(book.description, deathlyHallows.description);
@@ -76,7 +76,7 @@ main() {
     });
 
     group('nested @serializable', () {
-      var author = new Author.fromJson(serializedJkRowling);
+      var author = AuthorSerializer.fromMap(serializedJkRowling);
 
       test('nested @serializable class is deserialized', () {
         var newestBook = author.newestBook;
@@ -98,7 +98,7 @@ main() {
       });
 
       test('map with @serializable class as second key is deserialized', () {
-        var lib = new Library.fromJson(serializedLibrary);
+        var lib = LibrarySerializer.fromMap(serializedLibrary);
         expect(lib.collection, allOf(isNotEmpty, hasLength(1)));
         expect(lib.collection.keys.first, deathlyHallowsIsbn);
         var book = lib.collection[deathlyHallowsIsbn];

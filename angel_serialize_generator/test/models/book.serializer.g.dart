@@ -7,6 +7,28 @@ part of angel_serialize.test.models.book;
 // **************************************************************************
 
 abstract class BookSerializer {
+  static Book fromMap(Map map,
+      {String id,
+      String author,
+      String title,
+      String description,
+      int pageCount,
+      DateTime createdAt,
+      DateTime updatedAt}) {
+    return new Book(
+        id: map['id'],
+        author: map['author'],
+        title: map['title'],
+        description: map['description'],
+        pageCount: map['page_count'],
+        createdAt: map['created_at'] != null
+            ? DateTime.parse(map['created_at'])
+            : null,
+        updatedAt: map['updated_at'] != null
+            ? DateTime.parse(map['updated_at'])
+            : null);
+  }
+
   static Map<String, dynamic> toMap(Book model) {
     return {
       'id': model.id,
@@ -14,8 +36,8 @@ abstract class BookSerializer {
       'title': model.title,
       'description': model.description,
       'page_count': model.pageCount,
-      'created_at': model.createdAt.toIso8601String(),
-      'updated_at': model.updatedAt.toIso8601String()
+      'created_at': model.createdAt?.toIso8601String(),
+      'updated_at': model.updatedAt?.toIso8601String()
     };
   }
 }

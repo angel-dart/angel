@@ -24,6 +24,7 @@ TypeReference convertTypeReference(DartType t) {
   });
 }
 
+/// Determines if a type supports `package:angel_serialize`.
 bool isModelClass(DartType t) {
   if (t == null) return false;
 
@@ -35,4 +36,11 @@ bool isModelClass(DartType t) {
   } else {
     return false;
   }
+}
+
+/// Determines if a [DartType] is a `Map` with the second type argument being a `Model`.
+bool isMapToModelType(InterfaceType t) {
+  return t.name == 'Map' &&
+      t.typeArguments.length == 2 &&
+      isModelClass(t.typeArguments[1]);
 }
