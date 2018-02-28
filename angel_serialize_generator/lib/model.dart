@@ -15,7 +15,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         await buildStep.resolver, true, autoIdAndDateFields != false);
 
     var lib = new File((b) {
-      generateClass(ctx, b);
+      generateClass(ctx, b, annotation);
     });
 
     var buf = lib.accept(new DartEmitter());
@@ -23,7 +23,8 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   /// Generate an extended model class.
-  void generateClass(BuildContext ctx, FileBuilder file) {
+  void generateClass(
+      BuildContext ctx, FileBuilder file, ConstantReader annotation) {
     file.body.add(new Class((clazz) {
       clazz
         ..name = ctx.modelClassNameRecase.pascalCase
@@ -42,6 +43,18 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
       generateConstructor(ctx, clazz, file);
       generateCopyWithMethod(ctx, clazz, file);
+
+      // Generate toJson() method if necessary
+      var serializers = annotation.peek('serializers')?.listValue ?? [];
+
+      if (serializers.any((o) => o.toIntValue() == Serializers.json)) {
+        clazz.methods.add(new Method((method) {
+          method
+            ..name = 'toJson'
+            ..returns = new Reference('Map<String, dynamic>')
+            ..body = new Code('return ${clazz.name}Serializer.toMap(this);');
+        }));
+      }
     }));
   }
 

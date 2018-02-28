@@ -60,6 +60,10 @@ class Author extends _Author {
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
+
+  Map<String, dynamic> toJson() {
+    return AuthorSerializer.toMap(this);
+  }
 }
 
 class Library extends _Library {
@@ -87,5 +91,9 @@ class Library extends _Library {
         collection: collection ?? this.collection,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
+  }
+
+  Map<String, dynamic> toJson() {
+    return LibrarySerializer.toMap(this);
   }
 }

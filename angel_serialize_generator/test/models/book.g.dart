@@ -54,4 +54,8 @@ class Book extends _Book {
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
+
+  Map<String, dynamic> toJson() {
+    return BookSerializer.toMap(this);
+  }
 }
