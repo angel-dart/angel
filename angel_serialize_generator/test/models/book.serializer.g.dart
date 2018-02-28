@@ -7,15 +7,15 @@ part of angel_serialize.test.models.book;
 // **************************************************************************
 
 abstract class BookSerializer {
-  Map<String, dynamic> toMap() {
+  static Map<String, dynamic> toMap(Book model) {
     return {
-      'id': id,
-      'author': author,
-      'title': title,
-      'description': description,
-      'page_count': pageCount,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String()
+      'id': model.id,
+      'author': model.author,
+      'title': model.title,
+      'description': model.description,
+      'page_count': model.pageCount,
+      'created_at': model.createdAt.toIso8601String(),
+      'updated_at': model.updatedAt.toIso8601String()
     };
   }
 }

@@ -55,8 +55,14 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       ClassBuilder clazz, BuildContext ctx, FileBuilder file) {
     clazz.methods.add(new Method((method) {
       method
+        ..static = true
         ..name = 'toMap'
-        ..returns = new Reference('Map<String, dynamic>');
+        ..returns = new Reference('Map<String, dynamic>')
+        ..requiredParameters.add(new Parameter((b) {
+          b
+            ..name = 'model'
+            ..type = ctx.modelClassType;
+        }));
 
       var buf = new StringBuffer('return {');
       int i = 0;
@@ -70,16 +76,30 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         if (i++ > 0) buf.write(', ');
 
-        String serializedRepresentation = field.name;
+        String serializedRepresentation = 'model.${field.name}';
 
         // Serialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
-          serializedRepresentation = '${field.name}.toIso8601String()';
+          serializedRepresentation = 'model.${field.name}.toIso8601String()';
 
         // Serialize model classes via `XSerializer.toMap`
         else if (isModelClass(field.type)) {
           var rc = new ReCase(field.type.name);
-          serializedRepresentation = '${rc.pascalCase}Serializer.toMap(${field.name})';
+          serializedRepresentation =
+              '${rc.pascalCase}Serializer.toMap(model.${field.name})';
+        }
+
+        else if (field.type is InterfaceType) {
+          var t = field.type as InterfaceType;
+
+          if (t.name == 'List' && t.typeArguments.length == 1) {
+            var rc = new ReCase(t.typeArguments[0].name);
+            serializedRepresentation = 'model.${field.name}.map(${rc.pascalCase}Serializer.toMap).toList()';
+          }
+
+          else if (t.name == 'List' && t.typeArguments.length == 2 && isModelClass(t.typeArguments[1])) {
+            // TODO: Serialize maps
+          }
         }
 
         buf.write("'$alias': $serializedRepresentation");

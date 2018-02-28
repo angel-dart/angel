@@ -7,26 +7,26 @@ part of angel_serialize.test.models.author;
 // **************************************************************************
 
 abstract class AuthorSerializer {
-  Map<String, dynamic> toMap() {
+  static Map<String, dynamic> toMap(Author model) {
     return {
-      'id': id,
-      'name': name,
-      'age': age,
-      'books': books,
-      'newest_book': BookSerializer.toMap(newestBook),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String()
+      'id': model.id,
+      'name': model.name,
+      'age': model.age,
+      'books': model.books.map(BookSerializer.toMap).toList(),
+      'newest_book': BookSerializer.toMap(model.newestBook),
+      'created_at': model.createdAt.toIso8601String(),
+      'updated_at': model.updatedAt.toIso8601String()
     };
   }
 }
 
 abstract class LibrarySerializer {
-  Map<String, dynamic> toMap() {
+  static Map<String, dynamic> toMap(Library model) {
     return {
-      'id': id,
-      'collection': collection,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String()
+      'id': model.id,
+      'collection': model.collection,
+      'created_at': model.createdAt.toIso8601String(),
+      'updated_at': model.updatedAt.toIso8601String()
     };
   }
 }
