@@ -22,3 +22,14 @@ TypeReference convertTypeReference(DartType t) {
     }
   });
 }
+
+bool isModelClass(DartType t) {
+  if (serializableTypeChecker.hasAnnotationOf(t.element))
+    return true;
+
+  if (t is InterfaceType) {
+    return isModelClass(t.superclass);
+  } else {
+    return false;
+  }
+}

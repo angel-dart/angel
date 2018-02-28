@@ -72,8 +72,14 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         String serializedRepresentation = field.name;
 
+        // Serialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
           serializedRepresentation = '${field.name}.toIso8601String()';
+
+        // Serialize model classes via `XSerializer.toMap`
+        else if (isModelClass(field.type)) {
+
+        }
 
         buf.write("'$alias': $serializedRepresentation");
       }
