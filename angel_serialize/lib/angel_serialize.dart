@@ -8,7 +8,7 @@ const Exclude exclude = const Exclude();
 /// Marks a class as eligible for serialization.
 class Serializable {
   const Serializable(
-      {this.serializers: const [Serializers.MAP, Serializers.JSON],
+      {this.serializers: const [Serializers.map, Serializers.json],
       this.autoSnakeCaseNames: true,
       this.autoIdAndDateFields: true});
 
@@ -29,10 +29,10 @@ const Serializable serializable = const Serializable();
 /// The supported serialization types.
 abstract class Serializers {
   /// Enable `fromMap` and `toMap` methods on the model class.
-  static const int MAP = 0;
+  static const int map = 0;
 
   /// Enable a `toJson` method on the model class.
-  static const int JSON = 1;
+  static const int json = 1;
 }
 
 /// Specifies an alias for a field within its JSON representation.
