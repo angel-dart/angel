@@ -97,8 +97,11 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             serializedRepresentation = 'model.${field.name}.map(${rc.pascalCase}Serializer.toMap).toList()';
           }
 
-          else if (t.name == 'List' && t.typeArguments.length == 2 && isModelClass(t.typeArguments[1])) {
-            // TODO: Serialize maps
+          else if (t.name == 'Map' && t.typeArguments.length == 2 && isModelClass(t.typeArguments[1])) {
+            var rc = new ReCase(t.typeArguments[1].name);
+            serializedRepresentation = '''model.${field.name}.keys.fold({}, (map, key) {
+              return map..[key] = ${rc.pascalCase}Serializer.toMap(model.${field.name}[key]);
+            })''';
           }
         }
 

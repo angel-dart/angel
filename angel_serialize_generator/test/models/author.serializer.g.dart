@@ -24,7 +24,9 @@ abstract class LibrarySerializer {
   static Map<String, dynamic> toMap(Library model) {
     return {
       'id': model.id,
-      'collection': model.collection,
+      'collection': model.collection.keys.fold({}, (map, key) {
+        return map..[key] = BookSerializer.toMap(model.collection[key]);
+      }),
       'created_at': model.createdAt.toIso8601String(),
       'updated_at': model.updatedAt.toIso8601String()
     };
