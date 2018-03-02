@@ -12,8 +12,12 @@ abstract class _Author extends Model {
   int age;
   List<Book> books;
   Book newestBook;
+
   @exclude
   String secret;
+
+  @Exclude(canDeserialize: true)
+  String obscured;
 }
 
 @serializable

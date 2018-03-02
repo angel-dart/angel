@@ -13,7 +13,7 @@ class BuildContext {
   final Map<String, String> aliases = {};
 
   /// A map of fields that have been marked as to be excluded from serialization.
-  final Map<String, bool> excluded = {};
+  final Map<String, Exclude> excluded = {};
 
   /// A map of "synthetic" fields, i.e. `id` and `created_at` injected automatically.
   final Map<String, bool> shimmed = {};

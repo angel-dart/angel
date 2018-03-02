@@ -69,7 +69,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       // Add named parameters
       for (var field in ctx.fields) {
         // Skip excluded fields
-        if (ctx.excluded[field.name] == true) continue;
+        if (ctx.excluded[field.name]?.canSerialize == false) continue;
 
         var alias = ctx.resolveFieldName(field.name);
 
@@ -129,7 +129,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
       // Add named parameters
       for (var field in ctx.fields) {
-        if (ctx.excluded[field.name] == true) continue;
+        if (ctx.excluded[field.name]?.canDeserialize == false) continue;
 
         var alias = ctx.resolveFieldName(field.name);
         method.optionalParameters.add(new Parameter((b) {

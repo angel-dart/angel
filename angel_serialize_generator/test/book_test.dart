@@ -50,6 +50,16 @@ main() {
       expect(serializedJkRowling.keys, isNot(contains('secret')));
     });
 
+    test('heeds canDeserialize', () {
+      var map = new Map.from(serializedJkRowling)..['obscured'] = 'foo';
+      var author = AuthorSerializer.fromMap(map);
+      expect(author.obscured, 'foo');
+    });
+
+    test('heeds canSerialize', () {
+      expect(serializedJkRowling.keys, isNot(contains('obscured')));
+    });
+
     test('nested @serializable class is serialized', () {
       expect(serializedJkRowling['newest_book'], deathlyHallowsMap);
     });

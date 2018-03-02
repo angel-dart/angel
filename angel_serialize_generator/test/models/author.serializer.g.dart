@@ -13,6 +13,7 @@ abstract class AuthorSerializer {
       int age,
       List<Book> books,
       Book newestBook,
+      String obscured,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Author(
@@ -25,6 +26,7 @@ abstract class AuthorSerializer {
         newestBook: map['newest_book'] != null
             ? BookSerializer.fromMap(map['newest_book'])
             : null,
+        obscured: map['obscured'],
         createdAt: map['created_at'] != null
             ? DateTime.parse(map['created_at'])
             : null,

@@ -14,6 +14,7 @@ class Author extends _Author {
       this.books,
       this.newestBook,
       this.secret,
+      this.obscured,
       this.createdAt,
       this.updatedAt});
 
@@ -36,6 +37,9 @@ class Author extends _Author {
   final String secret;
 
   @override
+  final String obscured;
+
+  @override
   final DateTime createdAt;
 
   @override
@@ -48,6 +52,7 @@ class Author extends _Author {
       List<Book> books,
       Book newestBook,
       String secret,
+      String obscured,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Author(
@@ -57,6 +62,7 @@ class Author extends _Author {
         books: books ?? this.books,
         newestBook: newestBook ?? this.newestBook,
         secret: secret ?? this.secret,
+        obscured: obscured ?? this.obscured,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }

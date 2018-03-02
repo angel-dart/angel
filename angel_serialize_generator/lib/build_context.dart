@@ -47,7 +47,14 @@ Future<BuildContext> buildContext(
       // Skip if annotated with @exclude
       var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(field);
 
-      ctx.excluded[field.name] = excludeAnnotation != null;
+      if (excludeAnnotation != null) {
+        var cr = new ConstantReader(excludeAnnotation);
+
+        ctx.excluded[field.name] = new Exclude(
+          canSerialize: cr.read('canSerialize').boolValue,
+          canDeserialize: cr.read('canDeserialize').boolValue,
+        );
+      }
 
       // Check for alias
       Alias alias;
