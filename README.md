@@ -10,6 +10,7 @@ the time you spend writing boilerplate serialization code for your models.
   * [Models](#models)
     * [Field Aliases](#aliases)
     * [Excluding Keys](#excluding-keys)
+  * [Serialization](#serializaition)
   * [Nesting](#nesting)
   * [ID and Date Fields](#id-and-dates)
 
@@ -79,6 +80,44 @@ abstract class _Book extends Model {
 The following files will be generated:
   * `book.g.dart`
   * `book.serializer.g.dart`
+  
+# Serialization
+  
+You can use the generated files as follows:
+
+```dart
+myFunction() {
+  var warAndPeace = new Book(
+    author: 'Leo Tolstoy',
+    title: 'War and Peace',
+    description: 'You will cry after reading this.',
+    pageCount: 1225
+  );
+  
+  // Easily serialize models into Maps
+  var map = BookSerializer.toMap(warAndPeace);
+  
+  // Also deserialize from Maps
+  var book = BookSerialize.fromMap(map);
+  print(book.title); // 'War and Peace'
+  
+  // For compatibility with `JSON.encode`, a `toJson` method
+  // is included that forwards to `BookSerializer.toMap`:
+  expect(book.toJson(), map);
+}
+```
+## Customizing Serialization
+Currently, these serialization methods are supported:
+  * to `Map`
+  * to JSON
+  
+You can customize these by means of `serializers`:
+
+```dart
+@Serializable(serializers: const [Serializers.map, Serializers.json])
+class _MyClass extends Model {}
+```
+
 
 ## Aliases
 Whereas Dart fields conventionally are camelCased, most database columns
