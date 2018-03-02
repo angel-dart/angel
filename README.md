@@ -8,22 +8,23 @@ the time you spend writing boilerplate serialization code for your models.
 
 * [Usage](#usage)
   * [Models](#models)
-    * [`@Alias(...)`](#aliases)
-    * [`@exclude`](#excluding-keys)
+    * [Field Aliases](#aliases)
+    * [Excluding Keys](#excluding-keys)
   * [Nesting](#nesting)
+  * [ID and Date Fields](#id-and-dates)
 
 # Usage
 In your `pubspec.yaml`, you need to install the following dependencies:
 ```yaml
 dependencies:
-  angel_serialize: ^1.0.0-alpha
+  angel_serialize: ^2.0.0-alpha
 dev_dependencies:
-  angel_serialize_generator: ^1.0.0-alpha
-  build_runner: ^0.5.0
+  angel_serialize_generator: ^2.0.0-alpha
+  build_runner: ^0.7.0
 ```
 
 You'll want to create a Dart script, usually named `tool/phases.dart` that invokes
-the `JsonModelGenerator`.
+ `JsonModelGenerator` and `SerializerGenerator`.
 
 ```dart
 import 'package:build_runner/build_runner.dart';
@@ -75,84 +76,9 @@ abstract class _Book extends Model {
 }
 ```
 
-The following will be generated in `book.g.dart`:
-```dart
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
-part of angel_serialize.test.models.book;
-
-// **************************************************************************
-// Generator: JsonModelGenerator
-// Target: abstract class _Book
-// **************************************************************************
-
-class Book extends _Book {
-  @override
-  String id;
-
-  @override
-  String author;
-
-  @override
-  String title;
-
-  @override
-  String description;
-
-  @override
-  int pageCount;
-
-  @override
-  DateTime createdAt;
-
-  @override
-  DateTime updatedAt;
-
-  Book(
-      {this.id,
-      this.author,
-      this.title,
-      this.description,
-      this.pageCount,
-      this.createdAt,
-      this.updatedAt});
-
-  factory Book.fromJson(Map data) {
-    return new Book(
-        id: data['id'],
-        author: data['author'],
-        title: data['title'],
-        description: data['description'],
-        pageCount: data['page_count'],
-        createdAt: data['created_at'] is DateTime
-            ? data['created_at']
-            : (data['created_at'] is String
-                ? DateTime.parse(data['created_at'])
-                : null),
-        updatedAt: data['updated_at'] is DateTime
-            ? data['updated_at']
-            : (data['updated_at'] is String
-                ? DateTime.parse(data['updated_at'])
-                : null));
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'author': author,
-        'title': title,
-        'description': description,
-        'page_count': pageCount,
-        'created_at': createdAt == null ? null : createdAt.toIso8601String(),
-        'updated_at': updatedAt == null ? null : updatedAt.toIso8601String()
-      };
-
-  static Book parse(Map map) => new Book.fromJson(map);
-  
-  Book clone() {
-    return new Book.fromJson(toJson());
-  }
-}
-```
+The following files will be generated:
+  * `book.g.dart`
+  * `book.serializer.g.dart`
 
 ## Aliases
 Whereas Dart fields conventionally are camelCased, most database columns
@@ -178,6 +104,15 @@ abstract class _Spy extends Model {
 }
 ```
 
+You can also override `autoSnakeCaseNames` per model:
+
+```dart
+@Serializable(autoSnakeCaseNames: false)
+abstract class _OtherCasing extends Model {
+  String camelCasedField;
+}
+```
+
 ## Excluding Keys
 In pratice, there may keys that you want to exclude from JSON.
 To accomplish this, simply annotate them with `@exclude`:
@@ -191,11 +126,28 @@ abstract class _Whisper extends Model {
 }
 ```
 
+There are times, however, when you want to only exclude either serialization
+or deserialization, but not both. For example, you might want to deserialize
+passwords from a database without sending them to users as JSON.
+
+In this case, use `canSerialize` or `canDeserialize`:
+
+```dart
+@serializable
+abstract class _Whisper extends Model {
+  /// Will never be serialized to JSON
+  /// 
+  /// ... But it can be deserialized
+  @Exclude(canDeserialize: true)
+  String secret;
+}
+```
+
 # Nesting
 `angel_serialize` also supports a few types of nesting of `@serializable` classes:
-* As a class member
-* As the type argument to a `List`
-* As the second type argument to a `Map`
+* As a class member, ex. `Book myField`
+* As the type argument to a `List`, ex. `List<Book>`
+* As the second type argument to a `Map`, ex. `Map<String, Book>`
 
 In other words, the following are all legal, and will be serialized/deserialized.
 You can use either the underscored name of a child class (ex. `_Book`), or the
@@ -204,16 +156,25 @@ generated class name (ex `Book`):
 ```dart
 @serializable
 abstract class _Author extends Model {
-  List<_Book> books;
-  _Book newestBook;
-  Map<String, _Book> booksByIsbn;
+  List<Book> books;
+  Book newestBook;
+  Map<String, Book> booksByIsbn;
 }
 ```
 
-The caveat here is that nested classes must be written in the same file. `source_gen`
-otherwise will not be able to resolve the nested type.
+If your model (`Author`) depends on a model defined in another file (`Book`),
+then you will need to generate `book.g.dart` before, `author.g.dart`,
+**in a separate build action**. This way, the analyzer can resolve the `Book` type.
 
 # ID and Dates
 This package will automatically generate `id`, `createdAt`, and `updatedAt` fields for you,
-in the style of an Angel `Model`. To disable this, set `autoIdAndDates` to `false` in the
+in the style of an Angel `Model`. To disable this, set `autoIdAndDateFields` to `false` in the
 builder constructor.
+
+
+You can also override `autoSnakeCaseNames` per model:
+
+```dart
+@Serializable(autoIdAndDateFields: false)
+abstract class _Skinny extends Model {}
+```
