@@ -23,7 +23,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       return null;
     }
 
-    var lib = new File((b) {
+    var lib = new Library((b) {
       generateClass(serializers.map((s) => s.toIntValue()).toList(), ctx, b);
     });
 
@@ -33,7 +33,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
   /// Generate a serializer class.
   void generateClass(
-      List<int> serializers, BuildContext ctx, FileBuilder file) {
+      List<int> serializers, BuildContext ctx, LibraryBuilder file) {
     file.body.add(new Class((clazz) {
       clazz
         ..name = '${ctx.modelClassNameRecase.pascalCase}Serializer'
@@ -51,7 +51,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   void generateToMapMethod(
-      ClassBuilder clazz, BuildContext ctx, FileBuilder file) {
+      ClassBuilder clazz, BuildContext ctx, LibraryBuilder file) {
     clazz.methods.add(new Method((method) {
       method
         ..static = true
@@ -112,7 +112,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   void generateFromMapMethod(
-      ClassBuilder clazz, BuildContext ctx, FileBuilder file) {
+      ClassBuilder clazz, BuildContext ctx, LibraryBuilder file) {
     clazz.methods.add(new Method((method) {
       method
         ..static = true

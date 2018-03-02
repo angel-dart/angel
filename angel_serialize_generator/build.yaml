@@ -1,23 +1,28 @@
-targets:
-  _json_model_builder:
-  _serializer_builder:
-
 builders:
-  json_model:
-    target: "_json_model_builder"
+  angel_serialize:
+    target: "angel_serialize_generator"
     import: "package:angel_serialize_generator/angel_serialize_generator.dart"
     builder_factories:
-      - jsonModel
-    auto_apply: dependents
+      - jsonModelBuilder
+      - serializerBuilder
+    auto_apply: root_package
+    build_to: source
     build_extensions:
       .dart:
         - ".g.dart"
-  serializer:
-    target: "_serializer_builder"
-    import: "package:angel_serialize_generator/angel_serialize_generator.dart"
-    builder_factories:
-      - serializeGenerator
-    auto_apply: dependents
-    build_extensions:
-      .dart:
         - ".serializer.g.dart"
+    required_inputs:
+      - .dart
+    defaults:
+      generate_for:
+        - "lib/src/models/**.dart"
+        - "test/**.dart"
+targets:
+  _book:
+    sources:
+      - "test/models/book.dart"
+  $default:
+    dependencies:
+      - ":_book"
+    sources:
+      - "test/models/author.dart"

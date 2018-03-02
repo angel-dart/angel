@@ -18,37 +18,17 @@ the time you spend writing boilerplate serialization code for your models.
 In your `pubspec.yaml`, you need to install the following dependencies:
 ```yaml
 dependencies:
-  angel_serialize: ^2.0.0-alpha
+  angel_serialize: ^2.0.0
 dev_dependencies:
-  angel_serialize_generator: ^2.0.0-alpha
+  angel_serialize_generator: ^2.0.0
   build_runner: ^0.7.0
 ```
 
-You'll want to create a Dart script, usually named `tool/phases.dart` that invokes
- `JsonModelGenerator` and `SerializerGenerator`.
+With the recent updates to `package:build_runner`, you can build models in
+`lib/src/models/**.dart` automatically by running `pub run build_runner build`.
 
-```dart
-import 'package:build_runner/build_runner.dart';
-import 'package:source_gen/source_gen.dart';
-import 'package:angel_serialize_generator/angel_serialize_generator.dart';
-
-final List<BuildAction> actions = [
-  new BuildAction(new PartBuilder([const JsonModelGenerator()]),
-      '<package-name>',
-      inputs: const ['test/models/*.dart']),
-  new BuildAction(new PartBuilder([const SerializerGenerator()], generatedExtension: '.serializer.g.dart'),
-      '<package-name>',
-      inputs: const ['test/models/*.dart'])
-];
-```
-
-And then, a `tool/build.dart` can build your serializers:
-```dart
-import 'package:build_runner/build_runner.dart';
-import 'phases.dart';
-
-main() => build(actions, deleteFilesByDefault: true);
-```
+To tweak this:
+https://pub.dartlang.org/packages/build_config
 
 If you want to watch for file changes and re-build when necessary, replace the `build` call
 with a call to `watch`. They take the same parameters.

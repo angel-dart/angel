@@ -14,7 +14,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     var ctx = await buildContext(element, annotation, buildStep,
         await buildStep.resolver, true, autoIdAndDateFields != false);
 
-    var lib = new File((b) {
+    var lib = new Library((b) {
       generateClass(ctx, b, annotation);
     });
 
@@ -24,7 +24,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
   /// Generate an extended model class.
   void generateClass(
-      BuildContext ctx, FileBuilder file, ConstantReader annotation) {
+      BuildContext ctx, LibraryBuilder file, ConstantReader annotation) {
     file.body.add(new Class((clazz) {
       clazz
         ..name = ctx.modelClassNameRecase.pascalCase
@@ -35,8 +35,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
           b
             ..name = field.name
             ..modifier = FieldModifier.final$
-            ..annotations
-                .add(new Annotation((b) => b.code = new Code('override')))
+            ..annotations.add(new CodeExpression(new Code('override')))
             ..type = convertTypeReference(field.type);
         }));
       }
@@ -60,7 +59,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
   /// Generate a constructor with named parameters.
   void generateConstructor(
-      BuildContext ctx, ClassBuilder clazz, FileBuilder file) {
+      BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
     clazz.constructors.add(new Constructor((constructor) {
       for (var field in ctx.fields) {
         constructor.optionalParameters.add(new Parameter((b) {
@@ -75,7 +74,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
   /// Generate a `copyWith` method.
   void generateCopyWithMethod(
-      BuildContext ctx, ClassBuilder clazz, FileBuilder file) {
+      BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
     clazz.methods.add(new Method((method) {
       method
         ..name = 'copyWith'

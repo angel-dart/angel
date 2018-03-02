@@ -25,7 +25,7 @@ Builder jsonModelBuilder(_) {
 Builder serializerBuilder(_) {
   return new PartBuilder(
     const [const SerializerGenerator()],
-    generatedExtension: '.g.dart',
+    generatedExtension: '.serializer.g.dart',
   );
 }
 

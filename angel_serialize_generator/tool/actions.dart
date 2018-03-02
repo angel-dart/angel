@@ -1,3 +1,4 @@
+/*
 import 'package:build_runner/build_runner.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
@@ -27,3 +28,5 @@ BuildAction angelSerialize(List<String> inputs) {
     inputs: inputs,
   );
 }
+
+*/
