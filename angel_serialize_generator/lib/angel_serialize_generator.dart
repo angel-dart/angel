@@ -10,8 +10,24 @@ import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
 import 'context.dart';
+
 part 'model.dart';
+
 part 'serialize.dart';
+
+Builder jsonModelBuilder(_) {
+  return new PartBuilder(
+    const [const JsonModelGenerator()],
+    generatedExtension: '.g.dart',
+  );
+}
+
+Builder serializerBuilder(_) {
+  return new PartBuilder(
+    const [const SerializerGenerator()],
+    generatedExtension: '.g.dart',
+  );
+}
 
 /// Converts a [DartType] to a [TypeReference].
 TypeReference convertTypeReference(DartType t) {
@@ -28,8 +44,7 @@ TypeReference convertTypeReference(DartType t) {
 bool isModelClass(DartType t) {
   if (t == null) return false;
 
-  if (serializableTypeChecker.hasAnnotationOf(t.element))
-    return true;
+  if (serializableTypeChecker.hasAnnotationOf(t.element)) return true;
 
   if (t is InterfaceType) {
     return isModelClass(t.superclass);
