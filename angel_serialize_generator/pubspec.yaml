@@ -6,8 +6,7 @@ homepage: https://github.com/angel-dart/serialize
 environment:
   sdk: ">=1.19.0"
 dependencies:
-  angel_serialize:
-    path: ../angel_serialize
+  angel_serialize: ^2.0.0-alpha
   build_config: ">=0.0.0 <2.0.0"
   code_builder: ^2.0.0
   id: ^1.0.0
