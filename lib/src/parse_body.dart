@@ -1,11 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:http_server/http_server.dart';
 import 'package:mime/mime.dart';
 import 'body_parse_result.dart';
 import 'file_upload_info.dart';
 import 'map_from_uri.dart';
+
+/// Forwards to [parseBodyFromStream].
+@deprecated
+Future<BodyParseResult> parseBody(HttpRequest request,
+    {bool storeOriginalBuffer: false}) {
+  return parseBodyFromStream(
+      request,
+      request.headers.contentType != null
+          ? new MediaType.parse(request.headers.contentType.toString())
+          : null,
+      request.uri,
+      storeOriginalBuffer: storeOriginalBuffer);
+}
 
 /// Grabs data from an incoming request.
 ///
@@ -15,12 +29,13 @@ import 'map_from_uri.dart';
 /// via the *fileUploadName* parameter. :)
 ///
 /// Use [storeOriginalBuffer] to add  the original request bytes to the result.
-Future<BodyParseResult> parseBody(HttpRequest request,
+Future<BodyParseResult> parseBodyFromStream(
+    Stream<List<int>> data, MediaType contentType, Uri requestUri,
     {bool storeOriginalBuffer: false}) async {
   var result = new _BodyParseResultImpl();
 
   Future<List<int>> getBytes() {
-    return request
+    return data
         .fold<BytesBuilder>(new BytesBuilder(copy: false), (a, b) => a..add(b))
         .then((b) => b.takeBytes());
   }
@@ -32,13 +47,13 @@ Future<BodyParseResult> parseBody(HttpRequest request,
         return UTF8.decode(bytes);
       });
     } else
-      return request.transform(UTF8.decoder).join();
+      return data.transform(UTF8.decoder).join();
   }
 
   try {
-    if (request.headers.contentType != null) {
-      if (request.headers.contentType.primaryType == 'multipart' &&
-          request.headers.contentType.parameters.containsKey('boundary')) {
+    if (contentType != null) {
+      if (contentType.type == 'multipart' &&
+          contentType.parameters.containsKey('boundary')) {
         Stream<List<int>> stream;
 
         if (storeOriginalBuffer) {
@@ -48,12 +63,12 @@ Future<BodyParseResult> parseBody(HttpRequest request,
             ..close();
           stream = ctrl.stream;
         } else {
-          stream = request;
+          stream = data;
         }
 
         var parts = stream
             .transform(new MimeMultipartTransformer(
-                request.headers.contentType.parameters['boundary']))
+                contentType.parameters['boundary']))
             .map((part) =>
                 HttpMultipartFormData.parse(part, defaultEncoding: UTF8));
 
@@ -76,19 +91,17 @@ Future<BodyParseResult> parseBody(HttpRequest request,
                 '${part.contentDisposition.parameters["name"]}=$text');
           }
         }
-      } else if (request.headers.contentType.mimeType ==
-          ContentType.JSON.mimeType) {
+      } else if (contentType.mimeType == ContentType.JSON.mimeType) {
         result.body.addAll(JSON.decode(await getBody()));
-      } else if (request.headers.contentType.mimeType ==
-          'application/x-www-form-urlencoded') {
+      } else if (contentType.mimeType == 'application/x-www-form-urlencoded') {
         String body = await getBody();
         buildMapFromUri(result.body, body);
       } else if (storeOriginalBuffer == true) {
         result.originalBuffer = await getBytes();
       }
     } else {
-      if (request.uri.hasQuery) {
-        buildMapFromUri(result.query, request.uri.query);
+      if (requestUri.hasQuery) {
+        buildMapFromUri(result.query, requestUri.query);
       }
 
       if (storeOriginalBuffer == true) {
