@@ -53,6 +53,14 @@ bool isModelClass(DartType t) {
   }
 }
 
+/// Determines if a [DartType] is a `List` with the first type argument being a `Model`.
+bool isListModelType(InterfaceType t) {
+  return t.name == 'List' &&
+      t.typeArguments.length == 1 &&
+      isModelClass(t.typeArguments[0]);
+}
+
+
 /// Determines if a [DartType] is a `Map` with the second type argument being a `Model`.
 bool isMapToModelType(InterfaceType t) {
   return t.name == 'Map' &&

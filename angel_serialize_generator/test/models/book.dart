@@ -9,4 +9,5 @@ part 'book.serializer.g.dart';
 abstract class _Book extends Model {
   String author, title, description;
   int pageCount;
+  List<double> notModels;
 }

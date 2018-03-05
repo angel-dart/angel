@@ -13,6 +13,7 @@ abstract class BookSerializer {
       String title,
       String description,
       int pageCount,
+      List<double> notModels,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Book(
@@ -21,6 +22,7 @@ abstract class BookSerializer {
         title: map['title'],
         description: map['description'],
         pageCount: map['page_count'],
+        notModels: map['not_models'],
         createdAt: map['created_at'] != null
             ? DateTime.parse(map['created_at'])
             : null,
@@ -36,6 +38,7 @@ abstract class BookSerializer {
       'title': model.title,
       'description': model.description,
       'page_count': model.pageCount,
+      'not_models': model.notModels,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };

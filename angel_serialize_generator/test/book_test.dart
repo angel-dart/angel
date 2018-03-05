@@ -11,6 +11,7 @@ main() {
       title: 'Harry Potter and the Deathly Hallows',
       description: 'The 7th book.',
       pageCount: 759,
+      notModels: [1.0, 3.0],
       updatedAt: new DateTime.now());
   var serializedDeathlyHallows = deathlyHallows.toJson();
   print('Deathly Hallows: $serializedDeathlyHallows');
@@ -44,6 +45,10 @@ main() {
     test('heeds @Alias', () {
       expect(serializedDeathlyHallows['page_count'], deathlyHallows.pageCount);
       expect(serializedDeathlyHallows.keys, isNot(contains('pageCount')));
+    });
+
+    test('standard list', () {
+      expect(serializedDeathlyHallows['not_models'], deathlyHallows.notModels);
     });
 
     test('heeds @exclude', () {
@@ -81,6 +86,7 @@ main() {
       expect(book.author, deathlyHallows.author);
       expect(book.description, deathlyHallows.description);
       expect(book.pageCount, deathlyHallows.pageCount);
+      expect(book.notModels, deathlyHallows.notModels);
       expect(book.createdAt, isNull);
       expect(book.updatedAt, deathlyHallows.updatedAt);
     });

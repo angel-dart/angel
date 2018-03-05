@@ -89,7 +89,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
 
-          if (t.name == 'List' && t.typeArguments.length == 1) {
+          if (isListModelType(t)) {
             var rc = new ReCase(t.typeArguments[0].name);
             serializedRepresentation = 'model.${field.name}?.map(${rc
                 .pascalCase}Serializer.toMap)?.toList()';
@@ -157,7 +157,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
 
-          if (t.name == 'List' && t.typeArguments.length == 1) {
+          if (isListModelType(t)) {
             var rc = new ReCase(t.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
                 " ? map['$alias'].map(${rc

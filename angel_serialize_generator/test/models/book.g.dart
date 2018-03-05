@@ -13,6 +13,7 @@ class Book extends _Book {
       this.title,
       this.description,
       this.pageCount,
+      this.notModels,
       this.createdAt,
       this.updatedAt});
 
@@ -32,6 +33,9 @@ class Book extends _Book {
   final int pageCount;
 
   @override
+  final List<double> notModels;
+
+  @override
   final DateTime createdAt;
 
   @override
@@ -43,6 +47,7 @@ class Book extends _Book {
       String title,
       String description,
       int pageCount,
+      List<double> notModels,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Book(
@@ -51,6 +56,7 @@ class Book extends _Book {
         title: title ?? this.title,
         description: description ?? this.description,
         pageCount: pageCount ?? this.pageCount,
+        notModels: notModels ?? this.notModels,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
