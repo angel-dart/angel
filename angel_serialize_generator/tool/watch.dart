@@ -1,5 +1,4 @@
-/*import 'package:build_runner/build_runner.dart';
-import 'actions.dart';
+import 'package:build_runner/build_runner.dart';
+import 'applications.dart';
 
-main() => watch(actions, deleteFilesByDefault: true);
-*/
+main() => watch(applications, deleteFilesByDefault: true, verbose: false);

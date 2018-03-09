@@ -48,6 +48,26 @@ abstract class AuthorSerializer {
   }
 }
 
+abstract class AuthorFields {
+  static const String id = 'id';
+
+  static const String name = 'name';
+
+  static const String age = 'age';
+
+  static const String books = 'books';
+
+  static const String newestBook = 'newest_book';
+
+  static const String secret = 'secret';
+
+  static const String obscured = 'obscured';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
+}
+
 abstract class LibrarySerializer {
   static Library fromMap(Map map,
       {String id,
@@ -80,4 +100,14 @@ abstract class LibrarySerializer {
       'updated_at': model.updatedAt?.toIso8601String()
     };
   }
+}
+
+abstract class LibraryFields {
+  static const String id = 'id';
+
+  static const String collection = 'collection';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
 }

@@ -84,6 +84,18 @@ myFunction() {
   // For compatibility with `JSON.encode`, a `toJson` method
   // is included that forwards to `BookSerializer.toMap`:
   expect(book.toJson(), map);
+  
+}
+```
+
+As of `2.0.2`, the generated output also includes information
+about the serialized names of keys on your model class.
+
+```dart
+  myOtherFunction() {
+    // Relying on the serialized key of a field? No worries.
+      map[BookFields.author] = 'Zora Neale Hurston';
+  }
 }
 ```
 ## Customizing Serialization

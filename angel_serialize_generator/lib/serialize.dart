@@ -25,6 +25,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
     var lib = new Library((b) {
       generateClass(serializers.map((s) => s.toIntValue()).toList(), ctx, b);
+      generateFieldsClass(ctx, b);
     });
 
     var buf = lib.accept(new DartEmitter());
@@ -181,6 +182,25 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
       buf.write(');');
       method.body = new Code(buf.toString());
+    }));
+  }
+
+  void generateFieldsClass(BuildContext ctx, LibraryBuilder file) {
+    file.body.add(new Class((clazz) {
+      clazz
+        ..abstract = true
+        ..name = '${ctx.modelClassNameRecase.pascalCase}Fields';
+
+      for (var field in ctx.fields) {
+        clazz.fields.add(new Field((b) {
+          b
+            ..static = true
+            ..modifier = FieldModifier.constant
+            ..type = new Reference('String')
+            ..name = field.name
+            ..assignment = new Code("'${ctx.resolveFieldName(field.name)}'");
+        }));
+      }
     }));
   }
 }

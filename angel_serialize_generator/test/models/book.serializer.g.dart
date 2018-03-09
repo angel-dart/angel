@@ -44,3 +44,21 @@ abstract class BookSerializer {
     };
   }
 }
+
+abstract class BookFields {
+  static const String id = 'id';
+
+  static const String author = 'author';
+
+  static const String title = 'title';
+
+  static const String description = 'description';
+
+  static const String pageCount = 'page_count';
+
+  static const String notModels = 'not_models';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
+}
