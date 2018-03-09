@@ -10,4 +10,7 @@ abstract class _Book extends Model {
   String author, title, description;
   int pageCount;
   List<double> notModels;
+
+  @Alias('camelCase')
+  String camelCaseString;
 }

@@ -79,6 +79,12 @@ main() {
     });
   });
 
+  test('fields', () {
+    expect(BookFields.author, 'author');
+    expect(BookFields.notModels, 'not_models');
+    expect(BookFields.camelCaseString, 'camelCase');
+  });
+
   group('deserialization', () {
     test('deserialization sets proper fields', () {
       var book = BookSerializer.fromMap(deathlyHallowsMap);

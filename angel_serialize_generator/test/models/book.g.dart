@@ -14,6 +14,7 @@ class Book extends _Book {
       this.description,
       this.pageCount,
       this.notModels,
+      this.camelCaseString,
       this.createdAt,
       this.updatedAt});
 
@@ -36,6 +37,9 @@ class Book extends _Book {
   final List<double> notModels;
 
   @override
+  final String camelCaseString;
+
+  @override
   final DateTime createdAt;
 
   @override
@@ -48,6 +52,7 @@ class Book extends _Book {
       String description,
       int pageCount,
       List<double> notModels,
+      String camelCaseString,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Book(
@@ -57,6 +62,7 @@ class Book extends _Book {
         description: description ?? this.description,
         pageCount: pageCount ?? this.pageCount,
         notModels: notModels ?? this.notModels,
+        camelCaseString: camelCaseString ?? this.camelCaseString,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }

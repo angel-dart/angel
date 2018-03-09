@@ -14,6 +14,7 @@ abstract class BookSerializer {
       String description,
       int pageCount,
       List<double> notModels,
+      String camelCaseString,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Book(
@@ -23,6 +24,7 @@ abstract class BookSerializer {
         description: map['description'],
         pageCount: map['page_count'],
         notModels: map['not_models'],
+        camelCaseString: map['camelCase'],
         createdAt: map['created_at'] != null
             ? DateTime.parse(map['created_at'])
             : null,
@@ -39,6 +41,7 @@ abstract class BookSerializer {
       'description': model.description,
       'page_count': model.pageCount,
       'not_models': model.notModels,
+      'camelCase': model.camelCaseString,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -57,6 +60,8 @@ abstract class BookFields {
   static const String pageCount = 'page_count';
 
   static const String notModels = 'not_models';
+
+  static const String camelCaseString = 'camelCase';
 
   static const String createdAt = 'created_at';
 
