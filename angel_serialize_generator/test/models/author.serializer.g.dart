@@ -7,15 +7,7 @@ part of angel_serialize.test.models.author;
 // **************************************************************************
 
 abstract class AuthorSerializer {
-  static Author fromMap(Map map,
-      {String id,
-      String name,
-      int age,
-      List<Book> books,
-      Book newestBook,
-      String obscured,
-      DateTime createdAt,
-      DateTime updatedAt}) {
+  static Author fromMap(Map map) {
     return new Author(
         id: map['id'],
         name: map['name'],
@@ -69,11 +61,7 @@ abstract class AuthorFields {
 }
 
 abstract class LibrarySerializer {
-  static Library fromMap(Map map,
-      {String id,
-      Map<String, Book> collection,
-      DateTime createdAt,
-      DateTime updatedAt}) {
+  static Library fromMap(Map map) {
     return new Library(
         id: map['id'],
         collection: map['collection'] is Map

@@ -7,16 +7,7 @@ part of angel_serialize.test.models.book;
 // **************************************************************************
 
 abstract class BookSerializer {
-  static Book fromMap(Map map,
-      {String id,
-      String author,
-      String title,
-      String description,
-      int pageCount,
-      List<double> notModels,
-      String camelCaseString,
-      DateTime createdAt,
-      DateTime updatedAt}) {
+  static Book fromMap(Map map) {
     return new Book(
         id: map['id'],
         author: map['author'],

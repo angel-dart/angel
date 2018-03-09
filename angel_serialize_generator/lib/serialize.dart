@@ -128,17 +128,10 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       var buf = new StringBuffer('return new ${ctx.modelClassName}(');
       int i = 0;
 
-      // Add named parameters
       for (var field in ctx.fields) {
         if (ctx.excluded[field.name]?.canDeserialize == false) continue;
 
         var alias = ctx.resolveFieldName(field.name);
-        method.optionalParameters.add(new Parameter((b) {
-          b
-            ..name = field.name
-            ..named = true
-            ..type = convertTypeReference(field.type);
-        }));
 
         if (i++ > 0) buf.write(', ');
 
