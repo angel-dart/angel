@@ -203,7 +203,7 @@ in the style of an Angel `Model`. To disable this, set `autoIdAndDateFields` to 
 builder constructor.
 
 
-You can also override `autoSnakeCaseNames` per model:
+You can also override `autoIdAndDateFields` per model:
 
 ```dart
 @Serializable(autoIdAndDateFields: false)
