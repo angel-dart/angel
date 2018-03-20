@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/src/base_client.dart' as http;
@@ -7,7 +6,6 @@ import 'package:http/src/request.dart' as http;
 import 'package:http/src/response.dart' as http;
 import 'package:http/src/streamed_response.dart' as http;
 
-final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 class Proxy {
@@ -74,8 +72,8 @@ class Proxy {
 
         var headers = <String, String>{
           'host': port == null ? host : '$host:$port',
-          'x-forwarded-for': req.io.connectionInfo.remoteAddress.address,
-          'x-forwarded-port': req.io.connectionInfo.remotePort.toString(),
+          'x-forwarded-for': req.remoteAddress.address,
+          'x-forwarded-port': req.uri.port.toString(),
           'x-forwarded-host':
               req.headers.host ?? req.headers.value('host') ?? 'none',
           'x-forwarded-proto': protocol,
@@ -101,7 +99,7 @@ class Proxy {
 
         if (body != null) rq.bodyBytes = body;
 
-        return await httpClient.send(rq);
+        return httpClient.send(rq);
       }
 
       var future = accessRemote();
@@ -127,9 +125,11 @@ class Proxy {
 
     if (rs.statusCode == 404 && recoverFrom404 != false) return true;
 
+    // http/2 client implementations usually get confused by transfer-encoding
     res
       ..statusCode = rs.statusCode
-      ..headers.addAll(rs.headers);
+      ..headers.addAll(new Map<String, String>.from(rs.headers)
+        ..remove(HttpHeaders.TRANSFER_ENCODING));
 
     if (rs.contentLength == 0 && recoverFromDead != false) return true;
 
