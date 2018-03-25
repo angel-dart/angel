@@ -228,19 +228,20 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
       buf.write(ctx.prefix + "$name");
     });
 
+    int relationCounter = 0;
     // Add all relationship fields...
     for (var name in ctx.relationships.keys) {
       // Should only run when a JOIN is performed, i.e. singular
       var relationship = ctx.populateRelationship(name);
-
       if (relationship.isSingular) {
         var modelTypeContext = await relationship.modelTypeContext;
         modelTypeContext.fields.forEach((f) {
           if (i++ > 0) buf.write(', ');
           var name = modelTypeContext.resolveFieldName(f.name);
-          buf.write('${relationship.foreignTable}.$name');
+          buf.write('rel$relationCounter.$name');
         });
       }
+      relationCounter++;
     }
 
     return buf.toString();
@@ -264,17 +265,16 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
 
     var relationsIfThen = ifThen(prefix.equals(literal(null)));
 
+    int relationCounter = 0;
     // Apply relationships
     ctx.relationships.forEach((name, r) {
       var relationship = ctx.populateRelationship(name);
-
       if (relationship.isSingular) {
-        String b = ' LEFT OUTER JOIN ${relationship.foreignTable} ON ${ctx
-            .tableName}.${relationship.localKey} = ${relationship
-            .foreignTable}.${relationship.foreignKey}';
+        String b = ' LEFT OUTER JOIN ${relationship.foreignTable} AS rel$relationCounter ON ${ctx
+            .tableName}.${relationship.localKey} = rel$relationCounter.${relationship.foreignKey}';
         relationsIfThen.addStatement(buf.invoke('write', [literal(b)]));
       }
-
+      relationCounter++;
       // A join-based solution won't work for hasMany and co.
       /*else {
         String b = ' LEFT OUTER JOIN ${relationship.foreignTable} ON ${ctx
