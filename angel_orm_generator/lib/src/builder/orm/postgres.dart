@@ -3,14 +3,13 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/dart/async.dart';
-import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:inflection/inflection.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
+import 'lib_core.dart' as lib$core;
 import 'postgres_build_context.dart';
 
 const List<String> RELATIONS = const ['or'];

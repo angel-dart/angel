@@ -2,17 +2,19 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'build_context.dart';
 import 'postgres_build_context.dart';
+import 'lib_core.dart' as lib$core;
 
 class MigrationGenerator extends GeneratorForAnnotation<ORM> {
-  static final ParameterBuilder _schemaParam = parameter('schema', [
-    new TypeBuilder('Schema'),
-  ]);
-  static final ReferenceBuilder _schema = reference('schema');
+  static final Parameter _schemaParam = new Parameter((b) {
+    b
+      ..name = 'schema'
+      ..type = new TypeReference((b) => b.symbol = 'Schema');
+  });
+  static final Expression _schema = new CodeExpression(new Code('schema'));
 
   /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
@@ -37,165 +39,168 @@ class MigrationGenerator extends GeneratorForAnnotation<ORM> {
         resolver, autoSnakeCaseNames != false, autoIdAndDateFields != false);
     var lib = generateMigrationLibrary(ctx, element, resolver, buildStep);
     if (lib == null) return null;
-    return prettyToSource(lib.buildAst());
+    var emitter = new DartEmitter();
+    return lib.accept(emitter).toString();
   }
 
-  LibraryBuilder generateMigrationLibrary(PostgresBuildContext ctx,
+  Library generateMigrationLibrary(PostgresBuildContext ctx,
       ClassElement element, Resolver resolver, BuildStep buildStep) {
-    var lib = new LibraryBuilder()
-      ..addDirective(
-          new ImportBuilder('package:angel_migration/angel_migration.dart'));
+    return new Library((lib) {
+      lib.directives.add([
+        new Directive.import('package:angel_migration/angel_migration.dart'),
+      ]);
 
-    var clazz = new ClassBuilder('${ctx.modelClassName}Migration',
-        asExtends: new TypeBuilder('Migration'));
-    clazz..addMethod(buildUpMigration(ctx, lib))..addMethod(buildDownMigration(ctx));
+      lib.body.add(new Class((b) {
+        b.name = '${ctx.modelClassName}Migration';
+        b.extend = new Reference('Migration');
+      }));
 
-    return lib..addMember(clazz);
+      lib.methods.add(buildUpMigration(ctx, lib));
+      lib.methods.add(buildDownMigration(ctx));
+    });
   }
 
-  MethodBuilder buildUpMigration(PostgresBuildContext ctx, LibraryBuilder lib) {
-    var meth = new MethodBuilder('up')..addPositional(_schemaParam);
-    var closure = new MethodBuilder.closure()
-      ..addPositional(parameter('table'));
-    var table = reference('table');
+  Method buildUpMigration(PostgresBuildContext ctx, LibraryBuilder lib) {
+    return new Method((meth) {
+      meth.name = 'up';
+      meth.annotations.add(lib$core.override);
+      meth.requiredParameters.add(_schemaParam);
 
-    List<String> dup = [];
-    bool hasOrmImport = false;
-    ctx.columnInfo.forEach((name, col) {
-      var key = ctx.resolveFieldName(name);
+      var closure = new Method((closure) {
+        closure.requiredParameters.add(new Parameter((b) => b.name = 'table'));
+        var table = new Reference('table');
 
-      if (dup.contains(key))
-        return;
-      else {
-        if (key != 'id' || autoIdAndDateFields == false) {
-          // Check for relationships that might duplicate
-          for (var rName in ctx.relationships.keys) {
-            var relationship = ctx.populateRelationship(rName);
-            if (relationship.localKey == key) return;
+        List<String> dup = [];
+        bool hasOrmImport = false;
+        ctx.columnInfo.forEach((name, col) {
+          var key = ctx.resolveFieldName(name);
+
+          if (dup.contains(key))
+            return;
+          else {
+            if (key != 'id' || autoIdAndDateFields == false) {
+              // Check for relationships that might duplicate
+              for (var rName in ctx.relationships.keys) {
+                var relationship = ctx.populateRelationship(rName);
+                if (relationship.localKey == key) return;
+              }
+            }
+
+            dup.add(key);
           }
-        }
 
-        dup.add(key);
-      }
+          String methodName;
+          List<Expression> positional = [literal(key)];
+          Map<String, Expression> named = {};
 
-      String methodName;
-      List<ExpressionBuilder> positional = [literal(key)];
-      Map<String, ExpressionBuilder> named = {};
+          if (autoIdAndDateFields != false && name == 'id') methodName = 'serial';
 
-      if (autoIdAndDateFields != false && name == 'id') methodName = 'serial';
+          if (methodName == null) {
+            switch (col.type) {
+              case ColumnType.VAR_CHAR:
+                methodName = 'varchar';
+                if (col.length != null) named['length'] = literal(col.length);
+                break;
+              case ColumnType.SERIAL:
+                methodName = 'serial';
+                break;
+              case ColumnType.INT:
+                methodName = 'integer';
+                break;
+              case ColumnType.FLOAT:
+                methodName = 'float';
+                break;
+              case ColumnType.NUMERIC:
+                methodName = 'numeric';
+                break;
+              case ColumnType.BOOLEAN:
+                methodName = 'boolean';
+                break;
+              case ColumnType.DATE:
+                methodName = 'date';
+                break;
+              case ColumnType.DATE_TIME:
+                methodName = 'dateTime';
+                break;
+              case ColumnType.TIME_STAMP:
+                methodName = 'timeStamp';
+                break;
+              default:
+                if (!hasOrmImport) {
+                  hasOrmImport = true;
+                  lib.directives.add(new Directive.import('package:angel_orm/angel_orm.dart'));
+                }
 
-      if (methodName == null) {
-        switch (col.type) {
-          case ColumnType.VAR_CHAR:
-            methodName = 'varchar';
-            if (col.length != null) named['length'] = literal(col.length);
-            break;
-          case ColumnType.SERIAL:
-            methodName = 'serial';
-            break;
-          case ColumnType.INT:
-            methodName = 'integer';
-            break;
-          case ColumnType.FLOAT:
-            methodName = 'float';
-            break;
-          case ColumnType.NUMERIC:
-            methodName = 'numeric';
-            break;
-          case ColumnType.BOOLEAN:
-            methodName = 'boolean';
-            break;
-          case ColumnType.DATE:
-            methodName = 'date';
-            break;
-          case ColumnType.DATE_TIME:
-            methodName = 'dateTime';
-            break;
-          case ColumnType.TIME_STAMP:
-            methodName = 'timeStamp';
-            break;
-          default:
-            if (!hasOrmImport) {
-              hasOrmImport = true;
-              lib.addDirective(new ImportBuilder('package:angel_orm/angel_orm.dart'));
+                Expression provColumn;
+
+                if (col.length == null) {
+                  methodName = 'declare';
+                  provColumn = new CodeExpression(new Code("new ColumnType('${col.type.name}')"));
+                } else {
+                  methodName = 'declareColumn';
+                  provColumn = new CodeExpression(new Code("new Column({type: new Column('${col.type.name}'), length: ${col.length})"));
+                }
+
+                positional.add(provColumn);
+                break;
             }
+          }
 
-            ExpressionBuilder provColumn;
-            var colType = new TypeBuilder('Column');
-            var columnTypeType = new TypeBuilder('ColumnType');
+          var field = table.property(methodName).call(positional, named);
+          var cascade = <Expression Function(Expression)>[];
 
-            if (col.length == null) {
-              methodName = 'declare';
-              provColumn = columnTypeType.newInstance([
-                literal(col.type.name),
-              ]);
-            } else {
-              methodName = 'declareColumn';
-              provColumn = colType.newInstance([], named: {
-                'type': columnTypeType.newInstance([
-                  literal(col.type.name),
-                ]),
-                'length': literal(col.length),
-              });
-            }
+          if (col.defaultValue != null) {
+            cascade
+                .add((e) => e.property('defaultsTo').call([literal(col.defaultValue)]));
+          }
 
-            positional.add(provColumn);
-            break;
-        }
-      }
+          if (col.index == IndexType.PRIMARY_KEY ||
+              (autoIdAndDateFields != false && name == 'id'))
+            cascade.add((e) => e.property('primaryKey').call([]));
+          else if (col.index == IndexType.UNIQUE)
+            cascade.add((e) => e.property('unique').call([]));
 
-      var field = table.invoke(methodName, positional, namedArguments: named);
-      var cascade = <ExpressionBuilder Function(ExpressionBuilder)>[];
+          if (col.nullable != true) cascade.add((e) => e.property('notNull').call([]));
 
-      if (col.defaultValue != null) {
-        cascade.add((e) => e.invoke('defaultsTo', [literal(col.defaultValue)]));
-      }
+          field = cascade.isEmpty
+              ? field
+              : field.cascade((e) => cascade.map((f) => f(e)).toList());
+          closure.addStatement(field);
+        });
 
-      if (col.index == IndexType.PRIMARY_KEY ||
-          (autoIdAndDateFields != false && name == 'id'))
-        cascade.add((e) => e.invoke('primaryKey', []));
-      else if (col.index == IndexType.UNIQUE)
-        cascade.add((e) => e.invoke('unique', []));
+        ctx.relationships.forEach((name, r) {
+          var relationship = ctx.populateRelationship(name);
 
-      if (col.nullable != true) cascade.add((e) => e.invoke('notNull', []));
+          if (relationship.isBelongsTo) {
+            var key = relationship.localKey;
 
-      field = cascade.isEmpty
-          ? field
-          : field.cascade((e) => cascade.map((f) => f(e)).toList());
-      closure.addStatement(field);
+            var field = table.property('integer').call([literal(key)]);
+            // .references('user', 'id').onDeleteCascade()
+            var ref = field.property('references').call([
+              literal(relationship.foreignTable),
+              literal(relationship.foreignKey),
+            ]);
+
+            if (relationship.cascadeOnDelete != false && relationship.isSingular)
+              ref = ref.property('onDeleteCascade').call([]);
+            return closure.addStatement(ref);
+          }
+        });
+
+        meth.addStatement(_schema.property('create').call([
+          literal(ctx.tableName),
+          closure,
+        ]));
+      });
     });
-
-    ctx.relationships.forEach((name, r) {
-      var relationship = ctx.populateRelationship(name);
-
-      if (relationship.isBelongsTo) {
-        var key = relationship.localKey;
-
-        var field = table.invoke('integer', [literal(key)]);
-        // .references('user', 'id').onDeleteCascade()
-        var ref = field.invoke('references', [
-          literal(relationship.foreignTable),
-          literal(relationship.foreignKey),
-        ]);
-
-        if (relationship.cascadeOnDelete != false && relationship.isSingular)
-          ref = ref.invoke('onDeleteCascade', []);
-        return closure.addStatement(ref);
-      }
-    });
-
-    meth.addStatement(_schema.invoke('create', [
-      literal(ctx.tableName),
-      closure,
-    ]));
-    return meth..addAnnotation(lib$core.override);
   }
 
-  MethodBuilder buildDownMigration(PostgresBuildContext ctx) {
-    return method('down', [
-      _schemaParam,
-      _schema.invoke('drop', [literal(ctx.tableName)]),
-    ])
-      ..addAnnotation(lib$core.override);
+  Method buildDownMigration(PostgresBuildContext ctx) {
+    return new Method((b) {
+      b.name = 'down';
+      b.requiredParameters.add(_schemaParam);
+      b.annotations.add(lib$core.override);
+      b.body.add(new Code("schema.drop('${ctx.tableName}')"));
+    });
   }
 }

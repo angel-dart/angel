@@ -3,7 +3,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
