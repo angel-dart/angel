@@ -10,8 +10,9 @@ main() async {
   var hot = new HotReloader(() async {
     var app = new Angel()..lazyParseBodies = true;
     await app.configure(configureServer);
-    app.logger = new Logger('angel')
-      ..onRecord.listen(prettyLog);
+    app.logger = new Logger('angel');
+    var sub = app.logger.onRecord.listen(prettyLog);
+    app.shutdownHooks.add((_) => sub.cancel());
     return app;
   }, [
     new Directory('config'),

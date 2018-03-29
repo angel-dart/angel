@@ -17,11 +17,7 @@ void main() {
 }
 
 void isolateMain(int id) {
-  // Passing `startShared` to the constructor allows us to start multiple
-  // instances of our application concurrently, listening on a single port.
-  //
-  // This effectively lets us multi-thread the application.
-  var app = new Angel.custom(startShared);
+  var app = new Angel();
 
   app.configure(configureServer).then((_) async {
     // In production, we'll want to log errors to a file.
@@ -38,7 +34,12 @@ void isolateMain(int id) {
         }
       });
 
-    var server = await app.startServer(hostname, port);
+    // Passing `startShared` to the constructor allows us to start multiple
+    // instances of our application concurrently, listening on a single port.
+    //
+    // This effectively lets us multi-thread the application.
+    var http = new AngelHttp.custom(app, startShared);
+    var server = await http.startServer(hostname, port);
     print(
         'Instance #$id listening at http://${server.address.address}:${server.port}');
   });
