@@ -17,6 +17,22 @@ builders:
       generate_for:
         - "lib/src/models/**.dart"
         - "test/**.dart"
+  typescript_definition:
+    target: "angel_serialize_generator"
+    import: "package:angel_serialize_generator/angel_serialize_generator.dart"
+    builder_factories:
+      - typescriptDefinitionBuilder
+    auto_apply: root_package
+    build_to: source
+    build_extensions:
+      .dart:
+        - ".d.ts"
+    required_inputs:
+      - .dart
+    defaults:
+      generate_for:
+        - "lib/src/models/**.dart"
+        - "test/**.dart"
 targets:
   _book:
     sources:

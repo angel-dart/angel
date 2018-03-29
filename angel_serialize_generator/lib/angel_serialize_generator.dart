@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
+import 'package:code_buffer/code_buffer.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
@@ -14,6 +15,8 @@ import 'context.dart';
 part 'model.dart';
 
 part 'serialize.dart';
+
+part 'typescript.dart';
 
 Builder jsonModelBuilder(_) {
   return new PartBuilder(
@@ -27,6 +30,10 @@ Builder serializerBuilder(_) {
     const [const SerializerGenerator()],
     generatedExtension: '.serializer.g.dart',
   );
+}
+
+Builder typescriptDefinitionBuilder(_) {
+  return const TypeScriptDefinitionBuilder();
 }
 
 /// Converts a [DartType] to a [TypeReference].
@@ -59,7 +66,6 @@ bool isListModelType(InterfaceType t) {
       t.typeArguments.length == 1 &&
       isModelClass(t.typeArguments[0]);
 }
-
 
 /// Determines if a [DartType] is a `Map` with the second type argument being a `Model`.
 bool isMapToModelType(InterfaceType t) {
