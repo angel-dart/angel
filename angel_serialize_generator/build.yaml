@@ -5,27 +5,13 @@ builders:
     builder_factories:
       - jsonModelBuilder
       - serializerBuilder
+      - typescriptDefinitionBuilder
     auto_apply: root_package
     build_to: source
     build_extensions:
       .dart:
         - ".g.dart"
         - ".serializer.g.dart"
-    required_inputs:
-      - .dart
-    defaults:
-      generate_for:
-        - "lib/src/models/**.dart"
-        - "test/**.dart"
-  typescript_definition:
-    target: "angel_serialize_generator"
-    import: "package:angel_serialize_generator/angel_serialize_generator.dart"
-    builder_factories:
-      - typescriptDefinitionBuilder
-    auto_apply: root_package
-    build_to: source
-    build_extensions:
-      .dart:
         - ".d.ts"
     required_inputs:
       - .dart
@@ -37,8 +23,12 @@ targets:
   _book:
     sources:
       - "test/models/book.dart"
+  _typescript_definition:
+    sources:
+        - "lib/*.dart"
   $default:
     dependencies:
       - ":_book"
     sources:
+      - "lib/*.dart"
       - "test/models/author.dart"

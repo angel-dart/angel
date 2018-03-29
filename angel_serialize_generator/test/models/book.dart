@@ -5,7 +5,7 @@ import 'package:angel_serialize/angel_serialize.dart';
 part 'book.g.dart';
 part 'book.serializer.g.dart';
 
-@serializable
+@Serializable(serializers: Serializers.all)
 abstract class _Book extends Model {
   String author, title, description;
   int pageCount;

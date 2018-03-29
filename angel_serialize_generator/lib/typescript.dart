@@ -78,13 +78,31 @@ class TypeScriptDefinitionBuilder implements Builder {
   @override
   Future build(BuildStep buildStep) async {
     var contexts = <BuildContext>[];
-    var lib = new LibraryReader(await buildStep.inputLibrary);
+    LibraryReader lib;
+
+    try {
+      lib = new LibraryReader(await buildStep.inputLibrary);
+    } catch (_) {
+      return;
+    }
+
     var elements =
         lib.annotatedWith(const TypeChecker.fromRuntime(Serializable));
 
     for (var element in elements) {
       if (element.element.kind != ElementKind.CLASS)
         throw 'Only classes can be annotated with a @Serializable() annotation.';
+
+      var annotation = element.annotation;
+
+      var serializers = annotation.peek('serializers')?.listValue ?? [];
+
+      if (serializers.isEmpty) continue;
+
+      // Check if TypeScript serializer is supported
+      if (!serializers.any((s) => s.toIntValue() == Serializers.typescript)) {
+        continue;
+      }
 
       contexts.add(await buildContext(
           element.element,
@@ -101,6 +119,8 @@ class TypeScriptDefinitionBuilder implements Builder {
       trailingNewline: true,
       sourceUrl: buildStep.inputId.uri,
     );
+
+    buf.writeln('// GENERATED CODE - DO NOT MODIFY BY HAND');
 
     // declare module `foo` {
     //buf

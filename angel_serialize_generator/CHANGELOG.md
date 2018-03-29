@@ -1,3 +1,6 @@
+# 2.0.3
+* Added a `TypeScriptDefinitionBuilder`.
+
 # 2.0.2
 * Generates an `XFields` class with the serialized names of
 all fields in a model class `X`.

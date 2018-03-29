@@ -33,13 +33,16 @@ const Serializable serializable = const Serializable();
 /// The supported serialization types.
 abstract class Serializers {
   /// All supported serialization types.
-  static const List<int> all = const [map, json];
+  static const List<int> all = const [map, json, typescript];
 
   /// Enable `fromMap` and `toMap` methods on the model class.
   static const int map = 0;
 
   /// Enable a `toJson` method on the model class.
   static const int json = 1;
+
+  /// Generate a TypeScript definition file (`.d.ts`) for use on the client-side.
+  static const int typescript = 2;
 }
 
 /// Specifies an alias for a field within its JSON representation.

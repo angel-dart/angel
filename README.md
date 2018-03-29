@@ -13,6 +13,7 @@ the time you spend writing boilerplate serialization code for your models.
   * [Serialization](#serializaition)
   * [Nesting](#nesting)
   * [ID and Date Fields](#id-and-dates)
+  * [TypeScript Definition Generator](#typescript-definitions)
 
 # Usage
 In your `pubspec.yaml`, you need to install the following dependencies:
@@ -209,3 +210,41 @@ You can also override `autoIdAndDateFields` per model:
 @Serializable(autoIdAndDateFields: false)
 abstract class _Skinny extends Model {}
 ```
+
+# TypeScript Definitions
+It is quite common to build frontends with JavaScript and/or TypeScript,
+so why not generate typings as well?
+
+To accomplish this, add `Serializers.typescript` to your `@Serializable()` declaration:
+
+```dart
+@Serializable(serializers: const [Serializers.map, Serializers.json, Serializers.typescript])
+class _Foo extends Model {}
+```
+
+The aforementioned `_Author` class will generate the following in `author.d.ts`:
+
+```typescript
+interface Author {
+  id: string;
+  name: string;
+  age: number;
+  books: Book[];
+  newest_book: Book;
+  created_at: any;
+  updated_at: any;
+}
+interface Library {
+  id: string;
+  collection: BookCollection;
+  created_at: any;
+  updated_at: any;
+}
+interface BookCollection {
+  [key: string]: Book;
+}
+```
+
+Fields with an `@Exclude()` that specifies `canSerialize: false` will not be present in the
+TypeScript definition. The rationale for this is that if a field (i.e. `password`) will
+never be sent to the client, the client shouldn't even know the field exists.

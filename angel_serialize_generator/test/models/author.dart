@@ -3,7 +3,9 @@ library angel_serialize.test.models.author;
 import 'package:angel_framework/common.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'book.dart';
+
 part 'author.g.dart';
+
 part 'author.serializer.g.dart';
 
 @serializable
@@ -20,7 +22,7 @@ abstract class _Author extends Model {
   String obscured;
 }
 
-@serializable
+@Serializable(serializers: Serializers.all)
 abstract class _Library extends Model {
   Map<String, Book> collection;
 }

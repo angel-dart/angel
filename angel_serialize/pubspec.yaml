@@ -1,5 +1,5 @@
 name: angel_serialize
-version: 2.0.0
+version: 2.0.1
 description: Static annotations powering Angel model serialization. Combine with angel_serialize_generator for flexible modeling.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/serialize

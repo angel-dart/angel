@@ -29,6 +29,10 @@ final List<BuilderApplication> applications = [
     ),
     generateFor: all,
   ),
+  applyToRoot(
+    const TypeScriptDefinitionBuilder(),
+    generateFor: all,
+  ),
 ];
 
 /*
