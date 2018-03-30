@@ -1,3 +1,6 @@
+# 1.1.2
+* `MapService` will store `created_at` and `updated_at` as `String`.
+
 # 1.1.1
 * `ResponseContext` no longer automatically closes if `serializer` returns an
 empty string.

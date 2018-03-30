@@ -76,7 +76,7 @@ class MapService extends Service {
       throw new AngelHttpException.badRequest(
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
-    var now = new DateTime.now();
+    var now = new DateTime.now().toIso8601String();
     var result = data;
 
     if (autoIdAndDateFields == true) {
@@ -103,7 +103,7 @@ class MapService extends Service {
     if (autoIdAndDateFields == true)
       result
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
-            new DateTime.now();
+            new DateTime.now().toIso8601String();
     return result;
   }
 
@@ -128,7 +128,7 @@ class MapService extends Service {
         ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] =
             old[autoSnakeCaseNames == false ? 'createdAt' : 'created_at']
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
-            new DateTime.now();
+            new DateTime.now().toIso8601String();
     }
     items.add(result);
     return result;
