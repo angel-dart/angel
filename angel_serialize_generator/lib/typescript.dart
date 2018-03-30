@@ -144,7 +144,7 @@ class TypeScriptDefinitionBuilder implements Builder {
             field.name, field.type, ext, buildStep);
 
         // foo: string;
-        buf.writeln('$alias: $typeScriptType;');
+        buf.writeln('$alias?: $typeScriptType;');
       }
 
       buf

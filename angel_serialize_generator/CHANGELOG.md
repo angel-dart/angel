@@ -1,3 +1,6 @@
+# 2.0.4
+* Fields in TypeScript definitions are now nullable by default.
+
 # 2.0.3
 * Added a `TypeScriptDefinitionBuilder`.
 
