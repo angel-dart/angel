@@ -2,21 +2,18 @@ library angel_auth_oauth2;
 
 import 'dart:async';
 import 'package:angel_auth/angel_auth.dart';
-import 'package:angel_framework/src/http/response_context.dart';
-import 'package:angel_framework/src/http/request_context.dart';
+import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_validate/angel_validate.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
-
-/// Loads a user profile via OAuth2.
-typedef Future OAuth2Verifier(oauth2.Client client);
 
 final Validator OAUTH2_OPTIONS_SCHEMA = new Validator({
   'key*': isString,
   'secret*': isString,
-  'authorizationEndpoint*': isString,
-  'tokenEndpoint*': isString,
+  'authorizationEndpoint*': anyOf(isString, const isInstanceOf<Uri>()),
+  'tokenEndpoint*': anyOf(isString, const isInstanceOf<Uri>()),
   'callback*': isString,
-  'scopes': new isInstanceOf<Iterable<String>>()
+  'scopes': const isInstanceOf<Iterable<String>>()
 }, defaultValues: {
   'scopes': <String>[]
 }, customErrorMessages: {
@@ -32,10 +29,10 @@ class AngelAuthOAuth2Options {
   final String secret;
 
   /// The remote endpoint that prompts external users for authentication credentials.
-  final String authorizationEndpoint;
+  final authorizationEndpoint;
 
   /// The remote endpoint that exchanges auth codes for access tokens.
-  final String tokenEndpoint;
+  final tokenEndpoint;
 
   /// The callback URL that the OAuth2 server should redirect authenticated users to.
   final String callback;
@@ -44,6 +41,8 @@ class AngelAuthOAuth2Options {
   final String delimiter;
   final Iterable<String> scopes;
 
+  final Map<String, String> Function(MediaType, String) getParameters;
+
   const AngelAuthOAuth2Options(
       {this.key,
       this.secret,
@@ -51,7 +50,8 @@ class AngelAuthOAuth2Options {
       this.tokenEndpoint,
       this.callback,
       this.delimiter: ' ',
-      this.scopes: const []});
+      this.scopes: const [],
+      this.getParameters});
 
   factory AngelAuthOAuth2Options.fromJson(Map json) =>
       new AngelAuthOAuth2Options(
@@ -62,7 +62,7 @@ class AngelAuthOAuth2Options {
           callback: json['callback'],
           scopes: json['scopes'] ?? <String>[]);
 
-  Map<String, String> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'key': key,
       'secret': secret,
@@ -74,19 +74,14 @@ class AngelAuthOAuth2Options {
   }
 }
 
-class OAuth2Strategy implements AuthStrategy {
-  String _name;
+class OAuth2Strategy<T> implements AuthStrategy {
+  final FutureOr<T> Function(oauth2.Client) verifier;
+  String name;
+
   AngelAuthOAuth2Options _options;
-  final OAuth2Verifier verifier;
-
-  @override
-  String get name => _name;
-
-  @override
-  set name(String value) => _name = name;
 
   /// [options] can be either a `Map` or an instance of [AngelAuthOAuth2Options].
-  OAuth2Strategy(this._name, options, this.verifier) {
+  OAuth2Strategy(this.name, options, this.verifier) {
     if (options is AngelAuthOAuth2Options)
       _options = options;
     else if (options is Map)
@@ -102,7 +97,8 @@ class OAuth2Strategy implements AuthStrategy {
           Uri.parse(_options.authorizationEndpoint),
           Uri.parse(_options.tokenEndpoint),
           secret: _options.secret,
-          delimiter: _options.delimiter ?? ' ');
+          delimiter: _options.delimiter ?? ' ',
+          getParameters: _options.getParameters);
 
   @override
   Future authenticate(RequestContext req, ResponseContext res,

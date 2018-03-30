@@ -1,6 +1,6 @@
 # auth_oauth2
 
-[![version 1.0.1](https://img.shields.io/badge/pub-1.0.1-brightgreen.svg)](https://pub.dartlang.org/packages/angel_auth_oauth2)
+[![Pub](https://img.shields.io/pub/v/angel_auth_oauth2.svg)](https://pub.dartlang.org/packages/angel_auth_oauth2)
 
 `package:angel_auth` strategy for OAuth2 login, i.e. Facebook or Github.
 
@@ -13,7 +13,7 @@ configureServer(Angel app) async {
   var opts = new AngelOAuth2Options.fromJson(map);
   
   // Create in-place:
-  const AngelAuthOAuth2Options OAUTH2_CONFIG = const AngelAuthOAuth2Options(
+  var opts = const AngelAuthOAuth2Options(
       callback: '<callback-url>',
       key: '<client-id>',
       secret: '<client-secret>',
@@ -98,9 +98,31 @@ you can add it in the `AngelOAuth2Options` constructor:
 
 ```dart
 configureServer(Angel app) async {
-  const AngelOAuth2Options OPTS = const AngelOAuth2Options(
+  var opts = const AngelOAuth2Options(
     // ...
     delimiter: ','
   );
 }
+```
+
+## Handling non-JSON responses
+Many OAuth2 providers do not follow the specification, and do not return
+`application/json` responses.
+
+You can add a `getParameters` callback to parse the contents of any arbitrary
+response:
+
+```dart
+var opts = const AngelOAuth2Options(
+    // ...
+    getParameters: (contentType, body) {
+      if (contentType.type == 'application') {
+        if (contentType.subtype == 'x-www-form-urlencoded')
+          return Uri.splitQueryString(body);
+        else if (contentType.subtype == 'json') return JSON.decode(body);
+      }
+
+      throw new FormatException('Invalid content-type $contentType; expected application/x-www-form-urlencoded or application/json.');
+    }
+);
 ```
