@@ -17,10 +17,14 @@ abstract class BookSerializer {
         notModels: map['not_models'],
         camelCaseString: map['camelCase'],
         createdAt: map['created_at'] != null
-            ? DateTime.parse(map['created_at'])
+            ? (map['created_at'] is DateTime
+                ? map['created_at']
+                : DateTime.parse(map['created_at']))
             : null,
         updatedAt: map['updated_at'] != null
-            ? DateTime.parse(map['updated_at'])
+            ? (map['updated_at'] is DateTime
+                ? map['updated_at']
+                : DateTime.parse(map['updated_at']))
             : null);
   }
 

@@ -5,7 +5,7 @@ interface Book {
   title?: string;
   description?: string;
   page_count?: number;
-  not_models?: any[];
+  not_models?: number[];
   camelCase?: string;
   created_at?: any;
   updated_at?: any;

@@ -32,7 +32,8 @@ class TypeScriptDefinitionBuilder implements Builder {
       var arg = await compileToTypeScriptType(
           fieldName, type.typeArguments[0], ext, buildStep);
       typeScriptType = '$arg[]';
-    } else if (isMapToModelType(type)) {
+    } else if (const TypeChecker.fromRuntime(List).isAssignableFromType(type) &&
+        type.typeArguments.length == 2) {
       var key = await compileToTypeScriptType(
           fieldName, type.typeArguments[0], ext, buildStep);
       var value = await compileToTypeScriptType(
@@ -58,7 +59,13 @@ class TypeScriptDefinitionBuilder implements Builder {
         ..outdent()
         ..writeln('}'));
     } else if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
-      typeScriptType = 'any[]';
+      if (type.typeArguments.length == 0)
+        typeScriptType = 'any[]';
+      else {
+        var arg = await compileToTypeScriptType(
+            fieldName, type.typeArguments[0], ext, buildStep);
+        typeScriptType = '$arg[]';
+      }
     } else if (isModelClass(type)) {
       var ctx = await buildContext(
         type.element,

@@ -20,10 +20,14 @@ abstract class AuthorSerializer {
             : null,
         obscured: map['obscured'],
         createdAt: map['created_at'] != null
-            ? DateTime.parse(map['created_at'])
+            ? (map['created_at'] is DateTime
+                ? map['created_at']
+                : DateTime.parse(map['created_at']))
             : null,
         updatedAt: map['updated_at'] != null
-            ? DateTime.parse(map['updated_at'])
+            ? (map['updated_at'] is DateTime
+                ? map['updated_at']
+                : DateTime.parse(map['updated_at']))
             : null);
   }
 
@@ -71,10 +75,14 @@ abstract class LibrarySerializer {
               })
             : null,
         createdAt: map['created_at'] != null
-            ? DateTime.parse(map['created_at'])
+            ? (map['created_at'] is DateTime
+                ? map['created_at']
+                : DateTime.parse(map['created_at']))
             : null,
         updatedAt: map['updated_at'] != null
-            ? DateTime.parse(map['updated_at'])
+            ? (map['updated_at'] is DateTime
+                ? map['updated_at']
+                : DateTime.parse(map['updated_at']))
             : null);
   }
 

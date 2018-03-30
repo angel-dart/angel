@@ -1,3 +1,7 @@
+# 2.0.5
+* Deserialization now supports un-serialized `DateTime`.
+* Better support for regular typed Lists and Maps in TypeScript.
+
 # 2.0.4
 * Fields in TypeScript definitions are now nullable by default.
 

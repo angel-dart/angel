@@ -139,8 +139,9 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         // Deserialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
-          deserializedRepresentation =
-              "map['$alias'] != null ? DateTime.parse(map['$alias']) : null";
+          deserializedRepresentation = "map['$alias'] != null ? "
+              "(map['$alias'] is DateTime ? map['$alias'] : DateTime.parse(map['$alias']))"
+              " : null";
 
         // Serialize model classes via `XSerializer.toMap`
         else if (isModelClass(field.type)) {
