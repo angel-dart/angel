@@ -11,6 +11,12 @@ A `Service` class that caches data from one service, storing it in another.
 An imaginable use case is storing results from MongoDB or another database in
 MemcacheD/Redis.
 
+## `cacheSerializationResults`
+A middleware that enables the caching of response serialization.
+
+This can improve the performance of sending objects that are complex to serialize.
+You can pass a [shouldCache] callback to determine which values should be cached.
+
 ## `ResponseCache`
 A flexible response cache for Angel.
 
