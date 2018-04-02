@@ -8,4 +8,8 @@ Support for server-side caching in [Angel](https://angel-dart.github.io).
 *TODO: Documentation*
 
 A `Service` class that caches data from one service, storing it in another.
-An imaginable use case is storing results from MongoDB or another database in Redis.
+An imaginable use case is storing results from MongoDB or another database in
+MemcacheD/Redis.
+
+## `Cache`
+*TODO: Documentation*
