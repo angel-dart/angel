@@ -1,12 +1,7 @@
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:intl/intl.dart';
 import 'package:pool/pool.dart';
-
-final DateFormat _fmt = new DateFormat('EEE, d MMM yyyy HH:mm:ss');
-
-/// Formats a date (converted to UTC), ex: `Sun, 03 May 2015 23:02:37 GMT`.
-String _formatDateForHttp(DateTime dt) => _fmt.format(dt.toUtc()) + ' GMT';
+import 'util.dart';
 
 /// A flexible response cache for Angel.
 ///
@@ -39,7 +34,7 @@ class ResponseCache {
   /// This prevents the server from even having to access the cache, and plays very well with static assets.
   Future<bool> ifModifiedSince(RequestContext req, ResponseContext res) async {
     if (req.headers.value('if-modified-since') != null) {
-      var modifiedSince = _fmt
+      var modifiedSince = fmt
           .parse(req.headers.value('if-modified-since').replaceAll('GMT', ''));
 
       // Check if there is a cache entry.
@@ -47,8 +42,9 @@ class ResponseCache {
         if (pattern.allMatches(req.uri.path).isNotEmpty &&
             _cache.containsKey(req.uri.path)) {
           var response = _cache[req.uri.path];
+          //print('${response.timestamp} vs ${modifiedSince}');
 
-          if (response.timestamp.compareTo(modifiedSince) <= 0) {
+          if (response.timestamp.compareTo(modifiedSince) < 0) {
             res.statusCode = 304;
             return false;
           }
@@ -61,8 +57,7 @@ class ResponseCache {
 
   /// Serves content from the cache, if applicable.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
-    if (!await ifModifiedSince(req, res))
-      return false;
+    if (!await ifModifiedSince(req, res)) return false;
 
     // Check if there is a cache entry.
     for (var pattern in patterns) {
@@ -70,9 +65,13 @@ class ResponseCache {
         var now = new DateTime.now().toUtc();
 
         if (_cache.containsKey(req.uri.path)) {
-          // If the cache timeout has been met, don't send the cached response.
           var response = _cache[req.uri.path];
-          if (now.difference(response.timestamp) >= timeout) return true;
+
+          if (timeout != null) {
+            // If the cache timeout has been met, don't send the cached response.
+            if (now.difference(response.timestamp) >= timeout) return true;
+          }
+
           _setCachedHeaders(response.timestamp, req, res);
           res
             ..headers.addAll(response.headers)
@@ -110,7 +109,8 @@ class ResponseCache {
         }
 
         // Save the response.
-        var writeLock = _writeLocks.putIfAbsent(req.uri.path, () => new Pool(1));
+        var writeLock =
+            _writeLocks.putIfAbsent(req.uri.path, () => new Pool(1));
         await writeLock.withResource(() {
           _cache[req.uri.path] = new _CachedResponse(
               new Map.from(res.headers), res.buffer.toBytes(), now);
@@ -129,11 +129,11 @@ class ResponseCache {
 
     res.headers
       ..['cache-control'] = '$privacy, max-age=${timeout?.inSeconds ?? 0}'
-      ..['last-modified'] = _formatDateForHttp(modified);
+      ..['last-modified'] = formatDateForHttp(modified);
 
     if (timeout != null) {
       var expiry = new DateTime.now().add(timeout);
-      res.headers['expires'] = _formatDateForHttp(expiry);
+      res.headers['expires'] = formatDateForHttp(expiry);
     }
   }
 }

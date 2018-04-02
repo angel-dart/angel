@@ -37,7 +37,7 @@ Future configureServer(Angel app) async {
   cache.patterns.addAll([
     'robots.txt',
     new RegExp(r'\.(png|jpg|gif|txt)$'),
-    new Glob('/public/**/*'),
+    new Glob('public/**/*'),
   ]);
   
   // REQUIRED: The middleware that serves cached responses
