@@ -43,7 +43,7 @@ main() async {
       client = await connectTo(app);
       response1 = await client.get('/date.txt');
       response2 = await client.get('/date.txt');
-      lastModified = new DateTime.now().toUtc();
+      lastModified = fmt.parse(response2.headers['last-modified']);
       print('Response 1 status: ${response1.statusCode}');
       print('Response 2 status: ${response2.statusCode}');
       print('Response 1 body: ${response1.body}');
