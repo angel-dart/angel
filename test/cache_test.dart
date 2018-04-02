@@ -73,16 +73,16 @@ main() async {
     });
 
     test('invalidate', () async {
-      await client.sendUnstreamed(
-          'PURGE', '/date.txt', {});
+      await client.sendUnstreamed('PURGE', '/date.txt', {});
       var response = await client.get('/date.txt');
       print('Response after invalidation: ${response.body}');
       expect(response.body, isNot(response1.body));
     });
 
     test('sends 304 on if-modified-since', () async {
-      var response = await client.get('/date.txt',
-          headers: {'if-modified-since': formatDateForHttp(lastModified)});
+      var headers = {'if-modified-since': formatDateForHttp(lastModified)};
+      var response = await client.get('/date.txt', headers: headers);
+      print('Sending headers: $headers');
       print('Response (${response.statusCode}): ${response.headers}');
       expect(response.statusCode, 304);
     });
