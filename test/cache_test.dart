@@ -74,7 +74,7 @@ main() async {
 
     test('invalidate', () async {
       await client.sendUnstreamed(
-          'PURGE', '/date.txt', {'x-http-method-override': 'PURGE'});
+          'PURGE', '/date.txt', {});
       var response = await client.get('/date.txt');
       print('Response after invalidation: ${response.body}');
       expect(response.body, isNot(response1.body));

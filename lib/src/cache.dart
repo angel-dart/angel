@@ -44,9 +44,15 @@ class ResponseCache {
         if (pattern.allMatches(req.uri.path).isNotEmpty &&
             _cache.containsKey(req.uri.path)) {
           var response = _cache[req.uri.path];
-          //print('${response.timestamp} vs ${modifiedSince}');
+          //print('timestamp ${response.timestamp} vs since ${modifiedSince}');
 
-          if (response.timestamp.compareTo(modifiedSince) < 0) {
+          if (response.timestamp.compareTo(modifiedSince) <= 0) {
+            if (timeout != null) {
+              // If the cache timeout has been met, don't send the cached response.
+              if (new DateTime.now().toUtc().difference(response.timestamp) >=
+                  timeout) return true;
+            }
+
             res.statusCode = 304;
             return false;
           }
@@ -63,24 +69,28 @@ class ResponseCache {
     if (req.method != 'GET' && req.method != 'HEAD') return true;
 
     // Check if there is a cache entry.
-    for (var pattern in patterns) {
-      if (pattern.allMatches(req.uri.path).isNotEmpty) {
-        var now = new DateTime.now().toUtc();
+    //
+    // If `if-modified-since` is present, this check has already been performed.
+    if (req.headers.value('if-modified-since') == null) {
+      for (var pattern in patterns) {
+        if (pattern.allMatches(req.uri.path).isNotEmpty) {
+          var now = new DateTime.now().toUtc();
 
-        if (_cache.containsKey(req.uri.path)) {
-          var response = _cache[req.uri.path];
+          if (_cache.containsKey(req.uri.path)) {
+            var response = _cache[req.uri.path];
 
-          if (timeout != null) {
-            // If the cache timeout has been met, don't send the cached response.
-            if (now.difference(response.timestamp) >= timeout) return true;
+            if (timeout != null) {
+              // If the cache timeout has been met, don't send the cached response.
+              if (now.difference(response.timestamp) >= timeout) return true;
+            }
+
+            _setCachedHeaders(response.timestamp, req, res);
+            res
+              ..headers.addAll(response.headers)
+              ..buffer.add(response.body)
+              ..end();
+            return false;
           }
-
-          _setCachedHeaders(response.timestamp, req, res);
-          res
-            ..headers.addAll(response.headers)
-            ..buffer.add(response.body)
-            ..end();
-          return false;
         }
       }
     }
