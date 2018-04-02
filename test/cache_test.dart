@@ -80,7 +80,7 @@ main() async {
     });
 
     test('sends 304 on if-modified-since', () async {
-      var headers = {'if-modified-since': formatDateForHttp(lastModified)};
+      var headers = {'if-modified-since': formatDateForHttp(lastModified.add(const Duration(days: 1)))};
       var response = await client.get('/date.txt', headers: headers);
       print('Sending headers: $headers');
       print('Response (${response.statusCode}): ${response.headers}');
