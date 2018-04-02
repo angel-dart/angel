@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:meta/meta.dart';
 
@@ -17,5 +18,25 @@ class CacheService extends Service {
   CacheService({@required this.database, Service cache})
       : this.cache = cache ?? new MapService() {
     assert(database != null);
+  }
+
+  @override
+  Future create(data, [Map params]) {
+    return database.create(data, params);
+  }
+
+  @override
+  Future modify(id, data, [Map params]) {
+    return database.modify(id, data, params);
+  }
+
+  @override
+  Future update(id, data, [Map params]) {
+    return database.modify(id, data, params);
+  }
+
+  @override
+  Future remove(id, [Map params]) {
+    return database.remove(id, params);
   }
 }
