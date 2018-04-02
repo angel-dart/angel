@@ -14,18 +14,25 @@ class ResponseCache {
 
   ResponseCache({this.timeout});
 
-  Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
-    var now = new DateTime.now().toUtc();
+  /// A middleware that handles requests with an `If-Modified-Since` header.
+  ///
+  /// This prevents the server from even having to access the cache, and plays very well with static assets.
+  Future<bool> ifModifiedSince(RequestContext req, ResponseContext res) async {
+    if (req.headers.value('if-modified-since') != null) {
+      var modifiedSince = _fmt.parse(req.headers.value('if-modified-since'));
 
-    // Check if there is a cache entry.
-    for (var pattern in patterns) {
-      if (pattern.allMatches(req.uri.path).isNotEmpty && _cache.containsKey(req.uri.path)) {
-        var response = _cache[req.uri.path];
+      // Check if there is a cache entry.
+      for (var pattern in patterns) {
+        if (pattern.allMatches(req.uri.path).isNotEmpty &&
+            _cache.containsKey(req.uri.path)) {
+          var response = _cache[req.uri.path];
 
-        // Only send a cached response if it is valid.
-        if (timeout == null || now.difference(response.timestamp) >= timeout) {
-          // TODO: If-Last-Modified
-          break;
+          // Only send a cached response if it is valid.
+          if (timeout == null ||
+              modifiedSince.difference(response.timestamp) >= timeout) {
+            res.statusCode = 304;
+            return false;
+          }
         }
       }
     }
@@ -33,7 +40,10 @@ class ResponseCache {
     return true;
   }
 
-  Future<bool> responseFinalizer(RequestContext req, ResponseContext res) async {
+  Future<bool> responseFinalizer(
+      RequestContext req, ResponseContext res) async {
+    if (res.statusCode == 304) return true;
+
     var now = new DateTime.now().toUtc();
   }
 
