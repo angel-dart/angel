@@ -11,5 +11,53 @@ A `Service` class that caches data from one service, storing it in another.
 An imaginable use case is storing results from MongoDB or another database in
 MemcacheD/Redis.
 
-## `Cache`
-*TODO: Documentation*
+## `ResponseCache`
+A flexible response cache for Angel.
+
+Use this to improve real and perceived response of Web applications,
+as well as to memoize expensive responses.
+
+Supports the `If-Modified-Since` header, as well as storing the contents of
+response buffers in memory.
+
+To initialize a simple cache:
+
+```dart
+Future configureServer(Angel app) async {
+  // Simple instance.
+  var cache = new ResponseCache();
+  
+  // You can also pass an invalidation timeout.
+  var cache = new ResponseCache(timeout: const Duration(days: 2));
+  
+  // Use `patterns` to specify which resources should be cached.
+  cache.patterns.addAll([
+    'robots.txt',
+    new RegExp(r'\.(png|jpg|gif|txt)$'),
+    new Glob('/public/**/*'),
+  ]);
+  
+  // REQUIRED: The middleware that serves cached responses
+  app.use(cache.handleRequest);
+  
+  // REQUIRED: The response finalizer that saves responses to the cache
+  app.responseFinalizers.add(cache.responseFinalizer);
+}
+```
+
+### Purging the Cache
+Call `invalidate` to remove a resource from a `ResponseCache`.
+
+Some servers expect a reverse proxy or caching layer to support `PURGE` requests.
+If this is your case, make sure to include some sort of validation (maybe IP-based)
+to ensure no arbitrary attacker can hack your cache:
+
+```dart
+Future configureServer(Angel app) async {
+  app.addRoute('PURGE', '*', (req, res) {
+    if (req.ip != '127.0.0.1')
+      throw new AngelHttpException.forbidden();
+    return cache.purge(req.uri.path);
+  });
+}
+```

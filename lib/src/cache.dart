@@ -32,7 +32,7 @@ class ResponseCache {
   }
 
   /// Removes an entry from the response cache.
-  void invalidate(String path) => _cache.remove(path);
+  void purge(String path) => _cache.remove(path);
 
   /// A middleware that handles requests with an `If-Modified-Since` header.
   ///
@@ -61,7 +61,8 @@ class ResponseCache {
 
   /// Serves content from the cache, if applicable.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
-    if (res.statusCode == 304) return true;
+    if (!await ifModifiedSince(req, res))
+      return false;
 
     // Check if there is a cache entry.
     for (var pattern in patterns) {
@@ -105,7 +106,7 @@ class ResponseCache {
           if (now.difference(response.timestamp) < timeout) return true;
 
           // If the cache entry should be invalidated, then invalidate it.
-          invalidate(req.uri.path);
+          purge(req.uri.path);
         }
 
         // Save the response.
