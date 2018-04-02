@@ -109,8 +109,12 @@ class ResponseCache {
         }
 
         // Save the response.
-        _cache[req.uri.path] = new _CachedResponse(
-            new Map.from(res.headers), res.buffer.toBytes(), now);
+        var writeLock = _writeLocks.putIfAbsent(req.uri.path, () => new Pool(1));
+        await writeLock.withResource(() {
+          _cache[req.uri.path] = new _CachedResponse(
+              new Map.from(res.headers), res.buffer.toBytes(), now);
+        });
+
         _setCachedHeaders(now, req, res);
       }
     }
