@@ -30,6 +30,9 @@ Future configureServer(Angel app) async {
   // You can also pass an invalidation timeout.
   var cache = new ResponseCache(timeout: const Duration(days: 2));
   
+  // Close the cache when the application closes.
+  app.shutdownHooks.add((_) => cache.close());
+  
   // Use `patterns` to specify which resources should be cached.
   cache.patterns.addAll([
     'robots.txt',
