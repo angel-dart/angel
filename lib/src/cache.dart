@@ -65,7 +65,12 @@ class ResponseCache {
           // If the cache entry should be invalidated, then invalidate it.
           invalidate(req.uri.path);
         }
+
+        // Save the response.
+        _cache[req.uri.path] = new _CachedResponse(res.headers, res.buffer.toBytes(), now);
       }
+
+      return true;
     }
   }
 
@@ -89,5 +94,5 @@ class _CachedResponse {
   final List<int> body;
   final DateTime timestamp;
 
-  _CachedResponse({this.headers, this.body, this.timestamp});
+  _CachedResponse(this.headers, this.body, this.timestamp);
 }
