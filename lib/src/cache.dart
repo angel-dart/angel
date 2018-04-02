@@ -33,6 +33,8 @@ class ResponseCache {
   ///
   /// This prevents the server from even having to access the cache, and plays very well with static assets.
   Future<bool> ifModifiedSince(RequestContext req, ResponseContext res) async {
+    if (req.method != 'GET' && req.method != 'HEAD') return true;
+
     if (req.headers.value('if-modified-since') != null) {
       var modifiedSince = fmt
           .parse(req.headers.value('if-modified-since').replaceAll('GMT', ''));
@@ -58,6 +60,7 @@ class ResponseCache {
   /// Serves content from the cache, if applicable.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
     if (!await ifModifiedSince(req, res)) return false;
+    if (req.method != 'GET' && req.method != 'HEAD') return true;
 
     // Check if there is a cache entry.
     for (var pattern in patterns) {
@@ -89,6 +92,7 @@ class ResponseCache {
   Future<bool> responseFinalizer(
       RequestContext req, ResponseContext res) async {
     if (res.statusCode == 304) return true;
+    if (req.method != 'GET' && req.method != 'HEAD') return true;
 
     // Check if there is a cache entry.
     for (var pattern in patterns) {
