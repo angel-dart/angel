@@ -27,9 +27,7 @@ class ResponseCache {
             _cache.containsKey(req.uri.path)) {
           var response = _cache[req.uri.path];
 
-          // Only send a cached response if it is valid.
-          if (timeout == null ||
-              modifiedSince.difference(response.timestamp) >= timeout) {
+          if (response.timestamp.compareTo(modifiedSince) <= 0) {
             res.statusCode = 304;
             return false;
           }
