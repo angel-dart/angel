@@ -8,12 +8,28 @@ final DateFormat _fmt = new DateFormat('EEE, d MMM yyyy HH:mm:ss');
 /// Formats a date (converted to UTC), ex: `Sun, 03 May 2015 23:02:37 GMT`.
 String _formatDateForHttp(DateTime dt) => _fmt.format(dt.toUtc()) + ' GMT';
 
+/// A flexible response cache for Angel.
+///
+/// Use this to improve real and perceived response of Web applications,
+/// as well as to memoize expensive responses.
 class ResponseCache {
+  /// A set of [Patterns] for which responses will be cached.
+  ///
+  /// For example, you can pass a `Glob` matching `**/*.png` files to catch all PNG images.
   final List<Pattern> patterns = [];
+
+  /// An optional timeout, after which a given response will be removed from the cache, and the contents refreshed.
   final Duration timeout;
+
   final Map<String, _CachedResponse> _cache = {};
+  final Map<String, Pool> _writeLocks = {};
 
   ResponseCache({this.timeout});
+
+  /// Closes all internal write-locks, and closes the cache.
+  Future close() async {
+    _writeLocks.forEach((_, p) => p.close());
+  }
 
   /// Removes an entry from the response cache.
   void invalidate(String path) => _cache.remove(path);
