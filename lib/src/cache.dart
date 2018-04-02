@@ -143,7 +143,7 @@ class ResponseCache {
     var privacy = 'public';
 
     res.headers
-      ..['cache-control'] = '$privacy, max-age=${timeout?.inSeconds ?? Duration.secondsPerDay}'
+      ..['cache-control'] = '$privacy, max-age=${timeout?.inSeconds ?? 86400}'
       ..['last-modified'] = formatDateForHttp(modified);
 
     if (timeout != null) {
