@@ -43,6 +43,32 @@ class ResponseCache {
     return true;
   }
 
+  /// Serves content from the cache, if applicable.
+  Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
+    if (res.statusCode == 304) return true;
+
+    // Check if there is a cache entry.
+    for (var pattern in patterns) {
+      if (pattern.allMatches(req.uri.path).isNotEmpty) {
+        var now = new DateTime.now().toUtc();
+
+        if (_cache.containsKey(req.uri.path)) {
+          // If the cache timeout has been met, don't send the cached response.
+          var response = _cache[req.uri.path];
+          if (now.difference(response.timestamp) >= timeout) return true;
+          _setCachedHeaders(response.timestamp, req, res);
+          res
+            ..headers.addAll(response.headers)
+            ..buffer.add(response.body)
+            ..end();
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   /// A response finalizer that saves responses to the cache.
   Future<bool> responseFinalizer(
       RequestContext req, ResponseContext res) async {
@@ -67,15 +93,16 @@ class ResponseCache {
         }
 
         // Save the response.
-        _cache[req.uri.path] =
-            new _CachedResponse(res.headers, res.buffer.toBytes(), now);
+        _cache[req.uri.path] = new _CachedResponse(
+            new Map.from(res.headers), res.buffer.toBytes(), now);
+        _setCachedHeaders(now, req, res);
       }
     }
 
     return true;
   }
 
-  void setCachedHeaders(
+  void _setCachedHeaders(
       DateTime modified, RequestContext req, ResponseContext res) {
     var privacy = 'public';
 
