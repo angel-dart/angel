@@ -67,11 +67,12 @@ class ResponseCache {
         }
 
         // Save the response.
-        _cache[req.uri.path] = new _CachedResponse(res.headers, res.buffer.toBytes(), now);
+        _cache[req.uri.path] =
+            new _CachedResponse(res.headers, res.buffer.toBytes(), now);
       }
-
-      return true;
     }
+
+    return true;
   }
 
   void setCachedHeaders(
