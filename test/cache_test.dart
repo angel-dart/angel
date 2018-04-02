@@ -83,6 +83,7 @@ main() async {
     test('sends 304 on if-modified-since', () async {
       var response = await client.get('/date.txt',
           headers: {'if-modified-since': formatDateForHttp(lastModified)});
+      print('Response (${response.statusCode}): ${response.headers}');
       expect(response.statusCode, 304);
     });
 
