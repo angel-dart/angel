@@ -3,7 +3,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:glob/glob.dart';
 
 main() async {
-  var app = new Angel();
+  var app = new Angel()..lazyParseBodies = true;
 
   // Cache a glob
   var cache = new ResponseCache()

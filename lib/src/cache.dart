@@ -67,6 +67,7 @@ class ResponseCache {
   Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
     if (!await ifModifiedSince(req, res)) return false;
     if (req.method != 'GET' && req.method != 'HEAD') return true;
+    if (!res.isOpen) return true;
 
     // Check if there is a cache entry.
     //
@@ -130,7 +131,7 @@ class ResponseCache {
               new Map.from(res.headers), res.buffer.toBytes(), now);
         });
 
-        _setCachedHeaders(now, req, res);
+       // _setCachedHeaders(now, req, res);
       }
     }
 
