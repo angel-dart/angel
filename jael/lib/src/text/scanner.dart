@@ -1,10 +1,12 @@
+import 'dart:collection';
 import 'package:charcode/ascii.dart';
 import 'package:string_scanner/string_scanner.dart';
 import '../ast/ast.dart';
 
 final RegExp _whitespace = new RegExp(r'[ \n\r\t]+');
 
-final RegExp _id = new RegExp(r'(([A-Za-z][A-Za-z0-9_]*-)*([A-Za-z][A-Za-z0-9_]*))');
+final RegExp _id =
+    new RegExp(r'(([A-Za-z][A-Za-z0-9_]*-)*([A-Za-z][A-Za-z0-9_]*))');
 final RegExp _string1 = new RegExp(
     r"'((\\(['\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^'\\]))*'");
 final RegExp _string2 = new RegExp(
@@ -18,7 +20,8 @@ abstract class Scanner {
   List<Token> get tokens;
 }
 
-final Map<Pattern, TokenType> _htmlPatterns = {
+final Map<Pattern, TokenType> _expressionPatterns = {
+//final Map<Pattern, TokenType> _htmlPatterns = {
   '{{': TokenType.doubleCurlyL,
   '{{-': TokenType.doubleCurlyL,
 
@@ -34,9 +37,9 @@ final Map<Pattern, TokenType> _htmlPatterns = {
   _string1: TokenType.string,
   _string2: TokenType.string,
   _id: TokenType.id,
-};
+//};
 
-final Map<Pattern, TokenType> _expressionPatterns = {
+//final Map<Pattern, TokenType> _expressionPatterns = {
   '}}': TokenType.doubleCurlyR,
 
   // Keywords
@@ -78,6 +81,8 @@ final Map<Pattern, TokenType> _expressionPatterns = {
 class _Scanner implements Scanner {
   final List<JaelError> errors = [];
   final List<Token> tokens = [];
+  _ScannerState state = _ScannerState.html;
+  final Queue<String> openTags = new Queue();
 
   SpanScanner _scanner;
 
@@ -85,121 +90,153 @@ class _Scanner implements Scanner {
     _scanner = new SpanScanner(text, sourceUrl: sourceUrl);
   }
 
-  Token _scanFrom(Map<Pattern, TokenType> patterns,
-      [LineScannerState textStart]) {
-    var potential = <Token>[];
-
-    patterns.forEach((pattern, type) {
-      if (_scanner.matches(pattern))
-        potential.add(new Token(type, _scanner.lastSpan));
-    });
-
-    if (potential.isEmpty) return null;
-
-    if (textStart != null) {
-      var span = _scanner.spanFrom(textStart);
-      tokens.add(new Token(TokenType.text, span));
-    }
-
-    potential.sort((a, b) => b.span.length.compareTo(a.span.length));
-
-    var token = potential.first;
-    tokens.add(token);
-
-    _scanner.scan(token.span.text);
-
-    return token;
-  }
-
   void scan() {
-    while (!_scanner.isDone) scanHtmlTokens();
-  }
-
-  void scanHtmlTokens() {
-    LineScannerState textStart;
-
     while (!_scanner.isDone) {
-      var state = _scanner.state;
+      if (state == _ScannerState.html) {
+        scanHtml();
+      } else if (state == _ScannerState.freeText) {
+        // Just keep parsing until we hit "</"
+        var start = _scanner.state, end = start;
 
-      // Skip whitespace conditionally
-      if (textStart == null) {
-        _scanner.scan(_whitespace);
-      }
+        while (!_scanner.isDone) {
+          // Break on {{
+          if (_scanner.matches('{{')) {
+            state = _ScannerState.html;
+            //_scanner.position--;
+            break;
+          }
 
-      var lastToken = _scanFrom(_htmlPatterns, textStart);
+          var ch = _scanner.readChar();
 
-      if (lastToken?.type == TokenType.gt) {
-        if (!_scanner.isDone) {
-          var state = _scanner.state;
-          var ch = _scanner.peekChar();
+          if (ch == $lt && !_scanner.isDone) {
+            if (_scanner.matches('/')) {
+              // If we reached "</", backtrack and break into HTML
 
-          if (ch != $space && ch != $cr && ch != $lf && ch != $tab) {
-            while (!_scanner.isDone) {
-              var ch = _scanner.peekChar();
+              // Also break when we reach <foo.
+              //
+              // HOWEVER, that is also JavaScript. So we must
+              // only break in this case when the current tag is NOT "script".
+              var shouldBreak =
+                  (openTags.isEmpty || openTags.first != 'script');
 
-              if (ch == $lt || (ch == $open_brace && _scanner.peekChar() == $open_brace)) {
-                var span = _scanner.spanFrom(state);
-                tokens.add(new Token(TokenType.text, span));
+              if (!shouldBreak) {
+                // Try to see if we are closing a script tag
+                var replay = _scanner.state;
+                _scanner
+                  ..readChar()
+                  ..scan(_whitespace);
+                //print(_scanner.emptySpan.highlight());
+
+                if (_scanner.matches(_id)) {
+                  //print(_scanner.lastMatch[0]);
+                  shouldBreak = _scanner.lastMatch[0] == 'script';
+                  _scanner.position--;
+                }
+
+                if (!shouldBreak) {
+                  _scanner.state = replay;
+                }
+              }
+
+              if (shouldBreak) {
+                openTags.removeFirst();
+                _scanner.position--;
+                state = _ScannerState.html;
                 break;
-              } else
-                _scanner.readChar();
+              }
             }
           }
+
+          // Otherwise, just add to the "buffer"
+          end = _scanner.state;
         }
+
+        var span = _scanner.spanFrom(start, end);
+
+        if (span.text.isNotEmpty)
+          tokens.add(new Token(TokenType.text, span, null));
       }
-
-      else if (lastToken?.type == TokenType.equals ||
-          lastToken?.type == TokenType.nequ) {
-        textStart = null;
-        scanExpressionTokens();
-        return;
-      } else if (lastToken?.type == TokenType.doubleCurlyL) {
-        textStart = null;
-        scanExpressionTokens(true);
-        return;
-      } else if (lastToken?.type == TokenType.id &&
-          tokens.length >= 2 &&
-          tokens[tokens.length - 2].type == TokenType.gt) {
-        // Fold in the ID into a text node...
-        tokens.removeLast();
-        textStart = state;
-      } else if ((lastToken?.type == TokenType.id ||
-              lastToken?.type == TokenType.string) &&
-          tokens.length >= 2 &&
-          tokens[tokens.length - 2].type == TokenType.text) {
-        // Append the ID/string into the old text node
-        tokens.removeLast();
-        tokens.removeLast();
-
-        // Not sure how, but the following logic seems to occur
-        // automatically:
-        //
-        //var textToken = tokens.removeLast();
-        //var newSpan = textToken.span.expand(lastToken.span);
-        //tokens.add(new Token(TokenType.text, newSpan));
-      } else if (lastToken != null) {
-        textStart = null;
-      } else if (!_scanner.isDone ?? lastToken == null) {
-        textStart ??= state;
-        _scanner.readChar();
-      }
-    }
-
-    if (textStart != null) {
-      var span = _scanner.spanFrom(textStart);
-      tokens.add(new Token(TokenType.text, span));
     }
   }
 
-  void scanExpressionTokens([bool allowGt = false]) {
-    Token lastToken;
+  void scanHtml() {
+    var brackets = new Queue<Token>();
 
     do {
-      _scanner.scan(_whitespace);
-      lastToken = _scanFrom(_expressionPatterns);
-    } while (!_scanner.isDone &&
-        lastToken != null &&
-        lastToken.type != TokenType.doubleCurlyR &&
-        (allowGt || lastToken.type != TokenType.gt));
+      // Only continue if we find a left bracket
+      if (true) {// || _scanner.matches('<') || _scanner.matches('{{')) {
+        var potential = <Token>[];
+
+        while (true) {
+          // Scan whitespace
+          _scanner.scan(_whitespace);
+
+          _expressionPatterns.forEach((pattern, type) {
+            if (_scanner.matches(pattern))
+              potential
+                  .add(new Token(type, _scanner.lastSpan, _scanner.lastMatch));
+          });
+
+          potential.sort((a, b) => b.span.length.compareTo(a.span.length));
+
+          if (potential.isEmpty) break;
+
+          var token = potential.first;
+          tokens.add(token);
+
+          _scanner.scan(token.span.text);
+
+          if (token.type == TokenType.lt) {
+            brackets.addFirst(token);
+
+            // Try to see if we are at a tag.
+            var replay = _scanner.state;
+            _scanner.scan(_whitespace);
+
+            if (_scanner.matches(_id)) {
+              openTags.addFirst(_scanner.lastMatch[0]);
+            } else {
+              _scanner.state = replay;
+            }
+          } else if (token.type == TokenType.slash) {
+            // Only push if we're at </foo
+            if (brackets.isNotEmpty && brackets.first.type == TokenType.lt) {
+              brackets
+                ..removeFirst()
+                ..addFirst(token);
+            }
+          } else if (token.type == TokenType.gt) {
+            // Only pop the bracket if we're at foo>, </foo> or foo/>
+
+            if (brackets.isNotEmpty && brackets.first.type == TokenType.slash)
+              brackets.removeFirst();
+            //else if (_scanner.matches('>')) brackets.removeFirst();
+            else if (brackets.isNotEmpty &&
+                brackets.first.type == TokenType.lt) {
+              // We're at foo>, try to parse text?
+              brackets.removeFirst();
+
+              var replay = _scanner.state;
+              _scanner.scan(_whitespace);
+
+              if (!_scanner.matches('<')) {
+                _scanner.state = replay;
+                state = _ScannerState.freeText;
+                break;
+              }
+            }
+          } else if (token.type == TokenType.doubleCurlyR) {
+            state = _ScannerState.freeText;
+            break;
+          }
+
+          potential.clear();
+        }
+      }
+    } while (brackets.isNotEmpty && !_scanner.isDone);
+
+    state = _ScannerState.freeText;
   }
 }
+
+enum _ScannerState { html, freeText }

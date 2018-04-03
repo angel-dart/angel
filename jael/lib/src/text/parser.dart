@@ -260,7 +260,7 @@ class Parser {
     if (tagName2.name != tagName.name) {
       errors.add(new JaelError(
           JaelErrorSeverity.error,
-          'Mismatched closing tags. Expected "${tagName.span}"; got "${tagName2.name}" instead.',
+          'Mismatched closing tags. Expected "${tagName.span.text}"; got "${tagName2.name}" instead.',
           lt2.span));
       return null;
     }

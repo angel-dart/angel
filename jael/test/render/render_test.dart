@@ -27,7 +27,7 @@ main() {
           'avatar': 'thosakwe.png',
         }
       });
-    } on jael.JaelError catch(e) {
+    } on jael.JaelError catch (e) {
       print(e);
       print(e.stackTrace);
     }
@@ -75,7 +75,7 @@ main() {
     print(buf);
 
     expect(
-        buf.toString(),
+        buf.toString().replaceAll('\n', '').replaceAll(' ', '').trim(),
         '''
 <!doctype HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -84,10 +84,12 @@ main() {
       Pokémon
     </h1>
     Darkrai - Dark
-    <img/>
+    <img>
   </body>
 </html>
     '''
+            .replaceAll('\n', '')
+            .replaceAll(' ', '')
             .trim());
   });
 

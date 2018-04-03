@@ -10,6 +10,8 @@ Document parseDocument(String text,
     {sourceUrl, void onError(JaelError error)}) {
   var scanner = scan(text, sourceUrl: sourceUrl);
 
+  //scanner.tokens.forEach(print);
+
   if (scanner.errors.isNotEmpty && onError != null)
     scanner.errors.forEach(onError);
   else if (scanner.errors.isNotEmpty) throw scanner.errors.first;

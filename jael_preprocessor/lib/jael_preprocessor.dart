@@ -4,7 +4,8 @@ import 'package:file/file.dart';
 import 'package:jael/jael.dart';
 
 /// Modifies a Jael document.
-typedef FutureOr<Document> Patcher(Document document, Directory currentDirectory, void onError(JaelError));
+typedef FutureOr<Document> Patcher(Document document,
+    Directory currentDirectory, void onError(JaelError error));
 
 /// Expands all `block[name]` tags within the template, replacing them with the correct content.
 ///
@@ -17,7 +18,8 @@ Future<Document> resolve(Document document, Directory currentDirectory,
   // Resolve all includes...
   var includesResolved =
       await resolveIncludes(document, currentDirectory, onError);
-  var patched = await applyInheritance(includesResolved, currentDirectory, onError);
+  var patched =
+      await applyInheritance(includesResolved, currentDirectory, onError);
 
   if (patch?.isNotEmpty != true) return patched;
 
@@ -34,8 +36,8 @@ Future<Document> applyInheritance(Document document, Directory currentDirectory,
   if (document.root.tagName.name != 'extend') return document;
 
   var element = document.root;
-  var attr = element.attributes
-      .firstWhere((a) => a.name == 'src', orElse: () => null);
+  var attr =
+      element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
   if (attr == null) {
     onError(new JaelError(JaelErrorSeverity.warning,
         'Missing "src" attribute in "extend" tag.', element.tagName.span));
@@ -114,8 +116,8 @@ String getParent(Document document, void onError(JaelError error)) {
   var element = document.root;
   if (element.tagName.name != 'extend') return null;
 
-  var attr = element.attributes
-      .firstWhere((a) => a.name == 'src', orElse: () => null);
+  var attr =
+      element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
   if (attr == null) {
     onError(new JaelError(JaelErrorSeverity.warning,
         'Missing "src" attribute in "extend" tag.', element.tagName.span));
@@ -242,8 +244,8 @@ Future<Element> _expandIncludes(Element element, Directory currentDirectory,
     }
   }
 
-  var attr = element.attributes
-      .firstWhere((a) => a.name == 'src', orElse: () => null);
+  var attr =
+      element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
   if (attr == null) {
     onError(new JaelError(JaelErrorSeverity.warning,
         'Missing "src" attribute in "include" tag.', element.tagName.span));
