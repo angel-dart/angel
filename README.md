@@ -27,5 +27,6 @@ Within this repository are three packages:
 
 * `package:jael` - Contains the Jael parser, AST, and HTML renderer.
 * `package:jael_preprocessor` - Handles template inheritance, and facilitates the use of "compile-time" constructs.
+* `package:build_jael` - Uses `package:build` to compile Jael templates, therefore allowing speedy incremental builds to HTML files.
 * `package:angel_jael` - [Angel](https://angel-dart.github.io) support for Jael. Angel contains other
 facilities to speed up application development, so something like Jael is right at home.
