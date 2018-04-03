@@ -40,5 +40,10 @@ targets:
 Pass `minify: true` in the build configuration to produce "minified" HTML,
 without newlines or whitespace (other than where it is required).
 
+## Strict Variable Resolution
+By default, identifiers pointing to non-existent symbols return `null`.
+To disable this and throw an error when an undefined symbol is referenced,
+set `strict: true` in `build.yaml`.
+
 To apply additional transforms to parsed documents, provide a
 set of `patch` functions, like in `package:jael_preprocessor`.
