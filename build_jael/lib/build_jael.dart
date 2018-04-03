@@ -49,11 +49,24 @@ class JaelBuilder implements Builder {
 
     if (errors.isNotEmpty) {
       jael.Renderer.errorDocument(errors, buf);
-      return;
-    }
+    } else {
+      var scope = new SymbolTable(values: new Map.from(options.config));
 
-    var scope = new SymbolTable(values: new Map.from(options.config));
-    const jael.Renderer().render(doc, buf, scope);
+      try {
+        const jael.Renderer().render(
+          doc,
+          buf,
+          scope,
+          strictResolution: options.config['strict'] == true,
+        );
+      } on jael.JaelError catch (e) {
+        errors.add(e);
+      }
+
+      if (errors.isNotEmpty) {
+        jael.Renderer.errorDocument(errors, buf);
+      }
+    }
 
     buildStep.writeAsString(
       buildStep.inputId.changeExtension('.html'),
