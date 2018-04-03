@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:code_buffer/code_buffer.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:symbol_table/symbol_table.dart';
 import 'ast/ast.dart';
 import 'text/parser.dart';
@@ -29,12 +29,58 @@ Document parseDocument(String text,
 class Renderer {
   const Renderer();
 
+  /// Render an error page.
+  static void errorDocument(Iterable<JaelError> errors, CodeBuffer buf) {
+    buf
+      ..writeln('<!DOCTYPE html>')
+      ..writeln('<html lang="en">')
+      ..indent()
+      ..writeln('<head>')
+      ..indent()
+      ..writeln(
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+      )
+      ..writeln('<title>${errors.length} Error(s)</title>')
+      ..outdent()
+      ..writeln('</head>')
+      ..writeln('<body>')
+      ..writeln('<h1>${errors.length} Error(s)</h1>')
+      ..writeln('<ul>')
+      ..indent();
+
+    for (var error in errors) {
+      var type =
+      error.severity == JaelErrorSeverity.warning ? 'warning' : 'error';
+      buf
+        ..writeln('<li>')
+        ..indent()
+        ..writeln(
+            '<b>$type:</b> ${error.span.start.toolString}: ${error.message}')
+        ..writeln('<br>')
+        ..writeln(
+          '<span style="color: red;">' +
+              htmlEscape
+                  .convert(error.span.highlight(color: false))
+                  .replaceAll('\n', '<br>') +
+              '</span>',
+        )
+        ..outdent()
+        ..writeln('</li>');
+    }
+
+    buf
+      ..outdent()
+      ..writeln('</ul>')
+      ..writeln('</body>')
+      ..writeln('</html>');
+  }
+
   /// Renders a [document] into the [buffer] as HTML.
   ///
   /// If [strictResolution] is `false` (default: `true`), then undefined identifiers will return `null`
   /// instead of throwing.
   void render(Document document, CodeBuffer buffer, SymbolTable scope, {bool strictResolution: true}) {
-    scope.add('!strict!', value: strictResolution != false);
+    scope.create('!strict!', value: strictResolution != false);
 
     if (document.doctype != null) buffer.writeln(document.doctype.span.text);
     renderElement(
@@ -87,7 +133,7 @@ class Renderer {
         msg = value.toString();
       }
 
-      buffer.write(attribute.isRaw ? msg : HTML_ESCAPE.convert(msg));
+      buffer.write(attribute.isRaw ? msg : htmlEscape.convert(msg));
       buffer.write('"');
     }
 
@@ -175,7 +221,7 @@ class Renderer {
   void renderDeclare(
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     for (var attribute in element.attributes) {
-      scope.add(attribute.name,
+      scope.create(attribute.name,
           value: attribute.value?.compute(scope), constant: true);
     }
 
@@ -239,7 +285,7 @@ class Renderer {
         if (child.isRaw)
           buffer.write(value);
         else
-          buffer.write(HTML_ESCAPE.convert(value.toString()));
+          buffer.write(htmlEscape.convert(value.toString()));
       }
     } else if (child is Element) {
       if (buffer?.lastLine?.text?.isNotEmpty == true) buffer.writeln();
