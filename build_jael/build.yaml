@@ -1,0 +1,23 @@
+builders:
+  jael:
+    target: "build_jael"
+    import: "package:build_jael/build_jael.dart"
+    builder_factories:
+      - jaelBuilder
+    auto_apply: root_package
+    build_extensions:
+      .jl:
+        - ".html"
+    required_inputs:
+      - .jl
+    defaults:
+      generate_for:
+        - "**/*.html"
+        - "*.html"
+        - "**.html"
+targets:
+  $default:
+    sources:
+      - "**/*.html"
+      - "*.html"
+      - "**.html"
