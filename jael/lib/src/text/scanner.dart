@@ -20,13 +20,15 @@ abstract class Scanner {
   List<Token> get tokens;
 }
 
+final RegExp _htmlComment = new RegExp(r'<!--[^$]*-->');
+
 final Map<Pattern, TokenType> _expressionPatterns = {
 //final Map<Pattern, TokenType> _htmlPatterns = {
   '{{': TokenType.doubleCurlyL,
   '{{-': TokenType.doubleCurlyL,
 
   //
-  new RegExp(r'<!--[^$]*-->'): TokenType.htmlComment,
+  _htmlComment: TokenType.htmlComment,
   '!DOCTYPE': TokenType.doctype,
   '!doctype': TokenType.doctype,
   '<': TokenType.lt,
@@ -99,6 +101,9 @@ class _Scanner implements Scanner {
         var start = _scanner.state, end = start;
 
         while (!_scanner.isDone) {
+          // Skip through comments
+          if (_scanner.scan(_htmlComment)) continue;
+
           // Break on {{
           if (_scanner.matches('{{')) {
             state = _ScannerState.html;

@@ -1,3 +1,6 @@
+# 1.0.4
+* Skip HTML comments in free text.
+
 # 1.0.3
 * Fix a scanner bug that prevented proper parsing of HTML nodes
 followed by free text.
