@@ -23,7 +23,8 @@ class Call extends Expression {
         .expand(rParen.span);
   }
 
-  List computePositional(SymbolTable scope) => arguments.map((e) => e.compute(scope)).toList();
+  List computePositional(SymbolTable scope) =>
+      arguments.map((e) => e.compute(scope)).toList();
 
   Map<Symbol, dynamic> computeNamed(SymbolTable scope) {
     return namedArguments.fold<Map<Symbol, dynamic>>({}, (out, a) {

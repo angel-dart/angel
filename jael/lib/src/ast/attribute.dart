@@ -22,8 +22,6 @@ class Attribute extends AstNode {
   @override
   FileSpan get span {
     if (equals == null) return nameNode.span;
-    return nameNode.span
-        .expand(equals?.span ?? nequ.span)
-        .expand(value.span);
+    return nameNode.span.expand(equals?.span ?? nequ.span).expand(value.span);
   }
 }

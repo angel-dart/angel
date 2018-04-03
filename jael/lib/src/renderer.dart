@@ -50,12 +50,12 @@ class Renderer {
 
     for (var error in errors) {
       var type =
-      error.severity == JaelErrorSeverity.warning ? 'warning' : 'error';
+          error.severity == JaelErrorSeverity.warning ? 'warning' : 'error';
       buf
         ..writeln('<li>')
         ..indent()
-        ..writeln(
-            '<b>$type:</b> ${error.span.start.toolString}: ${error.message}')
+        ..writeln('<b>$type:</b> ${error.span.start.toolString}: ${error
+            .message}')
         ..writeln('<br>')
         ..writeln(
           '<span style="color: red;">' +
@@ -79,7 +79,8 @@ class Renderer {
   ///
   /// If [strictResolution] is `false` (default: `true`), then undefined identifiers will return `null`
   /// instead of throwing.
-  void render(Document document, CodeBuffer buffer, SymbolTable scope, {bool strictResolution: true}) {
+  void render(Document document, CodeBuffer buffer, SymbolTable scope,
+      {bool strictResolution: true}) {
     scope.create('!strict!', value: strictResolution != false);
 
     if (document.doctype != null) buffer.writeln(document.doctype.span.text);
@@ -148,8 +149,8 @@ class Renderer {
 
       for (int i = 0; i < element.children.length; i++) {
         var child = element.children.elementAt(i);
-        renderElementChild(
-            child, buffer, childScope, html5, i, element.children.length);
+        renderElementChild(element, child, buffer, childScope, html5, i,
+            element.children.length);
       }
 
       buffer.writeln();
@@ -228,7 +229,7 @@ class Renderer {
     for (int i = 0; i < element.children.length; i++) {
       var child = element.children.elementAt(i);
       renderElementChild(
-          child, buffer, scope, html5, i, element.children.length);
+          element, child, buffer, scope, html5, i, element.children.length);
     }
   }
 
@@ -250,7 +251,8 @@ class Renderer {
       if (comparison == value) {
         for (int i = 0; i < child.children.length; i++) {
           var c = child.children.elementAt(i);
-          renderElementChild(c, buffer, scope, html5, i, child.children.length);
+          renderElementChild(
+              element, c, buffer, scope, html5, i, child.children.length);
         }
 
         return;
@@ -263,15 +265,15 @@ class Renderer {
     if (defaultCase != null) {
       for (int i = 0; i < defaultCase.children.length; i++) {
         var child = defaultCase.children.elementAt(i);
-        renderElementChild(
-            child, buffer, scope, html5, i, defaultCase.children.length);
+        renderElementChild(element, child, buffer, scope, html5, i,
+            defaultCase.children.length);
       }
     }
   }
 
-  void renderElementChild(ElementChild child, CodeBuffer buffer,
+  void renderElementChild(Element parent, ElementChild child, CodeBuffer buffer,
       SymbolTable scope, bool html5, int index, int total) {
-    if (child is Text) {
+    if (child is Text && parent?.tagName != 'textarea') {
       if (index == 0)
         buffer.write(child.span.text.trimLeft());
       else if (index == total - 1)

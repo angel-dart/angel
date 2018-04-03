@@ -84,7 +84,7 @@ main() {
       Pokémon
     </h1>
     Darkrai - Dark
-    <img>
+    <img/>
   </body>
 </html>
     '''
@@ -250,13 +250,15 @@ main() {
     print(buf);
 
     expect(
-        buf.toString(),
+        buf.toString().replaceAll('\n', '').replaceAll(' ', '').trim(),
         '''
 <div>
   <img src="<SCARY XSS>">
   <MORE SCARY XSS>
 </div>
 '''
+            .replaceAll('\n', '')
+            .replaceAll(' ', '')
             .trim());
   });
 

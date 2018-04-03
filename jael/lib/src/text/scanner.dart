@@ -108,10 +108,15 @@ class _Scanner implements Scanner {
 
           var ch = _scanner.readChar();
 
-          if (ch == $lt && !_scanner.isDone) {
+          if (ch == $lt) {
+            // && !_scanner.isDone) {
             if (_scanner.matches('/')) {
               // If we reached "</", backtrack and break into HTML
-
+              openTags.removeFirst();
+              _scanner.position--;
+              state = _ScannerState.html;
+              break;
+            } else if (_scanner.matches(_id)) {
               // Also break when we reach <foo.
               //
               // HOWEVER, that is also JavaScript. So we must
@@ -164,7 +169,8 @@ class _Scanner implements Scanner {
 
     do {
       // Only continue if we find a left bracket
-      if (true) {// || _scanner.matches('<') || _scanner.matches('{{')) {
+      if (true) {
+        // || _scanner.matches('<') || _scanner.matches('{{')) {
         var potential = <Token>[];
 
         while (true) {
@@ -207,9 +213,20 @@ class _Scanner implements Scanner {
             }
           } else if (token.type == TokenType.gt) {
             // Only pop the bracket if we're at foo>, </foo> or foo/>
-
-            if (brackets.isNotEmpty && brackets.first.type == TokenType.slash)
+            if (brackets.isNotEmpty && brackets.first.type == TokenType.slash) {
+              // </foo>
               brackets.removeFirst();
+
+              // Now, ONLY continue parsing HTML if the next character is '<'.
+              var replay = _scanner.state;
+              _scanner.scan(_whitespace);
+
+              if (!_scanner.matches('<')) {
+                _scanner.state = replay;
+                state = _ScannerState.freeText;
+                break;
+              }
+            }
             //else if (_scanner.matches('>')) brackets.removeFirst();
             else if (brackets.isNotEmpty &&
                 brackets.first.type == TokenType.lt) {
