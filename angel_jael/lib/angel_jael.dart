@@ -61,49 +61,7 @@ AngelConfigurer jael(Directory viewsDirectory,
         }
       }
 
-      buf
-        ..writeln('<!DOCTYPE html>')
-        ..writeln('<html lang="en">')
-        ..indent()
-        ..writeln('<head>')
-        ..indent()
-        ..writeln(
-          '<meta name="viewport" content="width=device-width, initial-scale=1">',
-        )
-        ..writeln('<title>${errors.length} Error(s)</title>')
-        ..outdent()
-        ..writeln('</head>')
-        ..writeln('<body>')
-        ..writeln('<h1>${errors.length} Error(s)</h1>')
-        ..writeln('<ul>')
-        ..indent();
-
-      for (var error in errors) {
-        var type =
-            error.severity == JaelErrorSeverity.warning ? 'warning' : 'error';
-        buf
-          ..writeln('<li>')
-          ..indent()
-          ..writeln(
-              '<b>$type:</b> ${error.span.start.toolString}: ${error.message}')
-          ..writeln('<br>')
-          ..writeln(
-            '<span style="color: red;">' +
-                HTML_ESCAPE
-                    .convert(error.span.highlight(color: false))
-                    .replaceAll('\n', '<br>') +
-                '</span>',
-          )
-          ..outdent()
-          ..writeln('</li>');
-      }
-
-      buf
-        ..outdent()
-        ..writeln('</ul>')
-        ..writeln('</body>')
-        ..writeln('</html>');
-
+      Renderer.errorDocument(errors, buf);
       return buf.toString();
     };
   };
