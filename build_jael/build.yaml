@@ -9,15 +9,10 @@ builders:
       .jl:
         - ".html"
     required_inputs:
-      - .jl
-    defaults:
-      generate_for:
-        - "**/*.html"
-        - "*.html"
-        - "**.html"
+      - ".jl"
 targets:
   $default:
     sources:
-      - "**/*.html"
-      - "*.html"
-      - "**.html"
+      - "**.jl"
+      - "*.jl"
+      - "**/*.jl"

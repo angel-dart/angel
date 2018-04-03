@@ -13,3 +13,5 @@ dependencies:
   jael: ^1.0.0-alpha
   jael_preprocessor: ^1.0.0-alpha
   symbol_table: ^1.0.0
+dev_dependencies:
+  build_runner: ^0.7.0
