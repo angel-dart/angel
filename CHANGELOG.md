@@ -1,3 +1,6 @@
+# 1.1.3
+* `AngelHttp` now handles requests in a `Zone`.
+
 # 1.1.2
 * `MapService` will store `created_at` and `updated_at` as `String`.
 
