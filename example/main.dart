@@ -7,6 +7,8 @@ main() async {
 
   app.get('/greet/:name', (String name) => 'Hello, $name!');
 
+  app.get('/greet', (@Session('name') String name) => 'Hello, $name!');
+
   app.use((RequestContext req) async {
     throw new AngelHttpException.notFound(
       message: 'Unknown path: "${req.uri.path}"',

@@ -188,7 +188,6 @@ class AngelHttp {
       await sendResponse(request, req, res);
     }).whenComplete(() {
       res.dispose();
-      print('hey');
     });
   }
 

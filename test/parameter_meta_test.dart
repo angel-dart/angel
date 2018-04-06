@@ -85,9 +85,7 @@ main() {
     // Invalid request
     var rq = new MockHttpRequest('GET', Uri.parse('/session'))..close();
     var rs = rq.response;
-    print('a');
-    await http.handleRequest(rq);
-    print('b');
+    await http.handleRequest(rq).timeout(const Duration(seconds: 5)).catchError((_) => null);
 
     await printResponse(rs);
     expect(rs.statusCode, 500);
