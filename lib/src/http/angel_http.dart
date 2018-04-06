@@ -6,6 +6,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:pool/pool.dart';
+import 'package:stack_trace/stack_trace.dart';
 import 'package:tuple/tuple.dart';
 import 'http_request_context.dart';
 import 'http_response_context.dart';
@@ -26,7 +27,8 @@ class AngelHttp {
   AngelHttp(this.app);
 
   /// The function used to bind this instance to an HTTP server.
-  Future<HttpServer> Function(dynamic, int) get serverGenerator => _serverGenerator;
+  Future<HttpServer> Function(dynamic, int) get serverGenerator =>
+      _serverGenerator;
 
   /// An instance mounted on a server started by the [serverGenerator].
   factory AngelHttp.custom(
@@ -90,9 +92,7 @@ class AngelHttp {
     // TODO: Remove this try/catch in 1.2.0
     try {
       await app.close();
-    } catch(_) {
-
-    }
+    } catch (_) {}
 
     for (var configurer in app.shutdownHooks) await app.configure(configurer);
     return _server;
@@ -103,7 +103,54 @@ class AngelHttp {
     var req = await createRequestContext(request);
     var res = await createResponseContext(request.response, req);
 
-    try {
+    var zoneSpec = new ZoneSpecification(
+      print: (self, parent, zone, line) {
+        if (app.logger != null)
+          app.logger.info(line);
+        else
+          parent.print(zone, line);
+      },
+      handleUncaughtError: (self, parent, zone, error, stackTrace) async {
+        var trace = new Trace.from(stackTrace).terse;
+
+        try {
+          AngelHttpException e;
+
+          if (error is FormatException) {
+            e = new AngelHttpException.badRequest(message: error.message);
+          } else {
+            e = new AngelHttpException(error,
+                stackTrace: stackTrace, message: error?.toString());
+          }
+
+          if (app.logger != null) {
+            app.logger.severe(e.message ?? e.toString(), error, trace);
+          }
+
+          await handleAngelHttpException(e, trace, req, res, request);
+        } catch (e, st) {
+          var trace = new Trace.from(st).terse;
+          request.response.close();
+          // Ideally, we won't be in a position where an absolutely fatal error occurs,
+          // but if so, we'll need to log it.
+          if (app.logger != null) {
+            app.logger.severe(
+                'Fatal error occurred when processing ${request.uri}.',
+                e,
+                trace);
+          } else {
+            stderr
+              ..writeln('Fatal error occurred when processing '
+                  '${request.uri}:')
+              ..writeln(e)
+              ..writeln(trace);
+          }
+        }
+      },
+    );
+
+    var zone = Zone.current.fork(specification: zoneSpec);
+    return await zone.runGuarded(() async {
       var path = req.path;
       if (path == '/') path = '';
 
@@ -124,8 +171,8 @@ class AngelHttp {
           ? app.handlerCache.putIfAbsent(cacheKey, resolveTuple)
           : resolveTuple();
 
-      //req.inject(Zone, zone);
-      //req.inject(ZoneSpecification, zoneSpec);
+      req.inject(Zone, zone);
+      req.inject(ZoneSpecification, zoneSpec);
       req.params.addAll(tuple.item2);
       req.inject(ParseResult, tuple.item3);
 
@@ -134,48 +181,15 @@ class AngelHttp {
       var pipeline = tuple.item1;
 
       for (var handler in pipeline) {
-        try {
-          if (handler == null || !await app.executeHandler(handler, req, res))
-            break;
-        } on AngelHttpException catch (e, st) {
-          e.stackTrace ??= st;
-          return await handleAngelHttpException(e, st, req, res, request);
-        }
+        if (handler == null || !await app.executeHandler(handler, req, res))
+          break;
       }
 
-      try {
-        await sendResponse(request, req, res);
-      } on AngelHttpException catch (e, st) {
-        e.stackTrace ??= st;
-        return await handleAngelHttpException(
-          e,
-          st,
-          req,
-          res,
-          request,
-          ignoreFinalizers: true,
-        );
-      }
-    } on FormatException catch (error, stackTrace) {
-      var e = new AngelHttpException.badRequest(message: error.message);
-
-      if (app.logger != null) {
-        app.logger.severe(e.message ?? e.toString(), error, stackTrace);
-      }
-
-      return await handleAngelHttpException(e, stackTrace, req, res, request);
-    } catch (error, stackTrace) {
-      var e = new AngelHttpException(error,
-          stackTrace: stackTrace, message: error?.toString());
-
-      if (app.logger != null) {
-        app.logger.severe(e.message ?? e.toString(), error, stackTrace);
-      }
-
-      return await handleAngelHttpException(e, stackTrace, req, res, request);
-    } finally {
+      await sendResponse(request, req, res);
+    }).whenComplete(() {
       res.dispose();
-    }
+      print('hey');
+    });
   }
 
   /// Handles an [AngelHttpException].
