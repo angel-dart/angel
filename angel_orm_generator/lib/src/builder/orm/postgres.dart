@@ -46,7 +46,7 @@ class PostgresOrmGenerator extends GeneratorForAnnotation<ORM> {
     return prettyToSource(lib);
   }
 
-  Future<LibraryBuilder> generateOrmLibrary(LibraryElement libraryElement,
+  Future<Library> generateOrmLibrary(LibraryElement libraryElement,
       Resolver resolver, BuildStep buildStep) async {
     var lib = new LibraryBuilder();
     lib.addDirective(new ImportBuilder('dart:async'));
