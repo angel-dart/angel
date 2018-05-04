@@ -1,3 +1,9 @@
+# 1.0.0-alpha+11
+* Removed PostgreSQL-specific functionality, so that the ORM can ultimately
+target all services.
+* Created a better `Join` model.
+* Created a far better `Query` model.
+
 # 1.0.0-alpha+10
 * Split into `angel_orm.dart` and `server.dart`. Prevents DDC failures.
 
