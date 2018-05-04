@@ -3,6 +3,7 @@
 target all services.
 * Created a better `Join` model.
 * Created a far better `Query` model.
+* Removed `lib/server.dart`
 
 # 1.0.0-alpha+10
 * Split into `angel_orm.dart` and `server.dart`. Prevents DDC failures.
