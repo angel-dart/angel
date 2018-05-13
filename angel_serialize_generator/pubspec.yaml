@@ -1,5 +1,5 @@
 name: angel_serialize_generator
-version: 2.0.5
+version: 2.0.6
 description: Model serialization generators, designed for use with Angel. Combine with angel_serialize for flexible modeling.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/serialize
