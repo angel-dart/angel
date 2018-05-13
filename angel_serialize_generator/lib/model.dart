@@ -61,6 +61,18 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   void generateConstructor(
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
     clazz.constructors.add(new Constructor((constructor) {
+      // Add all `super` params
+      if (ctx.constructorParameters.isNotEmpty) {
+        for (var param in ctx.constructorParameters) {
+          constructor.requiredParameters.add(new Parameter((b) => b
+            ..name = param.name
+            ..type = convertTypeReference(param.type)));
+        }
+
+        constructor.initializers.add(new Code(
+            'super(${ctx.constructorParameters.map((p) => p.name).join(',')})'));
+      }
+
       for (var field in ctx.fields) {
         constructor.optionalParameters.add(new Parameter((b) {
           b
@@ -79,9 +91,23 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       method
         ..name = 'copyWith'
         ..returns = ctx.modelClassType;
+        
+      // Add all `super` params
+      if (ctx.constructorParameters.isNotEmpty) {
+        for (var param in ctx.constructorParameters) {
+          method.requiredParameters.add(new Parameter((b) => b
+            ..name = param.name
+            ..type = convertTypeReference(param.type)));
+        }
+      }
 
       var buf = new StringBuffer('return new ${ctx.modelClassName}(');
       int i = 0;
+
+      for (var param in ctx.constructorParameters) {
+        if (i++ > 0) buf.write(', ');
+        buf.write(param.name);
+      }
 
       // Add named parameters
       for (var field in ctx.fields) {

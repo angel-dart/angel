@@ -107,3 +107,44 @@ abstract class LibraryFields {
 
   static const String updatedAt = 'updated_at';
 }
+
+abstract class BookmarkSerializer {
+  static Bookmark fromMap(Map map, Book book) {
+    return new Bookmark(book,
+        id: map['id'],
+        page: map['page'],
+        comment: map['comment'],
+        createdAt: map['created_at'] != null
+            ? (map['created_at'] is DateTime
+                ? map['created_at']
+                : DateTime.parse(map['created_at']))
+            : null,
+        updatedAt: map['updated_at'] != null
+            ? (map['updated_at'] is DateTime
+                ? map['updated_at']
+                : DateTime.parse(map['updated_at']))
+            : null);
+  }
+
+  static Map<String, dynamic> toMap(Bookmark model) {
+    return {
+      'id': model.id,
+      'page': model.page,
+      'comment': model.comment,
+      'created_at': model.createdAt?.toIso8601String(),
+      'updated_at': model.updatedAt?.toIso8601String()
+    };
+  }
+}
+
+abstract class BookmarkFields {
+  static const String id = 'id';
+
+  static const String page = 'page';
+
+  static const String comment = 'comment';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
+}

@@ -25,6 +25,8 @@ class BuildContext {
   /// The fields declared on the original class.
   final List<FieldElement> fields = [];
 
+  final List<ParameterElement> constructorParameters = [];
+
   final ConstantReader annotation;
 
   /// The name of the field that identifies data of this model type.

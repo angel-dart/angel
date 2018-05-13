@@ -103,3 +103,42 @@ class Library extends _Library {
     return LibrarySerializer.toMap(this);
   }
 }
+
+class Bookmark extends _Bookmark {
+  Bookmark(Book book,
+      {this.id, this.page, this.comment, this.createdAt, this.updatedAt})
+      : super(book);
+
+  @override
+  final String id;
+
+  @override
+  final int page;
+
+  @override
+  final String comment;
+
+  @override
+  final DateTime createdAt;
+
+  @override
+  final DateTime updatedAt;
+
+  Bookmark copyWith(Book book,
+      {String id,
+      int page,
+      String comment,
+      DateTime createdAt,
+      DateTime updatedAt}) {
+    return new Bookmark(book,
+        id: id ?? this.id,
+        page: page ?? this.page,
+        comment: comment ?? this.comment,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt);
+  }
+
+  Map<String, dynamic> toJson() {
+    return BookmarkSerializer.toMap(this);
+  }
+}

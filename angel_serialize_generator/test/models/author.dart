@@ -26,3 +26,14 @@ abstract class _Author extends Model {
 abstract class _Library extends Model {
   Map<String, Book> get collection;
 }
+
+@serializable
+abstract class _Bookmark extends Model {
+  @exclude
+  final Book book;
+
+  int get page;
+  String get comment;
+  
+  _Bookmark(this.book);
+}

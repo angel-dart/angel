@@ -125,8 +125,22 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             ..type = new Reference('Map')),
         );
 
+      // Add all `super` params
+      if (ctx.constructorParameters.isNotEmpty) {
+        for (var param in ctx.constructorParameters) {
+          method.requiredParameters.add(new Parameter((b) => b
+            ..name = param.name
+            ..type = convertTypeReference(param.type)));
+        }
+      }
+
       var buf = new StringBuffer('return new ${ctx.modelClassName}(');
       int i = 0;
+
+      for (var param in ctx.constructorParameters) {
+        if (i++ > 0) buf.write(', ');
+        buf.write(param.name);
+      }
 
       for (var field in ctx.fields) {
         if (ctx.excluded[field.name]?.canDeserialize == false) continue;

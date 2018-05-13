@@ -14,6 +14,7 @@ the time you spend writing boilerplate serialization code for your models.
   * [Nesting](#nesting)
   * [ID and Date Fields](#id-and-dates)
   * [TypeScript Definition Generator](#typescript-definitions)
+  * [Constructor Parameters](#constructor-parameters)
 
 # Usage
 In your `pubspec.yaml`, you need to install the following dependencies:
@@ -253,3 +254,41 @@ interface BookCollection {
 Fields with an `@Exclude()` that specifies `canSerialize: false` will not be present in the
 TypeScript definition. The rationale for this is that if a field (i.e. `password`) will
 never be sent to the client, the client shouldn't even know the field exists.
+
+# Constructor Parameters
+Sometimes, you may need to have custom constructor parameters, for example, when
+using depedency injection frameworks. For these cases, `angel_serialize` can forward
+custom constructor parameters.
+
+The following:
+```dart
+@serializable
+abstract class _Bookmark extends _BookmarkBase {
+  @exclude
+  final Book book;
+
+  int get page;
+  String get comment;
+
+  _Bookmark(this.book);
+}
+```
+
+Generates:
+
+```dart
+class Bookmark extends _Bookmark {
+  Bookmark(Book book,
+      {this.id,
+      this.page,
+      this.comment,
+      this.createdAt,
+      this.updatedAt})
+      : super(book);
+
+  @override
+  final String id;
+
+  // ...
+}
+```

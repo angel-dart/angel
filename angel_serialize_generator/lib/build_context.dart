@@ -102,6 +102,9 @@ Future<BuildContext> buildContext(
     }
   }
 
+  // Get constructor params, if any
+  ctx.constructorParameters.addAll(clazz.unnamedConstructor.parameters);
+
   return ctx;
 }
 
