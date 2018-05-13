@@ -67,6 +67,20 @@ class Author extends _Author {
         updatedAt: updatedAt ?? this.updatedAt);
   }
 
+  bool operator ==(other) {
+    return other is _Author &&
+        other.id == id &&
+        other.name == name &&
+        other.age == age &&
+        const ListEquality<Book>(const DefaultEquality<Book>())
+            .equals(other.books, books) &&
+        other.newestBook == newestBook &&
+        other.secret == secret &&
+        other.obscured == obscured &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt;
+  }
+
   Map<String, dynamic> toJson() {
     return AuthorSerializer.toMap(this);
   }
@@ -99,6 +113,17 @@ class Library extends _Library {
         updatedAt: updatedAt ?? this.updatedAt);
   }
 
+  bool operator ==(other) {
+    return other is _Library &&
+        other.id == id &&
+        const MapEquality<String, Book>(
+                keys: const DefaultEquality<String>(),
+                values: const DefaultEquality<Book>())
+            .equals(other.collection, collection) &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt;
+  }
+
   Map<String, dynamic> toJson() {
     return LibrarySerializer.toMap(this);
   }
@@ -106,11 +131,19 @@ class Library extends _Library {
 
 class Bookmark extends _Bookmark {
   Bookmark(Book book,
-      {this.id, this.page, this.comment, this.createdAt, this.updatedAt})
+      {this.id,
+      this.history,
+      this.page,
+      this.comment,
+      this.createdAt,
+      this.updatedAt})
       : super(book);
 
   @override
   final String id;
+
+  @override
+  final List<int> history;
 
   @override
   final int page;
@@ -126,16 +159,29 @@ class Bookmark extends _Bookmark {
 
   Bookmark copyWith(Book book,
       {String id,
+      List<int> history,
       int page,
       String comment,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Bookmark(book,
         id: id ?? this.id,
+        history: history ?? this.history,
         page: page ?? this.page,
         comment: comment ?? this.comment,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
+  }
+
+  bool operator ==(other) {
+    return other is _Bookmark &&
+        other.id == id &&
+        const ListEquality<int>(const DefaultEquality<int>())
+            .equals(other.history, history) &&
+        other.page == page &&
+        other.comment == comment &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt;
   }
 
   Map<String, dynamic> toJson() {

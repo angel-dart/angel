@@ -23,7 +23,7 @@ dependencies:
   angel_serialize: ^2.0.0
 dev_dependencies:
   angel_serialize_generator: ^2.0.0
-  build_runner: ^0.7.0
+  build_runner: ^0.8.0
 ```
 
 With the recent updates to `package:build_runner`, you can build models in
@@ -41,7 +41,7 @@ class to have it serialized, and a serializable model class's name should also s
 with a leading underscore.
 
 In addition, you may consider using an `abstract` class to ensure immutability
-of models.s
+of models.
 
 Rather you writing the public class, `angel_serialize` does it for you. This means that the main class can have
 its constructors automatically generated, in addition into serialization functions.
@@ -85,13 +85,15 @@ myFunction() {
   var map = BookSerializer.toMap(warAndPeace);
   
   // Also deserialize from Maps
-  var book = BookSerialize.fromMap(map);
+  var book = BookSerializer.fromMap(map);
   print(book.title); // 'War and Peace'
   
   // For compatibility with `JSON.encode`, a `toJson` method
   // is included that forwards to `BookSerializer.toMap`:
   expect(book.toJson(), map);
   
+  // Generated classes act as value types, and thus can be compared.
+  expect(BookSerializer.fromMap(map), equals(warAndPeace));
 }
 ```
 

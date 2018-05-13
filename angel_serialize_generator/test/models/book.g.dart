@@ -67,6 +67,20 @@ class Book extends _Book {
         updatedAt: updatedAt ?? this.updatedAt);
   }
 
+  bool operator ==(other) {
+    return other is _Book &&
+        other.id == id &&
+        other.author == author &&
+        other.title == title &&
+        other.description == description &&
+        other.pageCount == pageCount &&
+        const ListEquality<double>(const DefaultEquality<double>())
+            .equals(other.notModels, notModels) &&
+        other.camelCaseString == camelCaseString &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt;
+  }
+
   Map<String, dynamic> toJson() {
     return BookSerializer.toMap(this);
   }

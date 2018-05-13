@@ -1,6 +1,9 @@
 # 2.0.6
 * Support for using `abstract` to create immutable model classes.
 * Add support for custom constructor parameters.
+* Closed [#21](https://github.com/angel-dart/serialize/issues/21) - better naming
+of `Map` types.
+* Added overridden `==` operators.
 
 # 2.0.5
 * Deserialization now supports un-serialized `DateTime`.

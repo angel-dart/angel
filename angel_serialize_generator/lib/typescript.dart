@@ -12,8 +12,8 @@ class TypeScriptDefinitionBuilder implements Builder {
     };
   }
 
-  Future<String> compileToTypeScriptType(String fieldName, InterfaceType type,
-      List<CodeBuffer> ext, BuildStep buildStep) async {
+  Future<String> compileToTypeScriptType(BuildContext ctx, String fieldName,
+      InterfaceType type, List<CodeBuffer> ext, BuildStep buildStep) async {
     String typeScriptType = 'any';
 
     var types = const {
@@ -30,16 +30,16 @@ class TypeScriptDefinitionBuilder implements Builder {
 
     if (isListModelType(type)) {
       var arg = await compileToTypeScriptType(
-          fieldName, type.typeArguments[0], ext, buildStep);
+          ctx, fieldName, type.typeArguments[0], ext, buildStep);
       typeScriptType = '$arg[]';
-    } else if (const TypeChecker.fromRuntime(List).isAssignableFromType(type) &&
+    } else if (const TypeChecker.fromRuntime(Map).isAssignableFromType(type) &&
         type.typeArguments.length == 2) {
       var key = await compileToTypeScriptType(
-          fieldName, type.typeArguments[0], ext, buildStep);
+          ctx, fieldName, type.typeArguments[0], ext, buildStep);
       var value = await compileToTypeScriptType(
-          fieldName, type.typeArguments[1], ext, buildStep);
-      var modelType = type.typeArguments[1];
-      var ctx = await buildContext(
+          ctx, fieldName, type.typeArguments[1], ext, buildStep);
+      //var modelType = type.typeArguments[1];
+      /*var innerCtx = await buildContext(
         modelType.element,
         new ConstantReader(
             serializableTypeChecker.firstAnnotationOf(modelType.element)),
@@ -47,7 +47,7 @@ class TypeScriptDefinitionBuilder implements Builder {
         buildStep.resolver,
         autoSnakeCaseNames,
         true,
-      );
+      );*/
 
       typeScriptType = ctx.modelClassNameRecase.pascalCase +
           new ReCase(fieldName).pascalCase;
@@ -63,7 +63,7 @@ class TypeScriptDefinitionBuilder implements Builder {
         typeScriptType = 'any[]';
       else {
         var arg = await compileToTypeScriptType(
-            fieldName, type.typeArguments[0], ext, buildStep);
+            ctx, fieldName, type.typeArguments[0], ext, buildStep);
         typeScriptType = '$arg[]';
       }
     } else if (isModelClass(type)) {
@@ -148,7 +148,7 @@ class TypeScriptDefinitionBuilder implements Builder {
 
         var alias = ctx.resolveFieldName(field.name);
         var typeScriptType = await compileToTypeScriptType(
-            field.name, field.type, ext, buildStep);
+            ctx, field.name, field.type, ext, buildStep);
 
         // foo: string;
         buf.writeln('$alias?: $typeScriptType;');

@@ -85,6 +85,12 @@ main() {
     expect(BookFields.camelCaseString, 'camelCase');
   });
 
+  test('equals', () {
+    expect(jkRowling.copyWith(), jkRowling);
+    expect(deathlyHallows.copyWith(), deathlyHallows);
+    expect(library.copyWith(), library);
+  });
+
   group('deserialization', () {
     test('deserialization sets proper fields', () {
       var book = BookSerializer.fromMap(deathlyHallowsMap);

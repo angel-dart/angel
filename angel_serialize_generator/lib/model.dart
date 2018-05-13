@@ -42,6 +42,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
       generateConstructor(ctx, clazz, file);
       generateCopyWithMethod(ctx, clazz, file);
+      generateEqualsOperator(ctx, clazz, file);
 
       // Generate toJson() method if necessary
       var serializers = annotation.peek('serializers')?.listValue ?? [];
@@ -91,7 +92,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       method
         ..name = 'copyWith'
         ..returns = ctx.modelClassType;
-        
+
       // Add all `super` params
       if (ctx.constructorParameters.isNotEmpty) {
         for (var param in ctx.constructorParameters) {
@@ -124,6 +125,52 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
       buf.write(');');
       method.body = new Code(buf.toString());
+    }));
+  }
+
+  static String generateEquality(DartType type, [bool nullable = false]) {
+    //if (type is! InterfaceType) return 'const DefaultEquality()';
+    var it = type as InterfaceType;
+    if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
+      if (it.typeParameters.length == 1) {
+        var eq = generateEquality(it.typeArguments[0]);
+        return 'const ListEquality<${it.typeArguments[0].name}>($eq)';
+      } else
+        return 'const ListEquality<${it.typeArguments[0].name}>()';
+    } else if (const TypeChecker.fromRuntime(Map).isAssignableFromType(type)) {
+      if (it.typeParameters.length == 2) {
+        var keq = generateEquality(it.typeArguments[0]),
+            veq = generateEquality(it.typeArguments[1]);
+        return 'const MapEquality<${it.typeArguments[0].name}, ${it.typeArguments[1].name}>(keys: $keq, values: $veq)';
+      } else
+        return 'const MapEquality()<${it.typeArguments[0].name}, ${it.typeArguments[1].name}>';
+    }
+
+    return nullable ? null : 'const DefaultEquality<${type.name}>()';
+  }
+
+  static String Function(String, String) generateComparator(DartType type) {
+    if (type is! InterfaceType) return (a, b) => '$a == $b';
+    var eq = generateEquality(type, true);
+    if (eq == null) return (a, b) => '$a == $b';
+    return (a, b) => '$eq.equals($a, $b)';
+  }
+
+  void generateEqualsOperator(
+      BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
+    clazz.methods.add(new Method((method) {
+      method
+        ..name = 'operator =='
+        ..returns = new Reference('bool')
+        ..requiredParameters.add(new Parameter((b) => b.name = 'other'));
+
+      var buf = ['other is ${ctx.originalClassName}'];
+
+      buf.addAll(ctx.fields.map((f) {
+        return generateComparator(f.type)('other.${f.name}', f.name);
+      }));
+
+      method.body = new Code('return ${buf.join('&&')};');
     }));
   }
 }

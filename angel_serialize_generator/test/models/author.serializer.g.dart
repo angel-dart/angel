@@ -112,6 +112,7 @@ abstract class BookmarkSerializer {
   static Bookmark fromMap(Map map, Book book) {
     return new Bookmark(book,
         id: map['id'],
+        history: map['history'],
         page: map['page'],
         comment: map['comment'],
         createdAt: map['created_at'] != null
@@ -129,6 +130,7 @@ abstract class BookmarkSerializer {
   static Map<String, dynamic> toMap(Bookmark model) {
     return {
       'id': model.id,
+      'history': model.history,
       'page': model.page,
       'comment': model.comment,
       'created_at': model.createdAt?.toIso8601String(),
@@ -139,6 +141,8 @@ abstract class BookmarkSerializer {
 
 abstract class BookmarkFields {
   static const String id = 'id';
+
+  static const String history = 'history';
 
   static const String page = 'page';
 
