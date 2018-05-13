@@ -10,19 +10,19 @@ part 'author.serializer.g.dart';
 
 @serializable
 abstract class _Author extends Model {
-  String name;
-  int age;
-  List<Book> books;
-  Book newestBook;
+  String get name;
+  int get age;
+  List<Book> get books;
+  Book get newestBook;
 
   @exclude
-  String secret;
+  String get secret;
 
   @Exclude(canDeserialize: true)
-  String obscured;
+  String get obscured;
 }
 
 @Serializable(serializers: Serializers.all)
 abstract class _Library extends Model {
-  Map<String, Book> collection;
+  Map<String, Book> get collection;
 }

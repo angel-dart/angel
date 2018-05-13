@@ -1,3 +1,6 @@
+# 2.0.6
+* Support for using `abstract` to create immutable model classes.
+
 # 2.0.5
 * Deserialization now supports un-serialized `DateTime`.
 * Better support for regular typed Lists and Maps in TypeScript.

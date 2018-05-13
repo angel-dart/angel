@@ -42,10 +42,12 @@ Future<BuildContext> buildContext(
   List<String> fieldNames = [];
 
   for (var field in clazz.fields) {
-    if (field.getter != null && field.setter != null) {
+    if (field.getter != null &&
+        (field.setter != null || field.getter.isAbstract)) {
+      var el = field.setter == null ? field.getter : field;
       fieldNames.add(field.name);
       // Skip if annotated with @exclude
-      var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(field);
+      var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(el);
 
       if (excludeAnnotation != null) {
         var cr = new ConstantReader(excludeAnnotation);
@@ -58,7 +60,7 @@ Future<BuildContext> buildContext(
 
       // Check for alias
       Alias alias;
-      var aliasAnn = aliasTypeChecker.firstAnnotationOf(field);
+      var aliasAnn = aliasTypeChecker.firstAnnotationOf(el);
 
       if (aliasAnn != null) {
         alias = new Alias(aliasAnn.getField('name').toStringValue());
