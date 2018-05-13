@@ -37,7 +37,10 @@ with a call to `watch`. They take the same parameters.
 # Models
 There are a few changes opposed to normal Model classes. You need to add a `@serializable` annotation to your model
 class to have it serialized, and a serializable model class's name should also start
-with a leading underscore. In addition, you may consider using an `abstract` class.
+with a leading underscore.
+
+In addition, you may consider using an `abstract` class to ensure immutability
+of models.s
 
 Rather you writing the public class, `angel_serialize` does it for you. This means that the main class can have
 its constructors automatically generated, in addition into serialization functions.
@@ -53,8 +56,10 @@ part 'book.g.dart';
 
 @serializable
 abstract class _Book extends Model {
-  String author, title, description;
-  int pageCount;
+  String get author;
+  String get title;
+  String get description;
+  int get pageCount;
 }
 ```
 
