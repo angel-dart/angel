@@ -151,7 +151,9 @@ class TypeScriptDefinitionBuilder implements Builder {
             ctx, field.name, field.type, ext, buildStep);
 
         // foo: string;
-        buf.writeln('$alias?: $typeScriptType;');
+        if (!ctx.requiredFields.containsKey(field.name))
+          alias += '?';
+        buf.writeln('$alias: $typeScriptType;');
       }
 
       buf

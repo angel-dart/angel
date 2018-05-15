@@ -15,7 +15,7 @@ abstract class _Author extends Model {
   @required
   String get name;
 
-  @required
+  @Required('Custom message for missing `age`')
   int get age;
 
   List<Book> get books;
@@ -41,6 +41,7 @@ abstract class _Bookmark extends Model {
 
   List<int> get history;
 
+  @required
   int get page;
 
   String get comment;

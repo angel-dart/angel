@@ -8,6 +8,14 @@ part of angel_serialize.test.models.author;
 
 abstract class AuthorSerializer {
   static Author fromMap(Map map) {
+    if (map['name'] == null) {
+      throw new FormatException("Missing required field 'name' on Author.");
+    }
+
+    if (map['age'] == null) {
+      throw new FormatException("Custom message for missing `age`");
+    }
+
     return new Author(
         id: map['id'],
         name: map['name'],
@@ -32,6 +40,14 @@ abstract class AuthorSerializer {
   }
 
   static Map<String, dynamic> toMap(Author model) {
+    if (model.name == null) {
+      throw new FormatException("Missing required field 'name' on Author.");
+    }
+
+    if (model.age == null) {
+      throw new FormatException("Custom message for missing `age`");
+    }
+
     return {
       'id': model.id,
       'name': model.name,
@@ -110,6 +126,10 @@ abstract class LibraryFields {
 
 abstract class BookmarkSerializer {
   static Bookmark fromMap(Map map, Book book) {
+    if (map['page'] == null) {
+      throw new FormatException("Missing required field 'page' on Bookmark.");
+    }
+
     return new Bookmark(book,
         id: map['id'],
         history: map['history'],
@@ -128,6 +148,10 @@ abstract class BookmarkSerializer {
   }
 
   static Map<String, dynamic> toMap(Bookmark model) {
+    if (model.page == null) {
+      throw new FormatException("Missing required field 'page' on Bookmark.");
+    }
+
     return {
       'id': model.id,
       'history': model.history,

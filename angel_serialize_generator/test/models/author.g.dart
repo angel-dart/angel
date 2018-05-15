@@ -136,7 +136,7 @@ class Bookmark extends _Bookmark {
   Bookmark(Book book,
       {this.id,
       List<int> history,
-      this.page,
+      @required this.page,
       this.comment,
       this.createdAt,
       this.updatedAt})

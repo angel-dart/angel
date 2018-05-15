@@ -64,7 +64,18 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             ..type = ctx.modelClassType;
         }));
 
-      var buf = new StringBuffer('return {');
+      var buf = new StringBuffer();
+
+      ctx.requiredFields.forEach((key, msg) {
+        if (ctx.excluded[key]?.canSerialize == false) return;
+        buf.writeln('''
+        if (model.$key == null) {
+          throw new FormatException("$msg");
+        }
+        ''');
+      });
+
+      buf.writeln('return {');
       int i = 0;
 
       // Add named parameters
@@ -134,7 +145,19 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         }
       }
 
-      var buf = new StringBuffer('return new ${ctx.modelClassName}(');
+      var buf = new StringBuffer();
+
+      ctx.requiredFields.forEach((key, msg) {
+        if (ctx.excluded[key]?.canDeserialize == false) return;
+        var name = ctx.resolveFieldName(key);
+        buf.writeln('''
+        if (map['$name'] == null) {
+          throw new FormatException("$msg");
+        }
+        ''');
+      });
+
+      buf.writeln('return new ${ctx.modelClassName}(');
       int i = 0;
 
       for (var param in ctx.constructorParameters) {

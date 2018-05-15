@@ -11,7 +11,7 @@ interface LibraryCollection {
 interface Bookmark {
   id?: string;
   history?: number[];
-  page?: number;
+  page: number;
   comment?: string;
   created_at?: any;
   updated_at?: any;

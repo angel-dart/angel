@@ -80,7 +80,7 @@ Future<BuildContext> buildContext(
       if (required != null) {
         var cr = new ConstantReader(required);
         var reason = cr.peek('reason')?.stringValue ??
-            "Missing field '${ctx.resolveFieldName(field.name)}' on ${ctx
+            "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx
                 .modelClassName}.";
         ctx.requiredFields[field.name] = reason;
       }

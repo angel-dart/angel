@@ -30,6 +30,9 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         ..name = ctx.modelClassNameRecase.pascalCase
         ..extend = new Reference(ctx.originalClassName);
 
+      //if (ctx.importsPackageMeta)
+      //  clazz.annotations.add(new CodeExpression(new Code('immutable')));
+
       for (var field in ctx.fields) {
         clazz.fields.add(new Field((b) {
           b
