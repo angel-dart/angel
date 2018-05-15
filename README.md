@@ -10,6 +10,7 @@ the time you spend writing boilerplate serialization code for your models.
   * [Models](#models)
     * [Field Aliases](#aliases)
     * [Excluding Keys](#excluding-keys)
+    * [Required Fields](#required-fields)
   * [Serialization](#serializaition)
   * [Nesting](#nesting)
   * [ID and Date Fields](#id-and-dates)
@@ -183,6 +184,25 @@ abstract class _Whisper extends Model {
   String secret;
 }
 ```
+
+## Required Fields
+It is easy to mark a field as required; just use the
+`@required` annotation from `package:meta`:
+
+```dart
+@serializable
+abstract class _Foo extends Model {
+  @required
+  int myRequiredInt;
+  
+  @Required('Custom message')
+  int myOtherRequiredInt;
+}
+```
+
+The given field will be marked as `@required` in the
+generated constructor, and serializers will check for its
+presence, throwing a `FormatException` if it is missing.
 
 # Nesting
 `angel_serialize` also supports a few types of nesting of `@serializable` classes:
