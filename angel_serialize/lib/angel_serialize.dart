@@ -9,6 +9,13 @@ class Exclude {
 
 const Exclude exclude = const Exclude();
 
+/// Marks a field as having a default value.
+class DefaultValue {
+  final value;
+
+  const DefaultValue(this.value);
+}
+
 /// Marks a class as eligible for serialization.
 class Serializable {
   const Serializable(
