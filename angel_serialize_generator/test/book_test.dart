@@ -91,6 +91,15 @@ main() {
     expect(library.copyWith(), library);
   });
 
+  test('required fields fromMap', () {
+    expect(() => AuthorSerializer.fromMap({}), throwsFormatException);
+  });
+
+  test('required fields toMap', () {
+    var author = new Author(name: null, age: 24);
+    expect(() => author.toJson(), throwsFormatException);
+  });
+
   group('deserialization', () {
     test('deserialization sets proper fields', () {
       var book = BookSerializer.fromMap(deathlyHallowsMap);
