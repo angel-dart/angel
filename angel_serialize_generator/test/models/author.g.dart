@@ -11,12 +11,13 @@ class Author extends _Author {
       {this.id,
       this.name,
       this.age,
-      this.books,
+      List<Book> books,
       this.newestBook,
       this.secret,
       this.obscured,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt})
+      : this.books = new List.unmodifiable(books ?? []);
 
   @override
   final String id;
@@ -87,7 +88,9 @@ class Author extends _Author {
 }
 
 class Library extends _Library {
-  Library({this.id, this.collection, this.createdAt, this.updatedAt});
+  Library(
+      {this.id, Map<String, Book> collection, this.createdAt, this.updatedAt})
+      : this.collection = new Map.unmodifiable(collection ?? {});
 
   @override
   final String id;
@@ -132,12 +135,13 @@ class Library extends _Library {
 class Bookmark extends _Bookmark {
   Bookmark(Book book,
       {this.id,
-      this.history,
+      List<int> history,
       this.page,
       this.comment,
       this.createdAt,
       this.updatedAt})
-      : super(book);
+      : this.history = new List.unmodifiable(history ?? []),
+        super(book);
 
   @override
   final String id;

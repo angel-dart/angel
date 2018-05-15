@@ -1,3 +1,6 @@
+# 2.0.7
+* Create unmodifiable Lists and Maps.
+
 # 2.0.6
 * Support for using `abstract` to create immutable model classes.
 * Add support for custom constructor parameters.

@@ -53,6 +53,7 @@ library angel_serialize.test.models.book;
 
 import 'package:angel_framework/common.dart';
 import 'package:angel_serialize/angel_serialize.dart';
+import 'package:collection/collection.dart';
 part 'book.g.dart';
 
 @serializable

@@ -13,10 +13,11 @@ class Book extends _Book {
       this.title,
       this.description,
       this.pageCount,
-      this.notModels,
+      List<double> notModels,
       this.camelCaseString,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt})
+      : this.notModels = new List.unmodifiable(notModels ?? []);
 
   @override
   final String id;

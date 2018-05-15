@@ -60,16 +60,21 @@ bool isModelClass(DartType t) {
   }
 }
 
+bool isListOrMapType(DartType t) {
+  return const TypeChecker.fromRuntime(List).isAssignableFromType(t) ||
+      const TypeChecker.fromRuntime(Map).isAssignableFromType(t);
+}
+
 /// Determines if a [DartType] is a `List` with the first type argument being a `Model`.
 bool isListModelType(InterfaceType t) {
-  return t.name == 'List' &&
+  return const TypeChecker.fromRuntime(List).isAssignableFromType(t) &&
       t.typeArguments.length == 1 &&
       isModelClass(t.typeArguments[0]);
 }
 
 /// Determines if a [DartType] is a `Map` with the second type argument being a `Model`.
 bool isMapToModelType(InterfaceType t) {
-  return t.name == 'Map' &&
+  return const TypeChecker.fromRuntime(Map).isAssignableFromType(t) &&
       t.typeArguments.length == 2 &&
       isModelClass(t.typeArguments[1]);
 }

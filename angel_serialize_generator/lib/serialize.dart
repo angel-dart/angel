@@ -169,17 +169,17 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           if (isListModelType(t)) {
             var rc = new ReCase(t.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
-                " ? map['$alias'].map(${rc
-                .pascalCase}Serializer.fromMap).toList()"
+                " ? new List.unmodifiable(map['$alias'].map(${rc
+                .pascalCase}Serializer.fromMap))"
                 " : null";
           } else if (isMapToModelType(t)) {
             var rc = new ReCase(t.typeArguments[1].name);
             deserializedRepresentation = '''
                 map['$alias'] is Map
-                  ? map['$alias'].keys.fold({}, (out, key) {
+                  ? new Map.unmodifiable(map['$alias'].keys.fold({}, (out, key) {
                        return out..[key] = ${rc
                 .pascalCase}Serializer.fromMap(map['$alias'][key]);
-                    })
+                    }))
                   : null
             ''';
           }

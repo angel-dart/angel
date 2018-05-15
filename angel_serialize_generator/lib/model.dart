@@ -63,23 +63,43 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
     clazz.constructors.add(new Constructor((constructor) {
       // Add all `super` params
-      if (ctx.constructorParameters.isNotEmpty) {
-        for (var param in ctx.constructorParameters) {
-          constructor.requiredParameters.add(new Parameter((b) => b
-            ..name = param.name
-            ..type = convertTypeReference(param.type)));
-        }
 
-        constructor.initializers.add(new Code(
-            'super(${ctx.constructorParameters.map((p) => p.name).join(',')})'));
+      for (var param in ctx.constructorParameters) {
+        constructor.requiredParameters.add(new Parameter((b) => b
+          ..name = param.name
+          ..type = convertTypeReference(param.type)));
+      }
+
+      for (var field in ctx.fields) {
+        if (isListOrMapType(field.type)) {
+          String typeName = const TypeChecker.fromRuntime(List)
+                  .isAssignableFromType(field.type)
+              ? 'List'
+              : 'Map';
+          var defaultValue = typeName == 'List' ? '[]' : '{}';
+          constructor.initializers.add(new Code('''
+              this.${field.name} =
+                new $typeName.unmodifiable(${field.name} ?? $defaultValue)'''));
+        }
+      }
+
+      if (ctx.constructorParameters.isNotEmpty) {
+        constructor.initializers.add(
+            new Code('super(${ctx.constructorParameters.map((p) => p.name).join(
+                ',')})'));
       }
 
       for (var field in ctx.fields) {
         constructor.optionalParameters.add(new Parameter((b) {
           b
             ..name = field.name
-            ..named = true
-            ..toThis = true;
+            ..named = true;
+
+          if (!isListOrMapType(field.type))
+            b.toThis = true;
+          else {
+            b.type = convertTypeReference(field.type);
+          }
         }));
       }
     }));
@@ -141,9 +161,11 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       if (it.typeParameters.length == 2) {
         var keq = generateEquality(it.typeArguments[0]),
             veq = generateEquality(it.typeArguments[1]);
-        return 'const MapEquality<${it.typeArguments[0].name}, ${it.typeArguments[1].name}>(keys: $keq, values: $veq)';
+        return 'const MapEquality<${it.typeArguments[0].name}, ${it
+            .typeArguments[1].name}>(keys: $keq, values: $veq)';
       } else
-        return 'const MapEquality()<${it.typeArguments[0].name}, ${it.typeArguments[1].name}>';
+        return 'const MapEquality()<${it.typeArguments[0].name}, ${it
+            .typeArguments[1].name}>';
     }
 
     return nullable ? null : 'const DefaultEquality<${type.name}>()';

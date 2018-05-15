@@ -13,7 +13,7 @@ abstract class AuthorSerializer {
         name: map['name'],
         age: map['age'],
         books: map['books'] is Iterable
-            ? map['books'].map(BookSerializer.fromMap).toList()
+            ? new List.unmodifiable(map['books'].map(BookSerializer.fromMap))
             : null,
         newestBook: map['newest_book'] != null
             ? BookSerializer.fromMap(map['newest_book'])
@@ -69,10 +69,10 @@ abstract class LibrarySerializer {
     return new Library(
         id: map['id'],
         collection: map['collection'] is Map
-            ? map['collection'].keys.fold({}, (out, key) {
+            ? new Map.unmodifiable(map['collection'].keys.fold({}, (out, key) {
                 return out
                   ..[key] = BookSerializer.fromMap(map['collection'][key]);
-              })
+              }))
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
