@@ -3,6 +3,7 @@
 * Support `@required` on fields.
 * Affix an `@immutable` annotation to classes, if
 `package:meta` is imported.
+* Add `/// <reference path="..." />` to TypeScript models.
 
 # 2.0.6
 * Support for using `abstract` to create immutable model classes.
