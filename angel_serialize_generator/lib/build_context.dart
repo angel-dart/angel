@@ -34,7 +34,7 @@ Future<BuildContext> buildContext(
   autoSnakeCaseNames =
       annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
 
-  var ctx = new BuildContext(annotation,
+  var ctx = new BuildContext(annotation, clazz,
       originalClassName: clazz.name,
       sourceFilename: p.basename(buildStep.inputId.path),
       autoIdAndDateFields: autoIdAndDateFields,

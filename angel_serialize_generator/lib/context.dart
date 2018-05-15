@@ -32,10 +32,12 @@ class BuildContext {
 
   final ConstantReader annotation;
 
+  final ClassElement clazz;
+
   /// The name of the field that identifies data of this model type.
   String primaryKeyName = 'id';
 
-  BuildContext(this.annotation,
+  BuildContext(this.annotation, this.clazz,
       {this.originalClassName,
       this.sourceFilename,
       this.autoSnakeCaseNames,

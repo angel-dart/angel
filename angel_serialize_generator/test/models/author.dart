@@ -3,6 +3,7 @@ library angel_serialize.test.models.author;
 import 'package:angel_framework/common.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'book.dart';
 
 part 'author.g.dart';
@@ -11,9 +12,14 @@ part 'author.serializer.g.dart';
 
 @serializable
 abstract class _Author extends Model {
+  @required
   String get name;
+
+  @required
   int get age;
+
   List<Book> get books;
+
   Book get newestBook;
 
   @exclude
@@ -34,7 +40,9 @@ abstract class _Bookmark extends Model {
   final Book book;
 
   List<int> get history;
+
   int get page;
+
   String get comment;
 
   _Bookmark(this.book);

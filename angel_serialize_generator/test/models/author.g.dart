@@ -9,8 +9,8 @@ part of angel_serialize.test.models.author;
 class Author extends _Author {
   Author(
       {this.id,
-      this.name,
-      this.age,
+      @required this.name,
+      @required this.age,
       List<Book> books,
       this.newestBook,
       this.secret,
