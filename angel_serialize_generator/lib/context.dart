@@ -9,6 +9,9 @@ class BuildContext {
   ReCase _modelClassNameRecase;
   TypeReference _modelClassType;
 
+  /// A map of fields that are absolutely required, and error messages for when they are absent.
+  final Map<String, String> requiredFields = {};
+
   /// A map of field names to resolved names from `@Alias()` declarations.
   final Map<String, String> aliases = {};
 

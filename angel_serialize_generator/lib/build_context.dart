@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/dart/element/element.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
@@ -70,6 +71,18 @@ Future<BuildContext> buildContext(
         ctx.aliases[field.name] = alias.name;
       } else if (autoSnakeCaseNames != false) {
         ctx.aliases[field.name] = new ReCase(field.name).snakeCase;
+      }
+
+      // Check for @required
+      var required =
+          const TypeChecker.fromRuntime(Required).firstAnnotationOf(el);
+
+      if (required != null) {
+        var cr = new ConstantReader(required);
+        var reason = cr.peek('reason')?.stringValue ??
+            "Missing field '${ctx.resolveFieldName(field.name)}' on ${ctx
+                .modelClassName}.";
+        ctx.requiredFields[field.name] = reason;
       }
 
       ctx.fields.add(field);

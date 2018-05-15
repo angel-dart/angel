@@ -11,6 +11,7 @@ dependencies:
   code_buffer: ^1.0.0
   code_builder: ^3.0.0
   id: ^1.0.0
+  meta: ^1.0.0
   recase: ^1.0.0
   source_gen: ^0.7.0
 dev_dependencies:
