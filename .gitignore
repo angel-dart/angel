@@ -63,3 +63,4 @@ packages
 pubspec.lock
 
 doc/api
+.dart_tool
