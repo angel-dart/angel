@@ -173,7 +173,8 @@ main() {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
         ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
       rq.close();
-      await http.handleRequest(rq);
+      http.handleRequest(rq);
+      await rq.response.toList();
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
           rq.response.headers.contentType.mimeType, ContentType.JSON.mimeType);
@@ -183,7 +184,8 @@ main() {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
         ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
       rq.close();
-      await http.handleRequest(rq);
+      http.handleRequest(rq);
+      await rq.response.toList();
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
           rq.response.headers.contentType.mimeType, ContentType.JSON.mimeType);
@@ -193,7 +195,8 @@ main() {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf2'));
       rq.headers.set(HttpHeaders.ACCEPT, ContentType.HTML.toString());
       rq.close();
-      await http.handleRequest(rq);
+      http.handleRequest(rq);
+      await rq.response.toList();
       expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
       expect(
           rq.response.headers.contentType?.mimeType, ContentType.HTML.mimeType);

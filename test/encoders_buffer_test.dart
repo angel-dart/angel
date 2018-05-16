@@ -1,8 +1,16 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
+
+Future<List<int>> getBody(MockHttpResponse rs) async {
+  var list = await rs.toList();
+  var bb = new BytesBuilder();
+  list.forEach(bb.add);
+  return bb.takeBytes();
+}
 
 main() {
   Angel app;
@@ -52,7 +60,7 @@ void encodingTests(Angel getApp()) {
       var rs = rq.response;
       await http.handleRequest(rq);
 
-      var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
+      var body = await getBody(rs);
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
       expect(body, ZLIB.encode(utf8.encode('Hello, world!')));
     });
@@ -64,7 +72,7 @@ void encodingTests(Angel getApp()) {
       var rs = rq.response;
       await http.handleRequest(rq);
 
-      var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
+      var body = await getBody(rs);
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
       expect(body, ZLIB.encode(utf8.encode('Hello, world!')));
     });
@@ -76,7 +84,7 @@ void encodingTests(Angel getApp()) {
       var rs = rq.response;
       await http.handleRequest(rq);
 
-      var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
+      var body = await getBody(rs);
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
       expect(body, GZIP.encode(utf8.encode('Hello, world!')));
     });
@@ -87,8 +95,8 @@ void encodingTests(Angel getApp()) {
       await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
-
-      var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
+      
+      var body = await getBody(rs);
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
       expect(body, GZIP.encode(utf8.encode('Hello, world!')));
     });

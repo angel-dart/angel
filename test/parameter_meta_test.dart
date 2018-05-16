@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:dart2_constant/convert.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
 Future<String> readResponse(MockHttpResponse rs) {
-  return rs.transform(UTF8.decoder).join();
+  return rs.transform(utf8.decoder).join();
 }
 
 Future printResponse(MockHttpResponse rs) {
@@ -63,7 +63,7 @@ main() {
     // Invalid request
     var rq = new MockHttpRequest('GET', Uri.parse('/header'))..close();
     var rs = rq.response;
-    await http.handleRequest(rq);
+    http.handleRequest(rq);
 
     await printResponse(rs);
     expect(rs.statusCode, 400);
@@ -78,15 +78,14 @@ main() {
     var body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
-    expect(body, JSON.encode('bar'));
-    print('done');
+    expect(body, json.encode('bar'));
   });
 
   test('injects session or throws', () async {
     // Invalid request
     var rq = new MockHttpRequest('GET', Uri.parse('/session'))..close();
     var rs = rq.response;
-    await http.handleRequest(rq).timeout(const Duration(seconds: 5)).catchError((_) => null);
+    http.handleRequest(rq).timeout(const Duration(seconds: 5)).catchError((_) => null);
 
     await printResponse(rs);
     expect(rs.statusCode, 500);
@@ -96,7 +95,7 @@ main() {
     rq.session['foo'] = 'bar';
     rq.close();
     rs = rq.response;
-    await http.handleRequest(rq);
+    http.handleRequest(rq);
 
     await printResponse(rs);
     expect(rs.statusCode, 200);
@@ -109,27 +108,27 @@ main() {
   test('pattern matching', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/match?mode=pos'))..close();
     var rs = rq.response;
-    await http.handleRequest(rq);
+    http.handleRequest(rq);
     var body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
-    expect(body, JSON.encode('YES pos'));
+    expect(body, json.encode('YES pos'));
 
     rq = new MockHttpRequest('GET', Uri.parse('/match?mode=neg'))..close();
     rs = rq.response;
-    await http.handleRequest(rq);
+    http.handleRequest(rq);
     body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
-    expect(body, JSON.encode('NO neg'));
+    expect(body, json.encode('NO neg'));
 
     // Fallback
     rq = new MockHttpRequest('GET', Uri.parse('/match?mode=ambi'))..close();
     rs = rq.response;
-    await http.handleRequest(rq);
+    http.handleRequest(rq);
     body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
-    expect(body, JSON.encode('DEFAULT ambi'));
+    expect(body, json.encode('DEFAULT ambi'));
   });
 }

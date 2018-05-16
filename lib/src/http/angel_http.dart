@@ -118,6 +118,8 @@ class AngelHttp {
 
           if (error is FormatException) {
             e = new AngelHttpException.badRequest(message: error.message);
+          } else if (error is AngelHttpException) {
+            e = error;
           } else {
             e = new AngelHttpException(error,
                 stackTrace: stackTrace, message: error?.toString());
