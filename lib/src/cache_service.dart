@@ -35,7 +35,6 @@ class CacheService extends Service {
   Future _getCached(Map params, _CachedItem get(), Future getFresh(),
       Future getCached(), Future save(data, DateTime now)) async {
     var cached = get();
-    //print('$params => $cached');
     var now = new DateTime.now().toUtc();
 
     if (cached != null) {
@@ -85,7 +84,7 @@ class CacheService extends Service {
       () => database.read(id, params),
       () => cache.read(id),
       (data, now) async {
-        _cache[id] = new _CachedItem(params, now);
+        _cache[id] = new _CachedItem(params, now, data);
         return await cache.modify(id, data);
       },
     );

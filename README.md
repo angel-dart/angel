@@ -5,7 +5,6 @@
 Support for server-side caching in [Angel](https://angel-dart.github.io).
 
 ## `CacheService`
-*TODO: Documentation*
 
 A `Service` class that caches data from one service, storing it in another.
 An imaginable use case is storing results from MongoDB or another database in
@@ -16,6 +15,27 @@ A middleware that enables the caching of response serialization.
 
 This can improve the performance of sending objects that are complex to serialize.
 You can pass a [shouldCache] callback to determine which values should be cached.
+
+```dart
+main() async {
+    var app = new Angel()..lazyParseBodies = true;
+    
+    app.use(
+      '/api/todos',
+      new CacheService(
+        database: new AnonymousService(
+          index: ([params]) {
+            print('Fetched directly from the underlying service at ${new DateTime.now()}!');
+            return ['foo', 'bar', 'baz'];
+          },
+          read: (id, [params]) {
+            return {id: '$id at ${new DateTime.now()}'};
+          }
+        ),
+      ),
+    );
+}
+```
 
 ## `ResponseCache`
 A flexible response cache for Angel.
