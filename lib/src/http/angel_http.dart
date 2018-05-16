@@ -150,6 +150,7 @@ class AngelHttp {
     );
 
     var zone = Zone.current.fork(specification: zoneSpec);
+
     return await zone.run(() async {
       var path = req.path;
       if (path == '/') path = '';
@@ -276,7 +277,8 @@ class AngelHttp {
       ..add(outputBuffer);
 
     return finalizers.then((_) async {
-      request.response.close();
+      await request.response.flush();
+      await request.response.close();
 
       if (req.injections.containsKey(PoolResource)) {
         req.injections[PoolResource].release();

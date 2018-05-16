@@ -2,17 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/injects_header_or_throws_in_parameter_meta_test_dart.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CHANGELOG.md" afterPath="$PROJECT_DIR$/CHANGELOG.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/example/json.dart" afterPath="$PROJECT_DIR$/example/json.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/core/response_context.dart" afterPath="$PROJECT_DIR$/lib/src/core/response_context.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/core/server.dart" afterPath="$PROJECT_DIR$/lib/src/core/server.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pubspec.yaml" afterPath="$PROJECT_DIR$/pubspec.yaml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/controller_test.dart" afterPath="$PROJECT_DIR$/test/controller_test.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/di_test.dart" afterPath="$PROJECT_DIR$/test/di_test.dart" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/encoders_buffer_test.dart" afterPath="$PROJECT_DIR$/test/encoders_buffer_test.dart" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/parameter_meta_test.dart" afterPath="$PROJECT_DIR$/test/parameter_meta_test.dart" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -100,8 +92,8 @@
       <file leaf-file-name="parameter_meta_test.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/parameter_meta_test.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="22" column="46" lean-forward="false" selection-start-line="22" selection-start-column="46" selection-end-line="22" selection-end-column="46" />
+            <state relative-caret-position="345">
+              <caret line="23" column="20" lean-forward="true" selection-start-line="23" selection-start-column="20" selection-end-line="23" selection-end-column="20" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -109,24 +101,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="30">
-                <caret line="2" column="31" lean-forward="false" selection-start-line="2" selection-start-column="31" selection-end-line="2" selection-end-column="31" />
-                <folding />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="angel_http.dart" pinned="false" current-in-tab="false">
+      <file leaf-file-name="angel_http.dart" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="107">
-              <caret line="149" column="6" lean-forward="false" selection-start-line="149" selection-start-column="6" selection-end-line="149" selection-end-column="6" />
+            <state relative-caret-position="101">
+              <caret line="188" column="44" lean-forward="true" selection-start-line="188" selection-start-column="44" selection-end-line="188" selection-end-column="44" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -156,8 +135,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ContentType</find>
-      <find>app</find>
       <find>handleRe</find>
       <find>instead.</find>
       <find>io\b</find>
@@ -186,6 +163,8 @@
       <find>match</find>
       <find>getV</find>
       <find>zone</find>
+      <find>zone.run</find>
+      <find>aaa</find>
     </findStrings>
     <replaceStrings>
       <replace>_isClosed</replace>
@@ -221,8 +200,8 @@
       <dir>C:\Users\thosa\Source\Angel\framework\lib\src\http</dir>
       <dir>C:\Users\thosa\Source\Angel\framework\test</dir>
       <dir>$PROJECT_DIR$/lib/src</dir>
-      <dir>$PROJECT_DIR$/lib</dir>
       <dir>$PROJECT_DIR$/test</dir>
+      <dir>$PROJECT_DIR$/lib</dir>
     </dirStrings>
   </component>
   <component name="Git.Settings">
@@ -283,8 +262,6 @@
         <option value="$PROJECT_DIR$/example/main.dart" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/lib/src/core/server.dart" />
-        <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
-        <option value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/test/controller_test.dart" />
         <option value="$PROJECT_DIR$/example/json.dart" />
@@ -292,6 +269,8 @@
         <option value="$PROJECT_DIR$/test/encoders_buffer_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/response_context.dart" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
+        <option value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
       </list>
     </option>
   </component>
@@ -335,6 +314,11 @@
             <path>
               <item name="Root" type="cbb8eebc:String" user="Root" />
               <item name="framework" type="cbb8eebc:String" user="framework" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="lib" type="cbb8eebc:String" user="lib" />
             </path>
           </expand>
           <select />
@@ -380,7 +364,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Dart Test.All Tests">
+  <component name="RunManager" selected="Dart Command Line App.main.dart">
     <configuration name="Chained routes in routing_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
       <option name="filePath" value="$PROJECT_DIR$/test/routing_test.dart" />
       <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
@@ -507,11 +491,6 @@
       <option name="testName" value="global injection added to injection map" />
       <option name="testRunnerOptions" value="-j 4" />
     </configuration>
-    <configuration name="injects header or throws in parameter_meta_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
-      <option name="filePath" value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
-      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
-      <option name="testName" value="injects header or throws" />
-    </configuration>
     <configuration name="middleware in controller_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
       <option name="filePath" value="$PROJECT_DIR$/test/controller_test.dart" />
       <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
@@ -576,41 +555,41 @@
       <item index="2" class="java.lang.String" itemvalue="Dart Command Line App.All Tests (for coverage)" />
       <item index="3" class="java.lang.String" itemvalue="Dart Command Line App.All Tests (PRODUCTION)" />
       <item index="4" class="java.lang.String" itemvalue="Dart Command Line App.performance::hello::raw" />
-      <item index="5" class="java.lang.String" itemvalue="Dart Test.tests in extension_test.dart" />
-      <item index="6" class="java.lang.String" itemvalue="Dart Test.global injection added to injection map in server_test.dart" />
-      <item index="7" class="java.lang.String" itemvalue="Dart Test.middleware in controller_test.dart" />
-      <item index="8" class="java.lang.String" itemvalue="Dart Test.injects header or throws in parameter_meta_test.dart" />
-      <item index="9" class="java.lang.String" itemvalue="Dart Test.injects session or throws in parameter_meta_test.dart" />
-      <item index="10" class="java.lang.String" itemvalue="Dart Test.tests in parameter_meta_test.dart" />
-      <item index="11" class="java.lang.String" itemvalue="Dart Test.Chained routes in routing_test.dart" />
-      <item index="12" class="java.lang.String" itemvalue="Dart Test.only match route with matching method in routing_test.dart" />
-      <item index="13" class="java.lang.String" itemvalue="Dart Test.only uses one encoder in encoders_buffer_test.dart" />
-      <item index="14" class="java.lang.String" itemvalue="Dart Test.can send html in server_test.dart" />
-      <item index="15" class="java.lang.String" itemvalue="Dart Test.tests in primitives_test.dart" />
-      <item index="16" class="java.lang.String" itemvalue="Dart Test.tests in repeat_request_test.dart" />
-      <item index="17" class="java.lang.String" itemvalue="Dart Test.tests in encoders_buffer_test.dart" />
-      <item index="18" class="java.lang.String" itemvalue="Dart Test.tests in streaming_test.dart" />
-      <item index="19" class="java.lang.String" itemvalue="Dart Test.can create data in services_test.dart" />
-      <item index="20" class="java.lang.String" itemvalue="Dart Test.can delete data in services_test.dart" />
-      <item index="21" class="java.lang.String" itemvalue="Dart Test.can use app.properties like members in util_test.dart" />
-      <item index="22" class="java.lang.String" itemvalue="Dart Test.tests in accepts_test.dart" />
-      <item index="23" class="java.lang.String" itemvalue="Dart Test.contains provider in before and after in hooked_test.dart" />
-      <item index="24" class="java.lang.String" itemvalue="Dart Test.tests in server_test.dart" />
-      <item index="25" class="java.lang.String" itemvalue="Dart Test.tests in anonymous_service_test.dart" />
-      <item index="26" class="java.lang.String" itemvalue="Dart Test.tests in exception_test.dart" />
-      <item index="27" class="java.lang.String" itemvalue="Dart Test.tests in typed_service_test.dart" />
-      <item index="28" class="java.lang.String" itemvalue="Dart Test.default view generator in view_generator_test.dart" />
-      <item index="29" class="java.lang.String" itemvalue="Dart Test.tests in precontained_test.dart" />
-      <item index="30" class="java.lang.String" itemvalue="Dart Test.Controller Tests" />
-      <item index="31" class="java.lang.String" itemvalue="Dart Test.DI Tests" />
-      <item index="32" class="java.lang.String" itemvalue="Dart Test.Hooked Tests" />
-      <item index="33" class="java.lang.String" itemvalue="Dart Test.Routing Tests" />
-      <item index="34" class="java.lang.String" itemvalue="Dart Test.tests in server_test.dart (PRODUCTION)" />
-      <item index="35" class="java.lang.String" itemvalue="Dart Test.All Tests" />
-      <item index="36" class="java.lang.String" itemvalue="Dart Test.All Tests (PRODUCTION)" />
-      <item index="37" class="java.lang.String" itemvalue="Dart Test.cannot write after close in streaming_test.dart" />
-      <item index="38" class="java.lang.String" itemvalue="Dart Test.tests in framework" />
-      <item index="39" class="java.lang.String" itemvalue="Dart Command Line App.main.dart" />
+      <item index="5" class="java.lang.String" itemvalue="Dart Command Line App.main.dart" />
+      <item index="6" class="java.lang.String" itemvalue="Dart Test.tests in extension_test.dart" />
+      <item index="7" class="java.lang.String" itemvalue="Dart Test.global injection added to injection map in server_test.dart" />
+      <item index="8" class="java.lang.String" itemvalue="Dart Test.middleware in controller_test.dart" />
+      <item index="9" class="java.lang.String" itemvalue="Dart Test.injects header or throws in parameter_meta_test.dart" />
+      <item index="10" class="java.lang.String" itemvalue="Dart Test.injects session or throws in parameter_meta_test.dart" />
+      <item index="11" class="java.lang.String" itemvalue="Dart Test.tests in parameter_meta_test.dart" />
+      <item index="12" class="java.lang.String" itemvalue="Dart Test.Chained routes in routing_test.dart" />
+      <item index="13" class="java.lang.String" itemvalue="Dart Test.only match route with matching method in routing_test.dart" />
+      <item index="14" class="java.lang.String" itemvalue="Dart Test.only uses one encoder in encoders_buffer_test.dart" />
+      <item index="15" class="java.lang.String" itemvalue="Dart Test.can send html in server_test.dart" />
+      <item index="16" class="java.lang.String" itemvalue="Dart Test.tests in primitives_test.dart" />
+      <item index="17" class="java.lang.String" itemvalue="Dart Test.tests in repeat_request_test.dart" />
+      <item index="18" class="java.lang.String" itemvalue="Dart Test.tests in encoders_buffer_test.dart" />
+      <item index="19" class="java.lang.String" itemvalue="Dart Test.tests in streaming_test.dart" />
+      <item index="20" class="java.lang.String" itemvalue="Dart Test.can create data in services_test.dart" />
+      <item index="21" class="java.lang.String" itemvalue="Dart Test.can delete data in services_test.dart" />
+      <item index="22" class="java.lang.String" itemvalue="Dart Test.can use app.properties like members in util_test.dart" />
+      <item index="23" class="java.lang.String" itemvalue="Dart Test.tests in accepts_test.dart" />
+      <item index="24" class="java.lang.String" itemvalue="Dart Test.contains provider in before and after in hooked_test.dart" />
+      <item index="25" class="java.lang.String" itemvalue="Dart Test.tests in server_test.dart" />
+      <item index="26" class="java.lang.String" itemvalue="Dart Test.tests in anonymous_service_test.dart" />
+      <item index="27" class="java.lang.String" itemvalue="Dart Test.tests in exception_test.dart" />
+      <item index="28" class="java.lang.String" itemvalue="Dart Test.tests in typed_service_test.dart" />
+      <item index="29" class="java.lang.String" itemvalue="Dart Test.default view generator in view_generator_test.dart" />
+      <item index="30" class="java.lang.String" itemvalue="Dart Test.tests in precontained_test.dart" />
+      <item index="31" class="java.lang.String" itemvalue="Dart Test.Controller Tests" />
+      <item index="32" class="java.lang.String" itemvalue="Dart Test.DI Tests" />
+      <item index="33" class="java.lang.String" itemvalue="Dart Test.Hooked Tests" />
+      <item index="34" class="java.lang.String" itemvalue="Dart Test.Routing Tests" />
+      <item index="35" class="java.lang.String" itemvalue="Dart Test.tests in server_test.dart (PRODUCTION)" />
+      <item index="36" class="java.lang.String" itemvalue="Dart Test.All Tests" />
+      <item index="37" class="java.lang.String" itemvalue="Dart Test.All Tests (PRODUCTION)" />
+      <item index="38" class="java.lang.String" itemvalue="Dart Test.cannot write after close in streaming_test.dart" />
+      <item index="39" class="java.lang.String" itemvalue="Dart Test.tests in framework" />
       <item index="40" class="java.lang.String" itemvalue="Dart Test.encoding in encoders_buffer_test.dart" />
     </list>
   </component>
@@ -687,14 +666,7 @@
       <workItem from="1517973177718" duration="9736000" />
       <workItem from="1522434729364" duration="100000" />
       <workItem from="1523041434716" duration="3254000" />
-      <workItem from="1526435792950" duration="514000" />
-    </task>
-    <task id="LOCAL-00031" summary="1.1.0-alpha start">
-      <created>1506055702294</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1506055702294</updated>
+      <workItem from="1526435792950" duration="2628000" />
     </task>
     <task id="LOCAL-00032" summary="1.1.0-alpha">
       <created>1506089003709</created>
@@ -1032,43 +1004,50 @@
       <option name="project" value="LOCAL" />
       <updated>1523044574359</updated>
     </task>
-    <option name="localTasksCounter" value="80" />
+    <task id="LOCAL-00080" summary="Use dart2_constant">
+      <created>1526436313662</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1526436313662</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="All_Tests - 2018.05.15 at 21h 56m 41s.xml">
-      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 23m 35s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="All_Tests - 2018.05.15 at 21h 57m 16s.xml">
-      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 26m 28s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="All_Tests - 2018.05.15 at 22h 00m 17s.xml">
-      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 28m 19s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 39m 59s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 29m 32s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 41m 13s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 29m 46s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 42m 12s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 31m 10s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 45m 10s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 31m 39s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 45m 20s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 32m 26s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 45m 48s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 35m 07s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
-    <history-entry file="injects_session_or_throws_in_parameter_meta_test_dart - 2018.04.06 at 15h 49m 39s.xml">
-      <configuration name="injects session or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
+    <history-entry file="injects_header_or_throws_in_parameter_meta_test_dart - 2018.05.15 at 22h 35m 16s.xml">
+      <configuration name="injects header or throws in parameter_meta_test.dart" configurationId="DartTestRunConfigurationType" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="131640000" />
+    <option name="totallyTimeSpent" value="133754000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1087,7 +1066,7 @@
       <window_info id="Tool Output" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34188035" sideWeight="0.5035524" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Dart Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31196582" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Dart Analysis" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31196582" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1102,10 +1081,11 @@
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4017094" sideWeight="0.4964476" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4017094" sideWeight="0.4964476" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32905984" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.48005697" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23141123" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32905984" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -1116,7 +1096,6 @@
       <window_info id="DB Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32998413" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32905984" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1127,7 +1106,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Used function syntax, deprecated `ResponseSerializer` typedef" />
     <MESSAGE value="Deprecated all serving logic in `Angel`" />
     <MESSAGE value="Removed use of `HttpHeaders` in `Angel`" />
     <MESSAGE value="Deprecated createZoneForRequest" />
@@ -1152,7 +1130,8 @@
     <MESSAGE value="Fixed tests" />
     <MESSAGE value="CHANGELOG" />
     <MESSAGE value="Update example" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update example" />
+    <MESSAGE value="Use dart2_constant" />
+    <option name="LAST_COMMIT_MESSAGE" value="Use dart2_constant" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1161,13 +1140,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/streaming_test.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="103" column="25" lean-forward="false" selection-start-line="103" selection-start-column="25" selection-end-line="103" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/example/common.dart" />
     <entry file="file://$PROJECT_DIR$/test/primitives_test.dart">
       <provider selected="true" editor-type-id="text-editor">
@@ -1363,6 +1335,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="318">
           <caret line="99" column="11" lean-forward="false" selection-start-line="99" selection-start-column="11" selection-end-line="99" selection-end-column="11" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1412,14 +1385,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/local/Cellar/dart/2.0.0-dev.50.0/libexec/lib/async/zone.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="236">
-          <caret line="546" column="50" lean-forward="true" selection-start-line="546" selection-start-column="50" selection-end-line="546" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/core/injection.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="281">
@@ -1436,31 +1401,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="107">
-          <caret line="149" column="6" lean-forward="false" selection-start-line="149" selection-start-column="6" selection-end-line="149" selection-end-column="6" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/core/server.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="131">
           <caret line="406" column="11" lean-forward="false" selection-start-line="406" selection-start-column="11" selection-end-line="406" selection-end-column="11" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/parameter_meta_test.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" column="46" lean-forward="false" selection-start-line="22" selection-start-column="46" selection-end-line="22" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1477,7 +1422,7 @@
         <state relative-caret-position="302">
           <caret line="105" column="31" lean-forward="true" selection-start-line="105" selection-start-column="31" selection-end-line="105" selection-end-column="31" />
           <folding>
-            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#0#20#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1487,7 +1432,7 @@
         <state relative-caret-position="151">
           <caret line="36" column="24" lean-forward="true" selection-start-line="36" selection-start-column="24" selection-end-line="36" selection-end-column="24" />
           <folding>
-            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#0#20#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1536,11 +1481,47 @@
     <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="30">
-            <caret line="2" column="31" lean-forward="false" selection-start-line="2" selection-start-column="31" selection-end-line="2" selection-end-column="31" />
+          <first_editor relative-caret-position="255">
+            <caret line="15" column="66" lean-forward="false" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
             <folding />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/parameter_meta_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" column="20" lean-forward="true" selection-start-line="23" selection-start-column="20" selection-end-line="23" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/Cellar/dart/2.0.0-dev.50.0/libexec/lib/io/io_sink.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="106">
+          <caret line="77" column="5" lean-forward="true" selection-start-line="77" selection-start-column="5" selection-end-line="77" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/Cellar/dart/2.0.0-dev.50.0/libexec/lib/async/zone.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="10" column="61" lean-forward="true" selection-start-line="10" selection-start-column="61" selection-end-line="10" selection-end-column="61" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="101">
+          <caret line="188" column="44" lean-forward="true" selection-start-line="188" selection-start-column="44" selection-end-line="188" selection-end-column="44" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
