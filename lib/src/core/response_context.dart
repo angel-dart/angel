@@ -1,8 +1,9 @@
 library angel_framework.http.response_context;
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' show Converter, Encoding;
 import 'dart:io';
+import 'package:dart2_constant/convert.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
@@ -362,7 +363,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
   /// Writes data to the response.
   void write(value, {Encoding encoding}) {
-    encoding ??= UTF8;
+    encoding ??= utf8;
 
     if (!isOpen && !streaming)
       throw closed();

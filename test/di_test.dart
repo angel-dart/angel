@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 import 'common.dart';
@@ -49,19 +49,19 @@ main() {
 
   test("make in route", () async {
     var response = await client.get("$url/errands3");
-    String text = await JSON.decode(response.body);
+    String text = await json.decode(response.body);
     expect(text, equals(TEXT));
   });
 
   test("make in controller", () async {
     var response = await client.get("$url/errands4");
-    String text = await JSON.decode(response.body);
+    String text = await json.decode(response.body);
     expect(text, equals(TEXT));
   });
 }
 
 void validateTodoSingleton(response) {
-  Map todo = JSON.decode(response.body);
+  Map todo = json.decode(response.body);
   // expect(todo.keys.length, equals(3));
   expect(todo["id"], equals(null));
   expect(todo["text"], equals(TEXT));
@@ -84,6 +84,7 @@ class ErrandController extends Controller {
 
 class Errand {
   Todo todo;
+
   String get text => todo.text;
 
   Errand(this.todo);

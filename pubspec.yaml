@@ -13,6 +13,7 @@ dependencies:
   charcode: ^1.0.0
   combinator: ">=1.0.0-beta <2.0.0"
   container: ^0.1.2
+  dart2_constant: ^1.0.0
   json_god: ^2.0.0-beta
   logging: ">=0.11.3 <1.0.0"
   matcher: ^0.12.0

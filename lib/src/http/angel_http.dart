@@ -39,7 +39,7 @@ class AngelHttp {
   factory AngelHttp.fromSecurityContext(Angel app, SecurityContext context) {
     var http = new AngelHttp(app);
 
-    http._serverGenerator = (InternetAddress address, int port) async {
+    http._serverGenerator = (address, int port) async {
       return await HttpServer.bindSecure(address, port, context);
     };
 
@@ -150,7 +150,7 @@ class AngelHttp {
     );
 
     var zone = Zone.current.fork(specification: zoneSpec);
-    return await zone.runGuarded(() async {
+    return await zone.run(() async {
       var path = req.path;
       if (path == '/') path = '';
 

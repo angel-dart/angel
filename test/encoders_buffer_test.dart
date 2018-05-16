@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
@@ -41,7 +41,7 @@ void encodingTests(Angel getApp()) {
       var rs = rq.response;
       await http.handleRequest(rq);
 
-      var body = await rs.transform(UTF8.decoder).join();
+      var body = await rs.transform(utf8.decoder).join();
       expect(body, 'Hello, world!');
     });
 
@@ -54,7 +54,7 @@ void encodingTests(Angel getApp()) {
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
-      expect(body, ZLIB.encode(UTF8.encode('Hello, world!')));
+      expect(body, ZLIB.encode(utf8.encode('Hello, world!')));
     });
 
     test('encodes if wildcard + multiple', () async {
@@ -66,7 +66,7 @@ void encodingTests(Angel getApp()) {
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
-      expect(body, ZLIB.encode(UTF8.encode('Hello, world!')));
+      expect(body, ZLIB.encode(utf8.encode('Hello, world!')));
     });
 
     test('encodes if explicit', () async {
@@ -78,7 +78,7 @@ void encodingTests(Angel getApp()) {
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
-      expect(body, GZIP.encode(UTF8.encode('Hello, world!')));
+      expect(body, GZIP.encode(utf8.encode('Hello, world!')));
     });
 
     test('only uses one encoder', () async {
@@ -90,7 +90,7 @@ void encodingTests(Angel getApp()) {
 
       var body = await rs.fold<List<int>>([], (out, list) => []..addAll(list));
       expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
-      expect(body, GZIP.encode(UTF8.encode('Hello, world!')));
+      expect(body, GZIP.encode(utf8.encode('Hello, world!')));
     });
   });
 }

@@ -79,6 +79,7 @@ main() {
     print('Body: $body');
     expect(rs.statusCode, 200);
     expect(body, JSON.encode('bar'));
+    print('done');
   });
 
   test('injects session or throws', () async {

@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
@@ -93,8 +93,8 @@ main() {
         }, optional: ['bar']));
     var rq = new MockHttpRequest('GET', new Uri(path: 'foo'));
     await new AngelHttp(app).handleRequest(rq);
-    var body = await rq.response.transform(UTF8.decoder).join();
-    expect(JSON.decode(body), 2);
+    var body = await rq.response.transform(utf8.decoder).join();
+    expect(json.decode(body), 2);
   });
 
   test('optional name', () async {
@@ -110,7 +110,7 @@ main() {
 
     expect(rgx.firstMatch(response.body)?.start, equals(0));
 
-    Map todo = JSON.decode(response.body.replaceAll(rgx, ""));
+    Map todo = json.decode(response.body.replaceAll(rgx, ""));
     print("Todo: $todo");
     // expect(todo.keys.length, equals(3));
     expect(todo['text'], equals("Hello"));

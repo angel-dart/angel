@@ -519,7 +519,7 @@ class Angel extends AngelBase {
     var app = new Angel();
 
     app._http =
-        new AngelHttp.custom(app, (InternetAddress address, int port) async {
+        new AngelHttp.custom(app, (address, int port) async {
       return await HttpServer.bindSecure(address, port, context);
     });
 

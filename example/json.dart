@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'package:dart2_constant/convert.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
@@ -41,7 +41,7 @@ serverMain(_) async {
   // Performance tuning
   app
     ..lazyParseBodies = true
-    ..serializer = JSON.encode;
+    ..serializer = json.encode;
 
   app.errorHandler = (e, req, res) {
     print(e.message ?? e.error ?? e);
