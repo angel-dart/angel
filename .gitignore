@@ -28,3 +28,4 @@ pubspec.lock
 
 rethinkdb_data/
 .idea
+.dart_tool
