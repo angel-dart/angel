@@ -27,3 +27,4 @@ doc/api/
 pubspec.lock
 
 rethinkdb_data/
+.idea

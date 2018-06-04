@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
+//import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:json_god/json_god.dart' as god;
-import 'package:rethinkdb_driver2/rethinkdb_driver2.dart';
+import 'package:rethinkdb_driver/rethinkdb_driver.dart';
 
 // Extends a RethinkDB query.
 typedef RqlQuery QueryCallback(RqlQuery query);
@@ -130,21 +130,21 @@ class RethinkService extends Service {
         hookedService.fireEvent(
             hookedService.afterCreated,
             new HookedServiceEvent(
-                true, null, null, this, HookedServiceEvent.CREATED,
+                true, null, null, this, HookedServiceEvent.created,
                 result: newVal));
       } else if (type == 'change') {
         // Update
         hookedService.fireEvent(
             hookedService.afterCreated,
             new HookedServiceEvent(
-                true, null, null, this, HookedServiceEvent.UPDATED,
+                true, null, null, this, HookedServiceEvent.updated,
                 result: newVal, id: oldVal['id'], data: newVal));
       } else if (type == 'remove') {
         // Remove
         hookedService.fireEvent(
             hookedService.afterCreated,
             new HookedServiceEvent(
-                true, null, null, this, HookedServiceEventREMOVED,
+                true, null, null, this, HookedServiceEvent.removed,
                 result: oldVal, id: oldVal['id']));
       }
     });
@@ -187,7 +187,7 @@ class RethinkService extends Service {
       try {
         await read(d['id'], params);
       } on AngelHttpException catch (e) {
-        if (e.statusCode == HttpStatus.NOT_FOUND)
+        if (e.statusCode == 404)
           return await create(data, params);
         else
           rethrow;
@@ -207,7 +207,7 @@ class RethinkService extends Service {
       try {
         await read(d['id'], params);
       } on AngelHttpException catch (e) {
-        if (e.statusCode == HttpStatus.NOT_FOUND)
+        if (e.statusCode == 404)
           return await create(data, params);
         else
           rethrow;
