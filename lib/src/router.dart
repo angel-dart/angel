@@ -10,12 +10,12 @@ part 'symlink_route.dart';
 part 'route.dart';
 part 'routing_result.dart';
 
-final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
+/*final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _rgxEnd = new RegExp(r'\$+$');
 final RegExp _rgxStart = new RegExp(r'^\^+');
 final RegExp _rgxStraySlashes =
     new RegExp(r'(^((\\+/)|(/))+)|(((\\+/)|(/))+$)');
-final RegExp _slashDollar = new RegExp(r'/+\$');
+final RegExp _slashDollar = new RegExp(r'/+\$');*/
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)

@@ -1,9 +1,11 @@
 part of angel_route.src.router;
 
 class RouteGrammar {
+  static final RegExp rgx = new RegExp(r'\((.+)\)');
   static final Parser<String> notSlash =
       match(new RegExp(r'[^/]+')).value((r) => r.span.text);
-  static final Parser<RegExp> regExp = new _RegExpParser();
+  static final Parser<RegExp> regExp =
+      match(rgx).map((r) => new RegExp(r.scanner.lastMatch[1]));
   static final Parser<String> parameterName =
       match(new RegExp(r':([A-Za-z0-9_]+)'))
           .value((r) => r.span.text.substring(1));
@@ -32,6 +34,7 @@ class RouteGrammar {
       .surroundedBy(match('/').star().opt());
 }
 
+/*
 class _RegExpParser extends Parser<RegExp> {
   static final RegExp rgx = new RegExp(r'\((.+)\)');
 
@@ -41,7 +44,7 @@ class _RegExpParser extends Parser<RegExp> {
     return new ParseResult(this, true, [],
         span: scanner.lastSpan, value: new RegExp(scanner.lastMatch[1]));
   }
-}
+}*/
 
 class RouteDefinition {
   final List<RouteSegment> segments;
@@ -66,6 +69,7 @@ class RouteDefinition {
 
 abstract class RouteSegment {
   Parser<Map<String, dynamic>> compile(bool isLast);
+
   Parser<Map<String, dynamic>> compileNext(
       Parser<Map<String, dynamic>> p, bool isLast);
 }

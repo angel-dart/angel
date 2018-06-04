@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_route/angel_route.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
@@ -27,7 +27,7 @@ main() {
 
   router.group('/people', (router) {
     router.get('/', (req, res) {
-      res.write(JSON.encode(people));
+      res.write(json.encode(people));
       return false;
     });
 
@@ -35,14 +35,14 @@ main() {
       router.get('/', (req, res) {
         // In a real application, we would take the param,
         // but not here...
-        res.write(JSON.encode(people.first));
+        res.write(json.encode(people.first));
         return false;
       });
 
       router.get('/name', (req, res) {
         // In a real application, we would take the param,
         // but not here...
-        res.write(JSON.encode(people.first['name']));
+        res.write(json.encode(people.first['name']));
         return false;
       });
     });
@@ -76,7 +76,7 @@ main() {
     client = new http.Client();
 
     router.dumpTree();
-    server = await HttpServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    server = await HttpServer.bind('127.0.0.1', 0);
     url = 'http://${server.address.address}:${server.port}';
 
     server.listen((req) async {
@@ -129,20 +129,20 @@ main() {
       test('root', () async {
         final res = await client.get('$url/people');
         print('Response: ${res.body}');
-        expect(JSON.decode(res.body), equals(people));
+        expect(json.decode(res.body), equals(people));
       });
 
       group('param', () {
         test('root', () async {
           final res = await client.get('$url/people/0');
           print('Response: ${res.body}');
-          expect(JSON.decode(res.body), equals(people.first));
+          expect(json.decode(res.body), equals(people.first));
         });
 
         test('path', () async {
           final res = await client.get('$url/people/0/name');
           print('Response: ${res.body}');
-          expect(JSON.decode(res.body), equals(people.first['name']));
+          expect(json.decode(res.body), equals(people.first['name']));
         });
       });
     });
