@@ -1,7 +1,8 @@
-import 'dart:io';
+import 'dart:io' hide FileMode;
 import 'dart:isolate';
 import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:logging/logging.dart';
 
 const String hostname = '127.0.0.1';
@@ -25,8 +26,11 @@ void isolateMain(int id) {
     app.logger = new Logger('angel')
       ..onRecord.listen((rec) {
         if (rec.error != null) {
-          var sink =
-              new File('server_log.txt').openWrite(mode: FileMode.APPEND);
+          var err = rec.error;
+          if (err is AngelHttpException && err.statusCode != 500) return;
+          var now = new DateTime.now().toUtc();
+          var filename = 'server_log_' + now.toString() + '.txt';
+          var sink = new File(filename).openWrite(mode: FileMode.append);
           sink
             ..writeln(rec.error)
             ..writeln(rec.stackTrace)

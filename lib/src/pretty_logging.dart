@@ -1,3 +1,4 @@
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:console/console.dart';
 import 'package:logging/logging.dart';
 
@@ -5,13 +6,17 @@ import 'package:logging/logging.dart';
 void prettyLog(LogRecord record) {
   var pen = new TextPen();
   chooseLogColor(pen.reset(), record.level);
-  pen(record.toString());
-  
-  if (record.error != null)
-    pen(record.error.toString());
-  if (record.stackTrace != null)
-    pen(record.stackTrace.toString());
-  
+
+  if (record.error == null) pen(record.toString());
+
+  if (record.error != null) {
+    var err = record.error;
+    if (err is AngelHttpException && err.statusCode != 500) return;
+    pen(record.toString() + '\n');
+    pen(err.toString());
+    if (record.stackTrace != null) pen(record.stackTrace.toString());
+  }
+
   pen();
 }
 
@@ -27,6 +32,5 @@ void chooseLogColor(TextPen pen, Level level) {
     pen.magenta();
   else if (level == Level.FINER)
     pen.blue();
-  else if (level == Level.FINEST)
-    pen.darkBlue();
+  else if (level == Level.FINEST) pen.darkBlue();
 }

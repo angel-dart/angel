@@ -1,14 +1,20 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Tobe O <thosakwe@gmail.com>
 
-# Install Dart SDK 1.24.2
+# Install Dart SDK.
 RUN sudo apt-get update
 RUN sudo apt-get install -y apt-transport-https
 RUN sudo apt-get install -y curl
 RUN sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
-RUN sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+
+# Uncomment this for Dart 1.24.x
+# RUN sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+
+# Comment this out if not installing Dart 2.x
+RUN sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_unstable.list > /etc/apt/sources.list.d/dart_unstable.list'
+
 RUN sudo apt-get update
-RUN sudo apt-get install -y dart=1.24.2-1
+RUN sudo apt-get install -y dart
 RUN export PATH="/usr/lib/dart/bin:$PATH"
 
 # Copy necessary files

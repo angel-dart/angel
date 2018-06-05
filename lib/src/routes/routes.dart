@@ -43,13 +43,19 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     //
     // Read the following for documentation:
     // * https://github.com/angel-dart/angel/wiki/Error-Handling
-    app.errorHandler = (e, req, res) async {
-      if (e.statusCode == 404) {
-        return await res
-            .render('error', {'message': 'No file exists at ${req.path}.'});
-      }
 
-      return await res.render('error', {'message': e.message});
+    var oldErrorHandler = app.errorHandler;
+    app.errorHandler = (e, req, res) async {
+      if (!req.accepts('text/html'))
+        return await oldErrorHandler(e, req, res);
+      else {
+        if (e.statusCode == 404) {
+          return await res
+              .render('error', {'message': 'No file exists at ${req.path}.'});
+        }
+
+        return await res.render('error', {'message': e.message});
+      }
     };
   };
 }

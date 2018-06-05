@@ -3,14 +3,14 @@
     "configurations": [
         {
             "name": "Development Server",
-            "type": "dart-cli",
+            "type": "dart",
             "request": "launch",
             "program": "${workspaceRoot}/bin/dev.dart",
             "checkedMode": true
         },
         {
             "name": "Production Server",
-            "type": "dart-cli",
+            "type": "dart",
             "request": "launch",
             "program": "${workspaceRoot}/bin/prod.dart",
             "checkedMode": true

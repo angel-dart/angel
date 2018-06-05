@@ -2,6 +2,8 @@
 
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/angel_dart/discussion)
 [![Pub](https://img.shields.io/pub/v/angel_framework.svg)](https://pub.dartlang.org/packages/angel_framework)
+[![Build status](https://travis-ci.org/angel-dart/framework.svg?branch=master)](https://travis-ci.org/angel-dart/framework)
+![License](https://img.shields.io/github/license/angel-dart/framework.svg)
 
 **Fill out the [v1.0.0 survey](https://docs.google.com/forms/d/e/1FAIpQLSfEgBNsOoi_nYZMmg2IAGyMv1nNaa6B3kUk3QdNJU5987ucVA/viewform?usp=sf_link) now!!!**
 
