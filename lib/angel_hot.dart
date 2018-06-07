@@ -1,10 +1,25 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:io'
+    show
+        ContentType,
+        Directory,
+        File,
+        FileStat,
+        FileSystemEntity,
+        FileSystemException,
+        HttpHeaders,
+        HttpRequest,
+        HttpServer,
+        Link,
+        Platform,
+        exit,
+        stderr;
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_websocket/server.dart';
+import 'package:dart2_constant/convert.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:glob/glob.dart';
 import 'package:html_builder/elements.dart';
 import 'package:html_builder/html_builder.dart';
@@ -15,13 +30,15 @@ import 'package:watcher/watcher.dart';
 /// A utility class that watches the filesystem for changes, and starts new instances of an Angel server.
 class HotReloader {
   vm.VmService _client;
+  vm.IsolateRef _mainIsolate;
   final StreamController<WatchEvent> _onChange =
       new StreamController<WatchEvent>.broadcast();
   final List _paths = [];
   final StringRenderer _renderer = new StringRenderer(pretty: false);
   final Queue<HttpRequest> _requestQueue = new Queue<HttpRequest>();
-  Angel _server;
+  AngelHttp _server;
   Duration _timeout;
+  vm.VM _vmachine;
 
   /// Invoked to load a new instance of [Angel] on file changes.
   final FutureOr<Angel> Function() generator;
@@ -62,9 +79,44 @@ class HotReloader {
     _onChange.close();
   }
 
+  void sendError(HttpRequest request, int status, String title_, e) {
+    var doc = html(lang: 'en', c: [
+      head(c: [
+        meta(name: 'viewport', content: 'width=device-width, initial-scale=1'),
+        title(c: [text(title_)])
+      ]),
+      body(c: [
+        h1(c: [text(title_)]),
+        i(c: [text(e.toString())])
+      ])
+    ]);
+
+    var response = request.response;
+    response.statusCode = HttpStatus.badGateway;
+    response.headers
+      ..contentType = ContentType.HTML
+      ..set(HttpHeaders.SERVER, 'angel_hot');
+
+    if (request.headers
+            .value(HttpHeaders.ACCEPT_ENCODING)
+            ?.toLowerCase()
+            ?.contains('gzip') ==
+        true) {
+      response
+        ..headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
+        ..add(gzip.encode(utf8.encode(_renderer.render(doc))));
+    } else
+      response.write(_renderer.render(doc));
+    response.close();
+  }
+
+  Future _handle(HttpRequest request) {
+    return _server.handleRequest(request);
+  }
+
   Future handleRequest(HttpRequest request) async {
     if (_server != null)
-      return await _server.handleRequest(request);
+      return await _handle(request);
     else if (timeout == null)
       _requestQueue.add(request);
     else {
@@ -72,48 +124,18 @@ class HotReloader {
       new Timer(timeout, () {
         if (_requestQueue.remove(request)) {
           // Send 502 response
-          var doc = html(lang: 'en', c: [
-            head(c: [
-              meta(
-                  name: 'viewport',
-                  content: 'width=device-width, initial-scale=1'),
-              title(c: [text('502 Bad Gateway')])
-            ]),
-            body(c: [
-              h1(c: [text('502 Bad Gateway')]),
-              i(c: [
-                text('Request timed out after ${timeout.inMilliseconds}ms.')
-              ])
-            ])
-          ]);
-
-          var response = request.response;
-          response.statusCode = HttpStatus.BAD_GATEWAY;
-          response.headers
-            ..contentType = ContentType.HTML
-            ..set(HttpHeaders.SERVER, 'angel_hot');
-
-          if (request.headers
-                  .value(HttpHeaders.ACCEPT_ENCODING)
-                  ?.toLowerCase()
-                  ?.contains('gzip') ==
-              true) {
-            response
-              ..headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
-              ..add(GZIP.encode(UTF8.encode(_renderer.render(doc))));
-          } else
-            response.write(_renderer.render(doc));
-          response.close();
+          sendError(request, HttpStatus.badGateway, '502 Bad Gateway',
+              'Request timed out after ${timeout.inMilliseconds}ms.');
         }
       });
     }
   }
 
-  Future<Angel> _generateServer() async {
-    var s = await generator() as Angel;
+  Future<AngelHttp> _generateServer() async {
+    var s = await generator();
     await Future.forEach(s.startupHooks, s.configure);
     s.optimizeForProduction();
-    return s;
+    return new AngelHttp(s);
   }
 
   /// Starts listening to requests and filesystem events.
@@ -122,17 +144,21 @@ class HotReloader {
       print(
           'WARNING: You have instantiated a HotReloader without providing any filesystem paths to watch.');
 
-    var s = _server = await _generateServer();
-    while (!_requestQueue.isEmpty)
-      await s.handleRequest(_requestQueue.removeFirst());
+    _client = await vm.vmServiceConnect(
+        vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
+    _vmachine ??= await _client.getVM();
+    _mainIsolate ??= _vmachine.isolates.first;
+    await _client.setExceptionPauseMode(_mainIsolate.id, 'None');
+
+    _server = await _generateServer();
+    while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
 
     _onChange.stream
         .transform(new _Debounce(new Duration(seconds: 1)))
         .listen(_handleWatchEvent);
     await _listenToFilesystem();
 
-    var server = await HttpServer.bind(
-        address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0);
+    var server = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
     server.listen(handleRequest);
     return server;
   }
@@ -174,14 +200,14 @@ class HotReloader {
     _listen() async {
       try {
         var stat = await FileStat.stat(path);
-        if (stat.type == FileSystemEntityType.LINK) {
+        if (stat.type == FileSystemEntityType.link) {
           var lnk = new Link(path);
           var p = await lnk.resolveSymbolicLinks();
           return await _listenToStat(p);
-        } else if (stat.type == FileSystemEntityType.FILE) {
+        } else if (stat.type == FileSystemEntityType.file) {
           var file = new File(path);
           if (!await file.exists()) return null;
-        } else if (stat.type == FileSystemEntityType.DIRECTORY) {
+        } else if (stat.type == FileSystemEntityType.directory) {
           var dir = new Directory(path);
           if (!await dir.exists()) return null;
         } else
@@ -204,7 +230,8 @@ class HotReloader {
 
     if (r == null) {
       print(
-          'WARNING: Unable to watch path "$path" from working directory "${Directory.current.path}". Please ensure that it exists.');
+          'WARNING: Unable to watch path "$path" from working directory "${Directory
+              .current.path}". Please ensure that it exists.');
     }
   }
 
@@ -216,27 +243,24 @@ class HotReloader {
       // Do this asynchronously, because we really don't care about the old server anymore.
       new Future(() async {
         // Disconnect active WebSockets
-        var ws = old.container.make(AngelWebSocket) as AngelWebSocket;
+        var ws = old.app.container.make(AngelWebSocket) as AngelWebSocket;
 
         for (var client in ws.clients) {
           try {
-            await client.close(WebSocketStatus.GOING_AWAY);
+            await client.close(WebSocketStatus.goingAway);
           } catch (e) {
             stderr.writeln(
-                'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
+                'Couldn\'t close WebSocket from session #${client.request
+                    .session.id}: $e');
           }
         }
 
-        Future.forEach(old.shutdownHooks, old.configure);
+        Future.forEach(old.app.shutdownHooks, old.app.configure);
       });
     }
 
     _server = null;
-    _client ??= await vm.vmServiceConnect(
-        vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
-    var vmachine = await _client.getVM();
-    var mainIsolate = vmachine.isolates.first;
-    var report = await _client.reloadSources(mainIsolate.id);
+    var report = await _client.reloadSources(_mainIsolate.id);
 
     if (!report.success) {
       stderr.writeln('Hot reload failed!!!');
@@ -246,12 +270,11 @@ class HotReloader {
 
     var s = await _generateServer();
     _server = s;
-    while (!_requestQueue.isEmpty)
-      await s.handleRequest(_requestQueue.removeFirst());
+    while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
   }
 }
 
-class _Debounce<S> implements StreamTransformer<S, S> {
+class _Debounce<S> extends StreamTransformerBase<S, S> {
   final Duration _delay;
 
   const _Debounce(this._delay);
