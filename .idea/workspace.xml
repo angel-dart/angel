@@ -2,44 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/Match_routes__even_with_query_params_in_routing_test_dart.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/can_fetch_data_in_services_test_dart.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis_options.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/analysis_options.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/json.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/json.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/hooks.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hooks.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/angel_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/angel_base.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/hooked_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/hooked_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/injection.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/injection.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/map_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/map_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/request_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/request_context.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/response_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/response_context.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/routable.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/routable.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/server.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/server.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/http/controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/http/http.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/http.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/http/http_request_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/http_request_context.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/http/http_response_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/http_response_context.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/stats/metric_server.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/stats/metric_server.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/performance/hello/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/performance/hello/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/performance/hello/raw.dart" beforeDir="false" afterPath="$PROJECT_DIR$/performance/hello/raw.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/encoders_buffer_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/encoders_buffer_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/exception_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/exception_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/general_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/general_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/parameter_meta_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/parameter_meta_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/precontained_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/precontained_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/primitives_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/primitives_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/repeat_request_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/repeat_request_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/routing_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/routing_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/server_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/server_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/services_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/services_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/streaming_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/streaming_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/main.dart" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -101,27 +65,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="server.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/core/server.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="115">
-              <caret line="399" column="31" lean-forward="true" selection-start-line="399" selection-start-column="31" selection-end-line="399" selection-end-column="31" />
-              <folding>
-                <element signature="e#38#58#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hooked_test.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/hooked_test.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="100">
-              <caret line="51" column="34" lean-forward="true" selection-start-line="51" selection-start-column="34" selection-end-line="51" selection-end-column="34" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="service.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/src/core/service.dart">
           <provider selected="true" editor-type-id="text-editor">
@@ -130,6 +73,24 @@
               <folding>
                 <element signature="e#39#59#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".travis.yml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.travis.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="48">
+              <caret line="3" column="10" lean-forward="true" selection-start-line="3" selection-start-column="10" selection-end-line="3" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.dart" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/example/main.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="138">
+              <caret line="24" column="46" selection-start-line="24" selection-start-column="46" selection-end-line="24" selection-end-column="46" />
             </state>
           </provider>
         </entry>
@@ -149,18 +110,18 @@
       <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pubspec.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="16" column="21" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="21" />
+            <state relative-caret-position="130">
+              <caret line="28" column="17" lean-forward="true" selection-start-line="28" selection-start-column="17" selection-end-line="28" selection-end-column="17" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="48">
-                <caret line="3" column="63" selection-start-line="3" selection-start-column="63" selection-end-line="3" selection-end-column="63" />
+              <first_editor relative-caret-position="128">
+                <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
               </first_editor>
               <second_editor />
             </state>
@@ -277,7 +238,6 @@
         <option value="$PROJECT_DIR$/test/controller_test.dart" />
         <option value="$PROJECT_DIR$/test/di_test.dart" />
         <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/mock_request-1.0.3/lib/src/response.dart" />
-        <option value="$PROJECT_DIR$/.travis.yml" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/lib/src/core/angel_base.dart" />
         <option value="$PROJECT_DIR$/analysis_options.yaml" />
@@ -296,7 +256,6 @@
         <option value="$PROJECT_DIR$/test/exception_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/http.dart" />
         <option value="$PROJECT_DIR$/performance/hello/raw.dart" />
-        <option value="$PROJECT_DIR$/example/main.dart" />
         <option value="$PROJECT_DIR$/test/server_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/typed_service.dart" />
         <option value="$PROJECT_DIR$/test/routing_test.dart" />
@@ -312,8 +271,10 @@
         <option value="$PROJECT_DIR$/lib/src/core/hooked_service.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
         <option value="$PROJECT_DIR$/performance/hello/main.dart" />
-        <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
+        <option value="$PROJECT_DIR$/pubspec.yaml" />
+        <option value="$PROJECT_DIR$/.travis.yml" />
+        <option value="$PROJECT_DIR$/example/main.dart" />
       </list>
     </option>
   </component>
@@ -350,7 +311,17 @@
             <path>
               <item name="Root" type="cbb8eebc:String" user="Root" />
               <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="example" type="cbb8eebc:String" user="example" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
               <item name="performance/hello" type="cbb8eebc:String" user="performance/hello" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="tool" type="cbb8eebc:String" user="tool" />
             </path>
           </expand>
           <select />
@@ -400,7 +371,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Dart Command Line App.performance::hello (PRODUCTION)">
+  <component name="RunManager" selected="Dart Command Line App.main.dart">
     <configuration name="Can serialize function result as JSON in routing_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
       <option name="filePath" value="$PROJECT_DIR$/test/routing_test.dart" />
       <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
@@ -670,14 +641,7 @@
       <workItem from="1526435792950" duration="2668000" />
       <workItem from="1526439485584" duration="1904000" />
       <workItem from="1528385352077" duration="29000" />
-      <workItem from="1528432209488" duration="9138000" />
-    </task>
-    <task id="LOCAL-00035" summary="Updated `use`">
-      <created>1506092171442</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1506092171442</updated>
+      <workItem from="1528432209488" duration="9720000" />
     </task>
     <task id="LOCAL-00036" summary="+2">
       <created>1506092186428</created>
@@ -1015,7 +979,14 @@
       <option name="project" value="LOCAL" />
       <updated>1526440683707</updated>
     </task>
-    <option name="localTasksCounter" value="84" />
+    <task id="LOCAL-00084" summary="Test against Dart 1.x">
+      <created>1528441794043</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1528441794044</updated>
+    </task>
+    <option name="localTasksCounter" value="85" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1051,7 +1022,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="144865000" />
+    <option name="totallyTimeSpent" value="145447000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1064,7 +1035,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="24" y="22" width="1360" height="797" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="bottom" id="Tool Output" order="7" />
@@ -1082,14 +1052,14 @@
       <window_info id="UI Designer" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39857143" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32763532" />
-      <window_info anchor="bottom" id="Messages" order="7" visible="true" weight="0.32285714" />
+      <window_info anchor="bottom" id="Messages" order="7" weight="0.32285714" />
       <window_info anchor="right" id="Palette&#9;" order="3" />
       <window_info id="Image Layers" order="2" />
       <window_info anchor="right" id="Capture Analysis" order="3" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32905984" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4964476" weight="0.40142858" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4964476" visible="true" weight="0.40142858" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.48" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23748103" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23748103" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32905984" />
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="Theme Preview" order="3" />
@@ -1114,7 +1084,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Deprecated createZoneForRequest" />
     <MESSAGE value="Deprecated `ServerGenerator`" />
     <MESSAGE value="Updated tests to use `AngelHttp` API" />
     <MESSAGE value="Added example/main.dart" />
@@ -1139,7 +1108,8 @@
     <MESSAGE value="Use dart2_constant" />
     <MESSAGE value="Fixed all broken tests" />
     <MESSAGE value="1.1.3" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.1.3" />
+    <MESSAGE value="Test against Dart 1.x" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test against Dart 1.x" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1149,13 +1119,6 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/tool/travis.sh">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.travis.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="64">
-          <caret line="4" column="24" selection-start-line="4" selection-start-column="24" selection-end-line="4" selection-end-column="24" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
@@ -1321,13 +1284,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="154">
           <caret line="2027" column="23" lean-forward="true" selection-start-line="2027" selection-start-column="23" selection-end-line="2027" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/example/main.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
         </state>
       </provider>
     </entry>
@@ -1525,20 +1481,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="16" column="21" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="48">
-            <caret line="3" column="63" selection-start-line="3" selection-start-column="63" selection-end-line="3" selection-end-column="63" />
+          <first_editor relative-caret-position="128">
+            <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="130">
+          <caret line="28" column="17" lean-forward="true" selection-start-line="28" selection-start-column="17" selection-end-line="28" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.travis.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="10" lean-forward="true" selection-start-line="3" selection-start-column="10" selection-end-line="3" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/example/main.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="138">
+          <caret line="24" column="46" selection-start-line="24" selection-start-column="46" selection-end-line="24" selection-end-column="46" />
         </state>
       </provider>
     </entry>

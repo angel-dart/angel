@@ -160,7 +160,16 @@ class AngelHttp {
         }
 
         if (useZone == false) {
-          return handle().whenComplete(() => res.dispose());
+          return handle().catchError((e, st) {
+            if (e is FormatException)
+              throw new AngelHttpException.badRequest(message: e.message)
+                ..stackTrace = st;
+            throw new AngelHttpException(e, stackTrace: st, statusCode: 500);
+          }, test: (e) => e is! AngelHttpException).catchError(
+              (AngelHttpException e, StackTrace st) {
+            return handleAngelHttpException(
+                e, e.stackTrace ?? st, req, res, request);
+          }).whenComplete(() => res.dispose());
         } else {
           var zoneSpec = new ZoneSpecification(
             print: (self, parent, zone, line) {

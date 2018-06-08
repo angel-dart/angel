@@ -1,3 +1,6 @@
+# 1.1.4+1
+* Ensure correct error handling when `useZone` is `false`.
+ 
 # 1.1.4
 * Remove all usages of `async`/`await` in the core library.
 * `AngelConfigurer` now accepts `FutureOr`.
