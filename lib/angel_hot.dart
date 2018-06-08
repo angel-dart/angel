@@ -140,37 +140,36 @@ class HotReloader {
 
   /// Starts listening to requests and filesystem events.
   Future<HttpServer> startServer([address, int port]) async {
+    _server = await _generateServer();
+
     if (_paths?.isNotEmpty != true)
       print(
           'WARNING: You have instantiated a HotReloader without providing any filesystem paths to watch.');
 
-    _client = await vm.vmServiceConnect(
-        vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
-    _vmachine ??= await _client.getVM();
-    _mainIsolate ??= _vmachine.isolates.first;
-    await _client.setExceptionPauseMode(_mainIsolate.id, 'None');
+    if (!Platform.executableArguments.contains('--observe') &&
+        !Platform.executableArguments.contains('--enable-vm-service')) {
+      stderr.writeln(
+          'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.');
+    } else {
+      _client = await vm.vmServiceConnect(
+          vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
+      _vmachine ??= await _client.getVM();
+      _mainIsolate ??= _vmachine.isolates.first;
+      await _client.setExceptionPauseMode(_mainIsolate.id, 'None');
 
-    _server = await _generateServer();
+      _onChange.stream
+          .transform(new _Debounce(new Duration(seconds: 1)))
+          .listen(_handleWatchEvent);
+      await _listenToFilesystem();
+    }
+
     while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
-
-    _onChange.stream
-        .transform(new _Debounce(new Duration(seconds: 1)))
-        .listen(_handleWatchEvent);
-    await _listenToFilesystem();
-
     var server = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
     server.listen(handleRequest);
     return server;
   }
 
   _listenToFilesystem() async {
-    if (!Platform.executableArguments.contains('--observe') &&
-        !Platform.executableArguments.contains('--enable-vm-service')) {
-      stderr.writeln(
-          'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.');
-      return;
-    }
-
     for (var path in _paths) {
       if (path is String) {
         await _listenToStat(path);
