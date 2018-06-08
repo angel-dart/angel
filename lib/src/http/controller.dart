@@ -27,7 +27,7 @@ class Controller {
   Controller({this.debug: false, this.injectSingleton: true});
 
   @mustCallSuper
-  Future configureServer(Angel app) async {
+  Future configureServer(Angel app)  {
     _app = app;
 
     if (injectSingleton != false) _app.container.singleton(this);
@@ -56,6 +56,7 @@ class Controller {
     final routeBuilder = _routeBuilder(instanceMirror, routable, handlers);
     classMirror.instanceMembers.forEach(routeBuilder);
     configureRoutes(routable);
+    return new Future.value();
   }
 
   Function _routeBuilder(
@@ -85,9 +86,9 @@ class Controller {
             method.parameters[1].type.reflectedType == ResponseContext) {
           // Create a regular route
           routeMappings[name] = routable
-              .addRoute(exposeDecl.method, exposeDecl.path, (req, res) async {
-            var result = await reflectedMethod(req, res);
-            return result is RequestHandler ? await result(req, res) : result;
+              .addRoute(exposeDecl.method, exposeDecl.path, (req, res)  {
+            var result =   reflectedMethod(req, res);
+            return result is RequestHandler ?   result(req, res) : result;
           }, middleware: middleware);
           return;
         }

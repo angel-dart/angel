@@ -7,6 +7,7 @@ import '../util.dart';
 import 'angel_base.dart';
 import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
+import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
 
@@ -54,11 +55,14 @@ class Service extends Routable {
     'token'
   ];
 
+  /// Handlers that must run to ensure this service's functionality.
+  List get bootstrappers => [];
+
   /// The [Angel] app powering this service.
   AngelBase app;
 
   /// Closes this service, including any database connections or stream controllers.
-  Future close() async {}
+  void close() {}
 
   /// Retrieves all resources.
   Future index([Map params]) {
@@ -99,18 +103,22 @@ class Service extends Routable {
   }
 
   /// Generates RESTful routes pointing to this class's methods.
-  void addRoutes() {
+  void addRoutes([Service service]) {
+    _addRoutesInner(service ?? this, bootstrappers);
+  }
+
+  void _addRoutesInner(Service service,
+      List handlers) {
     Map restProvider = {'provider': Providers.rest};
 
     // Add global middleware if declared on the instance itself
-    Middleware before = getAnnotation(this, Middleware);
-    final handlers = [];
+    Middleware before = getAnnotation(service, Middleware);
 
     if (before != null) handlers.addAll(before.handlers);
 
-    Middleware indexMiddleware = getAnnotation(this.index, Middleware);
-    get('/', (req, res) async {
-      return await this.index(mergeMap([
+    Middleware indexMiddleware = getAnnotation(service.index, Middleware);
+    get('/', (req, res) {
+      return this.index(mergeMap([
         {'query': req.query},
         restProvider,
         req.serviceParams
@@ -120,28 +128,33 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
-    Middleware createMiddleware = getAnnotation(this.create, Middleware);
-    post('/', (req, ResponseContext res) async {
-      var r = await this.create(
-          await req.lazyBody(),
-          mergeMap([
-            {'query': req.query},
-            restProvider,
-            req.serviceParams
-          ]));
-      res.statusCode = 201;
-      return r;
+    Middleware createMiddleware = getAnnotation(service.create, Middleware);
+    post('/', (RequestContext req, ResponseContext res) {
+      return req.lazyBody().then((body) {
+        return this
+            .create(
+                body,
+                mergeMap([
+                  {'query': req.query},
+                  restProvider,
+                  req.serviceParams
+                ]))
+            .then((r) {
+          res.statusCode = 201;
+          return r;
+        });
+      });
     },
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (createMiddleware == null) ? [] : createMiddleware.handlers));
 
-    Middleware readMiddleware = getAnnotation(this.read, Middleware);
+    Middleware readMiddleware = getAnnotation(service.read, Middleware);
 
     get(
         '/:id',
-        (req, res) async => await this.read(
+        (req, res) => this.read(
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},
@@ -152,56 +165,56 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
 
-    Middleware modifyMiddleware = getAnnotation(this.modify, Middleware);
+    Middleware modifyMiddleware = getAnnotation(service.modify, Middleware);
     patch(
         '/:id',
-        (req, res) async => await this.modify(
+        (RequestContext req, res) => req.lazyBody().then((body) => this.modify(
             toId(req.params['id']),
-            await req.lazyBody(),
+            body,
             mergeMap([
               {'query': req.query},
               restProvider,
               req.serviceParams
-            ])),
+            ]))),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (modifyMiddleware == null) ? [] : modifyMiddleware.handlers));
 
-    Middleware updateMiddleware = getAnnotation(this.update, Middleware);
+    Middleware updateMiddleware = getAnnotation(service.update, Middleware);
     post(
         '/:id',
-        (req, res) async => await this.update(
+        (RequestContext req, res) => req.lazyBody().then((body) => this.update(
             toId(req.params['id']),
-            await req.lazyBody(),
+            body,
             mergeMap([
               {'query': req.query},
               restProvider,
               req.serviceParams
-            ])),
+            ]))),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
     put(
         '/:id',
-        (req, res) async => await this.update(
+        (RequestContext req, res) => req.lazyBody().then((body) => this.update(
             toId(req.params['id']),
-            await req.lazyBody(),
+            body,
             mergeMap([
               {'query': req.query},
               restProvider,
               req.serviceParams
-            ])),
+            ]))),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
-    Middleware removeMiddleware = getAnnotation(this.remove, Middleware);
+    Middleware removeMiddleware = getAnnotation(service.remove, Middleware);
     delete(
         '/',
-        (req, res) async => await this.remove(
+        (req, res) => this.remove(
             null,
             mergeMap([
               {'query': req.query},
@@ -214,7 +227,7 @@ class Service extends Routable {
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
     delete(
         '/:id',
-        (req, res) async => await this.remove(
+        (req, res) => this.remove(
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},

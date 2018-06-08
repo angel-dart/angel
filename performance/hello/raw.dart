@@ -12,7 +12,7 @@ main() {
 
 void start(int id) {
   HttpServer
-      .bind(InternetAddress.LOOPBACK_IP_V4, 3000, shared: true)
+      .bind('127.0.0.1', 3000, shared: true)
       .then((server) {
     print(
         'Instance #$id listening at http://${server.address.address}:${server.port}');

@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="can fetch data in services_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true" nameIsGenerated="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/services_test.dart" />
+    <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+    <option name="testName" value="can fetch data" />
+    <option name="testRunnerOptions" value="-j 4" />
+    <method />
+  </configuration>
+</component>

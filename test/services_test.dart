@@ -1,7 +1,8 @@
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
+import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 
 class Todo extends Model {
@@ -23,7 +24,7 @@ main() {
       ..use('/todos', new TypedService<Todo>(new MapService()))
       ..errorHandler = (e, req, res) {
         print('Whoops: ${e.error}');
-        print(e.stackTrace);
+        if (e.stackTrace != null) print(new Chain.forTrace(e.stackTrace).terse);
       };
 
     var server = await new AngelHttp(app).startServer();
@@ -45,7 +46,7 @@ main() {
       print(response.body);
       expect(response.body, equals('[]'));
       print(response.body);
-      expect(JSON.decode(response.body).length, 0);
+      expect(json.decode(response.body).length, 0);
     });
 
     test('can create data', () async {
@@ -97,12 +98,12 @@ main() {
       String postData = god.serialize({'text': 'Hello, world!'});
       var created = await client
           .post("$url/todos", headers: headers, body: postData)
-          .then((r) => JSON.decode(r.body));
+          .then((r) => json.decode(r.body));
       var response = await client.delete("$url/todos/${created['id']}");
       expect(response.statusCode, 200);
-      var json = god.deserialize(response.body);
-      print(json);
-      expect(json['text'], equals('Hello, world!'));
+      var json_ = god.deserialize(response.body);
+      print(json_);
+      expect(json_['text'], equals('Hello, world!'));
     });
   });
 }

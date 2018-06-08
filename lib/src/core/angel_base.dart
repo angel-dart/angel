@@ -9,9 +9,8 @@ typedef Future<String> ViewGenerator(String path, [Map data]);
 
 /// Base class for Angel servers. Do not bother extending this.
 class AngelBase extends Routable {
-  static ViewGenerator noViewEngineConfigured = (String view,
-          [Map data]) async =>
-      "No view engine has been configured yet.";
+  static ViewGenerator noViewEngineConfigured = (String view, [Map data]) =>
+      new Future<String>.value("No view engine has been configured yet.");
 
   Container _container = new Container();
 
@@ -35,9 +34,10 @@ class AngelBase extends Routable {
   ViewGenerator viewGenerator = noViewEngineConfigured;
 
   /// Closes this instance, rendering it **COMPLETELY DEFUNCT**.
-  Future close() async {
-    await super.close();
+  Future close() {
+    super.close();
     _container = null;
     viewGenerator = noViewEngineConfigured;
+    return new Future.value();
   }
 }

@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:io' show stderr;
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
@@ -23,8 +24,8 @@ main() {
 
     app.injectEncoders(
       {
-        'deflate': ZLIB.encoder,
-        'gzip': GZIP.encoder,
+        'deflate': zlib.encoder,
+        'gzip': gzip.encoder,
       },
     );
 
@@ -73,7 +74,7 @@ main() {
   _expectHelloBye(String path) async {
     var rq = new MockHttpRequest('GET', Uri.parse(path))..close();
     await http.handleRequest(rq);
-    var body = await rq.response.transform(UTF8.decoder).join();
+    var body = await rq.response.transform(utf8.decoder).join();
     expect(body, 'Hello, world!bye');
   }
 
@@ -84,7 +85,7 @@ main() {
   test('cannot write after close', () async {
     var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))..close();
     await http.handleRequest(rq);
-    var body = await rq.response.transform(UTF8.decoder).join();
+    var body = await rq.response.transform(utf8.decoder).join();
 
     if (rq.response.statusCode != 32)
       throw 'overwrite should throw error; response: $body';
@@ -94,7 +95,7 @@ main() {
     try {
       var rq = new MockHttpRequest('GET', Uri.parse('/error'))..close();
       await http.handleRequest(rq);
-      var body = await rq.response.transform(UTF8.decoder).join();
+      var body = await rq.response.transform(utf8.decoder).join();
       throw 'addError should throw error; response: $body';
     } on StateError {
       // Should throw error...

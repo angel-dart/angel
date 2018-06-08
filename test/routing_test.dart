@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
@@ -96,7 +95,7 @@ main() {
 
     client = new http.Client();
     var server =
-        await new AngelHttp(app).startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+        await new AngelHttp(app).startServer('127.0.0.1', 0);
     url = "http://${server.address.host}:${server.port}";
   });
 
@@ -118,10 +117,10 @@ main() {
   test('Can match url with multiple parameters', () async {
     var response = await client.get('$url/name/HELLO/last/WORLD');
     print('Response: ${response.body}');
-    var json = JSON.decode(response.body);
-    expect(json, new isInstanceOf<Map<String, String>>());
-    expect(json['first'], equals('HELLO'));
-    expect(json['last'], equals('WORLD'));
+    var json_ = json.decode(response.body);
+    expect(json_, new isInstanceOf<Map<String, String>>());
+    expect(json_['first'], equals('HELLO'));
+    expect(json_['last'], equals('WORLD'));
   });
 
   test('Chained routes', () async {
@@ -131,16 +130,16 @@ main() {
 
   test('Can nest another Angel instance', () async {
     var response = await client.post('$url/nes/ted/foo');
-    var json = JSON.decode(response.body);
-    expect(json['route'], equals('foo'));
+    var json_ = json.decode(response.body);
+    expect(json_['route'], equals('foo'));
   });
 
   test('Can parse parameters from a nested Angel instance', () async {
     var response = await client.get('$url/todos/1337/action/test');
-    var json = JSON.decode(response.body);
-    print('JSON: $json');
-    expect(json['id'], equals('1337'));
-    expect(json['action'], equals('test'));
+    var json_ = json.decode(response.body);
+    print('JSON: $json_');
+    expect(json_['id'], equals('1337'));
+    expect(json_['action'], equals('test'));
   });
 
   test('Can add and use named middleware', () async {
@@ -156,10 +155,11 @@ main() {
 
   test('Can serialize function result as JSON', () async {
     Map headers = {'Content-Type': 'application/json'};
-    String postData = JSON.encode({'it': 'works'});
+    String postData = json.encode({'it': 'works'});
     var response =
         await client.post("$url/lambda", headers: headers, body: postData);
-    expect(JSON.decode(response.body)['it'], equals('works'));
+    print('Response: ${response.body}');
+    expect(json.decode(response.body)['it'], equals('works'));
   });
 
   test('Fallback routes', () async {
@@ -178,14 +178,14 @@ main() {
   test('Redirect to named routes', () async {
     var response = await client.get('$url/named');
     print(response.body);
-    expect(JSON.decode(response.body), equals('Hello tests'));
+    expect(json.decode(response.body), equals('Hello tests'));
   });
 
   test('Match routes, even with query params', () async {
     var response =
         await client.get("$url/log?foo=bar&bar=baz&baz.foo=bar&baz.bar=foo");
     print(response.body);
-    expect(JSON.decode(response.body), equals('Logged'));
+    expect(json.decode(response.body), equals('Logged'));
 
     response = await client.get("$url/query/foo?bar=baz");
     print(response.body);

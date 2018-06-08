@@ -9,7 +9,6 @@ import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 export 'package:container/container.dart';
 import 'package:logging/logging.dart';
-import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
 import '../http/http.dart';
 import 'angel_base.dart';
@@ -27,7 +26,7 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef Future<HttpServer> ServerGenerator(address, int port);
 
 /// A function that configures an [Angel] server in some way.
-typedef Future AngelConfigurer(Angel app);
+typedef FutureOr AngelConfigurer(Angel app);
 
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
@@ -202,12 +201,12 @@ class Angel extends AngelBase {
   /// Shuts down the server, and closes any open [StreamController]s.
   ///
   /// The server will be **COMPLETE DEFUNCT** after this operation!
-  Future close() async {
-    await Future.forEach(services.values, (Service service) async {
-      await service.close();
+  Future close() {
+    Future.forEach(services.values, (Service service) {
+      service.close();
     });
 
-    await super.close();
+    super.close();
     _preContained.clear();
     handlerCache.clear();
     _injections.clear();
@@ -220,8 +219,8 @@ class Angel extends AngelBase {
     shutdownHooks.clear();
     responseFinalizers.clear();
     _flattened = null;
-    await _http?.close();
-    return _http?.httpServer;
+    _http?.close();
+    return new Future.value(_http?.httpServer);
   }
 
   @override
@@ -269,52 +268,50 @@ class Angel extends AngelBase {
     this.serializer = serializer;
   }
 
-  Future getHandlerResult(
-      handler, RequestContext req, ResponseContext res) async {
+  Future getHandlerResult(handler, RequestContext req, ResponseContext res) {
     if (handler is RequestHandler) {
-      var result = await handler(req, res);
-      return await getHandlerResult(result, req, res);
+      var result = handler(req, res);
+      return getHandlerResult(result, req, res);
     }
 
     if (handler is Future) {
-      var result = await handler;
-      return await getHandlerResult(result, req, res);
+      return handler.then((result) => getHandlerResult(result, req, res));
     }
 
     if (handler is Function) {
-      var result = await runContained(handler, req, res);
-      return await getHandlerResult(result, req, res);
+      var result = runContained(handler, req, res);
+      return getHandlerResult(result, req, res);
     }
 
     if (handler is Stream) {
-      return await getHandlerResult(await handler.toList(), req, res);
+      return getHandlerResult(handler.toList(), req, res);
     }
 
     var middleware = (req.app ?? this).findMiddleware(handler);
     if (middleware != null) {
-      return await getHandlerResult(middleware, req, res);
+      return getHandlerResult(middleware, req, res);
     }
 
-    return handler;
+    return new Future.value(handler);
   }
 
   /// Runs some [handler]. Returns `true` if request execution should continue.
   Future<bool> executeHandler(
-      handler, RequestContext req, ResponseContext res) async {
-    var result = await getHandlerResult(handler, req, res);
-
-    if (result == null)
-      return false;
-    else if (result is bool) {
-      return result;
-    } else if (result != null) {
-      // TODO: Make `serialize` return a bool, return this as the value.
-      // Do this wherever applicable
-      res.serialize(result,
-          contentType: res.headers['content-type'] ?? 'application/json');
-      return false;
-    } else
-      return res.isOpen;
+      handler, RequestContext req, ResponseContext res) {
+    return getHandlerResult(handler, req, res).then((result) {
+      if (result == null)
+        return false;
+      else if (result is bool) {
+        return result;
+      } else if (result != null) {
+        // TODO: Make `serialize` return a bool, return this as the value.
+        // Do this wherever applicable
+        res.serialize(result,
+            contentType: res.headers['content-type'] ?? 'application/json');
+        return false;
+      } else
+        return res.isOpen;
+    });
   }
 
   /// Use the serving methods in [AngelHttp] instead.
@@ -400,20 +397,22 @@ class Angel extends AngelBase {
   /// the execution will be faster, as the injection requirements were stored beforehand.
   Future runContained(
       Function handler, RequestContext req, ResponseContext res) {
-    if (_preContained.containsKey(handler)) {
-      return handleContained(handler, _preContained[handler])(req, res);
-    }
+    return new Future.sync(() {
+      if (_preContained.containsKey(handler)) {
+        return handleContained(handler, _preContained[handler])(req, res);
+      }
 
-    return runReflected(handler, req, res);
+      return runReflected(handler, req, res);
+    });
   }
 
   /// Runs with DI, and *always* reflects. Prefer [runContained].
   Future runReflected(
-      Function handler, RequestContext req, ResponseContext res) async {
+      Function handler, RequestContext req, ResponseContext res) {
     var h =
         handleContained(handler, _preContained[handler] = preInject(handler));
-    return await h(req, res);
-    // return await closureMirror.apply(args).reflectee;
+    return new Future.sync(() => h(req, res));
+    // return   closureMirror.apply(args).reflectee;
   }
 
   /// Use the serving methods in [AngelHttp] instead.
@@ -432,8 +431,8 @@ class Angel extends AngelBase {
   }
 
   /// Applies an [AngelConfigurer] to this instance.
-  Future configure(AngelConfigurer configurer) async {
-    await configurer(this);
+  Future configure(AngelConfigurer configurer) {
+    return new Future.sync(() => configurer(this));
   }
 
   /// Mounts the child on this router. If [routable] is `null`,
@@ -447,7 +446,7 @@ class Angel extends AngelBase {
   /// NOTE: The above will not be properly copied if [path] is
   /// a [RegExp].
   @override
-  use(path, [@checked Routable routable, String namespace = null]) {
+  use(path, [Router routable, String namespace = null]) {
     if (routable == null) return all('*', path);
 
     var head = path.toString().replaceAll(_straySlashes, '');
@@ -457,13 +456,13 @@ class Angel extends AngelBase {
       _preContained.addAll(routable._preContained);
 
       if (routable.responseFinalizers.isNotEmpty) {
-        responseFinalizers.add((req, res) async {
+        responseFinalizers.add((req, res) {
           if (req.path.replaceAll(_straySlashes, '').startsWith(head)) {
             for (var finalizer in routable.responseFinalizers)
-              await finalizer(req, res);
+              finalizer(req, res);
           }
 
-          return true;
+          return new Future.value(true);
         });
       }
 
@@ -493,15 +492,17 @@ class Angel extends AngelBase {
   }
 
   @deprecated
-  Future<ZoneSpecification> defaultZoneCreator(request, req, res) async {
-    return new ZoneSpecification(
-      print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-        if (logger != null) {
-          logger.info(line);
-        } else {
-          return parent.print(zone, line);
-        }
-      },
+  Future<ZoneSpecification> defaultZoneCreator(request, req, res) {
+    return new Future.value(
+      new ZoneSpecification(
+        print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+          if (logger != null) {
+            logger.info(line);
+          } else {
+            return parent.print(zone, line);
+          }
+        },
+      ),
     );
   }
 
@@ -518,9 +519,8 @@ class Angel extends AngelBase {
   factory Angel.fromSecurityContext(SecurityContext context) {
     var app = new Angel();
 
-    app._http =
-        new AngelHttp.custom(app, (address, int port) async {
-      return await HttpServer.bindSecure(address, port, context);
+    app._http = new AngelHttp.custom(app, (address, int port) {
+      return HttpServer.bindSecure(address, port, context);
     });
 
     return app;

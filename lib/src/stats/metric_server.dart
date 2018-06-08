@@ -58,10 +58,10 @@ class AngelMetrics extends Angel {
   final AngelMetricsStats stats = new AngelMetricsStats._();
 
   @override
-  Future<HttpServer> close() async {
+  Future<HttpServer> close()  {
     _sub?.cancel();
-    await _inner.close();
-    return await super.close();
+      _inner.close();
+    return   super.close();
   }
 
   @override

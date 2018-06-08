@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 import 'package:dart2_constant/convert.dart';
 import 'package:angel_framework/angel_framework.dart';
@@ -48,6 +47,6 @@ serverMain(_) async {
     print(e.stackTrace);
   };
 
-  var server = await http.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
+  var server = await http.startServer('127.0.0.1', 3000);
   print('Listening at http://${server.address.address}:${server.port}');
 }

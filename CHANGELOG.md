@@ -1,3 +1,8 @@
+# 1.1.4
+* Remove all usages of `async`/`await` in the core library.
+* `AngelConfigurer` now accepts `FutureOr`.
+* `AngelHttp` now has a `useZone` flag to disable custom zones.
+
 # 1.1.3
 * `AngelHttp` now handles requests in a `Zone`.
 * Use `package:dart2_constant`.

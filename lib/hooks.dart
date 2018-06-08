@@ -9,19 +9,19 @@ import 'angel_framework.dart';
 /// Sequentially runs a set of [listeners].
 HookedServiceEventListener chainListeners(
     Iterable<HookedServiceEventListener> listeners) {
-  return (HookedServiceEvent e) async {
-    for (HookedServiceEventListener listener in listeners) await listener(e);
+  return (HookedServiceEvent e) {
+    for (HookedServiceEventListener listener in listeners) listener(e);
   };
 }
 
 /// Runs a [callback] on every service, and listens for future services to run it again.
 AngelConfigurer hookAllServices(callback(Service service)) {
-  return (Angel app) async {
+  return (Angel app) {
     List<Service> touched = [];
 
     for (var service in app.services.values) {
       if (!touched.contains(service)) {
-        await callback(service);
+        callback(service);
         touched.add(service);
       }
     }
@@ -52,9 +52,9 @@ HookedServiceEventListener transform(transformer(obj), [condition]) {
   Iterable cond = condition is Iterable ? condition : [condition];
   if (condition == null) cond = [];
 
-  _condition(HookedServiceEvent e, condition) async {
+  _condition(HookedServiceEvent e, condition) {
     if (condition is Function)
-      return await condition(e);
+      return condition(e);
     else if (condition == Providers)
       return true;
     else {
@@ -70,11 +70,11 @@ HookedServiceEventListener transform(transformer(obj), [condition]) {
     }
   }
 
-  normalize(HookedServiceEvent e, obj) async {
+  normalize(HookedServiceEvent e, obj) {
     bool transform = true;
 
     for (var c in cond) {
-      var r = await _condition(e, c);
+      var r = _condition(e, c);
 
       if (r != true) {
         transform = false;
@@ -97,7 +97,7 @@ HookedServiceEventListener transform(transformer(obj), [condition]) {
       var r = [];
 
       for (var o in obj) {
-        r.add(await normalize(e, o));
+        r.add(normalize(e, o));
       }
 
       return r;
@@ -105,10 +105,10 @@ HookedServiceEventListener transform(transformer(obj), [condition]) {
       return transformer(obj);
   }
 
-  return (HookedServiceEvent e) async {
+  return (HookedServiceEvent e) {
     if (e.isBefore) {
-      e.data = await normalize(e, e.data);
-    } else if (e.isAfter) e.result = await normalize(e, e.result);
+      e.data = normalize(e, e.data);
+    } else if (e.isAfter) e.result = normalize(e, e.result);
   };
 }
 
@@ -135,7 +135,7 @@ HookedServiceEventListener toType(Type type) {
 /// Only applies to the client-side.
 HookedServiceEventListener remove(key, [remover(key, obj)]) {
   return (HookedServiceEvent e) async {
-    _remover(key, obj) {
+    _remover(key, obj) async {
       if (remover != null)
         return remover(key, obj);
       else if (obj is List)
@@ -171,15 +171,15 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
         if (obj is Iterable) {
           return await Future.wait(obj.map(_removeAll));
         } else
-          return await _removeAll(obj);
+          return _removeAll(obj);
       }
     }
 
     if (e.params?.containsKey('provider') == true) {
       if (e.isBefore) {
-        e.data = await normalize(e.data);
+        e.data = normalize(e.data);
       } else if (e.isAfter) {
-        e.result = await normalize(e.result);
+        e.result = normalize(e.result);
       }
     }
   };
@@ -193,12 +193,12 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
 ///
 /// If [provider] is `null`, then it will be disabled to all clients.
 HookedServiceEventListener disable([provider]) {
-  return (HookedServiceEvent e) async {
+  return (HookedServiceEvent e) {
     if (e.params.containsKey('provider')) {
       if (provider == null)
         throw new AngelHttpException.methodNotAllowed();
       else if (provider is Function) {
-        var r = await provider(e);
+        var r = provider(e);
         if (r != true) throw new AngelHttpException.methodNotAllowed();
       } else {
         _provide(p) => p is Providers ? p : new Providers(p.toString());
@@ -224,7 +224,7 @@ HookedServiceEventListener addCreatedAt(
     {assign(obj, now), String key, bool serialize: true}) {
   var name = key?.isNotEmpty == true ? key : 'createdAt';
 
-  return (HookedServiceEvent e) async {
+  return (HookedServiceEvent e) {
     _assign(obj, now) {
       if (assign != null)
         return assign(obj, now);
@@ -242,17 +242,17 @@ HookedServiceEventListener addCreatedAt(
     var d = new DateTime.now().toUtc();
     var now = serialize == false ? d : d.toIso8601String();
 
-    normalize(obj) async {
+    normalize(obj) {
       if (obj != null) {
         if (obj is Iterable) {
           obj.forEach(normalize);
         } else {
-          await _assign(obj, now);
+          _assign(obj, now);
         }
       }
     }
 
-    await normalize(e.isBefore ? e.data : e.result);
+    normalize(e.isBefore ? e.data : e.result);
   };
 }
 
@@ -265,7 +265,7 @@ HookedServiceEventListener addUpdatedAt(
     {assign(obj, now), String key, bool serialize: true}) {
   var name = key?.isNotEmpty == true ? key : 'updatedAt';
 
-  return (HookedServiceEvent e) async {
+  return (HookedServiceEvent e) {
     _assign(obj, now) {
       if (assign != null)
         return assign(obj, now);
@@ -283,16 +283,16 @@ HookedServiceEventListener addUpdatedAt(
     var d = new DateTime.now().toUtc();
     var now = serialize == false ? d : d.toIso8601String();
 
-    normalize(obj) async {
+    normalize(obj) {
       if (obj != null) {
         if (obj is Iterable) {
           obj.forEach(normalize);
         } else {
-          await _assign(obj, now);
+          _assign(obj, now);
         }
       }
     }
 
-    await normalize(e.isBefore ? e.data : e.result);
+    normalize(e.isBefore ? e.data : e.result);
   };
 }

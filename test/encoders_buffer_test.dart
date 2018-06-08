@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show BytesBuilder;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
@@ -19,8 +20,8 @@ main() {
     app = new Angel();
     app.injectEncoders(
       {
-        'deflate': ZLIB.encoder,
-        'gzip': GZIP.encoder,
+        'deflate': zlib.encoder,
+        'gzip': gzip.encoder,
       },
     );
 
@@ -55,50 +56,50 @@ void encodingTests(Angel getApp()) {
 
     test('encodes if wildcard', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set(HttpHeaders.ACCEPT_ENCODING, '*')
+        ..headers.set('accept-encoding', '*')
         ..close();
       var rs = rq.response;
       await http.handleRequest(rq);
 
       var body = await getBody(rs);
-      expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
-      expect(body, ZLIB.encode(utf8.encode('Hello, world!')));
+      expect(rs.headers.value('content-encoding'), 'deflate');
+      expect(body, zlib.encode(utf8.encode('Hello, world!')));
     });
 
     test('encodes if wildcard + multiple', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set(HttpHeaders.ACCEPT_ENCODING, ['foo', 'bar', '*'])
+        ..headers.set('accept-encoding', ['foo', 'bar', '*'])
         ..close();
       var rs = rq.response;
       await http.handleRequest(rq);
 
       var body = await getBody(rs);
-      expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'deflate');
-      expect(body, ZLIB.encode(utf8.encode('Hello, world!')));
+      expect(rs.headers.value('content-encoding'), 'deflate');
+      expect(body, zlib.encode(utf8.encode('Hello, world!')));
     });
 
     test('encodes if explicit', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set(HttpHeaders.ACCEPT_ENCODING, 'gzip');
+        ..headers.set('accept-encoding', 'gzip');
       await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
 
       var body = await getBody(rs);
-      expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
-      expect(body, GZIP.encode(utf8.encode('Hello, world!')));
+      expect(rs.headers.value('content-encoding'), 'gzip');
+      expect(body, gzip.encode(utf8.encode('Hello, world!')));
     });
 
     test('only uses one encoder', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set(HttpHeaders.ACCEPT_ENCODING, ['gzip', 'deflate']);
+        ..headers.set('accept-encoding', ['gzip', 'deflate']);
       await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
       
       var body = await getBody(rs);
-      expect(rs.headers.value(HttpHeaders.CONTENT_ENCODING), 'gzip');
-      expect(body, GZIP.encode(utf8.encode('Hello, world!')));
+      expect(rs.headers.value('content-encoding'), 'gzip');
+      expect(body, gzip.encode(utf8.encode('Hello, world!')));
     });
   });
 }

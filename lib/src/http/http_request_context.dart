@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:body_parser/body_parser.dart';
+import 'package:http_parser/http_parser.dart';
 import '../core/core.dart';
 
 /// An implementation of [RequestContext] that wraps a [HttpRequest].
@@ -34,7 +35,7 @@ class HttpRequestContextImpl extends RequestContext {
 
   @override
   String get method {
-    return  _override ?? originalMethod;
+    return _override ?? originalMethod;
   }
 
   @override
@@ -70,7 +71,7 @@ class HttpRequestContextImpl extends RequestContext {
 
   /// Magically transforms an [HttpRequest] into a [RequestContext].
   static Future<HttpRequestContextImpl> from(
-      HttpRequest request, Angel app, String path) async {
+      HttpRequest request, Angel app, String path) {
     HttpRequestContextImpl ctx = new HttpRequestContextImpl();
 
     String override = request.method;
@@ -116,10 +117,10 @@ class HttpRequestContextImpl extends RequestContext {
     ctx._io = request;
 
     if (app.lazyParseBodies != true) {
-      await ctx.parse();
+      return ctx.parse().then((_) => ctx);
     }
 
-    return ctx;
+    return new Future.value(ctx);
   }
 
   @override
@@ -131,8 +132,13 @@ class HttpRequestContextImpl extends RequestContext {
   }
 
   @override
-  Future<BodyParseResult> parseOnce() async {
-    return await parseBody(io,
+  Future<BodyParseResult> parseOnce() {
+    return parseBodyFromStream(
+        io,
+        io.headers.contentType != null
+            ? new MediaType.parse(io.headers.contentType.toString())
+            : null,
+        io.uri,
         storeOriginalBuffer: app.storeOriginalBuffer == true);
   }
 }

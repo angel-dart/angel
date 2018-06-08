@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
@@ -16,8 +16,8 @@ main() {
     rq.close();
     await new AngelHttp(app).handleRequest(rq);
     var rs = rq.response;
-    var body = await rs.transform(UTF8.decoder).join();
-    expect(body, JSON.encode('bar'));
+    var body = await rs.transform(utf8.decoder).join();
+    expect(body, json.encode('bar'));
   });
 }
 

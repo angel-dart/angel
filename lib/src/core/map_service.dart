@@ -45,13 +45,13 @@ class MapService extends Service {
   }
 
   @override
-  Future<List> index([Map params]) async {
+  Future<List> index([Map params]) {
     if (allowQuery == false || params == null || params['query'] is! Map)
-      return items;
+      return new Future.value(items);
     else {
       Map query = params['query'];
 
-      return items.where((item) {
+      return new Future.value(items.where((item) {
         for (var key in query.keys) {
           if (!item.containsKey(key))
             return false;
@@ -59,19 +59,19 @@ class MapService extends Service {
         }
 
         return true;
-      }).toList();
+      }).toList());
     }
   }
 
   @override
-  Future<Map> read(id, [Map params]) async {
-    return items.firstWhere(_matchesId(id),
+  Future<Map> read(id, [Map params]) {
+    return new Future.value(items.firstWhere(_matchesId(id),
         orElse: () => throw new AngelHttpException.notFound(
-            message: 'No record found for ID $id'));
+            message: 'No record found for ID $id')));
   }
 
   @override
-  Future<Map> create(data, [Map params]) async {
+  Future<Map> create(data, [Map params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
@@ -86,70 +86,71 @@ class MapService extends Service {
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
     items.add(result);
-    return result;
+    return new Future.value(result);
   }
 
   @override
-  Future<Map> modify(id, data, [Map params]) async {
+  Future<Map> modify(id, data, [Map params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
               'MapService does not support `modify` with ${data.runtimeType}.');
-    if (!items.any(_matchesId(id))) return await create(data, params);
+    if (!items.any(_matchesId(id))) return create(data, params);
 
-    var item = await read(id);
-    var result = item..addAll(data);
+    return read(id).then((item) {
+      var result = item..addAll(data);
 
-    if (autoIdAndDateFields == true)
-      result
-        ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
-            new DateTime.now().toIso8601String();
-    return result;
+      if (autoIdAndDateFields == true)
+        result
+          ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
+              new DateTime.now().toIso8601String();
+      return new Future.value(result);
+    });
   }
 
   @override
-  Future<Map> update(id, data, [Map params]) async {
+  Future<Map> update(id, data, [Map params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
               'MapService does not support `update` with ${data.runtimeType}.');
-    if (!items.any(_matchesId(id))) return await create(data, params);
+    if (!items.any(_matchesId(id))) return create(data, params);
 
-    var old = await read(id);
+    return read(id).then((old) {
+      if (!items.remove(old))
+        throw new AngelHttpException.notFound(
+            message: 'No record found for ID $id');
 
-    if (!items.remove(old))
-      throw new AngelHttpException.notFound(
-          message: 'No record found for ID $id');
-
-    var result = data;
-    if (autoIdAndDateFields == true) {
-      result
-        ..['id'] = id?.toString()
-        ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] =
-            old[autoSnakeCaseNames == false ? 'createdAt' : 'created_at']
-        ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
-            new DateTime.now().toIso8601String();
-    }
-    items.add(result);
-    return result;
+      var result = data;
+      if (autoIdAndDateFields == true) {
+        result
+          ..['id'] = id?.toString()
+          ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] =
+              old[autoSnakeCaseNames == false ? 'createdAt' : 'created_at']
+          ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
+              new DateTime.now().toIso8601String();
+      }
+      items.add(result);
+      return new Future.value(result);
+    });
   }
 
   @override
-  Future<Map> remove(id, [Map params]) async {
+  Future<Map> remove(id, [Map params]) {
     if (id == null ||
         id == 'null' &&
             (allowRemoveAll == true ||
                 params?.containsKey('provider') != true)) {
       items.clear();
-      return {};
+      return new Future.value({});
     }
 
-    var result = await read(id, params);
-
-    if (items.remove(result))
-      return result;
-    else
-      throw new AngelHttpException.notFound(
-          message: 'No record found for ID $id');
+    return read(id, params).then((result) {
+      if (items.remove(result))
+        return result;
+      else
+        throw new AngelHttpException.notFound(
+            message: 'No record found for ID $id');
+    });
   }
 }

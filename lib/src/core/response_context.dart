@@ -123,10 +123,11 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// If `true`, all response finalizers will be skipped.
   bool willCloseItself = false;
 
-  static StateError closed() => new StateError('Cannot modify a closed response.');
+  static StateError closed() =>
+      new StateError('Cannot modify a closed response.');
 
   /// Sends a download as a response.
-  Future download(File file, {String filename}) async {
+  void download(File file, {String filename}) {
     if (!isOpen) throw closed();
 
     headers["Content-Disposition"] =
@@ -135,9 +136,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     headers['content-length'] = file.lengthSync().toString();
 
     if (streaming) {
-      await file.openRead().pipe(this);
+      file.openRead().pipe(this);
     } else {
-      buffer.add(await file.readAsBytes());
+      buffer.add(file.readAsBytesSync());
       end();
     }
   }
@@ -157,8 +158,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Disposes of all resources.
-  Future dispose() async {
-    await close();
+  void dispose() {
+    close();
     properties.clear();
     encoders.clear();
     _buffer.clear();
@@ -197,11 +198,12 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Renders a view to the response stream, and closes the response.
-  Future render(String view, [Map data]) async {
+  Future render(String view, [Map data]) {
     if (!isOpen) throw closed();
-    write(await app.viewGenerator(view, data));
+    write(app.viewGenerator(view, data));
     headers['content-type'] = ContentType.HTML.toString();
     end();
+    return new Future.value();
   }
 
   /// Redirects to user to the given URL.
@@ -293,11 +295,11 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Copies a file's contents into the response buffer.
-  Future sendFile(File file) async {
+  void sendFile(File file) {
     if (!isOpen) throw closed();
 
     headers['content-type'] = lookupMimeType(file.path);
-    buffer.add(await file.readAsBytes());
+    buffer.add(file.readAsBytesSync());
     end();
   }
 
@@ -309,8 +311,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
     var text = serializer(value);
 
-    if (text.isEmpty)
-      return;
+    if (text.isEmpty) return;
 
     if (contentType is String)
       headers['content-type'] = contentType;
@@ -337,10 +338,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
       (correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
     }
 
-    if (correspondingRequest?.injections?.containsKey(PoolResource) ==
-        true) {
-      (correspondingRequest.injections[PoolResource] as PoolResource)
-          .release();
+    if (correspondingRequest?.injections?.containsKey(PoolResource) == true) {
+      (correspondingRequest.injections[PoolResource] as PoolResource).release();
     }
   }
 

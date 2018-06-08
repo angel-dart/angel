@@ -51,12 +51,13 @@ main() {
       return 'DEFAULT $mode';
     });
 
-    app.logger = new Logger('parameter_meta_test')
+    /*app.logger = new Logger('parameter_meta_test')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
         if (rec.stackTrace != null) print(rec.stackTrace);
       });
+    */
   });
 
   test('injects header or throws', () async {

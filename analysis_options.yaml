@@ -1,2 +1,5 @@
 analyzer:
   strong-mode: true
+linter:
+  rules:
+    - avoid_slow_async_io

@@ -10,6 +10,7 @@ import 'metadata.dart';
 import 'response_context.dart';
 import 'routable.dart';
 import 'server.dart' show Angel;
+
 part 'injection.dart';
 
 /// A convenience wrapper around an incoming HTTP request.
@@ -167,8 +168,8 @@ abstract class RequestContext {
   void inject(type, value) {
     if (!app.isProduction && type is Type) {
       if (!reflect(value).type.isAssignableTo(reflectType(type)))
-        throw new ArgumentError(
-            'Cannot inject $value (${value.runtimeType}) as an instance of $type.');
+        throw new ArgumentError('Cannot inject $value (${value
+                .runtimeType}) as an instance of $type.');
     }
 
     _injections[type] = value;
@@ -230,12 +231,12 @@ abstract class RequestContext {
   }
 
   /// Manually parses the request body, if it has not already been parsed.
-  Future<BodyParseResult> parse() async {
+  Future<BodyParseResult> parse() {
     if (_body != null)
-      return _body;
+      return new Future.value(_body);
     else
       _provisionalQuery = null;
-    return _body = await parseOnce();
+    return parseOnce().then((body) => _body = body);
   }
 
   /// Override this method to one-time parse an incoming request.
@@ -243,7 +244,7 @@ abstract class RequestContext {
   Future<BodyParseResult> parseOnce();
 
   /// Disposes of all resources.
-  Future close() async {
+  Future close() {
     _body = null;
     _acceptsAllCache = null;
     _acceptHeaderCache = null;
@@ -252,5 +253,6 @@ abstract class RequestContext {
     _injections.clear();
     serviceParams.clear();
     params.clear();
+    return new Future.value();
   }
 }

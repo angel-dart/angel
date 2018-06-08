@@ -111,10 +111,10 @@ class HttpResponseContextImpl extends ResponseContext {
   }
 
   @override
-  Future close() async {
+  Future close()  {
     if (_useStream) {
       try {
-        await io.close();
+          io.close();
       } catch(_) {
         // This only seems to occur on `MockHttpRequest`, but
         // this try/catch prevents a crash.
@@ -122,7 +122,8 @@ class HttpResponseContextImpl extends ResponseContext {
     }
 
     _isClosed = true;
-    await super.close();
+      super.close();
     _useStream = false;
+    return new Future.value();
   }
 }

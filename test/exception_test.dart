@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:matcher/matcher.dart';
-import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -41,8 +40,8 @@ main() {
   test('toMap = toJson', () {
     var exc = new AngelHttpException.badRequest();
     expect(exc.toMap(), exc.toJson());
-    var json = JSON.encode(exc.toJson());
-    var exc2 = new AngelHttpException.fromJson(json);
+    var json_ = json.encode(exc.toJson());
+    var exc2 = new AngelHttpException.fromJson(json_);
     expect(exc2.toJson(), exc.toJson());
   });
 
@@ -68,7 +67,9 @@ class _IsException extends Matcher {
       description.add('has status code $statusCode and message "$message"');
 
   @override
-  bool matches(@checked AngelHttpException item, Map matchState) {
-    return item.statusCode == statusCode && item.message == message;
+  bool matches(item, Map matchState) {
+    return item is AngelHttpException &&
+        item.statusCode == statusCode &&
+        item.message == message;
   }
 }

@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
@@ -32,6 +32,6 @@ main() {
     var response = await client
         .get('$url/foo', headers: {'X-HTTP-Method-Override': 'POST'});
     print('Response: ${response.body}');
-    expect(JSON.decode(response.body), equals({'hello': 'world'}));
+    expect(json.decode(response.body), equals({'hello': 'world'}));
   });
 }

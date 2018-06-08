@@ -2,7 +2,6 @@ library angel_framework.http.routable;
 
 import 'dart:async';
 import 'package:angel_route/angel_route.dart';
-import 'package:meta/meta.dart';
 import '../util.dart';
 import 'angel_base.dart';
 import 'hooked_service.dart';
@@ -22,13 +21,23 @@ typedef Future RequestHandler(RequestContext req, ResponseContext res);
 /// Sequentially runs a list of [handlers] of middleware, and returns early if any does not
 /// return `true`. Works well with [Router].chain.
 RequestMiddleware waterfall(List handlers) {
-  return (RequestContext req, res) async {
+  return (req, res) {
+    Future<bool> Function() runPipeline;
+
     for (var handler in handlers) {
-      var result = await req.app.executeHandler(handler, req, res);
-      if (result != true) return result;
+      if (handler == null) break;
+
+      if (runPipeline == null)
+        runPipeline = () => req.app.executeHandler(handler, req, res);
+      else {
+        var current = runPipeline;
+        runPipeline = () => current().then((result) =>
+            !result ? result : req.app.executeHandler(handler, req, res));
+      }
     }
 
-    return true;
+    runPipeline ??= () => new Future.value(true);
+    return runPipeline();
   };
 }
 
@@ -39,7 +48,7 @@ class Routable extends Router {
 
   Routable() : super();
 
-  Future close() async {
+  void close() {
     _services.clear();
     configuration.clear();
     requestMiddleware.clear();
@@ -63,9 +72,11 @@ class Routable extends Router {
 
   /// Assigns a middleware to a name for convenience.
   @override
-  registerMiddleware(String name, @checked RequestHandler middleware) =>
-      // ignore: deprecated_member_use
-      super.registerMiddleware(name, middleware);
+  registerMiddleware(String name, middleware) {
+    assert(middleware is RequestMiddleware);
+    // ignore: deprecated_member_use
+    super.registerMiddleware(name, middleware);
+  }
 
   /// Retrieves the service assigned to the given path.
   Service service(Pattern path) =>
@@ -116,7 +127,7 @@ class Routable extends Router {
     final handlers = [];
 
     if (_router is AngelBase) {
-      handlers.add((RequestContext req, ResponseContext res) async {
+      handlers.add((RequestContext req, ResponseContext res) {
         req.app = _router;
         res.app = _router;
         return true;

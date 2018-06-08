@@ -14,10 +14,10 @@ export 'http_response_context.dart';
 
 /// Boots a shared server instance. Use this if launching multiple isolates
 Future<HttpServer> startShared(address, int port) => HttpServer
-    .bind(address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0, shared: true);
+    .bind(address ?? '127.0.0.1', port ?? 0, shared: true);
 
 Future<HttpServer> Function(dynamic, int) startSharedSecure(SecurityContext securityContext) {
   return (address, int port) => HttpServer.bindSecure(
-      address ?? InternetAddress.LOOPBACK_IP_V4, port ?? 0, securityContext,
+      address ?? '127.0.0.1', port ?? 0, securityContext,
       shared: true);
 }

@@ -1,9 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io'
+    show
+        stderr,
+        HttpRequest,
+        HttpResponse,
+        HttpServer,
+        Platform,
+        SecurityContext;
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -17,6 +25,7 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 /// Adapts `dart:io`'s [HttpServer] to serve Angel.
 class AngelHttp {
   final Angel app;
+  final bool useZone;
   bool _closed = false;
   HttpServer _server;
   Future<HttpServer> Function(dynamic, int) _serverGenerator = HttpServer.bind;
@@ -24,7 +33,7 @@ class AngelHttp {
 
   Pool _pool;
 
-  AngelHttp(this.app);
+  AngelHttp(this.app, {this.useZone: true});
 
   /// The function used to bind this instance to an HTTP server.
   Future<HttpServer> Function(dynamic, int) get serverGenerator =>
@@ -32,15 +41,18 @@ class AngelHttp {
 
   /// An instance mounted on a server started by the [serverGenerator].
   factory AngelHttp.custom(
-      Angel app, Future<HttpServer> Function(dynamic, int) serverGenerator) {
-    return new AngelHttp(app).._serverGenerator = serverGenerator;
+      Angel app, Future<HttpServer> Function(dynamic, int) serverGenerator,
+      {bool useZone: true}) {
+    return new AngelHttp(app, useZone: useZone)
+      .._serverGenerator = serverGenerator;
   }
 
-  factory AngelHttp.fromSecurityContext(Angel app, SecurityContext context) {
-    var http = new AngelHttp(app);
+  factory AngelHttp.fromSecurityContext(Angel app, SecurityContext context,
+      {bool useZone: true}) {
+    var http = new AngelHttp(app, useZone: useZone);
 
-    http._serverGenerator = (address, int port) async {
-      return await HttpServer.bindSecure(address, port, context);
+    http._serverGenerator = (address, int port) {
+      return HttpServer.bindSecure(address, port, context);
     };
 
     return http;
@@ -53,7 +65,7 @@ class AngelHttp {
   /// the server.
   factory AngelHttp.secure(
       Angel app, String certificateChainPath, String serverKeyPath,
-      {bool debug: false, String password}) {
+      {bool debug: false, String password, bool useZone: true}) {
     var certificateChain =
         Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
@@ -61,7 +73,8 @@ class AngelHttp {
     serverContext.useCertificateChain(certificateChain, password: password);
     serverContext.usePrivateKey(serverKey, password: password);
 
-    return new AngelHttp.fromSecurityContext(app, serverContext);
+    return new AngelHttp.fromSecurityContext(app, serverContext,
+        useZone: useZone);
   }
 
   /// The native HttpServer running this instance.
@@ -70,139 +83,153 @@ class AngelHttp {
   /// Starts the server.
   ///
   /// Returns false on failure; otherwise, returns the HttpServer.
-  Future<HttpServer> startServer([address, int port]) async {
-    var host = address ?? InternetAddress.LOOPBACK_IP_V4;
-    _server = await _serverGenerator(host, port ?? 0);
-
-    for (var configurer in app.startupHooks) {
-      await app.configure(configurer);
-    }
-
-    app.optimizeForProduction();
-    _sub = _server.listen(handleRequest);
-    return _server;
+  Future<HttpServer> startServer([address, int port]) {
+    var host = address ?? '127.0.0.1';
+    return _serverGenerator(host, port ?? 0).then((server) {
+      _server = server;
+      return Future.wait(app.startupHooks.map(app.configure)).then((_) {
+        app.optimizeForProduction();
+        _sub = _server.listen(handleRequest);
+        return _server;
+      });
+    });
   }
 
   /// Shuts down the underlying server.
-  Future<HttpServer> close() async {
-    if (_closed) return _server;
+  Future<HttpServer> close() {
+    if (_closed) return new Future.value(_server);
     _closed = true;
     _sub?.cancel();
 
     // TODO: Remove this try/catch in 1.2.0
-    try {
-      await app.close();
-    } catch (_) {}
-
-    for (var configurer in app.shutdownHooks) await app.configure(configurer);
-    return _server;
+    var close = app.close().catchError((_) => null);
+    return close.then((_) =>
+        Future.wait(app.shutdownHooks.map(app.configure)).then((_) => _server));
   }
 
   /// Handles a single request.
-  Future handleRequest(HttpRequest request) async {
-    var req = await createRequestContext(request);
-    var res = await createResponseContext(request.response, req);
+  Future handleRequest(HttpRequest request) {
+    return createRequestContext(request).then((req) {
+      return createResponseContext(request.response, req).then((res) {
+        handle() {
+          var path = req.path;
+          if (path == '/') path = '';
 
-    var zoneSpec = new ZoneSpecification(
-      print: (self, parent, zone, line) {
-        if (app.logger != null)
-          app.logger.info(line);
-        else
-          parent.print(zone, line);
-      },
-      handleUncaughtError: (self, parent, zone, error, stackTrace) async {
-        var trace = new Trace.from(stackTrace).terse;
+          Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
+            Router r = app.optimizedRouter;
+            var resolved =
+                r.resolveAbsolute(path, method: req.method, strip: false);
 
-        try {
-          AngelHttpException e;
-
-          if (error is FormatException) {
-            e = new AngelHttpException.badRequest(message: error.message);
-          } else if (error is AngelHttpException) {
-            e = error;
-          } else {
-            e = new AngelHttpException(error,
-                stackTrace: stackTrace, message: error?.toString());
+            return new Tuple3(
+              new MiddlewarePipeline(resolved).handlers,
+              resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
+              resolved.isEmpty ? null : resolved.first.parseResult,
+            );
           }
 
-          if (app.logger != null) {
-            app.logger.severe(e.message ?? e.toString(), error, trace);
+          var cacheKey = req.method + path;
+          var tuple = app.isProduction
+              ? app.handlerCache.putIfAbsent(cacheKey, resolveTuple)
+              : resolveTuple();
+
+          req.params.addAll(tuple.item2);
+          req.inject(ParseResult, tuple.item3);
+
+          if (app.logger != null)
+            req.inject(Stopwatch, new Stopwatch()..start());
+
+          var pipeline = tuple.item1;
+
+          Future<bool> Function() runPipeline;
+
+          for (var handler in pipeline) {
+            if (handler == null) break;
+
+            if (runPipeline == null)
+              runPipeline = () => app.executeHandler(handler, req, res);
+            else {
+              var current = runPipeline;
+              runPipeline = () => current().then((result) =>
+                  !result ? result : app.executeHandler(handler, req, res));
+            }
           }
 
-          await handleAngelHttpException(e, trace, req, res, request);
-        } catch (e, st) {
-          var trace = new Trace.from(st).terse;
-          request.response.close();
-          // Ideally, we won't be in a position where an absolutely fatal error occurs,
-          // but if so, we'll need to log it.
-          if (app.logger != null) {
-            app.logger.severe(
-                'Fatal error occurred when processing ${request.uri}.',
-                e,
-                trace);
-          } else {
-            stderr
-              ..writeln('Fatal error occurred when processing '
-                  '${request.uri}:')
-              ..writeln(e)
-              ..writeln(trace);
-          }
+          return runPipeline == null
+              ? sendResponse(request, req, res)
+              : runPipeline().then((_) => sendResponse(request, req, res));
         }
-      },
-    );
 
-    var zone = Zone.current.fork(specification: zoneSpec);
+        if (useZone == false) {
+          return handle().whenComplete(() => res.dispose());
+        } else {
+          var zoneSpec = new ZoneSpecification(
+            print: (self, parent, zone, line) {
+              if (app.logger != null)
+                app.logger.info(line);
+              else
+                parent.print(zone, line);
+            },
+            handleUncaughtError: (self, parent, zone, error, stackTrace) {
+              var trace = new Trace.from(stackTrace).terse;
 
-    return await zone.run(() async {
-      var path = req.path;
-      if (path == '/') path = '';
+              return new Future(() {
+                AngelHttpException e;
 
-      Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
-        Router r = app.optimizedRouter;
-        var resolved =
-            r.resolveAbsolute(path, method: req.method, strip: false);
+                if (error is FormatException) {
+                  e = new AngelHttpException.badRequest(message: error.message);
+                } else if (error is AngelHttpException) {
+                  e = error;
+                } else {
+                  e = new AngelHttpException(error,
+                      stackTrace: stackTrace, message: error?.toString());
+                }
 
-        return new Tuple3(
-          new MiddlewarePipeline(resolved).handlers,
-          resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
-          resolved.isEmpty ? null : resolved.first.parseResult,
-        );
-      }
+                if (app.logger != null) {
+                  app.logger.severe(e.message ?? e.toString(), error, trace);
+                }
 
-      var cacheKey = req.method + path;
-      var tuple = app.isProduction
-          ? app.handlerCache.putIfAbsent(cacheKey, resolveTuple)
-          : resolveTuple();
+                return handleAngelHttpException(e, trace, req, res, request);
+              }).catchError((e, st) {
+                var trace = new Trace.from(st).terse;
+                request.response.close();
+                // Ideally, we won't be in a position where an absolutely fatal error occurs,
+                // but if so, we'll need to log it.
+                if (app.logger != null) {
+                  app.logger.severe(
+                      'Fatal error occurred when processing ${request.uri}.',
+                      e,
+                      trace);
+                } else {
+                  stderr
+                    ..writeln('Fatal error occurred when processing '
+                        '${request.uri}:')
+                    ..writeln(e)
+                    ..writeln(trace);
+                }
+              });
+            },
+          );
 
-      req.inject(Zone, zone);
-      req.inject(ZoneSpecification, zoneSpec);
-      req.params.addAll(tuple.item2);
-      req.inject(ParseResult, tuple.item3);
-
-      if (app.logger != null) req.inject(Stopwatch, new Stopwatch()..start());
-
-      var pipeline = tuple.item1;
-
-      for (var handler in pipeline) {
-        if (handler == null || !await app.executeHandler(handler, req, res))
-          break;
-      }
-
-      await sendResponse(request, req, res);
-    }).whenComplete(() {
-      res.dispose();
+          var zone = Zone.current.fork(specification: zoneSpec);
+          req.inject(Zone, zone);
+          req.inject(ZoneSpecification, zoneSpec);
+          return zone.run(handle).whenComplete(() {
+            res.dispose();
+          });
+        }
+      });
     });
   }
 
   /// Handles an [AngelHttpException].
   Future handleAngelHttpException(AngelHttpException e, StackTrace st,
       RequestContext req, ResponseContext res, HttpRequest request,
-      {bool ignoreFinalizers: false}) async {
+      {bool ignoreFinalizers: false}) {
     if (req == null || res == null) {
       try {
         app.logger?.severe(e, st);
         request.response
-          ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+          ..statusCode = HttpStatus.internalServerError
           ..write('500 Internal Server Error')
           ..close();
       } finally {
@@ -212,12 +239,12 @@ class AngelHttp {
 
     if (res.isOpen) {
       res.statusCode = e.statusCode;
-      var result = await app.errorHandler(e, req, res);
-      await app.executeHandler(result, req, res);
+      var result = app.errorHandler(e, req, res);
+      app.executeHandler(result, req, res);
       res.end();
     }
 
-    return await sendResponse(request, req, res,
+    return sendResponse(request, req, res,
         ignoreFinalizers: ignoreFinalizers == true);
   }
 
@@ -244,8 +271,12 @@ class AngelHttp {
     List<int> outputBuffer = res.buffer.toBytes();
 
     if (res.encoders.isNotEmpty) {
-      var allowedEncodings =
-          req.headers[HttpHeaders.ACCEPT_ENCODING]?.map((str) {
+      var allowedEncodings = req.headers
+          .value('accept-encoding')
+          ?.split(',')
+          ?.map((s) => s.trim())
+          ?.where((s) => s.isNotEmpty)
+          ?.map((str) {
         // Ignore quality specifications in accept-encoding
         // ex. gzip;q=0.8
         if (!str.contains(';')) return str;
@@ -264,7 +295,7 @@ class AngelHttp {
           }
 
           if (encoder != null) {
-            request.response.headers.set(HttpHeaders.CONTENT_ENCODING, key);
+            request.response.headers.set('content-encoding', key);
             outputBuffer = res.encoders[key].convert(outputBuffer);
             request.response.contentLength = outputBuffer.length;
             break;
@@ -278,31 +309,30 @@ class AngelHttp {
       ..cookies.addAll(res.cookies)
       ..add(outputBuffer);
 
-    return finalizers.then((_) async {
-      await request.response.flush();
-      await request.response.close();
-
-      if (req.injections.containsKey(PoolResource)) {
-        req.injections[PoolResource].release();
-      }
-
-      if (app.logger != null) {
-        var sw = req.grab<Stopwatch>(Stopwatch);
-
-        if (sw.isRunning) {
-          sw?.stop();
-          app.logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
-              ?.elapsedMilliseconds ?? 'unknown'} ms)");
+    return finalizers.then((_) {
+      return request.response.close().then((_) {
+        if (req.injections.containsKey(PoolResource)) {
+          req.injections[PoolResource].release();
         }
-      }
+
+        if (app.logger != null) {
+          var sw = req.grab<Stopwatch>(Stopwatch);
+
+          if (sw.isRunning) {
+            sw?.stop();
+            app.logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
+                ?.elapsedMilliseconds ?? 'unknown'} ms)");
+          }
+        }
+      });
     });
   }
 
   Future<HttpRequestContextImpl> createRequestContext(HttpRequest request) {
     var path = request.uri.path.replaceAll(_straySlashes, '');
     if (path.length == 0) path = '/';
-    return HttpRequestContextImpl.from(request, app, path).then((req) async {
-      if (_pool != null) req.inject(PoolResource, await _pool.request());
+    return HttpRequestContextImpl.from(request, app, path).then((req) {
+      if (_pool != null) req.inject(PoolResource, _pool.request());
       if (app.injections.isNotEmpty) app.injections.forEach(req.inject);
       return req;
     });

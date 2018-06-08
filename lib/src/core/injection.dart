@@ -78,10 +78,11 @@ bool suitableForInjection(
 
 /// Handles a request with a DI-enabled handler.
 RequestHandler handleContained(handler, InjectionRequest injection) {
-  return (RequestContext req, ResponseContext res) async {
+  return (RequestContext req, ResponseContext res) {
     if (injection.parameters.isNotEmpty &&
         injection.parameters.values.any((p) => p.match != null) &&
-        !suitableForInjection(req, res, injection)) return true;
+        !suitableForInjection(req, res, injection))
+      return new Future.value(true);
 
     List args = [];
 
@@ -94,8 +95,7 @@ RequestHandler handleContained(handler, InjectionRequest injection) {
       named[name] = resolveInjection([k, v], injection, req, res, false);
     });
 
-    var result = Function.apply(handler, args, named);
-    return result is Future ? await result : result;
+    return Function.apply(handler, args, named);
   };
 }
 
@@ -181,6 +181,5 @@ InjectionRequest preInject(Function handler) {
       injection.named[name] = type;
     }
   }
-
   return injection;
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:matcher/matcher.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
@@ -51,7 +51,7 @@ main() {
       ContentType.HTML.mimeType,
     );
     expect(rs.statusCode, e.statusCode);
-    var body = await rs.transform(UTF8.decoder).join();
+    var body = await rs.transform(utf8.decoder).join();
     expect(body, contains('<title>${e.message}</title>'));
     expect(body, contains('<li>foo</li>'));
     expect(body, contains('<li>bar</li>'));
@@ -59,9 +59,7 @@ main() {
 
   test('plug-ins run on startup', () async {
     var app = new Angel();
-    app.startupHooks.add((app) async {
-      app.configuration['two'] = 2;
-    });
+    app.startupHooks.add((app) => app.configuration['two'] = 2);
 
     var http = new AngelHttp(app);
     await http.startServer();
@@ -92,8 +90,8 @@ main() {
     app.get('/', (String a) => a);
     var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();
     await http.handleRequest(rq);
-    var body = await rq.response.transform(UTF8.decoder).join();
-    expect(body, JSON.encode('b'));
+    var body = await rq.response.transform(utf8.decoder).join();
+    expect(body, json.encode('b'));
   });
 
   test('global injected serializer', () async {
@@ -102,7 +100,7 @@ main() {
     app.get($foo.path, (req, ResponseContext res) => res.serialize(null));
     var rq = new MockHttpRequest('GET', $foo)..close();
     await http.handleRequest(rq);
-    var body = await rq.response.transform(UTF8.decoder).join();
+    var body = await rq.response.transform(utf8.decoder).join();
     expect(body, 'x');
   });
 
@@ -157,7 +155,7 @@ main() {
       app.get('/wtf', () => throw new AngelHttpException.forbidden());
       app.get('/wtf2', () => throw new AngelHttpException.forbidden());
       http = new AngelHttp(app);
-      await http.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+      await http.startServer('127.0.0.1', 0);
 
       var oldHandler = app.errorHandler;
       app.errorHandler = (e, req, res) {
@@ -208,9 +206,9 @@ class CustomCloseService extends Service {
   int value = 2;
 
   @override
-  Future close() {
+  void close() {
     value = 3;
-    return super.close();
+    super.close();
   }
 }
 
