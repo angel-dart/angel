@@ -67,32 +67,37 @@ class HttpResponseContextImpl extends ResponseContext {
     Stream<List<int>> output = stream;
 
     if (encoders.isNotEmpty && correspondingRequest != null) {
-      var allowedEncodings =
-      (correspondingRequest.headers[HttpHeaders.ACCEPT_ENCODING] ?? [])
-          .map((str) {
+      var allowedEncodings = correspondingRequest.headers
+          .value(HttpHeaders.ACCEPT_ENCODING)
+          ?.split(',')
+          ?.map((s) => s.trim())
+          ?.where((s) => s.isNotEmpty)
+          ?.map((str) {
         // Ignore quality specifications in accept-encoding
         // ex. gzip;q=0.8
         if (!str.contains(';')) return str;
         return str.split(';')[0];
       });
 
-      for (var encodingName in allowedEncodings) {
-        Converter<List<int>, List<int>> encoder;
-        String key = encodingName;
+      if (allowedEncodings != null) {
+        for (var encodingName in allowedEncodings) {
+          Converter<List<int>, List<int>> encoder;
+          String key = encodingName;
 
-        if (encoders.containsKey(encodingName))
-          encoder = encoders[encodingName];
-        else if (encodingName == '*') {
-          encoder = encoders[key = encoders.keys.first];
-        }
-
-        if (encoder != null) {
-          if (firstStream) {
-            io.headers.set(HttpHeaders.CONTENT_ENCODING, key);
+          if (encoders.containsKey(encodingName))
+            encoder = encoders[encodingName];
+          else if (encodingName == '*') {
+            encoder = encoders[key = encoders.keys.first];
           }
 
-          output = encoders[key].bind(output);
-          break;
+          if (encoder != null) {
+            if (firstStream) {
+              io.headers.set(HttpHeaders.CONTENT_ENCODING, key);
+            }
+
+            output = encoders[key].bind(output);
+            break;
+          }
         }
       }
     }
@@ -111,18 +116,18 @@ class HttpResponseContextImpl extends ResponseContext {
   }
 
   @override
-  Future close()  {
+  Future close() {
     if (_useStream) {
       try {
-          io.close();
-      } catch(_) {
+        io.close();
+      } catch (_) {
         // This only seems to occur on `MockHttpRequest`, but
         // this try/catch prevents a crash.
       }
     }
 
     _isClosed = true;
-      super.close();
+    super.close();
     _useStream = false;
     return new Future.value();
   }

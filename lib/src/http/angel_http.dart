@@ -179,7 +179,7 @@ class AngelHttp {
                 parent.print(zone, line);
             },
             handleUncaughtError: (self, parent, zone, error, stackTrace) {
-              var trace = new Trace.from(stackTrace).terse;
+              var trace = new Trace.from(stackTrace ?? StackTrace.current).terse;
 
               return new Future(() {
                 AngelHttpException e;
@@ -199,7 +199,7 @@ class AngelHttp {
 
                 return handleAngelHttpException(e, trace, req, res, request);
               }).catchError((e, st) {
-                var trace = new Trace.from(st).terse;
+                var trace = new Trace.from(st ?? StackTrace.current).terse;
                 request.response.close();
                 // Ideally, we won't be in a position where an absolutely fatal error occurs,
                 // but if so, we'll need to log it.

@@ -25,15 +25,7 @@ void start(int id) {
   var app = new Angel()..lazyParseBodies = true;
   var http = new AngelHttp.custom(app, startShared, useZone: false);
 
-    app.get('/', (req, ResponseContext res) {
-      res.write('Hello, world!');
-      //res.willCloseItself = true;
-      //res.io
-      //  ..write('Hello, world!')
-      //  ..close();
-      return false;
-    });
-
+  app.get('/', (ResponseContext res) => res.write('Hello, world!'));
 
   var oldHandler = app.errorHandler;
   app.errorHandler = (e, req, res) {
@@ -43,7 +35,7 @@ void start(int id) {
   };
 
   http.startServer('127.0.0.1', 3000).then((server) {
-    print(
-        'Instance #$id listening at http://${server.address.address}:${server.port}');
+    print('Instance #$id listening at http://${server.address.address}:${server
+            .port}');
   });
 }

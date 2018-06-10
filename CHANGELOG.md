@@ -1,3 +1,9 @@
+# 1.1.4+2
+* Fix a bug that prevented proper rendering of views.
+* Fixed a hidden bug that prevents error handling when a
+stack trace is `null`.
+* Fixed a bug that prevented proper handling of `content-encoding`.
+
 # 1.1.4+1
 * Ensure correct error handling when `useZone` is `false`.
  

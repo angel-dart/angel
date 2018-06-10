@@ -200,10 +200,11 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) {
     if (!isOpen) throw closed();
-    write(app.viewGenerator(view, data));
-    headers['content-type'] = ContentType.HTML.toString();
-    end();
-    return new Future.value();
+    return app.viewGenerator(view, data).then((content) {
+      write(content);
+      headers['content-type'] = ContentType.HTML.toString();
+      end();
+    });
   }
 
   /// Redirects to user to the given URL.
