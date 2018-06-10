@@ -112,7 +112,6 @@ main() {
 
     Map todo = json.decode(response.body.replaceAll(rgx, ""));
     print("Todo: $todo");
-    // expect(todo.keys.length, equals(3));
     expect(todo['text'], equals("Hello"));
     expect(todo['over'], equals("world"));
   });

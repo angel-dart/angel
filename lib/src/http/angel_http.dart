@@ -100,10 +100,7 @@ class AngelHttp {
     if (_closed) return new Future.value(_server);
     _closed = true;
     _sub?.cancel();
-
-    // TODO: Remove this try/catch in 1.2.0
-    var close = app.close().catchError((_) => null);
-    return close.then((_) =>
+    return app.close().then((_) =>
         Future.wait(app.shutdownHooks.map(app.configure)).then((_) => _server));
   }
 
@@ -135,7 +132,7 @@ class AngelHttp {
           req.params.addAll(tuple.item2);
           req.inject(ParseResult, tuple.item3);
 
-          if (app.logger != null)
+          if (!app.isProduction && app.logger != null)
             req.inject(Stopwatch, new Stopwatch()..start());
 
           var pipeline = tuple.item1;
@@ -179,7 +176,8 @@ class AngelHttp {
                 parent.print(zone, line);
             },
             handleUncaughtError: (self, parent, zone, error, stackTrace) {
-              var trace = new Trace.from(stackTrace ?? StackTrace.current).terse;
+              var trace =
+                  new Trace.from(stackTrace ?? StackTrace.current).terse;
 
               return new Future(() {
                 AngelHttpException e;
@@ -246,15 +244,20 @@ class AngelHttp {
       }
     }
 
-    if (res.isOpen) {
+    Future handleError;
+
+    if (!res.isOpen)
+      handleError = new Future.value();
+    else {
       res.statusCode = e.statusCode;
-      var result = app.errorHandler(e, req, res);
-      app.executeHandler(result, req, res);
-      res.end();
+      handleError =
+          new Future.sync(() => app.errorHandler(e, req, res)).then((result) {
+        return app.executeHandler(result, req, res).then((_) => res.end());
+      });
     }
 
-    return sendResponse(request, req, res,
-        ignoreFinalizers: ignoreFinalizers == true);
+    return handleError.then((_) => sendResponse(request, req, res,
+        ignoreFinalizers: ignoreFinalizers == true));
   }
 
   /// Sends a response.
@@ -324,7 +327,7 @@ class AngelHttp {
           req.injections[PoolResource].release();
         }
 
-        if (app.logger != null) {
+        if (!app.isProduction && app.logger != null) {
           var sw = req.grab<Stopwatch>(Stopwatch);
 
           if (sw.isRunning) {

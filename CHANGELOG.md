@@ -1,3 +1,8 @@
+# 1.1.4+3
+* Don't create a Stopwatch in production.
+* Fix a bug where `handleAngelHttpException` created a race condition.
+* `ResponseContext.serialize` now returns a `bool`.
+
 # 1.1.4+2
 * Fix a bug that prevented proper rendering of views.
 * Fixed a hidden bug that prevents error handling when a

@@ -307,12 +307,12 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Serializes data to the response.
   ///
   /// [contentType] can be either a [String], or a [ContentType].
-  void serialize(value, {contentType}) {
+  bool serialize(value, {contentType}) {
     if (!isOpen) throw closed();
 
     var text = serializer(value);
 
-    if (text.isEmpty) return;
+    if (text.isEmpty) return true;
 
     if (contentType is String)
       headers['content-type'] = contentType;
@@ -321,6 +321,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     write(text);
 
     end();
+    return false;
   }
 
   /// Streams a file to this response.

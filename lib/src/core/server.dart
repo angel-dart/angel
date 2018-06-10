@@ -304,11 +304,8 @@ class Angel extends AngelBase {
       else if (result is bool) {
         return result;
       } else if (result != null) {
-        // TODO: Make `serialize` return a bool, return this as the value.
-        // Do this wherever applicable
-        res.serialize(result,
+        return res.serialize(result,
             contentType: res.headers['content-type'] ?? 'application/json');
-        return false;
       } else
         return res.isOpen;
     });
