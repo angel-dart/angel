@@ -448,8 +448,11 @@ class HookedService extends Service {
   Future<HookedServiceEvent> fireEvent(
       HookedServiceEventDispatcher dispatcher, HookedServiceEvent event,
       [HookedServiceEventListener callback]) {
-    if (callback != null && event?._canceled != true) callback(event);
-    return dispatcher._emit(event);
+    Future f;
+    if (callback != null && event?._canceled != true)
+      f = new Future.sync(() => callback(event));
+    f ??= new Future.value();
+    return f.then((_) => dispatcher._emit(event));
   }
 }
 
@@ -532,15 +535,19 @@ class HookedServiceEventDispatcher {
 
   /// Fires an event, and returns it once it is either canceled, or all listeners have run.
   Future<HookedServiceEvent> _emit(HookedServiceEvent event) {
-    if (event?._canceled != true) {
-      for (var listener in listeners) {
-        listener(event);
+    if (event?._canceled == true || event == null || listeners.isEmpty)
+      return new Future.value(event);
 
-        if (event._canceled) return new Future.value(event);
-      }
+    var f = new Future<HookedServiceEvent>.value(event);
+
+    for (var listener in listeners) {
+      f = f.then((event) {
+        if (event._canceled) return event;
+        return new Future.sync(() => listener(event)).then((_) => event);
+      });
     }
 
-    return new Future.value(event);
+    return f;
   }
 
   /// Returns a [Stream] containing all events fired by this dispatcher.

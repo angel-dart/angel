@@ -1,3 +1,6 @@
+# 1.1.4+4
+* Fix a bug that caused a race condition in hooked services.
+
 # 1.1.4+3
 * Don't create a Stopwatch in production.
 * Fix a bug where `handleAngelHttpException` created a race condition.
