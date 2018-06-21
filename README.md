@@ -21,6 +21,7 @@ the time you spend writing boilerplate serialization code for your models.
 In your `pubspec.yaml`, you need to install the following dependencies:
 ```yaml
 dependencies:
+  angel_model: ^1.0.0 # Only required if using Angel!!!
   angel_serialize: ^2.0.0
 dev_dependencies:
   angel_serialize_generator: ^2.0.0
@@ -52,7 +53,7 @@ For example, say we have a `Book` model. Create a class named `_Book`:
 ```dart
 library angel_serialize.test.models.book;
 
-import 'package:angel_framework/common.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 part 'book.g.dart';
