@@ -1,6 +1,6 @@
 library angel_http_exception;
 
-import 'dart:convert';
+import 'package:dart2_constant/convert.dart';
 
 /// Basically the same as
 /// [feathers-errors](https://github.com/feathersjs/feathers-errors).
@@ -21,9 +21,9 @@ class AngelHttpException implements Exception {
 
   AngelHttpException(this.error,
       {this.message: '500 Internal Server Error',
-        this.stackTrace,
-        this.statusCode: 500,
-        List<String> errors: const []}) {
+      this.stackTrace,
+      this.statusCode: 500,
+      List<String> errors: const []}) {
     if (errors != null) {
       this.errors.addAll(errors);
     }
@@ -47,29 +47,29 @@ class AngelHttpException implements Exception {
 
   factory AngelHttpException.fromMap(Map data) {
     return new AngelHttpException(null,
-        statusCode: data['status_code'] ?? data['statusCode'],
-        message: data['message'],
-        errors: data['errors']);
+        statusCode: (data['status_code'] ?? data['statusCode']) as int,
+        message: data['message']?.toString(),
+        errors: (data['errors'] as Iterable)?.cast<String>()?.toList());
   }
 
-  factory AngelHttpException.fromJson(String json) =>
-      new AngelHttpException.fromMap(JSON.decode(json));
+  factory AngelHttpException.fromJson(String str) =>
+      new AngelHttpException.fromMap(json.decode(str) as Map);
 
   /// Throws a 400 Bad Request error, including an optional arrray of (validation?)
   /// errors you specify.
   factory AngelHttpException.badRequest(
-      {String message: '400 Bad Request', List<String> errors: const []}) =>
+          {String message: '400 Bad Request', List<String> errors: const []}) =>
       new AngelHttpException(null,
           message: message, errors: errors, statusCode: 400);
 
   /// Throws a 401 Not Authenticated error.
   factory AngelHttpException.notAuthenticated(
-      {String message: '401 Not Authenticated'}) =>
+          {String message: '401 Not Authenticated'}) =>
       new AngelHttpException(null, message: message, statusCode: 401);
 
   /// Throws a 402 Payment Required error.
   factory AngelHttpException.paymentRequired(
-      {String message: '402 Payment Required'}) =>
+          {String message: '402 Payment Required'}) =>
       new AngelHttpException(null, message: message, statusCode: 402);
 
   /// Throws a 403 Forbidden error.
@@ -82,12 +82,12 @@ class AngelHttpException implements Exception {
 
   /// Throws a 405 Method Not Allowed error.
   factory AngelHttpException.methodNotAllowed(
-      {String message: '405 Method Not Allowed'}) =>
+          {String message: '405 Method Not Allowed'}) =>
       new AngelHttpException(null, message: message, statusCode: 405);
 
   /// Throws a 406 Not Acceptable error.
   factory AngelHttpException.notAcceptable(
-      {String message: '406 Not Acceptable'}) =>
+          {String message: '406 Not Acceptable'}) =>
       new AngelHttpException(null, message: message, statusCode: 406);
 
   /// Throws a 408 Timeout error.
@@ -100,12 +100,12 @@ class AngelHttpException implements Exception {
 
   /// Throws a 422 Not Processable error.
   factory AngelHttpException.notProcessable(
-      {String message: '422 Not Processable'}) =>
+          {String message: '422 Not Processable'}) =>
       new AngelHttpException(null, message: message, statusCode: 422);
 
   /// Throws a 501 Not Implemented error.
   factory AngelHttpException.notImplemented(
-      {String message: '501 Not Implemented'}) =>
+          {String message: '501 Not Implemented'}) =>
       new AngelHttpException(null, message: message, statusCode: 501);
 
   /// Throws a 503 Unavailable error.
