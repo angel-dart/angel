@@ -89,10 +89,11 @@ main() {
 
       if (pipeline.handlers.isEmpty) {
         res
-          ..statusCode = HttpStatus.NOT_FOUND
+          ..statusCode = 404
           ..writeln('404 Not Found');
       } else {
-        for (final handler in pipeline.handlers) {
+        for (bool Function(HttpRequest, HttpResponse) handler
+            in pipeline.handlers) {
           if (!await handler(req, res)) break;
         }
       }

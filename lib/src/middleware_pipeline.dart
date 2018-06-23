@@ -18,5 +18,6 @@ class MiddlewarePipeline {
     return _handlers = handlers;
   }
 
-  MiddlewarePipeline(this.routingResults);
+  MiddlewarePipeline(Iterable<RoutingResult> routingResults)
+      : this.routingResults = routingResults.toList();
 }

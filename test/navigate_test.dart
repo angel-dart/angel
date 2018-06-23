@@ -8,7 +8,7 @@ main() {
   router.get('/user/:id', 'GET');
   router.get('/first/:first/last/:last', 'GET').name = 'full_name';
 
-  navigate(params) {
+  navigate(Iterable params) {
     final uri = router.navigate(params);
     print('Uri: $uri');
     return uri;

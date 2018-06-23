@@ -14,7 +14,7 @@ class Route {
       : _routeDefinition = RouteGrammar.routeDefinition
             .parse(new SpanScanner(path.replaceAll(_straySlashes, '')))
             .value {
-    if (_routeDefinition?.segments?.isNotEmpty != true) _parser = match('').value((r) => {});
+    if (_routeDefinition?.segments?.isNotEmpty != true) _parser = match<Map<String, dynamic>>('').value((r) => {});
   }
 
   factory Route.join(Route a, Route b) {

@@ -39,7 +39,7 @@ abstract class BrowserRouter extends Router {
   void listen();
 
   /// Identical to [all].
-  Route on(Pattern path, handler, {List middleware});
+  Route on(String path, handler, {List middleware});
 }
 
 abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
@@ -64,7 +64,7 @@ abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
   @override
   void go(Iterable linkParams) => _goTo(navigate(linkParams));
 
-  Route on(Pattern path, handler, {List middleware}) =>
+  Route on(String path, handler, {List middleware}) =>
       all(path, handler, middleware: middleware);
 
   void prepareAnchors() {
@@ -176,7 +176,7 @@ class _PushStateRouter extends _BrowserRouterImpl {
 
   void handleState(state) {
     if (state is Map && state.containsKey('path')) {
-      var path = state['path'];
+      var path = state['path'].toString();
       final resolved = resolveAbsolute(path).first;
 
       if (resolved != null && resolved.route != _current) {
