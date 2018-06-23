@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:matcher/matcher.dart';
@@ -7,29 +6,29 @@ import 'package:test/test.dart';
 main() {
   test('named constructors', () {
     expect(new AngelHttpException.badRequest(),
-        isException(HttpStatus.BAD_REQUEST, '400 Bad Request'));
+        isException(400, '400 Bad Request'));
     expect(new AngelHttpException.notAuthenticated(),
-        isException(HttpStatus.UNAUTHORIZED, '401 Not Authenticated'));
+        isException(401, '401 Not Authenticated'));
     expect(new AngelHttpException.paymentRequired(),
-        isException(HttpStatus.PAYMENT_REQUIRED, '402 Payment Required'));
+        isException(402, '402 Payment Required'));
     expect(new AngelHttpException.forbidden(),
-        isException(HttpStatus.FORBIDDEN, '403 Forbidden'));
+        isException(403, '403 Forbidden'));
     expect(new AngelHttpException.notFound(),
-        isException(HttpStatus.NOT_FOUND, '404 Not Found'));
+        isException(404, '404 Not Found'));
     expect(new AngelHttpException.methodNotAllowed(),
-        isException(HttpStatus.METHOD_NOT_ALLOWED, '405 Method Not Allowed'));
+        isException(405, '405 Method Not Allowed'));
     expect(new AngelHttpException.notAcceptable(),
-        isException(HttpStatus.NOT_ACCEPTABLE, '406 Not Acceptable'));
+        isException(406, '406 Not Acceptable'));
     expect(new AngelHttpException.methodTimeout(),
-        isException(HttpStatus.REQUEST_TIMEOUT, '408 Timeout'));
+        isException(408, '408 Timeout'));
     expect(new AngelHttpException.conflict(),
-        isException(HttpStatus.CONFLICT, '409 Conflict'));
+        isException(409, '409 Conflict'));
     expect(new AngelHttpException.notProcessable(),
         isException(422, '422 Not Processable'));
     expect(new AngelHttpException.notImplemented(),
-        isException(HttpStatus.NOT_IMPLEMENTED, '501 Not Implemented'));
+        isException(501, '501 Not Implemented'));
     expect(new AngelHttpException.unavailable(),
-        isException(HttpStatus.SERVICE_UNAVAILABLE, '503 Unavailable'));
+        isException(503, '503 Unavailable'));
   });
 
   test('fromMap', () {

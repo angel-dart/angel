@@ -61,7 +61,7 @@ main() {
 }
 
 void validateTodoSingleton(response) {
-  Map todo = json.decode(response.body);
+  Map todo = json.decode(response.body.toString());
   expect(todo["id"], equals(null));
   expect(todo["text"], equals(TEXT));
   expect(todo["over"], equals(OVER));

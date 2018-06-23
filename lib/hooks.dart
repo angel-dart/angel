@@ -141,12 +141,12 @@ HookedServiceEventListener remove(key, [remover(key, obj)]) {
       else if (obj is List)
         return obj..remove(key);
       else if (obj is Iterable)
-        return obj.where((k) => !key);
+        return obj.where((k) => key != true);
       else if (obj is Map)
         return obj..remove(key);
       else {
         try {
-          reflect(obj).setField(new Symbol(key), null);
+          reflect(obj).setField(new Symbol(key.toString()), null);
           return obj;
         } catch (e) {
           throw new ArgumentError("Cannot remove key '$key' from $obj.");

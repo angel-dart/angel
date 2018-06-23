@@ -31,7 +31,7 @@ typedef FutureOr AngelConfigurer(Angel app);
 /// A powerful real-time/REST/MVC server class.
 class Angel extends AngelBase {
   final List<Angel> _children = [];
-  final Map<String, Tuple3<List, Map, ParseResult<Map<String, String>>>>
+  final Map<String, Tuple3<List, Map, ParseResult<Map<String, dynamic>>>>
       handlerCache = new HashMap();
 
   Router _flattened;
@@ -186,7 +186,7 @@ class Angel extends AngelBase {
           'This route will be ignored, and no requests will ever reach it.');
     }
     return super
-        .mount(path, router, hooked: hooked != false, namespace: namespace);
+        .mount(path.toString(), router, hooked: hooked != false, namespace: namespace);
   }
 
   /// Loads some base dependencies into the service container.

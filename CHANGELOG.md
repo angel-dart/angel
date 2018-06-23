@@ -1,3 +1,8 @@
+# 1.1.4+5
+* Intermediary release while patching up Dart 2 bugs.
+* Stricter Dart 2 use.
+* Remove `AngelMetrics` for good.
+
 # 1.1.4+4
 * Fix a bug that caused a race condition in hooked services.
 

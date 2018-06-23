@@ -5,7 +5,7 @@ const List<Type> _primitiveTypes = const [String, int, num, double, Null];
 /// Shortcut for calling [preInject], and then [handleContained].
 ///
 /// Use this to instantly create a request handler for a DI-enabled method.
-RequestHandler createDynamicHandler(handler,
+RequestHandler createDynamicHandler(Function handler,
     {Iterable<String> optional: const []}) {
   var injection = preInject(handler);
   injection.optional.addAll(optional ?? []);
@@ -77,7 +77,7 @@ bool suitableForInjection(
 }
 
 /// Handles a request with a DI-enabled handler.
-RequestHandler handleContained(handler, InjectionRequest injection) {
+RequestHandler handleContained(Function handler, InjectionRequest injection) {
   return (RequestContext req, ResponseContext res) {
     if (injection.parameters.isNotEmpty &&
         injection.parameters.values.any((p) => p.match != null) &&

@@ -37,15 +37,15 @@ class TypedService<T> extends Service {
       Model result = god.deserializeDatum(data, outputType: T);
 
       if (data['createdAt'] is DateTime) {
-        result.createdAt = data['createdAt'];
+        result.createdAt = data['createdAt'] as DateTime;
       } else if (data['created_at'] is DateTime) {
-        result.createdAt = data['created_at'];
+        result.createdAt = data['created_at'] as DateTime;
       }
 
       if (data['updatedAt'] is DateTime) {
-        result.updatedAt = data['updatedAt'];
+        result.updatedAt = data['updatedAt'] as DateTime;
       } else if (data['updated_at'] is DateTime) {
-        result.updatedAt = data['updated_at'];
+        result.updatedAt = data['updated_at'] as DateTime;
       }
 
       // print('x: $x\nresult: $result');

@@ -47,8 +47,8 @@ main() {
     await app.errorHandler(e, req, res);
     await http.sendResponse(rq, req, res);
     expect(
-      ContentType.parse(rs.headers.value(HttpHeaders.CONTENT_TYPE)).mimeType,
-      ContentType.HTML.mimeType,
+      ContentType.parse(rs.headers.value('content-type')).mimeType,
+      'text/html',
     );
     expect(rs.statusCode, e.statusCode);
     var body = await rs.transform(utf8.decoder).join();
@@ -169,35 +169,35 @@ main() {
 
     test('can send json', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
-        ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
+        ..headers.set('accept', 'application/json');
       rq.close();
       http.handleRequest(rq);
       await rq.response.toList();
-      expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
+      expect(rq.response.statusCode, 403);
       expect(
-          rq.response.headers.contentType.mimeType, ContentType.JSON.mimeType);
+          rq.response.headers.contentType.mimeType, 'application/json');
     });
 
     test('can throw in finalizer', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
-        ..headers.set(HttpHeaders.ACCEPT, ContentType.JSON.toString());
+        ..headers.set('accept', 'application/json');
       rq.close();
       http.handleRequest(rq);
       await rq.response.toList();
-      expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
+      expect(rq.response.statusCode, 403);
       expect(
-          rq.response.headers.contentType.mimeType, ContentType.JSON.mimeType);
+          rq.response.headers.contentType.mimeType, 'application/json');
     });
 
     test('can send html', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf2'));
-      rq.headers.set(HttpHeaders.ACCEPT, ContentType.HTML.toString());
+      rq.headers.set('accept', 'text/html');
       rq.close();
       http.handleRequest(rq);
       await rq.response.toList();
-      expect(rq.response.statusCode, HttpStatus.FORBIDDEN);
+      expect(rq.response.statusCode, 403);
       expect(
-          rq.response.headers.contentType?.mimeType, ContentType.HTML.mimeType);
+          rq.response.headers.contentType?.mimeType, 'text/html');
     });
   });
 }

@@ -118,7 +118,7 @@ main() {
     var response = await client.get('$url/name/HELLO/last/WORLD');
     print('Response: ${response.body}');
     var json_ = json.decode(response.body);
-    expect(json_, new isInstanceOf<Map<String, String>>());
+    expect(json_, const TypeMatcher<Map>());
     expect(json_['first'], equals('HELLO'));
     expect(json_['last'], equals('WORLD'));
   });
@@ -157,7 +157,7 @@ main() {
     Map headers = {'Content-Type': 'application/json'};
     String postData = json.encode({'it': 'works'});
     var response =
-        await client.post("$url/lambda", headers: headers, body: postData);
+        await client.post("$url/lambda", headers: headers.cast<String, String>(), body: postData);
     print('Response: ${response.body}');
     expect(json.decode(response.body)['it'], equals('works'));
   });

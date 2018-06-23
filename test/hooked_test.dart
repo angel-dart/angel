@@ -22,7 +22,7 @@ main() {
     client = new http.Client();
     app.use('/todos', new TypedService<Todo>(new MapService()));
     app.use('/books', new BookService());
-    Todos = app.service("todos");
+    Todos = app.service("todos") as HookedService;
 
     Todos.beforeAllStream().listen((e) {
       print('Fired ${e.eventName}! Data: ${e.data}; Params: ${e.params}');
@@ -71,7 +71,7 @@ main() {
       });
 
     var response = await client.post("$url/todos",
-        body: god.serialize({"arbitrary": "data"}), headers: headers);
+        body: god.serialize({"arbitrary": "data"}), headers: headers.cast<String, String>());
     print(response.body);
     Map result = god.deserialize(response.body);
     expect(result["hello"], equals("hooked world"));
@@ -97,7 +97,7 @@ main() {
 
   test('metadata', () async {
     final service = new HookedService(new IncrementService())..addHooks();
-    expect(service.inner, isNot(new isInstanceOf<MapService>()));
+    expect(service.inner, isNot(const TypeMatcher<MapService>()));
     IncrementService.TIMES = 0;
     await service.index();
     expect(IncrementService.TIMES, equals(2));
@@ -128,7 +128,7 @@ main() {
       print('Params to $type ${e.eventName}: ${e.params}');
       expect(e.params, isMap);
       expect(e.params.keys, contains('provider'));
-      expect(e.params['provider'], const isInstanceOf<Providers>());
+      expect(e.params['provider'], const TypeMatcher<Providers>());
     }
 
     svc

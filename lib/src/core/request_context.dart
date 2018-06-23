@@ -144,18 +144,18 @@ abstract class RequestContext {
   /// within a service hook.
   T grab<T>(key) {
     if (params.containsKey(key))
-      return params[key];
+      return params[key] as T;
     else if (_injections.containsKey(key))
-      return _injections[key];
+      return _injections[key] as T;
     else if (properties.containsKey(key))
-      return properties[key];
+      return properties[key] as T;
     else {
       var prop = app?.findProperty(key);
       if (prop != null)
-        return prop;
+        return prop as T;
       else if (key is Type) {
         try {
-          return app.container.make(key);
+          return app.container.make(key) as T;
         } catch (e) {
           return null;
         }
@@ -195,7 +195,7 @@ abstract class RequestContext {
       throw new ArgumentError(
           'RequestContext.accepts expects the `contentType` parameter to NOT be null.');
 
-    _acceptHeaderCache ??= headers.value(HttpHeaders.ACCEPT);
+    _acceptHeaderCache ??= headers.value('accept');
 
     if (_acceptHeaderCache == null)
       return false;

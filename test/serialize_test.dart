@@ -15,7 +15,7 @@ main() {
       ..get(
           '/bar',
           (req, ResponseContext res) =>
-              res.serialize({'hello': 'world'}, contentType: ContentType.HTML));
+              res.serialize({'hello': 'world'}, contentType: 'text/html'));
     client = new http.Client();
 
     server = await new AngelHttp(app).startServer();
@@ -33,12 +33,10 @@ main() {
   test("correct content-type", () async {
     var response = await client.get('$url/foo');
     print('Response: ${response.body}');
-    expect(response.headers[HttpHeaders.CONTENT_TYPE],
-        contains(ContentType.JSON.mimeType));
+    expect(response.headers['content-type'], contains('application/json'));
 
     response = await client.get('$url/bar');
     print('Response: ${response.body}');
-    expect(response.headers[HttpHeaders.CONTENT_TYPE],
-        contains(ContentType.HTML.mimeType));
+    expect(response.headers['content-type'], contains('text/html'));
   });
 }

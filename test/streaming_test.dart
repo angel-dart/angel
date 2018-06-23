@@ -29,7 +29,7 @@ main() {
       },
     );
 
-    app.get('/hello', (res) {
+    app.get('/hello', (ResponseContext res) {
       new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]).pipe(res);
     });
 
@@ -48,7 +48,7 @@ main() {
       await res.close();
     });
 
-    app.get('/overwrite', (res) async {
+    app.get('/overwrite', (ResponseContext res) async {
       res.statusCode = 32;
       await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res);

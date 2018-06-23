@@ -27,7 +27,7 @@ class Controller {
   Controller({this.debug: false, this.injectSingleton: true});
 
   @mustCallSuper
-  Future configureServer(Angel app)  {
+  Future configureServer(Angel app) {
     _app = app;
 
     if (injectSingleton != false) _app.container.singleton(this);
@@ -59,7 +59,7 @@ class Controller {
     return new Future.value();
   }
 
-  Function _routeBuilder(
+  void Function(Symbol, MethodMirror) _routeBuilder(
       InstanceMirror instanceMirror, Routable routable, List handlers) {
     return (Symbol methodName, MethodMirror method) {
       if (method.isRegularMethod &&
@@ -74,7 +74,8 @@ class Controller {
 
         if (exposeDecl == null) return;
 
-        var reflectedMethod = instanceMirror.getField(methodName).reflectee;
+        var reflectedMethod =
+            instanceMirror.getField(methodName).reflectee as Function;
         var middleware = []..addAll(handlers)..addAll(exposeDecl.middleware);
         String name = exposeDecl.as?.isNotEmpty == true
             ? exposeDecl.as
@@ -86,9 +87,10 @@ class Controller {
             method.parameters[1].type.reflectedType == ResponseContext) {
           // Create a regular route
           routeMappings[name] = routable
-              .addRoute(exposeDecl.method, exposeDecl.path, (req, res)  {
-            var result =   reflectedMethod(req, res);
-            return result is RequestHandler ?   result(req, res) : result;
+              .addRoute(exposeDecl.method, exposeDecl.path,
+                  (RequestContext req, ResponseContext res) {
+            var result = reflectedMethod(req, res);
+            return result is RequestHandler ? result(req, res) : result;
           }, middleware: middleware);
           return;
         }
@@ -112,5 +114,5 @@ class Controller {
   Expose findExpose() => reflectClass(runtimeType)
       .metadata
       .map((m) => m.reflectee)
-      .firstWhere((r) => r is Expose, orElse: () => null);
+      .firstWhere((r) => r is Expose, orElse: () => null) as Expose;
 }

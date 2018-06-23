@@ -8,6 +8,7 @@ import 'hooked_service.dart';
 import 'metadata.dart';
 import 'request_context.dart';
 import 'response_context.dart';
+import 'server.dart';
 import 'service.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
@@ -16,7 +17,7 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
 
 /// A function that receives an incoming [RequestContext] and responds to it.
-typedef Future RequestHandler(RequestContext req, ResponseContext res);
+typedef FutureOr RequestHandler(RequestContext req, ResponseContext res);
 
 /// Sequentially runs a list of [handlers] of middleware, and returns early if any does not
 /// return `true`. Works well with [Router].chain.
@@ -31,8 +32,9 @@ RequestMiddleware waterfall(List handlers) {
         runPipeline = () => req.app.executeHandler(handler, req, res);
       else {
         var current = runPipeline;
-        runPipeline = () => current().then((result) =>
-            !result ? result : req.app.executeHandler(handler, req, res));
+        runPipeline = () => current().then((result) => !result
+            ? new Future.value(result)
+            : req.app.executeHandler(handler, req, res));
       }
     }
 
@@ -97,7 +99,8 @@ class Routable extends Router {
     handlerSequence.addAll(middleware ?? []);
     handlerSequence.addAll(handlers);
 
-    return super.addRoute(method, path, handler, middleware: handlerSequence);
+    return super.addRoute(method, path.toString(), handler,
+        middleware: handlerSequence);
   }
 
   /// Mounts the given [router] on this instance.
@@ -128,8 +131,8 @@ class Routable extends Router {
 
     if (_router is AngelBase) {
       handlers.add((RequestContext req, ResponseContext res) {
-        req.app = _router;
-        res.app = _router;
+        req.app = _router as Angel;
+        res.app = _router as Angel;
         return true;
       });
     }
@@ -140,7 +143,7 @@ class Routable extends Router {
     Map copiedMiddleware = new Map.from(router.requestMiddleware);
     for (String middlewareName in copiedMiddleware.keys) {
       requestMiddleware.putIfAbsent("$middlewarePrefix$middlewareName",
-          () => copiedMiddleware[middlewareName]);
+          () => copiedMiddleware[middlewareName] as RequestHandler);
     }
 
     // Also copy properties...
@@ -154,7 +157,7 @@ class Routable extends Router {
 
     // _router.dumpTree(header: 'Mounting on "$path":');
     // root.child(path, debug: debug, handlers: handlers).addChild(router.root);
-    var mounted = mount(path, _router);
+    var mounted = mount(path.toString(), _router);
 
     if (_router is Routable) {
       // Copy services, too. :)

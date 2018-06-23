@@ -117,7 +117,7 @@ class Service extends Routable {
     if (before != null) handlers.addAll(before.handlers);
 
     Middleware indexMiddleware = getAnnotation(service.index, Middleware);
-    get('/', (req, res) {
+    get('/', (RequestContext req, res) {
       return this.index(mergeMap([
         {'query': req.query},
         restProvider,
@@ -154,7 +154,7 @@ class Service extends Routable {
 
     get(
         '/:id',
-        (req, res) => this.read(
+        (RequestContext req, res) => this.read(
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},
@@ -214,7 +214,7 @@ class Service extends Routable {
     Middleware removeMiddleware = getAnnotation(service.remove, Middleware);
     delete(
         '/',
-        (req, res) => this.remove(
+        (RequestContext req, res) => this.remove(
             null,
             mergeMap([
               {'query': req.query},
@@ -227,7 +227,7 @@ class Service extends Routable {
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
     delete(
         '/:id',
-        (req, res) => this.remove(
+        (RequestContext req, res) => this.remove(
             toId(req.params['id']),
             mergeMap([
               {'query': req.query},

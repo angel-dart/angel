@@ -112,7 +112,7 @@ class AngelHttp {
           var path = req.path;
           if (path == '/') path = '';
 
-          Tuple3<List, Map, ParseResult<Map<String, String>>> resolveTuple() {
+          Tuple3<List, Map, ParseResult<Map<String, dynamic>>> resolveTuple() {
             Router r = app.optimizedRouter;
             var resolved =
                 r.resolveAbsolute(path, method: req.method, strip: false);
@@ -147,7 +147,7 @@ class AngelHttp {
             else {
               var current = runPipeline;
               runPipeline = () => current().then((result) =>
-                  !result ? result : app.executeHandler(handler, req, res));
+                  !result ? new Future.value(result) : app.executeHandler(handler, req, res));
             }
           }
 
@@ -157,7 +157,7 @@ class AngelHttp {
         }
 
         if (useZone == false) {
-          return handle().catchError((e, st) {
+          return handle().catchError((e, StackTrace st) {
             if (e is FormatException)
               throw new AngelHttpException.badRequest(message: e.message)
                 ..stackTrace = st;
@@ -196,7 +196,7 @@ class AngelHttp {
                 }
 
                 return handleAngelHttpException(e, trace, req, res, request);
-              }).catchError((e, st) {
+              }).catchError((e, StackTrace st) {
                 var trace = new Trace.from(st ?? StackTrace.current).terse;
                 request.response.close();
                 // Ideally, we won't be in a position where an absolutely fatal error occurs,
@@ -353,7 +353,7 @@ class AngelHttp {
   Future<ResponseContext> createResponseContext(HttpResponse response,
           [RequestContext correspondingRequest]) =>
       new Future<ResponseContext>.value(
-          new HttpResponseContextImpl(response, app, correspondingRequest)
+          new HttpResponseContextImpl(response, app, correspondingRequest as HttpRequestContextImpl)
             ..serializer = (app.serializer ?? god.serialize)
             ..encoders.addAll(app.encoders ?? {}));
 

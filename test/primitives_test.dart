@@ -18,7 +18,7 @@ main() {
         '/num/parsed/:num',
         waterfall([
           (RequestContext req) {
-            req.params['n'] = num.parse(req.params['num']);
+            req.params['n'] = num.parse(req.params['num'].toString());
             return true;
           },
           (num n) => n,

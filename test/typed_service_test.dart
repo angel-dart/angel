@@ -24,7 +24,7 @@ main() {
         new Todo(text: 'a', completed: false, createdAt: now, updatedAt: now);
     var m = svc.serialize(t);
     print(m);
-    expect(m, {
+    expect(m..remove('_identityHashCode'), {
       'id': null,
       'createdAt': now.toIso8601String(),
       'updatedAt': now.toIso8601String(),
@@ -39,7 +39,7 @@ main() {
       'createdAt': now.toIso8601String(),
       'updatedAt': now.toIso8601String()
     });
-    expect(m, new isInstanceOf<Todo>());
+    expect(m, const TypeMatcher<Todo>());
     var t = m as Todo;
     expect(t.createdAt.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
   });
@@ -50,7 +50,7 @@ main() {
       'created_at': now.toIso8601String(),
       'updated_at': now.toIso8601String()
     });
-    expect(m, new isInstanceOf<Todo>());
+    expect(m, const TypeMatcher<Todo>());
     var t = m as Todo;
     expect(t.createdAt.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
   });

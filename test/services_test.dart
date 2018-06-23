@@ -52,7 +52,7 @@ main() {
     test('can create data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
       var response =
-          await client.post("$url/todos", headers: headers, body: postData);
+          await client.post("$url/todos", headers: headers.cast<String, String>(), body: postData);
       expect(response.statusCode, 201);
       var json = god.deserialize(response.body);
       print(json);
@@ -61,7 +61,7 @@ main() {
 
     test('can fetch data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post("$url/todos", headers: headers, body: postData);
+      await client.post("$url/todos", headers: headers.cast<String, String>(), body: postData);
       var response = await client.get("$url/todos/0");
       expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
@@ -71,10 +71,10 @@ main() {
 
     test('can modify data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post("$url/todos", headers: headers, body: postData);
+      await client.post("$url/todos", headers: headers.cast<String, String>(), body: postData);
       postData = god.serialize({'text': 'modified'});
       var response =
-          await client.patch("$url/todos/0", headers: headers, body: postData);
+          await client.patch("$url/todos/0", headers: headers.cast<String, String>(), body: postData);
       expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
@@ -83,10 +83,10 @@ main() {
 
     test('can overwrite data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
-      await client.post("$url/todos", headers: headers, body: postData);
+      await client.post("$url/todos", headers: headers.cast<String, String>(), body: postData);
       postData = god.serialize({'over': 'write'});
       var response =
-          await client.post("$url/todos/0", headers: headers, body: postData);
+          await client.post("$url/todos/0", headers: headers.cast<String, String>(), body: postData);
       expect(response.statusCode, 200);
       var json = god.deserialize(response.body);
       print(json);
@@ -97,7 +97,7 @@ main() {
     test('can delete data', () async {
       String postData = god.serialize({'text': 'Hello, world!'});
       var created = await client
-          .post("$url/todos", headers: headers, body: postData)
+          .post("$url/todos", headers: headers.cast<String, String>(), body: postData)
           .then((r) => json.decode(r.body));
       var response = await client.delete("$url/todos/${created['id']}");
       expect(response.statusCode, 200);

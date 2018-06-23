@@ -179,7 +179,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Serializes JSON to the response.
-  void json(value) => serialize(value, contentType: ContentType.JSON);
+  void json(value) => serialize(value, contentType: 'application/json');
 
   /// Returns a JSONP response.
   void jsonp(value, {String callbackName: "callback", contentType}) {
@@ -202,7 +202,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     if (!isOpen) throw closed();
     return app.viewGenerator(view, data).then((content) {
       write(content);
-      headers['content-type'] = ContentType.HTML.toString();
+      headers['content-type'] = 'text/html';
       end();
     });
   }
@@ -217,9 +217,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   void redirect(url, {bool absolute: true, int code: 302}) {
     if (!isOpen) throw closed();
     headers
-      ..['content-type'] = ContentType.HTML.toString()
+      ..['content-type'] = 'text/html'
       ..['location'] =
-          url is String ? url : app.navigate(url, absolute: absolute);
+          url is String ? url : app.navigate(url as Iterable, absolute: absolute);
     statusCode = code ?? 302;
     write('''
     <!DOCTYPE html>
@@ -259,7 +259,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     Route matched = _findRoute(app);
 
     if (matched != null) {
-      redirect(matched.makeUri(params), code: code);
+      redirect(matched.makeUri(params.cast<String, dynamic>()), code: code);
       return;
     }
 
@@ -290,7 +290,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
     final head =
         controller.findExpose().path.toString().replaceAll(_straySlashes, '');
-    final tail = matched.makeUri(params).replaceAll(_straySlashes, '');
+    final tail = matched.makeUri(params.cast<String, dynamic>()).replaceAll(_straySlashes, '');
 
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
   }

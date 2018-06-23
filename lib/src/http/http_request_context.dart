@@ -27,7 +27,7 @@ class HttpRequestContextImpl extends RequestContext {
 
   @override
   String get hostname {
-    return io.headers.value(HttpHeaders.HOST);
+    return io.headers.value('host');
   }
 
   /// The underlying [HttpRequest] instance underneath this context.

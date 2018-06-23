@@ -1,8 +1,6 @@
 library angel_framework.http;
 
 import 'dart:async';
-import 'package:angel_http_exception/angel_http_exception.dart';
-import 'package:merge_map/merge_map.dart';
 import '../util.dart';
 import 'request_context.dart';
 import 'response_context.dart';
@@ -48,12 +46,12 @@ class HookedService extends Service {
 
   RequestContext _getRequest(Map params) {
     if (params == null) return null;
-    return params['__requestctx'];
+    return params['__requestctx'] as RequestContext;
   }
 
   ResponseContext _getResponse(Map params) {
     if (params == null) return null;
-    return params['__responsectx'];
+    return params['__responsectx'] as ResponseContext;
   }
 
   Map _stripReq(Map params) {
@@ -88,8 +86,7 @@ class HookedService extends Service {
   /// Adds hooks to this instance.
   void addHooks() {
     Hooks hooks = getAnnotation(inner, Hooks);
-    final before = [];
-    final after = [];
+    List<HookedServiceEventListener> before = [], after = [];
 
     if (hooks != null) {
       before.addAll(hooks.before);
@@ -99,7 +96,8 @@ class HookedService extends Service {
     void applyListeners(Function fn, HookedServiceEventDispatcher dispatcher,
         [bool isAfter]) {
       Hooks hooks = getAnnotation(fn, Hooks);
-      final listeners = []..addAll(isAfter == true ? after : before);
+      final listeners = <HookedServiceEventListener>[]
+        ..addAll(isAfter == true ? after : before);
 
       if (hooks != null)
         listeners.addAll(isAfter == true ? hooks.after : hooks.before);

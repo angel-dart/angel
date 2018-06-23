@@ -20,7 +20,7 @@ getAnnotation(obj, Type T) {
     MethodMirror methodMirror = (reflect(obj) as ClosureMirror).function;
     return matchingAnnotation(methodMirror.metadata, T);
   } else {
-    ClassMirror classMirror = reflectClass(obj.runtimeType);
+    ClassMirror classMirror = reflectClass(obj.runtimeType as Type);
     return matchingAnnotation(classMirror.metadata, T);
   }
 }

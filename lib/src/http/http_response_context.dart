@@ -68,7 +68,7 @@ class HttpResponseContextImpl extends ResponseContext {
 
     if (encoders.isNotEmpty && correspondingRequest != null) {
       var allowedEncodings = correspondingRequest.headers
-          .value(HttpHeaders.ACCEPT_ENCODING)
+          .value('accept-encoding')
           ?.split(',')
           ?.map((s) => s.trim())
           ?.where((s) => s.isNotEmpty)
@@ -92,7 +92,7 @@ class HttpResponseContextImpl extends ResponseContext {
 
           if (encoder != null) {
             if (firstStream) {
-              io.headers.set(HttpHeaders.CONTENT_ENCODING, key);
+              io.headers.set('content-encoding', key);
             }
 
             output = encoders[key].bind(output);

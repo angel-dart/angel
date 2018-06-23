@@ -77,7 +77,7 @@ class MapService extends Service {
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
     var now = new DateTime.now().toIso8601String();
-    var result = data;
+    var result = data as Map;
 
     if (autoIdAndDateFields == true) {
       result
@@ -85,7 +85,7 @@ class MapService extends Service {
         ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] = now
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
-    items.add(result);
+    items.add(result.cast<String, dynamic>());
     return new Future.value(result);
   }
 
@@ -98,7 +98,7 @@ class MapService extends Service {
     if (!items.any(_matchesId(id))) return create(data, params);
 
     return read(id).then((item) {
-      var result = item..addAll(data);
+      var result = item..addAll(data as Map);
 
       if (autoIdAndDateFields == true)
         result
@@ -121,7 +121,7 @@ class MapService extends Service {
         throw new AngelHttpException.notFound(
             message: 'No record found for ID $id');
 
-      var result = data;
+      var result = data as Map;
       if (autoIdAndDateFields == true) {
         result
           ..['id'] = id?.toString()
@@ -130,7 +130,7 @@ class MapService extends Service {
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
               new DateTime.now().toIso8601String();
       }
-      items.add(result);
+      items.add(result.cast<String, dynamic>());
       return new Future.value(result);
     });
   }
