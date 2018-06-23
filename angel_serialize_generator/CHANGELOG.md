@@ -1,3 +1,6 @@
+# 2.0.8
+* Generate a `fromMap` with typecasting, for Dart 2's sake.
+
 # 2.0.7
 * Create unmodifiable Lists and Maps.
 * Support `@required` on fields.

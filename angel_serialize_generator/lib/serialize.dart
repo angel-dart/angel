@@ -172,12 +172,13 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         if (i++ > 0) buf.write(', ');
 
-        String deserializedRepresentation = "map['$alias']";
+        String deserializedRepresentation = "map['$alias'] as ${typeToString(
+            field.type)}";
 
         // Deserialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
           deserializedRepresentation = "map['$alias'] != null ? "
-              "(map['$alias'] is DateTime ? map['$alias'] : DateTime.parse(map['$alias']))"
+              "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias']))"
               " : null";
 
         // Serialize model classes via `XSerializer.toMap`
@@ -192,16 +193,16 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           if (isListModelType(t)) {
             var rc = new ReCase(t.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
-                " ? new List.unmodifiable(map['$alias'].map(${rc
+                " ? new List.unmodifiable((map['$alias'] as Iterable).whereType<Map>().map(${rc
                 .pascalCase}Serializer.fromMap))"
                 " : null";
           } else if (isMapToModelType(t)) {
             var rc = new ReCase(t.typeArguments[1].name);
             deserializedRepresentation = '''
                 map['$alias'] is Map
-                  ? new Map.unmodifiable(map['$alias'].keys.fold({}, (out, key) {
+                  ? new Map.unmodifiable((map['$alias'] as Map).keys.fold({}, (out, key) {
                        return out..[key] = ${rc
-                .pascalCase}Serializer.fromMap(map['$alias'][key]);
+                .pascalCase}Serializer.fromMap((map['$alias'] as Map)[key]);
                     }))
                   : null
             ''';

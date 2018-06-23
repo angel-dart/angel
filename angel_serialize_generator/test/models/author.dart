@@ -1,6 +1,6 @@
 library angel_serialize.test.models.author;
 
-import 'package:angel_framework/common.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';

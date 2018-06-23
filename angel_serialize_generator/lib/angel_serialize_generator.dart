@@ -79,3 +79,16 @@ bool isMapToModelType(InterfaceType t) {
       t.typeArguments.length == 2 &&
       isModelClass(t.typeArguments[1]);
 }
+
+/// Compute a [String] representation of a [type].
+String typeToString(DartType type) {
+  if (type is InterfaceType) {
+    if (type.typeArguments.isEmpty) return type.name;
+    return type.name +
+        '<' +
+        type.typeArguments.map(typeToString).join(', ') +
+        '>';
+  } else {
+    return type.name;
+  }
+}

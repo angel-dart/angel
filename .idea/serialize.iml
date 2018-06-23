@@ -2,10 +2,12 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$/angel_serialize">
+      <excludeFolder url="file://$MODULE_DIR$/angel_serialize/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize/build" />
     </content>
     <content url="file://$MODULE_DIR$/angel_serialize_generator">
+      <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_serialize_generator/build" />
     </content>
