@@ -107,8 +107,7 @@ class Service extends Routable {
     _addRoutesInner(service ?? this, bootstrappers);
   }
 
-  void _addRoutesInner(Service service,
-      List handlers) {
+  void _addRoutesInner(Service service, List handlers) {
     Map restProvider = {'provider': Providers.rest};
 
     // Add global middleware if declared on the instance itself

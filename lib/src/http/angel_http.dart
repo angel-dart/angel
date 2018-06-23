@@ -146,8 +146,9 @@ class AngelHttp {
               runPipeline = () => app.executeHandler(handler, req, res);
             else {
               var current = runPipeline;
-              runPipeline = () => current().then((result) =>
-                  !result ? new Future.value(result) : app.executeHandler(handler, req, res));
+              runPipeline = () => current().then((result) => !result
+                  ? new Future.value(result)
+                  : app.executeHandler(handler, req, res));
             }
           }
 
@@ -352,10 +353,10 @@ class AngelHttp {
 
   Future<ResponseContext> createResponseContext(HttpResponse response,
           [RequestContext correspondingRequest]) =>
-      new Future<ResponseContext>.value(
-          new HttpResponseContextImpl(response, app, correspondingRequest as HttpRequestContextImpl)
-            ..serializer = (app.serializer ?? god.serialize)
-            ..encoders.addAll(app.encoders ?? {}));
+      new Future<ResponseContext>.value(new HttpResponseContextImpl(
+          response, app, correspondingRequest as HttpRequestContextImpl)
+        ..serializer = (app.serializer ?? god.serialize)
+        ..encoders.addAll(app.encoders ?? {}));
 
   /// Limits the maximum number of requests to be handled concurrently by this instance.
   ///

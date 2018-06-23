@@ -151,6 +151,7 @@ InjectionRequest preInject(Function handler) {
         .firstWhere((m) => m.type.isAssignableTo(_Parameter),
             orElse: () => null)
         ?.reflectee as Parameter;
+    print(p);
     if (p != null) {
       injection.parameters[name] = new Parameter(
         cookie: p.cookie,

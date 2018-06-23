@@ -96,7 +96,7 @@ void encodingTests(Angel getApp()) {
       await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
-      
+
       var body = await getBody(rs);
       expect(rs.headers.value('content-encoding'), 'gzip');
       expect(body, gzip.encode(utf8.encode('Hello, world!')));

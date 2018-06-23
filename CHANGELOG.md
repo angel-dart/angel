@@ -1,3 +1,7 @@
+# 1.1.4+6
+* Almost 100% working with `2.0.0-dev.64.1`. In said version
+of Dart, `dart:mirrors` is broken, and therefore breaks detection of metadata.
+
 # 1.1.4+5
 * Intermediary release while patching up Dart 2 bugs.
 * Stricter Dart 2 use.

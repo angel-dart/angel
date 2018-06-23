@@ -94,8 +94,7 @@ main() {
     app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
     client = new http.Client();
-    var server =
-        await new AngelHttp(app).startServer('127.0.0.1', 0);
+    var server = await new AngelHttp(app).startServer('127.0.0.1', 0);
     url = "http://${server.address.host}:${server.port}";
   });
 
@@ -156,8 +155,8 @@ main() {
   test('Can serialize function result as JSON', () async {
     Map headers = {'Content-Type': 'application/json'};
     String postData = json.encode({'it': 'works'});
-    var response =
-        await client.post("$url/lambda", headers: headers.cast<String, String>(), body: postData);
+    var response = await client.post("$url/lambda",
+        headers: headers.cast<String, String>(), body: postData);
     print('Response: ${response.body}');
     expect(json.decode(response.body)['it'], equals('works'));
   });

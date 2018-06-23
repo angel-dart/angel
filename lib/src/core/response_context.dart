@@ -218,8 +218,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     if (!isOpen) throw closed();
     headers
       ..['content-type'] = 'text/html'
-      ..['location'] =
-          url is String ? url : app.navigate(url as Iterable, absolute: absolute);
+      ..['location'] = url is String
+          ? url
+          : app.navigate(url as Iterable, absolute: absolute);
     statusCode = code ?? 302;
     write('''
     <!DOCTYPE html>
@@ -290,7 +291,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
 
     final head =
         controller.findExpose().path.toString().replaceAll(_straySlashes, '');
-    final tail = matched.makeUri(params.cast<String, dynamic>()).replaceAll(_straySlashes, '');
+    final tail = matched
+        .makeUri(params.cast<String, dynamic>())
+        .replaceAll(_straySlashes, '');
 
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
   }

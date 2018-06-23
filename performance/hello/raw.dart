@@ -11,9 +11,7 @@ main() {
 }
 
 void start(int id) {
-  HttpServer
-      .bind('127.0.0.1', 3000, shared: true)
-      .then((server) {
+  HttpServer.bind('127.0.0.1', 3000, shared: true).then((server) {
     print(
         'Instance #$id listening at http://${server.address.address}:${server.port}');
 

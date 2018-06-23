@@ -185,8 +185,8 @@ class Angel extends AngelBase {
       logger?.warning(
           'This route will be ignored, and no requests will ever reach it.');
     }
-    return super
-        .mount(path.toString(), router, hooked: hooked != false, namespace: namespace);
+    return super.mount(path.toString(), router,
+        hooked: hooked != false, namespace: namespace);
   }
 
   /// Loads some base dependencies into the service container.

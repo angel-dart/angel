@@ -11,18 +11,17 @@ main() {
         isException(401, '401 Not Authenticated'));
     expect(new AngelHttpException.paymentRequired(),
         isException(402, '402 Payment Required'));
-    expect(new AngelHttpException.forbidden(),
-        isException(403, '403 Forbidden'));
-    expect(new AngelHttpException.notFound(),
-        isException(404, '404 Not Found'));
+    expect(
+        new AngelHttpException.forbidden(), isException(403, '403 Forbidden'));
+    expect(
+        new AngelHttpException.notFound(), isException(404, '404 Not Found'));
     expect(new AngelHttpException.methodNotAllowed(),
         isException(405, '405 Method Not Allowed'));
     expect(new AngelHttpException.notAcceptable(),
         isException(406, '406 Not Acceptable'));
     expect(new AngelHttpException.methodTimeout(),
         isException(408, '408 Timeout'));
-    expect(new AngelHttpException.conflict(),
-        isException(409, '409 Conflict'));
+    expect(new AngelHttpException.conflict(), isException(409, '409 Conflict'));
     expect(new AngelHttpException.notProcessable(),
         isException(422, '422 Not Processable'));
     expect(new AngelHttpException.notImplemented(),

@@ -85,11 +85,13 @@ main() {
     // Invalid request
     var rq = new MockHttpRequest('GET', Uri.parse('/session'))..close();
     var rs = rq.response;
-    http.handleRequest(rq).timeout(const Duration(seconds: 5)).catchError((_) => null);
+    http
+        .handleRequest(rq)
+        .timeout(const Duration(seconds: 5))
+        .catchError((_) => null);
 
     await printResponse(rs);
     expect(rs.statusCode, 500);
-
 
     rq = new MockHttpRequest('GET', Uri.parse('/session'));
     rq.session['foo'] = 'bar';

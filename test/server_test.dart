@@ -174,8 +174,7 @@ main() {
       http.handleRequest(rq);
       await rq.response.toList();
       expect(rq.response.statusCode, 403);
-      expect(
-          rq.response.headers.contentType.mimeType, 'application/json');
+      expect(rq.response.headers.contentType.mimeType, 'application/json');
     });
 
     test('can throw in finalizer', () async {
@@ -185,8 +184,7 @@ main() {
       http.handleRequest(rq);
       await rq.response.toList();
       expect(rq.response.statusCode, 403);
-      expect(
-          rq.response.headers.contentType.mimeType, 'application/json');
+      expect(rq.response.headers.contentType.mimeType, 'application/json');
     });
 
     test('can send html', () async {
@@ -196,8 +194,7 @@ main() {
       http.handleRequest(rq);
       await rq.response.toList();
       expect(rq.response.statusCode, 403);
-      expect(
-          rq.response.headers.contentType?.mimeType, 'text/html');
+      expect(rq.response.headers.contentType?.mimeType, 'text/html');
     });
   });
 }
