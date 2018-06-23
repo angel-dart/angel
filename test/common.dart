@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:angel_client/base_angel_client.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/src/base_client.dart' as http;
 import 'package:http/src/base_request.dart' as http;
 import 'package:http/src/streamed_response.dart' as http;
 
 Future<String> read(Stream<List<int>> stream) =>
-    stream.transform(UTF8.decoder).join();
+    stream.transform(utf8.decoder).join();
 
 class MockAngel extends BaseAngelClient {
   @override
@@ -38,7 +38,7 @@ class SpecClient extends http.BaseClient {
       };
 
     return new Future<http.StreamedResponse>.value(new http.StreamedResponse(
-      new Stream<List<int>>.fromIterable([UTF8.encode(JSON.encode(data))]),
+      new Stream<List<int>>.fromIterable([utf8.encode(json.encode(data))]),
       200,
       headers: {
         'content-type': 'application/json',

@@ -2,8 +2,8 @@
 library angel_client;
 
 import 'dart:async';
-import 'dart:convert';
 import 'package:collection/collection.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/src/response.dart' as http;
 export 'package:angel_http_exception/angel_http_exception.dart';
 
@@ -82,8 +82,8 @@ class AngelAuthResult {
     return result;
   }
 
-  factory AngelAuthResult.fromJson(String json) =>
-      new AngelAuthResult.fromMap(JSON.decode(json));
+  factory AngelAuthResult.fromJson(String s) =>
+      new AngelAuthResult.fromMap(json.decode(s));
 
   Map<String, dynamic> toJson() {
     return {'token': token, 'data': data};

@@ -1,3 +1,7 @@
+# 1.2.0+2
+* Code cleanup + housekeeping, update to `dart2_constant`, and
+ensured build works with `2.0.0-dev.64.1`.
+
 # 1.2.0+1
 * Removed a type annotation in `authenticateViaPopup` to prevent breaking with DDC.
 

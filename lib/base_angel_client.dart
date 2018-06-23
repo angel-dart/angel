@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' show Encoding;
 import 'package:angel_http_exception/angel_http_exception.dart';
-import 'package:collection/collection.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/src/base_client.dart' as http;
 import 'package:http/src/base_request.dart' as http;
 import 'package:http/src/request.dart' as http;
@@ -35,10 +35,10 @@ bool _invalid(http.Response response) =>
 
 AngelHttpException failure(http.Response response, {error, StackTrace stack}) {
   try {
-    final json = JSON.decode(response.body);
+    final v = json.decode(response.body);
 
-    if (json is Map && json['isError'] == true) {
-      return new AngelHttpException.fromMap(json);
+    if (v is Map && v['isError'] == true) {
+      return new AngelHttpException.fromMap(v);
     } else {
       return new AngelHttpException(error,
           message: 'Unhandled exception while connecting to Angel backend.',
@@ -95,17 +95,17 @@ abstract class BaseAngelClient extends Angel {
       }
 
       try {
-        final json = JSON.decode(response.body);
+        final v = json.decode(response.body);
 
-        if (json is! Map ||
-            !json.containsKey('data') ||
-            !json.containsKey('token')) {
+        if (v is! Map ||
+            !v.containsKey('data') ||
+            !v.containsKey('token')) {
           throw new AngelHttpException.notAuthenticated(
               message:
                   "Auth endpoint '$url' did not return a proper response.");
         }
 
-        var r = new AngelAuthResult.fromMap(json);
+        var r = new AngelAuthResult.fromMap(v);
         _onAuthenticated.add(r);
         return r;
       } on AngelHttpException {
@@ -119,7 +119,7 @@ abstract class BaseAngelClient extends Angel {
 
       if (credentials != null) {
         response = await client.post(url,
-            body: JSON.encode(credentials), headers: _writeHeaders);
+            body: json.encode(credentials), headers: _writeHeaders);
       } else {
         response = await client.post(url, headers: _writeHeaders);
       }
@@ -129,17 +129,17 @@ abstract class BaseAngelClient extends Angel {
       }
 
       try {
-        final json = JSON.decode(response.body);
+        final v = json.decode(response.body);
 
-        if (json is! Map ||
-            !json.containsKey('data') ||
-            !json.containsKey('token')) {
+        if (v is! Map ||
+            !v.containsKey('data') ||
+            !v.containsKey('token')) {
           throw new AngelHttpException.notAuthenticated(
               message:
                   "Auth endpoint '$url' did not return a proper response.");
         }
 
-        var r = new AngelAuthResult.fromMap(json);
+        var r = new AngelAuthResult.fromMap(v);
         _onAuthenticated.add(r);
         return r;
       } on AngelHttpException {
@@ -179,9 +179,9 @@ abstract class BaseAngelClient extends Angel {
       if (body is String) {
         request.body = body;
       } else if (body is List) {
-        request.bodyBytes = DelegatingList.typed(body);
+        request.bodyBytes = new List.from(body);
       } else if (body is Map) {
-        request.bodyFields = DelegatingMap.typed(body);
+        request.bodyFields = new Map.from(body);
       } else {
         throw new ArgumentError('Invalid request body "$body".');
       }
@@ -289,7 +289,7 @@ class BaseAngelService extends Service {
   }
 
   makeBody(x) {
-    return JSON.encode(x);
+    return json.encode(x);
   }
 
   Future<http.StreamedResponse> send(http.BaseRequest request) {
@@ -313,14 +313,14 @@ class BaseAngelService extends Service {
           throw failure(response);
       }
 
-      final json = JSON.decode(response.body);
+      final v = json.decode(response.body);
 
-      if (json is! List) {
-        _onIndexed.add(json);
-        return json;
+      if (v is! List) {
+        _onIndexed.add(v);
+        return v;
       }
 
-      var r = json.map(deserialize).toList();
+      var r = v.map(deserialize).toList();
       _onIndexed.add(r);
       return r;
     } catch (e, st) {
@@ -344,7 +344,7 @@ class BaseAngelService extends Service {
           throw failure(response);
       }
 
-      var r = deserialize(JSON.decode(response.body));
+      var r = deserialize(json.decode(response.body));
       _onRead.add(r);
       return r;
     } catch (e, st) {
@@ -368,7 +368,7 @@ class BaseAngelService extends Service {
           throw failure(response);
       }
 
-      var r = deserialize(JSON.decode(response.body));
+      var r = deserialize(json.decode(response.body));
       _onCreated.add(r);
       return r;
     } catch (e, st) {
@@ -392,7 +392,7 @@ class BaseAngelService extends Service {
           throw failure(response);
       }
 
-      var r = deserialize(JSON.decode(response.body));
+      var r = deserialize(json.decode(response.body));
       _onModified.add(r);
       return r;
     } catch (e, st) {
@@ -416,7 +416,7 @@ class BaseAngelService extends Service {
           throw failure(response);
       }
 
-      var r = deserialize(JSON.decode(response.body));
+      var r = deserialize(json.decode(response.body));
       _onUpdated.add(r);
       return r;
     } catch (e, st) {
@@ -440,7 +440,7 @@ class BaseAngelService extends Service {
           throw failure(response);
       }
 
-      var r = deserialize(JSON.decode(response.body));
+      var r = deserialize(json.decode(response.body));
       _onRemoved.add(r);
       return r;
     } catch (e, st) {

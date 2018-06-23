@@ -2,8 +2,8 @@
 library angel_client.browser;
 
 import 'dart:async' show Future, Stream, StreamController, StreamSubscription, Timer;
-import 'dart:convert' show JSON;
 import 'dart:html' show CustomEvent, Event, window;
+import 'package:dart2_constant/convert.dart';
 import 'package:http/browser_client.dart' as http;
 import 'angel_client.dart';
 // import 'auth_types.dart' as auth_types;
@@ -29,10 +29,10 @@ class Rest extends BaseAngelClient {
       try {
         final result = await super.authenticate(
             type: null,
-            credentials: {'token': JSON.decode(window.localStorage['token'])},
+            credentials: {'token': json.decode(window.localStorage['token'])},
             reviveEndpoint: reviveEndpoint);
-        window.localStorage['token'] = JSON.encode(authToken = result.token);
-        window.localStorage['user'] = JSON.encode(result.data);
+        window.localStorage['token'] = json.encode(authToken = result.token);
+        window.localStorage['user'] = json.encode(result.data);
         return result;
       } catch (e, st) {
         throw new AngelHttpException(e,
@@ -41,8 +41,8 @@ class Rest extends BaseAngelClient {
     } else {
       final result = await super.authenticate(
           type: type, credentials: credentials, authEndpoint: authEndpoint);
-      window.localStorage['token'] = JSON.encode(authToken = result.token);
-      window.localStorage['user'] = JSON.encode(result.data);
+      window.localStorage['token'] = json.encode(authToken = result.token);
+      window.localStorage['user'] = json.encode(result.data);
       return result;
     }
   }

@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:angel_client/angel_client.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
@@ -87,7 +87,7 @@ main() {
           .authenticate(type: 'local', credentials: {'username': 'password'});
       expect(
         await read(app.client.spec.request.finalize()),
-        JSON.encode({'username': 'password'}),
+        json.encode({'username': 'password'}),
       );
     });
   });

@@ -12,9 +12,10 @@ main() {
 
   setUp(() async {
     var serverApp = new s.Angel();
+    var http = new s.AngelHttp(serverApp);
     serverApp.use('/api/todos', new s.MapService(autoIdAndDateFields: false));
 
-    server = await serverApp.startServer();
+    server = await http.startServer();
     var uri = 'http://${server.address.address}:${server.port}';
     app = new c.Rest(uri);
     list = new c.ServiceList(app.service('api/todos'));
