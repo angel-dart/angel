@@ -1,0 +1,10 @@
+name: dsx_generator
+dependencies:
+  build_config: ^0.3.0
+  code_builder: ^3.0.0
+  dsx:
+    path: ../dsx
+  jael: ^1.0.0
+  recase: ^1.0.0
+  string_scanner: ^1.0.0
+  source_gen: ^0.8.0
