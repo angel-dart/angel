@@ -1,3 +1,6 @@
+# 1.0.5
+* Add support for DSX, a port of JSX to Dart.
+
 # 1.0.4
 * Skip HTML comments in free text.
 
