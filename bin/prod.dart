@@ -25,16 +25,13 @@ void isolateMain(int id) {
     // Alternatives include sending logs to a service like Sentry.
     app.logger = new Logger('angel')
       ..onRecord.listen((rec) {
-        if (rec.error != null) {
+        if (rec.error == null) {
+          stdout.writeln(rec);
+        } else {
           var err = rec.error;
           if (err is AngelHttpException && err.statusCode != 500) return;
-          var now = new DateTime.now().toUtc();
-          var filename = 'server_log_' + now.toString() + '.txt';
-          var sink = new File(filename).openWrite(mode: FileMode.append);
-          sink
-            ..writeln(rec.error)
-            ..writeln(rec.stackTrace)
-            ..close();
+          var sink = stderr;
+          sink..writeln(rec)..writeln(rec.error)..writeln(rec.stackTrace);
         }
       });
 
@@ -44,7 +41,7 @@ void isolateMain(int id) {
     // This effectively lets us multi-thread the application.
     var http = new AngelHttp.custom(app, startShared);
     var server = await http.startServer(hostname, port);
-    print(
-        'Instance #$id listening at http://${server.address.address}:${server.port}');
+    print('Instance #$id listening at http://${server.address.address}:${server
+            .port}');
   });
 }
