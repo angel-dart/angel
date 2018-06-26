@@ -17,6 +17,7 @@ AngelConfigurer jael(Directory viewsDirectory,
     bool strictResolution: false,
     bool cacheViews: false,
     Iterable<Patcher> patch,
+    bool asDSX: false,
     CodeBuffer createBuffer()}) {
   var cache = <String, Document>{};
   fileExtension ??= '.jl';
@@ -32,8 +33,8 @@ AngelConfigurer jael(Directory viewsDirectory,
       } else {
         var file = viewsDirectory.childFile(name + fileExtension);
         var contents = await file.readAsString();
-        var doc =
-            parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
+        var doc = parseDocument(contents,
+            sourceUrl: file.uri, asDSX: asDSX == true, onError: errors.add);
         processed = doc;
 
         try {
@@ -61,7 +62,7 @@ AngelConfigurer jael(Directory viewsDirectory,
         }
       }
 
-      Renderer.errorDocument(errors, buf);
+      Renderer.errorDocument(errors, buf..clear());
       return buf.toString();
     };
   };

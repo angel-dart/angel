@@ -1,5 +1,5 @@
 name: angel_jael
-version: 1.0.1
+version: 1.0.2
 description: Angel support for the Jael templating engine.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/jael/tree/master/jael
