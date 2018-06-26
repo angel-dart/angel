@@ -34,8 +34,8 @@ enum TokenType {
    */
   lBracket,
   rBracket,
-  doubleCurlyL,
-  doubleCurlyR,
+  lDoubleCurly,
+  rDoubleCurly,
   lCurly,
   rCurly,
   lParen,

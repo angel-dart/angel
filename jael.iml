@@ -13,6 +13,7 @@
     <content url="file://$MODULE_DIR$/dsx" />
     <content url="file://$MODULE_DIR$/dsx_generator" />
     <content url="file://$MODULE_DIR$/jael">
+      <excludeFolder url="file://$MODULE_DIR$/jael/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/jael/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/jael/build" />
     </content>

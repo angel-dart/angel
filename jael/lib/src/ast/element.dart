@@ -33,8 +33,13 @@ abstract class Element extends ElementChild {
   ];
 
   Identifier get tagName;
+
   Iterable<Attribute> get attributes;
+
   Iterable<ElementChild> get children;
+
+  Attribute getAttribute(String name) =>
+      attributes.firstWhere((a) => a.name == name, orElse: () => null);
 }
 
 class SelfClosingElement extends Element {

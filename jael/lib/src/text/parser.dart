@@ -5,11 +5,12 @@ import 'scanner.dart';
 class Parser {
   final List<JaelError> errors = [];
   final Scanner scanner;
+  final bool asDSX;
 
   Token _current;
   int _index = -1;
 
-  Parser(this.scanner);
+  Parser(this.scanner, {this.asDSX: false});
 
   Token get current => _current;
 
@@ -148,7 +149,7 @@ class Parser {
   Text parseText() => next(TokenType.text) ? new Text(_current) : null;
 
   Interpolation parseInterpolation() {
-    if (!next(TokenType.doubleCurlyL)) return null;
+    if (!next(asDSX ? TokenType.lCurly : TokenType.lDoubleCurly)) return null;
     var doubleCurlyL = _current;
 
     var expression = parseExpression(0);
@@ -159,9 +160,10 @@ class Parser {
       return null;
     }
 
-    if (!next(TokenType.doubleCurlyR)) {
+    if (!next(asDSX ? TokenType.rCurly : TokenType.rDoubleCurly)) {
+      var expected = asDSX ? '}' : '}}';
       errors.add(new JaelError(JaelErrorSeverity.error,
-          'Missing closing "}}" in interpolation.', expression.span));
+          'Missing closing "$expected" in interpolation.', expression.span));
       return null;
     }
 
@@ -260,7 +262,8 @@ class Parser {
     if (tagName2.name != tagName.name) {
       errors.add(new JaelError(
           JaelErrorSeverity.error,
-          'Mismatched closing tags. Expected "${tagName.span.text}"; got "${tagName2.name}" instead.',
+          'Mismatched closing tags. Expected "${tagName.span
+              .text}"; got "${tagName2.name}" instead.',
           lt2.span));
       return null;
     }
@@ -291,21 +294,41 @@ class Parser {
 
     if (next(TokenType.equals)) {
       equals = _current;
-    } else if (next(TokenType.nequ)) {
+    } else if (!asDSX && next(TokenType.nequ)) {
       nequ = _current;
     } else {
       return new Attribute(id, string, null, null, null);
     }
 
-    var value = parseExpression(0);
+    if (!asDSX) {
+      var value = parseExpression(0);
 
-    if (value == null) {
+      if (value == null) {
+        errors.add(new JaelError(JaelErrorSeverity.error,
+            'Missing expression in attribute.', equals?.span ?? nequ.span));
+        return null;
+      }
+
+      return new Attribute(id, string, equals, nequ, value);
+    } else {
+      // Find either a string, or an interpolation.
+      var value = implicitString();
+
+      if (value != null) {
+        return new Attribute(id, string, equals, nequ, value);
+      }
+
+      var interpolation = parseInterpolation();
+
+      if (interpolation != null) {
+        return new Attribute(
+            id, string, equals, nequ, interpolation.expression);
+      }
+
       errors.add(new JaelError(JaelErrorSeverity.error,
           'Missing expression in attribute.', equals?.span ?? nequ.span));
       return null;
     }
-
-    return new Attribute(id, string, equals, nequ, value);
   }
 
   Expression parseExpression(int precedence) {

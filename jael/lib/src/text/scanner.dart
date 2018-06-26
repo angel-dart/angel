@@ -12,7 +12,8 @@ final RegExp _string1 = new RegExp(
 final RegExp _string2 = new RegExp(
     r'"((\\(["\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^"\\]))*"');
 
-Scanner scan(String text, {sourceUrl}) => new _Scanner(text, sourceUrl)..scan();
+Scanner scan(String text, {sourceUrl, bool asDSX: false}) =>
+    new _Scanner(text, sourceUrl)..scan(asDSX: asDSX);
 
 abstract class Scanner {
   List<JaelError> get errors;
@@ -24,8 +25,8 @@ final RegExp _htmlComment = new RegExp(r'<!--[^$]*-->');
 
 final Map<Pattern, TokenType> _expressionPatterns = {
 //final Map<Pattern, TokenType> _htmlPatterns = {
-  '{{': TokenType.doubleCurlyL,
-  '{{-': TokenType.doubleCurlyL,
+  '{{': TokenType.lDoubleCurly,
+  '{{-': TokenType.lDoubleCurly,
 
   //
   _htmlComment: TokenType.htmlComment,
@@ -42,7 +43,7 @@ final Map<Pattern, TokenType> _expressionPatterns = {
 //};
 
 //final Map<Pattern, TokenType> _expressionPatterns = {
-  '}}': TokenType.doubleCurlyR,
+  '}}': TokenType.rDoubleCurly,
 
   // Keywords
   'new': TokenType.$new,
@@ -92,10 +93,10 @@ class _Scanner implements Scanner {
     _scanner = new SpanScanner(text, sourceUrl: sourceUrl);
   }
 
-  void scan() {
+  void scan({bool asDSX: false}) {
     while (!_scanner.isDone) {
       if (state == _ScannerState.html) {
-        scanHtml();
+        scanHtml(asDSX);
       } else if (state == _ScannerState.freeText) {
         // Just keep parsing until we hit "</"
         var start = _scanner.state, end = start;
@@ -104,8 +105,8 @@ class _Scanner implements Scanner {
           // Skip through comments
           if (_scanner.scan(_htmlComment)) continue;
 
-          // Break on {{
-          if (_scanner.matches('{{')) {
+          // Break on {{ or {
+          if (_scanner.matches(asDSX ? '{' : '{{')) {
             state = _ScannerState.html;
             //_scanner.position--;
             break;
@@ -169,7 +170,7 @@ class _Scanner implements Scanner {
     }
   }
 
-  void scanHtml() {
+  void scanHtml(bool asDSX) {
     var brackets = new Queue<Token>();
 
     do {
@@ -247,7 +248,8 @@ class _Scanner implements Scanner {
                 break;
               }
             }
-          } else if (token.type == TokenType.doubleCurlyR) {
+          } else if (token.type ==
+              (asDSX ? TokenType.rCurly : TokenType.rDoubleCurly)) {
             state = _ScannerState.freeText;
             break;
           }

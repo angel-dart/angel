@@ -34,7 +34,7 @@ void myFunction() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jl', asDSX: false);
     var scope = new SymbolTable(values: {
       'profile': {
         'avatar': 'thosakwe.png',

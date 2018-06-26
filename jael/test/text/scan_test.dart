@@ -64,13 +64,13 @@ main() {
     expect(tokens[6], isToken(TokenType.number, '2'));
     expect(tokens[7], isToken(TokenType.gt));
     expect(tokens[8], isToken(TokenType.text, 'three'));
-    expect(tokens[9], isToken(TokenType.doubleCurlyL));
+    expect(tokens[9], isToken(TokenType.lDoubleCurly));
     expect(tokens[10], isToken(TokenType.id, 'four'));
     expect(tokens[11], isToken(TokenType.gt));
     expect(tokens[12], isToken(TokenType.id, 'five'));
     expect(tokens[13], isToken(TokenType.dot));
     expect(tokens[14], isToken(TokenType.id, 'six'));
-    expect(tokens[15], isToken(TokenType.doubleCurlyR));
+    expect(tokens[15], isToken(TokenType.rDoubleCurly));
     expect(tokens[16], isToken(TokenType.lt));
     expect(tokens[17], isToken(TokenType.slash));
     expect(tokens[18], isToken(TokenType.id, 'ul'));
