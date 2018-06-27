@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:dart2_constant/convert.dart';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import '../options.dart';
@@ -50,7 +50,7 @@ class LocalAuthStrategy extends AuthStrategy {
       if (_rgxBasic.hasMatch(authHeader)) {
         String base64AuthString = _rgxBasic.firstMatch(authHeader).group(1);
         String authString =
-            new String.fromCharCodes(BASE64.decode(base64AuthString));
+            new String.fromCharCodes(base64.decode(base64AuthString));
         if (_rgxUsrPass.hasMatch(authString)) {
           Match usrPassMatch = _rgxUsrPass.firstMatch(authString);
           verificationResult =
@@ -73,10 +73,10 @@ class LocalAuthStrategy extends AuthStrategy {
 
     if (verificationResult == null) {
       await req.parse();
-      if (_validateString(req.body[usernameField]) &&
-          _validateString(req.body[passwordField])) {
+      if (_validateString(req.body[usernameField]?.toString()) &&
+          _validateString(req.body[passwordField]?.toString())) {
         verificationResult =
-            await verifier(req.body[usernameField], req.body[passwordField]);
+            await verifier(req.body[usernameField]?.toString(), req.body[passwordField]?.toString());
       }
     }
 

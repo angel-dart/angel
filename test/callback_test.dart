@@ -13,6 +13,7 @@ class User extends Model {
 
 main() {
   Angel app;
+  AngelHttp angelHttp;
   AngelAuth auth;
   http.Client client;
   HttpServer server;
@@ -20,14 +21,15 @@ main() {
 
   setUp(() async {
     app = new Angel();
+    angelHttp = new AngelHttp(app, useZone: false);
     app.use('/users', new TypedService<User>(new MapService()));
 
     await app
         .service('users')
         .create({'username': 'jdoe1', 'password': 'password'});
 
-    auth = new AngelAuth();
-    auth.serializer = (User user) async => user.id;
+    auth = new AngelAuth<User>();
+    auth.serializer = (u) => u.id;
     auth.deserializer = app.service('users').read;
 
     await app.configure(auth.configureServer);
@@ -52,13 +54,13 @@ main() {
         })));
 
     client = new http.Client();
-    server = await app.startServer();
+    server = await angelHttp.startServer();
     url = 'http://${server.address.address}:${server.port}';
   });
 
   tearDown(() async {
     client.close();
-    await server.close(force: true);
+    await angelHttp.close();
     app = null;
     client = null;
     url = null;

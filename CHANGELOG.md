@@ -1,3 +1,6 @@
+# 1.1.1
+* Added `protectCookie`, to better protect data sent in cookies.
+
 # 1.1.0+2
 * `LocalAuthStrategy` returns `true` on `Basic` authentication.
 

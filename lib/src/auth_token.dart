@@ -1,6 +1,6 @@
 import 'dart:collection';
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:crypto/crypto.dart';
 
 /// Calls [BASE64URL], but also works for strings with lengths
@@ -21,7 +21,7 @@ String decodeBase64(String str) {
       throw 'Illegal base64url string!"';
   }
 
-  return UTF8.decode(BASE64URL.decode(output));
+  return utf8.decode(base64Url.decode(output));
 }
 
 class AuthToken {
@@ -39,21 +39,23 @@ class AuthToken {
       this.lifeSpan: -1,
       this.userId,
       DateTime issuedAt,
-      Map<String, dynamic> payload: const {}}) {
+      Map payload: const {}}) {
     this.issuedAt = issuedAt ?? new DateTime.now();
-    this.payload.addAll(payload ?? {});
+    this.payload.addAll(
+        payload?.keys?.fold({}, (out, k) => out..[k.toString()] = payload[k]) ??
+            {});
   }
 
-  factory AuthToken.fromJson(String json) =>
-      new AuthToken.fromMap(JSON.decode(json));
+  factory AuthToken.fromJson(String jsons) =>
+      new AuthToken.fromMap(json.decode(jsons) as Map);
 
   factory AuthToken.fromMap(Map data) {
     return new AuthToken(
-        ipAddress: data["aud"],
-        lifeSpan: data["exp"],
-        issuedAt: DateTime.parse(data["iat"]),
+        ipAddress: data["aud"].toString(),
+        lifeSpan: data["exp"] as num,
+        issuedAt: DateTime.parse(data["iat"].toString()),
         userId: data["sub"],
-        payload: data["pld"] ?? {});
+        payload: data["pld"] as Map ?? {});
   }
 
   factory AuthToken.parse(String jwt) {
@@ -63,7 +65,7 @@ class AuthToken {
       throw new AngelHttpException.notAuthenticated(message: "Invalid JWT.");
 
     var payloadString = decodeBase64(split[1]);
-    return new AuthToken.fromMap(JSON.decode(payloadString));
+    return new AuthToken.fromMap(json.decode(payloadString) as Map);
   }
 
   factory AuthToken.validate(String jwt, Hmac hmac) {
@@ -75,21 +77,21 @@ class AuthToken {
     // var headerString = decodeBase64(split[0]);
     var payloadString = decodeBase64(split[1]);
     var data = split[0] + "." + split[1];
-    var signature = BASE64URL.encode(hmac.convert(data.codeUnits).bytes);
+    var signature = base64Url.encode(hmac.convert(data.codeUnits).bytes);
 
     if (signature != split[2])
       throw new AngelHttpException.notAuthenticated(
           message: "JWT payload does not match hashed version.");
 
-    return new AuthToken.fromMap(JSON.decode(payloadString));
+    return new AuthToken.fromMap(json.decode(payloadString) as Map);
   }
 
   String serialize(Hmac hmac) {
-    var headerString = BASE64URL.encode(JSON.encode(_header).codeUnits);
-    var payloadString = BASE64URL.encode(JSON.encode(toJson()).codeUnits);
+    var headerString = base64Url.encode(json.encode(_header).codeUnits);
+    var payloadString = base64Url.encode(json.encode(toJson()).codeUnits);
     var data = headerString + "." + payloadString;
     var signature = hmac.convert(data.codeUnits).bytes;
-    return data + "." + BASE64URL.encode(signature);
+    return data + "." + base64Url.encode(signature);
   }
 
   Map toJson() {

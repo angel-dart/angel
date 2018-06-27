@@ -12,7 +12,7 @@ import 'strategy.dart';
 /// Handles authentication within an Angel application.
 class AngelAuth<T> {
   Hmac _hs256;
-  num _jwtLifeSpan;
+  int _jwtLifeSpan;
   final StreamController<T> _onLogin = new StreamController<T>(),
       _onLogout = new StreamController<T>();
   Math.Random _random = new Math.Random.secure();
@@ -24,13 +24,22 @@ class AngelAuth<T> {
   /// If `true` (default), then users can include a JWT in the query string as `token`.
   final bool allowTokenInQuery;
 
+  /// Whether emitted cookies should have the `secure` and `HttpOnly` flags,
+  /// as well as being restricted to a specific domain.
+  final bool secureCookies;
+
+  /// A domain to restrict emitted cookies to.
+  ///
+  /// Only applies if [secureCookies] is `true`.
+  final String cookieDomain;
+
   /// The name to register [requireAuth] as. Default: `auth`.
   String middlewareName;
 
   /// If `true` (default), then JWT's will be considered invalid if used from a different IP than the first user's it was issued to.
   ///
   /// This is a security provision. Even if a user's JWT is stolen, a remote attacker will not be able to impersonate anyone.
-  bool enforceIp;
+  final bool enforceIp;
 
   /// The endpoint to mount [reviveJwt] at. If `null`, then no revival route is mounted. Default: `/auth/token`.
   String reviveTokenEndpoint;
@@ -62,17 +71,20 @@ class AngelAuth<T> {
     return new String.fromCharCodes(chars);
   }
 
+  /// `jwtLifeSpan` - should be in *milliseconds*.
   AngelAuth(
       {String jwtKey,
       num jwtLifeSpan,
       this.allowCookie: true,
       this.allowTokenInQuery: true,
       this.enforceIp: true,
+      this.cookieDomain,
+      this.secureCookies: true,
       this.middlewareName: 'auth',
       this.reviveTokenEndpoint: "/auth/token"})
       : super() {
     _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
-    _jwtLifeSpan = jwtLifeSpan ?? -1;
+    _jwtLifeSpan = jwtLifeSpan?.toInt() ?? -1;
   }
 
   Future configureServer(Angel app) async {
@@ -121,7 +133,7 @@ class AngelAuth<T> {
       }
 
       if (token.lifeSpan > -1) {
-        token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
+        token.issuedAt.add(new Duration(milliseconds: token.lifeSpan.toInt()));
 
         if (!token.issuedAt.isAfter(new DateTime.now()))
           throw new AngelHttpException.forbidden(message: "Expired JWT.");
@@ -146,20 +158,40 @@ class AngelAuth<T> {
         req.cookies.any((cookie) => cookie.name == "token")) {
       return req.cookies.firstWhere((cookie) => cookie.name == "token").value;
     } else if (allowTokenInQuery && req.query['token'] is String) {
-      return req.query['token'];
+      return req.query['token']?.toString();
     }
 
     return null;
   }
 
+  /// Applies security protections to a [cookie].
+  Cookie protectCookie(Cookie cookie) {
+    if (secureCookies != false) {
+      cookie.httpOnly = true;
+      cookie.secure = true;
+      cookie.domain ??= cookieDomain;
+    }
+
+    cookie.maxAge ??=
+        _jwtLifeSpan < 0 ? -1 : _jwtLifeSpan ~/ Duration.millisecondsPerSecond;
+
+    if (_jwtLifeSpan > 0) {
+      cookie.expires ??=
+          new DateTime.now().add(new Duration(milliseconds: _jwtLifeSpan));
+    }
+
+    return cookie;
+  }
+
   /// Attempts to revive an expired (or still alive) JWT.
-  Future<Map<String, dynamic>> reviveJwt(RequestContext req, ResponseContext res) async {
+  Future<Map<String, dynamic>> reviveJwt(
+      RequestContext req, ResponseContext res) async {
     try {
       var jwt = getJwt(req);
 
       if (jwt == null) {
         var body = await req.lazyBody();
-        jwt = body['token'];
+        jwt = body['token']?.toString();
       }
       if (jwt == null) {
         throw new AngelHttpException.forbidden(message: "No JWT provided");
@@ -172,7 +204,7 @@ class AngelAuth<T> {
         }
 
         if (token.lifeSpan > -1) {
-          token.issuedAt.add(new Duration(milliseconds: token.lifeSpan));
+          token.issuedAt.add(new Duration(milliseconds: token.lifeSpan.toInt()));
 
           if (!token.issuedAt.isAfter(new DateTime.now())) {
             print(
@@ -183,7 +215,8 @@ class AngelAuth<T> {
         }
 
         if (allowCookie)
-          res.cookies.add(new Cookie('token', token.serialize(_hs256)));
+          res.cookies
+              .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
 
         final data = await deserializer(token.userId);
         return {'data': data, 'token': token.serialize(_hs256)};
@@ -207,7 +240,7 @@ class AngelAuth<T> {
       List<String> names = [];
       var arr = type is Iterable ? type.toList() : [type];
 
-      for (var t in arr) {
+      for (String t in arr) {
         var n = t
             .split(',')
             .map((s) => s.trim())
@@ -227,7 +260,7 @@ class AngelAuth<T> {
         if (result == true)
           return result;
         else if (result != false) {
-          var userId = await serializer(result);
+          var userId = await serializer(result as T);
 
           // Create JWT
           var token = new AuthToken(
@@ -242,7 +275,8 @@ class AngelAuth<T> {
 
           _apply(req, token, result);
 
-          if (allowCookie) res.cookies.add(new Cookie("token", jwt));
+          if (allowCookie)
+            res.cookies.add(protectCookie(new Cookie("token", jwt)));
 
           if (options?.callback != null) {
             return await options.callback(req, res, jwt);
@@ -256,7 +290,7 @@ class AngelAuth<T> {
               (req.headers.value("accept").contains("application/json") ||
                   req.headers.value("accept").contains("*/*") ||
                   req.headers.value("accept").contains("application/*"))) {
-            var user = await deserializer(await serializer(result));
+            var user = await deserializer(await serializer(result as T));
             _onLogin.add(user);
             return {"data": user, "token": jwt};
           }
@@ -283,7 +317,8 @@ class AngelAuth<T> {
     _onLogin.add(user);
 
     if (allowCookie)
-      res.cookies.add(new Cookie('token', token.serialize(_hs256)));
+      res.cookies
+          .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
   }
 
   /// Log a user in on-demand.
@@ -295,7 +330,8 @@ class AngelAuth<T> {
     _onLogin.add(user);
 
     if (allowCookie)
-      res.cookies.add(new Cookie('token', token.serialize(_hs256)));
+      res.cookies
+          .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
   }
 
   /// Log an authenticated user out.
@@ -314,7 +350,7 @@ class AngelAuth<T> {
       }
 
       var user = req.grab('user');
-      if (user != null) _onLogout.add(user);
+      if (user != null) _onLogout.add(user as T);
 
       req.injections..remove(AuthToken)..remove('user');
       req.properties.remove('user');

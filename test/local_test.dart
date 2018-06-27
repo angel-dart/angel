@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_auth/angel_auth.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
 final AngelAuth auth = new AngelAuth();
-Map headers = {HttpHeaders.ACCEPT: ContentType.JSON.mimeType};
+var headers = <String, String>{HttpHeaders.ACCEPT: ContentType.JSON.mimeType};
 AngelAuthOptions localOpts = new AngelAuthOptions(
     failureRedirect: '/failure', successRedirect: '/success');
 Map sampleUser = {'hello': 'world'};
@@ -30,6 +30,7 @@ Future wireAuth(Angel app) async {
 
 main() async {
   Angel app;
+  AngelHttp angelHttp;
   http.Client client;
   String url;
   String basicAuthUrl;
@@ -37,6 +38,7 @@ main() async {
   setUp(() async {
     client = new http.Client();
     app = new Angel();
+    angelHttp = new AngelHttp(app, useZone: false);
     await app.configure(wireAuth);
     app.get('/hello', 'Woo auth', middleware: [auth.authenticate('local')]);
     app.post('/login', 'This should not be shown',
@@ -45,14 +47,14 @@ main() async {
     app.get('/failure', "nope");
 
     HttpServer server =
-        await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+        await angelHttp.startServer('127.0.0.1', 0);
     url = "http://${server.address.host}:${server.port}";
     basicAuthUrl =
         "http://username:password@${server.address.host}:${server.port}";
   });
 
   tearDown(() async {
-    await app.httpServer.close(force: true);
+    await angelHttp.close();
     client = null;
     url = null;
     basicAuthUrl = null;
@@ -68,7 +70,7 @@ main() async {
   test('successRedirect', () async {
     Map postData = {'username': 'username', 'password': 'password'};
     var response = await client.post("$url/login",
-        body: JSON.encode(postData),
+        body: json.encode(postData),
         headers: {HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType});
     expect(response.statusCode, equals(200));
     expect(response.headers[HttpHeaders.LOCATION], equals('/success'));
@@ -77,7 +79,7 @@ main() async {
   test('failureRedirect', () async {
     Map postData = {'username': 'password', 'password': 'username'};
     var response = await client.post("$url/login",
-        body: JSON.encode(postData),
+        body: json.encode(postData),
         headers: {HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType});
     print("Login response: ${response.body}");
     expect(response.headers[HttpHeaders.LOCATION], equals('/failure'));
@@ -85,7 +87,7 @@ main() async {
   });
 
   test('allow basic', () async {
-    String authString = BASE64.encode("username:password".runes.toList());
+    String authString = base64.encode("username:password".runes.toList());
     var response = await client.get("$url/hello",
         headers: {HttpHeaders.AUTHORIZATION: 'Basic $authString'});
     expect(response.body, equals('"Woo auth"'));
