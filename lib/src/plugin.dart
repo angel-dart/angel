@@ -109,10 +109,15 @@ class AngelAuth<T> {
     });
   }
 
-  void _apply(RequestContext req, AuthToken token, user) {
+  void _apply(RequestContext req, ResponseContext res, AuthToken token, user) {
     req
       ..inject(AuthToken, req.properties['token'] = token)
       ..inject(user.runtimeType, req.properties["user"] = user);
+
+    if (allowCookie == true) {
+      res.cookies
+          .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
+    }
   }
 
   /// A middleware that decodes a JWT from a request, and injects a corresponding user.
@@ -140,7 +145,7 @@ class AngelAuth<T> {
       }
 
       final user = await deserializer(token.userId);
-      _apply(req, token, user);
+      _apply(req, res, token, user);
     }
 
     return true;
@@ -173,8 +178,9 @@ class AngelAuth<T> {
     }
 
     if (_jwtLifeSpan > 0) {
-      cookie.maxAge ??=
-      _jwtLifeSpan < 0 ? -1 : _jwtLifeSpan ~/ Duration.millisecondsPerSecond;
+      cookie.maxAge ??= _jwtLifeSpan < 0
+          ? -1
+          : _jwtLifeSpan ~/ Duration.millisecondsPerSecond;
       cookie.expires ??=
           new DateTime.now().add(new Duration(milliseconds: _jwtLifeSpan));
     }
@@ -203,7 +209,8 @@ class AngelAuth<T> {
         }
 
         if (token.lifeSpan > -1) {
-          token.issuedAt.add(new Duration(milliseconds: token.lifeSpan.toInt()));
+          token.issuedAt
+              .add(new Duration(milliseconds: token.lifeSpan.toInt()));
 
           if (!token.issuedAt.isAfter(new DateTime.now())) {
             print(
@@ -272,7 +279,7 @@ class AngelAuth<T> {
             if (r != null) return r;
           }
 
-          _apply(req, token, result);
+          _apply(req, res, token, result);
 
           if (allowCookie)
             res.cookies.add(protectCookie(new Cookie("token", jwt)));
@@ -312,7 +319,7 @@ class AngelAuth<T> {
   /// Log a user in on-demand.
   Future login(AuthToken token, RequestContext req, ResponseContext res) async {
     var user = await deserializer(token.userId);
-    _apply(req, token, user);
+    _apply(req, res, token, user);
     _onLogin.add(user);
 
     if (allowCookie)
@@ -325,7 +332,7 @@ class AngelAuth<T> {
     var user = await deserializer(userId);
     var token = new AuthToken(
         userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
-    _apply(req, token, user);
+    _apply(req, res, token, user);
     _onLogin.add(user);
 
     if (allowCookie)

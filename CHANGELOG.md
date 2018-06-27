@@ -1,3 +1,6 @@
+# 1.1.1+2
+* `_apply` now always sends a `token` cookie.
+
 # 1.1.1+1
 * Update `protectCookie` to only send `maxAge` when it is not `-1`.
 
