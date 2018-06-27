@@ -99,7 +99,7 @@ main() {
   <body>
     <h1>Pokémon</h1>
     <ul>
-      <li for-each=starters as="starter">{{ starter.name }} - {{ starter.type }}</li>
+      <li for-each=starters as="starter" index-as="idx">#{{ idx }} {{ starter.name }} - {{ starter.type }}</li>
     </ul>
   </body>
 </html>
@@ -124,13 +124,13 @@ main() {
     </h1>
     <ul>
       <li>
-        Bulbasaur - Grass
+        #0 Bulbasaur - Grass
       </li>
       <li>
-        Charmander - Fire
+        #1 Charmander - Fire
       </li>
       <li>
-        Squirtle - Water
+        #2 Squirtle - Water
       </li>
     </ul>
   </body>

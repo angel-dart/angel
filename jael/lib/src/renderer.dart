@@ -173,8 +173,8 @@ class Renderer {
         .firstWhere((a) => a.name == 'index-as', orElse: () => null);
     var alias = asAttribute?.value?.compute(scope) ?? 'item';
     var indexAs = indexAsAttribute?.value?.compute(scope)?.toString() ?? 'item';
-    var otherAttributes =
-        element.attributes.where((a) => a.name != 'for-each' && a.name != 'as');
+    var otherAttributes = element.attributes.where(
+        (a) => a.name != 'for-each' && a.name != 'as' && a.name != 'index-as');
     Element strippedElement;
 
     if (element is SelfClosingElement)
