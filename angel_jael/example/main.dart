@@ -1,11 +1,12 @@
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_jael/angel_jael.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
 main() async {
   var app = new Angel()..lazyParseBodies = true;
+  var http = new AngelHttp(app);
   var fileSystem = const LocalFileSystem();
 
   await app.configure(
@@ -22,7 +23,7 @@ main() async {
     return await res.render('index', {
       'title': 'Form Submission',
       'message': msg,
-      'json_message': JSON.encode(msg),
+      'json_message': json.encode(msg),
     });
   });
 
@@ -35,6 +36,6 @@ main() async {
       if (rec.stackTrace != null) print(rec.stackTrace);
     });
 
-  var server = await app.startServer(null, 3000);
+  var server = await http.startServer(null, 3000);
   print('Listening at http://${server.address.address}:${server.port}');
 }

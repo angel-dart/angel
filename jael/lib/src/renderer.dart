@@ -203,7 +203,7 @@ class Renderer {
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     var attribute = element.attributes.singleWhere((a) => a.name == 'if');
 
-    if (!attribute.value.compute(scope)) return;
+    if (attribute.value.compute(scope) != true) return;
 
     var otherAttributes = element.attributes.where((a) => a.name != 'if');
     Element strippedElement;
@@ -299,6 +299,15 @@ class Renderer {
     } else if (child is Element) {
       if (buffer?.lastLine?.text?.isNotEmpty == true) buffer.writeln();
       renderElement(child, buffer, scope, html5);
+    }
+  }
+
+  void registerCustomElement(
+      Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
+    var name = element.getAttribute('name')?.value?.compute(scope)?.toString();
+
+    if (name) {
+
     }
   }
 }
