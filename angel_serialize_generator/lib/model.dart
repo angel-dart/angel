@@ -68,7 +68,8 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   bool shouldBeConstant(BuildContext ctx) {
     // Check if all fields are without a getter
     return !isAssignableToModel(ctx.clazz.type) &&
-        ctx.clazz.fields.every((f) => f.getter == null || f.setter == null);
+        ctx.clazz.fields.every((f) =>
+            f.getter?.isAbstract != false && f.setter?.isAbstract != false);
   }
 
   /// Generate a constructor with named parameters.

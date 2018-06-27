@@ -15,6 +15,8 @@ abstract class _Author extends Model {
   @required
   String get name;
 
+  String get customMethod => 'hey!';
+
   @Required('Custom message for missing `age`')
   int get age;
 

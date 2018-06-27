@@ -91,6 +91,10 @@ main() {
     expect(library.copyWith(), library);
   });
 
+  test('custom method', () {
+    expect(jkRowling.customMethod, 'hey!');
+  });
+
   test('required fields fromMap', () {
     expect(() => AuthorSerializer.fromMap({}), throwsFormatException);
   });

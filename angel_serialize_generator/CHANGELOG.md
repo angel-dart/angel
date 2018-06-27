@@ -1,3 +1,7 @@
+# 2.0.8+2
+* Better discern when custom methods disqualify classes
+from `const` protection.
+ 
 # 2.0.8+1
 * Fix generation of `const` constructors with iterables.
 
