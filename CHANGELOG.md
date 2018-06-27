@@ -1,3 +1,6 @@
+# 1.1.1+1
+* Update `protectCookie` to only send `maxAge` when it is not `-1`.
+
 # 1.1.1
 * Added `protectCookie`, to better protect data sent in cookies.
 
