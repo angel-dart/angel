@@ -1,3 +1,8 @@
+# 1.1.4+7
+* Remove `cast` for Dart 1.x.
+* `RequestContext.injections` is no longer cached or read-only.
+* `ResponseContext` now has `renderParams`.
+
 # 1.1.4+6
 * Almost 100% working with `2.0.0-dev.64.1`. In said version
 of Dart, `dart:mirrors` is broken, and therefore breaks detection of metadata.

@@ -46,6 +46,11 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// At most one encoder will ever be used to convert data.
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
 
+  /// A [Map] of data to inject when `res.render` is called.
+  ///
+  /// This can be used to reduce boilerplate when using templating engines.
+  final Map renderParams = {};
+
   /// Points to the [RequestContext] corresponding to this response.
   RequestContext get correspondingRequest;
 
@@ -200,7 +205,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) {
     if (!isOpen) throw closed();
-    return app.viewGenerator(view, data).then((content) {
+    return app.viewGenerator(view, new Map.from(renderParams)..addAll(data ?? {})).then((content) {
       write(content);
       headers['content-type'] = 'text/html';
       end();
@@ -260,7 +265,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     Route matched = _findRoute(app);
 
     if (matched != null) {
-      redirect(matched.makeUri(params.cast<String, dynamic>()), code: code);
+      redirect(matched.makeUri(params as Map<String, dynamic>), code: code);
       return;
     }
 
@@ -292,7 +297,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     final head =
         controller.findExpose().path.toString().replaceAll(_straySlashes, '');
     final tail = matched
-        .makeUri(params.cast<String, dynamic>())
+        .makeUri(params as Map<String, dynamic>)
         .replaceAll(_straySlashes, '');
 
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);

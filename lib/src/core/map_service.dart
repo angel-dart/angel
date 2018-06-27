@@ -85,7 +85,7 @@ class MapService extends Service {
         ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] = now
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
-    items.add(result.cast<String, dynamic>());
+    items.add(result as Map<String, dynamic>);
     return new Future.value(result);
   }
 
@@ -130,7 +130,7 @@ class MapService extends Service {
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
               new DateTime.now().toIso8601String();
       }
-      items.add(result.cast<String, dynamic>());
+      items.add(result as Map<String, dynamic>);
       return new Future.value(result);
     });
   }

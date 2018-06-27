@@ -156,7 +156,7 @@ main() {
     Map headers = {'Content-Type': 'application/json'};
     String postData = json.encode({'it': 'works'});
     var response = await client.post("$url/lambda",
-        headers: headers.cast<String, String>(), body: postData);
+        headers: headers as Map<String, String>, body: postData);
     print('Response: ${response.body}');
     expect(json.decode(response.body)['it'], equals('works'));
   });

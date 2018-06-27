@@ -72,7 +72,7 @@ main() {
 
     var response = await client.post("$url/todos",
         body: god.serialize({"arbitrary": "data"}),
-        headers: headers.cast<String, String>());
+        headers: headers as Map<String, String>);
     print(response.body);
     Map result = god.deserialize(response.body);
     expect(result["hello"], equals("hooked world"));

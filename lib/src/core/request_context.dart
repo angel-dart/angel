@@ -38,10 +38,9 @@ abstract class RequestContext {
   String get hostname;
 
   final Map _injections = {};
-  Map _injectionsCache;
 
-  /// A [Map] of singletons injected via [inject]. *Read-only*.
-  Map get injections => _injectionsCache ??= new Map.unmodifiable(_injections);
+  /// A [Map] of singletons injected via [inject].
+  Map get injections => _injections;
 
   /// This feature does not map to other adapters (i.e. HTTP/2), so it will be removed in a future version.
   @deprecated
@@ -173,7 +172,6 @@ abstract class RequestContext {
     }
 
     _injections[type] = value;
-    _injectionsCache = null;
   }
 
   /// Returns `true` if the client's `Accept` header indicates that the given [contentType] is considered a valid response.
