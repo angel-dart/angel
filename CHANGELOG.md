@@ -1,3 +1,7 @@
+# 1.1.1+5
+* Prevent duplication of cookies.
+* Regenerate the JWT if `tokenCallback` is called.
+
 # 1.1.1+4
 * Patched `logout` to properly erase cookies
 * Fixed checking of expired tokens.

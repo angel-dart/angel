@@ -30,8 +30,13 @@ class AngelAuth<T> {
 
   /// A domain to restrict emitted cookies to.
   ///
-  /// Only applies if [secureCookies] is `true`.
+  /// Only applies if [allowCookie] is `true`.
   final String cookieDomain;
+
+  /// A path to restrict emitted cookies to.
+  ///
+  /// Only applies if [allowCookie] is `true`.
+  final String cookiePath;
 
   /// The name to register [requireAuth] as. Default: `auth`.
   String middlewareName;
@@ -79,6 +84,7 @@ class AngelAuth<T> {
       this.allowTokenInQuery: true,
       this.enforceIp: true,
       this.cookieDomain,
+      this.cookiePath: '/',
       this.secureCookies: true,
       this.middlewareName: 'auth',
       this.reviveTokenEndpoint: "/auth/token"})
@@ -115,8 +121,7 @@ class AngelAuth<T> {
       ..inject(user.runtimeType, req.properties["user"] = user);
 
     if (allowCookie == true) {
-      res.cookies
-          .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
+      _addProtectedCookie(res, 'token', token.serialize(_hs256));
     }
   }
 
@@ -170,12 +175,17 @@ class AngelAuth<T> {
     return null;
   }
 
+  void _addProtectedCookie(ResponseContext res, String name, String value) {
+    if (!res.cookies.any((c) => c.name == name)) {
+      res.cookies.add(protectCookie(new Cookie(name, value)));
+    }
+  }
+
   /// Applies security protections to a [cookie].
   Cookie protectCookie(Cookie cookie) {
     if (secureCookies != false) {
       cookie.httpOnly = true;
       cookie.secure = true;
-      cookie.domain ??= cookieDomain;
     }
 
     if (_jwtLifeSpan > 0) {
@@ -186,6 +196,8 @@ class AngelAuth<T> {
           new DateTime.now().add(new Duration(milliseconds: _jwtLifeSpan));
     }
 
+    cookie.domain ??= cookieDomain;
+    cookie.path ??= cookiePath;
     return cookie;
   }
 
@@ -221,9 +233,9 @@ class AngelAuth<T> {
           }
         }
 
-        if (allowCookie)
-          res.cookies
-              .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
+        if (allowCookie) {
+          _addProtectedCookie(res, 'token', token.serialize(_hs256));
+        }
 
         final data = await deserializer(token.userId);
         return {'data': data, 'token': token.serialize(_hs256)};
@@ -282,12 +294,14 @@ class AngelAuth<T> {
             var r = await options.tokenCallback(
                 req, res, token, req.properties["user"] = result);
             if (r != null) return r;
+            jwt = token.serialize(_hs256);
           }
 
           _apply(req, res, token, result);
 
-          if (allowCookie)
-            res.cookies.add(protectCookie(new Cookie("token", jwt)));
+          if (allowCookie) {
+            _addProtectedCookie(res, 'token', jwt);
+          }
 
           if (options?.callback != null) {
             return await options.callback(req, res, jwt);
@@ -326,9 +340,9 @@ class AngelAuth<T> {
     _apply(req, res, token, user);
     _onLogin.add(user);
 
-    if (allowCookie)
-      res.cookies
-          .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
+    if (allowCookie) {
+      _addProtectedCookie(res, 'token', token.serialize(_hs256));
+    }
   }
 
   /// Log a user in on-demand.
@@ -339,9 +353,9 @@ class AngelAuth<T> {
     _apply(req, res, token, user);
     _onLogin.add(user);
 
-    if (allowCookie)
-      res.cookies
-          .add(protectCookie(new Cookie('token', token.serialize(_hs256))));
+    if (allowCookie) {
+      _addProtectedCookie(res, 'token', token.serialize(_hs256));
+    }
   }
 
   /// Log an authenticated user out.
@@ -367,7 +381,7 @@ class AngelAuth<T> {
 
       if (allowCookie == true) {
         res.cookies.removeWhere((cookie) => cookie.name == "token");
-        res.cookies.add(protectCookie(new Cookie('token', '')));
+        _addProtectedCookie(res, 'token', '');
       }
 
       if (options != null &&

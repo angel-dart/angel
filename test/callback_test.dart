@@ -25,7 +25,7 @@ main() {
     angelHttp = new AngelHttp(app, useZone: false);
     app.use('/users', new TypedService<User>(new MapService()));
 
-    User jdoe = await app
+    await app
         .service('users')
         .create({'username': 'jdoe1', 'password': 'password'});
 
