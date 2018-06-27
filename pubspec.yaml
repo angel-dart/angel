@@ -4,10 +4,11 @@ version: 1.1.1
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_auth
 environment:
-  sdk: ">=1.19.0"
+  sdk: ">=1.8.0 <3.0.0"
 dependencies:
   angel_framework: ^1.1.0-alpha
   crypto: ^2.0.0
+  dart2_constant: ^1.0.0
 dev_dependencies:
   http: ^0.11.0
   test: ^0.12.0
