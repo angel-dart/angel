@@ -1,3 +1,6 @@
+# 2.0.8+1
+* Fix generation of `const` constructors with iterables.
+
 # 2.0.8
 * Now supports de/serialization of `enum` types.
 * Generate `const` constructors when possible.

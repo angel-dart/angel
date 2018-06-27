@@ -7,17 +7,24 @@ part of 'with_enum.dart';
 // **************************************************************************
 
 class WithEnum implements _WithEnum {
-  const WithEnum({this.type});
+  const WithEnum({this.type, List<int> this.finalList});
 
   @override
   final WithEnumType type;
 
-  WithEnum copyWith({WithEnumType type}) {
-    return new WithEnum(type: type ?? this.type);
+  @override
+  final List<int> finalList;
+
+  WithEnum copyWith({WithEnumType type, List<int> finalList}) {
+    return new WithEnum(
+        type: type ?? this.type, finalList: finalList ?? this.finalList);
   }
 
   bool operator ==(other) {
-    return other is _WithEnum && other.type == type;
+    return other is _WithEnum &&
+        other.type == type &&
+        const ListEquality<int>(const DefaultEquality<int>())
+            .equals(other.finalList, finalList);
   }
 
   Map<String, dynamic> toJson() {

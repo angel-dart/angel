@@ -86,7 +86,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       }
 
       for (var field in ctx.fields) {
-        if (isListOrMapType(field.type)) {
+        if (!shouldBeConstant(ctx) && isListOrMapType(field.type)) {
           String typeName = const TypeChecker.fromRuntime(List)
                   .isAssignableFromType(field.type)
               ? 'List'
@@ -98,15 +98,10 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         }
       }
 
-      if (ctx.constructorParameters.isNotEmpty) {
-        constructor.initializers.add(
-            new Code('super(${ctx.constructorParameters.map((p) => p.name).join(
-                ',')})'));
-      }
-
       for (var field in ctx.fields) {
         constructor.optionalParameters.add(new Parameter((b) {
           b
+            ..toThis = shouldBeConstant(ctx)
             ..name = field.name
             ..named = true;
 
@@ -120,6 +115,14 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             b.annotations.add(new CodeExpression(new Code('required')));
           }
         }));
+      }
+
+      if (ctx.constructorParameters.isNotEmpty) {
+        if (!shouldBeConstant(ctx) ||
+            ctx.clazz.unnamedConstructor?.isConst == true)
+          constructor.initializers.add(new Code(
+              'super(${ctx.constructorParameters.map((p) => p.name).join(
+                  ',')})'));
       }
     }));
   }
