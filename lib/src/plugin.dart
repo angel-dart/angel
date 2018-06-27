@@ -138,9 +138,10 @@ class AngelAuth<T> {
       }
 
       if (token.lifeSpan > -1) {
-        token.issuedAt.add(new Duration(milliseconds: token.lifeSpan.toInt()));
+        var expiry = token.issuedAt
+            .add(new Duration(milliseconds: token.lifeSpan.toInt()));
 
-        if (!token.issuedAt.isAfter(new DateTime.now()))
+        if (!expiry.isAfter(new DateTime.now()))
           throw new AngelHttpException.forbidden(message: "Expired JWT.");
       }
 
@@ -209,12 +210,12 @@ class AngelAuth<T> {
         }
 
         if (token.lifeSpan > -1) {
-          token.issuedAt
+          var expiry = token.issuedAt
               .add(new Duration(milliseconds: token.lifeSpan.toInt()));
 
-          if (!token.issuedAt.isAfter(new DateTime.now())) {
-            print(
-                'Token has indeed expired! Resetting assignment date to current timestamp...');
+          if (!expiry.isAfter(new DateTime.now())) {
+            //print(
+            //    'Token has indeed expired! Resetting assignment date to current timestamp...');
             // Extend its lifespan by changing iat
             token.issuedAt = new DateTime.now();
           }
@@ -364,8 +365,10 @@ class AngelAuth<T> {
       req.injections..remove(AuthToken)..remove('user');
       req.properties.remove('user');
 
-      if (allowCookie == true)
+      if (allowCookie == true) {
         res.cookies.removeWhere((cookie) => cookie.name == "token");
+        res.cookies.add(protectCookie(new Cookie('token', '')));
+      }
 
       if (options != null &&
           options.successRedirect != null &&

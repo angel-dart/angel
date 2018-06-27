@@ -1,3 +1,7 @@
+# 1.1.1+4
+* Patched `logout` to properly erase cookies
+* Fixed checking of expired tokens.
+
 # 1.1.1+3
 * `authenticate` returns the current user, if one is present.
 
