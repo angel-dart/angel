@@ -262,7 +262,11 @@ class AngelAuth<T> {
             (AuthStrategy x) => x.name == name,
             orElse: () =>
                 throw new ArgumentError('No strategy "$name" found.'));
-        var result = await strategy.authenticate(req, res, options);
+
+        var hasExisting = req.properties.containsKey('user');
+        var result = hasExisting
+            ? req.properties['user']
+            : await strategy.authenticate(req, res, options);
         if (result == true)
           return result;
         else if (result != false) {
@@ -292,11 +296,10 @@ class AngelAuth<T> {
             res.redirect(options.successRedirect, code: HttpStatus.OK);
             return false;
           } else if (options?.canRespondWithJson != false &&
-              req.headers.value("accept") != null &&
-              (req.headers.value("accept").contains("application/json") ||
-                  req.headers.value("accept").contains("*/*") ||
-                  req.headers.value("accept").contains("application/*"))) {
-            var user = await deserializer(await serializer(result as T));
+              req.accepts('application/json')) {
+            var user = hasExisting
+                ? result as T
+                : await deserializer(await serializer(result as T));
             _onLogin.add(user);
             return {"data": user, "token": jwt};
           }

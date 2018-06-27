@@ -1,3 +1,6 @@
+# 1.1.1+3
+* `authenticate` returns the current user, if one is present.
+
 # 1.1.1+2
 * `_apply` now always sends a `token` cookie.
 

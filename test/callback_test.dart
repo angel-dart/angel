@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/common.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
@@ -24,7 +25,7 @@ main() {
     angelHttp = new AngelHttp(app, useZone: false);
     app.use('/users', new TypedService<User>(new MapService()));
 
-    await app
+    User jdoe = await app
         .service('users')
         .create({'username': 'jdoe1', 'password': 'password'});
 
@@ -53,6 +54,12 @@ main() {
             ..end();
         })));
 
+    app.chain((RequestContext req) {
+      req.properties['user'] =
+          new User(username: req.params['name']?.toString());
+      return true;
+    }).post('/existing/:name', auth.authenticate('local'));
+
     client = new http.Client();
     server = await angelHttp.startServer();
     url = 'http://${server.address.address}:${server.port}';
@@ -71,5 +78,13 @@ main() {
         body: {'username': 'jdoe1', 'password': 'password'});
     print('Response: ${response.body}');
     expect(response.body, equals('Hello!'));
+  });
+
+  test('preserve existing user', () async {
+    final response = await client.post('$url/existing/foo',
+        body: {'username': 'jdoe1', 'password': 'password'},
+        headers: {'accept': 'application/json'});
+    print('Response: ${response.body}');
+    expect(json.decode(response.body)['data']['username'], equals('foo'));
   });
 }
