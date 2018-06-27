@@ -104,6 +104,9 @@ class Renderer {
     } else if (element.tagName.name == 'switch') {
       renderSwitch(element, buffer, childScope, html5);
       return;
+    } else if (element.tagName.name == 'element') {
+      registerCustomElement(element, buffer, childScope, html5);
+      return;
     }
 
     buffer..write('<')..write(element.tagName.name);
@@ -166,7 +169,10 @@ class Renderer {
 
     var asAttribute = element.attributes
         .firstWhere((a) => a.name == 'as', orElse: () => null);
+    var indexAsAttribute = element.attributes
+        .firstWhere((a) => a.name == 'index-as', orElse: () => null);
     var alias = asAttribute?.value?.compute(scope) ?? 'item';
+    var indexAs = indexAsAttribute?.value?.compute(scope)?.toString() ?? 'item';
     var otherAttributes =
         element.attributes.where((a) => a.name != 'for-each' && a.name != 'as');
     Element strippedElement;
@@ -186,8 +192,9 @@ class Renderer {
           element.tagName2,
           element.gt2);
 
+    int i = 0;
     for (var item in attribute.value.compute(scope)) {
-      var childScope = scope.createChild(values: {alias: item});
+      var childScope = scope.createChild(values: {alias: item, indexAs: i++});
       renderElement(strippedElement, buffer, childScope, html5);
     }
   }
