@@ -112,6 +112,12 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
               return map..[key] = ${rc.pascalCase}Serializer.toMap(model.${field
                 .name}[key]);
             })''';
+          } else if (t.element.isEnum) {
+            serializedRepresentation = '''
+            model.${field.name} == null ?
+              null
+              : ${t.name}.values.indexOf(model.${field.name})
+            ''';
           }
         }
 
@@ -193,18 +199,30 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           if (isListModelType(t)) {
             var rc = new ReCase(t.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
-                " ? new List.unmodifiable((map['$alias'] as Iterable).whereType<Map>().map(${rc
-                .pascalCase}Serializer.fromMap))"
+                " ? new List.unmodifiable(((map['$alias'] as Iterable)"
+                ".where((x) => x is Map)  as Iterable<Map>)"
+                ".map(${rc.pascalCase}Serializer.fromMap))"
                 " : null";
           } else if (isMapToModelType(t)) {
             var rc = new ReCase(t.typeArguments[1].name);
             deserializedRepresentation = '''
                 map['$alias'] is Map
                   ? new Map.unmodifiable((map['$alias'] as Map).keys.fold({}, (out, key) {
-                       return out..[key] = ${rc
-                .pascalCase}Serializer.fromMap((map['$alias'] as Map)[key]);
+                       return out..[key] = ${rc.pascalCase}Serializer
+                        .fromMap((map['$alias'] as Map)[key]);
                     }))
                   : null
+            ''';
+          } else if (t.element.isEnum) {
+            deserializedRepresentation = '''
+            map['$alias'] is ${t.name}
+              ? map['$alias']
+              :
+              (
+                map['$alias'] is int
+                ? ${t.name}.values[map['$alias']]
+                : null
+              )
             ''';
           }
         }

@@ -61,9 +61,20 @@ part 'book.g.dart';
 @serializable
 abstract class _Book extends Model {
   String get author;
+  
   String get title;
+  
   String get description;
+  
   int get pageCount;
+  
+  BookType get type;
+}
+
+/// It even supports enums!
+enum BookType {
+  fiction,
+  nonFiction
 }
 ```
 

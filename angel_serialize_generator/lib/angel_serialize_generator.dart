@@ -3,6 +3,7 @@ library angel_serialize_generator;
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:code_buffer/code_buffer.dart';
@@ -66,6 +67,14 @@ bool isListOrMapType(DartType t) {
       const TypeChecker.fromRuntime(Map).isAssignableFromType(t);
 }
 
+bool isEnumType(DartType t) {
+  if (t is InterfaceType) {
+    return t.element.isEnum;
+  }
+
+  return false;
+}
+
 /// Determines if a [DartType] is a `List` with the first type argument being a `Model`.
 bool isListModelType(InterfaceType t) {
   return const TypeChecker.fromRuntime(List).isAssignableFromType(t) &&
@@ -79,6 +88,8 @@ bool isMapToModelType(InterfaceType t) {
       t.typeArguments.length == 2 &&
       isModelClass(t.typeArguments[1]);
 }
+
+bool isAssignableToModel(DartType type) => const TypeChecker.fromRuntime(Model).isAssignableFromType(type);
 
 /// Compute a [String] representation of a [type].
 String typeToString(DartType type) {

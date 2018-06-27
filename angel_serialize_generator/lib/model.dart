@@ -26,9 +26,13 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   void generateClass(
       BuildContext ctx, LibraryBuilder file, ConstantReader annotation) {
     file.body.add(new Class((clazz) {
-      clazz
-        ..name = ctx.modelClassNameRecase.pascalCase
-        ..extend = new Reference(ctx.originalClassName);
+      clazz..name = ctx.modelClassNameRecase.pascalCase;
+
+      if (shouldBeConstant(ctx)) {
+        clazz.implements.add(new Reference(ctx.originalClassName));
+      } else {
+        clazz.extend = new Reference(ctx.originalClassName);
+      }
 
       //if (ctx.importsPackageMeta)
       //  clazz.annotations.add(new CodeExpression(new Code('immutable')));
@@ -61,11 +65,19 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     }));
   }
 
+  bool shouldBeConstant(BuildContext ctx) {
+    // Check if all fields are without a getter
+    return !isAssignableToModel(ctx.clazz.type) &&
+        ctx.clazz.fields.every((f) => f.getter == null || f.setter == null);
+  }
+
   /// Generate a constructor with named parameters.
   void generateConstructor(
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
     clazz.constructors.add(new Constructor((constructor) {
       // Add all `super` params
+      constructor.constant = ctx.clazz.unnamedConstructor?.isConst == true ||
+          shouldBeConstant(ctx);
 
       for (var param in ctx.constructorParameters) {
         constructor.requiredParameters.add(new Parameter((b) => b
@@ -156,7 +168,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   static String generateEquality(DartType type, [bool nullable = false]) {
-    //if (type is! InterfaceType) return 'const DefaultEquality()';
+//if (type is! InterfaceType) return 'const DefaultEquality()';
     var it = type as InterfaceType;
     if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
       if (it.typeParameters.length == 1) {

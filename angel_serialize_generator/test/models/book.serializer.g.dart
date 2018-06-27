@@ -9,21 +9,21 @@ part of angel_serialize.test.models.book;
 abstract class BookSerializer {
   static Book fromMap(Map map) {
     return new Book(
-        id: map['id'],
-        author: map['author'],
-        title: map['title'],
-        description: map['description'],
-        pageCount: map['page_count'],
-        notModels: map['not_models'],
-        camelCaseString: map['camelCase'],
+        id: map['id'] as String,
+        author: map['author'] as String,
+        title: map['title'] as String,
+        description: map['description'] as String,
+        pageCount: map['page_count'] as int,
+        notModels: map['not_models'] as List<double>,
+        camelCaseString: map['camelCase'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
-                ? map['created_at']
+                ? (map['created_at'] as DateTime)
                 : DateTime.parse(map['created_at']))
             : null,
         updatedAt: map['updated_at'] != null
             ? (map['updated_at'] is DateTime
-                ? map['updated_at']
+                ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at']))
             : null);
   }

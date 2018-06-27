@@ -1,3 +1,8 @@
+# 2.0.9
+* Now supports de/serialization of `enum` types.
+* Generate `const` constructors when possible.
+* Remove `whereType`, perform manual coercion.
+
 # 2.0.8
 * Generate a `fromMap` with typecasting, for Dart 2's sake.
 
