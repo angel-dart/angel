@@ -16,6 +16,9 @@ abstract class WithEnumSerializer {
   }
 
   static Map<String, dynamic> toMap(WithEnum model) {
+    if (model == null) {
+      return null;
+    }
     return {
       'type':
           model.type == null ? null : WithEnumType.values.indexOf(model.type),

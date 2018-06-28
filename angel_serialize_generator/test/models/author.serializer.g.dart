@@ -42,6 +42,9 @@ abstract class AuthorSerializer {
   }
 
   static Map<String, dynamic> toMap(Author model) {
+    if (model == null) {
+      return null;
+    }
     if (model.name == null) {
       throw new FormatException("Missing required field 'name' on Author.");
     }
@@ -107,6 +110,9 @@ abstract class LibrarySerializer {
   }
 
   static Map<String, dynamic> toMap(Library model) {
+    if (model == null) {
+      return null;
+    }
     return {
       'id': model.id,
       'collection': model.collection.keys?.fold({}, (map, key) {
@@ -152,6 +158,9 @@ abstract class BookmarkSerializer {
   }
 
   static Map<String, dynamic> toMap(Bookmark model) {
+    if (model == null) {
+      return null;
+    }
     if (model.page == null) {
       throw new FormatException("Missing required field 'page' on Bookmark.");
     }

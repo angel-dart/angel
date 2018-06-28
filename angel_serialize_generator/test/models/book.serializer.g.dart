@@ -29,6 +29,9 @@ abstract class BookSerializer {
   }
 
   static Map<String, dynamic> toMap(Book model) {
+    if (model == null) {
+      return null;
+    }
     return {
       'id': model.id,
       'author': model.author,

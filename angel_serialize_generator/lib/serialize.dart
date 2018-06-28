@@ -89,6 +89,14 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         String serializedRepresentation = 'model.${field.name}';
 
+        String serializerToMap(ReCase rc, String value) {
+          if (rc.pascalCase == ctx.modelClassName) {
+            return '($value)?.toJson()';
+          }
+
+          return '${rc.pascalCase}Serializer.toMap($value)';
+        }
+
         // Serialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
           serializedRepresentation = 'model.${field.name}?.toIso8601String()';
@@ -97,7 +105,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         else if (isModelClass(field.type)) {
           var rc = new ReCase(field.type.name);
           serializedRepresentation =
-              '${rc.pascalCase}Serializer.toMap(model.${field.name})';
+              '${serializerToMap(rc, 'model.${field.name}')}';
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
 
@@ -109,8 +117,8 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             var rc = new ReCase(t.typeArguments[1].name);
             serializedRepresentation =
                 '''model.${field.name}.keys?.fold({}, (map, key) {
-              return map..[key] = ${rc.pascalCase}Serializer.toMap(model.${field
-                .name}[key]);
+              return map..[key] = ${serializerToMap(
+                rc, 'model.${field.name}[key]')};
             })''';
           } else if (t.element.isEnum) {
             serializedRepresentation = '''
@@ -125,7 +133,10 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       }
 
       buf.write('};');
-      method.body = new Code(buf.toString());
+      method.body = new Block.of([
+        new Code('if (model == null) { return null; }'),
+        new Code(buf.toString()),
+      ]);
     }));
   }
 

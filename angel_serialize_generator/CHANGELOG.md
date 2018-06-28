@@ -1,3 +1,7 @@
+# 2.0.8+3
+* Don't fail on `null` in `toMap`.
+* Support self-referencing via `toJson()`.
+
 # 2.0.8+2
 * Better discern when custom methods disqualify classes
 from `const` protection.
