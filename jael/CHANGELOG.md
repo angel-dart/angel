@@ -1,3 +1,8 @@
+# 1.0.6
+* Add `index-as` to `for-each`.
+* Support registering + rendering custom elements.
+* Improve handling of booleans in non-strict mode.
+
 # 1.0.5
 * Add support for DSX, a port of JSX to Dart.
 

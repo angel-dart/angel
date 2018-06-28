@@ -107,10 +107,14 @@ class Renderer {
     } else if (element.tagName.name == 'element') {
       registerCustomElement(element, buffer, childScope, html5);
       return;
-    } else if (scope.resolve(customElementName(element.tagName.name))?.value
-        is Element) {
-      renderCustomElement(element, buffer, childScope, html5);
-      return;
+    } else {
+      var customElementValue =
+          scope.resolve(customElementName(element.tagName.name))?.value;
+
+      if (customElementValue is Element) {
+        renderCustomElement(element, buffer, childScope, html5);
+        return;
+      }
     }
 
     buffer..write('<')..write(element.tagName.name);
@@ -207,7 +211,13 @@ class Renderer {
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     var attribute = element.attributes.singleWhere((a) => a.name == 'if');
 
-    if (attribute.value.compute(scope) != true) return;
+    var v = attribute.value.compute(scope) as bool;
+
+    if (scope.resolve('!strict!')?.value == false) {
+      v = v == true;
+    }
+
+    if (!v) return;
 
     var otherAttributes = element.attributes.where((a) => a.name != 'if');
     Element strippedElement;
@@ -325,7 +335,8 @@ class Renderer {
     }
 
     try {
-      scope.create(customElementName(name), value: element, constant: true);
+      var p = scope.isRoot ? scope : scope.parent;
+      p.create(customElementName(name), value: element, constant: true);
     } on StateError {
       throw new JaelError(
           JaelErrorSeverity.error,
