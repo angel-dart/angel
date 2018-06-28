@@ -2,7 +2,9 @@
 library angel_validate.server;
 
 import 'package:angel_framework/angel_framework.dart';
+import 'src/async.dart';
 import 'angel_validate.dart';
+export 'src/async.dart';
 export 'angel_validate.dart';
 
 /// Auto-parses numbers in `req.body`.

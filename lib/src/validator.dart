@@ -96,8 +96,7 @@ class Validator extends Matcher {
           } else if (rule is Filter) {
             addRule(fieldName, predicate(rule));
           } else {
-            throw new ArgumentError(
-                'Cannot use a(n) ${rule.runtimeType} as a validation rule.');
+            addRule(fieldName, wrapMatcher(rule));
           }
         }
       }
