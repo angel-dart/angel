@@ -11,7 +11,7 @@ void main() {
       <element name="square-root">
         The square root of {{ n }} is {{ sqrt(n).toInt() }}.
       </element>
-      <square-root n=16 />
+      <square-root @n=16 />
     </div>
     ''';
 
@@ -33,7 +33,7 @@ void main() {
       <element name="square-root">
         The square root of {{ n }} is {{ sqrt(n).toInt() }}.
       </element>
-      <square-root as="span" n=16 />
+      <square-root as="span" @n=16 />
     </div>
     ''';
 
@@ -49,13 +49,35 @@ void main() {
     '''.trim());
   });
 
+  test('pass attributes', () {
+    var template = '''
+    <div>
+      <element name="square-root">
+        The square root of {{ n }} is {{ sqrt(n).toInt() }}.
+      </element>
+      <square-root foo="bar" baz="quux" @n=16 />
+    </div>
+    ''';
+
+    var html = render(template, {'sqrt': sqrt});
+    print(html);
+
+    expect(html, '''
+<div>
+  <div foo="bar" baz="quux">
+    The square root of 16 is 4.
+  </div>
+</div>
+    '''.trim());
+  });
+
   test('render without tag name', () {
     var template = '''
     <div>
       <element name="square-root">
         The square root of {{ n }} is {{ sqrt(n).toInt() }}.
       </element>
-      <square-root as=false n=16 />
+      <square-root as=false @n=16 />
     </div>
     ''';
 

@@ -1,3 +1,6 @@
+# 1.0.6+1
+* Ensure `<element>` pass attributes.
+
 # 1.0.6
 * Add `index-as` to `for-each`.
 * Support registering + rendering custom elements.

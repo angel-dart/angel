@@ -353,8 +353,10 @@ class Renderer {
     var attrs = element.attributes.where((a) => a.name != 'as');
 
     for (var attribute in attrs) {
-      scope.create(attribute.name,
-          value: attribute.value?.compute(scope), constant: true);
+      if (attribute.name.startsWith('@')) {
+        scope.create(attribute.name.substring(1),
+            value: attribute.value?.compute(scope), constant: true);
+      }
     }
 
     if (renderAs == false) {
@@ -369,7 +371,8 @@ class Renderer {
       var syntheticElement = new RegularElement(
           template.lt,
           new SyntheticIdentifier(tagName),
-          [],
+          element.attributes
+              .where((a) => a.name != 'as' && !a.name.startsWith('@')),
           template.gt,
           template.children,
           template.lt2,
