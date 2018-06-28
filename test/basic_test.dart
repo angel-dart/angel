@@ -22,6 +22,11 @@ main() {
     expect(result.errors.first, equals('Hello, world!'));
   });
 
+  test('requireField', () => expect(requireField('foo'), 'foo*'));
+
+  test('requireFields',
+      () => expect(requireFields(['foo', 'bar']), 'foo*, bar*'));
+
   test('todo', () {
     expect(() {
       todoSchema

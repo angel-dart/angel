@@ -88,7 +88,7 @@ RequestMiddleware validateQuery(Validator validator,
 HookedServiceEventListener validateEvent(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (HookedServiceEvent e) {
-    var result = validator.check(e.data);
+    var result = validator.check(e.data as Map);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(

@@ -1,3 +1,4 @@
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:matcher/matcher.dart';
 
 final RegExp _asterisk = new RegExp(r'\*$');
@@ -19,13 +20,13 @@ Map<String, dynamic> autoParse(Map inputData, Iterable<String> fields) {
 
   for (var key in inputData.keys) {
     if (!fields.contains(key)) {
-      data[key] = inputData[key];
+      data[key.toString()] = inputData[key];
     } else {
       try {
         var n = inputData[key] is num
             ? inputData[key]
             : num.parse(inputData[key].toString());
-        data[key] = n == n.toInt() ? n.toInt() : n;
+        data[key.toString()] = n == n.toInt() ? n.toInt() : n;
       } catch (e) {
         // Invalid number, don't pass it
       }
@@ -38,7 +39,7 @@ Map<String, dynamic> autoParse(Map inputData, Iterable<String> fields) {
 /// Removes undesired fields from a `Map`.
 Map<String, dynamic> filter(Map inputData, Iterable<String> only) {
   return inputData.keys.fold(<String, dynamic>{}, (map, key) {
-    if (only.contains(key)) map[key] = inputData[key];
+    if (only.contains(key.toString())) map[key.toString()] = inputData[key];
     return map;
   });
 }
@@ -153,7 +154,7 @@ class Validator extends Matcher {
         for (Matcher matcher in rules[key]) {
           try {
             if (matcher is Validator) {
-              var result = matcher.check(value);
+              var result = matcher.check(value as Map);
 
               if (result.errors.isNotEmpty) {
                 errors.addAll(result.errors);
@@ -310,7 +311,7 @@ class Validator extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    enforce(item);
+    enforce(item as Map);
     return true;
   }
 
@@ -333,14 +334,18 @@ class ValidationResult {
 }
 
 /// Occurs when user-provided data is invalid.
-class ValidationException {
+class ValidationException extends AngelHttpException {
   /// A list of errors that resulted in the given data being marked invalid.
   final List<String> errors = [];
 
   /// A descriptive message describing the error.
   final String message;
 
-  ValidationException(this.message, {List<String> errors: const []}) {
+  ValidationException(this.message, {List<String> errors: const []})
+      : super(new FormatException(message),
+            statusCode: 400,
+            errors: errors ?? [],
+            stackTrace: StackTrace.current) {
     if (errors != null) this.errors.addAll(errors);
   }
 

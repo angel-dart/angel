@@ -92,7 +92,10 @@ to throw an error if it is not present.
 ```dart
 main() {
     var validator = new Validator({
-        'googleId*': isString
+        'googleId*': isString,
+        
+        // You can also use `requireField`
+        requireField('googleId'): isString,
     });
 }
 ```

@@ -1,3 +1,0 @@
-analyzer:
-  strong-mode: true
-  exclude: ./scripts-bin/**/*.dart

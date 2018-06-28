@@ -34,7 +34,8 @@ final Matcher isString = predicate((value) => value is String, 'a String');
 
 /// Asserts that a value is a non-empty `String`.
 final Matcher isNonEmptyString = predicate(
-    (value) => value is String && value.isNotEmpty, 'a non-empty String');
+    (value) => value is String && value.trim().isNotEmpty,
+    'a non-empty String');
 
 ///  Asserts that a `String` is an `http://` or `https://` URL.
 ///
