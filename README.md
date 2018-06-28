@@ -19,8 +19,9 @@ or the time invested in building an SPA would be too much.
 Each of the [packages within this repository](#this-repository) contains
 some sort of documentation.
 
-Documentation for Jael syntax and directives can be found in the
-[wiki](https://github.com/angel-dart/jael/wiki).
+Documentation for Jael syntax and directives has been
+**moved** to the
+[Angel framework wiki](https://angel-dart.gitbook.io/angel/front-end/jael-template-engine).
 
 ## This Repository
 Within this repository are three packages:
