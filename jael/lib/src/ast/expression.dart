@@ -22,6 +22,12 @@ class Negation extends Expression {
 
   @override
   compute(SymbolTable scope) {
-    return !(expression.compute(scope) == true);
+    var v = expression.compute(scope) as bool;
+
+    if (scope.resolve('!strict!')?.value == false) {
+      v = v == true;
+    }
+
+    return !v;
   }
 }
