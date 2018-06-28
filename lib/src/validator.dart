@@ -1,5 +1,7 @@
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:matcher/matcher.dart';
+import 'context_aware.dart';
+import 'context_validator.dart';
 
 final RegExp _asterisk = new RegExp(r'\*$');
 final RegExp _forbidden = new RegExp(r'!$');
@@ -113,6 +115,9 @@ class Validator extends Matcher {
     _importSchema(schema);
   }
 
+  static bool _hasContextValidators(Iterable it) =>
+      it.any((x) => x is ContextValidator);
+
   /// Validates, and filters input data.
   ValidationResult check(Map inputData) {
     List<String> errors = [];
@@ -136,13 +141,17 @@ class Validator extends Matcher {
     }
 
     for (String field in requiredFields) {
-      if (!input.containsKey(field)) {
-        if (!customErrorMessages.containsKey(field))
-          errors.add("'$field' is required.");
-        else
-          errors.add(customError(field, 'none'));
+      if (!_hasContextValidators(rules[field] ?? [])) {
+        if (!input.containsKey(field)) {
+          if (!customErrorMessages.containsKey(field))
+            errors.add("'$field' is required.");
+          else
+            errors.add(customError(field, 'none'));
+        }
       }
     }
+
+    // Run context validators.
 
     for (var key in input.keys) {
       if (key is String && rules.containsKey(key)) {
@@ -150,28 +159,50 @@ class Validator extends Matcher {
         var value = input[key];
         var description = new StringDescription("'$key': expected ");
 
-        for (Matcher matcher in rules[key]) {
-          try {
-            if (matcher is Validator) {
-              var result = matcher.check(value as Map);
-
-              if (result.errors.isNotEmpty) {
-                errors.addAll(result.errors);
-                valid = false;
-                break;
-              }
-            } else {
-              if (!matcher.matches(value, {})) {
-                if (!customErrorMessages.containsKey(key))
-                  errors.add(matcher.describe(description).toString().trim());
-                valid = false;
-                break;
-              }
+        for (var matcher in rules[key]) {
+          if (matcher is ContextValidator) {
+            if (!matcher.validate(key, input)) {
+              errors.add(matcher
+                  .errorMessage(description, key, input)
+                  .toString()
+                  .trim());
+              valid = false;
             }
-          } catch (e) {
-            errors.add(e.toString());
-            valid = false;
-            break;
+          }
+        }
+
+        if (valid) {
+          for (Matcher matcher in rules[key]) {
+            try {
+              if (matcher is Validator) {
+                var result = matcher.check(value as Map);
+
+                if (result.errors.isNotEmpty) {
+                  errors.addAll(result.errors);
+                  valid = false;
+                  break;
+                }
+              } else {
+                bool result;
+
+                if (matcher is ContextAwareMatcher) {
+                  result = matcher.matchesWithContext(value, key, input, {});
+                } else {
+                  result = matcher.matches(value, {});
+                }
+
+                if (!result) {
+                  if (!customErrorMessages.containsKey(key))
+                    errors.add(matcher.describe(description).toString().trim());
+                  valid = false;
+                  break;
+                }
+              }
+            } catch (e) {
+              errors.add(e.toString());
+              valid = false;
+              break;
+            }
           }
         }
 
@@ -187,7 +218,7 @@ class Validator extends Matcher {
       return new ValidationResult().._errors.addAll(errors);
     }
 
-    return new ValidationResult().._data = data;
+    return new ValidationResult().._data.addAll(data);
   }
 
   /// Validates, and filters input data after running [autoParse].
@@ -320,16 +351,23 @@ class Validator extends Matcher {
 
 /// The result of attempting to validate input data.
 class ValidationResult {
-  Map<String, dynamic> _data;
+  final Map<String, dynamic> _data = {};
   final List<String> _errors = [];
 
   /// The successfully validated data, filtered from the original input.
-  Map<String, dynamic> get data => _data;
+  Map<String, dynamic> get data => new Map<String, dynamic>.unmodifiable(_data);
 
   /// A list of errors that resulted in the given data being marked invalid.
   ///
   /// This is empty if validation was successful.
   List<String> get errors => new List<String>.unmodifiable(_errors);
+
+  ValidationResult withData(Map<String, dynamic> data) => new ValidationResult()
+    .._data.addAll(data)
+    .._errors.addAll(_errors);
+
+  ValidationResult withErrors(Iterable<String> errors) =>
+      new ValidationResult().._data.addAll(_data).._errors.addAll(errors);
 }
 
 /// Occurs when user-provided data is invalid.

@@ -2,6 +2,7 @@
 library angel_validate;
 
 export 'package:matcher/matcher.dart';
+export 'src/context_aware.dart';
 export 'src/matchers.dart';
 export 'src/validator.dart';
 

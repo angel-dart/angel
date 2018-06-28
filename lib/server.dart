@@ -1,6 +1,8 @@
 /// Support for using `angel_validate` with the Angel Framework.
 library angel_validate.server;
 
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'src/async.dart';
 import 'angel_validate.dart';
@@ -50,7 +52,8 @@ RequestMiddleware filterQuery(Iterable<String> only) {
 RequestMiddleware validate(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var result = validator.check(await req.lazyBody());
+    var result =
+        await asyncApplyValidator(validator, await req.lazyBody(), req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
@@ -70,7 +73,7 @@ RequestMiddleware validate(Validator validator,
 RequestMiddleware validateQuery(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var result = validator.check(req.query);
+    var result = await asyncApplyValidator(validator, req.query, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
@@ -89,8 +92,9 @@ RequestMiddleware validateQuery(Validator validator,
 /// filtered data before continuing the service event.
 HookedServiceEventListener validateEvent(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
-  return (HookedServiceEvent e) {
-    var result = validator.check(e.data as Map);
+  return (HookedServiceEvent e) async {
+    var result = await asyncApplyValidator(
+        validator, e.data as Map, (e.request?.app ?? e.service.app) as Angel);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
@@ -101,4 +105,37 @@ HookedServiceEventListener validateEvent(Validator validator,
       ..clear()
       ..addAll(result.data);
   };
+}
+
+/// Asynchronously apply a [validator], running any [AngelMatcher]s.
+Future<ValidationResult> asyncApplyValidator(
+    Validator validator, Map data, Angel app) async {
+  var result = validator.check(data);
+  if (result.errors.isNotEmpty) return result;
+
+  var errantKeys = <String>[], errors = <String>[];
+
+  for (var key in result.data.keys) {
+    var value = result.data[key];
+    var description = new StringDescription("'$key': expected ");
+
+    for (var rule in validator.rules[key]) {
+      if (rule is AngelMatcher) {
+        var r = await rule.matchesWithAngel(value, key, result.data, {}, app);
+
+        if (!r) {
+          errors.add(rule.describe(description).toString().trim());
+          errantKeys.add(key);
+          break;
+        }
+      }
+    }
+  }
+
+  var m = new Map<String, dynamic>.from(result.data);
+  for (var key in errantKeys) {
+    m.remove(key);
+  }
+
+  return result.withData(m).withErrors(errors);
 }

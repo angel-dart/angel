@@ -31,6 +31,7 @@ main() {
     expect(() {
       todoSchema
           .enforce({'id': 'fool', 'text': 'Hello, world!', 'completed': 4});
+      // ignore: deprecated_member_use
     }, throwsA(new isInstanceOf<ValidationException>()));
   });
 
