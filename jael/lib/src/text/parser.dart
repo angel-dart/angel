@@ -68,8 +68,10 @@ class Parser {
 
   StringLiteral implicitString() {
     if (next(TokenType.string)) {
-      return prefixParselets[TokenType.string].parse(this, _current);
-    } else if (next(TokenType.text)) {}
+      return prefixParselets[TokenType.string].parse(this, _current) as StringLiteral;
+    } /*else if (next(TokenType.text)) {
+
+    }*/
 
     return null;
   }
@@ -118,7 +120,7 @@ class Parser {
       return null;
     }
 
-    var name = stringParser.parse(this, _current);
+    var name = stringParser.parse(this, _current) as StringLiteral;
 
     if (!next(TokenType.string)) {
       errors.add(new JaelError(JaelErrorSeverity.error,
@@ -126,7 +128,7 @@ class Parser {
       return null;
     }
 
-    var url = stringParser.parse(this, _current);
+    var url = stringParser.parse(this, _current) as StringLiteral;
 
     if (!next(TokenType.gt)) {
       errors.add(new JaelError(JaelErrorSeverity.error,

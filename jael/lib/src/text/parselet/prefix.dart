@@ -41,14 +41,14 @@ class NewParselet implements PrefixParselet {
           '"new" must precede a call expression. Nothing was found.',
           call.span));
       return null;
-    } else if (call is! Call) {
+    } else if (call is Call) {
+      return new NewExpression(token, call);
+    } else {
       parser.errors.add(new JaelError(
           JaelErrorSeverity.error,
           '"new" must precede a call expression, not a(n) ${call.runtimeType}.',
           call.span));
       return null;
-    } else {
-      return new NewExpression(token, call);
     }
   }
 }

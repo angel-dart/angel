@@ -107,6 +107,10 @@ class Renderer {
     } else if (element.tagName.name == 'element') {
       registerCustomElement(element, buffer, childScope, html5);
       return;
+    } else if (scope.resolve(customElementName(element.tagName.name))?.value
+        is Element) {
+      renderCustomElement(element, buffer, childScope, html5);
+      return;
     }
 
     buffer..write('<')..write(element.tagName.name);
@@ -171,7 +175,7 @@ class Renderer {
         .firstWhere((a) => a.name == 'as', orElse: () => null);
     var indexAsAttribute = element.attributes
         .firstWhere((a) => a.name == 'index-as', orElse: () => null);
-    var alias = asAttribute?.value?.compute(scope) ?? 'item';
+    var alias = asAttribute?.value?.compute(scope)?.toString() ?? 'item';
     var indexAs = indexAsAttribute?.value?.compute(scope)?.toString() ?? 'item';
     var otherAttributes = element.attributes.where(
         (a) => a.name != 'for-each' && a.name != 'as' && a.name != 'index-as');
@@ -302,12 +306,67 @@ class Renderer {
     }
   }
 
+  static String customElementName(String name) => 'elements@$name';
+
   void registerCustomElement(
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
+    if (element is! RegularElement) {
+      throw new JaelError(JaelErrorSeverity.error,
+          "Custom elements cannot be self-closing.", element.span);
+    }
+
     var name = element.getAttribute('name')?.value?.compute(scope)?.toString();
 
-    if (name) {
+    if (name == null) {
+      throw new JaelError(
+          JaelErrorSeverity.error,
+          "Attribute 'name' is required when registering a custom element.",
+          element.tagName.span);
+    }
 
+    try {
+      scope.create(customElementName(name), value: element, constant: true);
+    } on StateError {
+      throw new JaelError(
+          JaelErrorSeverity.error,
+          "Cannot re-define element '$name' in this scope.",
+          element.getAttribute('name').span);
+    }
+  }
+
+  void renderCustomElement(
+      Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
+    var template = scope.resolve(customElementName(element.tagName.name)).value
+        as RegularElement;
+    var renderAs = element.getAttribute('as')?.value?.compute(scope);
+    var attrs = element.attributes.where((a) => a.name != 'as');
+
+    for (var attribute in attrs) {
+      scope.create(attribute.name,
+          value: attribute.value?.compute(scope), constant: true);
+    }
+
+    if (renderAs == false) {
+      for (int i = 0; i < template.children.length; i++) {
+        var child = template.children.elementAt(i);
+        renderElementChild(
+            element, child, buffer, scope, html5, i, element.children.length);
+      }
+    } else {
+      var tagName = renderAs?.toString() ?? 'div';
+
+      var syntheticElement = new RegularElement(
+          template.lt,
+          new SyntheticIdentifier(tagName),
+          [],
+          template.gt,
+          template.children,
+          template.lt2,
+          template.slash,
+          new SyntheticIdentifier(tagName),
+          template.gt2);
+
+      renderElement(syntheticElement, buffer, scope, html5);
     }
   }
 }

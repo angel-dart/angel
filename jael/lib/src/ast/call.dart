@@ -38,7 +38,7 @@ class Call extends Expression {
     var args = computePositional(scope);
     var named = computeNamed(scope);
 
-    return Function.apply(callee, args, named);
+    return Function.apply(callee as Function, args, named);
   }
 }
 

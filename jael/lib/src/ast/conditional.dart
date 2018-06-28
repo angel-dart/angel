@@ -20,7 +20,7 @@ class Conditional extends Expression {
 
   @override
   compute(scope) {
-    return condition.compute(scope)
+    return (condition.compute(scope) == true)
         ? ifTrue.compute(scope)
         : ifFalse.compute(scope);
   }

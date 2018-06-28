@@ -24,7 +24,7 @@ class NewExpression extends Expression {
     if (call.target is MemberExpression)
       name = (call.target as MemberExpression).name.name;
 
-    return reflectClass(targetType)
+    return reflectClass(targetType as Type)
         .newInstance(new Symbol(name), positional, named)
         .reflectee;
   }

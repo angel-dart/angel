@@ -33,3 +33,16 @@ class Identifier extends Expression {
   @override
   FileSpan get span => id.span;
 }
+
+class SyntheticIdentifier extends Identifier {
+  @override
+  final String name;
+
+  SyntheticIdentifier(this.name, [Token token]) : super(token);
+
+  @override
+  FileSpan get span {
+    if (id != null) return id.span;
+    throw new UnsupportedError('Cannot get the span of a SyntheticIdentifier.');
+  }
+}

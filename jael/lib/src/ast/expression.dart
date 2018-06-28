@@ -22,6 +22,6 @@ class Negation extends Expression {
 
   @override
   compute(SymbolTable scope) {
-    return !(expression.compute(scope));
+    return !(expression.compute(scope) == true);
   }
 }
