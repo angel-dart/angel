@@ -1,3 +1,6 @@
+# 2.0.9
+* Upgrade to `source_gen@^0.8.0`.
+
 # 2.0.8+3
 * Don't fail on `null` in `toMap`.
 * Support self-referencing via `toJson()`.

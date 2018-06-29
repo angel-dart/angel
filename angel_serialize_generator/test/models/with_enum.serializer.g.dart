@@ -3,7 +3,7 @@
 part of 'with_enum.dart';
 
 // **************************************************************************
-// Generator: SerializerGenerator
+// SerializerGenerator
 // **************************************************************************
 
 abstract class WithEnumSerializer {

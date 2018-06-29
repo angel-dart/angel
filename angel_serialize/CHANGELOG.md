@@ -1,3 +1,6 @@
+# 2.0.3
+* Increased the upper SDK boundary.
+
 # 2.0.2
 * Added `DefaultValue`.
 

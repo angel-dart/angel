@@ -3,7 +3,7 @@
 part of angel_serialize.test.models.book;
 
 // **************************************************************************
-// Generator: JsonModelGenerator
+// JsonModelGenerator
 // **************************************************************************
 
 class Book extends _Book {

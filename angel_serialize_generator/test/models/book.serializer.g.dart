@@ -3,7 +3,7 @@
 part of angel_serialize.test.models.book;
 
 // **************************************************************************
-// Generator: SerializerGenerator
+// SerializerGenerator
 // **************************************************************************
 
 abstract class BookSerializer {
