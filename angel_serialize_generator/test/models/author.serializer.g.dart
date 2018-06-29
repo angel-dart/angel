@@ -93,8 +93,8 @@ abstract class LibrarySerializer {
             ? new Map.unmodifiable(
                 (map['collection'] as Map).keys.fold({}, (out, key) {
                 return out
-                  ..[key] =
-                      BookSerializer.fromMap((map['collection'] as Map)[key]);
+                  ..[key] = BookSerializer.fromMap(
+                      ((map['collection'] as Map)[key]) as Map);
               }))
             : null,
         createdAt: map['created_at'] != null

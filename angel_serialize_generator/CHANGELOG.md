@@ -1,3 +1,6 @@
+# 2.0.9+1
+* Fix a cast error when deserializing nested model classes.
+
 # 2.0.9
 * Upgrade to `source_gen@^0.8.0`.
 

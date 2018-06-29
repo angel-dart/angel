@@ -220,7 +220,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                 map['$alias'] is Map
                   ? new Map.unmodifiable((map['$alias'] as Map).keys.fold({}, (out, key) {
                        return out..[key] = ${rc.pascalCase}Serializer
-                        .fromMap((map['$alias'] as Map)[key]);
+                        .fromMap(((map['$alias'] as Map)[key]) as Map);
                     }))
                   : null
             ''';
