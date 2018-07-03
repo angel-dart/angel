@@ -1,0 +1,18 @@
+include:
+  - angel_wings|lib/src/wings.h
+  - angel_wings|lib/src/wings_thread.h
+sources:
+  - angel_wings|lib/src/bind_socket.cc
+  - angel_wings|lib/src/http_listener.cc
+  - angel_wings|lib/src/send.cc
+  - angel_wings|lib/src/util.cc
+  - angel_wings|lib/src/wings.cc
+  - angel_wings|lib/src/worker_thread.cc
+third_party:
+  http_parser:
+    git: https://github.com/nodejs/http-parser.git
+    commit: 5b76466
+    include:
+      - .
+    sources:
+      - http_parser.c

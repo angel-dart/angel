@@ -1,0 +1,13 @@
+name: angel_wings
+dependencies:
+  angel_framework: ^1.0.0
+  build_native: ^0.0.9
+  mock_request: ^1.0.0
+  pooled_map: ^1.0.0
+  uuid: ^1.0.0
+dev_dependencies:
+  build_runner:
+    git:
+      url: https://github.com/thosakwe/build.git
+      path: build_runner
+      ref: experimental-hot-reloading
