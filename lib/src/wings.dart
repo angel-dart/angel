@@ -76,8 +76,9 @@ class AngelWings {
 
   final RawReceivePort _recv = new RawReceivePort();
   final Map<String, MockHttpSession> _sessions = {};
-  final PooledMap<int, WingsRequestContext> _staging =
-      new PooledMap<int, WingsRequestContext>();
+  final Map<int, WingsRequestContext> _staging = <int, WingsRequestContext>{};
+  //final PooledMap<int, WingsRequestContext> _staging =
+  //    new PooledMap<int, WingsRequestContext>();
   final Uuid _uuid = new Uuid();
   InternetAddress _address;
   int _port;
@@ -87,6 +88,32 @@ class AngelWings {
       int backlog, bool shared) native "BindSocket";
 
   static SendPort _startHttpListener() native "StartHttpListener";
+
+  final Pool _pool = new Pool(1);
+
+  static void __send(int sockfd, Uint8List data) native "Send";
+
+  static void __closeSocket(int sockfd) native "CloseSocket";
+
+  void _send(int sockfd, Uint8List data) {
+    // _pool.withResource(() {
+    print('Sending ${[sockfd, data]}');
+    _sendPort.send([sockfd, data]);
+    //});
+    //_pool.withResource(() => __send(sockfd, data));
+  }
+
+  void _closeSocket(WingsRequestContext req) {
+    //_pool.withResource(() {
+    if (!req._closed) {
+      req._closed = true;
+      var sockfd = req._sockfd;
+      print('Sending ${[sockfd]}');
+      _sendPort.send([sockfd]);
+    }
+    //});
+    //_pool.withResource(() => __closeSocket(sockfd));
+  }
 
   AngelWings(this.app, {this.shared: false, this.useZone: true}) {
     _recv.handler = _handleMessage;
@@ -137,34 +164,37 @@ class AngelWings {
   }
 
   void _handleMessage(x) {
+    print('INPUT: $x');
     if (x is String) {
       close();
       throw new StateError(x);
     } else if (x is List && x.length >= 2) {
       int sockfd = x[0], command = x[1];
-      
-      WingsRequestContext _newRequest() =>
-          new WingsRequestContext._(this, sockfd, app);
+
+      //WingsRequestContext _newRequest() =>
+      //    new WingsRequestContext._(this, sockfd, app);
       //print(x);
 
       switch (command) {
         case messageBegin:
-          _staging.putIfAbsent(sockfd, _newRequest);
+          print('BEGIN $sockfd');
+          _staging[sockfd] = new WingsRequestContext._(this, sockfd, app);
           break;
         case messageComplete:
-          // (sockfd, method, major, minor, addrBytes)
-          _staging.update(sockfd, (rq) {
+          print('$sockfd in $_staging???');
+          var rq = _staging.remove(sockfd);
+          if (rq != null) {
             rq._method = methodToString(x[2] as int);
             rq._addressBytes = x[5] as Uint8List;
-            return rq;
-          }, defaultValue: _newRequest).then(_handleRequest);
+            _handleRequest(rq);
+          }
           break;
         case body:
-          _staging.update(sockfd, (rq) {
+          var rq = _staging[sockfd];
+          if (rq != null) {
             (rq._body ??= new StreamController<Uint8List>())
                 .add(x[2] as Uint8List);
-            return rq;
-          }, defaultValue: _newRequest);
+          }
           break;
         //case upgrade:
         // TODO: Handle WebSockets...?
@@ -175,27 +205,26 @@ class AngelWings {
         //  onUpgradedMessage(sockfd, x[2]);
         //  break;
         case url:
-          _staging.update(sockfd, (rq) => rq..__url = x[2] as String,
-              defaultValue: _newRequest);
+          _staging[sockfd]?.__url = x[2] as String;
           break;
         case headerField:
-          _staging.update(sockfd, (rq) => rq.._headerField = x[2] as String,
-              defaultValue: _newRequest);
+          _staging[sockfd]?._headerField = x[2] as String;
           break;
         case headerValue:
-          _staging.update(sockfd, (rq) => rq.._headerValue = x[2] as String,
-              defaultValue: _newRequest);
+          _staging[sockfd]?._headerValue = x[2] as String;
           break;
       }
     }
   }
 
   Future _handleRequest(WingsRequestContext req) {
+    print('req: $req');
     if (req == null) return new Future.value();
     var res = new WingsResponseContext._(req)
       ..app = app
-      ..serializer = app.serializer
+      ..serializer = (app.serializer ?? god.serialize)
       ..encoders.addAll(app.encoders);
+    print('Handling fd: ${req._sockfd}');
 
     handle() {
       var path = req.path;
@@ -228,6 +257,7 @@ class AngelWings {
 
       Future<bool> Function() runPipeline;
 
+      print('Pipeline: $pipeline');
       for (var handler in pipeline) {
         if (handler == null) break;
 
@@ -286,7 +316,7 @@ class AngelWings {
             return handleAngelHttpException(e, trace, req, res);
           }).catchError((e, StackTrace st) {
             var trace = new Trace.from(st ?? StackTrace.current).terse;
-            WingsResponseContext._closeSocket(req._sockfd);
+            _closeSocket(req);
             // Ideally, we won't be in a position where an absolutely fatal error occurs,
             // but if so, we'll need to log it.
             if (app.logger != null) {
@@ -323,9 +353,8 @@ class AngelWings {
         b.writeln('HTTP/1.1 500 Internal Server Error');
         b.writeln();
 
-        WingsResponseContext._send(
-            req._sockfd, _coerceUint8List(b.toString().codeUnits));
-        WingsResponseContext._closeSocket(req._sockfd);
+        _send(req._sockfd, _coerceUint8List(b.toString().codeUnits));
+        _closeSocket(req);
       } finally {
         return null;
       }
@@ -350,7 +379,9 @@ class AngelWings {
   /// Sends a response.
   Future sendResponse(WingsRequestContext req, WingsResponseContext res,
       {bool ignoreFinalizers: false}) {
+    print('Closing: ${req._sockfd}');
     if (res.willCloseItself) return new Future.value();
+    print('Not self-closing: ${req._sockfd}');
 
     Future finalizers = ignoreFinalizers == true
         ? new Future.value()
@@ -368,6 +399,7 @@ class AngelWings {
     //request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
     // TODO: Is there a need to support this?
 
+    print('Buffer: ${res.buffer}');
     List<int> outputBuffer = res.buffer.toBytes();
 
     if (res.encoders.isNotEmpty) {
@@ -405,6 +437,7 @@ class AngelWings {
       }
     }
 
+    print('Create string buffer');
     var b = new StringBuffer();
     b.writeln('HTTP/1.1 ${res.statusCode}');
 
@@ -425,13 +458,20 @@ class AngelWings {
     }
 
     b.writeln();
+    print(b);
 
-    var buf = new Uint8List.fromList(
-        new List<int>.from(b.toString().codeUnits)..addAll(outputBuffer));
+    var bb = new BytesBuilder(copy: false)
+      ..add(b.toString().codeUnits)
+      ..add(outputBuffer);
+    var buf = _coerceUint8List(bb.takeBytes());
+    print('Output: $buf');
 
     return finalizers.then((_) {
-      WingsResponseContext._send(req._sockfd, buf);
-      WingsResponseContext._closeSocket(req._sockfd);
+      print('A');
+      _send(req._sockfd, buf);
+      print('B');
+      _closeSocket(req);
+      print('C');
 
       if (req.injections.containsKey(PoolResource)) {
         req.injections[PoolResource].release();

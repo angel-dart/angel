@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <iostream>
+//#include <iostream>
 #include <string.h>
 #include <dart_api.h>
 #include "wings.h"
@@ -25,7 +25,13 @@ DART_EXPORT Dart_Handle wings_Init(Dart_Handle parent_library)
 Dart_Handle HandleError(Dart_Handle handle)
 {
   if (Dart_IsError(handle))
+  {
+#ifdef DEBUG
+    Dart_DumpNativeStackTrace(NULL);
+#endif
     Dart_PropagateError(handle);
+  }
+
   return handle;
 }
 

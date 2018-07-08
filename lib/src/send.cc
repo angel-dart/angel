@@ -1,3 +1,6 @@
+#ifdef DEBUG
+#include "dart_debug.h"
+#endif
 #include "wings.h"
 
 void wings_CloseSocket(Dart_NativeArguments arguments)
@@ -16,7 +19,12 @@ void wings_Send(Dart_NativeArguments arguments)
     Dart_TypedData_Type dataType;
     void *dataBytes;
     intptr_t dataLength;
+
+#ifdef DEBUG
+    HandleError(Dart_Print(sockfdHandle));
+#endif
     HandleError(Dart_IntegerToUint64(sockfdHandle, &sockfd));
     HandleError(Dart_TypedDataAcquireData(dataHandle, &dataType, &dataBytes, &dataLength));
     write((int)sockfd, dataBytes, (size_t)dataLength);
+    HandleError(Dart_TypedDataReleaseData(dataHandle));
 }

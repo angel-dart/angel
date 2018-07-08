@@ -3,6 +3,7 @@ part of angel_wings;
 class WingsRequestContext extends RequestContext {
   final AngelWings _wings;
   final int _sockfd;
+  bool _closed = false;
 
   @override
   Angel app;
@@ -14,7 +15,7 @@ class WingsRequestContext extends RequestContext {
   final Map<String, String> _headers = {};
 
   String __contentTypeString;
-  String __path;
+  //String __path;
   String __url;
 
   Uint8List _addressBytes;
@@ -86,9 +87,9 @@ class WingsRequestContext extends RequestContext {
   @override
   String get path {
     if (_path != null) {
-      return __path;
+      return _path;
     } else {
-      var path = __path.replaceAll(_straySlashes, '');
+      var path = __url?.replaceAll(_straySlashes, '') ?? '';
       if (path.isEmpty) path = '/';
       return _path = path;
     }

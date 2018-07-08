@@ -34,7 +34,11 @@ void wings_BindSocket(Dart_NativeArguments arguments)
     std::string addressStringInstance(addressString);
     std::lock_guard<std::mutex> lock(serverInfoVectorMutex);
 
+#if __APPLE__
+    if (false)
+#else
     if (shared)
+#endif
     {
         for (unsigned long i = 0; i < serverInfoVector.size(); i++)
         {
@@ -42,7 +46,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
 
             if (server_info->addressString == addressStringInstance && server_info->port == port)
             {
-                existingIndex = (long) i;
+                existingIndex = (long)i;
                 break;
             }
         }
@@ -113,7 +117,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
             return;
         }
 
-        /*
+#if __APPLE__
         ret = setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &i, sizeof(i));
 
         if (ret < 0)
@@ -121,7 +125,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
             Dart_ThrowException(Dart_NewStringFromCString("Cannot reuse port for socket."));
             return;
         }
-        */
+#endif
 
         if (addressLength > 4)
         {

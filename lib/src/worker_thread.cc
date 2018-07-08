@@ -1,3 +1,4 @@
+//#include <memory>
 #include <utility>
 #include <dart_native_api.h>
 #include "wings_thread.h"
@@ -10,25 +11,31 @@ void wingsThreadMain(wings_thread_info *info)
 
     while (true)
     {
-        std::lock_guard<std::mutex> lock(serverInfo->mutex);
+        std::unique_lock<std::mutex> lock(serverInfo->mutex, std::defer_lock);
 
         sockaddr client_addr{};
         socklen_t client_addr_len;
-        int client = accept(serverInfo->sockfd, &client_addr, &client_addr_len);
 
-        if (client < 0)
+        if (lock.try_lock())
         {
-            // send_error(info->port, "Failed to accept client socket.");
-            return;
-        }
+            int client = accept(serverInfo->sockfd, &client_addr, &client_addr_len);
+            lock.unlock();
 
-        requestInfo rq{};
-        rq.ipv6 = serverInfo->ipv6;
-        rq.sock = client;
-        rq.addr = client_addr;
-        rq.addr_len = client_addr_len;
-        rq.port = port;
-        handleRequest(&rq);
+            if (client < 0)
+            {
+                // send_error(info->port, "Failed to accept client socket.");
+                return;
+            }
+
+            //auto rq = std::make_shared<requestInfo>();
+            auto *rq = new requestInfo;
+            rq->ipv6 = serverInfo->ipv6;
+            rq->sock = client;
+            rq->addr = client_addr;
+            rq->addr_len = client_addr_len;
+            rq->port = port;
+            handleRequest(rq);
+        }
     }
 }
 
@@ -137,7 +144,8 @@ int send_oncomplete(http_parser *parser, int code)
     return 0;
 }
 
-void handleRequest(requestInfo *rq)
+//void handleRequest(const std::shared_ptr<requestInfo> &rq)
+void handleRequest(requestInfo* rq)
 {
     size_t len = 80 * 1024, nparsed;
     char buf[len];
@@ -158,7 +166,7 @@ void handleRequest(requestInfo *rq)
     settings.on_message_complete = [](http_parser *parser) {
         //std::cout << "mc" << std::endl;
         send_oncomplete(parser, 1);
-        //delete (requestInfo *) parser->data;
+        delete (requestInfo *)parser->data;
         //std::cout << "deleted rq!" << std::endl;
         return 0;
     };
