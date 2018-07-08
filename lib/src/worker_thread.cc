@@ -1,4 +1,5 @@
 //#include <memory>
+#include <iostream>
 #include <utility>
 #include <dart_native_api.h>
 #include "wings_thread.h"
@@ -64,9 +65,8 @@ int send_string(http_parser *parser, char *str, size_t length, int code, bool as
 {
     //if (parser == nullptr) return 0;
     auto *rq = (requestInfo *)parser->data;
+    char *s = nullptr;
     //if (rq == nullptr) return 0;
-    auto *s = new char[length + 1];
-    memset(s, 0, length + 1);
 
     Dart_CObject first{};
     Dart_CObject second{};
@@ -77,7 +77,10 @@ int send_string(http_parser *parser, char *str, size_t length, int code, bool as
 
     if (!as_typed_data)
     {
+        s = new char[length + 1];
+        memset(s, 0, length + 1);
         third.type = Dart_CObject_kString;
+        //strcpy(s, str);
         memcpy(s, str, length);
         third.value.as_string = s;
     }
@@ -97,7 +100,8 @@ int send_string(http_parser *parser, char *str, size_t length, int code, bool as
     obj.value.as_array.length = 3;
     obj.value.as_array.values = list;
     Dart_PostCObject(rq->port, &obj);
-    delete[] s;
+    if (s != nullptr)
+        delete s;
     return 0;
 }
 
@@ -145,7 +149,7 @@ int send_oncomplete(http_parser *parser, int code)
 }
 
 //void handleRequest(const std::shared_ptr<requestInfo> &rq)
-void handleRequest(requestInfo* rq)
+void handleRequest(requestInfo *rq)
 {
     size_t len = 80 * 1024, nparsed;
     char buf[len];
@@ -153,21 +157,21 @@ void handleRequest(requestInfo* rq)
     memset(buf, 0, len);
 
     http_parser parser{};
-    http_parser_init(&parser, HTTP_REQUEST);
     parser.data = rq; //rq.get();
+    http_parser_init(&parser, HTTP_REQUEST);
 
     http_parser_settings settings{};
 
     settings.on_message_begin = [](http_parser *parser) {
-        // std::cout << "mb" << std::endl;
+        std::cout << "mb" << std::endl;
         return send_notification(parser, 0);
     };
 
     settings.on_message_complete = [](http_parser *parser) {
-        //std::cout << "mc" << std::endl;
+        std::cout << "mc" << std::endl;
         send_oncomplete(parser, 1);
         delete (requestInfo *)parser->data;
-        //std::cout << "deleted rq!" << std::endl;
+        std::cout << "deleted rq!" << std::endl;
         return 0;
     };
 
@@ -177,23 +181,23 @@ void handleRequest(requestInfo* rq)
     };
 
     settings.on_header_field = [](http_parser *parser, const char *at, size_t length) {
-        // std::cout << "hf" << std::endl;
+        std::cout << "hf" << std::endl;
         return send_string(parser, (char *)at, length, 3);
     };
 
     settings.on_header_value = [](http_parser *parser, const char *at, size_t length) {
-        // std::cout << "hv" << std::endl;
+        std::cout << "hv" << std::endl;
         return send_string(parser, (char *)at, length, 4);
     };
 
     settings.on_body = [](http_parser *parser, const char *at, size_t length) {
-        // std::cout << "body" << std::endl;
+        std::cout << "body" << std::endl;
         return send_string(parser, (char *)at, length, 5, true);
     };
 
     unsigned int isUpgrade = 0;
 
-    // std::cout << "start" << std::endl;
+    std::cout << "start" << std::endl;
     while ((recved = recv(rq->sock, buf, len, 0)) > 0)
     {
         if (isUpgrade)
