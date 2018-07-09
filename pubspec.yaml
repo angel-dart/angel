@@ -7,6 +7,7 @@ environment:
   sdk: ">=1.8.0 <3.0.0"
 dependencies: 
   angel_framework: ^1.0.0-dev
+  angel_http_exception: ^1.0.0
   dart2_constant: ^1.0.0
 dev_dependencies: 
   angel_test: ^1.1.0-alpha
