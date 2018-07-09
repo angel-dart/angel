@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
+import 'package:io/ansi.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
@@ -31,6 +34,15 @@ main() {
     // Lazy-parse in production
     [app, nested, todos].forEach((Angel app) {
       app.lazyParseBodies = app.isProduction;
+      app.logger = new Logger('routing_test')
+        ..onRecord.listen((rec) {
+          if (rec.error != null) {
+            stdout
+              ..writeln(cyan.wrap(rec.toString()))
+              ..writeln(cyan.wrap(rec.error.toString()))
+              ..writeln(cyan.wrap(rec.stackTrace.toString()));
+          }
+        });
     });
 
     app.requestMiddleware

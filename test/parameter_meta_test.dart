@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:dart2_constant/convert.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:mock_request/mock_request.dart';
@@ -14,7 +15,14 @@ Future printResponse(MockHttpResponse rs) {
   });
 }
 
-main() {
+void main() {
+  group('parameter_meta', parameterMetaTests,
+      skip: !Platform.version.contains('2.0.0-dev.6')
+          ? null
+          : 'Blocked on https://github.com/dart-lang/sdk/issues/33774');
+}
+
+parameterMetaTests() {
   Angel app;
   AngelHttp http;
 
