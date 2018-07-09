@@ -368,7 +368,7 @@ abstract class AuthorizationServer<Client, User> {
       }
 
       if (response != null) {
-        return {'token_type': AuthorizationTokenType.bearer}
+        return <String, dynamic>{'token_type': AuthorizationTokenType.bearer}
           ..addAll(response.toJson());
       }
 
