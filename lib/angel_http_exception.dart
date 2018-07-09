@@ -46,10 +46,14 @@ class AngelHttpException implements Exception {
   }
 
   factory AngelHttpException.fromMap(Map data) {
-    return new AngelHttpException(null,
-        statusCode: (data['status_code'] ?? data['statusCode']) as int,
-        message: data['message']?.toString(),
-        errors: (data['errors'] as Iterable)?.cast<String>()?.toList());
+    return new AngelHttpException(
+      null,
+      statusCode: (data['status_code'] ?? data['statusCode']) as int,
+      message: data['message']?.toString(),
+      errors: data['errors'] is Iterable<String>
+          ? ((data['errors'] as Iterable<String>).toList())
+          : <String>[],
+    );
   }
 
   factory AngelHttpException.fromJson(String str) =>

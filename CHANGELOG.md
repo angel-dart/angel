@@ -1,2 +1,5 @@
+# 1.0.0+2
+* Added a backwards-compatible way to cast the `errors` List.
+
 # 1.0.0+1
 * Dart 2 updates.
