@@ -303,7 +303,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     final head =
         controller.findExpose().path.toString().replaceAll(_straySlashes, '');
     final tail = matched
-        .makeUri(params as Map<String, dynamic>)
+        .makeUri(params.keys.fold<Map<String, dynamic>>({}, (out, k) {
+          return out..[k.toString()] = params[k];
+        }))
         .replaceAll(_straySlashes, '');
 
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);

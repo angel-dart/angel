@@ -1,6 +1,7 @@
 # 1.1.4+9
 * Patch `ResponseContext.redirectTo` to `fold` parameters, instead of
 `as`-casting them to `Map<String, dynamic>`.
+* Apply this same folding to `ResponseContext.redirectToAction`.
 
 # 1.1.4+8
 * Finalizers can now write to the response buffer or send headers,
