@@ -11,7 +11,7 @@ class Todo extends Model {
 }
 
 main() {
-  Map headers = {
+  Map headers = <String, String>{
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   };
