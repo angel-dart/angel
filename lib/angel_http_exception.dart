@@ -50,8 +50,8 @@ class AngelHttpException implements Exception {
       null,
       statusCode: (data['status_code'] ?? data['statusCode']) as int,
       message: data['message']?.toString(),
-      errors: data['errors'] is Iterable<String>
-          ? ((data['errors'] as Iterable<String>).toList())
+      errors: data['errors'] is Iterable
+          ? ((data['errors'] as Iterable).map((x) => x.toString()).toList())
           : <String>[],
     );
   }
