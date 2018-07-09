@@ -16,5 +16,5 @@ dependencies:
 dev_dependencies:
   angel_hot: ^1.1.0 # Hot-reloading support. :)
   angel_test: ^1.1.0 # Utilities for testing Angel servers.
-  console: ^2.2.4
+  console: ^3.0.0
   test: ^0.12.13
