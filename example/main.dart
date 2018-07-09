@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_seo/angel_seo.dart';
 import 'package:angel_static/angel_static.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:file/local.dart';
 
 main() async {
@@ -8,7 +9,8 @@ main() async {
   var fs = const LocalFileSystem();
   var http = new AngelHttp(app);
 
-  var vDir = inlineAssets(
+  // You can wrap a [VirtualDirectory]
+  var vDir = inlineAssetsFromVirtualDirectory(
     new VirtualDirectory(
       app,
       fs,
@@ -17,6 +19,20 @@ main() async {
   );
 
   app.use(vDir.handleRequest);
+
+  // OR, just add a finalizer. Note that [VirtualDirectory] *streams* its response,
+  // so a response finalizer does not touch its contents.
+  //
+  // You likely won't need to use both; it just depends on your use case.
+  app.responseFinalizers.add(inlineAssets(fs.directory('web')));
+
+  app.get('/using_response_buffer', (ResponseContext res) async {
+    var indexHtml = fs.directory('web').childFile('index.html');
+    var contents = await indexHtml.readAsString();
+    res
+      ..headers['content-type'] = 'text/html; charset=utf-8'
+      ..buffer.add(utf8.encode(contents));
+  });
 
   app.use(() => throw new AngelHttpException.notFound());
 
