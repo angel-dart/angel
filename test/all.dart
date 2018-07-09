@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:io/ansi.dart';
+
 import 'accepts_test.dart' as accepts;
 import 'anonymous_service_test.dart' as anonymous_service;
 import 'controller_test.dart' as controller;
@@ -22,6 +26,7 @@ import 'package:test/test.dart';
 
 /// For running with coverage
 main() {
+  print(cyan.wrap('Running tests on ${Platform.version}'));
   group('accepts', accepts.main);
   group('anonymous service', anonymous_service.main);
   group('controller', controller.main);
