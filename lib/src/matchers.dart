@@ -133,7 +133,7 @@ class _HasHeader extends Matcher {
             .matches(item.headers.keys, matchState);
       } else {
         if (!item.headers.containsKey(key.toLowerCase())) return false;
-        Iterable v = value is Iterable ? value : [value];
+        Iterable v = value is Iterable ? (value as Iterable) : [value];
         return v
             .map((x) => x.toString())
             .every(item.headers[key.toLowerCase()].split(',').contains);

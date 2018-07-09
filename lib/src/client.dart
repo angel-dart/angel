@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show Encoding;
-import 'dart:io' show ContentType, Cookie, HttpSession, HttpServer, WebSocket;
+import 'dart:io' show ContentType, Cookie, HttpServer, HttpSession, WebSocket;
 import 'package:dart2_constant/convert.dart';
 import 'package:dart2_constant/io.dart' hide WebSocket;
 import 'package:angel_client/base_angel_client.dart' as client;
@@ -138,8 +138,9 @@ class TestClient extends client.BaseAngelClient {
     Stream<List<int>> stream = rs;
 
     if (autoDecodeGzip != false &&
-        rs.headers['content-encoding']?.contains('gzip') == true)
+        rs.headers['content-encoding']?.contains('gzip') == true) {
       stream = stream.transform(gzip.decoder);
+    }
 
     return new StreamedResponse(stream, rs.statusCode,
         contentLength: rs.contentLength,

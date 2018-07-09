@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_validate/angel_validate.dart';
 import 'package:angel_websocket/server.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -97,7 +97,6 @@ main() {
     test('hasValidBody+hasContentType', () async {
       var res = await client.get('/valid');
       expect(res, hasContentType('application/json'));
-      expect(res, hasContentType(new ContentType('application', 'json')));
       expect(
           res,
           hasValidBody(new Validator({

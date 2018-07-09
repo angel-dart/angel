@@ -1,8 +1,9 @@
-import 'dart:io';
+import 'dart:io' show ContentType;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_validate/angel_validate.dart';
 import 'package:angel_websocket/server.dart';
+import 'package:dart2_constant/io.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -112,6 +113,7 @@ main() {
 
     test('gzip decode', () async {
       var res = await client.get('/gzip');
+      print('Body: ${res.body}');
       expect(res, hasHeader('content-encoding', 'gzip'));
       expect(res, hasBody('Poop'));
     });
