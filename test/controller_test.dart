@@ -100,7 +100,7 @@ main() {
   test('optional name', () async {
     var app = new Angel();
     await app.configure(new NamedController().configureServer);
-    expect(app.controllers['foo'], const TypeMatcher<NamedController>());
+    expect(app.controllers['foo'], const IsInstanceOf<NamedController>());
   });
 
   test("middleware", () async {

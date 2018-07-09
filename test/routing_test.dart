@@ -2,6 +2,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
+import 'common.dart';
 
 @Middleware(const ['interceptor'])
 testMiddlewareMetadata(RequestContext req, ResponseContext res) async {
@@ -117,7 +118,7 @@ main() {
     var response = await client.get('$url/name/HELLO/last/WORLD');
     print('Response: ${response.body}');
     var json_ = json.decode(response.body);
-    expect(json_, const TypeMatcher<Map>());
+    expect(json_, const IsInstanceOf<Map>());
     expect(json_['first'], equals('HELLO'));
     expect(json_['last'], equals('WORLD'));
   });

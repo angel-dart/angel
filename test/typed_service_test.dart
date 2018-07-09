@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/common.dart';
 import 'package:test/test.dart';
+import 'common.dart';
 
 main() {
   var svc = new TypedService<Todo>(new MapService());
@@ -39,7 +40,7 @@ main() {
       'createdAt': now.toIso8601String(),
       'updatedAt': now.toIso8601String()
     });
-    expect(m, const TypeMatcher<Todo>());
+    expect(m, const IsInstanceOf<Todo>());
     var t = m as Todo;
     expect(t.createdAt.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
   });
@@ -50,7 +51,7 @@ main() {
       'created_at': now.toIso8601String(),
       'updated_at': now.toIso8601String()
     });
-    expect(m, const TypeMatcher<Todo>());
+    expect(m, const IsInstanceOf<Todo>());
     var t = m as Todo;
     expect(t.createdAt.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
   });
