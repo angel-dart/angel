@@ -4,6 +4,7 @@ import 'package:file/local.dart';
 
 main() async {
   var app = new Angel();
+  var http = new AngelHttp(app);
   var fs = const LocalFileSystem();
   var vDir = new VirtualDirectory(
     app,
@@ -13,6 +14,6 @@ main() async {
   );
   app.use(vDir.handleRequest);
 
-  var server = await app.startServer('127.0.0.1', 3000);
+  var server = await http.startServer('127.0.0.1', 3000);
   print('Listening at http://${server.address.address}:${server.port}');
 }

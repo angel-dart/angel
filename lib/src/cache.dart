@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:async/async.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
@@ -15,7 +13,7 @@ String formatDateForHttp(DateTime dt) => _fmt.format(dt.toUtc()) + ' GMT';
 
 /// Generates a weak ETag from the given buffer.
 String weakEtag(List<int> buf) {
-  return 'W/${buf.length}' + BASE64URL.encode(buf.take(50).toList());
+  return 'W/${buf.length}' + base64Url.encode(buf.take(50).toList());
 }
 
 /// Returns a string representation of the given [CacheAccessLevel].
@@ -61,6 +59,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
       this.onlyInProduction: false,
       this.useEtags: true,
       bool allowDirectoryListing,
+      bool useStream,
       String publicPath,
       callback(File file, RequestContext req, ResponseContext res)})
       : super(app, fileSystem,
@@ -68,7 +67,8 @@ class CachingVirtualDirectory extends VirtualDirectory {
             indexFileNames: indexFileNames ?? ['index.html'],
             publicPath: publicPath ?? '/',
             callback: callback,
-            allowDirectoryListing: allowDirectoryListing);
+            allowDirectoryListing: allowDirectoryListing,
+            useStream: useStream);
 
   @override
   Future<bool> serveFile(

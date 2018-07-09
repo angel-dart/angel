@@ -46,12 +46,18 @@ class VirtualDirectory {
   /// If `true` (default: `false`), then if a directory does not contain any of the specific [indexFileNames], a default directory listing will be served.
   final bool allowDirectoryListing;
 
+  /// If `true` (default: `true`), then files will be opened as streams and piped into the request.
+  ///
+  /// If not, the response buffer will be used instead.
+  final bool useStream;
+
   VirtualDirectory(this.app, this.fileSystem,
       {Directory source,
       this.indexFileNames: const ['index.html'],
       this.publicPath: '/',
       this.callback,
-      this.allowDirectoryListing: false}) {
+      this.allowDirectoryListing: false,
+      this.useStream: true}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
     if (source != null) {
       _source = source;
@@ -86,7 +92,8 @@ class VirtualDirectory {
       if (path == vPath) return new Future<bool>.value(true);
 
       if (accepts?.isNotEmpty == true) {
-        if (!accepts.any((x) => req.accepts(x, strict: true))) return new Future<bool>.value(true);
+        if (!accepts.any((x) => req.accepts(x, strict: true)))
+          return new Future<bool>.value(true);
       }
 
       return servePath(vPath, req, res);
@@ -111,8 +118,8 @@ class VirtualDirectory {
   }
 
   /// Writes the file at the path given by the [stat] to a response.
-  Future<bool> serveStat(String absolute, String relative, FileStat stat, RequestContext req,
-      ResponseContext res) async {
+  Future<bool> serveStat(String absolute, String relative, FileStat stat,
+      RequestContext req, ResponseContext res) async {
     if (stat.type == FileSystemEntityType.DIRECTORY)
       return await serveDirectory(
           fileSystem.directory(absolute), relative, stat, req, res);
@@ -126,8 +133,8 @@ class VirtualDirectory {
   }
 
   /// Serves the index file of a [directory], if it exists.
-  Future<bool> serveDirectory(Directory directory, String relative, FileStat stat,
-      RequestContext req, ResponseContext res) async {
+  Future<bool> serveDirectory(Directory directory, String relative,
+      FileStat stat, RequestContext req, ResponseContext res) async {
     for (String indexFileName in indexFileNames) {
       final index =
           fileSystem.file(directory.absolute.uri.resolve(indexFileName));
@@ -177,11 +184,9 @@ class VirtualDirectory {
           type = '[Directory]';
         else if (entity is Link) type = '[Link]';
 
-        if (relative.isNotEmpty)
-          href = '/' +  relative + '/' + stub;
+        if (relative.isNotEmpty) href = '/' + relative + '/' + stub;
 
-        if (entity is Directory)
-          href += '/';
+        if (entity is Directory) href += '/';
 
         res.write('<li><a href="$href">$type $stub</a></li>');
       }
@@ -215,14 +220,20 @@ class VirtualDirectory {
     if (callback != null) {
       var r = callback(file, req, res);
       r = r is Future ? await r : r;
-      if (r != null && r != true) return r;
+      return r == true;
+      //if (r != null && r != true) return r;
     }
 
     var type = lookupMimeType(file.path) ?? 'application/octet-stream';
     _ensureContentTypeAllowed(type, req);
     res.headers['content-type'] = type;
 
-    await file.openRead().pipe(res);
+    if (useStream != true) {
+      res.buffer.add(await file.readAsBytes());
+    } else {
+      await file.openRead().pipe(res);
+    }
+
     return false;
   }
 }

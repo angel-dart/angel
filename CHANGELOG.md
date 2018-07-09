@@ -1,3 +1,7 @@
+# 1.3.0+1
+* Dart 2 fixes.
+* Enable optionally writing responses to the buffer instead of streaming.
+
 # 1.3.0
 * `pushState` uses `strict` mode when `accepts` is passed.
 

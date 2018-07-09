@@ -8,12 +8,14 @@ import 'package:test/test.dart';
 
 main() {
   Angel app;
+  AngelHttp http;
   Directory testDir = const LocalFileSystem().directory('test');
   String url;
   Client client = new Client();
 
   setUp(() async {
     app = new Angel();
+    http = new AngelHttp(app);
     app.logger = new Logger('angel')..onRecord.listen(print);
 
     app.use(
@@ -26,6 +28,7 @@ main() {
     app.use(
       new VirtualDirectory(app, const LocalFileSystem(),
           source: testDir,
+          useStream: false,
           indexFileNames: ['index.php', 'index.txt']).handleRequest,
     );
 
@@ -33,12 +36,12 @@ main() {
 
     app.dumpTree(showMatchers: true);
 
-    var server = await app.startServer();
+    var server = await http.startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 
   tearDown(() async {
-    if (app.httpServer != null) await app.httpServer.close(force: true);
+    if (http.httpServer != null) await http.httpServer.close(force: true);
   });
 
   test('can serve files, with correct Content-Type', () async {

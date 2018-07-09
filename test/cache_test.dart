@@ -9,12 +9,14 @@ import 'package:test/test.dart';
 
 main() {
   Angel app;
+  AngelHttp http;
   Directory testDir = const LocalFileSystem().directory('test');
   String url;
   Client client = new Client();
 
   setUp(() async {
     app = new Angel();
+    http = new AngelHttp(app);
 
     app.use(
       new CachingVirtualDirectory(app, const LocalFileSystem(),
@@ -34,12 +36,12 @@ main() {
         if (rec.stackTrace != null) print(rec.stackTrace);
       });
 
-    var server = await app.startServer();
+    var server = await http.startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 
   tearDown(() async {
-    if (app.httpServer != null) await app.httpServer.close(force: true);
+    if (http.httpServer != null) await http.httpServer.close(force: true);
   });
 
   test('sets etag, cache-control, expires, last-modified', () async {

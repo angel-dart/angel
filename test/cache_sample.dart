@@ -5,8 +5,10 @@ import 'package:file/local.dart';
 
 main() async {
   Angel app;
+  AngelHttp http;
   Directory testDir = const LocalFileSystem().directory('test');
   app = new Angel();
+  http = new AngelHttp(app);
 
   app.use(
     new CachingVirtualDirectory(app, const LocalFileSystem(),
@@ -20,6 +22,6 @@ main() async {
 
   app.dumpTree(showMatchers: true);
 
-  var server = await app.startServer();
+  var server = await http.startServer();
   print('Open at http://${server.address.host}:${server.port}');
 }
