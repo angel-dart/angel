@@ -1,4 +1,7 @@
 # seo
+[![Pub](https://img.shields.io/pub/v/angel_seo.svg)](https://pub.dartlang.org/packages/angel_seo)
+[![build status](https://travis-ci.org/angel-dart/seo.svg?branch=master)](https://travis-ci.org/angel-dart/seo)
+
 Helpers for building SEO-friendly Web pages in Angel. The goal of
 `package:angel_seo` is to speed up perceived client page loads, prevent
 the infamous
