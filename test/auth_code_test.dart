@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
 import 'package:angel_test/angel_test.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:logging/logging.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:test/test.dart';
@@ -34,8 +34,9 @@ main() {
         if (rec.stackTrace != null) print(rec.stackTrace);
       });
 
-    var http = await app.startServer();
-    var url = 'http://${http.address.address}:${http.port}';
+    var http = new AngelHttp(app);
+    var s = await http.startServer();
+    var url = 'http://${s.address.address}:${s.port}';
     authorizationEndpoint = Uri.parse('$url/oauth2/authorize');
     tokenEndpoint = Uri.parse('$url/oauth2/token');
     redirectUri = Uri.parse('http://foo.bar/baz');
@@ -63,7 +64,7 @@ main() {
       print('Body: ${response.body}');
       expect(
           response.body,
-          JSON.encode(
+          json.encode(
               'Hello ${pseudoApplication.id}:${pseudoApplication.secret}'));
     });
 
@@ -72,7 +73,7 @@ main() {
       var url = grant.getAuthorizationUrl(redirectUri, state: 'goodbye');
       var response = await testClient.client.get(url);
       print('Body: ${response.body}');
-      expect(JSON.decode(response.body)['state'], 'goodbye');
+      expect(json.decode(response.body)['state'], 'goodbye');
     });
 
     test('sends auth code', () async {
@@ -81,7 +82,7 @@ main() {
       var response = await testClient.client.get(url);
       print('Body: ${response.body}');
       expect(
-        JSON.decode(response.body),
+        json.decode(response.body),
         allOf(
           isMap,
           predicate((Map m) => m.containsKey('code'), 'contains "code"'),
@@ -95,7 +96,7 @@ main() {
       var response = await testClient.client.get(url);
       print('Body: ${response.body}');
 
-      var authCode = JSON.decode(response.body)['code'];
+      var authCode = json.decode(response.body)['code'];
       var client = await grant.handleAuthorizationCode(authCode);
       expect(client.credentials.accessToken, authCode + '_access');
     });
@@ -106,7 +107,7 @@ main() {
       var response = await testClient.client.get(url);
       print('Body: ${response.body}');
 
-      var authCode = JSON.decode(response.body)['code'];
+      var authCode = json.decode(response.body)['code'];
       var client = await grant.handleAuthorizationCode(authCode);
       expect(client.credentials.accessToken, authCode + '_access');
       expect(client.credentials.canRefresh, isTrue);

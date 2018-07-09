@@ -4,9 +4,10 @@ description: angel_auth strategy for in-house OAuth2 login.
 homepage: https://github.com/angel-dart/oauth2.git
 version: 1.0.0
 environment:
-  sdk: ">=1.19.0"
+  sdk: ">=1.8.0 <3.0.0"
 dependencies: 
   angel_framework: ^1.0.0-dev
+  dart2_constant: ^1.0.0
 dev_dependencies: 
   angel_test: ^1.1.0-alpha
   oauth2: ^1.0.0

@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
 import 'package:angel_validate/angel_validate.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
@@ -34,7 +33,7 @@ main() {
     var response = await client.post(
       '/oauth2/token',
       headers: {
-        'Authorization': 'Basic ' + BASE64URL.encode('foo:bar'.codeUnits),
+        'Authorization': 'Basic ' + base64Url.encode('foo:bar'.codeUnits),
       },
       body: {
         'grant_type': 'client_credentials',
@@ -45,7 +44,7 @@ main() {
 
     expect(response, allOf(
       hasStatus(200),
-      hasContentType(ContentType.JSON),
+      hasContentType('application/json'),
       hasValidBody(new Validator({
         'token_type': equals('bearer'),
         'access_token': equals('foo'),
@@ -57,7 +56,7 @@ main() {
     var response = await client.post(
       '/oauth2/token',
       headers: {
-        'Authorization': 'Basic ' + BASE64URL.encode('fooa:bar'.codeUnits),
+        'Authorization': 'Basic ' + base64Url.encode('fooa:bar'.codeUnits),
       },
       body: {
         'grant_type': 'client_credentials',
@@ -72,7 +71,7 @@ main() {
     var response = await client.post(
       '/oauth2/token',
       headers: {
-        'Authorization': 'Basic ' + BASE64URL.encode('foo:bara'.codeUnits),
+        'Authorization': 'Basic ' + base64Url.encode('foo:bara'.codeUnits),
       },
       body: {
         'grant_type': 'client_credentials',

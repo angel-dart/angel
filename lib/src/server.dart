@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'exception.dart';
 import 'response.dart';
 import 'token_type.dart';
@@ -296,7 +296,7 @@ abstract class AuthorizationServer<Client, User> {
 
         if (match != null) {
           match = _rgxBasicAuth
-              .firstMatch(new String.fromCharCodes(BASE64URL.decode(match[1])));
+              .firstMatch(new String.fromCharCodes(base64Url.decode(match[1])));
         }
 
         if (match == null) {

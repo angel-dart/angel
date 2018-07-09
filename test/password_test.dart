@@ -26,7 +26,8 @@ main() {
 
     app.logger = new Logger('password_test')..onRecord.listen(print);
 
-    var server = await app.startServer();
+    var http = new AngelHttp(app);
+    var server = await http.startServer();
     var url = 'http://${server.address.address}:${server.port}';
     tokenEndpoint = Uri.parse('$url/oauth2/token');
   });
