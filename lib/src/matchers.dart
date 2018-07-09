@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_validate/angel_validate.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:matcher/matcher.dart';
 
@@ -51,8 +51,9 @@ class _IsJson extends Matcher {
   }
 
   @override
-  bool matches(http.Response item, Map matchState) =>
-      equals(value).matches(JSON.decode(item.body), matchState);
+  bool matches(item, Map matchState) =>
+      item is http.Response &&
+      equals(value).matches(json.decode(item.body), matchState);
 }
 
 class _HasBody extends Matcher {
@@ -65,12 +66,16 @@ class _HasBody extends Matcher {
       description.add('has body $body');
 
   @override
-  bool matches(http.Response item, Map matchState) {
-    if (body == true) return isNotEmpty.matches(item.bodyBytes, matchState);
-    if (body is List<int>)
-      return equals(body).matches(item.bodyBytes, matchState);
-    else
-      return equals(body.toString()).matches(item.body, matchState);
+  bool matches(item, Map matchState) {
+    if (item is http.Response) {
+      if (body == true) return isNotEmpty.matches(item.bodyBytes, matchState);
+      if (body is List<int>)
+        return equals(body).matches(item.bodyBytes, matchState);
+      else
+        return equals(body.toString()).matches(item.body, matchState);
+    } else {
+      return false;
+    }
   }
 }
 
@@ -81,21 +86,27 @@ class _HasContentType extends Matcher {
 
   @override
   Description describe(Description description) {
-    var str =
-        contentType is ContentType ? contentType.value : contentType.toString();
+    var str = contentType is ContentType
+        ? ((contentType as ContentType).value)
+        : contentType.toString();
     return description.add('has content type ' + str);
   }
 
   @override
-  bool matches(http.Response item, Map matchState) {
-    if (!item.headers.containsKey(HttpHeaders.CONTENT_TYPE)) return false;
+  bool matches(item, Map matchState) {
+    if (item is http.Response) {
+      if (!item.headers.containsKey('content-type')) return false;
 
-    if (contentType is ContentType) {
-      var compare = ContentType.parse(item.headers[HttpHeaders.CONTENT_TYPE]);
-      return equals(contentType.mimeType).matches(compare.mimeType, matchState);
+      if (contentType is ContentType) {
+        var compare = ContentType.parse(item.headers['content-type']);
+        return equals(contentType.mimeType)
+            .matches(compare.mimeType, matchState);
+      } else {
+        return equals(contentType.toString())
+            .matches(item.headers['content-type'], matchState);
+      }
     } else {
-      return equals(contentType.toString())
-          .matches(item.headers[HttpHeaders.CONTENT_TYPE], matchState);
+      return false;
     }
   }
 }
@@ -115,15 +126,20 @@ class _HasHeader extends Matcher {
   }
 
   @override
-  bool matches(http.Response item, Map matchState) {
-    if (value == true) {
-      return contains(key.toLowerCase()).matches(item.headers.keys, matchState);
+  bool matches(item, Map matchState) {
+    if (item is http.Response) {
+      if (value == true) {
+        return contains(key.toLowerCase())
+            .matches(item.headers.keys, matchState);
+      } else {
+        if (!item.headers.containsKey(key.toLowerCase())) return false;
+        Iterable v = value is Iterable ? value : [value];
+        return v
+            .map((x) => x.toString())
+            .every(item.headers[key.toLowerCase()].split(',').contains);
+      }
     } else {
-      if (!item.headers.containsKey(key.toLowerCase())) return false;
-      Iterable v = value is Iterable ? value : [value];
-      return v
-          .map((x) => x.toString())
-          .every(item.headers[key.toLowerCase()].split(',').contains);
+      return false;
     }
   }
 }
@@ -139,7 +155,8 @@ class _HasStatus extends Matcher {
   }
 
   @override
-  bool matches(http.Response item, Map matchState) =>
+  bool matches(item, Map matchState) =>
+      item is http.Response &&
       equals(status).matches(item.statusCode, matchState);
 }
 
@@ -153,10 +170,14 @@ class _HasValidBody extends Matcher {
       description.add('matches validation schema ${validator.rules}');
 
   @override
-  bool matches(http.Response item, Map matchState) {
-    final json = JSON.decode(item.body);
-    if (json is! Map) return false;
-    return validator.matches(json, matchState);
+  bool matches(item, Map matchState) {
+    if (item is http.Response) {
+      final jsons = json.decode(item.body);
+      if (jsons is! Map) return false;
+      return validator.matches(jsons, matchState);
+    } else {
+      return false;
+    }
   }
 }
 
@@ -198,30 +219,35 @@ class _IsAngelHttpException extends Matcher {
   }
 
   @override
-  bool matches(http.Response item, Map matchState) {
-    final json = JSON.decode(item.body);
+  bool matches(item, Map matchState) {
+    if (item is http.Response) {
+      final jsons = json.decode(item.body);
 
-    if (json is Map && json['isError'] == true) {
-      var exc = new AngelHttpException.fromMap(json);
+      if (jsons is Map && jsons['isError'] == true) {
+        var exc = new AngelHttpException.fromMap(jsons);
+        print(exc.toJson());
 
-      if (message?.isNotEmpty != true && statusCode == null && errors.isEmpty)
-        return true;
-      else {
-        if (statusCode != null) if (!equals(statusCode)
-            .matches(exc.statusCode, matchState)) return false;
+        if (message?.isNotEmpty != true && statusCode == null && errors.isEmpty)
+          return true;
+        else {
+          if (statusCode != null) if (!equals(statusCode)
+              .matches(exc.statusCode, matchState)) return false;
 
-        if (message?.isNotEmpty == true) if (!equals(message)
-            .matches(exc.message, matchState)) return false;
+          if (message?.isNotEmpty == true) if (!equals(message)
+              .matches(exc.message, matchState)) return false;
 
-        if (errors.isNotEmpty) {
-          if (!errors
-              .every((err) => contains(err).matches(exc.errors, matchState)))
-            return false;
+          if (errors.isNotEmpty) {
+            if (!errors
+                .every((err) => contains(err).matches(exc.errors, matchState)))
+              return false;
+          }
+
+          return true;
         }
-
-        return true;
-      }
-    } else
+      } else
+        return false;
+    } else {
       return false;
+    }
   }
 }

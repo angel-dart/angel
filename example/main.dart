@@ -50,7 +50,7 @@ main() {
 
     app.errorHandler = (e, req, res) => e.toJson();
 
-    client = await connectTo(app, useZone: false);
+    client = await connectTo(app);
   });
 
   tearDown(() async {
@@ -96,7 +96,6 @@ main() {
 
     test('hasValidBody+hasContentType', () async {
       var res = await client.get('/valid');
-      print('Body: ${res.body}');
       expect(res, hasContentType('application/json'));
       expect(res, hasContentType(new ContentType('application', 'json')));
       expect(
@@ -137,7 +136,7 @@ main() {
       var foo = ws.service('foo');
       foo.create({});
       var result = await foo.onCreated.first;
-      expect(result is Map ? result : result.data, equals({'foo': 'bar'}));
+      expect(result.data, equals({'foo': 'bar'}));
     });
   });
 }
