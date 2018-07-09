@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import 'common.dart';
 
 main() {
-  Map headers = {
+  Map headers = <String, String>{
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   };

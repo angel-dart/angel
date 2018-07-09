@@ -154,7 +154,7 @@ main() {
   });
 
   test('Can serialize function result as JSON', () async {
-    Map headers = {'Content-Type': 'application/json'};
+    Map headers = <String, String>{'Content-Type': 'application/json'};
     String postData = json.encode({'it': 'works'});
     var response = await client.post("$url/lambda",
         headers: headers as Map<String, String>, body: postData);
