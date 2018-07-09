@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/parameter_meta_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/parameter_meta_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/routing_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/routing_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/core/response_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/response_context.dart" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -27,11 +27,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="parameter_meta_test.dart" pinned="false" current-in-tab="true">
+      <file leaf-file-name="parameter_meta_test.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/parameter_meta_test.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="21" column="69" selection-start-line="21" selection-start-column="69" selection-end-line="21" selection-end-column="69" />
+            <state relative-caret-position="257">
+              <caret line="26" column="17" lean-forward="true" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -39,12 +39,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="false">
+      <file leaf-file-name="all.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/all.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="117">
+              <caret line="13" column="30" lean-forward="true" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="144">
-                <caret line="9" column="10" selection-start-line="9" selection-start-column="10" selection-end-line="9" selection-end-column="10" />
+              <first_editor relative-caret-position="32">
+                <caret line="2" column="44" selection-start-line="2" selection-start-column="44" selection-end-line="2" selection-end-column="44" />
               </first_editor>
               <second_editor />
             </state>
@@ -72,8 +81,8 @@
       <file leaf-file-name="response_context.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="131">
-              <caret line="62" column="8" lean-forward="true" selection-start-line="62" selection-start-column="8" selection-end-line="62" selection-end-column="8" />
+            <state relative-caret-position="350">
+              <caret line="260" column="32" lean-forward="true" selection-start-line="260" selection-start-column="32" selection-end-line="260" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -117,18 +126,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="hm.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/hm.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="96">
-              <caret line="6" column="76" selection-start-line="6" selection-start-column="76" selection-end-line="6" selection-end-column="76" />
-              <folding>
-                <element signature="e#0#20#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -141,7 +138,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>HttpHeaders.CONTENT_TYPE</find>
       <find>HttpHeaders.CONTE</find>
       <find>HttpHeaders</find>
       <find>HttpStatus.FORBIDDEN</find>
@@ -171,6 +167,7 @@
       <find>unmofi</find>
       <find>Map&lt;String,</find>
       <find>as</find>
+      <find>redirectTo</find>
     </findStrings>
     <replaceStrings>
       <replace>if (_isClosed &amp;&amp; !_useStream)</replace>
@@ -226,7 +223,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/example/json.dart" />
         <option value="$PROJECT_DIR$/test/general_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/http.dart" />
         <option value="$PROJECT_DIR$/performance/hello/raw.dart" />
@@ -270,13 +266,14 @@
         <option value="$PROJECT_DIR$/example/hm.dart" />
         <option value="$PROJECT_DIR$/test/hm.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/injection.dart" />
-        <option value="$PROJECT_DIR$/lib/src/core/response_context.dart" />
-        <option value="$PROJECT_DIR$/CHANGELOG.md" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/test/services_test.dart" />
         <option value="$PROJECT_DIR$/test/hooked_test.dart" />
         <option value="$PROJECT_DIR$/test/routing_test.dart" />
+        <option value="$PROJECT_DIR$/test/all.dart" />
         <option value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/response_context.dart" />
+        <option value="$PROJECT_DIR$/CHANGELOG.md" />
       </list>
     </option>
   </component>
@@ -678,21 +675,7 @@
       <workItem from="1530124258733" duration="601000" />
       <workItem from="1530230623749" duration="89000" />
       <workItem from="1531145856019" duration="691000" />
-      <workItem from="1531146644160" duration="1843000" />
-    </task>
-    <task id="LOCAL-00048" summary="Response no longer closes if `serialize` is called with an empty string">
-      <created>1517973412941</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1517973412941</updated>
-    </task>
-    <task id="LOCAL-00049" summary="Added `autoSnakeCaseNames` to `MapService`">
-      <created>1517973884510</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1517973884510</updated>
+      <workItem from="1531146644160" duration="2793000" />
     </task>
     <task id="LOCAL-00050" summary="Created setup for AngelHttp">
       <created>1517974351104</created>
@@ -1023,16 +1006,24 @@
       <option name="project" value="LOCAL" />
       <updated>1531148090824</updated>
     </task>
-    <option name="localTasksCounter" value="97" />
+    <task id="LOCAL-00097" summary="Skip parameter meta tests on newer VM's where it's blocked on: https://github.com/dart-lang/sdk/issues/33774">
+      <created>1531148520815</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1531148520815</updated>
+    </task>
+    <task id="LOCAL-00098" summary="Skip parameter meta tests on newer VM's where it's blocked on: https://github.com/dart-lang/sdk/issues/33774">
+      <created>1531148881567</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1531148881568</updated>
+    </task>
+    <option name="localTasksCounter" value="99" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="All_Tests - 2018.06.08 at 02h 56m 02s.xml">
-      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
-    </history-entry>
-    <history-entry file="All_Tests - 2018.06.10 at 19h 13m 34s.xml">
-      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
-    </history-entry>
     <history-entry file="All_Tests - 2018.06.10 at 19h 15m 03s.xml">
       <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
     </history-entry>
@@ -1057,9 +1048,15 @@
     <history-entry file="All_Tests - 2018.07.09 at 10h 42m 26s.xml">
       <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
     </history-entry>
+    <history-entry file="All_Tests - 2018.07.09 at 11h 06m 02s.xml">
+      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="All_Tests - 2018.07.09 at 11h 06m 50s.xml">
+      <configuration name="All Tests" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="156962000" />
+    <option name="totallyTimeSpent" value="157912000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1122,7 +1119,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="`Service.toId` no longer only takes a `String`" />
     <MESSAGE value="IDEA" />
     <MESSAGE value="README update" />
     <MESSAGE value="Pubspec -&gt; v1.1.1" />
@@ -1147,7 +1143,8 @@
     <MESSAGE value="CHANGELOG, bump to 1.1.4+8" />
     <MESSAGE value="Patch services_test for strong mode" />
     <MESSAGE value="More &lt;String, String&gt; patches in tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="More &lt;String, String&gt; patches in tests" />
+    <MESSAGE value="Skip parameter meta tests on newer VM's where it's blocked on: https://github.com/dart-lang/sdk/issues/33774" />
+    <option name="LAST_COMMIT_MESSAGE" value="Skip parameter meta tests on newer VM's where it's blocked on: https://github.com/dart-lang/sdk/issues/33774" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1155,20 +1152,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/pubspec.lock">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="150" column="4" selection-start-line="150" selection-start-column="4" selection-end-line="150" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/example/handle_error.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="6" selection-start-line="6" selection-end-line="9" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/performance/hello/raw.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -1431,16 +1414,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="144">
-            <caret line="9" column="10" selection-start-line="9" selection-start-column="10" selection-end-line="9" selection-end-column="10" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/controller_test.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1520">
@@ -1459,13 +1432,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="43">
           <caret line="141" lean-forward="true" selection-start-line="141" selection-end-line="141" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="131">
-          <caret line="62" column="8" lean-forward="true" selection-start-line="62" selection-start-column="8" selection-end-line="62" selection-end-column="8" />
         </state>
       </provider>
     </entry>
@@ -1500,13 +1466,44 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///usr/local/Cellar/dart/2.0.0-dev.59.0/libexec/lib/io/platform.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="284">
+          <caret line="145" lean-forward="true" selection-start-line="145" selection-end-line="145" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/all.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="117">
+          <caret line="13" column="30" lean-forward="true" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/parameter_meta_test.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="21" column="69" selection-start-line="21" selection-start-column="69" selection-end-line="21" selection-end-column="69" />
+        <state relative-caret-position="257">
+          <caret line="26" column="17" lean-forward="true" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="350">
+          <caret line="260" column="32" lean-forward="true" selection-start-line="260" selection-start-column="32" selection-end-line="260" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="32">
+            <caret line="2" column="44" selection-start-line="2" selection-start-column="44" selection-end-line="2" selection-end-column="44" />
+          </first_editor>
+          <second_editor />
         </state>
       </provider>
     </entry>

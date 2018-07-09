@@ -205,7 +205,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map data]) {
     if (!isOpen) throw closed();
-    return app.viewGenerator(view, new Map.from(renderParams)..addAll(data ?? {})).then((content) {
+    return app
+        .viewGenerator(view, new Map.from(renderParams)..addAll(data ?? {}))
+        .then((content) {
       write(content);
       headers['content-type'] = 'text/html';
       end();
@@ -265,7 +267,11 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
     Route matched = _findRoute(app);
 
     if (matched != null) {
-      redirect(matched.makeUri(params as Map<String, dynamic>), code: code);
+      redirect(
+          matched.makeUri(params.keys.fold<Map<String, dynamic>>({}, (out, k) {
+            return out..[k.toString()] = params[k];
+          })),
+          code: code);
       return;
     }
 

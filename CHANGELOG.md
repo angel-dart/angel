@@ -1,3 +1,7 @@
+# 1.1.4+9
+* Patch `ResponseContext.redirectTo` to `fold` parameters, instead of
+`as`-casting them to `Map<String, dynamic>`.
+
 # 1.1.4+8
 * Finalizers can now write to the response buffer or send headers,
 because said getter now only returns an unmodifiable Map when using
