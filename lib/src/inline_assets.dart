@@ -7,6 +7,14 @@ import 'package:html/dom.dart' as html;
 import 'package:html/parser.dart' as html;
 import 'package:path/path.dart' as p;
 
+/// Wraps a `VirtualDirectory` to patch the way it sends
+/// `.html` files.
+///
+/// In any `.html` file sent down, `link` and `script` elements that point to internal resources
+/// will have the contents of said file read, and inlined into the HTML page itself.
+///
+/// In this case, "internal resources" refers to a URI *without* a scheme, i.e. `/site.css` or
+/// `foo/bar/baz.js`.
 VirtualDirectory inlineAssets(VirtualDirectory vDir) => new _InlineAssets(vDir);
 
 class _InlineAssets extends VirtualDirectory {
