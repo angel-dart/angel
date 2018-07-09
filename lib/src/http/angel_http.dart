@@ -164,7 +164,8 @@ class AngelHttp {
                 ..stackTrace = st;
             throw new AngelHttpException(e, stackTrace: st, statusCode: 500);
           }, test: (e) => e is! AngelHttpException).catchError(
-              (AngelHttpException e, StackTrace st) {
+              (ee, StackTrace st) {
+            var e = ee as AngelHttpException;
             return handleAngelHttpException(
                 e, e.stackTrace ?? st, req, res, request);
           }).whenComplete(() => res.dispose());

@@ -1,3 +1,6 @@
+# 1.1.4+10
+* Change the zone error handler to take an `Object`
+
 # 1.1.4+9
 * Patch `ResponseContext.redirectTo` to `fold` parameters, instead of
 `as`-casting them to `Map<String, dynamic>`.
