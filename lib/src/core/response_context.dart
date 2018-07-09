@@ -60,7 +60,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// Headers that will be sent to the user.
   Map<String, String> get headers {
     /// If the response is closed, then this getter will return an immutable `Map`.
-    if (!isOpen)
+    if (streaming)
       return new Map<String, String>.unmodifiable(_headers);
     else
       return _headers;

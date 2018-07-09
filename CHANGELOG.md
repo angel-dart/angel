@@ -1,3 +1,9 @@
+# 1.1.4+8
+* Finalizers can now write to the response buffer or send headers,
+because said getter now only returns an unmodifiable Map when using
+`streaming`.
+* Tracked down an annoying line that printed many, many `null` messages.
+
 # 1.1.4+7
 * Remove `cast` for Dart 1.x.
 * `RequestContext.injections` is no longer cached or read-only.
