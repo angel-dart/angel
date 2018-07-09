@@ -31,7 +31,10 @@ void main() {
   });
 }
 
-void Function() inlineAssetsTests(void Function(Angel, Directory) f) {
+/// Typedef for backwards-compatibility with Dart 1.
+typedef void InlineAssetTest(Angel app, Directory dir);
+
+void Function() inlineAssetsTests(InlineAssetTest f) {
   return () {
     TestClient client;
 
