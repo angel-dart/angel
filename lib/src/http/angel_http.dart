@@ -273,57 +273,57 @@ class AngelHttp {
         : app.responseFinalizers.fold<Future>(
             new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
-    if (res.isOpen) res.end();
+    return finalizers.then((_) {
+      if (res.isOpen) res.end();
 
-    for (var key in res.headers.keys) {
-      request.response.headers.add(key, res.headers[key]);
-    }
+      for (var key in res.headers.keys) {
+        request.response.headers.add(key, res.headers[key]);
+      }
 
-    request.response.contentLength = res.buffer.length;
-    request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
+      request.response.contentLength = res.buffer.length;
+      request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
 
-    List<int> outputBuffer = res.buffer.toBytes();
+      List<int> outputBuffer = res.buffer.toBytes();
 
-    if (res.encoders.isNotEmpty) {
-      var allowedEncodings = req.headers
-          .value('accept-encoding')
-          ?.split(',')
-          ?.map((s) => s.trim())
-          ?.where((s) => s.isNotEmpty)
-          ?.map((str) {
-        // Ignore quality specifications in accept-encoding
-        // ex. gzip;q=0.8
-        if (!str.contains(';')) return str;
-        return str.split(';')[0];
-      });
+      if (res.encoders.isNotEmpty) {
+        var allowedEncodings = req.headers
+            .value('accept-encoding')
+            ?.split(',')
+            ?.map((s) => s.trim())
+            ?.where((s) => s.isNotEmpty)
+            ?.map((str) {
+          // Ignore quality specifications in accept-encoding
+          // ex. gzip;q=0.8
+          if (!str.contains(';')) return str;
+          return str.split(';')[0];
+        });
 
-      if (allowedEncodings != null) {
-        for (var encodingName in allowedEncodings) {
-          Converter<List<int>, List<int>> encoder;
-          String key = encodingName;
+        if (allowedEncodings != null) {
+          for (var encodingName in allowedEncodings) {
+            Converter<List<int>, List<int>> encoder;
+            String key = encodingName;
 
-          if (res.encoders.containsKey(encodingName))
-            encoder = res.encoders[encodingName];
-          else if (encodingName == '*') {
-            encoder = res.encoders[key = res.encoders.keys.first];
-          }
+            if (res.encoders.containsKey(encodingName))
+              encoder = res.encoders[encodingName];
+            else if (encodingName == '*') {
+              encoder = res.encoders[key = res.encoders.keys.first];
+            }
 
-          if (encoder != null) {
-            request.response.headers.set('content-encoding', key);
-            outputBuffer = res.encoders[key].convert(outputBuffer);
-            request.response.contentLength = outputBuffer.length;
-            break;
+            if (encoder != null) {
+              request.response.headers.set('content-encoding', key);
+              outputBuffer = res.encoders[key].convert(outputBuffer);
+              request.response.contentLength = outputBuffer.length;
+              break;
+            }
           }
         }
       }
-    }
 
-    request.response
-      ..statusCode = res.statusCode
-      ..cookies.addAll(res.cookies)
-      ..add(outputBuffer);
+      request.response
+        ..statusCode = res.statusCode
+        ..cookies.addAll(res.cookies)
+        ..add(outputBuffer);
 
-    return finalizers.then((_) {
       return request.response.close().then((_) {
         if (req.injections.containsKey(PoolResource)) {
           req.injections[PoolResource].release();

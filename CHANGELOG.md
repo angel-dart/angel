@@ -1,3 +1,6 @@
+# 1.1.4+11
+* Close the response, etc. *after* finalizers are done.
+
 # 1.1.4+10
 * Change the zone error handler to take an `Object`
 

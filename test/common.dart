@@ -38,8 +38,8 @@ class IsInstanceOf<T> implements Matcher {
   const IsInstanceOf();
 
   @override
-  Description describeMismatch(item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+      item, Description mismatchDescription, Map matchState, bool verbose) {
     return mismatchDescription.add('$item is not an instance of $T');
   }
 
