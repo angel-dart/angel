@@ -1,0 +1,127 @@
+import 'dart:mirrors' as dart;
+import 'package:angel_container/angel_container.dart';
+import 'package:angel_container/src/reflector.dart';
+import 'package:angel_container/src/reflector.dart';
+
+class MirrorsReflector implements Reflector {
+  @override
+  String getName(Symbol symbol) => dart.MirrorSystem.getName(symbol);
+
+  @override
+  ReflectedClass reflectClass(Type clazz) {
+    var mirror = dart.reflectType(clazz);
+
+    if (mirror is dart.ClassMirror) {
+      return new _ReflectedClassMirror(mirror);
+    } else {
+      throw new ArgumentError('$clazz is not a class.');
+    }
+  }
+
+  @override
+  ReflectedFunction reflectFunction(Function function) {
+    // TODO: implement reflectFunction
+  }
+
+  @override
+  ReflectedType reflectType(Type type) {
+    var mirror = dart.reflectType(type);
+
+    if (mirror is dart.ClassMirror) {
+      return new _ReflectedClassMirror(mirror);
+    } else {
+      return new _ReflectedTypeMirror(mirror);
+    }
+  }
+}
+
+class _ReflectedTypeParameter extends ReflectedTypeParameter {
+  final dart.TypeVariableMirror mirror;
+
+  _ReflectedTypeParameter(this.mirror)
+      : super(
+            dart.MirrorSystem.getName(mirror.simpleName), mirror.reflectedType);
+}
+
+class _ReflectedTypeMirror extends ReflectedType {
+  final dart.TypeMirror mirror;
+
+  _ReflectedTypeMirror(this.mirror)
+      : super(
+          dart.MirrorSystem.getName(mirror.simpleName),
+          mirror.typeVariables
+              .map((m) => new _ReflectedTypeParameter(m))
+              .toList(),
+        );
+
+  @override
+  bool isAssignableTo(ReflectedType other) {
+    return other is _ReflectedTypeMirror && mirror.isAssignableTo(other.mirror);
+  }
+
+  @override
+  T newInstance<T>(String constructorName, List positionalArguments,
+      Map<String, dynamic> namedArguments, List<Type> typeArguments) {
+    throw new ReflectionException(
+        '$name is not a class, and therefore cannot be instantiated.');
+  }
+}
+
+class _ReflectedClassMirror extends ReflectedClass {
+  final dart.ClassMirror mirror;
+
+  _ReflectedClassMirror(this.mirror)
+      : super(
+          dart.MirrorSystem.getName(mirror.simpleName),
+          mirror.typeVariables
+              .map((m) => new _ReflectedTypeParameter(m))
+              .toList(),
+          mirror.metadata.map((m) => new _ReflectedInstanceMirror(m)).toList(),
+          _constructorsOf(mirror),
+          _declarationsOf(mirror),
+        );
+
+  static List<ReflectedFunction> _constructorsOf(dart.ClassMirror mirror) {
+    var out = <ReflectedFunction>[];
+
+    for (var key in mirror.declarations.keys) {
+      var value = mirror.declarations[key];
+    }
+
+    return out;
+  }
+
+  static List<ReflectedDeclaration> _declarationsOf(dart.ClassMirror mirror) {
+    var out = <ReflectedDeclaration>[];
+
+    for (var key in mirror.declarations.keys) {
+      var value = mirror.declarations[key];
+    }
+
+    return out;
+  }
+
+  @override
+  bool isAssignableTo(ReflectedType other) {
+    return other is _ReflectedTypeMirror && mirror.isAssignableTo(other.mirror);
+  }
+
+  @override
+  T newInstance<T>(String constructorName, List positionalArguments,
+      Map<String, dynamic> namedArguments, List<Type> typeArguments) {
+    // TODO: implement newInstance
+  }
+}
+
+class _ReflectedInstanceMirror extends ReflectedInstance {
+  final dart.InstanceMirror mirror;
+
+  _ReflectedInstanceMirror(this.mirror)
+      : super(new _ReflectedClassMirror(mirror.type),
+            new _ReflectedClassMirror(mirror.type));
+
+  @override
+  T invoke<T>(Invocation invocation) {
+    return mirror.delegate(invocation) as T;
+  }
+}

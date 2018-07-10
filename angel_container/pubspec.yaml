@@ -1,0 +1,4 @@
+name: angel_container
+dependencies:
+  collection: ^1.0.0
+  quiver_hashcode: ^1.0.0
