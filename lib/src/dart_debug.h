@@ -11,17 +11,17 @@ Dart_Handle ToCString(Dart_Handle obj, const char** out) {
   return Dart_StringToCString(string, out);
 }
 
-Dart_Handle Dart_PrintToFile(Dart_Handle obj, FILE* stream) {
+Dart_Handle Dart_//printToFile(Dart_Handle obj, FILE* stream) {
   const char *toString;
   Dart_Handle result = ToCString(obj, &toString);
 
   if (Dart_IsError(result))
     return result;
  
-  fprintf(stream, "%s\n", toString);
+  f//printf(stream, "%s\n", toString);
   return Dart_Null();
 }
 
-Dart_Handle Dart_Print(Dart_Handle obj) {
-  return Dart_PrintToFile(obj, stdout);
+Dart_Handle Dart_//print(Dart_Handle obj) {
+  return Dart_//printToFile(obj, stdout);
 }

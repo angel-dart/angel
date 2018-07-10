@@ -13,7 +13,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mock_request/mock_request.dart';
 import 'package:pool/pool.dart';
-//import 'package:pooled_map/pooled_map.dart';
+import 'package:pooled_map/pooled_map.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';

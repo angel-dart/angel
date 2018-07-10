@@ -13,14 +13,14 @@ class WingsResponseContext extends ResponseContext {
     if (_isClosed && !_useStream)
       throw ResponseContext.closed();
     else if (_useStream)
-      AngelWings._send(correspondingRequest._sockfd, _coerceUint8List(data));
+      _wings._send(correspondingRequest, _coerceUint8List(data));
     else
       buffer.add(data);
   }
 
   @override
   Future close() {
-    AngelWings._closeSocket(correspondingRequest._sockfd);
+    _wings._closeSocket(correspondingRequest);
     _isClosed = true;
     _useStream = false;
     return super.close();
@@ -76,8 +76,8 @@ class WingsResponseContext extends ResponseContext {
       }
     }
 
-    return output.forEach(((data) =>
-        AngelWings._send(correspondingRequest._sockfd, _coerceUint8List(data))));
+    return output.forEach(
+        ((data) => _wings._send(correspondingRequest, _coerceUint8List(data))));
   }
 
   @override
@@ -147,8 +147,8 @@ class WingsResponseContext extends ResponseContext {
 
     b.writeln();
 
-    AngelWings._send(
-        correspondingRequest._sockfd, _coerceUint8List(b.toString().codeUnits));
+    _wings._send(
+        correspondingRequest, _coerceUint8List(b.toString().codeUnits));
   }
 }
 

@@ -5,7 +5,7 @@ CXX_INCLUDES=-I$(HTTP_PARSER) -I$(DART_SDK)/include
 .PHONY: clean debug macos all
 
 all:
-	printf 'Available targets:\n'\
+	//printf 'Available targets:\n'\
 	'  * `debug` - Builds a debug library on MacOS\n'\
 	'  * `example` - Runs example/main.dart in LLDB on MacOS\n'\
 	'  * `macos` - Builds a release-mode library on MacOS\n'

@@ -1,5 +1,5 @@
-//#include <memory>
-//#include <iostream>
+#include <memory>
+#include <iostream>
 #include <utility>
 #include <dart_native_api.h>
 #include "wings_thread.h"
@@ -12,31 +12,32 @@ void wingsThreadMain(wings_thread_info *info)
 
     while (true)
     {
-        std::unique_lock<std::mutex> lock(serverInfo->mutex, std::defer_lock);
+        //std::unique_lock<std::mutex> lock(serverInfo->mutex, std::defer_lock);
+        std::lock_guard<std::mutex> lock(serverInfo->mutex);
 
         sockaddr client_addr{};
         socklen_t client_addr_len;
 
-        if (lock.try_lock())
+        //if (lock.try_lock())
+        //{
+        int client = accept(serverInfo->sockfd, &client_addr, &client_addr_len);
+        //lock.unlock();
+
+        if (client < 0)
         {
-            int client = accept(serverInfo->sockfd, &client_addr, &client_addr_len);
-            lock.unlock();
-
-            if (client < 0)
-            {
-                // send_error(info->port, "Failed to accept client socket.");
-                return;
-            }
-
-            //auto rq = std::make_shared<requestInfo>();
-            auto *rq = new requestInfo;
-            rq->ipv6 = serverInfo->ipv6;
-            rq->sock = client;
-            rq->addr = client_addr;
-            rq->addr_len = client_addr_len;
-            rq->port = port;
-            handleRequest(rq);
+            // send_error(info->port, "Failed to accept client socket.");
+            return;
         }
+
+        //auto rq = std::make_shared<requestInfo>();
+        auto *rq = new requestInfo;
+        rq->ipv6 = serverInfo->ipv6;
+        rq->sock = client;
+        rq->addr = client_addr;
+        rq->addr_len = client_addr_len;
+        rq->port = port;
+        handleRequest(rq);
+        //}
     }
 }
 
@@ -176,7 +177,7 @@ void handleRequest(requestInfo *rq)
     };
 
     settings.on_url = [](http_parser *parser, const char *at, size_t length) {
-        // std::cout << "url" << std::endl;
+        // //std::cout << "url" << std::endl;
         return send_string(parser, (char *)at, length, 2);
     };
 
@@ -198,7 +199,7 @@ void handleRequest(requestInfo *rq)
     unsigned int isUpgrade = 0;
 
     //std::cout << "start" << std::endl;
-    while ((recved = recv(rq->sock, buf, len, 0)) > 0)
+    while ((recved = recv(rq->sock, buf, len, 0)) >= 0)
     {
         if (isUpgrade)
         {

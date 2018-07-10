@@ -1,5 +1,5 @@
 #include <cstdlib>
-//#include <iostream>
+#include <iostream>
 #include <string.h>
 #include <dart_api.h>
 #include "wings.h"

@@ -76,9 +76,11 @@ class AngelWings {
 
   final RawReceivePort _recv = new RawReceivePort();
   final Map<String, MockHttpSession> _sessions = {};
-  final Map<int, WingsRequestContext> _staging = <int, WingsRequestContext>{};
-  //final PooledMap<int, WingsRequestContext> _staging =
-  //    new PooledMap<int, WingsRequestContext>();
+  //final Map<int, WingsRequestContext> _staging = <int, WingsRequestContext>{};
+  final PooledMap<int, WingsRequestContext> _staging =
+      new PooledMap<int, WingsRequestContext>();
+  final PooledMap<int, WingsRequestContext> _live =
+      new PooledMap<int, WingsRequestContext>();
   final Uuid _uuid = new Uuid();
   InternetAddress _address;
   int _port;
@@ -91,30 +93,42 @@ class AngelWings {
 
   //final Pool _pool = new Pool(1);
 
-  static void _send(int sockfd, Uint8List data) native "Send";
+  static void __send(int sockfd, Uint8List data) native "Send";
 
-  static void _closeSocket(int sockfd) native "CloseSocket";
+  static void __closeSocket(int sockfd) native "CloseSocket";
 
-  /*
-  void _send(int sockfd, Uint8List data) {
+  void _send(WingsRequestContext req, Uint8List data) {
+    _live.update(req._sockfd, (_) {
+      //print('Sending ${[req._sockfd, data]}');
+      __send(req._sockfd, data);
+      return req;
+    });
     // _pool.withResource(() {
-    print('Sending ${[sockfd, data]}');
-    _sendPort.send([sockfd, data]);
+    ////print('Sending ${[sockfd, data]}');
+    //_sendPort.send([sockfd, data]);
     //});
     //_pool.withResource(() => __send(sockfd, data));
   }
 
   void _closeSocket(WingsRequestContext req) {
+    _live.remove(req._sockfd).then((_) {
+      if (!req._closed) {
+        req._closed = true;
+        //print('Closing ${[req._sockfd]}');
+        __closeSocket(req._sockfd);
+      }
+      return req;
+    });
     //_pool.withResource(() {
-    if (!req._closed) {
-      req._closed = true;
-      var sockfd = req._sockfd;
-      print('Sending ${[sockfd]}');
-      _sendPort.send([sockfd]);
-    }
+    //if (!req._closed) {
+    //  req._closed = true;
+    //  var sockfd = req._sockfd;
+    //  //print('Sending ${[sockfd]}');
+    //  _sendPort.send([sockfd]);
+    //}
     //});
     //_pool.withResource(() => __closeSocket(sockfd));
-  }*/
+  }
 
   AngelWings(this.app, {this.shared: false, this.useZone: true}) {
     _recv.handler = _handleMessage;
@@ -172,16 +186,25 @@ class AngelWings {
     } else if (x is List && x.length >= 2) {
       int sockfd = x[0], command = x[1];
 
-      //WingsRequestContext _newRequest() =>
-      //    new WingsRequestContext._(this, sockfd, app);
+      WingsRequestContext _newRequest() =>
+          new WingsRequestContext._(this, sockfd, app);
       //print(x);
 
       switch (command) {
         case messageBegin:
           //print('BEGIN $sockfd');
-          _staging[sockfd] = new WingsRequestContext._(this, sockfd, app);
+          _staging.putIfAbsent(sockfd, _newRequest);
+          //_staging[sockfd] = new WingsRequestContext._(this, sockfd, app);
           break;
         case messageComplete:
+          _staging.remove(sockfd).then((rq) {
+            if (rq != null) {
+              rq._method = methodToString(x[2] as int);
+              rq._addressBytes = x[5] as Uint8List;
+              _live.put(sockfd, rq).then((_) => _handleRequest(rq));
+            }
+          });
+          /*
           //print('$sockfd in $_staging???');
           var rq = _staging.remove(sockfd);
           if (rq != null) {
@@ -189,13 +212,21 @@ class AngelWings {
             rq._addressBytes = x[5] as Uint8List;
             _handleRequest(rq);
           }
+          */
           break;
         case body:
+          _staging.update(sockfd, (rq) {
+            (rq._body ??= new StreamController<Uint8List>())
+                .add(x[2] as Uint8List);
+            return rq;
+          }, defaultValue: _newRequest);
+          /*
           var rq = _staging[sockfd];
           if (rq != null) {
             (rq._body ??= new StreamController<Uint8List>())
                 .add(x[2] as Uint8List);
           }
+          */
           break;
         //case upgrade:
         // TODO: Handle WebSockets...?
@@ -206,13 +237,25 @@ class AngelWings {
         //  onUpgradedMessage(sockfd, x[2]);
         //  break;
         case url:
-          _staging[sockfd]?.__url = x[2] as String;
+          _staging.update(sockfd, (rq) {
+            rq?.__url = x[2] as String;
+            return rq;
+          }, defaultValue: _newRequest);
+          //_staging[sockfd]?.__url = x[2] as String;
           break;
         case headerField:
-          _staging[sockfd]?._headerField = x[2] as String;
+          _staging.update(sockfd, (rq) {
+            rq?._headerField = x[2] as String;
+            return rq;
+          }, defaultValue: _newRequest);
+          //_staging[sockfd]?._headerField = x[2] as String;
           break;
         case headerValue:
-          _staging[sockfd]?._headerValue = x[2] as String;
+          _staging.update(sockfd, (rq) {
+            rq?._headerValue = x[2] as String;
+            return rq;
+          }, defaultValue: _newRequest);
+          //_staging[sockfd]?._headerValue = x[2] as String;
           break;
       }
     }
@@ -317,7 +360,7 @@ class AngelWings {
             return handleAngelHttpException(e, trace, req, res);
           }).catchError((e, StackTrace st) {
             var trace = new Trace.from(st ?? StackTrace.current).terse;
-            AngelWings._closeSocket(req._sockfd);
+            _closeSocket(req);
             // Ideally, we won't be in a position where an absolutely fatal error occurs,
             // but if so, we'll need to log it.
             if (app.logger != null) {
@@ -354,8 +397,8 @@ class AngelWings {
         b.writeln('HTTP/1.1 500 Internal Server Error');
         b.writeln();
 
-        _send(req._sockfd, _coerceUint8List(b.toString().codeUnits));
-        AngelWings._closeSocket(req._sockfd);
+        _send(req, _coerceUint8List(b.toString().codeUnits));
+        _closeSocket(req);
       } finally {
         return null;
       }
@@ -469,9 +512,9 @@ class AngelWings {
 
     return finalizers.then((_) {
       //print('A');
-      _send(req._sockfd, buf);
+      _send(req, buf);
       //print('B');
-      AngelWings._closeSocket(req._sockfd);
+      _closeSocket(req);
       //print('C');
 
       if (req.injections.containsKey(PoolResource)) {

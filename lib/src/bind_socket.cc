@@ -37,8 +37,8 @@ void wings_BindSocket(Dart_NativeArguments arguments)
 
     if (shared)
     {
-        #if __APPLE__
-        #else
+        //#if __APPLE__
+        //#else
         for (unsigned long i = 0; i < serverInfoVector.size(); i++)
         {
             WingsServerInfo *server_info = serverInfoVector.at(i);
@@ -49,7 +49,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
                 break;
             }
         }
-        #endif
+        //#endif
     }
 
     if (existingIndex > -1)
@@ -117,6 +117,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
             return;
         }
 
+/*
 #if __APPLE__
         ret = setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &i, sizeof(i));
 
@@ -126,6 +127,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
             return;
         }
 #endif
+*/
 
         if (addressLength > 4)
         {

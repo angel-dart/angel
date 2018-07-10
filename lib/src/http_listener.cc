@@ -1,6 +1,6 @@
 #include <dart_native_api.h>
 #include <thread>
-//#include <iostream>
+#include <iostream>
 #include <cstdio>
 #include "wings.h"
 #include "wings_thread.h"
