@@ -9,6 +9,7 @@ dependencies:
   angel_auth: ^1.1.0-alpha
   angel_client: ^1.1.0-alpha
   angel_framework: ^1.1.0-alpha
+  angel_http_exception: ^1.0.0
   dart2_constant: ^1.0.0
   http: ^0.11.0
   json_god: ^2.0.0-beta
@@ -17,4 +18,5 @@ dependencies:
   uuid: ^0.5.3
   web_socket_channel: ^1.0.0
 dev_dependencies:
+  logging: any
   test: "^0.12.15"
