@@ -191,7 +191,7 @@ class AngelAuth<T> {
     if (_jwtLifeSpan > 0) {
       cookie.maxAge ??= _jwtLifeSpan < 0
           ? -1
-          : _jwtLifeSpan ~/ Duration.millisecondsPerSecond;
+          : _jwtLifeSpan ~/ 1000;
       cookie.expires ??=
           new DateTime.now().add(new Duration(milliseconds: _jwtLifeSpan));
     }
