@@ -21,5 +21,7 @@ doc/api/
 *.js.map
 
 *.o
-*.dylib
+#*.dylib
 *.a
+*.lib
+*.obj
