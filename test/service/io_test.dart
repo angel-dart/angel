@@ -8,6 +8,7 @@ import 'common.dart';
 
 main() {
   srv.Angel app;
+  srv.AngelHttp http;
   ws.WebSockets client;
   srv.AngelWebSocket websockets;
   HttpServer server;
@@ -15,6 +16,7 @@ main() {
 
   setUp(() async {
     app = new srv.Angel()..use('/api/todos', new TodoService());
+    http = new srv.AngelHttp(app, useZone: false);
 
     websockets = new srv.AngelWebSocket(app)
       ..onData.listen((data) {
@@ -24,7 +26,7 @@ main() {
     await app.configure(websockets.configureServer);
     app.all('/ws', websockets.handleRequest);
     app.logger = new Logger('angel_auth')..onRecord.listen(print);
-    server = await app.startServer();
+    server = await http.startServer();
     url = 'ws://${server.address.address}:${server.port}/ws';
 
     client = new ws.WebSockets(url);
@@ -44,7 +46,7 @@ main() {
 
   tearDown(() async {
     await client.close();
-    await server.close(force: true);
+    await http.close();
     app = null;
     client = null;
     server = null;

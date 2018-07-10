@@ -8,6 +8,7 @@ import 'common.dart';
 
 main() {
   srv.Angel app;
+  srv.AngelHttp http;
   ws.WebSockets client;
   srv.AngelWebSocket websockets;
   HttpServer server;
@@ -15,6 +16,7 @@ main() {
 
   setUp(() async {
     app = new srv.Angel();
+    http = new srv.AngelHttp(app, useZone: false);
 
     websockets = new srv.AngelWebSocket(app)
       ..onData.listen((data) {
@@ -26,7 +28,7 @@ main() {
     await app.configure(new GameController(websockets).configureServer);
     app.logger = new Logger('angel_auth')..onRecord.listen(print);
 
-    server = await app.startServer();
+    server = await http.startServer();
     url = 'ws://${server.address.address}:${server.port}/ws';
 
     client = new ws.WebSockets(url);
@@ -46,7 +48,7 @@ main() {
 
   tearDown(() async {
     await client.close();
-    await server.close(force: true);
+    await http.close();
     app = null;
     client = null;
     server = null;
@@ -58,7 +60,7 @@ main() {
       client.send('search', new ws.WebSocketAction());
       var search = await client.on['searched'].first;
       print('Searched: ${search.data}');
-      expect(new Game.fromJson(search.data), equals(JOHN_VS_BOB));
+      expect(new Game.fromJson(search.data as Map), equals(johnVsBob));
     });
   });
 }

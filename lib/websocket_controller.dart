@@ -75,7 +75,7 @@ class WebSocketController extends Controller {
           if (_handlers.containsKey(action.eventName)) {
             var methodMirror = _handlers[action.eventName];
             var fn = instanceMirror.getField(methodMirror.simpleName).reflectee;
-            return app.runContained(fn, socket.request, socket.response);
+            return app.runContained(fn as Function, socket.request, socket.response);
           }
         } catch (e, st) {
           ws.catchError(e, st, socket);

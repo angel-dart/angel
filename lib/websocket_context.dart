@@ -55,7 +55,7 @@ class WebSocketContext {
 class _WebSocketEventTable {
   Map<String, StreamController<Map>> _handlers = {};
 
-  StreamController<Map> _getStreamForEvent(eventName) {
+  StreamController<Map> _getStreamForEvent(String eventName) {
     if (!_handlers.containsKey(eventName))
       _handlers[eventName] = new StreamController<Map>();
     return _handlers[eventName];

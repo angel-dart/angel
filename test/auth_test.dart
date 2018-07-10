@@ -11,11 +11,13 @@ const Map<String, String> USER = const {'username': 'foo', 'password': 'bar'};
 
 main() {
   Angel app;
+  AngelHttp http;
   c.Angel client;
   c.WebSockets ws;
 
   setUp(() async {
     app = new Angel();
+    http = new AngelHttp(app, useZone: false);
     var auth = new AngelAuth();
 
     auth.serializer = (_) async => 'baz';
@@ -33,7 +35,7 @@ main() {
     app.all('/ws', sock.handleRequest);
     app.logger = new Logger('angel_auth')..onRecord.listen(print);
 
-    var server = await app.startServer();
+    var server = await http.startServer();
     client = new c.Rest('http://${server.address.address}:${server.port}');
     ws = new c.WebSockets('ws://${server.address.address}:${server.port}/ws');
     await ws.connect();
@@ -41,7 +43,7 @@ main() {
 
   tearDown(() {
     return Future.wait([
-      app.close(),
+      http.close(),
       client.close(),
       ws.close(),
     ]);

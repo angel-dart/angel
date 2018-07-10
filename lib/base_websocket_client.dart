@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'package:angel_client/angel_client.dart';
 import 'package:angel_client/base_angel_client.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:http/src/base_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -109,7 +109,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
           c.complete(socket);
         }
-      }).catchError((e, st) {
+      }).catchError((e, StackTrace st) {
         if (!c.isCompleted) {
           if (timer.isActive) timer.cancel();
           c.completeError(e, st);
@@ -148,10 +148,10 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
           if (data is WebSocketChannelException) {
             _onWebSocketChannelException.add(data);
           } else if (data is String) {
-            var json = JSON.decode(data);
+            var jsons = json.decode(data);
 
-            if (json is Map) {
-              var event = new WebSocketEvent.fromJson(json);
+            if (jsons is Map) {
+              var event = new WebSocketEvent.fromJson(jsons);
 
               if (event.eventName?.isNotEmpty == true) {
                 _onAllEvents.add(event);
@@ -159,10 +159,10 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
               }
 
               if (event.eventName == EVENT_ERROR) {
-                var error = new AngelHttpException.fromMap(event.data ?? {});
+                var error = new AngelHttpException.fromMap((event.data ?? {}) as Map);
                 _onError.add(error);
               } else if (event.eventName == EVENT_AUTHENTICATED) {
-                var authResult = new AngelAuthResult.fromMap(event.data);
+                var authResult = new AngelAuthResult.fromMap(event.data as Map);
                 _onAuthenticated.add(authResult);
               } else if (event.eventName?.isNotEmpty == true) {
                 var split = event.eventName
@@ -199,7 +199,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   }
 
   /// Serializes data to JSON.
-  serialize(x) => JSON.encode(x);
+  serialize(x) => json.encode(x);
 
   /// Alternative form of [send]ing an action.
   void send(String eventName, WebSocketAction action) =>
@@ -289,7 +289,7 @@ class WebSocketsService extends Service {
   }
 
   /// Serializes an [action] to be sent over a WebSocket.
-  serialize(WebSocketAction action) => JSON.encode(action);
+  serialize(WebSocketAction action) => json.encode(action);
 
   /// Deserializes data from a [WebSocketEvent].
   deserialize(x) {
@@ -349,7 +349,7 @@ class WebSocketsService extends Service {
   @override
   Future read(id, [Map params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_READ}', id: id, params: params ?? {}));
+        eventName: '$path::${ACTION_READ}', id: id.toString(), params: params ?? {}));
     return null;
   }
 
@@ -366,7 +366,7 @@ class WebSocketsService extends Service {
   Future modify(id, data, [Map params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_MODIFY}',
-        id: id,
+        id: id.toString(),
         data: data,
         params: params ?? {}));
     return null;
@@ -376,7 +376,7 @@ class WebSocketsService extends Service {
   Future update(id, data, [Map params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_UPDATE}',
-        id: id,
+        id: id.toString(),
         data: data,
         params: params ?? {}));
     return null;
@@ -385,7 +385,7 @@ class WebSocketsService extends Service {
   @override
   Future remove(id, [Map params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_REMOVE}', id: id, params: params ?? {}));
+        eventName: '$path::${ACTION_REMOVE}', id: id.toString(), params: params ?? {}));
     return null;
   }
 

@@ -2,11 +2,11 @@
 library angel_websocket.server;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
 import 'package:web_socket_channel/io.dart';
@@ -18,9 +18,11 @@ part 'websocket_context.dart';
 
 part 'websocket_controller.dart';
 
+typedef String WebSocketResponseSerializer(data);
+
 /// Broadcasts events from [HookedService]s, and handles incoming [WebSocketAction]s.
 class AngelWebSocket {
-  List<WebSocketContext> _clients = [];
+  List<WebSocketContext> _clients = <WebSocketContext>[];
   final List<String> _servicesAlreadyWired = [];
 
   final StreamController<WebSocketAction> _onAction =
@@ -40,7 +42,7 @@ class AngelWebSocket {
   /// If `true`, then clients can authenticate their WebSockets by sending a valid JWT.
   final bool allowAuth;
 
-  /// Send error information across WebSockets, without including [debug] information..
+  /// Send error information across WebSockets, without including debug information..
   final bool sendErrors;
 
   /// A list of clients currently connected to this server via WebSockets.
@@ -66,7 +68,7 @@ class AngelWebSocket {
   Stream<WebSocketContext> get onDisconnection => _onDisconnect.stream;
 
   /// Serializes data to WebSockets.
-  ResponseSerializer serializer;
+  WebSocketResponseSerializer serializer;
 
   /// Deserializes data from WebSockets.
   Function deserializer;
@@ -82,7 +84,7 @@ class AngelWebSocket {
     if (deserializer == null) deserializer = (params) => params;
   }
 
-  serviceHook(String path) {
+  HookedServiceEventListener serviceHook(String path) {
     return (HookedServiceEvent e) async {
       if (e.params != null && e.params['broadcast'] == false) return;
 
@@ -107,7 +109,7 @@ class AngelWebSocket {
       {filter(WebSocketContext socket), bool notify: true}) async {
     // Default implementation will just immediately fire events
     _clients.forEach((client) async {
-      var result = true;
+      dynamic result = true;
       if (filter != null) result = await filter(client);
       if (result == true) {
         client.channel.sink.add((serializer ?? god.serialize)(event.toJson()));
@@ -125,14 +127,18 @@ class AngelWebSocket {
   Future handleAction(WebSocketAction action, WebSocketContext socket) async {
     var split = action.eventName.split("::");
 
-    if (split.length < 2)
-      return socket.sendError(new AngelHttpException.badRequest());
+    if (split.length < 2) {
+      socket.sendError(new AngelHttpException.badRequest());
+      return null;
+    }
 
     var service = app.service(split[0]);
 
-    if (service == null)
-      return socket.sendError(new AngelHttpException.notFound(
+    if (service == null) {
+      socket.sendError(new AngelHttpException.notFound(
           message: "No service \"${split[0]}\" exists."));
+      return null;
+    }
 
     var actionName = split[1];
 
@@ -146,7 +152,7 @@ class AngelWebSocket {
     }
 
     var params = mergeMap([
-      (deserializer ?? (params) => params)(action.params),
+      ((deserializer ?? (params) => params)(action.params)) as Map,
       {
         "provider": Providers.websocket,
         '__requestctx': socket.request,
@@ -156,11 +162,13 @@ class AngelWebSocket {
 
     try {
       if (actionName == ACTION_INDEX) {
-        return socket.send(
+        socket.send(
             "${split[0]}::" + EVENT_INDEXED, await service.index(params));
+        return null;
       } else if (actionName == ACTION_READ) {
-        return socket.send("${split[0]}::" + EVENT_READ,
+        socket.send("${split[0]}::" + EVENT_READ,
             await service.read(action.id, params));
+        return null;
       } else if (actionName == ACTION_CREATE) {
         return new WebSocketEvent(
             eventName: "${split[0]}::" + EVENT_CREATED,
@@ -178,8 +186,9 @@ class AngelWebSocket {
             eventName: "${split[0]}::" + EVENT_REMOVED,
             data: await service.remove(action.id, params));
       } else {
-        return socket.sendError(new AngelHttpException.methodNotAllowed(
+        socket.sendError(new AngelHttpException.methodNotAllowed(
             message: "Method Not Allowed: \"$actionName\""));
+        return null;
       }
     } catch (e, st) {
       catchError(e, st, socket);
@@ -236,8 +245,8 @@ class AngelWebSocket {
   handleData(WebSocketContext socket, data) async {
     try {
       socket._onData.add(data);
-      var fromJson = JSON.decode(data);
-      var action = new WebSocketAction.fromJson(fromJson);
+      var fromJson = json.decode(data.toString());
+      var action = new WebSocketAction.fromJson(fromJson as Map);
       _onAction.add(action);
 
       if (action.eventName == null ||
@@ -250,7 +259,7 @@ class AngelWebSocket {
         socket._onAction.add(new WebSocketAction.fromJson(fromJson));
         socket.on
             ._getStreamForEvent(fromJson["eventName"].toString())
-            .add(fromJson["data"]);
+            .add(fromJson["data"] as Map);
       }
 
       if (action.eventName == ACTION_AUTHENTICATE)
@@ -261,7 +270,7 @@ class AngelWebSocket {
 
         if (split.length >= 2) {
           if (ACTIONS.contains(split[1])) {
-            var event = handleAction(action, socket);
+            var event = await handleAction(action, socket);
             if (event is Future) event = await event;
           }
         }
@@ -299,11 +308,11 @@ class AngelWebSocket {
       return !_servicesAlreadyWired.contains(x) &&
           app.services[x] is HookedService;
     })) {
-      hookupService(key, app.services[key]);
+      hookupService(key, app.services[key] as HookedService);
     }
   }
 
-  /// Configiures an [Angel] instance to listen for WebSocket connections.
+  /// Configures an [Angel] instance to listen for WebSocket connections.
   Future configureServer(Angel app) async {
     app..container.singleton(this);
 
@@ -320,45 +329,56 @@ class AngelWebSocket {
     if (synchronizer != null) {
       synchronizer.stream.listen((e) => batchEvent(e, notify: false));
     }
+
+    app.shutdownHooks.add((_) => synchronizer?.close());
   }
 
-  /// Handles an incoming HTTP request.
-  Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
-    if (!WebSocketTransformer.isUpgradeRequest(req.io))
-      throw new AngelHttpException.badRequest();
-
-    res
-      ..willCloseItself = true
-      ..end();
-
-    var ws = await WebSocketTransformer.upgrade(req.io);
-    var channel = new IOWebSocketChannel(ws);
-    var socket = new WebSocketContext(channel, req, res);
+  /// Handles an incoming [WebSocketContext].
+  Future handleClient(WebSocketContext socket) async {
     _clients.add(socket);
     await handleConnect(socket);
 
     _onConnection.add(socket);
 
-    req
+    socket.request
       ..properties['socket'] = socket
       ..inject(WebSocketContext, socket);
 
-    ws.listen(
-      (data) {
+    socket.channel.stream.listen(
+          (data) {
         _onData.add(data);
         handleData(socket, data);
       },
       onDone: () {
         _onDisconnect.add(socket);
-        _clients.remove(ws);
+        _clients.remove(socket);
       },
       onError: (e) {
         _onDisconnect.add(socket);
-        _clients.remove(ws);
+        _clients.remove(socket);
       },
       cancelOnError: true,
     );
-    return false;
+  }
+
+  /// Handles an incoming HTTP request.
+  Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
+    if (req is HttpRequestContextImpl) {
+      if (!WebSocketTransformer.isUpgradeRequest(req.io))
+        throw new AngelHttpException.badRequest();
+
+      res
+        ..willCloseItself = true
+        ..end();
+
+      var ws = await WebSocketTransformer.upgrade(req.io);
+      var channel = new IOWebSocketChannel(ws);
+      var socket = new WebSocketContext(channel, req, res);
+      handleClient(socket);
+      return false;
+    } else {
+      throw new ArgumentError('Not an HTTP/1.1 RequestContext: $req');
+    }
   }
 }
 

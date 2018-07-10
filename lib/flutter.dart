@@ -10,13 +10,13 @@ import 'base_websocket_client.dart';
 export 'package:angel_client/angel_client.dart';
 export 'angel_websocket.dart';
 
-final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
+// final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
 /// Queries an Angel server via WebSockets.
 class WebSockets extends BaseWebSocketClient {
   final List<WebSocketsService> _services = [];
 
-  WebSockets(String path) : super(new http.Client(), path);
+  WebSockets(String path) : super(new http.IOClient(), path);
 
   @override
   Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {

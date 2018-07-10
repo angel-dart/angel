@@ -6,8 +6,9 @@ class Game {
 
   const Game({this.playerOne, this.playerTwo});
 
-  factory Game.fromJson(Map data) =>
-      new Game(playerOne: data['playerOne'], playerTwo: data['playerTwo']);
+  factory Game.fromJson(Map data) => new Game(
+      playerOne: data['playerOne'].toString(),
+      playerTwo: data['playerTwo'].toString());
 
   @override
   bool operator ==(other) =>
@@ -16,7 +17,7 @@ class Game {
       other.playerTwo == playerTwo;
 }
 
-const Game JOHN_VS_BOB = const Game(playerOne: 'John', playerTwo: 'Bob');
+const Game johnVsBob = const Game(playerOne: 'John', playerTwo: 'Bob');
 
 @Expose('/game')
 class GameController extends WebSocketController {
@@ -25,6 +26,6 @@ class GameController extends WebSocketController {
   @ExposeWs('search')
   search(WebSocketContext socket) async {
     print('User is searching for a game...');
-    socket.send('searched', JOHN_VS_BOB);
+    socket.send('searched', johnVsBob);
   }
 }

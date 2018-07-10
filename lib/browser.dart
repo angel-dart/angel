@@ -52,7 +52,7 @@ class WebSockets extends BaseWebSocketClient {
 
     sub = window.on[eventName ?? 'token'].listen((e) {
       if (!ctrl.isClosed) {
-        ctrl.add((e as CustomEvent).detail);
+        ctrl.add((e as CustomEvent).detail.toString());
         t.cancel();
         ctrl.close();
         sub.cancel();
@@ -93,7 +93,7 @@ class WebSockets extends BaseWebSocketClient {
 class BrowserWebSocketsService extends WebSocketsService {
   final Type type;
 
-  BrowserWebSocketsService(WebSocketChannel socket, Angel app, String uri,
+  BrowserWebSocketsService(WebSocketChannel socket, WebSockets app, String uri,
       {this.type, AngelDeserializer deserializer})
       : super(socket, app, uri, deserializer: deserializer);
 }

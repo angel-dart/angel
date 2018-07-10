@@ -19,7 +19,7 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 class WebSockets extends BaseWebSocketClient {
   final List<IoWebSocketsService> _services = [];
 
-  WebSockets(String path) : super(new http.Client(), path);
+  WebSockets(String path) : super(new http.IOClient(), path);
 
   @override
   Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
@@ -59,7 +59,7 @@ class WebSockets extends BaseWebSocketClient {
 class IoWebSocketsService extends WebSocketsService {
   final Type type;
 
-  IoWebSocketsService(WebSocketChannel socket, Angel app, String uri, this.type)
+  IoWebSocketsService(WebSocketChannel socket, WebSockets app, String uri, this.type)
       : super(socket, app, uri);
 
   @override
