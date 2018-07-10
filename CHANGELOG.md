@@ -1,3 +1,8 @@
+# 1.1.1+6
+* Fix a small logic bug that prevented `LocalAuthStrategy`
+from correctly propagating the authenticated user when
+using `Basic` auth.
+
 # 1.1.1+5
 * Prevent duplication of cookies.
 * Regenerate the JWT if `tokenCallback` is called.

@@ -61,13 +61,12 @@ class LocalAuthStrategy extends AuthStrategy {
         if (verificationResult == false || verificationResult == null) {
           res
             ..statusCode = 401
-            ..headers[HttpHeaders.WWW_AUTHENTICATE] = 'Basic realm="$realm"'
+            ..headers['www-authenticate'] = 'Basic realm="$realm"'
             ..end();
           return false;
         }
 
-        res.properties['user'] = verificationResult;
-        return true;
+        return verificationResult;
       }
     }
 
@@ -75,8 +74,8 @@ class LocalAuthStrategy extends AuthStrategy {
       await req.parse();
       if (_validateString(req.body[usernameField]?.toString()) &&
           _validateString(req.body[passwordField]?.toString())) {
-        verificationResult =
-            await verifier(req.body[usernameField]?.toString(), req.body[passwordField]?.toString());
+        verificationResult = await verifier(req.body[usernameField]?.toString(),
+            req.body[passwordField]?.toString());
       }
     }
 

@@ -4,6 +4,8 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/common.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
+import 'package:io/ansi.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 class User extends Model {
@@ -21,9 +23,30 @@ main() {
   String url;
 
   setUp(() async {
+    hierarchicalLoggingEnabled = true;
     app = new Angel();
-    angelHttp = new AngelHttp(app, useZone: false);
+    angelHttp = new AngelHttp(app);
     app.use('/users', new TypedService<User>(new MapService()));
+
+    var oldErrorHandler = app.errorHandler;
+    app.errorHandler = (e, req, res) {
+      app.logger.severe(e.message, e, e.stackTrace ?? StackTrace.current);
+      return oldErrorHandler(e, req, res);
+    };
+
+    app.logger = new Logger('angel_auth')
+      ..level = Level.FINEST
+      ..onRecord.listen((rec) {
+        print(rec);
+
+        if (rec.error != null) {
+          print(yellow.wrap(rec.error.toString()));
+        }
+
+        if (rec.stackTrace != null) {
+          print(yellow.wrap(rec.stackTrace.toString()));
+        }
+      });
 
     await app
         .service('users')
@@ -31,7 +54,8 @@ main() {
 
     auth = new AngelAuth<User>();
     auth.serializer = (u) => u.id;
-    auth.deserializer = app.service('users').read;
+    auth.deserializer =
+        (id) async => await app.service('users').read(id) as User;
 
     await app.configure(auth.configureServer);
     app.use(auth.decodeJwt);
@@ -78,7 +102,10 @@ main() {
         body: {'username': 'jdoe1', 'password': 'password'});
     print('Response: ${response.body}');
     expect(response.body, equals('Hello!'));
-  });
+  },
+      skip: Platform.version.contains('2.0.0-dev')
+          ? 'Blocked on https://github.com/dart-lang/sdk/issues/33594'
+          : null);
 
   test('preserve existing user', () async {
     final response = await client.post('$url/existing/foo',
