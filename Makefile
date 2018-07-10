@@ -2,7 +2,13 @@ CXX=clang
 HTTP_PARSER=.dart_tool/build_native/third_party/angel_wings.http_parser
 CXX_INCLUDES=-I$(HTTP_PARSER) -I$(DART_SDK)/include
 
-.PHONY: clean debug
+.PHONY: clean debug macos all
+
+all:
+	printf 'Available targets:\n'\
+	'  * `debug` - Builds a debug library on MacOS\n'\
+	'  * `example` - Runs example/main.dart in LLDB on MacOS\n'\
+	'  * `macos` - Builds a release-mode library on MacOS\n'
 
 clean:
 	find lib -name "*.a" -delete
@@ -11,6 +17,9 @@ clean:
 
 debug:
 	$(MAKE) lib/src/libwings.dylib CXXFLAGS="-g -DDEBUG=1"
+
+macos:
+	$(MAKE) lib/src/libwings.dylib
 
 example: debug
 	lldb -o "target create dart" \

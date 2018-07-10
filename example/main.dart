@@ -5,7 +5,6 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_wings/angel_wings.dart';
 
 main() async {
-  if (false)
   for (int i = 1; i < Platform.numberOfProcessors; i++) {
     var onError = new ReceivePort();
     Isolate.spawn(isolateMain, i, onError: onError.sendPort);
@@ -18,7 +17,7 @@ main() async {
 
 void isolateMain(int id) {
   var app = new Angel();
-  var wings = new AngelWings(app, shared: id > 0, useZone: false);
+  var wings = new AngelWings(app, shared: true, useZone: false);
 
   var old = app.errorHandler;
   app.errorHandler = (e, req, res) {

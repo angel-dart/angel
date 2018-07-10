@@ -1,5 +1,5 @@
 //#include <memory>
-#include <iostream>
+//#include <iostream>
 #include <utility>
 #include <dart_native_api.h>
 #include "wings_thread.h"
@@ -86,11 +86,11 @@ int send_string(http_parser *parser, char *str, size_t length, int code, bool as
     }
     else
     {
-        third.type = Dart_CObject_kExternalTypedData;
-        third.type = Dart_CObject_kExternalTypedData;
-        third.value.as_external_typed_data.type = Dart_TypedData_kUint8;
-        third.value.as_external_typed_data.length = length;
-        third.value.as_external_typed_data.data = (uint8_t *)str;
+        third.type = Dart_CObject_kTypedData;
+        third.type = Dart_CObject_kTypedData;
+        third.value.as_typed_data.type = Dart_TypedData_kUint8;
+        third.value.as_typed_data.length = length;
+        third.value.as_typed_data.values = (uint8_t *)str;
     }
 
     // Post the string back to Dart...
@@ -118,24 +118,24 @@ int send_oncomplete(http_parser *parser, int code)
     Dart_CObject minor{};
     Dart_CObject addr{};
     sockfd.type = command.type = method.type = major.type = minor.type = Dart_CObject_kInt32;
-    addr.type = Dart_CObject_kExternalTypedData;
+    addr.type = Dart_CObject_kTypedData;
     sockfd.value.as_int32 = rq->sock;
     command.value.as_int32 = code;
     method.value.as_int32 = parser->method;
     major.value.as_int32 = parser->http_major;
     minor.value.as_int32 = parser->http_minor;
-    addr.value.as_external_typed_data.type = Dart_TypedData_kUint8;
-    addr.value.as_external_typed_data.length = rq->addr_len;
+    addr.value.as_typed_data.type = Dart_TypedData_kUint8;
+    addr.value.as_typed_data.length = rq->addr_len;
 
     if (rq->ipv6)
     {
         auto *v6 = (sockaddr_in6 *)&rq->addr;
-        addr.value.as_external_typed_data.data = (uint8_t *)v6->sin6_addr.s6_addr;
+        addr.value.as_typed_data.values = (uint8_t *)v6->sin6_addr.s6_addr;
     }
     else
     {
         auto *v4 = (sockaddr_in *)&rq->addr;
-        addr.value.as_external_typed_data.data = (uint8_t *)&v4->sin_addr.s_addr;
+        addr.value.as_typed_data.values = (uint8_t *)&v4->sin_addr.s_addr;
     }
 
     Dart_CObject *list[6]{&sockfd, &command, &method, &major, &minor, &addr};
@@ -151,7 +151,7 @@ int send_oncomplete(http_parser *parser, int code)
 //void handleRequest(const std::shared_ptr<requestInfo> &rq)
 void handleRequest(requestInfo *rq)
 {
-    size_t len = 80 * 1024, nparsed;
+    size_t len = 100 * 1024, nparsed;
     char buf[len];
     ssize_t recved;
     memset(buf, 0, len);
@@ -163,15 +163,15 @@ void handleRequest(requestInfo *rq)
     http_parser_settings settings{};
 
     settings.on_message_begin = [](http_parser *parser) {
-        std::cout << "mb" << std::endl;
+        //std::cout << "mb" << std::endl;
         return send_notification(parser, 0);
     };
 
     settings.on_message_complete = [](http_parser *parser) {
-        std::cout << "mc" << std::endl;
+        //std::cout << "mc" << std::endl;
         send_oncomplete(parser, 1);
         delete (requestInfo *)parser->data;
-        std::cout << "deleted rq!" << std::endl;
+        //std::cout << "deleted rq!" << std::endl;
         return 0;
     };
 
@@ -181,23 +181,23 @@ void handleRequest(requestInfo *rq)
     };
 
     settings.on_header_field = [](http_parser *parser, const char *at, size_t length) {
-        std::cout << "hf" << std::endl;
+        //std::cout << "hf" << std::endl;
         return send_string(parser, (char *)at, length, 3);
     };
 
     settings.on_header_value = [](http_parser *parser, const char *at, size_t length) {
-        std::cout << "hv" << std::endl;
+        //std::cout << "hv" << std::endl;
         return send_string(parser, (char *)at, length, 4);
     };
 
     settings.on_body = [](http_parser *parser, const char *at, size_t length) {
-        std::cout << "body" << std::endl;
+        //std::cout << "body" << std::endl;
         return send_string(parser, (char *)at, length, 5, true);
     };
 
     unsigned int isUpgrade = 0;
 
-    std::cout << "start" << std::endl;
+    //std::cout << "start" << std::endl;
     while ((recved = recv(rq->sock, buf, len, 0)) > 0)
     {
         if (isUpgrade)
@@ -217,6 +217,7 @@ void handleRequest(requestInfo *rq)
             }
             else if (nparsed != recved)
             {
+                //std::cout << "Hm what" << std::endl;
                 close(rq->sock);
                 return;
             }

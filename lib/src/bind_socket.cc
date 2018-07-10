@@ -34,12 +34,11 @@ void wings_BindSocket(Dart_NativeArguments arguments)
     std::string addressStringInstance(addressString);
     std::lock_guard<std::mutex> lock(serverInfoVectorMutex);
 
-#if __APPLE__
-    if (false)
-#else
+
     if (shared)
-#endif
     {
+        #if __APPLE__
+        #else
         for (unsigned long i = 0; i < serverInfoVector.size(); i++)
         {
             WingsServerInfo *server_info = serverInfoVector.at(i);
@@ -50,6 +49,7 @@ void wings_BindSocket(Dart_NativeArguments arguments)
                 break;
             }
         }
+        #endif
     }
 
     if (existingIndex > -1)

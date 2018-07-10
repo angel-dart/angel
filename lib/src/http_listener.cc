@@ -1,6 +1,6 @@
 #include <dart_native_api.h>
 #include <thread>
-#include <iostream>
+//#include <iostream>
 #include <cstdio>
 #include "wings.h"
 #include "wings_thread.h"
@@ -56,9 +56,9 @@ void handleMessage(Dart_Port destPortId, Dart_CObject *message)
     else
     {
         // This is either a send or close message.
-        std::cout << "NVALUES: " << message->value.as_array.length << std::endl;
+        //std::cout << "NVALUES: " << message->value.as_array.length << std::endl;
         int sockfd = (int)get_int(message->value.as_array.values[0]);
-        printf("FD: %d\n", sockfd);
+        //printf("FD: %d\n", sockfd);
 
         if (message->value.as_array.length >= 2)
         {
@@ -69,30 +69,30 @@ void handleMessage(Dart_Port destPortId, Dart_CObject *message)
 
                 if (msg->type == Dart_CObject_kExternalTypedData)
                 {
-                    std::cout << "ext typed data" << std::endl;
-                    printf("Length: %ld\n", msg->value.as_external_typed_data.length);
-                    std::cout << "ptr: " << msg->value.as_typed_data.values << std::endl;
+                    //std::cout << "ext typed data" << std::endl;
+                    //printf("Length: %ld\n", msg->value.as_external_typed_data.length);
+                    //std::cout << "ptr: " << msg->value.as_typed_data.values << std::endl;
                     write(sockfd, msg->value.as_external_typed_data.data, (size_t)msg->value.as_external_typed_data.length);
                 }
                 else if (msg->type == Dart_CObject_kTypedData)
                 {
-                    std::cout << "regular typed data" << std::endl;
-                    printf("Length: %ld\n", msg->value.as_typed_data.length);
+                    //std::cout << "regular typed data" << std::endl;
+                    //printf("Length: %ld\n", msg->value.as_typed_data.length);
                     write(sockfd, msg->value.as_typed_data.values, (size_t)msg->value.as_typed_data.length);
                 }
                 else
                 {
-                    std::cout << "unknown type: " << ((Dart_CObject_Type) msg->type) << std::endl;
+                    //std::cout << "unknown type: " << ((Dart_CObject_Type) msg->type) << std::endl;
                 }
             }
             else
             {
-                std::cout << "null msg!!!" << std::endl;
+                //std::cout << "null msg!!!" << std::endl;
             }
         }
         else
         {
-            printf("Close!\n");
+            //printf("Close!\n");
             close(sockfd);
         }
     }

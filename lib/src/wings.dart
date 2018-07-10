@@ -89,12 +89,13 @@ class AngelWings {
 
   static SendPort _startHttpListener() native "StartHttpListener";
 
-  final Pool _pool = new Pool(1);
+  //final Pool _pool = new Pool(1);
 
-  static void __send(int sockfd, Uint8List data) native "Send";
+  static void _send(int sockfd, Uint8List data) native "Send";
 
-  static void __closeSocket(int sockfd) native "CloseSocket";
+  static void _closeSocket(int sockfd) native "CloseSocket";
 
+  /*
   void _send(int sockfd, Uint8List data) {
     // _pool.withResource(() {
     print('Sending ${[sockfd, data]}');
@@ -113,7 +114,7 @@ class AngelWings {
     }
     //});
     //_pool.withResource(() => __closeSocket(sockfd));
-  }
+  }*/
 
   AngelWings(this.app, {this.shared: false, this.useZone: true}) {
     _recv.handler = _handleMessage;
@@ -164,7 +165,7 @@ class AngelWings {
   }
 
   void _handleMessage(x) {
-    print('INPUT: $x');
+    //print('INPUT: $x');
     if (x is String) {
       close();
       throw new StateError(x);
@@ -177,11 +178,11 @@ class AngelWings {
 
       switch (command) {
         case messageBegin:
-          print('BEGIN $sockfd');
+          //print('BEGIN $sockfd');
           _staging[sockfd] = new WingsRequestContext._(this, sockfd, app);
           break;
         case messageComplete:
-          print('$sockfd in $_staging???');
+          //print('$sockfd in $_staging???');
           var rq = _staging.remove(sockfd);
           if (rq != null) {
             rq._method = methodToString(x[2] as int);
@@ -218,13 +219,13 @@ class AngelWings {
   }
 
   Future _handleRequest(WingsRequestContext req) {
-    print('req: $req');
+    //print('req: $req');
     if (req == null) return new Future.value();
     var res = new WingsResponseContext._(req)
       ..app = app
       ..serializer = (app.serializer ?? god.serialize)
       ..encoders.addAll(app.encoders);
-    print('Handling fd: ${req._sockfd}');
+    //print('Handling fd: ${req._sockfd}');
 
     handle() {
       var path = req.path;
@@ -257,7 +258,7 @@ class AngelWings {
 
       Future<bool> Function() runPipeline;
 
-      print('Pipeline: $pipeline');
+      //print('Pipeline: $pipeline');
       for (var handler in pipeline) {
         if (handler == null) break;
 
@@ -316,7 +317,7 @@ class AngelWings {
             return handleAngelHttpException(e, trace, req, res);
           }).catchError((e, StackTrace st) {
             var trace = new Trace.from(st ?? StackTrace.current).terse;
-            _closeSocket(req);
+            AngelWings._closeSocket(req._sockfd);
             // Ideally, we won't be in a position where an absolutely fatal error occurs,
             // but if so, we'll need to log it.
             if (app.logger != null) {
@@ -354,7 +355,7 @@ class AngelWings {
         b.writeln();
 
         _send(req._sockfd, _coerceUint8List(b.toString().codeUnits));
-        _closeSocket(req);
+        AngelWings._closeSocket(req._sockfd);
       } finally {
         return null;
       }
@@ -379,9 +380,9 @@ class AngelWings {
   /// Sends a response.
   Future sendResponse(WingsRequestContext req, WingsResponseContext res,
       {bool ignoreFinalizers: false}) {
-    print('Closing: ${req._sockfd}');
+    //print('Closing: ${req._sockfd}');
     if (res.willCloseItself) return new Future.value();
-    print('Not self-closing: ${req._sockfd}');
+    //print('Not self-closing: ${req._sockfd}');
 
     Future finalizers = ignoreFinalizers == true
         ? new Future.value()
@@ -399,7 +400,7 @@ class AngelWings {
     //request.response.headers.chunkedTransferEncoding = res.chunked ?? true;
     // TODO: Is there a need to support this?
 
-    print('Buffer: ${res.buffer}');
+    //print('Buffer: ${res.buffer}');
     List<int> outputBuffer = res.buffer.toBytes();
 
     if (res.encoders.isNotEmpty) {
@@ -437,7 +438,7 @@ class AngelWings {
       }
     }
 
-    print('Create string buffer');
+    //print('Create string buffer');
     var b = new StringBuffer();
     b.writeln('HTTP/1.1 ${res.statusCode}');
 
@@ -458,20 +459,20 @@ class AngelWings {
     }
 
     b.writeln();
-    print(b);
+    //print(b);
 
     var bb = new BytesBuilder(copy: false)
       ..add(b.toString().codeUnits)
       ..add(outputBuffer);
     var buf = _coerceUint8List(bb.takeBytes());
-    print('Output: $buf');
+    //print('Output: $buf');
 
     return finalizers.then((_) {
-      print('A');
+      //print('A');
       _send(req._sockfd, buf);
-      print('B');
-      _closeSocket(req);
-      print('C');
+      //print('B');
+      AngelWings._closeSocket(req._sockfd);
+      //print('C');
 
       if (req.injections.containsKey(PoolResource)) {
         req.injections[PoolResource].release();
