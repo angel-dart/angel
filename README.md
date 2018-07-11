@@ -130,6 +130,7 @@ about the serialized names of keys on your model class.
 Currently, these serialization methods are supported:
   * to `Map`
   * to JSON
+  * to TypeScript definitions
   
 You can customize these by means of `serializers`:
 
