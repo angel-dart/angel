@@ -25,7 +25,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
         '/', (RequestContext req, ResponseContext res) => res.render('hello'));
 
     // Mount static server at web in development.
-    // This variant of `VirtualDirectory` also sends `Cache-Control` headers.
+    // The `CachingVirtualDirectory` variant of `VirtualDirectory` also sends `Cache-Control` headers.
     //
     // In production, however, prefer serving static files through NGINX or a
     // similar reverse proxy.
@@ -33,7 +33,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     // Read the following two sources for documentation:
     // * https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae
     // * https://github.com/angel-dart/static
-    var vDir = new CachingVirtualDirectory(
+    var vDir = new VirtualDirectory(
       app,
       fileSystem,
       source: fileSystem.directory('web'),
