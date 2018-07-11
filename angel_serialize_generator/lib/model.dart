@@ -11,7 +11,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
 
-    var ctx = await buildContext(element, annotation, buildStep,
+    var ctx = await buildContext(element as ClassElement, annotation, buildStep,
         await buildStep.resolver, true, autoIdAndDateFields != false);
 
     var lib = new Library((b) {
@@ -26,7 +26,9 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   void generateClass(
       BuildContext ctx, LibraryBuilder file, ConstantReader annotation) {
     file.body.add(new Class((clazz) {
-      clazz..name = ctx.modelClassNameRecase.pascalCase;
+      clazz
+        ..name = ctx.modelClassNameRecase.pascalCase
+        ..annotations.add(refer('generatedSerializable'));
 
       if (shouldBeConstant(ctx)) {
         clazz.implements.add(new Reference(ctx.originalClassName));
@@ -122,8 +124,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         if (!shouldBeConstant(ctx) ||
             ctx.clazz.unnamedConstructor?.isConst == true)
           constructor.initializers.add(new Code(
-              'super(${ctx.constructorParameters.map((p) => p.name).join(
-                  ',')})'));
+              'super(${ctx.constructorParameters.map((p) => p.name).join(',')})'));
       }
     }));
   }
@@ -172,30 +173,32 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   static String generateEquality(DartType type, [bool nullable = false]) {
-//if (type is! InterfaceType) return 'const DefaultEquality()';
-    var it = type as InterfaceType;
-    if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
-      if (it.typeParameters.length == 1) {
-        var eq = generateEquality(it.typeArguments[0]);
-        return 'const ListEquality<${it.typeArguments[0].name}>($eq)';
-      } else
-        return 'const ListEquality<${it.typeArguments[0].name}>()';
-    } else if (const TypeChecker.fromRuntime(Map).isAssignableFromType(type)) {
-      if (it.typeParameters.length == 2) {
-        var keq = generateEquality(it.typeArguments[0]),
-            veq = generateEquality(it.typeArguments[1]);
-        return 'const MapEquality<${it.typeArguments[0].name}, ${it
-            .typeArguments[1].name}>(keys: $keq, values: $veq)';
-      } else
-        return 'const MapEquality()<${it.typeArguments[0].name}, ${it
-            .typeArguments[1].name}>';
-    }
+    if (type is InterfaceType) {
+      if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
+        if (type.typeParameters.length == 1) {
+          var eq = generateEquality(type.typeArguments[0]);
+          return 'const ListEquality<${type.typeArguments[0].name}>($eq)';
+        } else
+          return 'const ListEquality<${type.typeArguments[0].name}>()';
+      } else if (const TypeChecker.fromRuntime(Map)
+          .isAssignableFromType(type)) {
+        if (type.typeParameters.length == 2) {
+          var keq = generateEquality(type.typeArguments[0]),
+              veq = generateEquality(type.typeArguments[1]);
+          return 'const MapEquality<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>(keys: $keq, values: $veq)';
+        } else
+          return 'const MapEquality()<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>';
+      }
 
-    return nullable ? null : 'const DefaultEquality<${type.name}>()';
+      return nullable ? null : 'const DefaultEquality<${type.name}>()';
+    } else {
+      return 'const DefaultEquality()';
+    }
   }
 
   static String Function(String, String) generateComparator(DartType type) {
-    if (type is! InterfaceType) return (a, b) => '$a == $b';
+    if (type is! InterfaceType || type.name == 'dynamic')
+      return (a, b) => '$a == $b';
     var eq = generateEquality(type, true);
     if (eq == null) return (a, b) => '$a == $b';
     return (a, b) => '$eq.equals($a, $b)';

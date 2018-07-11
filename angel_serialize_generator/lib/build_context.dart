@@ -19,6 +19,9 @@ const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
 const TypeChecker serializableTypeChecker =
     const TypeChecker.fromRuntime(Serializable);
 
+const TypeChecker generatedSerializableTypeChecker =
+    const TypeChecker.fromRuntime(GeneratedSerializable);
+
 /// Create a [BuildContext].
 Future<BuildContext> buildContext(
     ClassElement clazz,
@@ -43,6 +46,11 @@ Future<BuildContext> buildContext(
   List<String> fieldNames = [];
 
   for (var field in clazz.fields) {
+    // Skip private fields
+    if (field.name.startsWith('_')) {
+      continue;
+    }
+
     if (field.getter != null &&
         (field.setter != null || field.getter.isAbstract)) {
       var el = field.setter == null ? field.getter : field;
@@ -80,8 +88,7 @@ Future<BuildContext> buildContext(
       if (required != null) {
         var cr = new ConstantReader(required);
         var reason = cr.peek('reason')?.stringValue ??
-            "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx
-                .modelClassName}.";
+            "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";
         ctx.requiredFields[field.name] = reason;
       }
 

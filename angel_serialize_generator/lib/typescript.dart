@@ -15,7 +15,7 @@ class TypeScriptDefinitionBuilder implements Builder {
   Future<String> compileToTypeScriptType(
       BuildContext ctx,
       String fieldName,
-      InterfaceType type,
+      DartType type,
       List<String> refs,
       List<CodeBuffer> ext,
       BuildStep buildStep) async {
@@ -33,18 +33,20 @@ class TypeScriptDefinitionBuilder implements Builder {
         typeScriptType = tsType;
     });
 
-    if (isListModelType(type)) {
-      var arg = await compileToTypeScriptType(
-          ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
-      typeScriptType = '$arg[]';
-    } else if (const TypeChecker.fromRuntime(Map).isAssignableFromType(type) &&
-        type.typeArguments.length == 2) {
-      var key = await compileToTypeScriptType(
-          ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
-      var value = await compileToTypeScriptType(
-          ctx, fieldName, type.typeArguments[1], refs, ext, buildStep);
-      //var modelType = type.typeArguments[1];
-      /*var innerCtx = await buildContext(
+    if (type is InterfaceType) {
+      if (isListOfModelType(type)) {
+        var arg = await compileToTypeScriptType(
+            ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
+        typeScriptType = '$arg[]';
+      } else if (const TypeChecker.fromRuntime(Map)
+              .isAssignableFromType(type) &&
+          type.typeArguments.length == 2) {
+        var key = await compileToTypeScriptType(
+            ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
+        var value = await compileToTypeScriptType(
+            ctx, fieldName, type.typeArguments[1], refs, ext, buildStep);
+        //var modelType = type.typeArguments[1];
+        /*var innerCtx = await buildContext(
         modelType.element,
         new ConstantReader(
             serializableTypeChecker.firstAnnotationOf(modelType.element)),
@@ -54,50 +56,52 @@ class TypeScriptDefinitionBuilder implements Builder {
         true,
       );*/
 
-      typeScriptType = ctx.modelClassNameRecase.pascalCase +
-          new ReCase(fieldName).pascalCase;
+        typeScriptType = ctx.modelClassNameRecase.pascalCase +
+            new ReCase(fieldName).pascalCase;
 
-      ext.add(new CodeBuffer()
-        ..writeln('interface $typeScriptType {')
-        ..indent()
-        ..writeln('[key: $key]: $value;')
-        ..outdent()
-        ..writeln('}'));
-    } else if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
-      if (type.typeArguments.length == 0)
-        typeScriptType = 'any[]';
-      else {
-        var arg = await compileToTypeScriptType(
-            ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
-        typeScriptType = '$arg[]';
+        ext.add(new CodeBuffer()
+          ..writeln('interface $typeScriptType {')
+          ..indent()
+          ..writeln('[key: $key]: $value;')
+          ..outdent()
+          ..writeln('}'));
+      } else if (const TypeChecker.fromRuntime(List)
+          .isAssignableFromType(type)) {
+        if (type.typeArguments.length == 0)
+          typeScriptType = 'any[]';
+        else {
+          var arg = await compileToTypeScriptType(
+              ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
+          typeScriptType = '$arg[]';
+        }
+      } else if (isModelClass(type)) {
+        var sourcePath = buildStep.inputId.uri.toString();
+        var targetPath = type.element.source.uri.toString();
+
+        if (!p.equals(sourcePath, targetPath)) {
+          //var relative = p.relative(targetPath, from: sourcePath);
+          var relative = (p.dirname(targetPath) == p.dirname(sourcePath))
+              ? p.basename(targetPath)
+              : p.relative(targetPath, from: sourcePath);
+          var parent = p.dirname(relative);
+          var filename =
+              p.setExtension(p.basenameWithoutExtension(relative), '.d.ts');
+          relative = p.joinAll(p.split(parent).toList()..add(filename));
+          var ref = '/// <reference path="$relative" />';
+          if (!refs.contains(ref)) refs.add(ref);
+        }
+
+        var ctx = await buildContext(
+          type.element,
+          new ConstantReader(
+              serializableTypeChecker.firstAnnotationOf(type.element)),
+          buildStep,
+          buildStep.resolver,
+          autoSnakeCaseNames,
+          true,
+        );
+        typeScriptType = ctx.modelClassNameRecase.pascalCase;
       }
-    } else if (isModelClass(type)) {
-      var sourcePath = buildStep.inputId.uri.toString();
-      var targetPath = type.element.source.uri.toString();
-
-      if (!p.equals(sourcePath, targetPath)) {
-        //var relative = p.relative(targetPath, from: sourcePath);
-        var relative = (p.dirname(targetPath) == p.dirname(sourcePath))
-            ? p.basename(targetPath)
-            : p.relative(targetPath, from: sourcePath);
-        var parent = p.dirname(relative);
-        var filename =
-            p.setExtension(p.basenameWithoutExtension(relative), '.d.ts');
-        relative = p.joinAll(p.split(parent).toList()..add(filename));
-        var ref = '/// <reference path="$relative" />';
-        if (!refs.contains(ref)) refs.add(ref);
-      }
-
-      var ctx = await buildContext(
-        type.element,
-        new ConstantReader(
-            serializableTypeChecker.firstAnnotationOf(type.element)),
-        buildStep,
-        buildStep.resolver,
-        autoSnakeCaseNames,
-        true,
-      );
-      typeScriptType = ctx.modelClassNameRecase.pascalCase;
     }
 
     return typeScriptType;
@@ -133,7 +137,7 @@ class TypeScriptDefinitionBuilder implements Builder {
       }
 
       contexts.add(await buildContext(
-          element.element,
+          element.element as ClassElement,
           element.annotation,
           buildStep,
           await buildStep.resolver,

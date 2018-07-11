@@ -11,7 +11,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
     if (element.kind != ElementKind.CLASS)
       throw 'Only classes can be annotated with a @Serializable() annotation.';
 
-    var ctx = await buildContext(element, annotation, buildStep,
+    var ctx = await buildContext(element as ClassElement, annotation, buildStep,
         await buildStep.resolver, true, autoSnakeCaseNames != false);
 
     var serializers = annotation.peek('serializers')?.listValue ?? [];
@@ -109,7 +109,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
 
-          if (isListModelType(t)) {
+          if (isListOfModelType(t)) {
             //var rc = new ReCase(t.typeArguments[0].name);
             serializedRepresentation = '''
             model.${field.name}
@@ -191,13 +191,13 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
         if (i++ > 0) buf.write(', ');
 
-        String deserializedRepresentation = "map['$alias'] as ${typeToString(
-            field.type)}";
+        String deserializedRepresentation =
+            "map['$alias'] as ${typeToString(field.type)}";
 
         // Deserialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
           deserializedRepresentation = "map['$alias'] != null ? "
-              "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias']))"
+              "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias'].toString()))"
               " : null";
 
         // Serialize model classes via `XSerializer.toMap`
@@ -209,7 +209,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
 
-          if (isListModelType(t)) {
+          if (isListOfModelType(t)) {
             var rc = new ReCase(t.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
                 " ? new List.unmodifiable(((map['$alias'] as Iterable)"
@@ -253,6 +253,20 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       clazz
         ..abstract = true
         ..name = '${ctx.modelClassNameRecase.pascalCase}Fields';
+
+      clazz.fields.add(new Field((b) {
+        b
+          ..static = true
+          ..modifier = FieldModifier.constant
+          ..type = new TypeReference((b) => b
+            ..symbol = 'List'
+            ..types.add(refer('String')))
+          ..name = 'allFields'
+          ..assignment = literalConstList(
+                  ctx.fields.map((f) => refer(f.name)).toList(),
+                  refer('String'))
+              .code;
+      }));
 
       for (var field in ctx.fields) {
         clazz.fields.add(new Field((b) {

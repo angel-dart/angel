@@ -3,9 +3,10 @@
 part of 'with_enum.dart';
 
 // **************************************************************************
-// Generator: JsonModelGenerator
+// JsonModelGenerator
 // **************************************************************************
 
+@generatedSerializable
 class WithEnum implements _WithEnum {
   const WithEnum({this.type, List<int> this.finalList});
 

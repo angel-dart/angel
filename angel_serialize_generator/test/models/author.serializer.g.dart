@@ -32,12 +32,12 @@ abstract class AuthorSerializer {
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
-                : DateTime.parse(map['created_at']))
+                : DateTime.parse(map['created_at'].toString()))
             : null,
         updatedAt: map['updated_at'] != null
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
-                : DateTime.parse(map['updated_at']))
+                : DateTime.parse(map['updated_at'].toString()))
             : null);
   }
 
@@ -100,12 +100,12 @@ abstract class LibrarySerializer {
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
-                : DateTime.parse(map['created_at']))
+                : DateTime.parse(map['created_at'].toString()))
             : null,
         updatedAt: map['updated_at'] != null
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
-                : DateTime.parse(map['updated_at']))
+                : DateTime.parse(map['updated_at'].toString()))
             : null);
   }
 
@@ -148,12 +148,12 @@ abstract class BookmarkSerializer {
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
-                : DateTime.parse(map['created_at']))
+                : DateTime.parse(map['created_at'].toString()))
             : null,
         updatedAt: map['updated_at'] != null
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
-                : DateTime.parse(map['updated_at']))
+                : DateTime.parse(map['updated_at'].toString()))
             : null);
   }
 

@@ -6,6 +6,7 @@ part of angel_serialize.test.models.author;
 // JsonModelGenerator
 // **************************************************************************
 
+@generatedSerializable
 class Author extends _Author {
   Author(
       {this.id,
@@ -87,6 +88,7 @@ class Author extends _Author {
   }
 }
 
+@generatedSerializable
 class Library extends _Library {
   Library(
       {this.id, Map<String, Book> collection, this.createdAt, this.updatedAt})
@@ -132,6 +134,7 @@ class Library extends _Library {
   }
 }
 
+@generatedSerializable
 class Bookmark extends _Bookmark {
   Bookmark(Book book,
       {this.id,

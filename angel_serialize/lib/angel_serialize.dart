@@ -37,6 +37,13 @@ class Serializable {
 
 const Serializable serializable = const Serializable();
 
+/// Used by `package:angel_serialize_generator` to reliably identify generated models.
+class GeneratedSerializable {
+  const GeneratedSerializable();
+}
+
+const GeneratedSerializable generatedSerializable = const GeneratedSerializable();
+
 /// The supported serialization types.
 abstract class Serializers {
   /// All supported serialization types.

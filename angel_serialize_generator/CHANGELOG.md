@@ -1,3 +1,11 @@
+# 2.0.10
+* Generate `XFields.allFields` constant.
+* No longer breaks in cases where `dynamic` is present.
+* Call `toJson` in `toMap` on nested models.
+* Never generate named parameters from private fields.
+* Use the new `@generatedSerializable` to *always* find generated
+models.
+
 # 2.0.9+4
 * Remove `defaults` in `build.yaml`.
 

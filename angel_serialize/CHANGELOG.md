@@ -1,3 +1,6 @@
+# 2.0.4
+* Added `generatedSerializable`.
+
 # 2.0.3
 * Increased the upper SDK boundary.
 

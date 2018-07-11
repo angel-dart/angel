@@ -19,13 +19,14 @@ targets:
   _book:
     sources:
       - "test/models/book.dart"
+      - "test/models/game_pad_button.dart"
       - "test/models/with_enum.dart"
   _typescript_definition:
     sources:
-        - "lib/*.dart"
+        - "test/*.dart"
   $default:
     dependencies:
       - ":_book"
     sources:
-      - "lib/*.dart"
       - "test/models/author.dart"
+      - "test/models/game_pad.dart"

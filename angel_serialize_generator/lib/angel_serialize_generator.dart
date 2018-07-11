@@ -53,7 +53,17 @@ TypeReference convertTypeReference(DartType t) {
 bool isModelClass(DartType t) {
   if (t == null) return false;
 
-  if (serializableTypeChecker.hasAnnotationOf(t.element)) return true;
+  if (serializableTypeChecker.hasAnnotationOf(t.element)) {
+    return true;
+  }
+
+  if (generatedSerializableTypeChecker.hasAnnotationOf(t.element)) {
+    return true;
+  }
+
+  if (const TypeChecker.fromRuntime(Model).isAssignableFromType(t)) {
+    return true;
+  }
 
   if (t is InterfaceType) {
     return isModelClass(t.superclass);
@@ -76,7 +86,7 @@ bool isEnumType(DartType t) {
 }
 
 /// Determines if a [DartType] is a `List` with the first type argument being a `Model`.
-bool isListModelType(InterfaceType t) {
+bool isListOfModelType(InterfaceType t) {
   return const TypeChecker.fromRuntime(List).isAssignableFromType(t) &&
       t.typeArguments.length == 1 &&
       isModelClass(t.typeArguments[0]);
@@ -89,7 +99,8 @@ bool isMapToModelType(InterfaceType t) {
       isModelClass(t.typeArguments[1]);
 }
 
-bool isAssignableToModel(DartType type) => const TypeChecker.fromRuntime(Model).isAssignableFromType(type);
+bool isAssignableToModel(DartType type) =>
+    const TypeChecker.fromRuntime(Model).isAssignableFromType(type);
 
 /// Compute a [String] representation of a [type].
 String typeToString(DartType type) {
