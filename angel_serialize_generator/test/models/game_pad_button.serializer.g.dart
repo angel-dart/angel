@@ -21,6 +21,8 @@ abstract class GamepadButtonSerializer {
 }
 
 abstract class GamepadButtonFields {
+  static const List<String> allFields = const <String>[name, radius];
+
   static const String name = 'name';
 
   static const String radius = 'radius';

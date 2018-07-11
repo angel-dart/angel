@@ -42,7 +42,8 @@ class GeneratedSerializable {
   const GeneratedSerializable();
 }
 
-const GeneratedSerializable generatedSerializable = const GeneratedSerializable();
+const GeneratedSerializable generatedSerializable =
+    const GeneratedSerializable();
 
 /// The supported serialization types.
 abstract class Serializers {

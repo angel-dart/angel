@@ -30,6 +30,8 @@ abstract class WithEnumSerializer {
 }
 
 abstract class WithEnumFields {
+  static const List<String> allFields = const <String>[type, finalList];
+
   static const String type = 'type';
 
   static const String finalList = 'final_list';

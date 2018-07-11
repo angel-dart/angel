@@ -82,6 +82,11 @@ The following files will be generated:
   * `book.g.dart`
   * `book.serializer.g.dart`
   
+Producing these classes:
+  * `Book`: Extends or implements `_Book`; may be `const`-enabled.
+  * `BookSerializer`: static functionality for serializing `Book` models.
+  * `BookFields`: The names of all fields from the `Book` model, statically-available.
+  
 # Serialization
   
 You can use the generated files as follows:

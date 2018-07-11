@@ -29,6 +29,8 @@ abstract class GamepadSerializer {
 }
 
 abstract class GamepadFields {
+  static const List<String> allFields = const <String>[buttons, dynamicMap];
+
   static const String buttons = 'buttons';
 
   static const String dynamicMap = 'dynamic_map';

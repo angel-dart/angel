@@ -7,9 +7,10 @@ part of 'game_pad.dart';
 // **************************************************************************
 
 @generatedSerializable
-class Gamepad implements _Gamepad {
-  const Gamepad(
-      {List<GamepadButton> this.buttons, Map<String, dynamic> this.dynamicMap});
+class Gamepad extends _Gamepad {
+  Gamepad({List<GamepadButton> buttons, Map<String, dynamic> dynamicMap})
+      : this.buttons = new List.unmodifiable(buttons ?? []),
+        this.dynamicMap = new Map.unmodifiable(dynamicMap ?? {});
 
   @override
   final List<GamepadButton> buttons;

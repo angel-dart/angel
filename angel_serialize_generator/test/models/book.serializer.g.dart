@@ -47,6 +47,18 @@ abstract class BookSerializer {
 }
 
 abstract class BookFields {
+  static const List<String> allFields = const <String>[
+    id,
+    author,
+    title,
+    description,
+    pageCount,
+    notModels,
+    camelCaseString,
+    createdAt,
+    updatedAt
+  ];
+
   static const String id = 'id';
 
   static const String author = 'author';

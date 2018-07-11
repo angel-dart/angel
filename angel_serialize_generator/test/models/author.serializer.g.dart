@@ -66,6 +66,18 @@ abstract class AuthorSerializer {
 }
 
 abstract class AuthorFields {
+  static const List<String> allFields = const <String>[
+    id,
+    name,
+    age,
+    books,
+    newestBook,
+    secret,
+    obscured,
+    createdAt,
+    updatedAt
+  ];
+
   static const String id = 'id';
 
   static const String name = 'name';
@@ -125,6 +137,13 @@ abstract class LibrarySerializer {
 }
 
 abstract class LibraryFields {
+  static const List<String> allFields = const <String>[
+    id,
+    collection,
+    createdAt,
+    updatedAt
+  ];
+
   static const String id = 'id';
 
   static const String collection = 'collection';
@@ -177,6 +196,15 @@ abstract class BookmarkSerializer {
 }
 
 abstract class BookmarkFields {
+  static const List<String> allFields = const <String>[
+    id,
+    history,
+    page,
+    comment,
+    createdAt,
+    updatedAt
+  ];
+
   static const String id = 'id';
 
   static const String history = 'history';
