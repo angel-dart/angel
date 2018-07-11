@@ -110,15 +110,17 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           var t = field.type as InterfaceType;
 
           if (isListModelType(t)) {
-            var rc = new ReCase(t.typeArguments[0].name);
-            serializedRepresentation = 'model.${field.name}?.map(${rc
-                .pascalCase}Serializer.toMap)?.toList()';
+            //var rc = new ReCase(t.typeArguments[0].name);
+            serializedRepresentation = '''
+            model.${field.name}
+              ?.map((m) => m.toJson())
+              ?.toList()''';
           } else if (isMapToModelType(t)) {
             var rc = new ReCase(t.typeArguments[1].name);
             serializedRepresentation =
                 '''model.${field.name}.keys?.fold({}, (map, key) {
-              return map..[key] = ${serializerToMap(
-                rc, 'model.${field.name}[key]')};
+              return map..[key] =
+              ${serializerToMap(rc, 'model.${field.name}[key]')};
             })''';
           } else if (t.element.isEnum) {
             serializedRepresentation = '''
@@ -202,7 +204,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         else if (isModelClass(field.type)) {
           var rc = new ReCase(field.type.name);
           deserializedRepresentation = "map['$alias'] != null"
-              " ? ${rc.pascalCase}Serializer.fromMap(map['$alias'])"
+              " ? ${rc.pascalCase}Serializer.fromMap(map['$alias'] as Map)"
               " : null";
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
@@ -227,11 +229,11 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           } else if (t.element.isEnum) {
             deserializedRepresentation = '''
             map['$alias'] is ${t.name}
-              ? map['$alias']
+              ? (map['$alias'] as ${t.name})
               :
               (
                 map['$alias'] is int
-                ? ${t.name}.values[map['$alias']]
+                ? ${t.name}.values[map['$alias'] as int]
                 : null
               )
             ''';

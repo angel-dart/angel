@@ -1,3 +1,12 @@
+# 2.0.9+4
+* Remove `defaults` in `build.yaml`.
+
+# 2.0.9+3
+* Fix a cast error when self-referencing nested list expressions.
+
+# 2.0.9+2
+* Fix previously unseen cast errors with enums.
+
 # 2.0.9+1
 * Fix a cast error when deserializing nested model classes.
 

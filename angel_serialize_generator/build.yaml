@@ -15,10 +15,6 @@ builders:
         - ".d.ts"
     required_inputs:
       - .dart
-    defaults:
-      generate_for:
-        - "lib/src/models/**.dart"
-        - "test/**.dart"
 targets:
   _book:
     sources:

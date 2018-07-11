@@ -10,8 +10,10 @@ abstract class WithEnumSerializer {
   static WithEnum fromMap(Map map) {
     return new WithEnum(
         type: map['type'] is WithEnumType
-            ? map['type']
-            : (map['type'] is int ? WithEnumType.values[map['type']] : null),
+            ? (map['type'] as WithEnumType)
+            : (map['type'] is int
+                ? WithEnumType.values[map['type'] as int]
+                : null),
         finalList: map['final_list'] as List<int>);
   }
 

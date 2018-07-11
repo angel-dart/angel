@@ -26,7 +26,7 @@ abstract class AuthorSerializer {
                 .map(BookSerializer.fromMap))
             : null,
         newestBook: map['newest_book'] != null
-            ? BookSerializer.fromMap(map['newest_book'])
+            ? BookSerializer.fromMap(map['newest_book'] as Map)
             : null,
         obscured: map['obscured'] as String,
         createdAt: map['created_at'] != null
@@ -57,7 +57,7 @@ abstract class AuthorSerializer {
       'id': model.id,
       'name': model.name,
       'age': model.age,
-      'books': model.books?.map(BookSerializer.toMap)?.toList(),
+      'books': model.books?.map((m) => m.toJson())?.toList(),
       'newest_book': BookSerializer.toMap(model.newestBook),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
