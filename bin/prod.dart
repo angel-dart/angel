@@ -1,4 +1,4 @@
-import 'dart:io' hide FileMode;
+import 'dart:io';
 import 'dart:isolate';
 import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
