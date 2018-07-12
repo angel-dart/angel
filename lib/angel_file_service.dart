@@ -19,6 +19,11 @@ class JsonFileService extends Service {
             allowQuery: allowQuery != false);
   }
 
+  Map<String, dynamic> _coerceStringDynamic(Map m) {
+    return m.keys.fold<Map<String, dynamic>>(
+        <String, dynamic>{}, (out, k) => out..[k.toString()] = m[k]);
+  }
+
   Future _load() {
     return _mutex.withResource(() async {
       if (!await file.exists()) await file.writeAsString(json.encode([]));
@@ -32,18 +37,10 @@ class JsonFileService extends Service {
 
         var contents = await file.readAsString();
 
-        try {
-          var list = json.decode(contents) as Iterable;
-          _store.items.clear(); // Clear exist in-memory copy
-          _store.items.addAll(list.map((x) =>
-              _revive(x) as Map<String, dynamic>)); // Insert all new entries
-        } catch (e) {
-          if (_store.app is Angel) {
-            (_store.app as Angel)
-                .logger
-                .warning('WARNING: Failed to reload contents of ${file.path}.');
-          }
-        }
+        var list = json.decode(contents) as Iterable;
+        _store.items.clear(); // Clear exist in-memory copy
+        _store.items.addAll(list.map((x) =>
+            _coerceStringDynamic(_revive(x) as Map))); // Insert all new entries
       }
     });
   }

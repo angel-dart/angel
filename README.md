@@ -1,4 +1,7 @@
 # file_service
+[![Pub](https://img.shields.io/pub/v/angel_file_service.svg)](https://pub.dartlang.org/packages/angel_file_service)
+[![build status](https://travis-ci.org/angel-dart/file_service.svg)](https://travis-ci.org/angel-dart/file_service)
+
 Angel service that persists data to a file on disk, stored as a JSON list. It uses a simple
 mutex to prevent race conditions, and caches contents in memory until changes
 are made.

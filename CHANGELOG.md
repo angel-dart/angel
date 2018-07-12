@@ -1,3 +1,6 @@
+# 1.1.2
+* Added tests, because tests.
+
 # 1.1.1
 * Dart 2 fixes.
 
