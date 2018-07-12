@@ -334,8 +334,8 @@ class AngelHttp {
 
           if (sw.isRunning) {
             sw?.stop();
-            app.logger.info("${res.statusCode} ${req.method} ${req.uri} (${sw
-                ?.elapsedMilliseconds ?? 'unknown'} ms)");
+            app.logger.info(
+                "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
           }
         }
       });

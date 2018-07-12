@@ -35,7 +35,7 @@ void start(int id) {
   };
 
   http.startServer('127.0.0.1', 3000).then((server) {
-    print('Instance #$id listening at http://${server.address.address}:${server
-            .port}');
+    print(
+        'Instance #$id listening at http://${server.address.address}:${server.port}');
   });
 }

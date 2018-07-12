@@ -167,8 +167,8 @@ abstract class RequestContext {
   void inject(type, value) {
     if (!app.isProduction && type is Type) {
       if (!reflect(value).type.isAssignableTo(reflectType(type)))
-        throw new ArgumentError('Cannot inject $value (${value
-                .runtimeType}) as an instance of $type.');
+        throw new ArgumentError(
+            'Cannot inject $value (${value.runtimeType}) as an instance of $type.');
     }
 
     _injections[type] = value;

@@ -1,3 +1,7 @@
+# 1.1.5
+* `AnonymousService` methods can now return `FutureOr`.
+* Added `findOne` to `Service`.
+
 # 1.1.4+11
 * Close the response, etc. *after* finalizers are done.
 
