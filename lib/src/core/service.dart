@@ -64,6 +64,33 @@ class Service extends Routable {
   /// Closes this service, including any database connections or stream controllers.
   void close() {}
 
+  /// Retrieves the first object from the result of calling [index] with the given [params].
+  ///
+  /// If the result of [index] is `null`, OR an empty [Iterable], a 404 `AngelHttpException` will be thrown.
+  ///
+  /// If the result is both non-null and NOT an [Iterable], it will be returned as-is.
+  ///
+  /// If the result is a non-empty [Iterable], [findOne] will return `it.first`, where `it` is the aforementioned [Iterable].
+  ///
+  /// A custom [errorMessage] may be provided.
+  Future findOne(
+      [Map params,
+      String errorMessage = 'No record was found matching the given query.']) {
+    return index(params).then((result) {
+      if (result == null) {
+        throw new AngelHttpException.notFound(message: errorMessage);
+      } else if (result is Iterable) {
+        if (result.isEmpty) {
+          throw new AngelHttpException.notFound(message: errorMessage);
+        } else {
+          return result.first;
+        }
+      } else {
+        return result;
+      }
+    });
+  }
+
   /// Retrieves all resources.
   Future index([Map params]) {
     throw new AngelHttpException.methodNotAllowed();
