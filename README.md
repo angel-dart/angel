@@ -99,28 +99,3 @@ foo:
   quux: goodbye
   yellow: submarine
 ```
-
-**In the Browser**
-
-You can easily load configuration values within your client-side app,
-and they will be automatically replaced by a Barback transformer.
-
-In your `pubspec.yaml`:
-
-```yaml
-transformers:
-- angel_configuration
-```
-
-In your app:
-
-```dart
-import 'package:angel_configuration/browser.dart';
-
-main() async {
-    print(config("some_key.other.nested_key"));
-}
-```
-
-You can also provide a `dir` or `env` argument, corresponding to
-the ones on the server-side.

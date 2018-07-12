@@ -6,35 +6,6 @@ import 'package:file/file.dart';
 import 'package:merge_map/merge_map.dart';
 import 'package:yaml/yaml.dart';
 
-final RegExp _equ = new RegExp(r'=$');
-final RegExp _sym = new RegExp(r'Symbol\("([^"]+)"\)');
-
-/// A proxy object that encapsulates a server's configuration.
-@proxy
-class Configuration {
-  /// The [Angel] instance that loaded this configuration.
-  final Angel app;
-  Configuration(this.app);
-
-  operator [](key) => app.configuration[key];
-  operator []=(key, value) => app.configuration[key] = value;
-
-  noSuchMethod(Invocation invocation) {
-    if (invocation.memberName != null) {
-      String name = _sym.firstMatch(invocation.memberName.toString()).group(1);
-
-      if (invocation.isMethod) {
-        return Function.apply(app.configuration[name],
-            invocation.positionalArguments, invocation.namedArguments);
-      } else if (invocation.isGetter) {
-        return app.configuration[name];
-      }
-    }
-
-    super.noSuchMethod(invocation);
-  }
-}
-
 _loadYamlFile(Angel app, File yamlFile, Map<String, String> env) async {
   if (await yamlFile.exists()) {
     var config = loadYaml(await yamlFile.readAsString());
@@ -89,8 +60,7 @@ _applyEnv(var v, Map<String, String> env, Angel app) {
 /// load from a [overrideEnvironmentName].
 ///
 /// You can also specify a custom [envPath] to load system configuration from.
-AngelConfigurer configuration(
-    FileSystem fileSystem,
+AngelConfigurer configuration(FileSystem fileSystem,
     {String directoryPath: "./config",
     String overrideEnvironmentName,
     String envPath}) {
@@ -121,6 +91,5 @@ AngelConfigurer configuration(
     var configFile = sourceDirectory.childFile(configFilePath);
 
     await _loadYamlFile(app, configFile, env);
-    app.container.singleton(new Configuration(app));
   };
 }

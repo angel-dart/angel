@@ -2,7 +2,6 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_configuration/angel_configuration.dart';
 import 'package:file/local.dart';
 import 'package:test/test.dart';
-import 'transformer.dart' as transformer;
 
 main() async {
   // Note: Set ANGEL_ENV to 'development'
@@ -45,6 +44,4 @@ main() async {
         directoryPath: './test/config', overrideEnvironmentName: 'override'));
     expect(app.configuration['merge'], {'map': true, 'hello': 'goodbye'});
   });
-
-  group("transformer", transformer.main);
 }
