@@ -1,3 +1,6 @@
+# 1.1.1
+* Dart 2 fixes.
+
 # 1.1.0+2
 * `create` now uses the underlying store, instead of manually patching
 

@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:pool/pool.dart';
 
@@ -19,37 +19,45 @@ class JsonFileService extends Service {
             allowQuery: allowQuery != false);
   }
 
-  _load() async {
-    if (!await file.exists()) await file.writeAsString(JSON.encode([]));
-    var stat = await file.stat();
-    //
+  Future _load() {
+    return _mutex.withResource(() async {
+      if (!await file.exists()) await file.writeAsString(json.encode([]));
+      var stat = await file.stat();
+      //
 
-    if (_lastStat == null ||
-        stat.modified.millisecondsSinceEpoch >
-            _lastStat.modified.millisecondsSinceEpoch) {
-      _lastStat = stat;
+      if (_lastStat == null ||
+          stat.modified.millisecondsSinceEpoch >
+              _lastStat.modified.millisecondsSinceEpoch) {
+        _lastStat = stat;
 
-      var contents = await file.readAsString();
+        var contents = await file.readAsString();
 
-      try {
-        var list = JSON.decode(contents);
-        _store.items.clear(); // Clear exist in-memory copy
-        _store.items.addAll(list.map(_revive)); // Insert all new entries
-      } catch (e) {
-        print('WARNING: Failed to reload contents of ${file.path}.');
+        try {
+          var list = json.decode(contents) as Iterable;
+          _store.items.clear(); // Clear exist in-memory copy
+          _store.items.addAll(list.map((x) =>
+              _revive(x) as Map<String, dynamic>)); // Insert all new entries
+        } catch (e) {
+          if (_store.app is Angel) {
+            (_store.app as Angel)
+                .logger
+                .warning('WARNING: Failed to reload contents of ${file.path}.');
+          }
+        }
       }
-    }
+    });
   }
 
-  _save() async {
-    var r = await _mutex.request();
-    await file.writeAsString(JSON.encode(_store.items.map(_jsonify).toList()));
-    r.release();
+  _save() {
+    return _mutex.withResource(() {
+      return file
+          .writeAsString(json.encode(_store.items.map(_jsonify).toList()));
+    });
   }
 
   @override
-  Future close() {
-    return _store.close();
+  Future close() async {
+    _store.close();
   }
 
   @override
