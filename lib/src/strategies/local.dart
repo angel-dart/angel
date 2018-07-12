@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:dart2_constant/convert.dart';
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import '../options.dart';
 import '../strategy.dart';
@@ -45,7 +44,7 @@ class LocalAuthStrategy extends AuthStrategy {
     var verificationResult;
 
     if (allowBasic) {
-      String authHeader = req.headers.value(HttpHeaders.AUTHORIZATION) ?? "";
+      String authHeader = req.headers.value('authorization') ?? "";
 
       if (_rgxBasic.hasMatch(authHeader)) {
         String base64AuthString = _rgxBasic.firstMatch(authHeader).group(1);
@@ -82,14 +81,14 @@ class LocalAuthStrategy extends AuthStrategy {
     if (verificationResult == false || verificationResult == null) {
       if (options.failureRedirect != null &&
           options.failureRedirect.isNotEmpty) {
-        res.redirect(options.failureRedirect, code: HttpStatus.UNAUTHORIZED);
+        res.redirect(options.failureRedirect, code: 401);
         return false;
       }
 
       if (forceBasic) {
         res
           ..statusCode = 401
-          ..headers[HttpHeaders.WWW_AUTHENTICATE] = 'Basic realm="$realm"'
+          ..headers['www-authenticate'] = 'Basic realm="$realm"'
           ..end();
       }
 

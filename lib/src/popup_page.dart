@@ -6,7 +6,7 @@ import 'options.dart';
 AngelAuthCallback confirmPopupAuthentication({String eventName: 'token'}) {
   return (req, ResponseContext res, String jwt) async {
     res
-      ..contentType = ContentType.HTML
+      ..contentType = new ContentType('text', 'html')
       ..write('''
       <!DOCTYPE html>
       <html>

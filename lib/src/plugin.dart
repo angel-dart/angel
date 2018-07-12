@@ -38,7 +38,8 @@ class AngelAuth<T> {
   /// Only applies if [allowCookie] is `true`.
   final String cookiePath;
 
-  /// The name to register [requireAuth] as. Default: `auth`.
+  /// The name to register [requireAuthentication] as. Default: `auth`.
+  @deprecated
   String middlewareName;
 
   /// If `true` (default), then JWT's will be considered invalid if used from a different IP than the first user's it was issued to.
@@ -104,7 +105,8 @@ class AngelAuth<T> {
     app.container.singleton(this);
     if (runtimeType != AngelAuth) app.container.singleton(this, as: AngelAuth);
 
-    app.registerMiddleware(middlewareName, requireAuth);
+    // ignore: deprecated_member_use
+    app.registerMiddleware(middlewareName, requireAuthentication());
 
     if (reviveTokenEndpoint != null) {
       app.post(reviveTokenEndpoint, reviveJwt);
@@ -189,9 +191,7 @@ class AngelAuth<T> {
     }
 
     if (_jwtLifeSpan > 0) {
-      cookie.maxAge ??= _jwtLifeSpan < 0
-          ? -1
-          : _jwtLifeSpan ~/ 1000;
+      cookie.maxAge ??= _jwtLifeSpan < 0 ? -1 : _jwtLifeSpan ~/ 1000;
       cookie.expires ??=
           new DateTime.now().add(new Duration(milliseconds: _jwtLifeSpan));
     }
@@ -308,7 +308,7 @@ class AngelAuth<T> {
           }
 
           if (options?.successRedirect?.isNotEmpty == true) {
-            res.redirect(options.successRedirect, code: HttpStatus.OK);
+            res.redirect(options.successRedirect, code: 200);
             return false;
           } else if (options?.canRespondWithJson != false &&
               req.accepts('application/json')) {
@@ -325,7 +325,7 @@ class AngelAuth<T> {
           // Check if not redirect
           if (res.statusCode == 301 ||
               res.statusCode == 302 ||
-              res.headers.containsKey(HttpHeaders.LOCATION))
+              res.headers.containsKey('location'))
             return false;
           else
             throw new AngelHttpException.notAuthenticated();
