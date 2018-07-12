@@ -1,7 +1,6 @@
 # 1.2.0
 * Deprecate `requireAuth`, in favor of `requireAuthentication`.
 * Allow configuring of the `userKey`.
-* Add `authenticateAndContinue`.
 * Deprecate `middlewareName`.
 
 # 1.1.1+6

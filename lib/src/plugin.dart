@@ -42,6 +42,11 @@ class AngelAuth<T> {
   @deprecated
   String middlewareName;
 
+  /// The name to inject authenticated users as.
+  ///
+  /// Defaults to `'user'`.
+  final String userKey;
+
   /// If `true` (default), then JWT's will be considered invalid if used from a different IP than the first user's it was issued to.
   ///
   /// This is a security provision. Even if a user's JWT is stolen, a remote attacker will not be able to impersonate anyone.
@@ -85,6 +90,7 @@ class AngelAuth<T> {
       this.allowTokenInQuery: true,
       this.enforceIp: true,
       this.cookieDomain,
+      this.userKey: 'user',
       this.cookiePath: '/',
       this.secureCookies: true,
       this.middlewareName: 'auth',
@@ -120,7 +126,7 @@ class AngelAuth<T> {
   void _apply(RequestContext req, ResponseContext res, AuthToken token, user) {
     req
       ..inject(AuthToken, req.properties['token'] = token)
-      ..inject(user.runtimeType, req.properties["user"] = user);
+      ..inject(user.runtimeType, req.properties[userKey] = user);
 
     if (allowCookie == true) {
       _addProtectedCookie(res, 'token', token.serialize(_hs256));
@@ -276,9 +282,9 @@ class AngelAuth<T> {
             orElse: () =>
                 throw new ArgumentError('No strategy "$name" found.'));
 
-        var hasExisting = req.properties.containsKey('user');
+        var hasExisting = req.properties.containsKey(userKey);
         var result = hasExisting
-            ? req.properties['user']
+            ? req.properties[userKey]
             : await strategy.authenticate(req, res, options);
         if (result == true)
           return result;
@@ -292,7 +298,7 @@ class AngelAuth<T> {
 
           if (options?.tokenCallback != null) {
             var r = await options.tokenCallback(
-                req, res, token, req.properties["user"] = result);
+                req, res, token, req.properties[userKey] = result);
             if (r != null) return r;
             jwt = token.serialize(_hs256);
           }
@@ -373,11 +379,11 @@ class AngelAuth<T> {
         }
       }
 
-      var user = req.grab('user');
+      var user = req.grab(userKey);
       if (user != null) _onLogout.add(user as T);
 
-      req.injections..remove(AuthToken)..remove('user');
-      req.properties.remove('user');
+      req.injections..remove(AuthToken)..remove(userKey);
+      req.properties.remove(userKey);
 
       if (allowCookie == true) {
         res.cookies.removeWhere((cookie) => cookie.name == "token");

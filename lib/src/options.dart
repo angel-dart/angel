@@ -10,9 +10,14 @@ typedef AngelAuthTokenCallback(
 class AngelAuthOptions {
   AngelAuthCallback callback;
   AngelAuthTokenCallback tokenCallback;
-  bool canRespondWithJson;
   String successRedirect;
   String failureRedirect;
+
+  /// If `false` (default: `true`), then successful authentication will return `true` and allow the
+  /// execution of subsequent handlers, just like any other middleware.
+  ///
+  /// Works well with `Basic` authentication.
+  bool canRespondWithJson;
 
   AngelAuthOptions(
       {this.callback,

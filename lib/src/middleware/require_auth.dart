@@ -3,9 +3,9 @@ import 'package:angel_framework/angel_framework.dart';
 /// Forces Basic authentication over the requested resource, with the given [realm] name, if no JWT is present.
 ///
 /// [realm] defaults to `'angel_auth'`.
-RequestHandler forceBasicAuth({String realm}) {
+RequestHandler forceBasicAuth({String realm, String userKey: 'user'}) {
   return (RequestContext req, ResponseContext res) async {
-    if (req.properties.containsKey('user')) return true;
+    if (req.properties.containsKey(userKey)) return true;
 
     res
       ..statusCode = 401
