@@ -5,7 +5,6 @@ import 'package:io/ansi.dart';
 import '../util.dart';
 
 class DoctorCommand extends Command {
-
   @override
   String get name => "doctor";
 
@@ -24,7 +23,8 @@ class DoctorCommand extends Command {
       var git = await Process.start("git", ["--version"]);
       if (await git.exitCode == 0) {
         var version = await git.stdout.transform(utf8.decoder).join();
-        print(green.wrap("$checkmark Git executable found: v${version.replaceAll('git version', '').trim()}"))
+        print(green.wrap(
+            "$checkmark Git executable found: v${version.replaceAll('git version', '').trim()}"));
       } else
         throw new Exception("Git executable exit code not 0");
     } catch (exc) {

@@ -1,15 +1,17 @@
+import 'dart:async';
 import "dart:io";
 import "package:args/command_runner.dart";
-import "package:console/console.dart";
-import 'package:random_string/random_string.dart' as rs;
+import 'package:io/ansi.dart';
 import 'package:path/path.dart' as p;
+import 'package:prompts/prompts.dart' as prompts;
+import 'package:random_string/random_string.dart' as rs;
+import '../util.dart';
 import 'key.dart';
 import 'pub.dart';
 import 'rename.dart';
 
 class InitCommand extends Command {
   final KeyCommand _key = new KeyCommand();
-  final TextPen _pen = new TextPen();
 
   @override
   String get name => "init";
@@ -19,14 +21,7 @@ class InitCommand extends Command {
       "Initializes a new Angel project in the current directory.";
 
   InitCommand() {
-    argParser
-      ..addFlag('pub-get', defaultsTo: true)
-      ..addFlag(
-        'legacy',
-        help:
-            'Generate a project using Angel 1.0.x boilerplates, rather than 1.1.x+.',
-        negatable: false,
-      );
+    argParser..addFlag('pub-get', defaultsTo: true);
   }
 
   @override
@@ -59,26 +54,27 @@ class InitCommand extends Command {
       await _pubGet(projectDir);
     }
 
-    _pen.green();
-    _pen("${Icon.CHECKMARK} Successfully initialized Angel project.");
-    _pen();
-    _pen
-      ..reset()
-      ..text('\nCongratulations! You are ready to start developing with Angel!')
-      ..text('\nTo start the server (with file watching), run ')
-      ..magenta()
-      ..text(argResults['legacy'] ? '`dart bin/server.dart`' : '`dart bin/dev.dart`')
-      ..normal()
-      ..text(' in your terminal.')
-      ..text('\n\nFind more documentation about Angel:')
-      ..text('\n  * https://angel-dart.github.io')
-      ..text('\n  * https://github.com/angel-dart/angel/wiki')
-      ..text(
-          '\n  * https://www.youtube.com/playlist?list=PLl3P3tmiT-frEV50VdH_cIrA2YqIyHkkY')
-      ..text('\n  * https://medium.com/the-angel-framework')
-      ..text('\n  * https://dart.academy/tag/angel')
-      ..text('\n\nHappy coding!')
-      ..call();
+    print(green.wrap("$checkmark Successfully initialized Angel project."));
+
+    stdout
+      ..writeln()
+      ..writeln(
+          'Congratulations! You are ready to start developing with Angel!')
+      ..write('To start the server (with ')
+      ..write(cyan.wrap('hot-reloading'))
+      ..write('), run ')
+      ..write(magenta.wrap('`dart --observe bin/dev.dart`'))
+      ..writeln(' in your terminal')
+      ..writeln()
+      ..writeln('Find more documentation about Angel:')
+      ..writeln('  * https://angel-dart.github.io')
+      ..writeln('  * https://github.com/angel-dart/angel/wiki')
+      ..writeln(
+          '  * https://www.youtube.com/playlist?list=PLl3P3tmiT-frEV50VdH_cIrA2YqIyHkkY')
+      ..writeln('  * https://medium.com/the-angel-framework')
+      ..writeln('  * https://dart.academy/tag/angel')
+      ..writeln()
+      ..writeln('Happy coding!');
   }
 
   _deleteRecursive(FileSystemEntity entity, [bool self = true]) async {
@@ -101,9 +97,9 @@ class InitCommand extends Command {
       var stat = await FileStat.stat(path);
 
       switch (stat.type) {
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           return await _deleteRecursive(new Directory(path));
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           return await _deleteRecursive(new File(path));
         default:
           break;
@@ -114,11 +110,10 @@ class InitCommand extends Command {
   _cloneRepo(Directory projectDir) async {
     try {
       if (await projectDir.exists()) {
-        var chooser = new Chooser(["Yes", "No"],
-            message:
-                "Directory '${projectDir.absolute.path}' already exists. Overwrite it? (Yes/No)");
+        var shouldDelete = prompts.getBool(
+            "Directory '${projectDir.absolute.path}' already exists. Overwrite it?");
 
-        if (await chooser.choose() != "Yes")
+        if (shouldDelete)
           throw new Exception("Chose not to overwrite existing directory.");
         else if (projectDir.absolute.uri.normalizePath().toFilePath() !=
             Directory.current.absolute.uri.normalizePath().toFilePath())
@@ -129,10 +124,9 @@ class InitCommand extends Command {
       }
 
       print('Choose a project type before continuing:');
-      var boilerplateChooser = new Chooser<BoilerplateInfo>(
-        argResults['legacy'] ? legacyBoilerplates : boilerplates,
-      );
-      var boilerplate = await boilerplateChooser.choose();
+
+      var boilerplate = prompts.choose(
+          'Choose a project type before continuing', boilerplates);
 
       print(
           'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
@@ -157,13 +151,14 @@ class InitCommand extends Command {
         }
       }
 
+      if (boilerplate.needsPrebuild) {
+        await preBuild(projectDir).catchError((_) => null);
+      }
+
       var gitDir = new Directory.fromUri(projectDir.uri.resolve(".git"));
       if (await gitDir.exists()) await gitDir.delete(recursive: true);
     } catch (e) {
-      print(e);
-      _pen.red();
-      _pen("${Icon.BALLOT_X} Could not initialize Angel project.");
-      _pen();
+      print(red.wrap("$ballot Could not initialize Angel project."));
       rethrow;
     }
   }
@@ -180,11 +175,11 @@ class InitCommand extends Command {
   }
 }
 
-preBuild(Directory projectDir) async {
+Future preBuild(Directory projectDir) async {
   // Run build
-  print('Pre-building resources...');
+  print('Running `pub run build_runner build`...');
 
-  var build = await Process.start(Platform.executable, ['tool/build.dart'],
+  var build = await Process.start(resolvePub(), ['run', 'build'],
       workingDirectory: projectDir.absolute.path);
 
   stdout.addStream(build.stdout);
@@ -195,30 +190,11 @@ preBuild(Directory projectDir) async {
   if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
 }
 
-const BoilerplateInfo fullApplicationBoilerplate = const BoilerplateInfo(
-  'Full Application',
-  'A complete project including authentication, multi-threading, and more.',
-  'https://github.com/angel-dart/angel.git',
-  ref: '1.0.x',
-);
-
-const BoilerplateInfo lightBoilerplate = const BoilerplateInfo(
-  'Light',
-  'Minimal starting point for new users.',
-  'https://github.com/angel-dart/boilerplate_light.git',
-);
-
 const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
   'ORM',
   "A starting point for applications that use Angel's ORM.",
   'https://github.com/angel-dart/boilerplate_orm.git',
 );
-
-const List<BoilerplateInfo> legacyBoilerplates = const [
-  fullApplicationBoilerplate,
-  lightBoilerplate,
-  ormBoilerplate
-];
 
 const BoilerplateInfo basicBoilerplate = const BoilerplateInfo(
   'Basic',
@@ -233,8 +209,10 @@ const List<BoilerplateInfo> boilerplates = const [
 
 class BoilerplateInfo {
   final String name, description, url, ref;
+  final bool needsPrebuild;
 
-  const BoilerplateInfo(this.name, this.description, this.url, {this.ref});
+  const BoilerplateInfo(this.name, this.description, this.url,
+      {this.ref, this.needsPrebuild: false});
 
   @override
   String toString() => '$name ($description)';
