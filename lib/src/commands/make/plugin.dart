@@ -60,11 +60,10 @@ library ${pubspec.name}.src.config.plugins.${rc.snakeCase};
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 
-class ${rc.pascalCase}Plugin extends AngelPlugin {
-  @override
-  Future call(Angel app) async {
+AngelConfigurer ${rc.camelCase}() {
+  return (Angel app) async {
     // Work some magic...
-  }
+  };
 }
     ''';
   }

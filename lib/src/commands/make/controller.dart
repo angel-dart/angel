@@ -64,12 +64,21 @@ class ControllerCommand extends Command {
               : 'Controller');
 
         if (argResults['websocket'] as bool) {
+          // XController(AngelWebSocket ws) : super(ws);
+          clazz.constructors.add(new Constructor((b) {
+            b
+              ..requiredParameters.add(new Parameter((b) => b
+                ..name = 'ws'
+                ..type = refer('AngelWebSocket')))
+              ..initializers.add(new Code('super(ws)'));
+          }));
+
           clazz.methods.add(new Method((meth) {
             meth
               ..name = 'hello'
               ..returns = refer('void')
-              ..annotations.add(refer('ExposeWs')
-                  .call([literal('get_${rc.snakeCase}')]))
+              ..annotations
+                  .add(refer('ExposeWs').call([literal('get_${rc.snakeCase}')]))
               ..requiredParameters.add(new Parameter((b) => b
                 ..name = 'socket'
                 ..type = refer('WebSocketContext')))
