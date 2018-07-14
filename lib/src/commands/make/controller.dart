@@ -26,7 +26,7 @@ class ControllerCommand extends Command {
           abbr: 'n', help: 'Specifies a name for the model class.')
       ..addOption('output-dir',
           help: 'Specifies a directory to create the controller class in.',
-          defaultsTo: 'lib/src/controllers');
+          defaultsTo: 'lib/src/routes/controllers');
   }
 
   @override
@@ -69,7 +69,7 @@ class ControllerCommand extends Command {
               ..name = 'hello'
               ..returns = refer('void')
               ..annotations.add(refer('ExposeWs')
-                  .constInstance([literal('get_${rc.snakeCase}')]))
+                  .newInstance([literal('get_${rc.snakeCase}')]))
               ..requiredParameters.add(new Parameter((b) => b
                 ..name = 'socket'
                 ..type = refer('WebSocketContext')))
@@ -82,14 +82,14 @@ class ControllerCommand extends Command {
           }));
         } else {
           clazz
-            ..annotations.add(
-                refer('Expose').constInstance([literal('/${rc.snakeCase}')]))
+            ..annotations
+                .add(refer('Expose').newInstance([literal('/${rc.snakeCase}')]))
             ..methods.add(new Method((meth) {
               meth
                 ..name = 'hello'
                 ..returns = refer('String')
                 ..body = literal('Hello, world').returned.statement
-                ..annotations.add(refer('Expose').constInstance([
+                ..annotations.add(refer('Expose').newInstance([
                   literal('/'),
                 ]));
             }));
