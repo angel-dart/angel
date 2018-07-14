@@ -14,18 +14,29 @@ class FileServiceGenerator extends ServiceGenerator {
   bool get goesFirst => true;
 
   @override
-  void applyToLibrary(LibraryBuilder library, String name, String lower) {
-    library.addMember(new ImportBuilder('dart:io'));
-    library.addMember(new ImportBuilder(
-        'package:angel_file_service/angel_file_service.dart'));
+  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
+      String name, String lower) {
+    configureServer.requiredParameters.add(new Parameter((b) => b
+      ..name = 'dbDirectory'
+      ..type = refer('Directory')));
   }
 
   @override
-  ExpressionBuilder createInstance(
+  void applyToLibrary(LibraryBuilder library, String name, String lower) {
+    library.directives.addAll([
+      new Directive.import(
+          'package:angel_file_service/angel_file_service.dart'),
+      new Directive.import('package:file/file.dart'),
+    ]);
+  }
+
+  @override
+  Expression createInstance(
       MethodBuilder methodBuilder, String name, String lower) {
-    return new TypeBuilder('JsonFileService').newInstance([
-      new TypeBuilder('File')
-          .newInstance([literal(pluralize(lower) + '_db.json')])
+    return refer('JsonFileService').newInstance([
+      refer('dbDirectory')
+          .property('childFile')
+          .call([literal(pluralize(lower) + '_db.json')])
     ]);
   }
 }
