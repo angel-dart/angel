@@ -6,5 +6,3 @@ export "init.dart";
 export "install.dart";
 export "make.dart";
 export "rename.dart";
-export 'update.dart';
-export 'version.dart';
