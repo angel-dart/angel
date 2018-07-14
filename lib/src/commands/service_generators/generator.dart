@@ -27,12 +27,12 @@ class ServiceGenerator {
 
   void applyToLibrary(LibraryBuilder library, String name, String lower) {}
 
-  void beforeService(MethodBuilder methodBuilder, String name, String lower) {}
+  void beforeService(BlockBuilder builder, String name, String lower) {}
 
   void applyToConfigureServer(
-      MethodBuilder configureServer, String name, String lower) {}
+      MethodBuilder configureServer, BlockBuilder block, String name, String lower) {}
 
-  ExpressionBuilder createInstance(
+  Expression createInstance(
           MethodBuilder methodBuilder, String name, String lower) =>
       literal(null);
 }

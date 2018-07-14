@@ -1,16 +1,17 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:console/console.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:inflection/inflection.dart';
+import 'package:io/ansi.dart';
+import 'package:prompts/prompts.dart' as prompts;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import '../service_generators/service_generators.dart';
+import '../../util.dart';
 import 'maker.dart';
 
 class ServiceCommand extends Command {
-  final TextPen _pen = new TextPen();
-
   @override
   String get name => 'service';
 
@@ -32,94 +33,103 @@ class ServiceCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await Pubspec.load(Directory.current);
+    var pubspec = await loadPubspec();
     String name;
-    if (argResults.wasParsed('name')) name = argResults['name'];
+    if (argResults.wasParsed('name')) name = argResults['name'] as String;
 
     if (name?.isNotEmpty != true) {
-      var p = new Prompter('Name of Service: ');
-      name = await p.prompt(checker: (s) => s.isNotEmpty);
+      name = prompts.get('Name of service');
     }
 
     List<MakerDependency> deps = [
       const MakerDependency('angel_framework', '^1.0.0')
     ];
 
+    // '${pubspec.name}.src.services.${rc.snakeCase}'
     var rc = new ReCase(name);
-    var serviceLib =
-        new LibraryBuilder('${pubspec.name}.src.services.${rc.snakeCase}');
+    var serviceLib = new Library((serviceLib) {
+      var generator = prompts.choose(
+          'Choose which type of service to create', serviceGenerators);
 
-    ServiceGenerator generator;
+//      if (generator == null) {
+//        _pen.red();
+//        _pen('${Icon.BALLOT_X} \'$type\' services are not yet implemented. :(');
+//        _pen();
+//        throw 'Unrecognized service type: "$type".';
+//      }
 
-    var chooser = new Chooser<String>(
-        serviceGenerators.map<String>((g) => g.name).toList(),
-        message: 'What type of service would you like to create? ');
-    var type = await chooser.choose();
+      for (var dep in generator.dependencies) {
+        if (!deps.any((d) => d.name == dep.name)) deps.add(dep);
+      }
 
-    generator =
-        serviceGenerators.firstWhere((g) => g.name == type, orElse: () => null);
+      if (generator.goesFirst) {
+        generator.applyToLibrary(serviceLib, name, rc.snakeCase);
+        serviceLib.directives.add(new Directive.import(
+            'package:angel_framework/angel_framework.dart'));
+      } else {
+        serviceLib.directives.add(new Directive.import(
+            'package:angel_framework/angel_framework.dart'));
+        generator.applyToLibrary(serviceLib, name, rc.snakeCase);
+      }
 
-    if (generator == null) {
-      _pen.red();
-      _pen('${Icon.BALLOT_X} \'$type\' services are not yet implemented. :(');
-      _pen();
-      throw 'Unrecognized service type: "$type".';
-    }
+      if (argResults['typed'] as bool) {
+        serviceLib.directives
+            .add(new Directive.import('../models/${rc.snakeCase}.dart'));
+      }
 
-    for (var dep in generator.dependencies) {
-      if (!deps.any((d) => d.name == dep.name)) deps.add(dep);
-    }
+      // configureServer() {}
+      serviceLib.body.add(new Method((configureServer) {
+        configureServer
+          ..name = 'configureServer'
+          ..returns = refer('AngelConfigurer');
 
-    if (generator.goesFirst) {
-      generator.applyToLibrary(serviceLib, name, rc.snakeCase);
-      serviceLib.addMember(
-          new ImportBuilder('package:angel_framework/angel_framework.dart'));
-    } else {
-      serviceLib.addMember(
-          new ImportBuilder('package:angel_framework/angel_framework.dart'));
-      generator.applyToLibrary(serviceLib, name, rc.snakeCase);
-    }
+        configureServer.body = new Block((block) {
+          generator.applyToConfigureServer(
+              configureServer, block, name, rc.snakeCase);
 
-    if (argResults['typed']) {
-      serviceLib
-        ..addMember(new ImportBuilder('../models/${rc.snakeCase}.dart'));
-    }
+          // return (Angel app) async {}
+          var closure = new Method((closure) {
+            closure
+              ..modifier = MethodModifier.async
+              ..requiredParameters.add(new Parameter((b) => b
+                ..name = 'app'
+                ..type = refer('Angel')));
+            closure.body = new Block((block) {
+              generator.beforeService(block, name, rc.snakeCase);
 
-    // configureServer() {}
-    var configureServer = new MethodBuilder('configureServer',
-        returnType: new TypeBuilder('AngelConfigurer'));
-    generator.applyToConfigureServer(configureServer, name, rc.snakeCase);
+              // app.use('/api/todos', new MapService());
+              var service =
+                  generator.createInstance(closure, name, rc.snakeCase);
 
-    // return (Angel app) async {}
-    var closure = new MethodBuilder.closure(modifier: MethodModifier.asAsync)
-      ..addPositional(parameter('app', [new TypeBuilder('Angel')]));
-    generator.beforeService(closure, name, rc.snakeCase);
+              if (argResults['typed'] as bool) {
+                var tb = new TypeReference((b) => b
+                  ..symbol = 'TypedService'
+                  ..types.add(refer(rc.pascalCase)));
+                service = tb.newInstance([service]);
+              }
 
-    // app.use('/api/todos', new MapService());
-    var service = generator.createInstance(closure, name, rc.snakeCase);
+              block.addExpression(refer('app').property('use').call([
+                literal('/api/${pluralize(rc.snakeCase)}'),
+                service,
+              ]));
+            });
+          });
 
-    if (argResults['typed']) {
-      service = new TypeBuilder('TypedService',
-              genericTypes: [new TypeBuilder(rc.pascalCase)])
-          .newInstance([service]);
-    }
-
-    closure.addStatement(reference('app')
-        .invoke('use', [literal('/api/${pluralize(rc.snakeCase)}'), service]));
-    configureServer.addStatement(closure.asReturn());
-    serviceLib.addMember(configureServer);
+          block.addExpression(closure.closure.returned);
+        });
+      }));
+    });
 
     final outputDir = new Directory.fromUri(
-        Directory.current.uri.resolve(argResults['output-dir']));
+        Directory.current.uri.resolve(argResults['output-dir'] as String));
     final serviceFile =
         new File.fromUri(outputDir.uri.resolve("${rc.snakeCase}.dart"));
     if (!await serviceFile.exists()) await serviceFile.create(recursive: true);
-    await serviceFile.writeAsString(prettyToSource(serviceLib.buildAst()));
+    await serviceFile.writeAsString(new DartFormatter()
+        .format(serviceLib.accept(new DartEmitter()).toString()));
 
-    _pen.green();
-    _pen(
-        '${Icon.CHECKMARK} Successfully generated service file "${serviceFile.absolute.path}".');
-    _pen();
+    print(green.wrap(
+        '$checkmark Successfully generated service file "${serviceFile.absolute.path}".'));
 
     if (deps.isNotEmpty) await depend(deps);
   }
