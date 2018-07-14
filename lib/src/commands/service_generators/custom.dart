@@ -20,8 +20,8 @@ class CustomServiceGenerator extends ServiceGenerator {
   }
 
   @override
-  Expression createInstance(
-      MethodBuilder methodBuilder, String name, String lower) {
+  Expression createInstance(LibraryBuilder library, MethodBuilder methodBuilder,
+      String name, String lower) {
     return refer('${name}Service').newInstance([]);
   }
 }

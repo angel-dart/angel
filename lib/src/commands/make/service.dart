@@ -85,7 +85,7 @@ class ServiceCommand extends Command {
 
         configureServer.body = new Block((block) {
           generator.applyToConfigureServer(
-              configureServer, block, name, rc.snakeCase);
+              serviceLib, configureServer, block, name, rc.snakeCase);
 
           // return (Angel app) async {}
           var closure = new Method((closure) {
@@ -95,11 +95,11 @@ class ServiceCommand extends Command {
                 ..name = 'app'
                 ..type = refer('Angel')));
             closure.body = new Block((block) {
-              generator.beforeService(block, name, rc.snakeCase);
+              generator.beforeService(serviceLib, block, name, rc.snakeCase);
 
               // app.use('/api/todos', new MapService());
-              var service =
-                  generator.createInstance(closure, name, rc.snakeCase);
+              var service = generator.createInstance(
+                  serviceLib, closure, name, rc.snakeCase);
 
               if (argResults['typed'] as bool) {
                 var tb = new TypeReference((b) => b

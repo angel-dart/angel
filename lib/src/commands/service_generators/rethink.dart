@@ -14,8 +14,12 @@ class RethinkServiceGenerator extends ServiceGenerator {
   bool get createsModel => false;
 
   @override
-  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
-      String name, String lower) {
+  void applyToConfigureServer(
+      LibraryBuilder library,
+      MethodBuilder configureServer,
+      BlockBuilder block,
+      String name,
+      String lower) {
     configureServer.requiredParameters.addAll([
       new Parameter((b) => b
         ..name = 'connection'
@@ -35,8 +39,8 @@ class RethinkServiceGenerator extends ServiceGenerator {
   }
 
   @override
-  Expression createInstance(
-      MethodBuilder methodBuilder, String name, String lower) {
+  Expression createInstance(LibraryBuilder library, MethodBuilder methodBuilder,
+      String name, String lower) {
     return refer('RethinkService').newInstance([
       refer('connection'),
       refer('r').property('table').call([literal(pluralize(lower))])

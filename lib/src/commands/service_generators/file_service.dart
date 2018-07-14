@@ -14,8 +14,12 @@ class FileServiceGenerator extends ServiceGenerator {
   bool get goesFirst => true;
 
   @override
-  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
-      String name, String lower) {
+  void applyToConfigureServer(
+      LibraryBuilder library,
+      MethodBuilder configureServer,
+      BlockBuilder block,
+      String name,
+      String lower) {
     configureServer.requiredParameters.add(new Parameter((b) => b
       ..name = 'dbDirectory'
       ..type = refer('Directory')));
@@ -26,13 +30,15 @@ class FileServiceGenerator extends ServiceGenerator {
     library.directives.addAll([
       new Directive.import(
           'package:angel_file_service/angel_file_service.dart'),
-      new Directive.import('package:file/file.dart'),
     ]);
   }
 
   @override
-  Expression createInstance(
-      MethodBuilder methodBuilder, String name, String lower) {
+  Expression createInstance(LibraryBuilder library, MethodBuilder methodBuilder,
+      String name, String lower) {
+    library.directives.addAll([
+      new Directive.import('package:file/file.dart'),
+    ]);
     return refer('JsonFileService').newInstance([
       refer('dbDirectory')
           .property('childFile')

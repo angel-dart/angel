@@ -14,8 +14,12 @@ class MongoServiceGenerator extends ServiceGenerator {
   bool get createsModel => false;
 
   @override
-  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
-      String name, String lower) {
+  void applyToConfigureServer(
+      LibraryBuilder library,
+      MethodBuilder configureServer,
+      BlockBuilder block,
+      String name,
+      String lower) {
     configureServer.requiredParameters.add(new Parameter((b) => b
       ..name = 'db'
       ..type = refer('Db')));
@@ -30,8 +34,8 @@ class MongoServiceGenerator extends ServiceGenerator {
   }
 
   @override
-  Expression createInstance(
-      MethodBuilder methodBuilder, String name, String lower) {
+  Expression createInstance(LibraryBuilder library, MethodBuilder methodBuilder,
+      String name, String lower) {
     return refer('MongoService').newInstance([
       refer('db').property('collection').call([literal(pluralize(lower))])
     ]);
