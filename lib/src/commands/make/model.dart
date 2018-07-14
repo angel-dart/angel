@@ -73,6 +73,7 @@ class ModelCommand extends Command {
 
       modelLib.body.add(new Class((modelClazz) {
         modelClazz
+          ..abstract = true
           ..name = needsSerialize ? '_${rc.pascalCase}' : rc.pascalCase
           ..extend = refer('Model');
 

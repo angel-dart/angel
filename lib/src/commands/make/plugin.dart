@@ -57,7 +57,6 @@ class PluginCommand extends Command {
     return '''
 library ${pubspec.name}.src.config.plugins.${rc.snakeCase};
 
-import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 
 AngelConfigurer ${rc.camelCase}() {
