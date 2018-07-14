@@ -121,9 +121,11 @@ class InstallCommand extends Command {
               var desc = val[key]['description'] ?? key;
 
               if (val[key]['type'] == 'prompt') {
-                values[key] = prompts.get(desc.toString(), defaultsTo: val[key]['default']?.toString());
+                values[key] = prompts.get(desc.toString(),
+                    defaultsTo: val[key]['default']?.toString());
               } else if (val[key]['type'] == 'choice') {
-                values[key] = prompts.choose(desc.toString(), val[key]['choices'] as Iterable);
+                values[key] = prompts.choose(
+                    desc.toString(), val[key]['choices'] as Iterable);
               }
             }
           }

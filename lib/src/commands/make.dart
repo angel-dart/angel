@@ -10,7 +10,8 @@ class MakeCommand extends Command {
   String get name => 'make';
 
   @override
-  String get description => 'Generates common code for your project, such as projects and controllers.';
+  String get description =>
+      'Generates common code for your project, such as projects and controllers.';
 
   MakeCommand() {
     addSubcommand(new ControllerCommand());

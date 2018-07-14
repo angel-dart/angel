@@ -29,8 +29,8 @@ class ServiceGenerator {
 
   void beforeService(BlockBuilder builder, String name, String lower) {}
 
-  void applyToConfigureServer(
-      MethodBuilder configureServer, BlockBuilder block, String name, String lower) {}
+  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
+      String name, String lower) {}
 
   Expression createInstance(
           MethodBuilder methodBuilder, String name, String lower) =>
