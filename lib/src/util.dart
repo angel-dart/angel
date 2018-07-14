@@ -6,6 +6,8 @@ import 'package:pubspec_parse/pubspec_parse.dart';
 
 final String checkmark = ansiOutputEnabled ? '\u2713' : '[Success]';
 
+final String ballot = ansiOutputEnabled ? '\u2717' : '[Failure]';
+
 Future<Pubspec> loadPubspec() {
   var file = new File('pubspec.yaml');
   return file

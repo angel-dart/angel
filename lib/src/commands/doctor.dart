@@ -1,10 +1,10 @@
 import "dart:convert";
 import "dart:io";
 import "package:args/command_runner.dart";
-import "package:console/console.dart";
+import 'package:io/ansi.dart';
+import '../util.dart';
 
 class DoctorCommand extends Command {
-  final TextPen _pen = new TextPen();
 
   @override
   String get name => "doctor";
@@ -23,16 +23,12 @@ class DoctorCommand extends Command {
     try {
       var git = await Process.start("git", ["--version"]);
       if (await git.exitCode == 0) {
-        var version = await git.stdout.transform(UTF8.decoder).join();
-        _pen.green();
-        _pen("${Icon.CHECKMARK} Git executable found: v${version.replaceAll('git version', '').trim()}");
-        _pen();
+        var version = await git.stdout.transform(utf8.decoder).join();
+        print(green.wrap("$checkmark Git executable found: v${version.replaceAll('git version', '').trim()}"))
       } else
         throw new Exception("Git executable exit code not 0");
     } catch (exc) {
-      _pen.red();
-      _pen("${Icon.BALLOT_X} Git executable not found");
-      _pen();
+      print(red.wrap("$ballot Git executable not found"));
     }
   }
 }

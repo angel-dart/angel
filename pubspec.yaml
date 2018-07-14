@@ -7,8 +7,6 @@ dependencies:
   # analyzer: ^0.29.0
   args: ^1.0.0
   code_builder: ^3.0.0
-  #console: ^2.2.3
-  dart2_constant: ^1.0.0
   dart_style: ^1.0.0
   glob: ^1.1.0
   homedir: ^0.0.4
@@ -16,7 +14,6 @@ dependencies:
   id: ^1.0.0
   io: ^0.3.2
   inflection: ^0.4.1
-  #mustache4dart: ^2.1.0
   path: ^1.0.0
   prompts: ^1.0.0
   pubspec_parse: ^0.1.2
@@ -25,10 +22,6 @@ dependencies:
   watcher: ^0.9.7
   yaml: ^2.0.0
   #yamlicious: ^0.0.5
-dev_dependencies:
-  #build: ^0.7.0
-  #build_runner: ^0.3.0
-  #check_for_update: ^1.0.0
 environment: 
   sdk: ">=2.0.0-dev <3.0.0"
 executables: 
