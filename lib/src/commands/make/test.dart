@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
-import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
+import 'package:io/ansi.dart';
+import 'package:prompts/prompts.dart' as prompter;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
+import '../../util.dart';
 import 'maker.dart';
 
 class TestCommand extends Command {
-  final TextPen _pen = new TextPen();
-
   @override
   String get name => "test";
 
@@ -29,13 +29,12 @@ class TestCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await Pubspec.load(Directory.current);
+    var pubspec = await loadPubspec();
     String name;
-    if (argResults.wasParsed('name')) name = argResults['name'];
+    if (argResults.wasParsed('name')) name = argResults['name'] as String;
 
     if (name?.isNotEmpty != true) {
-      var p = new Prompter('Name of Test: ');
-      name = await p.prompt(checker: (s) => s.isNotEmpty);
+      name = prompter.get('Name of test');
     }
 
     List<MakerDependency> deps = [
@@ -46,7 +45,7 @@ class TestCommand extends Command {
 
     var rc = new ReCase(name);
     final testDir = new Directory.fromUri(
-        Directory.current.uri.resolve(argResults['output-dir']));
+        Directory.current.uri.resolve(argResults['output-dir'] as String));
     final testFile =
         new File.fromUri(testDir.uri.resolve("${rc.snakeCase}_test.dart"));
     if (!await testFile.exists()) await testFile.create(recursive: true);
@@ -55,27 +54,22 @@ class TestCommand extends Command {
 
     if (deps.isNotEmpty) await depend(deps);
 
-    _pen.green();
-    _pen(
-        '${Icon.CHECKMARK} Successfully generated test file "${testFile.absolute.path}".');
-    _pen();
+    print(green.wrap(
+        '$checkmark Successfully generated test file "${testFile.absolute.path}".'));
 
-    if (argResults['run-configuration']) {
+    if (argResults['run-configuration'] as bool) {
       final runConfig = new File.fromUri(Directory.current.uri
           .resolve('.idea/runConfigurations/${name}_Tests.xml'));
 
       if (!await runConfig.exists()) await runConfig.create(recursive: true);
       await runConfig.writeAsString(_generateRunConfiguration(name, rc));
 
-      _pen.reset();
-      _pen.green();
-      _pen(
-          '${Icon.CHECKMARK} Successfully generated run configuration "$name Tests" at "${runConfig.absolute.path}".');
-      _pen();
+      print(green.wrap(
+          '$checkmark Successfully generated run configuration "$name Tests" at "${runConfig.absolute.path}".'));
     }
   }
 
-  _generateRunConfiguration(String name, ReCase rc) {
+  String _generateRunConfiguration(String name, ReCase rc) {
     return '''
     <component name="ProjectRunConfigurationManager">
       <configuration default="false" name="$name Tests" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true">
