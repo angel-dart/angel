@@ -12,13 +12,16 @@ class CustomServiceGenerator extends ServiceGenerator {
 
   @override
   void applyToLibrary(LibraryBuilder library, String name, String lower) {
-    var clazz = new ClassBuilder('${name}Service', asExtends: new TypeBuilder('Service'));
-    library.addMember(clazz);
+    library.body.add(new Class((clazz) {
+      clazz
+        ..name = '${name}Service'
+        ..extend = refer('Service');
+    }));
   }
 
   @override
-  ExpressionBuilder createInstance(
+  Expression createInstance(
       MethodBuilder methodBuilder, String name, String lower) {
-    return new TypeBuilder('${name}Service').newInstance([]);
+    return refer('${name}Service').newInstance([]);
   }
 }
