@@ -17,9 +17,7 @@ main(List<String> args) async {
     ..addCommand(new InitCommand())
     ..addCommand(new InstallCommand())
     ..addCommand(new RenameCommand())
-    ..addCommand(new UpdateCommand())
-    ..addCommand(new MakeCommand())
-    ..addCommand(new VersionCommand());
+    ..addCommand(new MakeCommand());
 
   return await runner.run(args).then((_) {}).catchError((exc) {
     stderr.writeln("Oops, something went wrong: $exc");
