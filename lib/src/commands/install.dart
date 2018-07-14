@@ -73,7 +73,7 @@ class InstallCommand extends Command {
           throw 'No add-on named "$packageName" is installed. You might need to run `angel install --update`.';
         print('Installing $packageName...');
 
-        Map<String, dynamic> values = {
+        Map values = {
           'project_name': pubspec.name,
           'pubspec': pubspec,
         };
@@ -106,7 +106,7 @@ class InstallCommand extends Command {
         if (await promptFile.exists()) {
           var contents = await promptFile.readAsString();
           var y = yaml.loadYamlDocument(contents);
-          var cfg = y.contents.value as Map<String, dynamic>;
+          var cfg = y.contents.value as Map;
 
           // Loads globs
           if (cfg['templates'] is List) {
@@ -115,7 +115,7 @@ class InstallCommand extends Command {
           }
 
           if (cfg['values'] is Map) {
-            var val = cfg['values'] as Map<String, dynamic>;
+            var val = cfg['values'] as Map;
 
             for (var key in val.keys) {
               var desc = val[key]['description'] ?? key;

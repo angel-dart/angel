@@ -11,6 +11,9 @@ main(List<String> args) async {
   var runner =
       new CommandRunner("angel", "Command-line tools for the Angel framework.");
 
+  runner.argParser
+      .addFlag('verbose', help: 'Print verbose output', negatable: false);
+
   runner
     ..addCommand(new DoctorCommand())
     ..addCommand(new KeyCommand())
@@ -19,12 +22,16 @@ main(List<String> args) async {
     ..addCommand(new RenameCommand())
     ..addCommand(new MakeCommand());
 
-  return await runner.run(args).then((_) {}).catchError((exc) {
+  return await runner.run(args).then((_) {}).catchError((exc, st) {
     if (exc is String) {
       stdout.writeln(exc);
     } else {
       stderr.writeln("Oops, something went wrong: $exc");
       exitCode = 1;
+
+      if (args.contains('--verbose')) {
+        stderr.writeln(st);
+      }
     }
   });
 }
