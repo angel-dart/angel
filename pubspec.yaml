@@ -14,6 +14,7 @@ dependencies:
   id: ^1.0.0
   io: ^0.3.2
   inflection: ^0.4.1
+  mustache4dart: ^2.0.0
   path: ^1.0.0
   prompts: ^1.0.0
   pubspec_parse: ^0.1.2

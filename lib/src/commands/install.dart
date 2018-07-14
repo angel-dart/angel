@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:args/command_runner.dart';
-import 'package:console/console.dart';
 import 'package:glob/glob.dart';
 import 'package:homedir/homedir.dart';
+import 'package:io/ansi.dart';
 import 'package:mustache4dart/mustache4dart.dart' as mustache;
 import 'package:path/path.dart' as p;
+import 'package:prompts/prompts.dart' as prompts;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:yaml/yaml.dart' as yaml;
+import '../util.dart';
 import 'make/maker.dart';
 
 class InstallCommand extends Command {
@@ -46,22 +48,22 @@ class InstallCommand extends Command {
 
   @override
   run() async {
-    if (argResults['wipe']) {
+    if (argResults['wipe'] as bool) {
       if (await installRepo.exists()) await installRepo.delete(recursive: true);
-    } else if (argResults['list']) {
+    } else if (argResults['list'] as bool) {
       var addons = await list();
       print('${addons.length} add-on(s) installed:');
 
       for (var addon in addons) {
         print('  * ${addon.name}@${addon.version}: ${addon.description}');
       }
-    } else if (argResults['update']) {
+    } else if (argResults['update'] as bool) {
       await update();
     } else if (argResults.rest.isNotEmpty) {
       if (!await installRepo.exists())
         throw 'No local add-on database exists. Run `angel install --update` first.';
 
-      var pubspec = await Pubspec.load(Directory.current);
+      var pubspec = await loadPubspec();
 
       for (var packageName in argResults.rest) {
         var packageDir =
@@ -78,23 +80,21 @@ class InstallCommand extends Command {
 
         List<Glob> globs = [];
 
-        var projectPubspec = await Pubspec.load(packageDir);
+        var projectPubspec = await loadPubspec(packageDir);
         var deps = projectPubspec.dependencies.keys
             .map((k) {
-          var dep = projectPubspec.dependencies[k];
-          if (dep is HostedReference)
-            return new MakerDependency(
-                k, dep.versionConstraint.toString());
-          return null;
-        })
+              var dep = projectPubspec.dependencies[k];
+              if (dep is HostedDependency)
+                return new MakerDependency(k, dep.version.toString());
+              return null;
+            })
             .where((d) => d != null)
             .toList();
 
         deps.addAll(projectPubspec.devDependencies.keys.map((k) {
           var dep = projectPubspec.devDependencies[k];
-          if (dep is HostedReference)
-            return new MakerDependency(k, dep.versionConstraint.toString(),
-                dev: true);
+          if (dep is HostedDependency)
+            return new MakerDependency(k, dep.version.toString(), dev: true);
           return null;
         }).where((d) => d != null));
 
@@ -110,7 +110,8 @@ class InstallCommand extends Command {
 
           // Loads globs
           if (cfg['templates'] is List) {
-            globs.addAll(cfg['templates'].map((p) => new Glob(p)));
+            globs.addAll(
+                (cfg['templates'] as List).map((p) => new Glob(p.toString())));
           }
 
           if (cfg['values'] is Map) {
@@ -120,25 +121,9 @@ class InstallCommand extends Command {
               var desc = val[key]['description'] ?? key;
 
               if (val[key]['type'] == 'prompt') {
-                Prompter prompt;
-
-                if (val[key]['default'] != null) {
-                  prompt = new Prompter('$desc (${val[key]['default']}): ');
-                } else {
-                  prompt = new Prompter('$desc: ');
-                }
-
-                if (val[key]['default'] != null) {
-                  var v = await prompt.prompt();
-                  v = v.isNotEmpty ? v : val[key]['default'];
-                  values[key] = v;
-                } else
-                  values[key] =
-                      await prompt.prompt(checker: (s) => s.isNotEmpty);
+                values[key] = prompts.get(desc.toString(), defaultsTo: val[key]['default']?.toString());
               } else if (val[key]['type'] == 'choice') {
-                var chooser =
-                    new Chooser(val[key]['choices'], message: '$desc: ');
-                values[key] = await chooser.choose();
+                values[key] = prompts.choose(desc.toString(), val[key]['choices'] as Iterable);
               }
             }
           }
@@ -164,10 +149,7 @@ class InstallCommand extends Command {
 
               if (!allClear) {
                 print('The file ${entity.absolute.path} already exists.');
-                var p = new Prompter('Overwrite the existing file? [y/N]');
-                var answer = await p.prompt(
-                    checker: (s) => s.trim() == 'y' || s.trim() == 'N');
-                allClear = answer == 'y';
+                allClear = prompts.getBool('Overwrite the existing file?');
                 if (allClear) await targetFile.delete();
               }
 
@@ -176,12 +158,12 @@ class InstallCommand extends Command {
                   var path = prefix.isEmpty ? name : '$prefix/$name';
 
                   if (globs.any((g) => g.matches(path))) {
-                    print('Rendering Mustache template from ${entity.absolute
-                        .path} to ${targetFile.absolute.path}...');
+                    print(
+                        'Rendering Mustache template from ${entity.absolute.path} to ${targetFile.absolute.path}...');
                     var contents = await entity.readAsString();
                     var renderer = mustache.compile(contents);
                     var generated = renderer(values);
-                    await targetFile.writeAsString(generated);
+                    await targetFile.writeAsString(generated.toString());
                   } else {
                     print(
                         'Copying ${entity.absolute.path} to ${targetFile.absolute.path}...');
@@ -216,7 +198,7 @@ class InstallCommand extends Command {
       await for (var entity in installRepo.list()) {
         if (entity is Directory) {
           try {
-            repos.add(await Pubspec.load(entity));
+            repos.add(await loadPubspec(entity));
           } catch (_) {
             // Ignore failures...
           }

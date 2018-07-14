@@ -8,8 +8,9 @@ final String checkmark = ansiOutputEnabled ? '\u2713' : '[Success]';
 
 final String ballot = ansiOutputEnabled ? '\u2717' : '[Failure]';
 
-Future<Pubspec> loadPubspec() {
-  var file = new File('pubspec.yaml');
+Future<Pubspec> loadPubspec([Directory directory]) {
+  directory ??= Directory.current;
+  var file = new File.fromUri(directory.uri.resolve('pubspec.yaml'));
   return file
       .readAsString()
       .then((yaml) => new Pubspec.parse(yaml, sourceUrl: file.uri));
