@@ -12,15 +12,10 @@ main(List<String> args) async {
       new CommandRunner("angel", "Command-line tools for the Angel framework.");
 
   runner
-    ..addCommand(new ControllerCommand())
     ..addCommand(new DoctorCommand())
     ..addCommand(new KeyCommand())
-    ..addCommand(new ServiceCommand())
     ..addCommand(new InitCommand())
     ..addCommand(new InstallCommand())
-    ..addCommand(new TestCommand())
-    ..addCommand(new PluginCommand())
-    ..addCommand(new StartCommand())
     ..addCommand(new RenameCommand())
     ..addCommand(new UpdateCommand())
     ..addCommand(new MakeCommand())
