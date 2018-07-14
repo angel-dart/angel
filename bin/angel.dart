@@ -8,11 +8,16 @@ import 'package:angel_cli/angel_cli.dart';
 final String DOCTOR = "doctor";
 
 main(List<String> args) async {
-  var runner =
-      new CommandRunner("angel", "Command-line tools for the Angel framework.");
+  var runner = new CommandRunner(
+      "angel",
+      asciiArt.trim() +
+          '\n\n' +
+          "Command-line tools for the Angel framework." +
+          '\n\n' +
+          'https://angel-dart.github.io');
 
   runner.argParser
-      .addFlag('verbose', help: 'Print verbose output', negatable: false);
+      .addFlag('verbose', help: 'Print verbose output.', negatable: false);
 
   runner
     ..addCommand(new DoctorCommand())
@@ -35,3 +40,12 @@ main(List<String> args) async {
     }
   });
 }
+
+const String asciiArt = '''
+____________   ________________________ 
+___    |__  | / /_  ____/__  ____/__  / 
+__  /| |_   |/ /_  / __ __  __/  __  /  
+_  ___ |  /|  / / /_/ / _  /___  _  /___
+/_/  |_/_/ |_/  \____/  /_____/  /_____/
+                                        
+''';
