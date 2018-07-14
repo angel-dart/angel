@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:analyzer/analyzer.dart';
 import 'package:args/command_runner.dart';
-import 'package:console/console.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:glob/glob.dart';
+import 'package:io/ansi.dart';
+import 'package:prompts/prompts.dart' as prompts;
 import 'package:pubspec_parse/pubspec_parse.dart';
+import '../util.dart';
 import 'pub.dart';
 
 class RenameCommand extends Command {
@@ -24,15 +26,12 @@ class RenameCommand extends Command {
     if (argResults.rest.isNotEmpty)
       newName = argResults.rest.first;
     else {
-      var p = new Prompter('Enter new project name: ');
-      newName = await p.prompt(checker: (String str) => str.isNotEmpty);
+      newName = prompts.get('Rename project to');
     }
 
-    var ch = new Chooser<String>(['Yes', 'No'],
-        message: 'Rename the project to `$newName`? ');
-    var choice = await ch.choose();
+    var choice = prompts.getBool('Rename the project to `$newName`?');
 
-    if (choice == 'Yes') {
+    if (choice) {
       print('Renaming project to `$newName`...');
       var pubspecFile =
           new File.fromUri(Directory.current.uri.resolve('pubspec.yaml'));
@@ -40,7 +39,7 @@ class RenameCommand extends Command {
       if (!await pubspecFile.exists()) {
         throw new Exception('No pubspec.yaml found in current directory.');
       } else {
-        var pubspec = await Pubspec.load(Directory.current);
+        var pubspec = await loadPubspec();
         var oldName = pubspec.name;
         await renamePubspec(Directory.current, oldName, newName);
         await renameDartFiles(Directory.current, oldName, newName);
@@ -57,9 +56,13 @@ class RenameCommand extends Command {
 }
 
 renamePubspec(Directory dir, String oldName, String newName) async {
-  var pubspec = await Pubspec.load(dir);
-  var newPubspec = new Pubspec.fromJson(pubspec.toJson()..['name'] = newName);
-  await newPubspec.save(dir);
+//  var pubspec = await loadPubspec(dir);
+  print(cyan.wrap('Renaming your project to `$newName.`'));
+  print(cyan
+      .wrap('Note that this does not actually modify your `pubspec.yaml`.'));
+// TODO: https://github.com/dart-lang/pubspec_parse/issues/17
+//  var newPubspec = new Pubspec.fromJson(pubspec.toJson()..['name'] = newName);
+//  await newPubspec.save(dir);
 }
 
 renameDartFiles(Directory dir, String oldName, String newName) async {
@@ -68,7 +71,8 @@ renameDartFiles(Directory dir, String oldName, String newName) async {
 
   await for (var yamlFile in configGlob.list(root: dir.absolute.path)) {
     if (yamlFile is File) {
-      print('Replacing occurrences of "$oldName" with "$newName" in file "${yamlFile.absolute.path}"...');
+      print(
+          'Replacing occurrences of "$oldName" with "$newName" in file "${yamlFile.absolute.path}"...');
       var contents = await yamlFile.readAsString();
       contents = contents.replaceAll(oldName, newName);
       await yamlFile.writeAsString(contents);
@@ -93,10 +97,10 @@ renameDartFiles(Directory dir, String oldName, String newName) async {
       if (visitor.replace.isNotEmpty) {
         visitor.replace.forEach((range, replacement) {
           if (range.first is int) {
-            contents =
-                contents.replaceRange(range.first, range.last, replacement);
+            contents = contents.replaceRange(
+                range.first as int, range.last as int, replacement);
           } else if (range.first is String) {
-            contents = contents.replaceAll(range.first, replacement);
+            contents = contents.replaceAll(range.first as Pattern, replacement);
           }
         });
 
