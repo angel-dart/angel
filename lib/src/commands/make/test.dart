@@ -102,7 +102,7 @@ main() async {
 
   test('${rc.snakeCase}', () async {
     final response = await client.get('/${rc.snakeCase}');
-    expect(response, hasStatus(HttpStatus.OK));
+    expect(response, hasStatus(HttpStatus.ok));
   });
 }
     ''';
