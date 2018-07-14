@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
-import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
+import 'package:io/ansi.dart';
+import 'package:prompts/prompts.dart' as prompts;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
+import '../../util.dart';
 import 'maker.dart';
 
 class PluginCommand extends Command {
-  final TextPen _pen = new TextPen();
-
   @override
   String get name => "plugin";
 
@@ -26,13 +26,12 @@ class PluginCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await Pubspec.load(Directory.current);
+    var pubspec = await loadPubspec();
     String name;
-    if (argResults.wasParsed('name')) name = argResults['name'];
+    if (argResults.wasParsed('name')) name = argResults['name'] as String;
 
     if (name?.isNotEmpty != true) {
-      var p = new Prompter('Name of Controller class: ');
-      name = await p.prompt(checker: (s) => s.isNotEmpty);
+      name = prompts.get('Name of plug-in class');
     }
 
     List<MakerDependency> deps = [
@@ -41,7 +40,7 @@ class PluginCommand extends Command {
 
     var rc = new ReCase(name);
     final pluginDir = new Directory.fromUri(
-        Directory.current.uri.resolve(argResults['output-dir']));
+        Directory.current.uri.resolve(argResults['output-dir'] as String));
     final pluginFile =
         new File.fromUri(pluginDir.uri.resolve("${rc.snakeCase}.dart"));
     if (!await pluginFile.exists()) await pluginFile.create(recursive: true);
@@ -50,10 +49,8 @@ class PluginCommand extends Command {
 
     if (deps.isNotEmpty) await depend(deps);
 
-    _pen.green();
-    _pen(
-        '${Icon.CHECKMARK} Successfully generated plug-in file "${pluginFile.absolute.path}".');
-    _pen();
+    print(green.wrap(
+        '$checkmark Successfully generated plug-in file "${pluginFile.absolute.path}".'));
   }
 
   String _generatePlugin(Pubspec pubspec, ReCase rc) {
