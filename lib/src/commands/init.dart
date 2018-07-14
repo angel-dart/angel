@@ -64,7 +64,7 @@ class InitCommand extends Command {
       ..write(cyan.wrap('hot-reloading'))
       ..write('), run ')
       ..write(magenta.wrap('`dart --observe bin/dev.dart`'))
-      ..writeln(' in your terminal')
+      ..writeln(' in your terminal.')
       ..writeln()
       ..writeln('Find more documentation about Angel:')
       ..writeln('  * https://angel-dart.github.io')
@@ -159,7 +159,9 @@ class InitCommand extends Command {
       var gitDir = new Directory.fromUri(projectDir.uri.resolve(".git"));
       if (await gitDir.exists()) await gitDir.delete(recursive: true);
     } catch (e) {
-      print(red.wrap("$ballot Could not initialize Angel project."));
+      if (e is! String) {
+        print(red.wrap("$ballot Could not initialize Angel project."));
+      }
       rethrow;
     }
   }
