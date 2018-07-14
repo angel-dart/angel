@@ -35,4 +35,7 @@ class ServiceGenerator {
   Expression createInstance(
           MethodBuilder methodBuilder, String name, String lower) =>
       literal(null);
+
+  @override
+  String toString() => name;
 }
