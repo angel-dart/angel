@@ -7,7 +7,7 @@ class KeyCommand extends Command {
   String get name => 'key';
 
   @override
-  String get description => 'Generates a new `angel_auth`key.';
+  String get description => 'Generates a new `angel_auth` key.';
 
   @override
   run() async {
