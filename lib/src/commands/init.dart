@@ -125,8 +125,9 @@ class InitCommand extends Command {
 
       print('Choose a project type before continuing:');
 
-      var boilerplate = prompts.choose(
-          'Choose a project type before continuing', boilerplates);
+      var boilerplate = basicBoilerplate;
+//      var boilerplate = prompts.choose(
+//          'Choose a project type before continuing', boilerplates);
 
       print(
           'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
