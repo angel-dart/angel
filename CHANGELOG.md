@@ -1,3 +1,8 @@
+# 1.3.0
+* Focus on Dart2 from here on out.
+* Update `code_builder`.
+* More changes...
+
 # 1.1.5
 Deprecated several commands, in favor of the `make`
 command:
