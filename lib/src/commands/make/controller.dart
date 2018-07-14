@@ -69,7 +69,7 @@ class ControllerCommand extends Command {
               ..name = 'hello'
               ..returns = refer('void')
               ..annotations.add(refer('ExposeWs')
-                  .newInstance([literal('get_${rc.snakeCase}')]))
+                  .call([literal('get_${rc.snakeCase}')]))
               ..requiredParameters.add(new Parameter((b) => b
                 ..name = 'socket'
                 ..type = refer('WebSocketContext')))
@@ -83,13 +83,13 @@ class ControllerCommand extends Command {
         } else {
           clazz
             ..annotations
-                .add(refer('Expose').newInstance([literal('/${rc.snakeCase}')]))
+                .add(refer('Expose').call([literal('/${rc.snakeCase}')]))
             ..methods.add(new Method((meth) {
               meth
                 ..name = 'hello'
                 ..returns = refer('String')
                 ..body = literal('Hello, world').returned.statement
-                ..annotations.add(refer('Expose').newInstance([
+                ..annotations.add(refer('Expose').call([
                   literal('/'),
                 ]));
             }));
