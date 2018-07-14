@@ -113,8 +113,8 @@ class InitCommand extends Command {
         var shouldDelete = prompts.getBool(
             "Directory '${projectDir.absolute.path}' already exists. Overwrite it?");
 
-        if (shouldDelete)
-          throw new Exception("Chose not to overwrite existing directory.");
+        if (!shouldDelete)
+          throw "Chose not to overwrite existing directory.";
         else if (projectDir.absolute.uri.normalizePath().toFilePath() !=
             Directory.current.absolute.uri.normalizePath().toFilePath())
           await projectDir.delete(recursive: true);

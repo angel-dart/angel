@@ -20,7 +20,11 @@ main(List<String> args) async {
     ..addCommand(new MakeCommand());
 
   return await runner.run(args).then((_) {}).catchError((exc) {
-    stderr.writeln("Oops, something went wrong: $exc");
-    exitCode = 1;
+    if (exc is String) {
+      stdout.writeln(exc);
+    } else {
+      stderr.writeln("Oops, something went wrong: $exc");
+      exitCode = 1;
+    }
   });
 }

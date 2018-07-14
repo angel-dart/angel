@@ -58,8 +58,21 @@ class RenameCommand extends Command {
 renamePubspec(Directory dir, String oldName, String newName) async {
 //  var pubspec = await loadPubspec(dir);
   print(cyan.wrap('Renaming your project to `$newName.`'));
-  print(cyan
-      .wrap('Note that this does not actually modify your `pubspec.yaml`.'));
+
+  var pubspecFile = new File.fromUri(dir.uri.resolve('pubspec.yaml'));
+
+  if (await pubspecFile.exists()) {
+    var contents = await pubspecFile.readAsString(), oldContents = contents;
+    contents =
+        contents.replaceAll(new RegExp('name:\\s*$oldName'), 'name: $newName');
+
+    if (contents != oldContents) {
+      await pubspecFile.writeAsString(contents);
+    }
+  }
+
+//  print(cyan
+//      .wrap('Note that this does not actually modify your `pubspec.yaml`.'));
 // TODO: https://github.com/dart-lang/pubspec_parse/issues/17
 //  var newPubspec = new Pubspec.fromJson(pubspec.toJson()..['name'] = newName);
 //  await newPubspec.save(dir);
