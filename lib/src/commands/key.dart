@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
-import 'package:random_string/random_string.dart' as rs;
+import '../random_string.dart' as rs;
 
 class KeyCommand extends Command {
   @override
