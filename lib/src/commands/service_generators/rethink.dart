@@ -34,7 +34,7 @@ class RethinkServiceGenerator extends ServiceGenerator {
   void applyToLibrary(LibraryBuilder library, String name, String lower) {
     library.directives.addAll([
       'package:angel_rethink/angel_rethink.dart',
-      'package:rethinkdb_driver2/rethinkdb_driver2.dart'
+      'package:rethinkdb_driver/rethinkdb_driver.dart'
     ].map((str) => new Directive.import(str)));
   }
 
