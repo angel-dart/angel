@@ -8,8 +8,8 @@ class MapServiceGenerator extends ServiceGenerator {
   bool get createsModel => false;
 
   @override
-  ExpressionBuilder createInstance(
+  Expression createInstance(
       MethodBuilder methodBuilder, String name, String lower) {
-    return new TypeBuilder('MapService').newInstance([]);
+    return refer('MapService').newInstance([]);
   }
 }
