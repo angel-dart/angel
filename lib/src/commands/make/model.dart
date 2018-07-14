@@ -1,16 +1,15 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
-import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:console/console.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:inflection/inflection.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:io/ansi.dart';
+import 'package:prompts/prompts.dart' as prompts;
 import 'package:recase/recase.dart';
+import '../../util.dart';
 import 'maker.dart';
 
 class ModelCommand extends Command {
-  final TextPen _pen = new TextPen();
-
   @override
   String get name => 'model';
 
@@ -38,13 +37,12 @@ class ModelCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await loadPubspec();
     String name;
-    if (argResults.wasParsed('name')) name = argResults['name'];
+    if (argResults.wasParsed('name')) name = argResults['name'] as String;
 
     if (name?.isNotEmpty != true) {
-      var p = new Prompter('Name of Model class: ');
-      name = await p.prompt(checker: (s) => s.isNotEmpty);
+      name = prompts.get('Name of model class');
     }
 
     List<MakerDependency> deps = [
@@ -53,107 +51,148 @@ class ModelCommand extends Command {
     ];
 
     var rc = new ReCase(name);
-    var modelLib =
-        new LibraryBuilder('${pubspec.name}.src.models.${rc.snakeCase}');
-    modelLib.addDirective(
-        new ImportBuilder('package:angel_model/angel_model.dart'));
 
-    var needsSerialize = argResults['serializable'] || argResults['orm'];
+    var modelLib = new Library((modelLib) {
+      modelLib.directives
+          .add(new Directive.import('package:angel_model/angel_model.dart'));
 
-    if (needsSerialize) {
-      modelLib.addDirective(
-          new ImportBuilder('package:angel_serialize/angel_serialize.dart'));
-      deps.add(const MakerDependency('angel_serialize', '^1.0.0-alpha'));
-    }
+      var needsSerialize =
+          argResults['serializable'] as bool || argResults['orm'] as bool;
 
-    if (argResults['orm']) {
-      modelLib
-          .addDirective(new ImportBuilder('package:angel_orm/angel_orm.dart'));
-      deps.add(const MakerDependency('angel_orm', '^1.0.0-alpha'));
-    }
+      if (needsSerialize) {
+        modelLib.directives.add(new Directive.import(
+            'package:angel_serialize/angel_serialize.dart'));
+        deps.add(const MakerDependency('angel_serialize', '^2.0.0'));
+      }
 
-    var modelClazz = new ClassBuilder(
-        needsSerialize ? '_${rc.pascalCase}' : rc.pascalCase,
-        asExtends: new TypeBuilder('Model'));
-    modelLib.addMember(modelClazz);
+      if (argResults['orm'] as bool) {
+        modelLib.directives
+            .add(new Directive.import('package:angel_orm/angel_orm.dart'));
+        deps.add(const MakerDependency('angel_orm', '^1.0.0-alpha'));
+      }
 
-    if (needsSerialize) {
-      modelLib.addDirective(new PartBuilder('${rc.snakeCase}.g.dart'));
-      modelClazz.addAnnotation(reference('serializable'));
-    }
+      modelLib.body.add(new Class((modelClazz) {
+        modelClazz
+          ..name = needsSerialize ? '_${rc.pascalCase}' : rc.pascalCase
+          ..extend = refer('Model');
 
-    if (argResults['orm']) {
-      modelClazz.addAnnotation(reference('orm'));
-    }
+        if (needsSerialize) {
+          // TODO: Add parts
+          // modelLib.addDirective(new PartBuilder('${rc.snakeCase}.g.dart'));
+          modelClazz.annotations.add(refer('serializable'));
+        }
+
+        if (argResults['orm'] as bool) {
+          modelClazz.annotations.add(refer('orm'));
+        }
+      }));
+    });
 
     // Save model file
     var outputDir = new Directory.fromUri(
-        Directory.current.uri.resolve(argResults['output-dir']));
+        Directory.current.uri.resolve(argResults['output-dir'] as String));
     var modelFile =
         new File.fromUri(outputDir.uri.resolve('${rc.snakeCase}.dart'));
     if (!await modelFile.exists()) await modelFile.create(recursive: true);
-    await modelFile.writeAsString(prettyToSource(modelLib.buildAst()));
-    _pen
-      ..green()
-      ..call(
-          '${Icon.CHECKMARK} Created model file "${modelFile.absolute.path}".')
-      ..call()
-      ..reset();
 
-    if (argResults['migration']) {
+    await modelFile.writeAsString(new DartFormatter()
+        .format(modelLib.accept(new DartEmitter()).toString()));
+
+    print(green
+        .wrap('$checkmark Created model file "${modelFile.absolute.path}".'));
+
+    if (argResults['migration'] as bool) {
       deps.add(const MakerDependency('angel_migration', '^1.0.0-alpha'));
 
-      var migrationLib = new LibraryBuilder()
-        ..addDirective(
-            new ImportBuilder('package:angel_migration/angel_migration.dart'));
-      var migrationClazz = new ClassBuilder('${rc.pascalCase}Migration',
-          asExtends: new TypeBuilder('Migration'));
-      migrationLib.addMember(migrationClazz);
-      var tableName = pluralize(rc.snakeCase);
+      var migrationLib = new Library((migrationLib) {
+        migrationLib
+          ..directives.add(new Directive.import(
+              'package:angel_migration.dart/angel_migration.dart'))
+          ..body.add(new Class((migrationClazz) {
+            migrationClazz
+              ..name = '${rc.pascalCase}Migration'
+              ..extend = refer('Migration');
 
-      // up()
-      var up = new MethodBuilder('up', returnType: lib$core.$void);
-      migrationClazz.addMethod(up);
-      up.addAnnotation(lib$core.override);
-      up.addPositional(parameter('schema', [new TypeBuilder('Schema')]));
+            var tableName = pluralize(rc.snakeCase);
 
-      // (table) { ... }
-      var callback = new MethodBuilder.closure();
-      callback.addPositional(parameter('table'));
+            // up()
+            migrationClazz.methods.add(new Method((up) {
+              up
+                ..name = 'up'
+                ..returns = refer('void')
+                ..annotations.add(refer('override'))
+                ..requiredParameters.add(new Parameter((b) => b
+                  ..name = 'schema'
+                  ..type = refer('Schema')))
+                ..body = new Block((block) {
+                  // (table) { ... }
+                  var callback = new Method((callback) {
+                    callback
+                      ..requiredParameters
+                          .add(new Parameter((b) => b..name = 'table'))
+                      ..body = new Block((block) {
+                        var table = refer('table');
 
-      var cascade = reference('table').cascade((table) => [
-            table.invoke('serial', [literal('id')]).invoke('primaryKey', []),
-            table.invoke('date', [literal('created_at')]),
-            table.invoke('date', [literal('updated_at')])
-          ]);
-      callback.addStatement(cascade);
+                        block.addExpression(
+                          (table.property('serial').call([literal('id')]))
+                              .property('primaryKey')
+                              .call([]),
+                        );
 
-      up.addStatement(
-          reference('schema').invoke('create', [literal(tableName), callback]));
+                        block.addExpression(
+                          table.property('date').call([
+                            literal('created_at'),
+                          ]),
+                        );
 
-      // down()
-      var down = new MethodBuilder('down', returnType: lib$core.$void);
-      migrationClazz.addMethod(down);
-      down.addAnnotation(lib$core.override);
-      down.addPositional(parameter('schema', [new TypeBuilder('Schema')]));
-      down.addStatement(
-          reference('schema').invoke('drop', [literal(tableName)]));
+                        block.addExpression(
+                          table.property('date').call([
+                            literal('updated_at'),
+                          ]),
+                        );
+                      });
+                  });
+
+                  block.addExpression(refer('schema').property('create').call([
+                    literal(tableName),
+                    callback.closure,
+                  ]));
+                });
+            }));
+
+            // down()
+            migrationClazz.methods.add(new Method((down) {
+              down
+                ..name = 'down'
+                ..returns = refer('void')
+                ..annotations.add(refer('override'))
+                ..requiredParameters.add(new Parameter((b) => b
+                  ..name = 'schema'
+                  ..type = refer('Schema')))
+                ..body = new Block((block) {
+                  block.addExpression(
+                    refer('schema').property('drop').call([
+                      literal(tableName),
+                    ]),
+                  );
+                });
+            }));
+          }));
+      });
 
       // Save migration file
       var migrationDir = new Directory.fromUri(
-          Directory.current.uri.resolve(argResults['migration-dir']));
+          Directory.current.uri.resolve(argResults['migration-dir'] as String));
       var migrationFile =
           new File.fromUri(migrationDir.uri.resolve('${rc.snakeCase}.dart'));
       if (!await migrationFile.exists())
         await migrationFile.create(recursive: true);
-      await migrationFile
-          .writeAsString(prettyToSource(migrationLib.buildAst()));
-      _pen
-        ..green()
-        ..call(
-            '${Icon.CHECKMARK} Created migration file "${migrationFile.absolute.path}".')
-        ..call()
-        ..reset();
+
+      await migrationFile.writeAsString(new DartFormatter()
+          .format(migrationLib.accept(new DartEmitter()).toString()));
+
+      print(green.wrap(
+          '$checkmark Created migration file "${migrationFile.absolute.path}".'));
     }
 
     if (deps.isNotEmpty) await depend(deps);

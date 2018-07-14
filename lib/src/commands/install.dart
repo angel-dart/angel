@@ -6,7 +6,7 @@ import 'package:glob/glob.dart';
 import 'package:homedir/homedir.dart';
 import 'package:mustache4dart/mustache4dart.dart' as mustache;
 import 'package:path/path.dart' as p;
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:yaml/yaml.dart' as yaml;
 import 'make/maker.dart';
 
@@ -61,7 +61,7 @@ class InstallCommand extends Command {
       if (!await installRepo.exists())
         throw 'No local add-on database exists. Run `angel install --update` first.';
 
-      var pubspec = await PubSpec.load(Directory.current);
+      var pubspec = await Pubspec.load(Directory.current);
 
       for (var packageName in argResults.rest) {
         var packageDir =
@@ -78,7 +78,7 @@ class InstallCommand extends Command {
 
         List<Glob> globs = [];
 
-        var projectPubspec = await PubSpec.load(packageDir);
+        var projectPubspec = await Pubspec.load(packageDir);
         var deps = projectPubspec.dependencies.keys
             .map((k) {
           var dep = projectPubspec.dependencies[k];
@@ -207,16 +207,16 @@ class InstallCommand extends Command {
     }
   }
 
-  Future<List<PubSpec>> list() async {
+  Future<List<Pubspec>> list() async {
     if (!await installRepo.exists()) {
       throw 'No local add-on database exists. Run `angel install --update` first.';
     } else {
-      List<PubSpec> repos = [];
+      List<Pubspec> repos = [];
 
       await for (var entity in installRepo.list()) {
         if (entity is Directory) {
           try {
-            repos.add(await PubSpec.load(entity));
+            repos.add(await Pubspec.load(entity));
           } catch (_) {
             // Ignore failures...
           }

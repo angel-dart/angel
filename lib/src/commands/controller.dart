@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
 import "package:console/console.dart";
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import 'deprecated.dart';
 
@@ -31,7 +31,7 @@ class ControllerCommand extends Command {
       await controllerFile.create(recursive: true);
 
     await controllerFile.writeAsString(
-        _generateController(await PubSpec.load(Directory.current), recase));
+        _generateController(await Pubspec.load(Directory.current), recase));
 
     _pen.green();
     _pen("${Icon.CHECKMARK} Successfully generated controller $name.");
@@ -41,7 +41,7 @@ class ControllerCommand extends Command {
   NewInstanceBuilder _expose(String path) => new TypeBuilder('Expose')
       .constInstance([], namedArguments: {'path': literal(path)});
 
-  String _generateController(PubSpec pubspec, ReCase recase) {
+  String _generateController(Pubspec pubspec, ReCase recase) {
     var lower = recase.snakeCase;
     var lib = new LibraryBuilder('${pubspec.name}.routes.controllers.$lower');
     lib.addDirective(

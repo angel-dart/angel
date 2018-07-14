@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import 'deprecated.dart';
 
@@ -19,7 +19,7 @@ class PluginCommand extends Command {
   run() async {
     warnDeprecated(this.name, _pen);
 
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await Pubspec.load(Directory.current);
     final name = await readInput("Name of Plugin: "),
         lower = new ReCase(name).snakeCase;
     final testDir = new Directory("lib/src/config/plugins");
@@ -35,7 +35,7 @@ class PluginCommand extends Command {
     _pen();
   }
 
-  String _generatePlugin(PubSpec pubspec, String name, String lower) {
+  String _generatePlugin(Pubspec pubspec, String name, String lower) {
     return '''
 library ${pubspec.name}.config.plugins.$lower;
 

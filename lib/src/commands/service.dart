@@ -4,7 +4,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:console/console.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:inflection/inflection.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import 'service_generators/service_generators.dart';
 import 'deprecated.dart';
@@ -23,7 +23,7 @@ class ServiceCommand extends Command {
   run() async {
     warnDeprecated(this.name, _pen);
     
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await Pubspec.load(Directory.current);
     var name = await readInput('Name of Service (not plural): ');
     var chooser = new Chooser<String>(
         serviceGenerators.map<String>((g) => g.name).toList(),
@@ -151,7 +151,7 @@ class ServiceCommand extends Command {
   }
 
   _generateModel(
-      PubSpec pubspec, String name, String lower, DartFormatter fmt) async {
+      Pubspec pubspec, String name, String lower, DartFormatter fmt) async {
     var file = new File('lib/src/models/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
@@ -173,7 +173,7 @@ class $name extends Model {
   }
 
   _generateValidator(
-      PubSpec pubspec, String lower, ReCase rc, DartFormatter fmt) async {
+      Pubspec pubspec, String lower, ReCase rc, DartFormatter fmt) async {
     var file = new File('lib/src/validators/$lower.dart');
 
     if (!await file.exists()) await file.createSync(recursive: true);
@@ -204,7 +204,7 @@ final Validator create${rc.pascalCase} = ${rc.camelCase}.extend({})
         .trim();
   }
 
-  _generateTests(PubSpec pubspec, String lower, DartFormatter fmt) {
+  _generateTests(Pubspec pubspec, String lower, DartFormatter fmt) {
     return fmt.format('''
 import 'dart:io';
 import 'package:${pubspec.name}/${pubspec.name}.dart';

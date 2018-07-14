@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import 'deprecated.dart';
 
@@ -28,7 +28,7 @@ class TestCommand extends Command {
     if (!await testFile.exists()) await testFile.create(recursive: true);
 
     await testFile.writeAsString(new DartFormatter()
-        .format(_generateTest(await PubSpec.load(Directory.current), lower)));
+        .format(_generateTest(await Pubspec.load(Directory.current), lower)));
 
     final runConfig = new File('./.idea/runConfigurations/${name}_tests.xml');
 
@@ -56,7 +56,7 @@ class TestCommand extends Command {
         .trim();
   }
 
-  String _generateTest(PubSpec pubspec, String lower) {
+  String _generateTest(Pubspec pubspec, String lower) {
     return '''
 import 'dart:io';
 import 'package:${pubspec.name}/${pubspec.name}.dart';

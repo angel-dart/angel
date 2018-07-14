@@ -3,7 +3,7 @@ import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:console/console.dart';
 import 'package:inflection/inflection.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import '../service_generators/service_generators.dart';
 import 'maker.dart';
@@ -32,7 +32,7 @@ class ServiceCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await Pubspec.load(Directory.current);
     String name;
     if (argResults.wasParsed('name')) name = argResults['name'];
 

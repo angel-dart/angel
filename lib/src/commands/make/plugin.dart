@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import 'maker.dart';
 
@@ -26,7 +26,7 @@ class PluginCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await Pubspec.load(Directory.current);
     String name;
     if (argResults.wasParsed('name')) name = argResults['name'];
 
@@ -56,7 +56,7 @@ class PluginCommand extends Command {
     _pen();
   }
 
-  String _generatePlugin(PubSpec pubspec, ReCase rc) {
+  String _generatePlugin(Pubspec pubspec, ReCase rc) {
     return '''
 library ${pubspec.name}.src.config.plugins.${rc.snakeCase};
 

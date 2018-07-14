@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
 import 'package:dart_style/dart_style.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:recase/recase.dart';
 import 'maker.dart';
 
@@ -29,7 +29,7 @@ class TestCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await Pubspec.load(Directory.current);
     String name;
     if (argResults.wasParsed('name')) name = argResults['name'];
 
@@ -87,7 +87,7 @@ class TestCommand extends Command {
         .trim();
   }
 
-  String _generateTest(PubSpec pubspec, ReCase rc) {
+  String _generateTest(Pubspec pubspec, ReCase rc) {
     return '''
 import 'dart:io';
 import 'package:${pubspec.name}/${pubspec.name}.dart';

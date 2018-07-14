@@ -1,15 +1,14 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
-import 'package:code_builder/dart/core.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:console/console.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:dart_style/dart_style.dart';
+import 'package:io/ansi.dart';
+import 'package:prompts/prompts.dart' as prompts;
 import 'package:recase/recase.dart';
+import '../../util.dart';
 import 'maker.dart';
 
 class ControllerCommand extends Command {
-  final TextPen _pen = new TextPen();
-
   @override
   String get name => 'controller';
 
@@ -32,73 +31,83 @@ class ControllerCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await PubSpec.load(Directory.current);
+    var pubspec = await loadPubspec();
     String name;
-    if (argResults.wasParsed('name')) name = argResults['name'];
+    if (argResults.wasParsed('name')) name = argResults['name'] as String;
 
     if (name?.isNotEmpty != true) {
-      var p = new Prompter('Name of Controller class: ');
-      name = await p.prompt(checker: (s) => s.isNotEmpty);
+      name = prompts.get('Name of controller class');
     }
 
     List<MakerDependency> deps = [
       const MakerDependency('angel_framework', '^1.0.0')
     ];
 
+    // ${pubspec.name}.src.models.${rc.snakeCase}
+
     var rc = new ReCase(name);
-    var controllerLib =
-        new LibraryBuilder('${pubspec.name}.src.controllers.${rc.snakeCase}');
+    var controllerLib = new Library((controllerLib) {
+      if (argResults['websocket'] as bool) {
+        deps.add(const MakerDependency('angel_websocket', '^1.0.0'));
+        controllerLib.directives
+            .add(new Directive.import('package:angel_websocket/server.dart'));
+      } else {
+        controllerLib.directives.add(new Directive.import(
+            'package:angel_framework/angel_framework.dart'));
+      }
 
-    if (argResults['websocket']) {
-      deps.add(const MakerDependency('angel_websocket', '^1.0.0'));
-      controllerLib.addDirective(
-          new ImportBuilder('package:angel_websocket/server.dart'));
-    } else
-      controllerLib.addDirective(
-          new ImportBuilder('package:angel_framework/angel_framework.dart'));
+      controllerLib.body.add(new Class((clazz) {
+        clazz
+          ..name = '${rc.pascalCase}Controller'
+          ..extend = refer(argResults['websocket'] as bool
+              ? 'WebSocketController'
+              : 'Controller');
 
-    TypeBuilder parentType = new TypeBuilder(
-        argResults['websocket'] ? 'WebSocketController' : 'Controller');
-    ClassBuilder clazz =
-        new ClassBuilder('${rc.pascalCase}Controller', asExtends: parentType);
-    controllerLib.addMember(clazz);
-
-    if (argResults['websocket']) {
-      var meth = new MethodBuilder('hello', returnType: lib$core.$void);
-      meth.addAnnotation(new TypeBuilder('ExposeWs')
-          .constInstance([literal('get_${rc.snakeCase}')]));
-      meth.addPositional(
-          parameter('socket', [new TypeBuilder('WebSocketContext')]));
-      meth.addStatement(reference('socket').invoke('send', [
-        literal('got_${rc.snakeCase}'),
-        map({'message': literal('Hello, world!')})
-      ]));
-      clazz.addMethod(meth);
-    } else {
-      clazz.addAnnotation(new TypeBuilder('Expose')
-          .constInstance([literal('/${rc.snakeCase}')]));
-
-      var meth = new MethodBuilder('hello',
-          returnType: lib$core.String, returns: literal('Hello, world!'));
-      meth.addAnnotation(
-          new TypeBuilder('Expose').constInstance([literal('/')]));
-      clazz.addMethod(meth);
-    }
+        if (argResults['websocket'] as bool) {
+          clazz.methods.add(new Method((meth) {
+            meth
+              ..name = 'hello'
+              ..returns = refer('void')
+              ..annotations.add(refer('ExposeWs')
+                  .constInstance([literal('get_${rc.snakeCase}')]))
+              ..requiredParameters.add(new Parameter((b) => b
+                ..name = 'socket'
+                ..type = refer('WebSocketContext')))
+              ..body = new Block((block) {
+                block.addExpression(refer('socket').property('send').call([
+                  literal('got_${rc.snakeCase}'),
+                  literalMap({'message': literal('Hello, world!')}),
+                ]));
+              });
+          }));
+        } else {
+          clazz
+            ..annotations.add(
+                refer('Expose').constInstance([literal('/${rc.snakeCase}')]))
+            ..methods.add(new Method((meth) {
+              meth
+                ..name = 'hello'
+                ..returns = refer('String')
+                ..body = literal('Hello, world').returned.statement
+                ..annotations.add(refer('Expose').constInstance([
+                  literal('/'),
+                ]));
+            }));
+        }
+      }));
+    });
 
     var outputDir = new Directory.fromUri(
-        Directory.current.uri.resolve(argResults['output-dir']));
+        Directory.current.uri.resolve(argResults['output-dir'] as String));
     var controllerFile =
         new File.fromUri(outputDir.uri.resolve('${rc.snakeCase}.dart'));
     if (!await controllerFile.exists())
       await controllerFile.create(recursive: true);
-    await controllerFile
-        .writeAsString(prettyToSource(controllerLib.buildAst()));
-    _pen
-      ..green()
-      ..call(
-          '${Icon.CHECKMARK} Created controller file "${controllerFile.absolute.path}".')
-      ..call()
-      ..reset();
+    await controllerFile.writeAsString(new DartFormatter()
+        .format(controllerLib.accept(new DartEmitter()).toString()));
+
+    print(green.wrap(
+        '$checkmark Created controller file "${controllerFile.absolute.path}"'));
 
     if (deps.isNotEmpty) await depend(deps);
   }

@@ -4,7 +4,7 @@ import 'package:args/command_runner.dart';
 import 'package:console/console.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:glob/glob.dart';
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'pub.dart';
 
 class RenameCommand extends Command {
@@ -40,7 +40,7 @@ class RenameCommand extends Command {
       if (!await pubspecFile.exists()) {
         throw new Exception('No pubspec.yaml found in current directory.');
       } else {
-        var pubspec = await PubSpec.load(Directory.current);
+        var pubspec = await Pubspec.load(Directory.current);
         var oldName = pubspec.name;
         await renamePubspec(Directory.current, oldName, newName);
         await renameDartFiles(Directory.current, oldName, newName);
@@ -57,8 +57,8 @@ class RenameCommand extends Command {
 }
 
 renamePubspec(Directory dir, String oldName, String newName) async {
-  var pubspec = await PubSpec.load(dir);
-  var newPubspec = new PubSpec.fromJson(pubspec.toJson()..['name'] = newName);
+  var pubspec = await Pubspec.load(dir);
+  var newPubspec = new Pubspec.fromJson(pubspec.toJson()..['name'] = newName);
   await newPubspec.save(dir);
 }
 
