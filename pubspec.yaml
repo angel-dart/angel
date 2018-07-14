@@ -24,7 +24,7 @@ dependencies:
   recase: ^1.0.0
   watcher: ^0.9.7
   yaml: ^2.0.0
-  yamlicious: ^0.0.5
+  #yamlicious: ^0.0.5
 dev_dependencies:
   #build: ^0.7.0
   #build_runner: ^0.3.0

@@ -38,17 +38,17 @@ class ControllerCommand extends Command {
     _pen();
   }
 
-  NewInstanceBuilder _expose(String path) => new TypeBuilder('Expose')
+  NewInstanceBuilder _expose(String path) => refer('Expose')
       .constInstance([], namedArguments: {'path': literal(path)});
 
   String _generateController(Pubspec pubspec, ReCase recase) {
     var lower = recase.snakeCase;
     var lib = new LibraryBuilder('${pubspec.name}.routes.controllers.$lower');
     lib.addDirective(
-        new ImportBuilder('package:angel_common/angel_common.dart'));
+        new Directive.import('package:angel_common/angel_common.dart'));
 
     var clazz = new ClassBuilder('${recase.pascalCase}Controller',
-        asExtends: new TypeBuilder('Controller'));
+        asExtends: refer('Controller'));
 
     // Add @Expose()
     clazz.addAnnotation(_expose('/$lower'));
@@ -58,7 +58,7 @@ class ControllerCommand extends Command {
     // String foo() => 'bar';
 
     var meth = new MethodBuilder('foo',
-        returns: literal('bar'), returnType: new TypeBuilder('String'));
+        returns: literal('bar'), returnType: refer('String'));
     meth.addAnnotation(_expose('/'));
     clazz.addMethod(meth);
 

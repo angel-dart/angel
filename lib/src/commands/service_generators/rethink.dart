@@ -14,27 +14,32 @@ class RethinkServiceGenerator extends ServiceGenerator {
   bool get createsModel => false;
 
   @override
-  void applyToConfigureServer(
-      MethodBuilder configureServer, String name, String lower) {
-    configureServer
-      ..addPositional(parameter('connection', [new TypeBuilder('Connection')]))
-      ..addPositional(parameter('r', [new TypeBuilder('Rethinkdb')]));
+  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
+      String name, String lower) {
+    configureServer.requiredParameters.addAll([
+      new Parameter((b) => b
+        ..name = 'connection'
+        ..type = refer('Connection')),
+      new Parameter((b) => b
+        ..name = 'r'
+        ..type = refer('Rethinkdb')),
+    ]);
   }
 
   @override
   void applyToLibrary(LibraryBuilder library, String name, String lower) {
-    library.addMembers([
+    library.directives.addAll([
       'package:angel_rethink/angel_rethink.dart',
       'package:rethinkdb_driver2/rethinkdb_driver2.dart'
-    ].map((str) => new ImportBuilder(str)));
+    ].map((str) => new Directive.import(str)));
   }
 
   @override
-  ExpressionBuilder createInstance(
+  Expression createInstance(
       MethodBuilder methodBuilder, String name, String lower) {
-    return new TypeBuilder('RethinkService').newInstance([
-      reference('connection'),
-      reference('r').invoke('table', [literal(pluralize(lower))])
+    return refer('RethinkService').newInstance([
+      refer('connection'),
+      refer('r').property('table').call([literal(pluralize(lower))])
     ]);
   }
 }

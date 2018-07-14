@@ -14,24 +14,26 @@ class MongoServiceGenerator extends ServiceGenerator {
   bool get createsModel => false;
 
   @override
-  void applyToConfigureServer(
-      MethodBuilder configureServer, String name, String lower) {
-    configureServer.addPositional(parameter('db', [new TypeBuilder('Db')]));
+  void applyToConfigureServer(MethodBuilder configureServer, BlockBuilder block,
+      String name, String lower) {
+    configureServer.requiredParameters.add(new Parameter((b) => b
+      ..name = 'db'
+      ..type = refer('Db')));
   }
 
   @override
   void applyToLibrary(LibraryBuilder library, String name, String lower) {
-    library.addMembers([
-      new ImportBuilder('package:angel_mongo/angel_mongo.dart'),
-      new ImportBuilder('package:mongo_dart/mongo_dart.dart'),
+    library.directives.addAll([
+      new Directive.import('package:angel_mongo/angel_mongo.dart'),
+      new Directive.import('package:mongo_dart/mongo_dart.dart'),
     ]);
   }
 
   @override
-  ExpressionBuilder createInstance(
+  Expression createInstance(
       MethodBuilder methodBuilder, String name, String lower) {
-    return new TypeBuilder('MongoService').newInstance([
-      reference('db').invoke('collection', [literal(pluralize(lower))])
+    return refer('MongoService').newInstance([
+      refer('db').property('collection').call([literal(pluralize(lower))])
     ]);
   }
 }

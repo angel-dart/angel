@@ -102,23 +102,23 @@ class ServiceCommand extends Command {
     import '../models/$lower.dart';
     export '../models/$lower.dart';
     */
-    lib.addMember(new ImportBuilder('package:angel_common/angel_common.dart'));
+    lib.addMember(new Directive.import('package:angel_common/angel_common.dart'));
     generator.applyToLibrary(lib, name, lower);
 
     if (generator.createsModel == true || typed) {
       lib
-        ..addMember(new ImportBuilder('../models/$lower.dart'))
+        ..addMember(new Directive.import('../models/$lower.dart'))
         ..addMember(new ExportBuilder('../models/$lower.dart'));
     }
 
     // configureServer() {}
     var configureServer = new MethodBuilder('configureServer',
-        returnType: new TypeBuilder('AngelConfigurer'));
+        returnType: refer('AngelConfigurer'));
     generator.applyToConfigureServer(configureServer, name, lower);
 
     // return (Angel app) async {}
     var closure = new MethodBuilder.closure(modifier: MethodModifier.asAsync)
-      ..addPositional(parameter('app', [new TypeBuilder('Angel')]));
+      ..addPositional(parameter('app', [refer('Angel')]));
     generator.beforeService(closure, name, lower);
 
     // app.use('/api/todos', new MapService());
@@ -126,21 +126,21 @@ class ServiceCommand extends Command {
 
     if (typed == true) {
       service =
-          new TypeBuilder('TypedService', genericTypes: [new TypeBuilder(name)])
+          refer('TypedService', genericTypes: [refer(name)])
               .newInstance([service]);
     }
 
-    closure.addStatement(reference('app')
+    closure.addStatement(refer('app')
         .invoke('use', [literal('/api/${pluralize(lower)}'), service]));
 
     if (generator.injectsSingleton == true) {
       closure.addStatement(varField('service',
-          value: reference('app')
+          value: refer('app')
               .invoke('service', [literal('/api/${pluralize(lower)}')]).castAs(
-                  new TypeBuilder('HookedService'))));
-      closure.addStatement(reference('app')
+                  refer('HookedService'))));
+      closure.addStatement(refer('app')
           .property('container')
-          .invoke('singleton', [reference('service').property('inner')]));
+          .invoke('singleton', [refer('service').property('inner')]));
     }
 
     configureServer.addStatement(closure.asReturn());
