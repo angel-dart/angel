@@ -73,8 +73,8 @@ class ModelCommand extends Command {
       }
 
       modelLib.body.addAll([
-        new Code('part ${rc.snakeCase}.g.dart;'),
-        new Code('part ${rc.snakeCase}.serializer.g.dart;'),
+        new Code("part '${rc.snakeCase}.g.dart';"),
+        new Code("part '${rc.snakeCase}.serializer.g.dart';"),
       ]);
 
       modelLib.body.add(new Class((modelClazz) {

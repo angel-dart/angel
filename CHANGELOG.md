@@ -1,3 +1,6 @@
+# 1.3.4
+* Fix another typo.
+
 # 1.3.3
 * Fix a small typo in the model generator.
 
