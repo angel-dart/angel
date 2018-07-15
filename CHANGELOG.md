@@ -1,3 +1,6 @@
+# 1.3.2
+* Restore `part` directives in generated models.
+
 # 1.3.1
 * Add `deploy nginx` and `deploy systemd`.
 

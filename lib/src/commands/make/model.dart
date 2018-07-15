@@ -72,6 +72,11 @@ class ModelCommand extends Command {
         deps.add(const MakerDependency('angel_orm', '^1.0.0-alpha'));
       }
 
+      modelLib.body.addAll([
+        new Code('part ${rc.snakeCase}.g.dart'),
+        new Code('part ${rc.snakeCase}.serializer.g.dart'),
+      ]);
+
       modelLib.body.add(new Class((modelClazz) {
         modelClazz
           ..abstract = true
@@ -79,7 +84,6 @@ class ModelCommand extends Command {
           ..extend = refer('Model');
 
         if (needsSerialize) {
-          // TODO: Add parts
           // modelLib.addDirective(new PartBuilder('${rc.snakeCase}.g.dart'));
           modelClazz.annotations.add(refer('serializable'));
         }
