@@ -49,7 +49,10 @@ AngelConfigurer jael(Directory viewsDirectory,
       }
 
       var buf = createBuffer();
-      var scope = new SymbolTable(values: locals ?? {});
+      var scope = new SymbolTable(
+          values: locals?.keys?.fold<Map<String, dynamic>>(<String, dynamic>{},
+                  (out, k) => out..[k.toString()] = locals[k]) ??
+              <String, dynamic>{});
 
       if (errors.isEmpty) {
         try {

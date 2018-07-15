@@ -26,6 +26,14 @@ main() {
     // d.jl
     fileSystem.file('d.jl').writeAsStringSync(
         '<extend src="c.jl"><block name="greeting">Saluton!</block></extend>');
+
+    // e.jl
+    fileSystem.file('e.jl').writeAsStringSync(
+        '<extend src="c.jl"><block name="greeting">Angel <block name="name">default</block></block></extend>');
+
+    // e.jl
+    fileSystem.file('f.jl').writeAsStringSync(
+        '<extend src="e.jl"><block name="name">framework</block></extend>');
   });
 
   test('blocks are replaced or kept', () async {
@@ -40,14 +48,17 @@ main() {
     const jael.Renderer().render(processed, buf, scope);
     print(buf);
 
-    expect(buf.toString(), '''
+    expect(
+        buf.toString(),
+        '''
 <i>
   <b>
     a.jl
   </b>
   Goodbye
 </i>
-    '''.trim());
+    '''
+            .trim());
   });
 
   test('block resolution is recursive', () async {
@@ -62,13 +73,41 @@ main() {
     const jael.Renderer().render(processed, buf, scope);
     print(buf);
 
-    expect(buf.toString(), '''
+    expect(
+        buf.toString(),
+        '''
 <i>
   <b>
     a.jl
   </b>
   Saluton!Goodbye
 </i>
-    '''.trim());
+    '''
+            .trim());
+  });
+
+  test('blocks within blocks', () async {
+    var file = fileSystem.file('f.jl');
+    var original = jael.parseDocument(await file.readAsString(),
+        sourceUrl: file.uri, onError: (e) => throw e);
+    var processed = await jael.resolve(
+        original, fileSystem.directory(fileSystem.currentDirectory),
+        onError: (e) => throw e);
+    var buf = new CodeBuffer();
+    var scope = new SymbolTable();
+    const jael.Renderer().render(processed, buf, scope);
+    print(buf);
+
+    expect(
+        buf.toString(),
+        '''
+<i>
+  <b>
+    a.jl
+  </b>
+  Angel frameworkGoodbye
+</i>
+    '''
+            .trim());
   });
 }
