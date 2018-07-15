@@ -16,7 +16,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
   return (Angel app) async {
     // Enable CORS
     app.use(cors());
-    
+
     // Typically, you want to mount controllers first, after any global middleware.
     await app.configure(controllers.configureServer);
 

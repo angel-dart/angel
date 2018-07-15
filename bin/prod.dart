@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:isolate';
 import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/io.dart';
 import 'package:logging/logging.dart';
 
 const String hostname = '127.0.0.1';
@@ -42,7 +41,7 @@ void isolateMain(int id) {
     // This effectively lets us multi-thread the application.
     var http = new AngelHttp.custom(app, startShared);
     var server = await http.startServer(hostname, port);
-    print('Instance #$id listening at http://${server.address.address}:${server
-            .port}');
+    print(
+        'Instance #$id listening at http://${server.address.address}:${server.port}');
   });
 }

@@ -1,36 +1,35 @@
 import 'package:angel_http_exception/angel_http_exception.dart';
-import 'package:console/console.dart';
 import 'package:logging/logging.dart';
+import 'package:io/ansi.dart';
 
 /// Prints the contents of a [LogRecord] with pretty colors.
 void prettyLog(LogRecord record) {
-  var pen = new TextPen();
-  chooseLogColor(pen.reset(), record.level);
+  var code = chooseLogColor(record.level);
 
-  if (record.error == null) pen(record.toString());
+  if (record.error == null) print(code.wrap(record.toString()));
 
   if (record.error != null) {
     var err = record.error;
     if (err is AngelHttpException && err.statusCode != 500) return;
-    pen(record.toString() + '\n');
-    pen(err.toString());
-    if (record.stackTrace != null) pen(record.stackTrace.toString());
-  }
+    print(code.wrap(record.toString() + '\n'));
+    print(code.wrap(err.toString()));
 
-  pen();
+    if (record.stackTrace != null) {
+      print(code.wrap(record.stackTrace.toString()));
+    }
+  }
 }
 
 /// Chooses a color based on the logger [level].
-void chooseLogColor(TextPen pen, Level level) {
+AnsiCode chooseLogColor(Level level) {
   if (level == Level.SHOUT)
-    pen.darkRed();
+    return backgroundRed;
   else if (level == Level.SEVERE)
-    pen.red();
+    return red;
   else if (level == Level.WARNING)
-    pen.yellow();
+    return yellow;
   else if (level == Level.INFO)
-    pen.magenta();
-  else if (level == Level.FINER)
-    pen.blue();
-  else if (level == Level.FINEST) pen.darkBlue();
+    return cyan;
+  else if (level == Level.FINER || level == Level.FINEST) return lightGray;
+  return resetAll;
 }
