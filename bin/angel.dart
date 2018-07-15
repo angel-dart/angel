@@ -20,6 +20,7 @@ main(List<String> args) async {
       .addFlag('verbose', help: 'Print verbose output.', negatable: false);
 
   runner
+    ..addCommand(new DeployCommand())
     ..addCommand(new DoctorCommand())
     ..addCommand(new KeyCommand())
     ..addCommand(new InitCommand())

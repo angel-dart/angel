@@ -46,7 +46,6 @@ class ModelCommand extends Command {
     }
 
     List<MakerDependency> deps = [
-      const MakerDependency('angel_framework', '^1.0.0'),
       const MakerDependency('angel_model', '^1.0.0'),
     ];
 
@@ -63,6 +62,8 @@ class ModelCommand extends Command {
         modelLib.directives.add(new Directive.import(
             'package:angel_serialize/angel_serialize.dart'));
         deps.add(const MakerDependency('angel_serialize', '^2.0.0'));
+        deps.add(const MakerDependency('angel_serialize_generator', '^2.0.0'));
+        deps.add(const MakerDependency('build_runner', '">=0.7.0 <0.10.0"'));
       }
 
       if (argResults['orm'] as bool) {

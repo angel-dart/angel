@@ -1,3 +1,6 @@
+# 1.3.1
+* Add `deploy nginx` and `deploy systemd`.
+
 # 1.3.0
 * Focus on Dart2 from here on out.
 * Update `code_builder`.
