@@ -1,3 +1,6 @@
+# 1.3.3
+* Fix a small typo in the model generator.
+
 # 1.3.2
 * Restore `part` directives in generated models.
 
