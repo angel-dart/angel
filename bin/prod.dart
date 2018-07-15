@@ -1,4 +1,4 @@
-import 'dart:io' hide FileMode;
+import 'dart:io';
 import 'dart:isolate';
 import 'package:angel/angel.dart';
 import 'package:angel_framework/angel_framework.dart';
@@ -23,6 +23,7 @@ void isolateMain(int id) {
   app.configure(configureServer).then((_) async {
     // In production, we'll want to log errors to a file.
     // Alternatives include sending logs to a service like Sentry.
+    hierarchicalLoggingEnabled = true;
     app.logger = new Logger('angel')
       ..onRecord.listen((rec) {
         if (rec.error == null) {

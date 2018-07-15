@@ -10,6 +10,7 @@ main() async {
   var hot = new HotReloader(() async {
     var app = new Angel()..lazyParseBodies = true;
     await app.configure(configureServer);
+    hierarchicalLoggingEnabled = true;
     app.logger = new Logger('angel');
     var sub = app.logger.onRecord.listen(prettyLog);
     app.shutdownHooks.add((_) => sub.cancel());

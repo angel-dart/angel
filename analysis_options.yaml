@@ -1,4 +1,3 @@
 analyzer:
-  strong-mode: true
-  exclude:
-    - .scripts-bin/**/*.dart
+  strong-mode:
+    implicit-casts: false

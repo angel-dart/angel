@@ -1,6 +1,7 @@
 /// This app's route configuration.
 library angel.src.routes;
 
+import 'package:angel_cors/angel_cors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:file/file.dart';
@@ -13,6 +14,9 @@ import 'controllers/controllers.dart' as controllers;
 /// * https://github.com/angel-dart/angel/wiki/Requests-&-Responses
 AngelConfigurer configureServer(FileSystem fileSystem) {
   return (Angel app) async {
+    // Enable CORS
+    app.use(cors());
+    
     // Typically, you want to mount controllers first, after any global middleware.
     await app.configure(controllers.configureServer);
 
@@ -21,7 +25,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
         '/', (RequestContext req, ResponseContext res) => res.render('hello'));
 
     // Mount static server at web in development.
-    // This variant of `VirtualDirectory` also sends `Cache-Control` headers.
+    // The `CachingVirtualDirectory` variant of `VirtualDirectory` also sends `Cache-Control` headers.
     //
     // In production, however, prefer serving static files through NGINX or a
     // similar reverse proxy.
@@ -29,12 +33,14 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     // Read the following two sources for documentation:
     // * https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae
     // * https://github.com/angel-dart/static
-    var vDir = new CachingVirtualDirectory(
-      app,
-      fileSystem,
-      source: fileSystem.directory('web'),
-    );
-    app.use(vDir.handleRequest);
+    if (!app.isProduction) {
+      var vDir = new VirtualDirectory(
+        app,
+        fileSystem,
+        source: fileSystem.directory('web'),
+      );
+      app.use(vDir.handleRequest);
+    }
 
     // Throw a 404 if no route matched the request.
     app.use(() => throw new AngelHttpException.notFound());
