@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
@@ -42,14 +44,14 @@ class GraphQL {
     }
   }
 
-  executeRequest(
+  Future<GraphQLResult> executeRequest(
       GraphQLSchema schema, DocumentContext document, String operationName,
-      {Map<String, dynamic> variableValues: const {}, initialValue}) {
+      {Map<String, dynamic> variableValues: const {}, initialValue}) async {
     var operation = getOperation(document, operationName);
     var coercedVariableValues =
         coerceVariableValues(schema, operation, variableValues ?? {});
     if (operation.isQuery)
-      return executeQuery(
+      return await executeQuery(
           document, operation, schema, coercedVariableValues, initialValue);
     else
       return executeMutation(
@@ -108,24 +110,24 @@ class GraphQL {
     return coercedValues;
   }
 
-  GraphQLResult executeQuery(
+  Future<GraphQLResult> executeQuery(
       DocumentContext document,
       OperationDefinitionContext query,
       GraphQLSchema schema,
       Map<String, dynamic> variableValues,
-      initialValue) {
+      initialValue) async {
     var queryType = schema.query;
     var selectionSet = query.selectionSet;
-    return executeSelectionSet(
+    return await executeSelectionSet(
         document, selectionSet, queryType, initialValue, variableValues);
   }
 
-  Map<String, dynamic> executeSelectionSet(
+  Future<Map<String, dynamic>> executeSelectionSet(
       DocumentContext document,
       SelectionSetContext selectionSet,
       GraphQLObjectType objectType,
       objectValue,
-      Map<String, dynamic> variableValues) {
+      Map<String, dynamic> variableValues) async {
     var groupedFieldSet =
         collectFields(document, objectType, selectionSet, variableValues);
     var resultMap = <String, dynamic>{};
@@ -138,7 +140,7 @@ class GraphQL {
         var fieldType =
             objectType.fields.firstWhere((f) => f.name == fieldName)?.type;
         if (fieldType == null) continue;
-        var responseValue = executeField(
+        var responseValue = await executeField(
             objectType, objectValue, fields, fieldType, variableValues);
         resultMap[responseKey] = responseValue;
       }
@@ -152,11 +154,11 @@ class GraphQL {
       objectValue,
       List<SelectionContext> fields,
       GraphQLType fieldType,
-      Map<String, dynamic> variableValues) {
+      Map<String, dynamic> variableValues) async {
     var field = fields[0];
     var argumentValues =
         coerceArgumentValues(objectType, field, variableValues);
-    var resolvedValue = resolveFieldValue(
+    var resolvedValue = await resolveFieldValue(
         objectType, objectValue, field.field.fieldName.name, argumentValues);
     return completeValue(fieldType, fields, resolvedValue, variableValues);
   }
@@ -200,6 +202,9 @@ class GraphQL {
 
     return coercedValues;
   }
+
+  Future<T> resolveFieldValue<T>(GraphQLObjectType objectType, T objectValue,
+      String fieldName, Map<String, dynamic> argumentValues) async {}
 
   Map<String, List<SelectionContext>> collectFields(
       DocumentContext document,
