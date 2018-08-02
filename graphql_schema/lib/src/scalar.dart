@@ -118,7 +118,7 @@ class _GraphQLDateType extends GraphQLScalarType<DateTime, String>
   String get name => 'Date';
 
   @override
-  String get description => 'An ISO0-8601 Date.';
+  String get description => 'An ISO-8601 Date.';
 
   @override
   String serialize(DateTime value) => value.toIso8601String();
