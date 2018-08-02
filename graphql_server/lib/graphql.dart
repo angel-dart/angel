@@ -204,7 +204,10 @@ class GraphQL {
   }
 
   Future<T> resolveFieldValue<T>(GraphQLObjectType objectType, T objectValue,
-      String fieldName, Map<String, dynamic> argumentValues) async {}
+      String fieldName, Map<String, dynamic> argumentValues) async {
+    var field = objectType.fields.firstWhere((f) => f.name == fieldName);
+    return await field.resolve(objectValue, argumentValues) as T;
+  }
 
   Map<String, List<SelectionContext>> collectFields(
       DocumentContext document,

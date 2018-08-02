@@ -1,7 +1,7 @@
 part of graphql_schema.src.schema;
 
 typedef FutureOr<Value> GraphQLFieldResolver<Value, Serialized>(
-    Serialized serialized);
+    Serialized serialized, Map<String, dynamic> argumentValues);
 
 class GraphQLField<Value, Serialized> {
   final List<GraphQLFieldArgument> arguments = <GraphQLFieldArgument>[];
@@ -20,8 +20,9 @@ class GraphQLField<Value, Serialized> {
     return type.serialize(value);
   }
 
-  FutureOr<Value> deserialize(Serialized serialized) {
-    if (resolve != null) return resolve(serialized);
+  FutureOr<Value> deserialize(Serialized serialized,
+      [Map<String, dynamic> argumentValues = const <String, dynamic>{}]) {
+    if (resolve != null) return resolve(serialized, argumentValues);
     return type.deserialize(serialized);
   }
 }
