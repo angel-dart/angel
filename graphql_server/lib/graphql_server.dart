@@ -171,7 +171,7 @@ class GraphQL {
     return resultMap;
   }
 
-  executeField(
+  Future executeField(
       DocumentContext document,
       String fieldName,
       GraphQLObjectType objectType,
@@ -246,6 +246,7 @@ class GraphQL {
       List<SelectionContext> fields,
       result,
       Map<String, dynamic> variableValues) async {
+
     if (fieldType is GraphQLNonNullableType) {
       var innerType = fieldType.innerType;
       var completedResult = completeValue(
@@ -270,10 +271,14 @@ class GraphQL {
       }
 
       var innerType = fieldType.innerType;
-      return (result as Iterable)
-          .map((resultItem) => completeValue(document, '(item in "$fieldName")',
-              innerType, fields, resultItem, variableValues))
-          .toList();
+      var out = [];
+
+      for (var resultItem in (result as Iterable)) {
+        out.add(await completeValue(document, '(item in "$fieldName")',
+            innerType, fields, resultItem, variableValues));
+      }
+
+      return out;
     }
 
     if (fieldType is GraphQLScalarType) {
@@ -288,13 +293,27 @@ class GraphQL {
 
     if (fieldType is GraphQLObjectType) {
       var objectType = fieldType;
-      var subSelectionSet = new SelectionSetContext.merged(fields);
+      var subSelectionSet = mergeSelectionSets(fields);
       return await executeSelectionSet(
           document, subSelectionSet, objectType, result, variableValues);
     }
 
     // TODO: Interface/union type
     throw new UnsupportedError('Unsupported type: $fieldType');
+  }
+
+  SelectionSetContext mergeSelectionSets(List<SelectionContext> fields) {
+    var selections = <SelectionContext>[];
+
+    for (var field in fields) {
+      if (field.field?.selectionSet != null) {
+        selections.addAll(field.field.selectionSet.selections);
+      } else if (field.inlineFragment?.selectionSet != null) {
+        selections.addAll(field.inlineFragment.selectionSet.selections);
+      }
+    }
+
+    return new SelectionSetContext.merged(selections);
   }
 
   Map<String, List<SelectionContext>> collectFields(
