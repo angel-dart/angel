@@ -48,7 +48,7 @@ main() {
     test('with selection set', () {
       var op = parse('{foo, bar: baz}').parseOperationDefinition();
       expect(op.variableDefinitions, isNull);
-      expect(op.isQuery, isFalse);
+      expect(op.isQuery, isTrue);
       expect(op.isMutation, isFalse);
       expect(op.name, isNull);
       expect(
