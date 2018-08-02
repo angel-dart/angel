@@ -1,16 +1,33 @@
 import 'package:graphql_schema/graphql_schema.dart';
 
 // TODO: How to handle custom types???
-GraphQLSchema reflectSchema(GraphQLSchema schema) {
-  var objectTypes = _fetchAllTypes(schema);
-  var typeType = _reflectSchemaTypes(schema);
+GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
+  var objectTypes = fetchAllTypes(schema);
+  allTypes.addAll(objectTypes);
+  var typeType = _reflectSchemaTypes();
 
-  var schemaType = objectType('__Schema', [
+  var schemaType = objectType('__Schema', fields: [
     field(
       'types',
       type: listType(typeType),
       resolve: (_, __) => objectTypes,
     ),
+    field(
+      'queryType',
+      type: typeType,
+      resolve: (_, __) => schema.query,
+    ),
+    field(
+      'mutationType',
+      type: typeType,
+      resolve: (_, __) => schema.mutation,
+    ),
+  ]);
+
+  allTypes.addAll([
+    typeType,
+    schemaType,
+    _reflectFields(),
   ]);
 
   var fields = <GraphQLField>[
@@ -37,38 +54,109 @@ GraphQLSchema reflectSchema(GraphQLSchema schema) {
   fields.addAll(schema.query.fields);
 
   return new GraphQLSchema(
-    query: objectType(schema.query.name, fields),
+    query: objectType(schema.query.name, fields: fields),
     mutation: schema.mutation,
   );
 }
 
-GraphQLObjectType _reflectSchemaTypes(GraphQLSchema schema) {
+GraphQLObjectType _typeType;
+
+GraphQLObjectType _reflectSchemaTypes() {
+  if (_typeType == null) {
+    _typeType = _createTypeType();
+    _typeType.fields.add(
+      field(
+        'ofType',
+        type: _reflectSchemaTypes(),
+        resolve: (type, _) {
+          if (type is GraphQLListType)
+            return type.innerType;
+          else if (type is GraphQLNonNullableType) return type.innerType;
+          return null;
+        },
+      ),
+    );
+
+    var fieldType = _reflectFields();
+    var typeField = fieldType.fields
+        .firstWhere((f) => f.name == 'type', orElse: () => null);
+
+    if (typeField == null) {
+      fieldType.fields.add(
+        field(
+          'type',
+          type: _reflectSchemaTypes(),
+          resolve: (f, _) => (f as GraphQLField).type,
+        ),
+      );
+    }
+  }
+
+  return _typeType;
+}
+
+GraphQLObjectType _createTypeType() {
   var fieldType = _reflectFields();
 
-  return objectType('__Type', [
+  return objectType('__Type', fields: [
     field(
       'name',
       type: graphQLString,
-      resolve: (type, _) => (type as GraphQLObjectType).name,
+      resolve: (type, _) => (type as GraphQLType).name,
+    ),
+    field(
+      'description',
+      type: graphQLString,
+      resolve: (type, _) => (type as GraphQLType).description,
     ),
     field(
       'kind',
       type: graphQLString,
-      resolve: (type, _) => 'OBJECT', // TODO: Union, interface
+      resolve: (type, _) {
+        var t = type as GraphQLType;
+
+        if (t is GraphQLScalarType)
+          return 'SCALAR';
+        else if (t is GraphQLObjectType)
+          return 'OBJECT';
+        else if (t is GraphQLListType)
+          return 'LIST';
+        else if (t is GraphQLNonNullableType)
+          return 'NON_NULL';
+        else
+          throw new UnsupportedError(
+              'Cannot get the kind of $t.'); // TODO: Interface + union
+      },
     ),
     field(
       'fields',
       type: listType(fieldType),
-      resolve: (type, _) => (type as GraphQLObjectType).fields,
+      resolve: (type, _) => type is GraphQLObjectType ? type.fields : [],
     ),
   ]);
 }
 
+GraphQLObjectType _fieldType;
+
 GraphQLObjectType _reflectFields() {
-  return objectType('__Field', []);
+  if (_fieldType == null) {
+    _fieldType = _createFieldType();
+  }
+
+  return _fieldType;
 }
 
-List<GraphQLObjectType> _fetchAllTypes(GraphQLSchema schema) {
+GraphQLObjectType _createFieldType() {
+  return objectType('__Field', fields: [
+    field(
+      'name',
+      type: graphQLString,
+      resolve: (f, _) => (f as GraphQLField).name,
+    ),
+  ]);
+}
+
+List<GraphQLObjectType> fetchAllTypes(GraphQLSchema schema) {
   var typess = <GraphQLType>[];
   typess.addAll(_fetchAllTypesFromObject(schema.query));
 

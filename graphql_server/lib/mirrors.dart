@@ -23,8 +23,13 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
     return graphQLBoolean;
   } else if (type == int) {
     return graphQLInt;
-  } else if (type == double || type == num) {
+  } else if (type == double) {
     return graphQLFloat;
+  } else if (type == num) {
+    throw new UnsupportedError(
+        'Cannot convert `num` to a GraphQL type. Choose `int` or `float` instead.');
+  } else if (type == Null) {
+    throw new UnsupportedError('Cannot convert `Null` to a GraphQL type.');
   } else if (type == String) {
     return graphQLString;
   } else if (type == DateTime) {
@@ -57,7 +62,10 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
     }
   }
 
-  return objectType(MirrorSystem.getName(mirror.simpleName), fields);
+  return objectType(
+    MirrorSystem.getName(mirror.simpleName),
+    fields: fields,
+  );
 }
 
 GraphQLField fieldFromGetter(

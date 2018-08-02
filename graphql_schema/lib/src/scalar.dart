@@ -17,15 +17,20 @@ final GraphQLScalarType<DateTime, String> graphQLDate =
     new _GraphQLDateType._();
 
 /// A signed 32‐bit integer.
-final GraphQLScalarType<int, int> graphQLInt =
-    new _GraphQLNumType<int>((x) => x is int, 'an integer');
+final GraphQLScalarType<int, int> graphQLInt = new _GraphQLNumType<int>(
+    'Int', 'A signed 64-bit integer.', (x) => x is int, 'an integer');
 
 /// A signed double-precision floating-point value.
 final GraphQLScalarType<double, double> graphQLFloat =
-    new _GraphQLNumType<double>((x) => x is double, 'a float');
+    new _GraphQLNumType<double>(
+        'Float',
+        'A signed double-precision floating-point value.',
+        (x) => x is double,
+        'a float');
 
 abstract class GraphQLScalarType<Value, Serialized>
-    extends GraphQLType<Value, Serialized> with _NonNullableMixin<Value, Serialized> {}
+    extends GraphQLType<Value, Serialized>
+    with _NonNullableMixin<Value, Serialized> {}
 
 typedef bool _NumVerifier(x);
 
@@ -34,6 +39,12 @@ class _GraphQLBoolType extends GraphQLScalarType<bool, bool> {
   bool serialize(bool value) {
     return value;
   }
+
+  @override
+  String get name => 'Boolean';
+
+  @override
+  String get description => 'A boolean value; can be either true or false.';
 
   @override
   ValidationResult<bool> validate(String key, input) {
@@ -50,10 +61,12 @@ class _GraphQLBoolType extends GraphQLScalarType<bool, bool> {
 }
 
 class _GraphQLNumType<T extends num> extends GraphQLScalarType<T, T> {
+  final String name;
+  final String description;
   final _NumVerifier verifier;
   final String expected;
 
-  _GraphQLNumType(this.verifier, this.expected);
+  _GraphQLNumType(this.name, this.description, this.verifier, this.expected);
 
   @override
   ValidationResult<T> validate(String key, input) {
@@ -79,6 +92,12 @@ class _GraphQLStringType extends GraphQLScalarType<String, String> {
   _GraphQLStringType._();
 
   @override
+  String get name => 'String';
+
+  @override
+  String get description => 'A character sequence.';
+
+  @override
   String serialize(String value) => value;
 
   @override
@@ -94,6 +113,12 @@ class _GraphQLStringType extends GraphQLScalarType<String, String> {
 class _GraphQLDateType extends GraphQLScalarType<DateTime, String>
     with _NonNullableMixin<DateTime, String> {
   _GraphQLDateType._();
+
+  @override
+  String get name => 'Date';
+
+  @override
+  String get description => 'An ISO0-8601 Date.';
 
   @override
   String serialize(DateTime value) => value.toIso8601String();

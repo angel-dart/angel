@@ -1,9 +1,16 @@
 part of graphql_schema.src.schema;
 
 abstract class GraphQLType<Value, Serialized> {
+  String get name;
+
+  String get description;
+
   Serialized serialize(Value value);
+
   Value deserialize(Serialized serialized);
+
   ValidationResult<Serialized> validate(String key, Serialized input);
+
   GraphQLType<Value, Serialized> nonNullable();
 }
 
@@ -16,7 +23,15 @@ class GraphQLListType<Value, Serialized>
     extends GraphQLType<List<Value>, List<Serialized>>
     with _NonNullableMixin<List<Value>, List<Serialized>> {
   final GraphQLType<Value, Serialized> innerType;
+
   GraphQLListType(this.innerType);
+
+  @override
+  String get name => null;
+
+  @override
+  String get description =>
+      'A list of items of type ${innerType.name ?? '(${innerType.description}).'}';
 
   @override
   ValidationResult<List<Serialized>> validate(
@@ -55,6 +70,7 @@ class GraphQLListType<Value, Serialized>
 abstract class _NonNullableMixin<Value, Serialized>
     implements GraphQLType<Value, Serialized> {
   GraphQLType<Value, Serialized> _nonNullableCache;
+
   GraphQLType<Value, Serialized> nonNullable() => _nonNullableCache ??=
       new GraphQLNonNullableType<Value, Serialized>._(this);
 }
@@ -62,7 +78,15 @@ abstract class _NonNullableMixin<Value, Serialized>
 class GraphQLNonNullableType<Value, Serialized>
     extends GraphQLType<Value, Serialized> {
   final GraphQLType<Value, Serialized> innerType;
+
   GraphQLNonNullableType._(this.innerType);
+
+  @override
+  String get name => innerType.name;
+
+  @override
+  String get description =>
+      'A non-nullable binding to ${innerType.name ?? '(${innerType.description}).'}';
 
   @override
   GraphQLType<Value, Serialized> nonNullable() {

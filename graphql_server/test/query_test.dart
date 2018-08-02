@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('single element', () async {
-    var todoType = objectType('todo', [
+    var todoType = objectType('todo',fields: [
       field(
         'text',
         type: graphQLString,
@@ -18,7 +18,7 @@ void main() {
     ]);
 
     var schema = graphQLSchema(
-      query: objectType('api', [
+      query: objectType('api', fields:[
         field(
           'todos',
           type: listType(todoType),

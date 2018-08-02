@@ -10,7 +10,12 @@ class GraphQL {
 
   GraphQL(GraphQLSchema schema, {bool introspect: true}) : _schema = schema {
     if (introspect) {
-      _schema = reflectSchema(_schema);
+      var allTypes = <GraphQLType>[];
+      _schema = reflectSchema(_schema, allTypes);
+
+      for (var type in allTypes) {
+        customTypes[type.name] = type;
+      }
     }
 
     if (_schema.query != null) customTypes[_schema.query.name] = _schema.query;

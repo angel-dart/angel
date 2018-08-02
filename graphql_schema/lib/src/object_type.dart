@@ -4,9 +4,10 @@ class GraphQLObjectType
     extends GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
     with _NonNullableMixin<Map<String, dynamic>, Map<String, dynamic>> {
   final String name;
+  final String description;
   final List<GraphQLField> fields = [];
 
-  GraphQLObjectType(this.name);
+  GraphQLObjectType(this.name, this.description);
 
   @override
   ValidationResult<Map<String, dynamic>> validate(String key, Map input) {

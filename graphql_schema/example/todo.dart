@@ -1,7 +1,7 @@
 import 'package:graphql_schema/graphql_schema.dart';
 
 final GraphQLSchema todoSchema = new GraphQLSchema(
-  query: objectType('Todo', [
+  query: objectType('Todo', fields: [
     field(
       'text',
       type: graphQLString.nonNullable(),
