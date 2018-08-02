@@ -12,10 +12,4 @@ class DocumentContext extends Node {
         .map<FileSpan>((d) => d.span)
         .reduce((a, b) => a.expand(b));
   }
-
-  @override
-  String toSource() {
-    if (definitions.isEmpty) return '(empty document)';
-    return definitions.map((d) => d.toSource()).join();
-  }
 }

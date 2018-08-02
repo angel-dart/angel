@@ -28,12 +28,4 @@ class OperationDefinitionContext extends DefinitionContext {
     out = directives.fold<FileSpan>(out, (o, d) => o.expand(d.span));
     return out.expand(selectionSet.span);
   }
-
-  @override
-  String toSource() {
-    if (TYPE == null) return selectionSet.toSource();
-    return '${TYPE.text} ${NAME.text} ${variableDefinitions.toSource()} ' +
-        directives.map((d) => d.toSource()).join() +
-        ' ${selectionSet.toSource()}';
-  }
 }

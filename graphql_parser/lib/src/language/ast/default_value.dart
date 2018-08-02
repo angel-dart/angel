@@ -11,7 +11,4 @@ class DefaultValueContext extends Node {
 
   @override
   FileSpan get span => EQUALS.span.expand(value.span);
-
-  @override
-  String toSource() => '=${value.toSource()}';
 }

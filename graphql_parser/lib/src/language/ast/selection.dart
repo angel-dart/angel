@@ -16,10 +16,4 @@ class SelectionContext extends Node {
   @override
   FileSpan get span =>
       field?.span ?? fragmentSpread?.span ?? inlineFragment?.span;
-
-  @override
-  String toSource() =>
-      field?.toSource() ??
-      fragmentSpread?.toSource() ??
-      inlineFragment?.toSource();
 }

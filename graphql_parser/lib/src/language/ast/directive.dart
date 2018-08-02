@@ -26,14 +26,4 @@ class DirectiveContext extends Node {
 
     return out;
   }
-
-  @override
-  String toSource() {
-    if (valueOrVariable != null)
-      return '@${NAME.text}:${valueOrVariable.toSource()}';
-    else if (argument != null)
-      return '@${NAME.text}(${argument.toSource()})';
-    else
-      return '@${NAME.text}';
-  }
 }

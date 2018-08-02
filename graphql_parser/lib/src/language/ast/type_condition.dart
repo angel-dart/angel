@@ -9,7 +9,4 @@ class TypeConditionContext extends Node {
 
   @override
   FileSpan get span => typeName.span;
-
-  @override
-  String toSource() => typeName.toSource();
 }

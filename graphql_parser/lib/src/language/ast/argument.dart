@@ -14,7 +14,4 @@ class ArgumentContext extends Node {
   @override
   FileSpan get span =>
       NAME.span.expand(COLON.span).expand(valueOrVariable.span);
-
-  @override
-  String toSource() => '${NAME.text}:${valueOrVariable.toSource()}';
 }

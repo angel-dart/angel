@@ -15,16 +15,4 @@ class SelectionSetContext extends Node {
         selections.fold<FileSpan>(LBRACE.span, (out, s) => out.expand(s.span));
     return out.expand(RBRACE.span);
   }
-
-  @override
-  String toSource() {
-    var buf = new StringBuffer('{');
-
-    for (int i = 0; i < selections.length; i++) {
-      if (i > 0) buf.write(',');
-      buf.write(selections[i].toSource());
-    }
-
-    return buf.toString() + '}';
-  }
 }

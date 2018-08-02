@@ -15,17 +15,4 @@ class VariableDefinitionsContext extends Node {
         LPAREN.span, (o, v) => o.expand(v.span));
     return out.expand(RPAREN.span);
   }
-
-  @override
-  String toSource() {
-    var buf = new StringBuffer('(');
-
-    for (int i = 0; i < variableDefinitions.length; i++) {
-      if (i > 0) buf.write(',');
-      buf.write(variableDefinitions[i].toSource());
-    }
-
-    buf.write(')');
-    return buf.toString();
-  }
 }

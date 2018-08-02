@@ -20,19 +20,4 @@ class TypeContext extends Node {
     var out = typeName?.span ?? listType.span;
     return EXCLAMATION != null ? out.expand(EXCLAMATION.span) : out;
   }
-
-  @override
-  String toSource() {
-    var buf = new StringBuffer();
-
-    if (typeName != null) {
-      buf.write(typeName.toSource());
-    } else if (listType != null) {
-      buf.write(listType.toSource());
-    }
-
-    if (!isNullable) buf.write('!');
-
-    return buf.toString();
-  }
 }

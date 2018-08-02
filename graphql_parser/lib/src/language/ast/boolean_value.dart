@@ -17,7 +17,4 @@ class BooleanValueContext extends ValueContext {
 
   @override
   FileSpan get span => BOOLEAN.span;
-
-  @override
-  String toSource() => BOOLEAN.text;
 }

@@ -25,7 +25,4 @@ class NumberValueContext extends ValueContext {
 
   @override
   FileSpan get span => NUMBER.span;
-
-  @override
-  String toSource() => NUMBER.text;
 }

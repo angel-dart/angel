@@ -13,7 +13,4 @@ class ValueOrVariableContext extends Node {
 
   @override
   FileSpan get span => value?.span ?? variable.span;
-
-  @override
-  String toSource() => '${value?.toSource() ?? variable.toSource()}';
 }

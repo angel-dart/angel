@@ -16,8 +16,4 @@ class VariableDefinitionContext extends Node {
 
   @override
   FileSpan get span => variable.span.expand(defaultValue?.span ?? type.span);
-
-  @override
-  String toSource() =>
-      '${variable.toSource()}:${type.toSource()}${defaultValue?.toSource() ?? ""}';
 }

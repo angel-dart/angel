@@ -39,7 +39,7 @@ class _IsArgument extends Matcher {
   bool matches(item, Map matchState) {
     var arg = item is ArgumentContext ? item : parseArgument(item.toString());
     if (arg == null) return false;
-    print(arg.toSource());
+    print(arg.span.highlight());
     return equals(name).matches(arg.name, matchState) &&
         equals(value).matches(
             arg.valueOrVariable.value?.value ??

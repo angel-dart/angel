@@ -1,0 +1,5 @@
+name: graphql_server
+dependencies:
+  graphql_parser:
+    path: ../graphql_parser
+  symbol_table: ^1.0.0

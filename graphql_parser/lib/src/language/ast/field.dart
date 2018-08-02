@@ -26,7 +26,4 @@ class FieldContext extends Node {
     else
       return fieldName.span;
   }
-
-  @override
-  String toSource() => span.text;
 }

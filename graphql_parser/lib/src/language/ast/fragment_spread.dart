@@ -17,9 +17,4 @@ class FragmentSpreadContext extends Node {
     if (directives.isEmpty) return out;
     return directives.fold<FileSpan>(out, (o, d) => o.expand(d.span));
   }
-
-  @override
-  String toSource() {
-    return '...${NAME.text}' + directives.map((d) => d.toSource()).join();
-  }
 }

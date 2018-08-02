@@ -3,7 +3,7 @@ import 'syntax_error.dart';
 import 'token.dart';
 import 'token_type.dart';
 
-final RegExp _comment = RegExp(r'#[^\n]*');
+final RegExp _comment = new RegExp(r'#[^\n]*');
 final RegExp _whitespace = new RegExp('[ \t\n\r]+');
 final RegExp _boolean = new RegExp(r'true|false');
 final RegExp _number = new RegExp(r'-?[0-9]+(\.[0-9]+)?(E|e(\+|-)?[0-9]+)?');

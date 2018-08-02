@@ -15,7 +15,4 @@ class FieldNameContext extends Node {
 
   @override
   FileSpan get span => alias?.span ?? NAME.span;
-
-  @override
-  String toSource() => alias?.toSource() ?? NAME.text;
 }

@@ -11,7 +11,4 @@ class TypeNameContext extends Node {
   FileSpan get span => NAME.span;
 
   TypeNameContext(this.NAME);
-
-  @override
-  String toSource() => NAME.text;
 }

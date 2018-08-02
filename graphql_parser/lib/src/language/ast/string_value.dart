@@ -67,7 +67,4 @@ class StringValueContext extends ValueContext {
 
   @override
   get value => stringValue;
-
-  @override
-  String toSource() => STRING.text;
 }

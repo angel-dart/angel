@@ -25,11 +25,4 @@ class FragmentDefinitionContext extends DefinitionContext {
     out = directives.fold<FileSpan>(out, (o, d) => o.expand(d.span));
     return out.expand(selectionSet.span);
   }
-
-  @override
-  String toSource() =>
-      'fragment ${NAME.text} on ' +
-      typeCondition.toSource() +
-      directives.map((d) => d.toSource()).join() +
-      selectionSet.toSource();
 }

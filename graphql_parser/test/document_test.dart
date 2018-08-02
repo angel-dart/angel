@@ -63,10 +63,9 @@ main() {
       var doc =
           parse(r'query foo ($one: [int] = 2) @foo @bar: 2 {foo, bar: baz}')
               .parseDocument();
-      print(doc.toSource());
+      print(doc.span.highlight());
       expect(doc.definitions, hasLength(1));
-      expect(doc.definitions.first,
-          const isInstanceOf<OperationDefinitionContext>());
+      expect(doc.definitions.first is OperationDefinitionContext, isTrue);
       var op = doc.definitions.first as OperationDefinitionContext;
       expect(op.isMutation, isFalse);
       expect(op.isQuery, isTrue);

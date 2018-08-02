@@ -11,7 +11,4 @@ class ListTypeContext extends Node {
 
   @override
   FileSpan get span => LBRACKET.span.expand(type.span).expand(RBRACKET.span);
-
-  @override
-  String toSource() => '[${type.toSource()}]';
 }
