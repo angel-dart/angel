@@ -3,6 +3,7 @@ import 'syntax_error.dart';
 import 'token.dart';
 import 'token_type.dart';
 
+final RegExp _comment = RegExp(r'#[^\n]*');
 final RegExp _whitespace = new RegExp('[ \t\n\r]+');
 final RegExp _boolean = new RegExp(r'true|false');
 final RegExp _number = new RegExp(r'-?[0-9]+(\.[0-9]+)?(E|e(\+|-)?[0-9]+)?');
@@ -41,7 +42,7 @@ List<Token> scan(String text) {
   while (!scanner.isDone) {
     List<Token> potential = [];
 
-    if (scanner.scan(_whitespace)) continue;
+    if (scanner.scan(_comment) || scanner.scan(_whitespace)) continue;
 
     for (var pattern in _patterns.keys) {
       if (scanner.matches(pattern)) {

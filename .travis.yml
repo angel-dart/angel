@@ -1,3 +1,6 @@
 language: dart
+dart:
+  - dev
+  - stable
 script:
-  - travis.sh
+  - bash -ex travis.sh
