@@ -5,5 +5,7 @@ author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/thosakwe/graphql_schema
 environment:
   sdk: ">=1.8.0 <3.0.0"
+dependencies:
+  meta: ^1.0.0
 dev_dependencies:
   test: ^0.12.0

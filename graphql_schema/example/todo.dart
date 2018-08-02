@@ -4,9 +4,14 @@ final GraphQLSchema todoSchema = new GraphQLSchema(
   query: objectType('Todo', [
     field(
       'text',
-      innerType: graphQLString.nonNullable(),
+      type: graphQLString.nonNullable(),
+      resolve: resolveToNull,
     ),
-    field('created_at', innerType: graphQLDate),
+    field(
+      'created_at',
+      type: graphQLDate,
+      resolve: resolveToNull,
+    ),
   ]),
 );
 
@@ -14,7 +19,11 @@ main() {
   // Validation
   var validation = todoSchema.query.validate(
     '@root',
-    {'foo': 'bar', 'text': null, 'created_at': 24,},
+    {
+      'foo': 'bar',
+      'text': null,
+      'created_at': 24,
+    },
   );
 
   if (validation.successful) {

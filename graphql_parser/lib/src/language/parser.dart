@@ -66,13 +66,13 @@ class Parser {
                 TYPE, NAME, variables, selectionSet)
               ..directives.addAll(dirs);
           else
-            throw new SyntaxError.fromSourceLocation(
+            throw new SyntaxError(
                 'Expected selection set in fragment definition.',
-                NAME.span.end);
+                NAME.span);
         } else
-          throw new SyntaxError.fromSourceLocation(
+          throw new SyntaxError(
               'Expected name after operation type "${TYPE.text}" in operation definition.',
-              TYPE.span.end);
+              TYPE.span);
       } else
         return null;
     }
@@ -94,21 +94,21 @@ class Parser {
                   FRAGMENT, NAME, ON, typeCondition, selectionSet)
                 ..directives.addAll(dirs);
             else
-              throw new SyntaxError.fromSourceLocation(
+              throw new SyntaxError(
                   'Expected selection set in fragment definition.',
-                  typeCondition.span.end);
+                  typeCondition.span);
           } else
-            throw new SyntaxError.fromSourceLocation(
+            throw new SyntaxError(
                 'Expected type condition after "on" in fragment definition.',
-                ON.span.end);
+                ON.span);
         } else
-          throw new SyntaxError.fromSourceLocation(
+          throw new SyntaxError(
               'Expected "on" after name "${NAME.text}" in fragment definition.',
-              NAME.span.end);
+              NAME.span);
       } else
-        throw new SyntaxError.fromSourceLocation(
+        throw new SyntaxError(
             'Expected name after "fragment" in fragment definition.',
-            FRAGMENT.span.end);
+            FRAGMENT.span);
     } else
       return null;
   }
@@ -142,18 +142,18 @@ class Parser {
                 ELLIPSIS, ON, typeCondition, selectionSet)
               ..directives.addAll(directives);
           } else
-            throw new SyntaxError.fromSourceLocation(
+            throw new SyntaxError(
                 'Expected selection set in inline fragment.',
                 directives.isEmpty
-                    ? typeCondition.span.end
-                    : directives.last.span.end);
+                    ? typeCondition.span
+                    : directives.last.span);
         } else
-          throw new SyntaxError.fromSourceLocation(
+          throw new SyntaxError(
               'Expected type condition after "on" in inline fragment.',
-              ON.span.end);
+              ON.span);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected "on" after "..." in inline fragment.', ELLIPSIS.span.end);
+        throw new SyntaxError(
+            'Expected "on" after "..." in inline fragment.', ELLIPSIS.span);
     } else
       return null;
   }
@@ -174,9 +174,9 @@ class Parser {
         return new SelectionSetContext(LBRACE, current)
           ..selections.addAll(selections);
       else
-        throw new SyntaxError.fromSourceLocation(
+        throw new SyntaxError(
             'Expected "}" after selection set.',
-            selections.isEmpty ? LBRACE.span.end : selections.last.span.end);
+            selections.isEmpty ? LBRACE.span : selections.last.span);
     } else
       return null;
   }
@@ -216,8 +216,8 @@ class Parser {
           return new FieldNameContext(
               null, new AliasContext(NAME1, COLON, current));
         else
-          throw new SyntaxError.fromSourceLocation(
-              'Expected name after colon in alias.', COLON.span.end);
+          throw new SyntaxError(
+              'Expected name after colon in alias.', COLON.span);
       } else
         return new FieldNameContext(NAME1);
     } else
@@ -240,8 +240,8 @@ class Parser {
         return new VariableDefinitionsContext(LPAREN, current)
           ..variableDefinitions.addAll(defs);
       else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected ")" after variable definitions.', LPAREN.span.end);
+        throw new SyntaxError(
+            'Expected ")" after variable definitions.', LPAREN.span);
     } else
       return null;
   }
@@ -257,11 +257,11 @@ class Parser {
           return new VariableDefinitionContext(
               variable, COLON, type, defaultValue);
         } else
-          throw new SyntaxError.fromSourceLocation(
-              'Expected type in variable definition.', COLON.span.end);
+          throw new SyntaxError(
+              'Expected type in variable definition.', COLON.span);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected ":" in variable definition.', variable.span.end);
+        throw new SyntaxError(
+            'Expected ":" in variable definition.', variable.span);
     } else
       return null;
   }
@@ -287,11 +287,11 @@ class Parser {
         if (next(TokenType.RBRACKET)) {
           return new ListTypeContext(LBRACKET, type, current);
         } else
-          throw new SyntaxError.fromSourceLocation(
-              'Expected "]" in list type.', type.span.end);
+          throw new SyntaxError(
+              'Expected "]" in list type.', type.span);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected type after "[".', LBRACKET.span.end);
+        throw new SyntaxError(
+            'Expected type after "[".', LBRACKET.span);
     } else
       return null;
   }
@@ -320,9 +320,9 @@ class Parser {
             return new DirectiveContext(
                 ARROBA, NAME, COLON, null, null, null, val);
           else
-            throw new SyntaxError.fromSourceLocation(
+            throw new SyntaxError(
                 'Expected value or variable in directive after colon.',
-                COLON.span.end);
+                COLON.span);
         } else if (next(TokenType.LPAREN)) {
           var LPAREN = current;
           var arg = parseArgument();
@@ -331,17 +331,17 @@ class Parser {
               return new DirectiveContext(
                   ARROBA, NAME, null, LPAREN, current, arg, null);
             } else
-              throw new SyntaxError.fromSourceLocation(
-                  'Expected \')\'', arg.valueOrVariable.span.end);
+              throw new SyntaxError(
+                  'Expected \')\'', arg.valueOrVariable.span);
           } else
-            throw new SyntaxError.fromSourceLocation(
-                'Expected argument in directive.', LPAREN.span.end);
+            throw new SyntaxError(
+                'Expected argument in directive.', LPAREN.span);
         } else
           return new DirectiveContext(
               ARROBA, NAME, null, null, null, null, null);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected name for directive.', ARROBA.span.end);
+        throw new SyntaxError(
+            'Expected name for directive.', ARROBA.span);
     } else
       return null;
   }
@@ -363,8 +363,8 @@ class Parser {
       if (next(TokenType.RPAREN))
         return out;
       else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected ")" in argument list.', LPAREN.span.end);
+        throw new SyntaxError(
+            'Expected ")" in argument list.', LPAREN.span);
     } else
       return [];
   }
@@ -378,11 +378,11 @@ class Parser {
         if (val != null)
           return new ArgumentContext(NAME, COLON, val);
         else
-          throw new SyntaxError.fromSourceLocation(
-              'Expected value or variable in argument.', COLON.span.end);
+          throw new SyntaxError(
+              'Expected value or variable in argument.', COLON.span);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected colon after name in argument.', NAME.span.end);
+        throw new SyntaxError(
+            'Expected colon after name in argument.', NAME.span);
     } else
       return null;
   }
@@ -406,9 +406,9 @@ class Parser {
       if (next(TokenType.NAME))
         return new VariableContext(DOLLAR, current);
       else
-        throw new SyntaxError.fromSourceLocation(
+        throw new SyntaxError(
             'Expected name for variable; found a lone "\$" instead.',
-            DOLLAR.span.end);
+            DOLLAR.span);
     } else
       return null;
   }
@@ -420,8 +420,8 @@ class Parser {
       if (value != null) {
         return new DefaultValueContext(EQUALS, value);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Expected value after "=" sign.', EQUALS.span.end);
+        throw new SyntaxError(
+            'Expected value after "=" sign.', EQUALS.span);
     } else
       return null;
   }
@@ -474,8 +474,8 @@ class Parser {
       if (next(TokenType.RBRACKET)) {
         return new ArrayValueContext(LBRACKET, current)..values.addAll(values);
       } else
-        throw new SyntaxError.fromSourceLocation(
-            'Unterminated array literal.', LBRACKET.span.end);
+        throw new SyntaxError(
+            'Unterminated array literal.', LBRACKET.span);
     } else
       return null;
   }

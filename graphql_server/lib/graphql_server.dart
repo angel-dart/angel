@@ -44,9 +44,25 @@ class GraphQL {
     }
   }
 
+  Future<Map<String, dynamic>> parseAndExecute(String text,
+      {String operationName,
+      sourceUrl,
+      Map<String, dynamic> variableValues: const {},
+      initialValue}) {
+    var tokens = scan(text, sourceUrl: sourceUrl);
+    var parser = new Parser(tokens);
+    var document = parser.parseDocument();
+    return executeRequest(schema, document,
+        operationName: operationName,
+        initialValue: initialValue,
+        variableValues: variableValues);
+  }
+
   Future<Map<String, dynamic>> executeRequest(
-      GraphQLSchema schema, DocumentContext document, String operationName,
-      {Map<String, dynamic> variableValues: const {}, initialValue}) async {
+      GraphQLSchema schema, DocumentContext document,
+      {String operationName,
+      Map<String, dynamic> variableValues: const {},
+      initialValue}) async {
     var operation = getOperation(document, operationName);
     var coercedVariableValues =
         coerceVariableValues(schema, operation, variableValues ?? {});
@@ -62,17 +78,20 @@ class GraphQL {
 
   OperationDefinitionContext getOperation(
       DocumentContext document, String operationName) {
-    var ops = document.definitions.whereType<OperationDefinitionContext>();
+    var ops =
+        document.definitions.where((d) => d is OperationDefinitionContext);
 
     if (operationName == null) {
       return ops.length == 1
-          ? ops.first
+          ? ops.first as OperationDefinitionContext
           : throw new GraphQLException(
-              'Missing required operation "$operationName".');
+              'This document does not define any operations.');
     } else {
-      return ops.firstWhere((d) => d.name == operationName,
-          orElse: () => throw new GraphQLException(
-              'Missing required operation "$operationName".'));
+      return ops.firstWhere(
+              (d) => (d as OperationDefinitionContext).name == operationName,
+              orElse: () => throw new GraphQLException(
+                  'Missing required operation "$operationName".'))
+          as OperationDefinitionContext;
     }
   }
 
@@ -139,8 +158,9 @@ class GraphQL {
 
       for (var field in fields) {
         var fieldName = field.field.fieldName.name;
-        var fieldType =
-            objectType.fields.firstWhere((f) => f.name == fieldName)?.type;
+        var fieldType = objectType.fields
+            .firstWhere((f) => f.name == fieldName, orElse: () => null)
+            ?.type;
         if (fieldType == null) continue;
         var responseValue = await executeField(document, fieldName, objectType,
             objectValue, fields, fieldType, variableValues);
@@ -211,7 +231,12 @@ class GraphQL {
   Future<T> resolveFieldValue<T>(GraphQLObjectType objectType, T objectValue,
       String fieldName, Map<String, dynamic> argumentValues) async {
     var field = objectType.fields.firstWhere((f) => f.name == fieldName);
-    return await field.resolve(objectValue, argumentValues) as T;
+
+    if (field.resolve == null) {
+      return null;
+    } else {
+      return await field.resolve(objectValue, argumentValues) as T;
+    }
   }
 
   Future completeValue(
@@ -375,4 +400,7 @@ class GraphQL {
 
 class GraphQLException extends FormatException {
   GraphQLException(String message) : super(message);
+
+  @override
+  String toString() => 'GraphQL exception: $message';
 }

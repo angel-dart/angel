@@ -11,7 +11,7 @@ class GraphQLField<Value, Serialized> {
 
   GraphQLField(this.name,
       {Iterable<GraphQLFieldArgument> arguments: const <GraphQLFieldArgument>[],
-      this.resolve,
+      @required this.resolve,
       this.type}) {
     this.arguments.addAll(arguments ?? <GraphQLFieldArgument>[]);
   }

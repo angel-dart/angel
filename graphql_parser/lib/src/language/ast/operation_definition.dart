@@ -1,7 +1,8 @@
+import 'package:source_span/source_span.dart';
+
 import '../token.dart';
 import 'definition.dart';
 import 'directive.dart';
-import 'package:source_span/source_span.dart';
 import 'selection_set.dart';
 import 'variable_definitions.dart';
 
@@ -12,7 +13,8 @@ class OperationDefinitionContext extends DefinitionContext {
   final SelectionSetContext selectionSet;
 
   bool get isMutation => TYPE?.text == 'mutation';
-  bool get isQuery => TYPE?.text == 'query';
+
+  bool get isQuery => TYPE?.text == 'query' || TYPE == null;
 
   String get name => NAME?.text;
 

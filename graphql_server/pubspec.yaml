@@ -4,4 +4,5 @@ dependencies:
     path: ../graphql_schema
   graphql_parser:
     path: ../graphql_parser
-  symbol_table: ^1.0.0
+dev_dependencies:
+  test: ^0.12.0

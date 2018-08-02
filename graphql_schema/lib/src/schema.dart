@@ -20,3 +20,6 @@ class GraphQLSchema {
 GraphQLSchema graphQLSchema(
         {@required GraphQLObjectType query, GraphQLObjectType mutation}) =>
     new GraphQLSchema(query: query, mutation: mutation);
+
+/// A default resolver that always returns `null`.
+resolveToNull(_, __) => null;

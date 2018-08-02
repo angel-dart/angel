@@ -55,8 +55,8 @@ class StringValueContext extends ValueContext {
               buf.writeCharCode(next);
           }
         } else
-          throw new SyntaxError.fromSourceLocation(
-              'Unexpected "\\" in string literal.', span.start);
+          throw new SyntaxError(
+              'Unexpected "\\" in string literal.', span);
       } else {
         buf.writeCharCode(ch);
       }

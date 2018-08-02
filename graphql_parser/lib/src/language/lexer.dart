@@ -35,9 +35,9 @@ final Map<Pattern, TokenType> _patterns = {
   _name: TokenType.NAME
 };
 
-List<Token> scan(String text) {
+List<Token> scan(String text, {sourceUrl}) {
   List<Token> out = [];
-  var scanner = new SpanScanner(text);
+  var scanner = new SpanScanner(text, sourceUrl: sourceUrl);
 
   while (!scanner.isDone) {
     List<Token> potential = [];
@@ -54,7 +54,7 @@ List<Token> scan(String text) {
     if (potential.isEmpty) {
       var ch = new String.fromCharCode(scanner.readChar());
       throw new SyntaxError(
-          "Unexpected token '$ch'.", scanner.state.line, scanner.state.column);
+          "Unexpected token '$ch'.", scanner.emptySpan);
     } else {
       // Choose longest token
       potential.sort((a, b) => b.text.length.compareTo(a.text.length));
