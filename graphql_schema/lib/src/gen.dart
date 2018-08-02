@@ -5,9 +5,10 @@ GraphQLObjectType objectType(String name,
     new GraphQLObjectType(name)..fields.addAll(fields ?? []);
 
 GraphQLField<T, Serialized> field<T, Serialized>(String name,
-    {GraphQLFieldArgument<T, Serialized> argument,
+    {Iterable<GraphQLFieldArgument<T, Serialized>> arguments:
+        const <GraphQLFieldArgument<T, Serialized>>[],
     GraphQLFieldResolver<T, Serialized> resolve,
-    GraphQLType<T, Serialized> type}) {
+    GraphQLType<T, Serialized> innerType}) {
   return new GraphQLField(name,
-      argument: argument, resolve: resolve, type: type);
+      arguments: arguments, resolve: resolve, type: innerType);
 }

@@ -1,14 +1,14 @@
 import 'package:graphql_schema/graphql_schema.dart';
 
 final GraphQLObjectType pokemonType = objectType('Pokemon', [
-  field('species', type: graphQLString),
-  field('catch_date', type: graphQLDate)
+  field('species', innerType: graphQLString),
+  field('catch_date', innerType: graphQLDate)
 ]);
 
 final GraphQLObjectType trainerType =
-    objectType('Trainer', [field('name', type: graphQLString)]);
+    objectType('Trainer', [field('name', innerType: graphQLString)]);
 
 final GraphQLObjectType pokemonRegionType = objectType('PokemonRegion', [
-  field('trainer', type: trainerType),
-  field('pokemon_species', type: listType(pokemonType))
+  field('trainer', innerType: trainerType),
+  field('pokemon_species', innerType: listType(pokemonType))
 ]);

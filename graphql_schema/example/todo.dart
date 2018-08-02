@@ -1,15 +1,21 @@
 import 'package:graphql_schema/graphql_schema.dart';
 
 final GraphQLSchema todoSchema = new GraphQLSchema(
-    query: objectType('Todo', [
-  field('text', type: graphQLString.nonNullable()),
-  field('created_at', type: graphQLDate)
-]));
+  query: objectType('Todo', [
+    field(
+      'text',
+      innerType: graphQLString.nonNullable(),
+    ),
+    field('created_at', innerType: graphQLDate),
+  ]),
+);
 
 main() {
   // Validation
-  var validation = todoSchema.query
-      .validate('@root', {'foo': 'bar', 'text': null, 'created_at': 24});
+  var validation = todoSchema.query.validate(
+    '@root',
+    {'foo': 'bar', 'text': null, 'created_at': 24,},
+  );
 
   if (validation.successful) {
     print('This is valid data!!!');

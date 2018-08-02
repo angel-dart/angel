@@ -5,8 +5,6 @@ abstract class GraphQLType<Value, Serialized> {
   Value deserialize(Serialized serialized);
   ValidationResult<Serialized> validate(String key, Serialized input);
   GraphQLType<Value, Serialized> nonNullable();
-
-  bool get isNullable => false;
 }
 
 /// Shorthand to create a [GraphQLListType].
@@ -17,8 +15,8 @@ GraphQLListType<Value, Serialized> listType<Value, Serialized>(
 class GraphQLListType<Value, Serialized>
     extends GraphQLType<List<Value>, List<Serialized>>
     with _NonNullableMixin<List<Value>, List<Serialized>> {
-  final GraphQLType<Value, Serialized> type;
-  GraphQLListType(this.type);
+  final GraphQLType<Value, Serialized> innerType;
+  GraphQLListType(this.innerType);
 
   @override
   ValidationResult<List<Serialized>> validate(
@@ -32,7 +30,7 @@ class GraphQLListType<Value, Serialized>
     for (int i = 0; i < input.length; i++) {
       var k = '"$key" at index $i';
       var v = input[i];
-      var result = type.validate(k, v);
+      var result = innerType.validate(k, v);
       if (!result.successful)
         errors.addAll(result.errors);
       else
@@ -45,12 +43,12 @@ class GraphQLListType<Value, Serialized>
 
   @override
   List<Value> deserialize(List<Serialized> serialized) {
-    return serialized.map<Value>(type.deserialize).toList();
+    return serialized.map<Value>(innerType.deserialize).toList();
   }
 
   @override
   List<Serialized> serialize(List<Value> value) {
-    return value.map<Serialized>(type.serialize).toList();
+    return value.map<Serialized>(innerType.serialize).toList();
   }
 }
 
@@ -58,16 +56,13 @@ abstract class _NonNullableMixin<Value, Serialized>
     implements GraphQLType<Value, Serialized> {
   GraphQLType<Value, Serialized> _nonNullableCache;
   GraphQLType<Value, Serialized> nonNullable() => _nonNullableCache ??=
-      new _GraphQLNonNullableType<Value, Serialized>._(this);
+      new GraphQLNonNullableType<Value, Serialized>._(this);
 }
 
-class _GraphQLNonNullableType<Value, Serialized>
+class GraphQLNonNullableType<Value, Serialized>
     extends GraphQLType<Value, Serialized> {
-  final GraphQLType<Value, Serialized> type;
-  _GraphQLNonNullableType._(this.type);
-
-  @override
-  bool get isNullable => true;
+  final GraphQLType<Value, Serialized> innerType;
+  GraphQLNonNullableType._(this.innerType);
 
   @override
   GraphQLType<Value, Serialized> nonNullable() {
@@ -80,16 +75,16 @@ class _GraphQLNonNullableType<Value, Serialized>
     if (input == null)
       return new ValidationResult._failure(
           ['Expected "$key" to be a non-null value.']);
-    return type.validate(key, input);
+    return innerType.validate(key, input);
   }
 
   @override
   Value deserialize(Serialized serialized) {
-    return type.deserialize(serialized);
+    return innerType.deserialize(serialized);
   }
 
   @override
   Serialized serialize(Value value) {
-    return type.serialize(value);
+    return innerType.serialize(value);
   }
 }
