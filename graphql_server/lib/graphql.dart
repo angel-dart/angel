@@ -33,8 +33,7 @@ class GraphQL {
           if (customTypes.containsKey(ctx.typeName.name))
             return customTypes[ctx.typeName.name];
           throw new ArgumentError(
-              'Unknown GraphQL type: "${ctx.typeName.name}"\n${ctx.span
-                  .highlight()}');
+              'Unknown GraphQL type: "${ctx.typeName.name}"\n${ctx.span.highlight()}');
           break;
       }
     } else {
@@ -48,7 +47,7 @@ class GraphQL {
       {Map<String, dynamic> variableValues: const {}, initialValue}) {
     var operation = getOperation(document, operationName);
     var coercedVariableValues =
-    coerceVariableValues(schema, operation, variableValues ?? {});
+        coerceVariableValues(schema, operation, variableValues ?? {});
     if (operation.isQuery)
       return executeQuery(
           document, operation, schema, coercedVariableValues, initialValue);
@@ -65,7 +64,7 @@ class GraphQL {
       return ops.length == 1
           ? ops.first
           : throw new GraphQLException(
-          'Missing required operation "$operationName".');
+              'Missing required operation "$operationName".');
     } else {
       return ops.firstWhere((d) => d.name == operationName,
           orElse: () => throw new GraphQLException(
@@ -128,7 +127,7 @@ class GraphQL {
       objectValue,
       Map<String, dynamic> variableValues) {
     var groupedFieldSet =
-    collectFields(document, objectType, selectionSet, variableValues);
+        collectFields(document, objectType, selectionSet, variableValues);
     var resultMap = <String, dynamic>{};
 
     for (var responseKey in groupedFieldSet.keys) {
@@ -156,7 +155,7 @@ class GraphQL {
       Map<String, dynamic> variableValues) {
     var field = fields[0];
     var argumentValues =
-    coerceArgumentValues(objectType, field, variableValues);
+        coerceArgumentValues(objectType, field, variableValues);
     var resolvedValue = resolveFieldValue(
         objectType, objectValue, field.field.fieldName.name, argumentValues);
     return completeValue(fieldType, fields, resolvedValue, variableValues);
@@ -168,9 +167,36 @@ class GraphQL {
     var argumentValues = field.field.arguments;
     var fieldName = field.field.fieldName.name;
     var desiredField = objectType.fields.firstWhere((f) => f.name == fieldName);
+    var argumentDefinitions = desiredField.arguments;
 
-    // TODO: Multiple arguments?
-    var argumentDefinitions = desiredField.argument;
+    for (var argumentDefinition in argumentDefinitions) {
+      var argumentName = argumentDefinition.name;
+      var argumentType = argumentDefinition.type;
+      var defaultValue = argumentDefinition.defaultValue;
+      var value = argumentValues.firstWhere((a) => a.name == argumentName,
+          orElse: () => null);
+
+      if (value != null) {
+        var variableName = value.name;
+        var variableValue = variableValues[variableName];
+
+        if (variableValues.containsKey(variableName)) {
+          coercedValues[argumentName] = variableValue;
+        } else if (defaultValue != null || argumentDefinition.defaultsToNull) {
+          coercedValues[argumentName] = defaultValue;
+        } else if (!argumentType.isNullable) {
+          throw new GraphQLException(
+              'Missing value for argument "$argumentName".');
+        }
+      } else {
+        if (defaultValue != null || argumentDefinition.defaultsToNull) {
+          coercedValues[argumentName] = defaultValue;
+        } else if (!argumentType.isNullable) {
+          throw new GraphQLException(
+              'Missing value for argument "$argumentName".');
+        }
+      }
+    }
 
     return coercedValues;
   }
@@ -192,7 +218,7 @@ class GraphQL {
       if (selection.field != null) {
         var responseKey = selection.field.fieldName.name;
         var groupForResponseKey =
-        groupedFields.putIfAbsent(responseKey, () => []);
+            groupedFields.putIfAbsent(responseKey, () => []);
         groupForResponseKey.add(selection);
       } else if (selection.fragmentSpread != null) {
         var fragmentSpreadName = selection.fragmentSpread.name;
@@ -201,7 +227,7 @@ class GraphQL {
         var fragment = document.definitions
             .whereType<FragmentDefinitionContext>()
             .firstWhere((f) => f.name == fragmentSpreadName,
-            orElse: () => null);
+                orElse: () => null);
 
         if (fragment == null) continue;
         var fragmentType = fragment.typeCondition;
@@ -213,7 +239,7 @@ class GraphQL {
         for (var responseKey in fragmentGroupFieldSet.keys) {
           var fragmentGroup = fragmentGroupFieldSet[responseKey];
           var groupForResponseKey =
-          groupedFields.putIfAbsent(responseKey, () => []);
+              groupedFields.putIfAbsent(responseKey, () => []);
           groupForResponseKey.addAll(fragmentGroup);
         }
       } else if (selection.inlineFragment != null) {
@@ -227,7 +253,7 @@ class GraphQL {
         for (var responseKey in fragmentGroupFieldSet.keys) {
           var fragmentGroup = fragmentGroupFieldSet[responseKey];
           var groupForResponseKey =
-          groupedFields.putIfAbsent(responseKey, () => []);
+              groupedFields.putIfAbsent(responseKey, () => []);
           groupForResponseKey.addAll(fragmentGroup);
         }
       }

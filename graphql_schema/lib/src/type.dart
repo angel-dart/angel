@@ -5,6 +5,8 @@ abstract class GraphQLType<Value, Serialized> {
   Value deserialize(Serialized serialized);
   ValidationResult<Serialized> validate(String key, Serialized input);
   GraphQLType<Value, Serialized> nonNullable();
+
+  bool get isNullable => false;
 }
 
 /// Shorthand to create a [GraphQLListType].
@@ -63,6 +65,9 @@ class _GraphQLNonNullableType<Value, Serialized>
     extends GraphQLType<Value, Serialized> {
   final GraphQLType<Value, Serialized> type;
   _GraphQLNonNullableType._(this.type);
+
+  @override
+  bool get isNullable => true;
 
   @override
   GraphQLType<Value, Serialized> nonNullable() {

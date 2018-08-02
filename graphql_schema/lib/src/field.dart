@@ -4,12 +4,17 @@ typedef FutureOr<Value> GraphQLFieldResolver<Value, Serialized>(
     Serialized serialized);
 
 class GraphQLField<Value, Serialized> {
+  final List<GraphQLFieldArgument> arguments = <GraphQLFieldArgument>[];
   final String name;
-  final GraphQLFieldArgument argument;
   final GraphQLFieldResolver<Value, Serialized> resolve;
   final GraphQLType<Value, Serialized> type;
 
-  GraphQLField(this.name, {this.argument, this.resolve, this.type});
+  GraphQLField(this.name,
+      {Iterable<GraphQLFieldArgument> arguments: const <GraphQLFieldArgument>[],
+      this.resolve,
+      this.type}) {
+    this.arguments.addAll(arguments ?? <GraphQLFieldArgument>[]);
+  }
 
   FutureOr<Serialized> serialize(Value value) {
     return type.serialize(value);
