@@ -1,7 +1,9 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_graphql/angel_graphql.dart';
+import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:graphql_server/graphql_server.dart';
+import 'package:graphql_server/mirrors.dart';
 
 main() async {
   var app = new Angel();
@@ -9,18 +11,14 @@ main() async {
 
   var todoService = app.use('api/todos', new MapService()) as Service;
 
-  var todo = objectType('todo', [
-    field(
-      'text',
-      type: graphQLString,
-    ),
-  ]);
-
   var api = objectType('api', [
     field(
-      'todos',
-      type: listType(todo),
+      'todo',
+      type: listType(objectTypeFromDartType(Todo)),
       resolve: resolveFromService(todoService),
+      arguments: [
+        new GraphQLFieldArgument('id', graphQLId),
+      ],
     ),
   ]);
 
@@ -37,4 +35,13 @@ main() async {
   var graphiqlUri = uri.replace(path: 'graphiql');
   print('Listening at $uri');
   print('Access graphiql at $graphiqlUri');
+}
+
+@serializable
+class Todo extends Model {
+  String text;
+
+  bool completed;
+
+  Todo({this.text, this.completed});
 }

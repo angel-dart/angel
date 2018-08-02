@@ -3,12 +3,22 @@ import 'dart:mirrors';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:recase/recase.dart';
+import 'package:tuple/tuple.dart';
 
 /// Reflects upon a given [type] and dynamically generates a [GraphQLType] that corresponds to it.
 ///
 /// This function is aware of the annotations from `package:angel_serialize`, and works seamlessly
 /// with them.
 GraphQLType objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
+  var tuple = new Tuple2(type, typeArguments);
+  return _cache.putIfAbsent(
+      tuple, () => _objectTypeFromDartType(type, typeArguments));
+}
+
+final Map<Tuple2<Type, List<Type>>, GraphQLType> _cache =
+    <Tuple2<Type, List<Type>>, GraphQLType>{};
+
+GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
   if (type == bool) {
     return graphQLBoolean;
   } else if (type == int) {
@@ -17,9 +27,12 @@ GraphQLType objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
     return graphQLFloat;
   } else if (type == String) {
     return graphQLString;
+  } else if (type == DateTime) {
+    return graphQLDate;
   }
 
-  var mirror = reflectType(type, typeArguments);
+  var mirror = reflectType(
+      type, typeArguments?.isNotEmpty == true ? typeArguments : null);
 
   if (mirror is! ClassMirror) {
     throw new StateError(
@@ -35,7 +48,10 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   for (var name in mirror.instanceMembers.keys) {
     var methodMirror = mirror.instanceMembers[name];
     var exclude = _getExclude(name, methodMirror);
-    var canAdd = exclude?.canSerialize != true;
+    var canAdd = name != #hashCode &&
+        name != #runtimeType &&
+        !methodMirror.isPrivate &&
+        exclude?.canSerialize != true;
     if (methodMirror.isGetter && canAdd) {
       fields.add(fieldFromGetter(name, methodMirror, exclude, mirror));
     }

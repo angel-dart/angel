@@ -8,3 +8,5 @@ dependencies:
     path: ../graphql_schema
   graphql_server:
     path: ../graphql_server
+dev_dependencies:
+  angel_serialize: ^2.0.0
