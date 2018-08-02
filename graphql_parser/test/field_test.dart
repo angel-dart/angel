@@ -98,7 +98,7 @@ class _IsField extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var field = item is FieldContext ? item : parseField(item);
+    var field = item is FieldContext ? item : parseField(item.toString());
     if (field == null) return false;
     if (fieldName != null && !fieldName.matches(field.fieldName, matchState))
       return false;
@@ -122,7 +122,7 @@ class _IsFieldName extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var fieldName = item is FieldNameContext ? item : parseFieldName(item);
+    var fieldName = item is FieldNameContext ? item : parseFieldName(item.toString());
     if (realName != null)
       return fieldName.alias?.alias == name && fieldName.alias?.name == realName;
     else

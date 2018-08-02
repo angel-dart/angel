@@ -59,7 +59,7 @@ class _IsValue extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var v = item is ValueContext ? item : parseValue(item);
+    var v = item is ValueContext ? item : parseValue(item.toString());
     return equals(value).matches(v.value, matchState);
   }
 }

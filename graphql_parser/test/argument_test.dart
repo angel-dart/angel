@@ -37,7 +37,7 @@ class _IsArgument extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var arg = item is ArgumentContext ? item : parseArgument(item);
+    var arg = item is ArgumentContext ? item : parseArgument(item.toString());
     if (arg == null) return false;
     print(arg.toSource());
     return equals(name).matches(arg.name, matchState) &&
@@ -61,7 +61,7 @@ class _IsArgumentList extends Matcher {
   @override
   bool matches(item, Map matchState) {
     var args =
-        item is List<ArgumentContext> ? item : parse(item).parseArguments();
+        item is List<ArgumentContext> ? item : parse(item.toString()).parseArguments();
 
     if (args.length != arguments.length) return false;
 

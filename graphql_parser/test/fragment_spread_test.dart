@@ -44,7 +44,7 @@ class _IsFragmentSpread extends Matcher {
   @override
   bool matches(item, Map matchState) {
     var spread =
-        item is FragmentSpreadContext ? item : parseFragmentSpread(item);
+        item is FragmentSpreadContext ? item : parseFragmentSpread(item.toString());
     if (spread == null) return false;
     if (spread.name != name) return false;
     if (directives != null)

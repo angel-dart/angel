@@ -66,7 +66,7 @@ class _IsSelectionSet extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var set = item is SelectionSetContext ? item : parseSelectionSet(item);
+    var set = item is SelectionSetContext ? item : parseSelectionSet(item.toString());
     if (set == null) return false;
     if (set.selections.length != selections.length) return false;
 

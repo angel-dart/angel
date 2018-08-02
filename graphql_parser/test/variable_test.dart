@@ -29,8 +29,8 @@ class _IsVariable extends Matcher {
   }
 
   @override
-  bool matches(String item, Map matchState) {
-    var p = parse(item);
+  bool matches(item, Map matchState) {
+    var p = parse(item.toString());
     var v = p.parseVariable();
     return equals(name).matches(v?.name, matchState);
   }

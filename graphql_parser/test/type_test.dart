@@ -64,7 +64,7 @@ class _IsListType extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var type = item is TypeContext ? item : parseType(item);
+    var type = item is TypeContext ? item : parseType(item.toString());
     if (type.listType == null) return false;
     if (type.isNullable != (isNullable != false)) return false;
     return innerType.matches(type.listType.type, matchState);
@@ -87,7 +87,7 @@ class _IsType extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var type = item is TypeContext ? item : parseType(item);
+    var type = item is TypeContext ? item : parseType(item.toString());
     if (type.typeName == null) return false;
     var result = type.typeName.name == name;
     return result && type.isNullable == !(nonNull == true);

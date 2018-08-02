@@ -58,7 +58,7 @@ class _IsVariableDefinition extends Matcher {
   bool matches(item, Map matchState) {
     var def = item is VariableDefinitionContext
         ? item
-        : parseVariableDefinition(item);
+        : parseVariableDefinition(item.toString());
     if (def == null) return false;
     if (def.variable.name != name) return false;
     bool result = true;
