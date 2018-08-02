@@ -23,7 +23,7 @@ class GraphQLObjectType
         errors.add('Unexpected field "$k" encountered in $key.');
       } else {
         var v = input[k];
-        var result = field.type.validate(k, v);
+        var result = field.type.validate(k.toString(), v);
 
         if (!result.successful) {
           errors.addAll(result.errors.map((s) => '$key: $s'));
@@ -36,7 +36,7 @@ class GraphQLObjectType
     if (errors.isNotEmpty) {
       return new ValidationResult._failure(errors);
     } else
-      return new ValidationResult._ok(out);
+      return new ValidationResult._ok(_foldToStringDynamic(out));
   }
 
   @override
@@ -45,7 +45,7 @@ class GraphQLObjectType
       var field = fields.firstWhere((f) => f.name == k, orElse: () => null);
       if (field == null)
         throw new UnsupportedError('Cannot serialize field "$k", which was not defined in the schema.');
-      return out..[k] = field.serialize(value[k]);
+      return out..[k.toString()] = field.serialize(value[k]);
     });
   }
 
@@ -55,7 +55,14 @@ class GraphQLObjectType
       var field = fields.firstWhere((f) => f.name == k, orElse: () => null);
       if (field == null)
         throw new UnsupportedError('Unexpected field "$k" encountered in map.');
-      return out..[k] = field.deserialize(value[k]);
+      return out..[k.toString()] = field.deserialize(value[k]);
     });
   }
+}
+
+Map<String, dynamic> _foldToStringDynamic(Map map) {
+  return map == null
+      ? null
+      : map.keys.fold<Map<String, dynamic>>(
+      <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
 }

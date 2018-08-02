@@ -23,3 +23,10 @@ GraphQLSchema graphQLSchema(
 
 /// A default resolver that always returns `null`.
 resolveToNull(_, __) => null;
+
+class GraphQLException extends FormatException {
+  GraphQLException(String message) : super(message);
+
+  @override
+  String toString() => 'GraphQL exception: $message';
+}

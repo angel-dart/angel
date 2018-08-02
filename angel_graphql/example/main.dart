@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_graphql/angel_graphql.dart';
 import 'package:angel_serialize/angel_serialize.dart';
+import 'package:logging/logging.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:graphql_server/graphql_server.dart';
 import 'package:graphql_server/mirrors.dart';
@@ -8,6 +9,13 @@ import 'package:graphql_server/mirrors.dart';
 main() async {
   var app = new Angel();
   var http = new AngelHttp(app);
+  hierarchicalLoggingEnabled = true;
+  app.logger = new Logger('angel_graphql')
+    ..onRecord.listen((rec) {
+      print(rec);
+      if (rec.error != null) print(rec.error);
+      if (rec.stackTrace != null) print(rec.stackTrace);
+    });
 
   var todoService = app.use('api/todos', new MapService()) as Service;
 

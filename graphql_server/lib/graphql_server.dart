@@ -2,15 +2,20 @@ import 'dart:async';
 
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
+import 'package:graphql_schema/introspection.dart';
 
 class GraphQL {
   final Map<String, GraphQLType> customTypes = {};
-  final GraphQLSchema schema;
+  GraphQLSchema _schema;
 
-  GraphQL(this.schema) {
-    if (schema.query != null) customTypes[schema.query.name] = schema.query;
-    if (schema.mutation != null)
-      customTypes[schema.mutation.name] = schema.mutation;
+  GraphQL(GraphQLSchema schema, {bool introspect: true}) : _schema = schema {
+    if (introspect) {
+      _schema = reflectSchema(_schema);
+    }
+
+    if (_schema.query != null) customTypes[_schema.query.name] = _schema.query;
+    if (_schema.mutation != null)
+      customTypes[_schema.mutation.name] = _schema.mutation;
   }
 
   GraphQLType convertType(TypeContext ctx) {
@@ -35,12 +40,11 @@ class GraphQL {
           if (customTypes.containsKey(ctx.typeName.name))
             return customTypes[ctx.typeName.name];
           throw new ArgumentError(
-              'Unknown GraphQL type: "${ctx.typeName.name}"\n${ctx.span.highlight()}');
+              'Unknown GraphQL type: "${ctx.typeName.name}"');
           break;
       }
     } else {
-      throw new ArgumentError(
-          'Invalid GraphQL type: "${ctx.span.text}"\n${ctx.span.highlight()}');
+      throw new ArgumentError('Invalid GraphQL type: "${ctx.span.text}"');
     }
   }
 
@@ -52,7 +56,7 @@ class GraphQL {
     var tokens = scan(text, sourceUrl: sourceUrl);
     var parser = new Parser(tokens);
     var document = parser.parseDocument();
-    return executeRequest(schema, document,
+    return executeRequest(_schema, document,
         operationName: operationName,
         initialValue: initialValue,
         variableValues: variableValues);
@@ -203,8 +207,8 @@ class GraphQL {
       var value = argumentValues.firstWhere((a) => a.name == argumentName,
           orElse: () => null);
 
-      if (value != null) {
-        var variableName = value.name;
+      if (value?.valueOrVariable?.variable != null) {
+        var variableName = value.valueOrVariable.variable.name;
         var variableValue = variableValues[variableName];
 
         if (variableValues.containsKey(variableName)) {
@@ -214,13 +218,28 @@ class GraphQL {
         } else if (argumentType is GraphQLNonNullableType) {
           throw new GraphQLException(
               'Missing value for argument "$argumentName".');
+        } else {
+          continue;
         }
-      } else {
+      } else if (value == null) {
         if (defaultValue != null || argumentDefinition.defaultsToNull) {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
           throw new GraphQLException(
               'Missing value for argument "$argumentName".');
+        } else {
+          continue;
+        }
+      } else {
+        var validation =
+            argumentType.validate(fieldName, value.valueOrVariable.value.value);
+
+        if (!validation.successful) {
+          throw new GraphQLException(
+              'Coercion error for value of argument "$argumentName".');
+        } else {
+          var coercedValue = validation.value;
+          coercedValues[argumentName] = coercedValue;
         }
       }
     }
@@ -246,7 +265,6 @@ class GraphQL {
       List<SelectionContext> fields,
       result,
       Map<String, dynamic> variableValues) async {
-
     if (fieldType is GraphQLNonNullableType) {
       var innerType = fieldType.innerType;
       var completedResult = completeValue(
@@ -321,8 +339,9 @@ class GraphQL {
       GraphQLObjectType objectType,
       SelectionSetContext selectionSet,
       Map<String, dynamic> variableValues,
-      {List visitedFragments: const []}) {
+      {List visitedFragments}) {
     var groupedFields = <String, List<SelectionContext>>{};
+    visitedFragments ??= [];
 
     for (var selection in selectionSet.selections) {
       if (getDirectiveValue('skip', 'if', selection, variableValues) == true)
@@ -340,9 +359,11 @@ class GraphQL {
         if (visitedFragments.contains(fragmentSpreadName)) continue;
         visitedFragments.add(fragmentSpreadName);
         var fragment = document.definitions
-            .whereType<FragmentDefinitionContext>()
-            .firstWhere((f) => f.name == fragmentSpreadName,
-                orElse: () => null);
+            .where((d) => d is FragmentDefinitionContext)
+            .firstWhere(
+                (f) =>
+                    (f as FragmentDefinitionContext).name == fragmentSpreadName,
+                orElse: () => null) as FragmentDefinitionContext;
 
         if (fragment == null) continue;
         var fragmentType = fragment.typeCondition;
@@ -395,8 +416,7 @@ class GraphQL {
 
     var vname = vv.variable.name;
     if (!variableValues.containsKey(vname))
-      throw new GraphQLException(
-          'Unknown variable: "$vname"\n${vv.variable.span.highlight()}');
+      throw new GraphQLException('Unknown variable: "$vname"');
 
     return variableValues[vname];
   }
@@ -415,11 +435,4 @@ class GraphQL {
 
     return false;
   }
-}
-
-class GraphQLException extends FormatException {
-  GraphQLException(String message) : super(message);
-
-  @override
-  String toString() => 'GraphQL exception: $message';
 }
