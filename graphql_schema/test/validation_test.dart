@@ -2,7 +2,7 @@ import 'package:graphql_schema/graphql_schema.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var typeType = new GraphQLEnumType('Type', [
+  var typeType = enumType('Type', [
     'FIRE',
     'WATER',
     'GRASS',
