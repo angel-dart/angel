@@ -12,7 +12,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     field(
       'types',
       type: listType(typeType),
-      resolve: (_, __) => objectTypes,
+      resolve: (_, __) => allTypes,
     ),
     field(
       'queryType',
@@ -25,6 +25,11 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
       resolve: (_, __) => schema.mutation,
     ),
     field(
+      'subscriptionType',
+      type: typeType,
+      resolve: (_, __) => schema.subscription,
+    ),
+    field(
       'directives',
       type: listType(directiveType).nonNullable(),
       resolve: (_, __) => [], // TODO: Actually fetch directives
@@ -32,6 +37,12 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   ]);
 
   allTypes.addAll([
+    graphQLBoolean,
+    graphQLString,
+    graphQLId,
+    graphQLDate,
+    graphQLFloat,
+    graphQLInt,
     directiveType,
     typeType,
     schemaType,
@@ -128,7 +139,7 @@ GraphQLObjectType _reflectSchemaTypes() {
       );
     }
 
-    typeField = fieldType.fields
+    typeField = inputValueType.fields
         .firstWhere((f) => f.name == 'type', orElse: () => null);
 
     if (typeField == null) {
@@ -262,7 +273,7 @@ GraphQLObjectType _reflectInputValueType() {
   return _inputValueType ??= objectType('__InputValue', fields: [
     field(
       'name',
-      type: graphQLString,
+      type: graphQLString.nonNullable(),
       resolve: (obj, _) => (obj as GraphQLFieldArgument).name,
     ),
     field(
@@ -279,11 +290,13 @@ GraphQLObjectType _reflectInputValueType() {
   ]);
 }
 
+GraphQLObjectType _directiveType;
+
 GraphQLObjectType _reflectDirectiveType() {
   var inputValueType = _reflectInputValueType();
 
   // TODO: What actually is this???
-  return objectType('__Directive', fields: [
+  return _directiveType ??= objectType('__Directive', fields: [
     field(
       'name',
       type: graphQLString.nonNullable(),
@@ -298,7 +311,7 @@ GraphQLObjectType _reflectDirectiveType() {
       'locations',
       type: listType(graphQLString.nonNullable()).nonNullable(),
       // TODO: Enum directiveLocation
-      resolve: (obj, _) => [],
+      resolve: (obj, _) => <String>[],
     ),
     field(
       'args',
@@ -311,6 +324,7 @@ GraphQLObjectType _reflectDirectiveType() {
 GraphQLObjectType _enumValueType;
 
 GraphQLObjectType _reflectEnumValueType() {
+  // TODO: Enum values
   return _enumValueType ?? objectType('__EnumValue', fields: []);
 }
 

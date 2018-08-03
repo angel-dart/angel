@@ -13,13 +13,14 @@ part 'validation_result.dart';
 class GraphQLSchema {
   final GraphQLObjectType query;
   final GraphQLObjectType mutation;
+  final GraphQLObjectType subscription;
 
-  GraphQLSchema({this.query, this.mutation});
+  GraphQLSchema({this.query, this.mutation, this.subscription});
 }
 
 GraphQLSchema graphQLSchema(
-        {@required GraphQLObjectType query, GraphQLObjectType mutation}) =>
-    new GraphQLSchema(query: query, mutation: mutation);
+        {@required GraphQLObjectType query, GraphQLObjectType mutation, GraphQLObjectType subscription}) =>
+    new GraphQLSchema(query: query, mutation: mutation, subscription: subscription);
 
 /// A default resolver that always returns `null`.
 resolveToNull(_, __) => null;
