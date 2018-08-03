@@ -1,3 +1,6 @@
+# 2.0.4+1
+* Allow Dart 1 for this annotation-only package.
+
 # 2.0.4
 * Added `generatedSerializable`.
 
