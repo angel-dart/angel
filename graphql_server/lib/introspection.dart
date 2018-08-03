@@ -418,6 +418,10 @@ List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
     } else {
       types.addAll(_fetchAllTypesFromType(field.type));
     }
+
+    for (var argument in field.arguments ?? <GraphQLFieldArgument>[]) {
+      types.addAll(_fetchAllTypesFromType(argument.type));
+    }
   }
 
   return types;

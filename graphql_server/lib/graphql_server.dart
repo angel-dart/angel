@@ -238,9 +238,8 @@ class GraphQL {
         if (defaultValue != null || argumentDefinition.defaultsToNull) {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
-          throw new GraphQLException.fromSourceSpan(
-              'Missing value for argument "$argumentName".',
-              value.valueOrVariable.span);
+          throw new GraphQLException.fromMessage(
+              'Missing value for argument "$argumentName".');
         } else {
           continue;
         }

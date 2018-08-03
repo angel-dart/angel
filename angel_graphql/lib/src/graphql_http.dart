@@ -55,7 +55,7 @@ RequestHandler graphQLHttp(GraphQL graphQl) {
 
       errors
           .addAll(e.errors.map((ee) => new GraphQLExceptionError(ee)).toList());
-      throw new GraphQLException(errors);
+      return new GraphQLException(errors).toJson();
     } on SyntaxError catch (e) {
       return new GraphQLException.fromSourceSpan(e.message, e.span);
     } on GraphQLException catch (e) {

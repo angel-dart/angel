@@ -24,11 +24,16 @@ main() async {
     description: 'A simple API that manages your to-do list.',
     fields: [
       field(
-        'todo',
+        'todos',
         type: listType(convertDartType(Todo).nonNullable()),
-        resolve: resolveFromService(todoService),
+        resolve: resolveViaServiceIndex(todoService),
+      ),
+      field(
+        'todo',
+        type: convertDartType(Todo),
+        resolve: resolveViaServiceRead(todoService),
         arguments: [
-          new GraphQLFieldArgument('id', graphQLId),
+          new GraphQLFieldArgument('id', graphQLId.nonNullable()),
         ],
       ),
     ],
@@ -39,10 +44,14 @@ main() async {
   app.all('/graphql', graphQLHttp(new GraphQL(schema)));
   app.get('/graphiql', graphiql());
 
-  await todoService.create({'text': 'Clean your room!', 'completed': true});
-  await todoService.create({'text': 'Take out the trash', 'completed': false});
+  await todoService
+      .create({'text': 'Clean your room!', 'completion_status': 'COMPLETE'});
   await todoService.create(
-      {'text': 'Become a billionaire at the age of 5', 'completed': false});
+      {'text': 'Take out the trash', 'completion_status': 'INCOMPLETE'});
+  await todoService.create({
+    'text': 'Become a billionaire at the age of 5',
+    'completion_status': 'INCOMPLETE'
+  });
 
   var server = await http.startServer('127.0.0.1', 3000);
   var uri =
@@ -67,5 +76,4 @@ class Todo extends Model {
 }
 
 @GraphQLDocumentation(description: 'The completion status of a to-do item.')
-enum CompletionStatus {
-  COMPLETE, INCOMPLETE }
+enum CompletionStatus { COMPLETE, INCOMPLETE }
