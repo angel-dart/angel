@@ -25,7 +25,7 @@ main() async {
     fields: [
       field(
         'todo',
-        type: listType(objectTypeFromDartType(Todo).nonNullable()),
+        type: listType(convertDartType(Todo).nonNullable()),
         resolve: resolveFromService(todoService),
         arguments: [
           new GraphQLFieldArgument('id', graphQLId),

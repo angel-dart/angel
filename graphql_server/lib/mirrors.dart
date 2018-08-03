@@ -9,7 +9,7 @@ import 'package:tuple/tuple.dart';
 ///
 /// This function is aware of the annotations from `package:angel_serialize`, and works seamlessly
 /// with them.
-GraphQLType objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
+GraphQLType convertDartType(Type type, [List<Type> typeArguments]) {
   var tuple = new Tuple2(type, typeArguments);
   return _cache.putIfAbsent(
       tuple, () => _objectTypeFromDartType(type, typeArguments));
@@ -44,7 +44,13 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
         '$type is not a class, and therefore cannot be converted into a GraphQL object type.');
   }
 
-  return objectTypeFromClassMirror(mirror as ClassMirror);
+  var clazz = mirror as ClassMirror;
+
+  if (clazz.isEnum) {
+    return enumTypeFromClassMirror(clazz);
+  }
+
+  return objectTypeFromClassMirror(clazz);
 }
 
 GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
@@ -69,9 +75,30 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   );
 }
 
+GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
+  var values = <GraphQLEnumValue>[];
+
+  for (var name in mirror.staticMembers.keys) {
+    var methodMirror = mirror.staticMembers[name];
+    values.add(
+      new GraphQLEnumValue(
+        MirrorSystem.getName(name),
+        mirror.getField(name).reflectee,
+        deprecationReason: _getDeprecationReason(methodMirror.metadata),
+      ),
+    );
+  }
+
+  return new GraphQLEnumType(
+    MirrorSystem.getName(mirror.simpleName),
+    values,
+    description: _getDescription(mirror.metadata),
+  );
+}
+
 GraphQLField fieldFromGetter(
     Symbol name, MethodMirror mirror, Exclude exclude, ClassMirror clazz) {
-  var type = objectTypeFromDartType(mirror.returnType.reflectedType,
+  var type = convertDartType(mirror.returnType.reflectedType,
       mirror.returnType.typeArguments.map((t) => t.reflectedType).toList());
 
   var nameString = _getSerializedName(name, mirror, clazz);
