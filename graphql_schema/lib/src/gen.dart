@@ -1,8 +1,12 @@
 part of graphql_schema.src.schema;
 
 GraphQLObjectType objectType(String name,
-        {String description, Iterable<GraphQLField> fields = const []}) =>
-    new GraphQLObjectType(name, description)..fields.addAll(fields ?? []);
+        {String description,
+        Iterable<GraphQLField> fields = const [],
+        Iterable<GraphQLObjectType> interfaces = const []}) =>
+    new GraphQLObjectType(name, description)
+      ..fields.addAll(fields ?? [])
+      ..interfaces.addAll(interfaces ?? []);
 
 GraphQLField<T, Serialized> field<T, Serialized>(String name,
     {Iterable<GraphQLFieldArgument<T, Serialized>> arguments: const [],

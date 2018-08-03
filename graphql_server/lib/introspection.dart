@@ -38,6 +38,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     _reflectFields(),
     _reflectDirectiveType(),
     _reflectInputValueType(),
+    _reflectEnumValueType(),
   ]);
 
   var fields = <GraphQLField>[
@@ -87,6 +88,31 @@ GraphQLObjectType _reflectSchemaTypes() {
       ),
     );
 
+    _typeType.fields.add(
+      field(
+        'interfaces',
+        type: listType(_reflectSchemaTypes().nonNullable()),
+        resolve: (type, _) {
+          if (type is GraphQLObjectType) {
+            return type.interfaces;
+          } else {
+            return <GraphQLType>[];
+          }
+        },
+      ),
+    );
+
+    _typeType.fields.add(
+      field(
+        'possibleTypes',
+        type: listType(_reflectSchemaTypes().nonNullable()),
+        resolve: (type, _) {
+          // TODO: Interface and union types
+          return <GraphQLType>[];
+        },
+      ),
+    );
+
     var fieldType = _reflectFields();
     var inputValueType = _reflectInputValueType();
     var typeField = fieldType.fields
@@ -120,7 +146,9 @@ GraphQLObjectType _reflectSchemaTypes() {
 }
 
 GraphQLObjectType _createTypeType() {
+  var enumValueType = _reflectEnumValueType();
   var fieldType = _reflectFields();
+  var inputValueType = _reflectInputValueType();
 
   return objectType('__Type', fields: [
     field(
@@ -168,6 +196,25 @@ GraphQLObjectType _createTypeType() {
                   (f) => !f.isDeprecated || args['includeDeprecated'] == true)
               .toList()
           : [],
+    ),
+    field(
+      'enumValues',
+      type: listType(enumValueType.nonNullable()),
+      arguments: [
+        new GraphQLFieldArgument(
+          'includeDeprecated',
+          graphQLBoolean,
+          defaultValue: false,
+        ),
+      ],
+    ),
+    field(
+      'inputFields',
+      type: listType(inputValueType.nonNullable()),
+      resolve: (obj, _) {
+        // TODO: INPUT_OBJECT type
+        return <GraphQLFieldArgument>[];
+      },
     ),
   ]);
 }
@@ -259,6 +306,12 @@ GraphQLObjectType _reflectDirectiveType() {
       resolve: (obj, _) => [],
     ),
   ]);
+}
+
+GraphQLObjectType _enumValueType;
+
+GraphQLObjectType _reflectEnumValueType() {
+  return _enumValueType ?? objectType('__EnumValue', fields: []);
 }
 
 List<GraphQLObjectType> fetchAllTypes(GraphQLSchema schema) {

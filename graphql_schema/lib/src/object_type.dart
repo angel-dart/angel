@@ -7,6 +7,9 @@ class GraphQLObjectType
   final String description;
   final List<GraphQLField> fields = [];
 
+  /// A list of other types that this object type is known to implement.
+  final List<GraphQLObjectType> interfaces = [];
+
   GraphQLObjectType(this.name, this.description);
 
   @override
