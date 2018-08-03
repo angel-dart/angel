@@ -3,6 +3,7 @@ library graphql_schema.src.schema;
 import 'dart:async';
 
 import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 
 part 'argument.dart';
 
@@ -36,11 +37,65 @@ GraphQLSchema graphQLSchema(
 /// A default resolver that always returns `null`.
 resolveToNull(_, __) => null;
 
-class GraphQLException extends FormatException {
-  GraphQLException(String message) : super(message);
+/// An error that occurs during execution of a GraphQL query.
+class GraphQLException implements Exception {
+  final List<GraphQLExceptionError> errors;
 
-  @override
-  String toString() => 'GraphQL exception: $message';
+  GraphQLException(this.errors);
+
+  factory GraphQLException.fromMessage(String message) {
+    return new GraphQLException([
+      new GraphQLExceptionError(message),
+    ]);
+  }
+
+  factory GraphQLException.fromSourceSpan(String message, FileSpan span) {
+    return new GraphQLException([
+      new GraphQLExceptionError(
+        message,
+        locations: [
+          new GraphExceptionErrorLocation.fromSourceLocation(span.start),
+        ],
+      ),
+    ]);
+  }
+
+  Map<String, List<Map<String, dynamic>>> toJson() {
+    return {
+      'errors': errors.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+class GraphQLExceptionError {
+  final String message;
+  final List<GraphExceptionErrorLocation> locations;
+
+  GraphQLExceptionError(this.message, {this.locations: const []});
+
+  Map<String, dynamic> toJson() {
+    var out = <String, dynamic>{'message': message};
+    if (locations?.isNotEmpty == true) {
+      out['locations'] = locations.map((l) => l.toJson()).toList();
+    }
+    return out;
+  }
+}
+
+class GraphExceptionErrorLocation {
+  final int line;
+  final int column;
+
+  GraphExceptionErrorLocation(this.line, this.column);
+
+  factory GraphExceptionErrorLocation.fromSourceLocation(
+      SourceLocation location) {
+    return new GraphExceptionErrorLocation(location.line, location.column);
+  }
+
+  Map<String, int> toJson() {
+    return {'line': line, 'column': column};
+  }
 }
 
 /// A metadata annotation used to provide documentation to `package:graphql_server`.

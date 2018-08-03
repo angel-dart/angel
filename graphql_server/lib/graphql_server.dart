@@ -94,12 +94,12 @@ class GraphQL {
     if (operationName == null) {
       return ops.length == 1
           ? ops.first as OperationDefinitionContext
-          : throw new GraphQLException(
+          : throw new GraphQLException.fromMessage(
               'This document does not define any operations.');
     } else {
       return ops.firstWhere(
               (d) => (d as OperationDefinitionContext).name == operationName,
-              orElse: () => throw new GraphQLException(
+              orElse: () => throw new GraphQLException.fromMessage(
                   'Missing required operation "$operationName".'))
           as OperationDefinitionContext;
     }
@@ -123,15 +123,21 @@ class GraphQL {
         if (defaultValue != null) {
           coercedValues[variableName] = defaultValue.value.value;
         } else if (!variableType.isNullable) {
-          throw new GraphQLException(
-              'Missing required variable "$variableName".');
+          throw new GraphQLException.fromSourceSpan(
+              'Missing required variable "$variableName".',
+              variableDefinition.span);
         }
       } else {
         var type = convertType(variableType);
         var validation = type.validate(variableName, value);
 
         if (!validation.successful) {
-          throw new GraphQLException(validation.errors[0]);
+          throw new GraphQLException(validation.errors
+              .map((e) => new GraphQLExceptionError(e, locations: [
+                    new GraphExceptionErrorLocation.fromSourceLocation(
+                        variableDefinition.span.start)
+                  ]))
+              .toList());
         } else {
           coercedValues[variableName] = type.deserialize(value);
         }
@@ -222,8 +228,9 @@ class GraphQL {
         } else if (defaultValue != null || argumentDefinition.defaultsToNull) {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
-          throw new GraphQLException(
-              'Missing value for argument "$argumentName".');
+          throw new GraphQLException.fromSourceSpan(
+              'Missing value for argument "$argumentName".',
+              value.valueOrVariable.span);
         } else {
           continue;
         }
@@ -231,8 +238,9 @@ class GraphQL {
         if (defaultValue != null || argumentDefinition.defaultsToNull) {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
-          throw new GraphQLException(
-              'Missing value for argument "$argumentName".');
+          throw new GraphQLException.fromSourceSpan(
+              'Missing value for argument "$argumentName".',
+              value.valueOrVariable.span);
         } else {
           continue;
         }
@@ -241,8 +249,9 @@ class GraphQL {
             argumentType.validate(fieldName, value.valueOrVariable.value.value);
 
         if (!validation.successful) {
-          throw new GraphQLException(
-              'Coercion error for value of argument "$argumentName".');
+          throw new GraphQLException.fromSourceSpan(
+              'Coercion error for value of argument "$argumentName".',
+              value.valueOrVariable.span);
         } else {
           var coercedValue = validation.value;
           coercedValues[argumentName] = coercedValue;
@@ -277,7 +286,7 @@ class GraphQL {
           document, fieldName, innerType, fields, result, variableValues);
 
       if (completedResult == null) {
-        throw new GraphQLException(
+        throw new GraphQLException.fromMessage(
             'Null value provided for non-nullable field "$fieldName".');
       } else {
         return completedResult;
@@ -290,7 +299,7 @@ class GraphQL {
 
     if (fieldType is GraphQLListType) {
       if (result is! Iterable) {
-        throw new GraphQLException(
+        throw new GraphQLException.fromMessage(
             'Value of field "$fieldName" must be a list or iterable, got $result instead.');
       }
 
@@ -315,7 +324,7 @@ class GraphQL {
           return validation.value;
         }
       } on TypeError {
-        throw new GraphQLException(
+        throw new GraphQLException.fromMessage(
             'Value of field "$fieldName" must be ${fieldType.valueType}, got $result instead.');
       }
     }
@@ -427,7 +436,7 @@ class GraphQL {
 
     var vname = vv.variable.name;
     if (!variableValues.containsKey(vname))
-      throw new GraphQLException('Unknown variable: "$vname"');
+      throw new GraphQLException.fromSourceSpan('Unknown variable: "$vname"', vv.span);
 
     return variableValues[vname];
   }

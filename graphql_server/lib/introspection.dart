@@ -67,8 +67,8 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
       resolve: (_, args) {
         var name = args['name'] as String;
         return objectTypes.firstWhere((t) => t.name == name,
-            orElse: () =>
-                throw new GraphQLException('No type named "$name" exists.'));
+            orElse: () => throw new GraphQLException.fromMessage(
+                'No type named "$name" exists.'));
       },
     ),
   ];

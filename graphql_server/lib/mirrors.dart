@@ -167,6 +167,8 @@ String _getDeprecationReason(List<InstanceMirror> metadata) {
       }
     }
   }
+
+  return null;
 }
 
 String _getDescription(List<InstanceMirror> metadata) {

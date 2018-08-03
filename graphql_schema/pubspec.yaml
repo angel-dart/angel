@@ -7,5 +7,6 @@ environment:
   sdk: ">=1.8.0 <3.0.0"
 dependencies:
   meta: ^1.0.0
+  source_span: ^1.0.0
 dev_dependencies:
   test: ^0.12.0
