@@ -163,8 +163,10 @@ String _getDeprecationReason(List<InstanceMirror> metadata) {
       if (expires == deprecated.expires) {
         return 'Expires after $expires';
       } else {
-        deprecated.expires;
+        return deprecated.expires;
       }
+    } else if (obj.reflectee is GraphQLDocumentation) {
+      return (obj.reflectee as GraphQLDocumentation).deprecationReason;
     }
   }
 

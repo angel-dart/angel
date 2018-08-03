@@ -101,6 +101,7 @@ class GraphExceptionErrorLocation {
 /// A metadata annotation used to provide documentation to `package:graphql_server`.
 class GraphQLDocumentation {
   final String description;
+  final String deprecationReason;
 
-  const GraphQLDocumentation({this.description});
+  const GraphQLDocumentation({this.description, this.deprecationReason});
 }

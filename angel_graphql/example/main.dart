@@ -57,6 +57,7 @@ main() async {
 class Todo extends Model {
   String text;
 
+  @GraphQLDocumentation(deprecationReason: 'Booleans are just *sooo* 2015!')
   bool completed;
 
   Todo({this.text, this.completed});
