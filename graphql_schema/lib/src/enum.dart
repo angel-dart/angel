@@ -24,6 +24,7 @@ class GraphQLEnumType<Value> extends GraphQLScalarType<Value, String>
 
   @override
   String serialize(Value value) {
+    if (value == null) return null;
     return values.firstWhere((v) => v.value == value).name;
   }
 
