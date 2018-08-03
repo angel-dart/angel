@@ -11,7 +11,11 @@ GraphQLObjectType objectType(String name,
 GraphQLField<T, Serialized> field<T, Serialized>(String name,
     {Iterable<GraphQLFieldArgument<T, Serialized>> arguments: const [],
     GraphQLFieldResolver<T, Serialized> resolve,
-    GraphQLType<T, Serialized> type}) {
+    GraphQLType<T, Serialized> type,
+    String deprecationReason}) {
   return new GraphQLField(name,
-      arguments: arguments, resolve: resolve, type: type);
+      arguments: arguments,
+      resolve: resolve,
+      type: type,
+      deprecationReason: deprecationReason);
 }

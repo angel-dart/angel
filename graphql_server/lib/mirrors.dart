@@ -65,6 +65,7 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   return objectType(
     MirrorSystem.getName(mirror.simpleName),
     fields: fields,
+    description: _getDescription(mirror.metadata),
   );
 }
 
@@ -83,6 +84,7 @@ GraphQLField fieldFromGetter(
   return field(
     nameString,
     type: type,
+    deprecationReason: _getDeprecationReason(mirror.metadata),
     resolve: (obj, _) {
       if (obj is Map && exclude?.canSerialize != true) {
         return obj[nameString];
@@ -151,4 +153,28 @@ bool _autoNames(ClassMirror clazz) {
   }
 
   return false;
+}
+
+String _getDeprecationReason(List<InstanceMirror> metadata) {
+  for (var obj in metadata) {
+    if (obj.reflectee is Deprecated) {
+      var expires = (obj.reflectee as Deprecated).expires;
+
+      if (expires == deprecated.expires) {
+        return 'Expires after $expires';
+      } else {
+        deprecated.expires;
+      }
+    }
+  }
+}
+
+String _getDescription(List<InstanceMirror> metadata) {
+  for (var obj in metadata) {
+    if (obj.reflectee is GraphQLDocumentation) {
+      return (obj.reflectee as GraphQLDocumentation).description;
+    }
+  }
+
+  return null;
 }

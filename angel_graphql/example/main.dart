@@ -19,16 +19,20 @@ main() async {
 
   var todoService = app.use('api/todos', new MapService()) as Service;
 
-  var api = objectType('api', fields: [
-    field(
-      'todo',
-      type: listType(objectTypeFromDartType(Todo)),
-      resolve: resolveFromService(todoService),
-      arguments: [
-        new GraphQLFieldArgument('id', graphQLId),
-      ],
-    ),
-  ]);
+  var api = objectType(
+    'Query',
+    description: 'A simple API that manages your to-do list.',
+    fields: [
+      field(
+        'todo',
+        type: listType(objectTypeFromDartType(Todo).nonNullable()),
+        resolve: resolveFromService(todoService),
+        arguments: [
+          new GraphQLFieldArgument('id', graphQLId),
+        ],
+      ),
+    ],
+  );
 
   var schema = graphQLSchema(query: api);
 
@@ -37,7 +41,8 @@ main() async {
 
   await todoService.create({'text': 'Clean your room!', 'completed': true});
   await todoService.create({'text': 'Take out the trash', 'completed': false});
-  await todoService.create({'text': 'Become a billionaire at the age of 5', 'completed': false});
+  await todoService.create(
+      {'text': 'Become a billionaire at the age of 5', 'completed': false});
 
   var server = await http.startServer('127.0.0.1', 3000);
   var uri =
@@ -48,6 +53,7 @@ main() async {
 }
 
 @serializable
+@GraphQLDocumentation(description: 'A task that might not be completed yet. **Yay! Markdown!**')
 class Todo extends Model {
   String text;
 
