@@ -79,15 +79,19 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
   var values = <GraphQLEnumValue>[];
 
   for (var name in mirror.staticMembers.keys) {
-    var methodMirror = mirror.staticMembers[name];
-    values.add(
-      new GraphQLEnumValue(
-        MirrorSystem.getName(name),
-        mirror.getField(name).reflectee,
-        description: _getDescription(methodMirror.metadata),
-        deprecationReason: _getDeprecationReason(methodMirror.metadata),
-      ),
-    );
+    if (name != #values) {
+      var methodMirror = mirror.staticMembers[name];
+      values.add(
+        new GraphQLEnumValue(
+          MirrorSystem.getName(name),
+          mirror
+              .getField(name)
+              .reflectee,
+          description: _getDescription(methodMirror.metadata),
+          deprecationReason: _getDeprecationReason(methodMirror.metadata),
+        ),
+      );
+    }
   }
 
   return new GraphQLEnumType(

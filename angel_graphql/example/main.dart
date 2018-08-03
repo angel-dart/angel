@@ -66,4 +66,6 @@ class Todo extends Model {
   Todo({this.text, this.completed, this.completionStatus});
 }
 
-enum CompletionStatus { complete, incomplete }
+@GraphQLDocumentation(description: 'The completion status of a to-do item.')
+enum CompletionStatus {
+  COMPLETE, INCOMPLETE }

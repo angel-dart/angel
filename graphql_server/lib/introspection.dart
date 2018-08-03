@@ -3,7 +3,7 @@ import 'package:graphql_schema/graphql_schema.dart';
 
 // TODO: How to handle custom types???
 GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
-  var objectTypes = fetchAllTypes(schema);
+  var objectTypes = fetchAllTypes(schema, allTypes);
   var typeType = _reflectSchemaTypes();
   var directiveType = _reflectDirectiveType();
   allTypes.addAll(objectTypes);
@@ -46,6 +46,8 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     directiveType,
     typeType,
     schemaType,
+    _typeKindType,
+    _directiveLocationType,
     _reflectFields(),
     _reflectDirectiveType(),
     _reflectInputValueType(),
@@ -66,7 +68,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
       ],
       resolve: (_, args) {
         var name = args['name'] as String;
-        return objectTypes.firstWhere((t) => t.name == name,
+        return allTypes.firstWhere((t) => t.name == name,
             orElse: () => throw new GraphQLException.fromMessage(
                 'No type named "$name" exists.'));
       },
@@ -156,6 +158,18 @@ GraphQLObjectType _reflectSchemaTypes() {
   return _typeType;
 }
 
+final GraphQLEnumType<String> _typeKindType =
+    enumTypeFromStrings('__TypeKind', [
+  'SCALAR',
+  'OBJECT',
+  'INTERFACE',
+  'UNION',
+  'ENUM',
+  'INPUT_OBJECT',
+  'LIST',
+  'NON_NULL'
+]);
+
 GraphQLObjectType _createTypeType() {
   var enumValueType = _reflectEnumValueType();
   var fieldType = _reflectFields();
@@ -174,7 +188,7 @@ GraphQLObjectType _createTypeType() {
     ),
     field(
       'kind',
-      type: graphQLString,
+      type: _typeKindType,
       resolve: (type, _) {
         var t = type as GraphQLType;
 
@@ -186,6 +200,8 @@ GraphQLObjectType _createTypeType() {
           return 'LIST';
         else if (t is GraphQLNonNullableType)
           return 'NON_NULL';
+        else if (t is GraphQLEnumType)
+          return 'ENUM';
         else
           throw new UnsupportedError(
               'Cannot get the kind of $t.'); // TODO: Interface + union
@@ -218,6 +234,16 @@ GraphQLObjectType _createTypeType() {
           defaultValue: false,
         ),
       ],
+      resolve: (obj, args) {
+        if (obj is GraphQLEnumType) {
+          return obj.values
+              .where(
+                  (f) => !f.isDeprecated || args['includeDeprecated'] == true)
+              .toList();
+        } else {
+          return null;
+        }
+      },
     ),
     field(
       'inputFields',
@@ -292,6 +318,16 @@ GraphQLObjectType _reflectInputValueType() {
 
 GraphQLObjectType _directiveType;
 
+final GraphQLEnumType<String> _directiveLocationType =
+    enumTypeFromStrings('__DirectiveLocation', [
+  'QUERY',
+  'MUTATION',
+  'FIELD',
+  'FRAGMENT_DEFINITION',
+  'FRAGMENT_SPREAD',
+  'INLINE_FRAGMENT'
+]);
+
 GraphQLObjectType _reflectDirectiveType() {
   var inputValueType = _reflectInputValueType();
 
@@ -309,15 +345,7 @@ GraphQLObjectType _reflectDirectiveType() {
     ),
     field(
       'locations',
-      type: listType(enumTypeFromStrings('DirectiveLocation', [
-        'QUERY',
-        'MUTATION',
-        'FIELD',
-        'FRAGMENT_DEFINITION',
-        'FRAGMENT_SPREAD',
-        'INLINE_FRAGMENT'
-      ]).nonNullable())
-          .nonNullable(),
+      type: listType(_directiveLocationType.nonNullable()).nonNullable(),
       // TODO: Fetch directiveLocation
       resolve: (obj, _) => <String>[],
     ),
@@ -360,7 +388,8 @@ GraphQLObjectType _reflectEnumValueType() {
       );
 }
 
-List<GraphQLObjectType> fetchAllTypes(GraphQLSchema schema) {
+List<GraphQLObjectType> fetchAllTypes(
+    GraphQLSchema schema, List<GraphQLType> allTypes) {
   var typess = <GraphQLType>[];
   typess.addAll(_fetchAllTypesFromObject(schema.query));
 
@@ -372,7 +401,9 @@ List<GraphQLObjectType> fetchAllTypes(GraphQLSchema schema) {
   var types = <GraphQLObjectType>[];
 
   for (var type in typess) {
-    if (type is GraphQLObjectType) types.add(type);
+    if (type is GraphQLObjectType)
+      types.add(type);
+    else if (!allTypes.contains(type)) allTypes.add(type);
   }
 
   return types.toSet().toList();
