@@ -309,8 +309,16 @@ GraphQLObjectType _reflectDirectiveType() {
     ),
     field(
       'locations',
-      type: listType(graphQLString.nonNullable()).nonNullable(),
-      // TODO: Enum directiveLocation
+      type: listType(enumTypeFromStrings('DirectiveLocation', [
+        'QUERY',
+        'MUTATION',
+        'FIELD',
+        'FRAGMENT_DEFINITION',
+        'FRAGMENT_SPREAD',
+        'INLINE_FRAGMENT'
+      ]).nonNullable())
+          .nonNullable(),
+      // TODO: Fetch directiveLocation
       resolve: (obj, _) => <String>[],
     ),
     field(
@@ -324,8 +332,32 @@ GraphQLObjectType _reflectDirectiveType() {
 GraphQLObjectType _enumValueType;
 
 GraphQLObjectType _reflectEnumValueType() {
-  // TODO: Enum values
-  return _enumValueType ?? objectType('__EnumValue', fields: []);
+  return _enumValueType ??
+      objectType(
+        '__EnumValue',
+        fields: [
+          field(
+            'name',
+            type: graphQLString.nonNullable(),
+            resolve: (obj, _) => (obj as GraphQLEnumValue).name,
+          ),
+          field(
+            'description',
+            type: graphQLString,
+            resolve: (obj, _) => (obj as GraphQLEnumValue).description,
+          ),
+          field(
+            'isDeprecated',
+            type: graphQLBoolean.nonNullable(),
+            resolve: (obj, _) => (obj as GraphQLEnumValue).isDeprecated,
+          ),
+          field(
+            'deprecationReason',
+            type: graphQLString,
+            resolve: (obj, _) => (obj as GraphQLEnumValue).deprecationReason,
+          ),
+        ],
+      );
 }
 
 List<GraphQLObjectType> fetchAllTypes(GraphQLSchema schema) {
@@ -369,8 +401,10 @@ Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
     types.addAll(_fetchAllTypesFromType(type.innerType));
   } else if (type is GraphQLObjectType) {
     types.addAll(_fetchAllTypesFromObject(type));
+  } else if (type is GraphQLEnumType) {
+    types.add(type);
   }
 
-  // TODO: Enum, interface, union
+  // TODO: Interface, union
   return types;
 }

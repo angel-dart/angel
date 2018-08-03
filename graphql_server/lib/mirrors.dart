@@ -84,6 +84,7 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
       new GraphQLEnumValue(
         MirrorSystem.getName(name),
         mirror.getField(name).reflectee,
+        description: _getDescription(methodMirror.metadata),
         deprecationReason: _getDeprecationReason(methodMirror.metadata),
       ),
     );

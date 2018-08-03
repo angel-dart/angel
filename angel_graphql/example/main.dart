@@ -53,12 +53,17 @@ main() async {
 }
 
 @serializable
-@GraphQLDocumentation(description: 'A task that might not be completed yet. **Yay! Markdown!**')
+@GraphQLDocumentation(
+    description: 'A task that might not be completed yet. **Yay! Markdown!**')
 class Todo extends Model {
   String text;
 
-  @GraphQLDocumentation(deprecationReason: 'Booleans are just *sooo* 2015!')
+  @GraphQLDocumentation(deprecationReason: 'Use `completion_status` instead.')
   bool completed;
 
-  Todo({this.text, this.completed});
+  CompletionStatus completionStatus;
+
+  Todo({this.text, this.completed, this.completionStatus});
 }
+
+enum CompletionStatus { complete, incomplete }

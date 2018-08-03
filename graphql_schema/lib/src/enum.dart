@@ -47,9 +47,10 @@ class GraphQLEnumType<Value> extends GraphQLScalarType<Value, String>
 class GraphQLEnumValue<Value> {
   final String name;
   final Value value;
+  final String description;
   final String deprecationReason;
 
-  GraphQLEnumValue(this.name, this.value, {this.deprecationReason});
+  GraphQLEnumValue(this.name, this.value, {this.description, this.deprecationReason});
 
   bool get isDeprecated => deprecationReason != null;
 
