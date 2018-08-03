@@ -36,6 +36,8 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     typeType,
     schemaType,
     _reflectFields(),
+    _reflectDirectiveType(),
+    _reflectInputValueType(),
   ]);
 
   var fields = <GraphQLField>[
@@ -86,6 +88,7 @@ GraphQLObjectType _reflectSchemaTypes() {
     );
 
     var fieldType = _reflectFields();
+    var inputValueType = _reflectInputValueType();
     var typeField = fieldType.fields
         .firstWhere((f) => f.name == 'type', orElse: () => null);
 
@@ -95,6 +98,19 @@ GraphQLObjectType _reflectSchemaTypes() {
           'type',
           type: _reflectSchemaTypes(),
           resolve: (f, _) => (f as GraphQLField).type,
+        ),
+      );
+    }
+
+    typeField = fieldType.fields
+        .firstWhere((f) => f.name == 'type', orElse: () => null);
+
+    if (typeField == null) {
+      inputValueType.fields.add(
+        field(
+          'type',
+          type: _reflectSchemaTypes(),
+          resolve: (f, _) => (f as GraphQLFieldArgument).type,
         ),
       );
     }
@@ -155,6 +171,8 @@ GraphQLObjectType _reflectFields() {
 }
 
 GraphQLObjectType _createFieldType() {
+  var inputValueType = _reflectInputValueType();
+
   return objectType('__Field', fields: [
     field(
       'name',
@@ -163,7 +181,7 @@ GraphQLObjectType _createFieldType() {
     ),
     field(
       'isDeprecated',
-      type: graphQLString,
+      type: graphQLBoolean,
       resolve: (f, _) => (f as GraphQLField).isDeprecated,
     ),
     field(
@@ -173,13 +191,38 @@ GraphQLObjectType _createFieldType() {
     ),
     field(
       'args',
-      type: listType(graphQLString.nonNullable()).nonNullable(), // TODO: Input value type
+      type: listType(inputValueType.nonNullable()).nonNullable(),
       resolve: (f, _) => (f as GraphQLField).arguments,
     ),
   ]);
 }
 
+GraphQLObjectType _inputValueType;
+
+GraphQLObjectType _reflectInputValueType() {
+  return _inputValueType ??= objectType('__InputValue', fields: [
+    field(
+      'name',
+      type: graphQLString,
+      resolve: (obj, _) => (obj as GraphQLFieldArgument).name,
+    ),
+    field(
+      'description',
+      type: graphQLString,
+      resolve: (obj, _) => (obj as GraphQLFieldArgument).description,
+    ),
+    field(
+      'defaultValue',
+      type: graphQLString,
+      resolve: (obj, _) =>
+          (obj as GraphQLFieldArgument).defaultValue?.toString(),
+    ),
+  ]);
+}
+
 GraphQLObjectType _reflectDirectiveType() {
+  var inputValueType = _reflectInputValueType();
+
   // TODO: What actually is this???
   return objectType('__Directive', fields: [
     field(
@@ -194,12 +237,13 @@ GraphQLObjectType _reflectDirectiveType() {
     ),
     field(
       'locations',
-      type: listType(graphQLString.nonNullable()).nonNullable(), // TODO: Enum directiveLocation
+      type: listType(graphQLString.nonNullable()).nonNullable(),
+      // TODO: Enum directiveLocation
       resolve: (obj, _) => [],
     ),
     field(
       'args',
-      type: listType(graphQLString.nonNullable()).nonNullable(),
+      type: listType(inputValueType.nonNullable()).nonNullable(),
       resolve: (obj, _) => [],
     ),
   ]);

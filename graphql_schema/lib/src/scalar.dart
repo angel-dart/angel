@@ -30,7 +30,9 @@ final GraphQLScalarType<double, double> graphQLFloat =
 
 abstract class GraphQLScalarType<Value, Serialized>
     extends GraphQLType<Value, Serialized>
-    with _NonNullableMixin<Value, Serialized> {}
+    with _NonNullableMixin<Value, Serialized> {
+  Type get valueType => Value;
+}
 
 typedef bool _NumVerifier(x);
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
+
 import 'introspection.dart';
 
 class GraphQL {
@@ -305,12 +306,17 @@ class GraphQL {
     }
 
     if (fieldType is GraphQLScalarType) {
-      var validation = fieldType.validate(fieldName, result);
+      try {
+        var validation = fieldType.validate(fieldName, result);
 
-      if (!validation.successful) {
-        return null;
-      } else {
-        return validation.value;
+        if (!validation.successful) {
+          return null;
+        } else {
+          return validation.value;
+        }
+      } on TypeError {
+        throw new GraphQLException(
+            'Value of field "$fieldName" must be ${fieldType.valueType}, got $result instead.');
       }
     }
 
