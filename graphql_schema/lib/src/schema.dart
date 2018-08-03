@@ -7,6 +7,8 @@ import 'package:source_span/source_span.dart';
 
 part 'argument.dart';
 
+part 'enum.dart';
+
 part 'field.dart';
 
 part 'gen.dart';

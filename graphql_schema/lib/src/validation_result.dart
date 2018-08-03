@@ -5,6 +5,8 @@ class ValidationResult<T> {
   final T value;
   final List<String> errors;
 
+  ValidationResult._(this.successful, this.value, this.errors);
+
   ValidationResult._ok(this.value)
       : errors = [],
         successful = true;
@@ -12,4 +14,8 @@ class ValidationResult<T> {
   ValidationResult._failure(this.errors)
       : value = null,
         successful = false;
+
+  ValidationResult<T> _asFailure() {
+    return new ValidationResult<T>._(false, value, errors);
+  }
 }
