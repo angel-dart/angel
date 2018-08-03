@@ -161,15 +161,46 @@ GraphQLObjectType _createFieldType() {
       type: graphQLString,
       resolve: (f, _) => (f as GraphQLField).name,
     ),
+    field(
+      'isDeprecated',
+      type: graphQLString,
+      resolve: (f, _) => (f as GraphQLField).isDeprecated,
+    ),
+    field(
+      'deprecationReason',
+      type: graphQLString,
+      resolve: (f, _) => (f as GraphQLField).deprecationReason,
+    ),
+    field(
+      'args',
+      type: listType(graphQLString.nonNullable()).nonNullable(), // TODO: Input value type
+      resolve: (f, _) => (f as GraphQLField).arguments,
+    ),
   ]);
 }
 
 GraphQLObjectType _reflectDirectiveType() {
+  // TODO: What actually is this???
   return objectType('__Directive', fields: [
     field(
       'name',
-      type: graphQLString,
+      type: graphQLString.nonNullable(),
       resolve: (obj, _) => (obj as DirectiveContext).NAME.span.text,
+    ),
+    field(
+      'description',
+      type: graphQLString,
+      resolve: (obj, _) => null,
+    ),
+    field(
+      'locations',
+      type: listType(graphQLString.nonNullable()).nonNullable(), // TODO: Enum directiveLocation
+      resolve: (obj, _) => [],
+    ),
+    field(
+      'args',
+      type: listType(graphQLString.nonNullable()).nonNullable(),
+      resolve: (obj, _) => [],
     ),
   ]);
 }

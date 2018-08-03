@@ -8,13 +8,17 @@ class GraphQLField<Value, Serialized> {
   final String name;
   final GraphQLFieldResolver<Value, Serialized> resolve;
   final GraphQLType<Value, Serialized> type;
+  final String deprecationReason;
 
   GraphQLField(this.name,
       {Iterable<GraphQLFieldArgument> arguments: const <GraphQLFieldArgument>[],
       @required this.resolve,
-      this.type}) {
+      this.type,
+      this.deprecationReason}) {
     this.arguments.addAll(arguments ?? <GraphQLFieldArgument>[]);
   }
+
+  bool get isDeprecated => deprecationReason?.isNotEmpty == true;
 
   FutureOr<Serialized> serialize(Value value) {
     return type.serialize(value);
