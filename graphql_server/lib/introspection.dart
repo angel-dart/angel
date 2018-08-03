@@ -120,8 +120,11 @@ GraphQLObjectType _reflectSchemaTypes() {
         'possibleTypes',
         type: listType(_reflectSchemaTypes().nonNullable()),
         resolve: (type, _) {
-          // TODO: Interface and union types
-          return <GraphQLType>[];
+          if (type is GraphQLObjectType && type.isInterface) {
+            return type.possibleTypes;
+          } else {
+            return null;
+          }
         },
       ),
     );
@@ -195,7 +198,7 @@ GraphQLObjectType _createTypeType() {
         if (t is GraphQLScalarType)
           return 'SCALAR';
         else if (t is GraphQLObjectType)
-          return 'OBJECT';
+          return t.isInterface ? 'INTERFACE' : 'OBJECT';
         else if (t is GraphQLListType)
           return 'LIST';
         else if (t is GraphQLNonNullableType)
@@ -204,7 +207,7 @@ GraphQLObjectType _createTypeType() {
           return 'ENUM';
         else
           throw new UnsupportedError(
-              'Cannot get the kind of $t.'); // TODO: Interface + union
+              'Cannot get the kind of $t.'); // TODO: union
       },
     ),
     field(
@@ -424,6 +427,14 @@ List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
     }
   }
 
+  for (var type in objectType.interfaces) {
+    types.addAll(_fetchAllTypesFromObject(type));
+  }
+
+  for (var type in objectType.possibleTypes) {
+    types.addAll(_fetchAllTypesFromObject(type));
+  }
+
   return types;
 }
 
@@ -440,6 +451,6 @@ Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
     types.add(type);
   }
 
-  // TODO: Interface, union
+  // TODO:  union
   return types;
 }

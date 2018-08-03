@@ -1,12 +1,21 @@
 part of graphql_schema.src.schema;
 
 GraphQLObjectType objectType(String name,
-        {String description,
-        Iterable<GraphQLField> fields = const [],
-        Iterable<GraphQLObjectType> interfaces = const []}) =>
-    new GraphQLObjectType(name, description)
-      ..fields.addAll(fields ?? [])
-      ..interfaces.addAll(interfaces ?? []);
+    {String description,
+    bool isInterface: false,
+    Iterable<GraphQLField> fields = const [],
+    Iterable<GraphQLObjectType> interfaces = const []}) {
+  var obj = new GraphQLObjectType(name, description, isInterface: isInterface)
+    ..fields.addAll(fields ?? []);
+
+  if (interfaces?.isNotEmpty == true) {
+    for (var i in interfaces) {
+      obj.inheritFrom(i);
+    }
+  }
+
+  return obj;
+}
 
 GraphQLField<T, Serialized> field<T, Serialized>(String name,
     {Iterable<GraphQLFieldArgument<T, Serialized>> arguments: const [],

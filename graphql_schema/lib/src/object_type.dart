@@ -6,11 +6,27 @@ class GraphQLObjectType
   final String name;
   final String description;
   final List<GraphQLField> fields = [];
+  final bool isInterface;
+
+  final List<GraphQLObjectType> _interfaces = [];
+
+  final List<GraphQLObjectType> _possibleTypes = [];
 
   /// A list of other types that this object type is known to implement.
-  final List<GraphQLObjectType> interfaces = [];
+  List<GraphQLObjectType> get interfaces => new List<GraphQLObjectType>.unmodifiable(_interfaces);
 
-  GraphQLObjectType(this.name, this.description);
+  /// A list of other types that implement this interface.
+  List<GraphQLObjectType> get possibleTypes => new List<GraphQLObjectType>.unmodifiable(_possibleTypes);
+
+  GraphQLObjectType(this.name, this.description, {this.isInterface: false});
+
+  void inheritFrom(GraphQLObjectType other) {
+    if (!_interfaces.contains(other)) {
+      _interfaces.add(other);
+      other._possibleTypes.add(this);
+      other._interfaces.forEach(inheritFrom);
+    }
+  }
 
   @override
   ValidationResult<Map<String, dynamic>> validate(String key, Map input) {
@@ -23,7 +39,8 @@ class GraphQLObjectType
     for (var field in fields) {
       if (field.type is GraphQLNonNullableType) {
         if (!input.containsKey(field.name) || input[field.name] == null) {
-          errors.add('Field "${field.name}, of type ${field.type} cannot be null."');
+          errors.add(
+              'Field "${field.name}, of type ${field.type} cannot be null."');
         }
       }
     }
@@ -56,7 +73,8 @@ class GraphQLObjectType
     return value.keys.fold<Map<String, dynamic>>({}, (out, k) {
       var field = fields.firstWhere((f) => f.name == k, orElse: () => null);
       if (field == null)
-        throw new UnsupportedError('Cannot serialize field "$k", which was not defined in the schema.');
+        throw new UnsupportedError(
+            'Cannot serialize field "$k", which was not defined in the schema.');
       return out..[k.toString()] = field.serialize(value[k]);
     });
   }
@@ -76,5 +94,5 @@ Map<String, dynamic> _foldToStringDynamic(Map map) {
   return map == null
       ? null
       : map.keys.fold<Map<String, dynamic>>(
-      <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
+          <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
 }
