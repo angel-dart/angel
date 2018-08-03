@@ -2,8 +2,21 @@ import 'package:graphql_schema/graphql_schema.dart';
 import 'package:test/test.dart';
 
 void main() {
+  var typeType = new GraphQLEnumType('Type', [
+    'FIRE',
+    'WATER',
+    'GRASS',
+  ]);
+
   var pokemonType = objectType('Pokémon', fields: [
-    field('name', type: graphQLString.nonNullable()),
+    field(
+      'name',
+      type: graphQLString.nonNullable(),
+    ),
+    field(
+      'type',
+      type: typeType,
+    ),
   ]);
 
   var isValidPokemon = predicate(
@@ -28,5 +41,13 @@ void main() {
 
   test('rejects extraneous fields', () {
     expect({'name': 'Vulpix', 'foo': 'bar'}, isNot(isValidPokemon));
+  });
+
+  test('enum accepts valid value', () {
+    expect(typeType.validate('@root', 'FIRE').successful, true);
+  });
+
+  test('enum rejects invalid value', () {
+    expect(typeType.validate('@root', 'POISON').successful, false);
   });
 }
