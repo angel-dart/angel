@@ -155,7 +155,19 @@ GraphQLObjectType _createTypeType() {
     field(
       'fields',
       type: listType(fieldType),
-      resolve: (type, _) => type is GraphQLObjectType ? type.fields : [],
+      arguments: [
+        new GraphQLFieldArgument(
+          'includeDeprecated',
+          graphQLBoolean,
+          defaultValue: false,
+        ),
+      ],
+      resolve: (type, args) => type is GraphQLObjectType
+          ? type.fields
+              .where(
+                  (f) => !f.isDeprecated || args['includeDeprecated'] == true)
+              .toList()
+          : [],
     ),
   ]);
 }
