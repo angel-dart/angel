@@ -1,10 +1,12 @@
+import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
 // TODO: How to handle custom types???
 GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   var objectTypes = fetchAllTypes(schema);
-  allTypes.addAll(objectTypes);
   var typeType = _reflectSchemaTypes();
+  var directiveType = _reflectDirectiveType();
+  allTypes.addAll(objectTypes);
 
   var schemaType = objectType('__Schema', fields: [
     field(
@@ -22,9 +24,15 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
       type: typeType,
       resolve: (_, __) => schema.mutation,
     ),
+    field(
+      'directives',
+      type: listType(directiveType).nonNullable(),
+      resolve: (_, __) => [], // TODO: Actually fetch directives
+    ),
   ]);
 
   allTypes.addAll([
+    directiveType,
     typeType,
     schemaType,
     _reflectFields(),
@@ -152,6 +160,16 @@ GraphQLObjectType _createFieldType() {
       'name',
       type: graphQLString,
       resolve: (f, _) => (f as GraphQLField).name,
+    ),
+  ]);
+}
+
+GraphQLObjectType _reflectDirectiveType() {
+  return objectType('__Directive', fields: [
+    field(
+      'name',
+      type: graphQLString,
+      resolve: (obj, _) => (obj as DirectiveContext).NAME.span.text,
     ),
   ]);
 }

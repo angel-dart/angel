@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
-import 'package:graphql_schema/introspection.dart';
+import 'introspection.dart';
 
 class GraphQL {
   final Map<String, GraphQLType> customTypes = {};
@@ -290,7 +290,7 @@ class GraphQL {
     if (fieldType is GraphQLListType) {
       if (result is! Iterable) {
         throw new GraphQLException(
-            'Value of field "$fieldName" must be a list or iterable.');
+            'Value of field "$fieldName" must be a list or iterable, got $result instead.');
       }
 
       var innerType = fieldType.innerType;

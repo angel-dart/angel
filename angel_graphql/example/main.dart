@@ -36,6 +36,8 @@ main() async {
   app.get('/graphiql', graphiql());
 
   await todoService.create({'text': 'Clean your room!', 'completed': true});
+  await todoService.create({'text': 'Take out the trash', 'completed': false});
+  await todoService.create({'text': 'Become a billionaire at the age of 5', 'completed': false});
 
   var server = await http.startServer('127.0.0.1', 3000);
   var uri =
