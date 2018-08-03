@@ -12,6 +12,9 @@ abstract class GraphQLType<Value, Serialized> {
   ValidationResult<Serialized> validate(String key, Serialized input);
 
   GraphQLType<Value, Serialized> nonNullable();
+
+  @override
+  String toString() => name;
 }
 
 /// Shorthand to create a [GraphQLListType].
@@ -65,6 +68,9 @@ class GraphQLListType<Value, Serialized>
   List<Serialized> serialize(List<Value> value) {
     return value.map<Serialized>(innerType.serialize).toList();
   }
+
+  @override
+  String toString() => '[$innerType]';
 }
 
 abstract class _NonNullableMixin<Value, Serialized>
@@ -110,5 +116,10 @@ class GraphQLNonNullableType<Value, Serialized>
   @override
   Serialized serialize(Value value) {
     return innerType.serialize(value);
+  }
+
+  @override
+  String toString() {
+    return '$innerType!';
   }
 }

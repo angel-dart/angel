@@ -20,6 +20,14 @@ class GraphQLObjectType
     var out = {};
     List<String> errors = [];
 
+    for (var field in fields) {
+      if (field.type is GraphQLNonNullableType) {
+        if (!input.containsKey(field.name) || input[field.name] == null) {
+          errors.add('Field "${field.name}, of type ${field.type} cannot be null."');
+        }
+      }
+    }
+
     input.keys.forEach((k) {
       var field = fields.firstWhere((f) => f.name == k, orElse: () => null);
 

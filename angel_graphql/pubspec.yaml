@@ -1,4 +1,6 @@
 name: angel_graphql
+environment:
+  sdk: ">=1.8.0 <3.0.0"
 dependencies:
   angel_framework: ^1.0.0
   angel_validate: ^1.0.0
