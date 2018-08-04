@@ -100,10 +100,14 @@ class GraphExceptionErrorLocation {
   }
 }
 
+typedef GraphQLType _GraphDocumentationTypeProvider();
+
 /// A metadata annotation used to provide documentation to `package:graphql_server`.
 class GraphQLDocumentation {
   final String description;
   final String deprecationReason;
+  final _GraphDocumentationTypeProvider type;
 
-  const GraphQLDocumentation({this.description, this.deprecationReason});
+  const GraphQLDocumentation(
+      {this.description, this.deprecationReason, GraphQLType this.type()});
 }

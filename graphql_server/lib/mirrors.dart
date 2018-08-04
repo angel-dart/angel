@@ -151,13 +151,18 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
 
 GraphQLField fieldFromGetter(
     Symbol name, MethodMirror mirror, Exclude exclude, ClassMirror clazz) {
-  var type = convertDartType(mirror.returnType.reflectedType,
-      mirror.returnType.typeArguments.map((t) => t.reflectedType).toList());
+  var type = _getProvidedType(mirror.metadata);
+  var wasProvided = type != null;
+
+  if (!wasProvided) {
+    type = convertDartType(mirror.returnType.reflectedType,
+        mirror.returnType.typeArguments.map((t) => t.reflectedType).toList());
+  }
 
   var nameString = _getSerializedName(name, mirror, clazz);
   var defaultValue = _getDefaultValue(mirror);
 
-  if (nameString == 'id' && _autoNames(clazz)) {
+  if (!wasProvided && (nameString == 'id' && _autoNames(clazz))) {
     type = graphQLId;
   }
 
@@ -257,6 +262,16 @@ String _getDescription(List<InstanceMirror> metadata) {
   for (var obj in metadata) {
     if (obj.reflectee is GraphQLDocumentation) {
       return (obj.reflectee as GraphQLDocumentation).description;
+    }
+  }
+
+  return null;
+}
+
+GraphQLType _getProvidedType(List<InstanceMirror> metadata) {
+  for (var obj in metadata) {
+    if (obj.reflectee is GraphQLDocumentation) {
+      return (obj.reflectee as GraphQLDocumentation).type();
     }
   }
 

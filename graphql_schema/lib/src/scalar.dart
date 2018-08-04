@@ -10,7 +10,7 @@ final GraphQLScalarType<String, String> graphQLString =
 /// The ID scalar type represents a unique identifier, often used to refetch an object or as the key for a cache.
 ///
 /// The ID type is serialized in the same way as a String; however, defining it as an ID signifies that it is not intended to be human‐readable.
-final GraphQLScalarType<String, String> graphQLId = new _GraphQLStringType._();
+final GraphQLScalarType<String, String> graphQLId = new _GraphQLStringType._('ID');
 
 /// A [DateTime].
 final GraphQLScalarType<DateTime, String> graphQLDate =
@@ -91,10 +91,9 @@ class _GraphQLNumType<T extends num> extends GraphQLScalarType<T, T> {
 }
 
 class _GraphQLStringType extends GraphQLScalarType<String, String> {
-  _GraphQLStringType._();
+  final String name;
 
-  @override
-  String get name => 'String';
+  _GraphQLStringType._([this.name = 'String']);
 
   @override
   String get description => 'A character sequence.';
