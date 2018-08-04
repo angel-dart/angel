@@ -207,7 +207,9 @@ GraphQLObjectType _createTypeType() {
       resolve: (type, _) {
         var t = type as GraphQLType;
 
-        if (t is GraphQLScalarType)
+        if (t is GraphQLEnumType)
+          return 'ENUM';
+        else if (t is GraphQLScalarType)
           return 'SCALAR';
         else if (t is GraphQLObjectType)
           return t.isInterface ? 'INTERFACE' : 'OBJECT';
@@ -215,8 +217,6 @@ GraphQLObjectType _createTypeType() {
           return 'LIST';
         else if (t is GraphQLNonNullableType)
           return 'NON_NULL';
-        else if (t is GraphQLEnumType)
-          return 'ENUM';
         else if (t is GraphQLUnionType)
           return 'UNION';
         else
@@ -376,32 +376,31 @@ GraphQLObjectType _reflectDirectiveType() {
 GraphQLObjectType _enumValueType;
 
 GraphQLObjectType _reflectEnumValueType() {
-  return _enumValueType ??
-      objectType(
-        '__EnumValue',
-        fields: [
-          field(
-            'name',
-            type: graphQLString.nonNullable(),
-            resolve: (obj, _) => (obj as GraphQLEnumValue).name,
-          ),
-          field(
-            'description',
-            type: graphQLString,
-            resolve: (obj, _) => (obj as GraphQLEnumValue).description,
-          ),
-          field(
-            'isDeprecated',
-            type: graphQLBoolean.nonNullable(),
-            resolve: (obj, _) => (obj as GraphQLEnumValue).isDeprecated,
-          ),
-          field(
-            'deprecationReason',
-            type: graphQLString,
-            resolve: (obj, _) => (obj as GraphQLEnumValue).deprecationReason,
-          ),
-        ],
-      );
+  return _enumValueType ??= objectType(
+    '__EnumValue',
+    fields: [
+      field(
+        'name',
+        type: graphQLString.nonNullable(),
+        resolve: (obj, _) => (obj as GraphQLEnumValue).name,
+      ),
+      field(
+        'description',
+        type: graphQLString,
+        resolve: (obj, _) => (obj as GraphQLEnumValue).description,
+      ),
+      field(
+        'isDeprecated',
+        type: graphQLBoolean.nonNullable(),
+        resolve: (obj, _) => (obj as GraphQLEnumValue).isDeprecated,
+      ),
+      field(
+        'deprecationReason',
+        type: graphQLString,
+        resolve: (obj, _) => (obj as GraphQLEnumValue).deprecationReason,
+      ),
+    ],
+  );
 }
 
 List<GraphQLType> fetchAllTypes(

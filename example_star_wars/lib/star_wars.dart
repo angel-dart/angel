@@ -51,6 +51,9 @@ Future configureServer(Angel app) async {
       field(
         'hero',
         type: heroType,
+        arguments: [
+          new GraphQLFieldArgument('ep', episodeType),
+        ],
         resolve: (_, args) async {
           var allHeroes = [];
           var allDroids = await droidService.index() as Iterable;
@@ -94,18 +97,24 @@ Future configureServer(Angel app) async {
     'total_credits': 520,
   });
 
+  var lando = await humansService.create({
+    'name': 'Lando Calrissian',
+    'appears_in': ['EMPIRE', 'JEDI'],
+    'total_credits': 525430,
+  });
+
   var hanSolo = await humansService.create({
     'name': 'Han Solo',
     'appears_in': ['NEWHOPE', 'EMPIRE', 'JEDI'],
     'total_credits': 23,
-    'friends': [leia],
+    'friends': [leia, lando],
   });
 
   var luke = await humansService.create({
     'name': 'Luke Skywalker',
     'appears_in': ['NEWHOPE', 'EMPIRE', 'JEDI'],
     'total_credits': 682,
-    'friends': [leia, hanSolo],
+    'friends': [leia, hanSolo, lando],
   });
 }
 
