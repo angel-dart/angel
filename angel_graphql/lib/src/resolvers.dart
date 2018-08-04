@@ -1,6 +1,13 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
+Map<String, dynamic> _fetchRequestInfo(Map<String, dynamic> arguments) {
+  return <String, dynamic> {
+    '__requestctx': arguments.remove('__requestctx'),
+    '__responsectx': arguments.remove('__responsectx'),
+  };
+}
+
 /// A GraphQL resolver that `index`es an Angel service.
 ///
 /// The arguments passed to the resolver will be forwarded to the service, and the
@@ -8,7 +15,8 @@ import 'package:graphql_schema/graphql_schema.dart';
 GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceIndex<Value, Serialized>(Service service) {
   return (_, arguments) async {
-    var params = {'query': arguments, 'provider': Providers.graphql};
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': arguments, 'provider': Providers.graphql}..addAll(_requestInfo);
 
     return await service.index(params) as Value;
   };
@@ -21,7 +29,8 @@ GraphQLFieldResolver<Value, Serialized>
 GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceFindOne<Value, Serialized>(Service service) {
   return (_, arguments) async {
-    var params = {'query': arguments, 'provider': Providers.graphql};
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': arguments, 'provider': Providers.graphql}..addAll(_requestInfo);
     return await service.findOne(params) as Value;
   };
 }
@@ -37,7 +46,8 @@ GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceRead<Value, Serialized>(Service service,
         {String idField: 'id'}) {
   return (_, arguments) async {
-    var params = {'query': arguments, 'provider': Providers.graphql};
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': arguments, 'provider': Providers.graphql}..addAll(_requestInfo);
     var id = arguments.remove(idField);
     return await service.read(id, params) as Value;
   };
@@ -55,7 +65,8 @@ GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceModify<Value, Serialized>(Service service,
         {String idField: 'id'}) {
   return (_, arguments) async {
-    var params = {'provider': Providers.graphql};
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': arguments, 'provider': Providers.graphql}..addAll(_requestInfo);
     var id = arguments.remove(idField);
     return await service.modify(id, arguments['data'], params) as Value;
   };
@@ -76,7 +87,8 @@ GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceUpdate<Value, Serialized>(Service service,
         {String idField: 'id'}) {
   return (_, arguments) async {
-    var params = {'provider': Providers.graphql};
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': arguments, 'provider': Providers.graphql}..addAll(_requestInfo);
     var id = arguments.remove(idField);
     return await service.update(id, arguments['data'], params) as Value;
   };
@@ -93,7 +105,8 @@ GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceRemove<Value, Serialized>(Service service,
         {String idField: 'id'}) {
   return (_, arguments) async {
-    var params = {'query': arguments, 'provider': Providers.graphql};
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': arguments, 'provider': Providers.graphql}..addAll(_requestInfo);
     var id = arguments.remove(idField);
     return await service.remove(id, params) as Value;
   };
