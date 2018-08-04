@@ -94,9 +94,8 @@ class GraphQL {
       return await executeQuery(
           document, operation, schema, coercedVariableValues, initialValue);
     else {
-      throw new UnimplementedError('mutations');
-//      return executeMutation(
-//          document, operation, schema, coercedVariableValues, initialValue);
+      return executeMutation(
+          document, operation, schema, coercedVariableValues, initialValue);
     }
   }
 
@@ -171,6 +170,23 @@ class GraphQL {
     var selectionSet = query.selectionSet;
     return await executeSelectionSet(
         document, selectionSet, queryType, initialValue, variableValues);
+  }
+
+  Future<Map<String, dynamic>> executeMutation(
+      DocumentContext document,
+      OperationDefinitionContext mutation,
+      GraphQLSchema schema,
+      Map<String, dynamic> variableValues,
+      initialValue) async {
+    var mutationType = schema.mutation;
+
+    if (mutationType == null) {
+      throw new GraphQLException.fromMessage('The schema does not define a mutation type.');
+    }
+
+    var selectionSet = mutation.selectionSet;
+    return await executeSelectionSet(
+        document, selectionSet, mutationType, initialValue, variableValues);
   }
 
   Future<Map<String, dynamic>> executeSelectionSet(
