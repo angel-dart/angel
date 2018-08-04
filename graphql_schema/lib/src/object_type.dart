@@ -35,6 +35,22 @@ class GraphQLObjectType
     if (input is! Map)
       return new ValidationResult._failure(['Expected "$key" to be a Map.']);
 
+    if (isInterface) {
+      List<String> errors = [];
+
+      for (var type in possibleTypes) {
+        var result = type.validate(key, input);
+
+        if (result.successful) {
+          return result;
+        } else {
+          errors.addAll(result.errors);
+        }
+      }
+
+      return new ValidationResult<Map<String, dynamic>>._failure(errors);
+    }
+
     var out = {};
     List<String> errors = [];
 
@@ -51,7 +67,8 @@ class GraphQLObjectType
       var field = fields.firstWhere((f) => f.name == k, orElse: () => null);
 
       if (field == null) {
-        errors.add('Unexpected field "$k" encountered in $key.');
+        errors.add(
+            'Unexpected field "$k" encountered in $key. Accepted values on type $name: ${fields.map((f) => f.name).toList()}');
       } else {
         var v = input[k];
         var result = field.type.validate(k.toString(), v);

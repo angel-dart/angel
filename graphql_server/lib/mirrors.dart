@@ -16,6 +16,11 @@ GraphQLType convertDartType(Type type, [List<Type> typeArguments]) {
   }
 }
 
+/// Shorthand for [convertDartType], for when you know the result will be an object type.
+GraphQLObjectType convertDartClass(Type type, [List<Type> typeArguments]) {
+  return convertDartType(type, typeArguments) as GraphQLObjectType;
+}
+
 final Map<Type, GraphQLType> _cache =
     <Type, GraphQLType>{};
 

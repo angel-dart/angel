@@ -462,6 +462,8 @@ Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
   } else if (type is GraphQLEnumType) {
     types.add(type);
   } else if (type is GraphQLUnionType) {
+    types.add(type);
+
     for (var t in type.possibleTypes) {
       types.addAll(_fetchAllTypesFromType(t));
     }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_graphql/angel_graphql.dart';
@@ -14,37 +15,62 @@ Future configureServer(Angel app) async {
   var droidService = mountService<Droid>(app, '/api/droids');
   var humansService = mountService<Human>(app, '/api/humans');
   var starshipService = mountService<Starship>(app, '/api/starships');
+  var rnd = new Random();
 
   // Create the GraphQL schema.
   // This code uses dart:mirrors to easily create GraphQL types from Dart PODO's.
-  var droidType = convertDartType(Droid);
+  var droidType = convertDartClass(Droid);
   var episodeType = convertDartType(Episode);
-  var humanType = convertDartType(Human);
+  var humanType = convertDartClass(Human);
   var starshipType = convertDartType(Starship);
+  var heroType = new GraphQLUnionType('Hero', [droidType, humanType]);
 
   // Create the query type.
   //
   // Use the `resolveViaServiceIndex` helper to load data directly from an
   // Angel service.
-  var queryType = objectType('StarWarsQuery',
-      description: 'A long time ago, in a galaxy far, far away...',
-      fields: [
-        field(
-          'droids',
-          type: listType(droidType.nonNullable()),
-          resolve: resolveViaServiceIndex(droidService),
-        ),
-        field(
-          'humans',
-          type: listType(humanType.nonNullable()),
-          resolve: resolveViaServiceIndex(humansService),
-        ),
-        field(
-          'starships',
-          type: listType(starshipType.nonNullable()),
-          resolve: resolveViaServiceIndex(starshipService),
-        ),
-      ]);
+  var queryType = objectType(
+    'StarWarsQuery',
+    description: 'A long time ago, in a galaxy far, far away...',
+    fields: [
+      field(
+        'droids',
+        type: listType(droidType.nonNullable()),
+        resolve: resolveViaServiceIndex(droidService),
+      ),
+      field(
+        'humans',
+        type: listType(humanType.nonNullable()),
+        resolve: resolveViaServiceIndex(humansService),
+      ),
+      field(
+        'starships',
+        type: listType(starshipType.nonNullable()),
+        resolve: resolveViaServiceIndex(starshipService),
+      ),
+      field(
+        'hero',
+        type: heroType,
+        resolve: (_, args) async {
+          var allHeroes = [];
+          var allDroids = await droidService.index() as Iterable;
+          var allHumans = await humansService.index() as Iterable;
+          allHeroes..addAll(allDroids)..addAll(allHumans);
+
+          // Ignore the annoying cast here, hopefully Dart 2 fixes cases like this
+          allHeroes = allHeroes
+              .where((m) =>
+                  !args.containsKey('ep') ||
+                  (m['appears_in'].contains(args['ep']) as bool))
+              .toList();
+
+          return allHeroes.isEmpty
+              ? null
+              : allHeroes[rnd.nextInt(allHeroes.length)];
+        },
+      ),
+    ],
+  );
 
   // Finally, create the schema.
   var schema = graphQLSchema(query: queryType);
@@ -60,9 +86,28 @@ Future configureServer(Angel app) async {
   if (!app.isProduction) {
     app.get('/graphiql', graphiQL());
   }
+
+  // Seed the database.
+  var leia = await humansService.create({
+    'name': 'Leia Organa',
+    'appears_in': ['NEWHOPE', 'EMPIRE', 'JEDI'],
+    'total_credits': 520,
+  });
+
+  var hanSolo = await humansService.create({
+    'name': 'Han Solo',
+    'appears_in': ['NEWHOPE', 'EMPIRE', 'JEDI'],
+    'total_credits': 23,
+    'friends': [leia],
+  });
+
+  var luke = await humansService.create({
+    'name': 'Luke Skywalker',
+    'appears_in': ['NEWHOPE', 'EMPIRE', 'JEDI'],
+    'total_credits': 682,
+    'friends': [leia, hanSolo],
+  });
 }
 
-Service mountService<T extends Model>(Angel app, String path) => app.use(
-    path,
-    new TypedService(new MapService(
-        autoIdAndDateFields: false, autoSnakeCaseNames: false))) as Service;
+Service mountService<T extends Model>(Angel app, String path) =>
+    app.use(path, new TypedService(new MapService())) as Service;

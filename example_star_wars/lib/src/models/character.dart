@@ -1,5 +1,8 @@
+import 'package:angel_serialize/angel_serialize.dart';
+
 import 'episode.dart';
 
+@serializable
 abstract class Character {
   String get id;
 

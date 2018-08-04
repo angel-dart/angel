@@ -181,7 +181,8 @@ class GraphQL {
     var mutationType = schema.mutation;
 
     if (mutationType == null) {
-      throw new GraphQLException.fromMessage('The schema does not define a mutation type.');
+      throw new GraphQLException.fromMessage(
+          'The schema does not define a mutation type.');
     }
 
     var selectionSet = mutation.selectionSet;
@@ -364,7 +365,7 @@ class GraphQL {
       if (fieldType is GraphQLObjectType && !fieldType.isInterface) {
         objectType = fieldType;
       } else {
-        objectType = resolveAbstractType(fieldType, result);
+        objectType = resolveAbstractType(fieldName, fieldType, result);
       }
 
       var subSelectionSet = mergeSelectionSets(fields);
@@ -375,29 +376,46 @@ class GraphQL {
     throw new UnsupportedError('Unsupported type: $fieldType');
   }
 
-  GraphQLObjectType resolveAbstractType(GraphQLType type, result) {
+  GraphQLObjectType resolveAbstractType(String fieldName, GraphQLType type, result) {
     List<GraphQLObjectType> possibleTypes;
 
     if (type is GraphQLObjectType) {
-      possibleTypes = type.possibleTypes;
+      if (type.isInterface) {
+        possibleTypes = type.possibleTypes;
+      } else {
+        return type;
+      }
     } else if (type is GraphQLUnionType) {
       possibleTypes = type.possibleTypes;
     } else {
       throw new ArgumentError();
     }
 
+    var errors = <GraphQLExceptionError>[];
+
     for (var t in possibleTypes) {
       try {
         var validation =
-            t.validate('@root', foldToStringDynamic(result as Map));
+            t.validate(fieldName, foldToStringDynamic(result as Map));
 
         if (validation.successful) {
           return t;
         }
-      } catch (_) {}
+
+        errors
+            .addAll(validation.errors.map((m) => new GraphQLExceptionError(m)));
+      } catch (_, st) {
+        print('Um... $_');
+        print(st);
+      }
     }
 
-    throw new StateError('Cannot convert value $result to type $type.');
+    errors.insert(
+        0,
+        new GraphQLExceptionError(
+            'Cannot convert value $result to type $type.'));
+
+    throw new GraphQLException(errors);
   }
 
   SelectionSetContext mergeSelectionSets(List<SelectionContext> fields) {
