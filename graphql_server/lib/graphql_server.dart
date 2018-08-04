@@ -104,8 +104,8 @@ class GraphQL {
       initialValue,
       Map<String, dynamic> globalVariables}) async {
     var operation = getOperation(document, operationName);
-    var coercedVariableValues =
-        coerceVariableValues(schema, operation, variableValues ?? {});
+    var coercedVariableValues = coerceVariableValues(
+        schema, operation, variableValues ?? <String, dynamic>{});
     if (operation.isQuery)
       return await executeQuery(document, operation, schema,
           coercedVariableValues, initialValue, globalVariables);
@@ -282,6 +282,7 @@ class GraphQL {
       var argumentName = argumentDefinition.name;
       var argumentType = argumentDefinition.type;
       var defaultValue = argumentDefinition.defaultValue;
+
       var value = argumentValues.firstWhere((a) => a.name == argumentName,
           orElse: () => null);
 
@@ -480,10 +481,7 @@ class GraphQL {
 
         errors
             .addAll(validation.errors.map((m) => new GraphQLExceptionError(m)));
-      } catch (_, st) {
-        print('Um... $_');
-        print(st);
-      }
+      } catch (_) {}
     }
 
     errors.insert(

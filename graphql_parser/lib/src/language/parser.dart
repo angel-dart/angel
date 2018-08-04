@@ -547,6 +547,7 @@ class Parser {
       var field = parseObjectField();
 
       while (field != null) {
+        fields.add(field);
         lastSpan = field.span;
         eatCommas();
         field = parseObjectField();
