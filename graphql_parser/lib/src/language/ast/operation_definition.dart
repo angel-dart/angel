@@ -26,7 +26,7 @@ class OperationDefinitionContext extends DefinitionContext {
   @override
   FileSpan get span {
     if (TYPE == null) return selectionSet.span;
-    var out = TYPE.span.expand(NAME.span);
+    var out = NAME == null ? TYPE.span : TYPE.span.expand(NAME.span);
     out = directives.fold<FileSpan>(out, (o, d) => o.expand(d.span));
     return out.expand(selectionSet.span);
   }
