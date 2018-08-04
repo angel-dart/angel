@@ -1,3 +1,7 @@
+# 1.1.5+1
+* Patched annoying error that prevented MapServices from working,
+simply because `<dynamic, dynamic>` is incompatible with `<String, dynamic>`.
+
 # 1.1.5
 * `AnonymousService` methods can now return `FutureOr`.
 * Added `findOne` to `Service`.

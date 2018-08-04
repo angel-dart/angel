@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:angel_http_exception/angel_http_exception.dart';
+
 import 'service.dart';
 
 /// A basic service that manages an in-memory list of maps.
@@ -85,8 +87,15 @@ class MapService extends Service {
         ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] = now
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
-    items.add(result as Map<String, dynamic>);
+    items.add(_foldStringDynamic(result));
     return new Future.value(result);
+  }
+
+  Map<String, dynamic> _foldStringDynamic(Map map) {
+    return map == null
+        ? null
+        : map.keys.fold<Map<String, dynamic>>(
+            <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
   }
 
   @override
@@ -130,7 +139,7 @@ class MapService extends Service {
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
               new DateTime.now().toIso8601String();
       }
-      items.add(result as Map<String, dynamic>);
+      items.add(_foldStringDynamic(result));
       return new Future.value(result);
     });
   }
