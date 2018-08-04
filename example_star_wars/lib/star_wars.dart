@@ -68,7 +68,7 @@ Future configureServer(Angel app) async {
 
   // Convert our object types to input objects, so that they can be passed to
   // mutations.
-  var humanChangesType = humanType.asInputObject('HumanChanges');
+  var humanChangesType = humanType.toInputObject('HumanChanges');
 
   // Create the mutation type.
   var mutationType = objectType(

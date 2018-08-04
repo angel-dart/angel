@@ -25,11 +25,11 @@ class GraphQLObjectType
   @override
   GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
       coerceToInputObject() {
-    return asInputObject('${name}Input', description: description);
+    return toInputObject('${name}Input', description: description);
   }
 
   /// Converts [this] into a [GraphQLInputObjectType].
-  GraphQLInputObjectType asInputObject(String name, {String description}) {
+  GraphQLInputObjectType toInputObject(String name, {String description}) {
     return new GraphQLInputObjectType(name,
         description: description ?? this.description,
         inputFields: fields.map((f) => new GraphQLInputObjectField(
