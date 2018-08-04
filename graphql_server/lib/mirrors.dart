@@ -56,22 +56,71 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
 GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   var fields = <GraphQLField>[];
 
-  for (var name in mirror.instanceMembers.keys) {
-    var methodMirror = mirror.instanceMembers[name];
-    var exclude = _getExclude(name, methodMirror);
-    var canAdd = name != #hashCode &&
-        name != #runtimeType &&
-        !methodMirror.isPrivate &&
-        exclude?.canSerialize != true;
-    if (methodMirror.isGetter && canAdd) {
-      fields.add(fieldFromGetter(name, methodMirror, exclude, mirror));
+  void walkMap(Map<Symbol, MethodMirror> map) {
+    for (var name in map.keys) {
+      var methodMirror = map[name];
+      var exclude = _getExclude(name, methodMirror);
+      var canAdd = name != #hashCode &&
+          name != #runtimeType &&
+          !methodMirror.isPrivate &&
+          exclude?.canSerialize != true;
+      if (methodMirror.isGetter && canAdd) {
+        fields.add(fieldFromGetter(name, methodMirror, exclude, mirror));
+      }
     }
   }
+
+  walkMap(mirror.instanceMembers);
+
+  if (mirror.isAbstract) {
+    var decls = <Symbol, MethodMirror>{};
+
+    mirror.declarations.forEach((name, decl) {
+      if (decl is MethodMirror) {
+        decls[name] = decl;
+      }
+    });
+
+    walkMap(decls);
+  }
+
+  var inheritsFrom = <GraphQLObjectType>[];
+  var primitiveTypes = const <Type>[
+    String,
+    bool,
+    num,
+    int,
+    double,
+    Object,
+    dynamic,
+    Null,
+    Type,
+    Symbol
+  ];
+
+  void walk(ClassMirror parent) {
+    if (!primitiveTypes.contains(parent.reflectedType)) {
+      if (parent.isAbstract) {
+        var obj = convertDartType(parent.reflectedType);
+
+        if (obj is GraphQLObjectType && !inheritsFrom.contains(obj)) {
+          inheritsFrom.add(obj);
+        }
+      }
+
+      walk(parent.superclass);
+      parent.superinterfaces.forEach(walk);
+    }
+  }
+
+  walk(mirror.superclass);
+  mirror.superinterfaces.forEach(walk);
 
   return objectType(
     MirrorSystem.getName(mirror.simpleName),
     fields: fields,
     isInterface: mirror.isAbstract,
+    interfaces: inheritsFrom,
     description: _getDescription(mirror.metadata),
   );
 }
@@ -85,9 +134,7 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
       values.add(
         new GraphQLEnumValue(
           MirrorSystem.getName(name),
-          mirror
-              .getField(name)
-              .reflectee,
+          mirror.getField(name).reflectee,
           description: _getDescription(methodMirror.metadata),
           deprecationReason: _getDeprecationReason(methodMirror.metadata),
         ),

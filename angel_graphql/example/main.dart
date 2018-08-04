@@ -61,10 +61,15 @@ main() async {
   print('Access graphiql at $graphiqlUri');
 }
 
+@GraphQLDocumentation(description: 'Any object with a .text (String) property.')
+abstract class HasText {
+  String get text;
+}
+
 @serializable
 @GraphQLDocumentation(
     description: 'A task that might not be completed yet. **Yay! Markdown!**')
-class Todo extends Model {
+class Todo extends Model implements HasText {
   String text;
 
   @GraphQLDocumentation(deprecationReason: 'Use `completion_status` instead.')

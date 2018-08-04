@@ -427,12 +427,8 @@ List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
     }
   }
 
-  for (var type in objectType.interfaces) {
-    types.addAll(_fetchAllTypesFromObject(type));
-  }
-
-  for (var type in objectType.possibleTypes) {
-    types.addAll(_fetchAllTypesFromObject(type));
+  for (var i in objectType.interfaces) {
+    types.addAll(_fetchAllTypesFromObject(i));
   }
 
   return types;
