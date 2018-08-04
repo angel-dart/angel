@@ -48,6 +48,14 @@ RequestHandler graphQLHttp(GraphQL graphQl) {
       } else {
         throw new AngelHttpException.badRequest();
       }
+    } on ValidationException catch (e) {
+      var errors = <GraphQLExceptionError>[
+        new GraphQLExceptionError(e.message)
+      ];
+
+      errors
+          .addAll(e.errors.map((ee) => new GraphQLExceptionError(ee)).toList());
+      return new GraphQLException(errors).toJson();
     } on AngelHttpException catch (e) {
       var errors = <GraphQLExceptionError>[
         new GraphQLExceptionError(e.message)
