@@ -66,7 +66,8 @@ class Parser {
             ..directives.addAll(dirs);
         else
           throw new SyntaxError(
-              'Expected selection set in fragment definition.', NAME.span);
+              'Expected selection set in fragment definition.',
+              NAME?.span ?? TYPE.span);
       } else
         return null;
     }
