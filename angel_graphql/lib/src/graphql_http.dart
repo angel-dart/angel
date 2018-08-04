@@ -16,13 +16,6 @@ final Validator graphQlPostBody = new Validator({
   'variables': predicate((v) => v == null || v is Map),
 });
 
-Map<String, dynamic> _foldToStringDynamic(Map map) {
-  return map == null
-      ? null
-      : map.keys.fold<Map<String, dynamic>>(
-          <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
-}
-
 RequestHandler graphQLHttp(GraphQL graphQl) {
   return (req, res) async {
     try {
@@ -41,7 +34,7 @@ RequestHandler graphQLHttp(GraphQL graphQl) {
               text,
               sourceUrl: 'input',
               operationName: operationName,
-              variableValues: _foldToStringDynamic(variables),
+              variableValues: foldToStringDynamic(variables),
             ),
           };
         }

@@ -5,6 +5,13 @@ import 'package:graphql_schema/graphql_schema.dart';
 
 import 'introspection.dart';
 
+Map<String, dynamic> foldToStringDynamic(Map map) {
+  return map == null
+      ? null
+      : map.keys.fold<Map<String, dynamic>>(
+          <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
+}
+
 class GraphQL {
   final List<GraphQLType> customTypes = [];
   GraphQLSchema _schema;
@@ -335,15 +342,46 @@ class GraphQL {
       }
     }
 
-    if (fieldType is GraphQLObjectType) {
-      var objectType = fieldType;
+    if (fieldType is GraphQLObjectType || fieldType is GraphQLUnionType) {
+      GraphQLObjectType objectType;
+
+      if (fieldType is GraphQLObjectType && !fieldType.isInterface) {
+        objectType = fieldType;
+      } else {
+        objectType = resolveAbstractType(fieldType, result);
+      }
+
       var subSelectionSet = mergeSelectionSets(fields);
       return await executeSelectionSet(
           document, subSelectionSet, objectType, result, variableValues);
     }
 
-    // TODO: Interface/union type
     throw new UnsupportedError('Unsupported type: $fieldType');
+  }
+
+  GraphQLObjectType resolveAbstractType(GraphQLType type, result) {
+    List<GraphQLObjectType> possibleTypes;
+
+    if (type is GraphQLObjectType) {
+      possibleTypes = type.possibleTypes;
+    } else if (type is GraphQLUnionType) {
+      possibleTypes = type.possibleTypes;
+    } else {
+      throw new ArgumentError();
+    }
+
+    for (var t in possibleTypes) {
+      try {
+        var validation =
+            t.validate('@root', foldToStringDynamic(result as Map));
+
+        if (validation.successful) {
+          return t;
+        }
+      } catch (_) {}
+    }
+
+    throw new StateError('Cannot convert value $result to type $type.');
   }
 
   SelectionSetContext mergeSelectionSets(List<SelectionContext> fields) {
@@ -451,13 +489,14 @@ class GraphQL {
   bool doesFragmentTypeApply(
       GraphQLObjectType objectType, TypeConditionContext fragmentType) {
     var type = convertType(new TypeContext(fragmentType.typeName, null));
-    // TODO: Handle interface type, union?
-
-    if (type is GraphQLObjectType) {
+    if (type is GraphQLObjectType && !type.isInterface) {
       for (var field in type.fields)
         if (!objectType.fields.any((f) => f.name == field.name)) return false;
-
       return true;
+    } else if (type is GraphQLObjectType && type.isInterface) {
+      return objectType.isImplementationOf(type);
+    } else if (type is GraphQLUnionType) {
+      return type.possibleTypes.any((t) => objectType.isImplementationOf(t));
     }
 
     return false;

@@ -13,10 +13,12 @@ class GraphQLObjectType
   final List<GraphQLObjectType> _possibleTypes = [];
 
   /// A list of other types that this object type is known to implement.
-  List<GraphQLObjectType> get interfaces => new List<GraphQLObjectType>.unmodifiable(_interfaces);
+  List<GraphQLObjectType> get interfaces =>
+      new List<GraphQLObjectType>.unmodifiable(_interfaces);
 
   /// A list of other types that implement this interface.
-  List<GraphQLObjectType> get possibleTypes => new List<GraphQLObjectType>.unmodifiable(_possibleTypes);
+  List<GraphQLObjectType> get possibleTypes =>
+      new List<GraphQLObjectType>.unmodifiable(_possibleTypes);
 
   GraphQLObjectType(this.name, this.description, {this.isInterface: false});
 
@@ -87,6 +89,18 @@ class GraphQLObjectType
         throw new UnsupportedError('Unexpected field "$k" encountered in map.');
       return out..[k.toString()] = field.deserialize(value[k]);
     });
+  }
+
+  bool isImplementationOf(GraphQLObjectType type) {
+    if (type == this) {
+      return true;
+    } else if (interfaces.contains(type)) {
+      return true;
+    } else if (interfaces.isNotEmpty) {
+      return interfaces.any((t) => t.isImplementationOf(type));
+    } else {
+      return false;
+    }
   }
 }
 
