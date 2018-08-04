@@ -116,15 +116,18 @@ class _IsFieldName extends Matcher {
   @override
   Description describe(Description description) {
     if (realName != null)
-      return description.add('is field with name "$name" and alias "$realName"');
+      return description
+          .add('is field with name "$name" and alias "$realName"');
     return description.add('is field with name "$name"');
   }
 
   @override
   bool matches(item, Map matchState) {
-    var fieldName = item is FieldNameContext ? item : parseFieldName(item.toString());
+    var fieldName =
+        item is FieldNameContext ? item : parseFieldName(item.toString());
     if (realName != null)
-      return fieldName.alias?.alias == name && fieldName.alias?.name == realName;
+      return fieldName.alias?.alias == name &&
+          fieldName.alias?.name == realName;
     else
       return fieldName.name == name;
   }

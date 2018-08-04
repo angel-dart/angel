@@ -1,19 +1,28 @@
 import 'package:charcode/charcode.dart';
 import 'package:source_span/source_span.dart';
+
 import '../syntax_error.dart';
 import '../token.dart';
 import 'value.dart';
 
 class StringValueContext extends ValueContext {
   final Token STRING;
+  final bool isBlockString;
 
-  StringValueContext(this.STRING);
+  StringValueContext(this.STRING, {this.isBlockString: false});
 
   @override
   FileSpan get span => STRING.span;
 
   String get stringValue {
-    var text = STRING.text.substring(1, STRING.text.length - 1);
+    String text;
+
+    if (!isBlockString) {
+      text = STRING.text.substring(1, STRING.text.length - 1);
+    } else {
+      text = STRING.text.substring(3, STRING.text.length - 3).trim();
+    }
+
     var codeUnits = text.codeUnits;
     var buf = new StringBuffer();
 
@@ -55,8 +64,7 @@ class StringValueContext extends ValueContext {
               buf.writeCharCode(next);
           }
         } else
-          throw new SyntaxError(
-              'Unexpected "\\" in string literal.', span);
+          throw new SyntaxError('Unexpected "\\" in string literal.', span);
       } else {
         buf.writeCharCode(ch);
       }

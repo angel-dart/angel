@@ -2,6 +2,7 @@ library graphql_schema.src.schema;
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 
@@ -24,19 +25,21 @@ part 'union.dart';
 part 'validation_result.dart';
 
 class GraphQLSchema {
-  final GraphQLObjectType query;
-  final GraphQLObjectType mutation;
-  final GraphQLObjectType subscription;
+  final GraphQLObjectType queryType;
+  final GraphQLObjectType mutationType;
+  final GraphQLObjectType subscriptionType;
 
-  GraphQLSchema({this.query, this.mutation, this.subscription});
+  GraphQLSchema({this.queryType, this.mutationType, this.subscriptionType});
 }
 
 GraphQLSchema graphQLSchema(
-        {@required GraphQLObjectType query,
-        GraphQLObjectType mutation,
-        GraphQLObjectType subscription}) =>
+        {@required GraphQLObjectType queryType,
+        GraphQLObjectType mutationType,
+        GraphQLObjectType subscriptionType}) =>
     new GraphQLSchema(
-        query: query, mutation: mutation, subscription: subscription);
+        queryType: queryType,
+        mutationType: mutationType,
+        subscriptionType: subscriptionType);
 
 /// A default resolver that always returns `null`.
 resolveToNull(_, __) => null;

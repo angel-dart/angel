@@ -1,7 +1,6 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
-// TODO: How to handle custom types???
 GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   for (var type in allTypes.toList()) {
     var custom = _fetchAllTypesFromType(type);
@@ -14,34 +13,36 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   }
 
   var objectTypes = fetchAllTypes(schema, allTypes);
+
   var typeType = _reflectSchemaTypes();
   var directiveType = _reflectDirectiveType();
   allTypes.addAll(objectTypes);
+  Set<GraphQLType> allTypeSet;
 
   var schemaType = objectType('__Schema', fields: [
     field(
       'types',
-      type: listType(typeType),
-      resolve: (_, __) => allTypes,
+      listType(typeType),
+      resolve: (_, __) => allTypeSet ??= allTypes.toSet(),
     ),
     field(
       'queryType',
-      type: typeType,
-      resolve: (_, __) => schema.query,
+      typeType,
+      resolve: (_, __) => schema.queryType,
     ),
     field(
       'mutationType',
-      type: typeType,
-      resolve: (_, __) => schema.mutation,
+      typeType,
+      resolve: (_, __) => schema.mutationType,
     ),
     field(
       'subscriptionType',
-      type: typeType,
-      resolve: (_, __) => schema.subscription,
+      typeType,
+      resolve: (_, __) => schema.subscriptionType,
     ),
     field(
       'directives',
-      type: listType(directiveType).nonNullable(),
+      listType(directiveType).nonNullable(),
       resolve: (_, __) => [], // TODO: Actually fetch directives
     ),
   ]);
@@ -64,18 +65,16 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     _reflectEnumValueType(),
   ]);
 
-  var fields = <GraphQLField>[
+  var fields = <GraphQLObjectField>[
     field(
       '__schema',
-      type: schemaType,
+      schemaType,
       resolve: (_, __) => schemaType,
     ),
     field(
       '__type',
-      type: typeType,
-      arguments: [
-        new GraphQLFieldArgument('name', graphQLString.nonNullable())
-      ],
+      typeType,
+      inputs: [new GraphQLFieldInput('name', graphQLString.nonNullable())],
       resolve: (_, args) {
         var name = args['name'] as String;
         return allTypes.firstWhere((t) => t.name == name,
@@ -85,11 +84,11 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     ),
   ];
 
-  fields.addAll(schema.query.fields);
+  fields.addAll(schema.queryType.fields);
 
   return new GraphQLSchema(
-    query: objectType(schema.query.name, fields: fields),
-    mutation: schema.mutation,
+    queryType: objectType(schema.queryType.name, fields: fields),
+    mutationType: schema.mutationType,
   );
 }
 
@@ -101,11 +100,11 @@ GraphQLObjectType _reflectSchemaTypes() {
     _typeType.fields.add(
       field(
         'ofType',
-        type: _reflectSchemaTypes(),
+        _reflectSchemaTypes(),
         resolve: (type, _) {
           if (type is GraphQLListType)
-            return type.innerType;
-          else if (type is GraphQLNonNullableType) return type.innerType;
+            return type.ofType;
+          else if (type is GraphQLNonNullableType) return type.ofType;
           return null;
         },
       ),
@@ -114,7 +113,7 @@ GraphQLObjectType _reflectSchemaTypes() {
     _typeType.fields.add(
       field(
         'interfaces',
-        type: listType(_reflectSchemaTypes().nonNullable()),
+        listType(_reflectSchemaTypes().nonNullable()),
         resolve: (type, _) {
           if (type is GraphQLObjectType) {
             return type.interfaces;
@@ -128,7 +127,7 @@ GraphQLObjectType _reflectSchemaTypes() {
     _typeType.fields.add(
       field(
         'possibleTypes',
-        type: listType(_reflectSchemaTypes().nonNullable()),
+        listType(_reflectSchemaTypes().nonNullable()),
         resolve: (type, _) {
           if (type is GraphQLObjectType && type.isInterface) {
             return type.possibleTypes;
@@ -150,8 +149,8 @@ GraphQLObjectType _reflectSchemaTypes() {
       fieldType.fields.add(
         field(
           'type',
-          type: _reflectSchemaTypes(),
-          resolve: (f, _) => (f as GraphQLField).type,
+          _reflectSchemaTypes(),
+          resolve: (f, _) => (f as GraphQLObjectField).type,
         ),
       );
     }
@@ -163,8 +162,9 @@ GraphQLObjectType _reflectSchemaTypes() {
       inputValueType.fields.add(
         field(
           'type',
-          type: _reflectSchemaTypes(),
-          resolve: (f, _) => (f as GraphQLFieldArgument).type,
+          _reflectSchemaTypes(),
+          resolve: (f, _) =>
+              _fetchFromInputValue(f, (f) => f.type, (f) => f.type),
         ),
       );
     }
@@ -193,17 +193,17 @@ GraphQLObjectType _createTypeType() {
   return objectType('__Type', fields: [
     field(
       'name',
-      type: graphQLString,
+      graphQLString,
       resolve: (type, _) => (type as GraphQLType).name,
     ),
     field(
       'description',
-      type: graphQLString,
+      graphQLString,
       resolve: (type, _) => (type as GraphQLType).description,
     ),
     field(
       'kind',
-      type: _typeKindType,
+      _typeKindType,
       resolve: (type, _) {
         var t = type as GraphQLType;
 
@@ -211,6 +211,8 @@ GraphQLObjectType _createTypeType() {
           return 'ENUM';
         else if (t is GraphQLScalarType)
           return 'SCALAR';
+        else if (t is GraphQLInputObjectType)
+          return 'INPUT_OBJECT';
         else if (t is GraphQLObjectType)
           return t.isInterface ? 'INTERFACE' : 'OBJECT';
         else if (t is GraphQLListType)
@@ -225,9 +227,9 @@ GraphQLObjectType _createTypeType() {
     ),
     field(
       'fields',
-      type: listType(fieldType),
-      arguments: [
-        new GraphQLFieldArgument(
+      listType(fieldType),
+      inputs: [
+        new GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
@@ -238,13 +240,13 @@ GraphQLObjectType _createTypeType() {
               .where(
                   (f) => !f.isDeprecated || args['includeDeprecated'] == true)
               .toList()
-          : [],
+          : null,
     ),
     field(
       'enumValues',
-      type: listType(enumValueType.nonNullable()),
-      arguments: [
-        new GraphQLFieldArgument(
+      listType(enumValueType.nonNullable()),
+      inputs: [
+        new GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
@@ -263,10 +265,13 @@ GraphQLObjectType _createTypeType() {
     ),
     field(
       'inputFields',
-      type: listType(inputValueType.nonNullable()),
+      listType(inputValueType.nonNullable()),
       resolve: (obj, _) {
-        // TODO: INPUT_OBJECT type
-        return <GraphQLFieldArgument>[];
+        if (obj is GraphQLInputObjectType) {
+          return obj.inputFields;
+        }
+
+        return null;
       },
     ),
   ]);
@@ -288,46 +293,64 @@ GraphQLObjectType _createFieldType() {
   return objectType('__Field', fields: [
     field(
       'name',
-      type: graphQLString,
-      resolve: (f, _) => (f as GraphQLField).name,
+      graphQLString,
+      resolve: (f, _) => (f as GraphQLObjectField).name,
+    ),
+    field(
+      'description',
+      graphQLString,
+      resolve: (f, _) => (f as GraphQLObjectField).description,
     ),
     field(
       'isDeprecated',
-      type: graphQLBoolean,
-      resolve: (f, _) => (f as GraphQLField).isDeprecated,
+      graphQLBoolean,
+      resolve: (f, _) => (f as GraphQLObjectField).isDeprecated,
     ),
     field(
       'deprecationReason',
-      type: graphQLString,
-      resolve: (f, _) => (f as GraphQLField).deprecationReason,
+      graphQLString,
+      resolve: (f, _) => (f as GraphQLObjectField).deprecationReason,
     ),
     field(
       'args',
-      type: listType(inputValueType.nonNullable()).nonNullable(),
-      resolve: (f, _) => (f as GraphQLField).arguments,
+      listType(inputValueType.nonNullable()).nonNullable(),
+      resolve: (f, _) => (f as GraphQLObjectField).inputs,
     ),
   ]);
 }
 
 GraphQLObjectType _inputValueType;
 
+T _fetchFromInputValue<T>(x, T Function(GraphQLFieldInput) ifInput,
+    T Function(GraphQLInputObjectField) ifObjectField) {
+  if (x is GraphQLFieldInput) {
+    return ifInput(x);
+  } else if (x is GraphQLInputObjectField) {
+    return ifObjectField(x);
+  } else {
+    return null;
+  }
+}
+
 GraphQLObjectType _reflectInputValueType() {
   return _inputValueType ??= objectType('__InputValue', fields: [
     field(
       'name',
-      type: graphQLString.nonNullable(),
-      resolve: (obj, _) => (obj as GraphQLFieldArgument).name,
+      graphQLString.nonNullable(),
+      resolve: (obj, _) =>
+          _fetchFromInputValue(obj, (f) => f.name, (f) => f.name),
     ),
     field(
       'description',
-      type: graphQLString,
-      resolve: (obj, _) => (obj as GraphQLFieldArgument).description,
+      graphQLString,
+      resolve: (obj, _) =>
+          _fetchFromInputValue(obj, (f) => f.description, (f) => f.description),
     ),
     field(
       'defaultValue',
-      type: graphQLString,
-      resolve: (obj, _) =>
-          (obj as GraphQLFieldArgument).defaultValue?.toString(),
+      graphQLString,
+      resolve: (obj, _) => _fetchFromInputValue(obj,
+          (f) => f.defaultValue?.toString(), (f) => f.defaultValue?.toString()),
     ),
   ]);
 }
@@ -351,23 +374,23 @@ GraphQLObjectType _reflectDirectiveType() {
   return _directiveType ??= objectType('__Directive', fields: [
     field(
       'name',
-      type: graphQLString.nonNullable(),
+      graphQLString.nonNullable(),
       resolve: (obj, _) => (obj as DirectiveContext).NAME.span.text,
     ),
     field(
       'description',
-      type: graphQLString,
+      graphQLString,
       resolve: (obj, _) => null,
     ),
     field(
       'locations',
-      type: listType(_directiveLocationType.nonNullable()).nonNullable(),
+      listType(_directiveLocationType.nonNullable()).nonNullable(),
       // TODO: Fetch directiveLocation
       resolve: (obj, _) => <String>[],
     ),
     field(
       'args',
-      type: listType(inputValueType.nonNullable()).nonNullable(),
+      listType(inputValueType.nonNullable()).nonNullable(),
       resolve: (obj, _) => [],
     ),
   ]);
@@ -381,22 +404,22 @@ GraphQLObjectType _reflectEnumValueType() {
     fields: [
       field(
         'name',
-        type: graphQLString.nonNullable(),
+        graphQLString.nonNullable(),
         resolve: (obj, _) => (obj as GraphQLEnumValue).name,
       ),
       field(
         'description',
-        type: graphQLString,
+        graphQLString,
         resolve: (obj, _) => (obj as GraphQLEnumValue).description,
       ),
       field(
         'isDeprecated',
-        type: graphQLBoolean.nonNullable(),
+        graphQLBoolean.nonNullable(),
         resolve: (obj, _) => (obj as GraphQLEnumValue).isDeprecated,
       ),
       field(
         'deprecationReason',
-        type: graphQLString,
+        graphQLString,
         resolve: (obj, _) => (obj as GraphQLEnumValue).deprecationReason,
       ),
     ],
@@ -407,24 +430,13 @@ List<GraphQLType> fetchAllTypes(
     GraphQLSchema schema, List<GraphQLType> allTypes) {
   var types = <GraphQLType>[];
 
-  types.addAll(_fetchAllTypesFromObject(schema.query));
+  types.addAll(_fetchAllTypesFromObject(schema.queryType));
 
-  if (schema.mutation != null) {
-    types.addAll(_fetchAllTypesFromObject(schema.mutation)
-        .where((t) => t is GraphQLObjectType));
+  if (schema.mutationType != null) {
+    types.addAll(_fetchAllTypesFromObject(schema.mutationType));
   }
 
   return types;
-
-//  var types = <GraphQLObjectType>[];
-//
-//  for (var type in typess) {
-//    if (type is GraphQLObjectType)
-//      types.add(type);
-//    else if (!allTypes.contains(type)) allTypes.add(type);
-//  }
-//
-//  return types.toSet().toList();
 }
 
 List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
@@ -433,12 +445,16 @@ List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
   for (var field in objectType.fields) {
     if (field.type is GraphQLObjectType) {
       types.addAll(_fetchAllTypesFromObject(field.type as GraphQLObjectType));
+    } else if (field.type is GraphQLInputObjectType) {
+      for (var v in (field.type as GraphQLInputObjectType).inputFields) {
+        types.addAll(_fetchAllTypesFromType(v.type));
+      }
     } else {
       types.addAll(_fetchAllTypesFromType(field.type));
     }
 
-    for (var argument in field.arguments ?? <GraphQLFieldArgument>[]) {
-      types.addAll(_fetchAllTypesFromType(argument.type));
+    for (var input in field.inputs ?? <GraphQLFieldInput>[]) {
+      types.addAll(_fetchAllTypesFromType(input.type));
     }
   }
 
@@ -453,12 +469,18 @@ Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
   var types = <GraphQLType>[];
 
   if (type is GraphQLNonNullableType) {
-    types.addAll(_fetchAllTypesFromType(type.innerType));
+    types.addAll(_fetchAllTypesFromType(type.ofType));
   } else if (type is GraphQLListType) {
-    types.addAll(_fetchAllTypesFromType(type.innerType));
+    types.addAll(_fetchAllTypesFromType(type.ofType));
   } else if (type is GraphQLObjectType) {
     types.addAll(_fetchAllTypesFromObject(type));
   } else if (type is GraphQLEnumType) {
+    types.add(type);
+  } else if (type is GraphQLInputObjectType) {
+    for (var v in type.inputFields) {
+      types.addAll(_fetchAllTypesFromType(v.type));
+    }
+
     types.add(type);
   } else if (type is GraphQLUnionType) {
     types.add(type);

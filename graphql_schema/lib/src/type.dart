@@ -13,6 +13,8 @@ abstract class GraphQLType<Value, Serialized> {
 
   GraphQLType<Value, Serialized> nonNullable();
 
+  GraphQLType<Value, Serialized> coerceToInputObject();
+
   @override
   String toString() => name;
 }
@@ -25,16 +27,16 @@ GraphQLListType<Value, Serialized> listType<Value, Serialized>(
 class GraphQLListType<Value, Serialized>
     extends GraphQLType<List<Value>, List<Serialized>>
     with _NonNullableMixin<List<Value>, List<Serialized>> {
-  final GraphQLType<Value, Serialized> innerType;
+  final GraphQLType<Value, Serialized> ofType;
 
-  GraphQLListType(this.innerType);
+  GraphQLListType(this.ofType);
 
   @override
   String get name => null;
 
   @override
   String get description =>
-      'A list of items of type ${innerType.name ?? '(${innerType.description}).'}';
+      'A list of items of type ${ofType.name ?? '(${ofType.description}).'}';
 
   @override
   ValidationResult<List<Serialized>> validate(
@@ -48,7 +50,7 @@ class GraphQLListType<Value, Serialized>
     for (int i = 0; i < input.length; i++) {
       var k = '"$key" at index $i';
       var v = input[i];
-      var result = innerType.validate(k, v);
+      var result = ofType.validate(k, v);
       if (!result.successful)
         errors.addAll(result.errors);
       else
@@ -61,16 +63,23 @@ class GraphQLListType<Value, Serialized>
 
   @override
   List<Value> deserialize(List<Serialized> serialized) {
-    return serialized.map<Value>(innerType.deserialize).toList();
+    return serialized.map<Value>(ofType.deserialize).toList();
   }
 
   @override
   List<Serialized> serialize(List<Value> value) {
-    return value.map<Serialized>(innerType.serialize).toList();
+    return value.map<Serialized>(ofType.serialize).toList();
   }
 
   @override
-  String toString() => '[$innerType]';
+  String toString() => '[$ofType]';
+
+  @override
+  bool operator ==(other) => other is GraphQLListType && other.ofType == ofType;
+
+  @override
+  GraphQLType<List<Value>, List<Serialized>> coerceToInputObject() =>
+      new GraphQLListType<Value, Serialized>(ofType.coerceToInputObject());
 }
 
 abstract class _NonNullableMixin<Value, Serialized>
@@ -83,16 +92,16 @@ abstract class _NonNullableMixin<Value, Serialized>
 
 class GraphQLNonNullableType<Value, Serialized>
     extends GraphQLType<Value, Serialized> {
-  final GraphQLType<Value, Serialized> innerType;
+  final GraphQLType<Value, Serialized> ofType;
 
-  GraphQLNonNullableType._(this.innerType);
+  GraphQLNonNullableType._(this.ofType);
 
   @override
-  String get name => innerType.name;
+  String get name => null; //innerType.name;
 
   @override
   String get description =>
-      'A non-nullable binding to ${innerType.name ?? '(${innerType.description}).'}';
+      'A non-nullable binding to ${ofType.name ?? '(${ofType.description}).'}';
 
   @override
   GraphQLType<Value, Serialized> nonNullable() {
@@ -105,21 +114,30 @@ class GraphQLNonNullableType<Value, Serialized>
     if (input == null)
       return new ValidationResult._failure(
           ['Expected "$key" to be a non-null value.']);
-    return innerType.validate(key, input);
+    return ofType.validate(key, input);
   }
 
   @override
   Value deserialize(Serialized serialized) {
-    return innerType.deserialize(serialized);
+    return ofType.deserialize(serialized);
   }
 
   @override
   Serialized serialize(Value value) {
-    return innerType.serialize(value);
+    return ofType.serialize(value);
   }
 
   @override
   String toString() {
-    return '$innerType!';
+    return '$ofType!';
+  }
+
+  @override
+  bool operator ==(other) =>
+      other is GraphQLNonNullableType && other.ofType == ofType;
+
+  @override
+  GraphQLType<Value, Serialized> coerceToInputObject() {
+    return ofType.coerceToInputObject().nonNullable();
   }
 }

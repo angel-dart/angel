@@ -51,9 +51,11 @@ main() {
       ]
     });
 
-    expect(() => pokemonRegionType.serialize({
-      'trainer': trainer,
-      'DIGIMON_species': [pikachu, charizard]
-    }), throwsUnsupportedError);
+    expect(
+        () => pokemonRegionType.serialize({
+              'trainer': trainer,
+              'DIGIMON_species': [pikachu, charizard]
+            }),
+        throwsUnsupportedError);
   });
 }

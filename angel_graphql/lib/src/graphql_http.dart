@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_validate/server.dart';
 import 'package:dart2_constant/convert.dart';
@@ -81,7 +82,14 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
       return new GraphQLException.fromSourceSpan(e.message, e.span);
     } on GraphQLException catch (e) {
       return e.toJson();
-    } catch (e) {
+    } catch (e, st) {
+      if (req.app?.logger != null) {
+        req.app.logger.severe(
+            'An error occurred while processing GraphQL query at ${req.uri}.',
+            e,
+            st);
+      }
+
       return new GraphQLException.fromMessage(e.toString()).toJson();
     }
   };

@@ -2,7 +2,7 @@ import '../token.dart';
 import 'package:source_span/source_span.dart';
 import 'value.dart';
 
-class BooleanValueContext extends ValueContext {
+class BooleanValueContext extends ValueContext<bool> {
   bool _valueCache;
   final Token BOOLEAN;
 
@@ -13,7 +13,7 @@ class BooleanValueContext extends ValueContext {
   bool get booleanValue => _valueCache ??= BOOLEAN.text == 'true';
 
   @override
-  get value => booleanValue;
+  bool get value => booleanValue;
 
   @override
   FileSpan get span => BOOLEAN.span;

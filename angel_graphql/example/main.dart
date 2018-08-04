@@ -25,15 +25,15 @@ main() async {
     fields: [
       field(
         'todos',
-        type: listType(convertDartType(Todo).nonNullable()),
+        listType(convertDartType(Todo).nonNullable()),
         resolve: resolveViaServiceIndex(todoService),
       ),
       field(
         'todo',
-        type: convertDartType(Todo),
+        convertDartType(Todo),
         resolve: resolveViaServiceRead(todoService),
-        arguments: [
-          new GraphQLFieldArgument('id', graphQLId.nonNullable()),
+        inputs: [
+          new GraphQLFieldInput('id', graphQLId.nonNullable()),
         ],
       ),
     ],
@@ -45,14 +45,14 @@ main() async {
     fields: [
       field(
         'create',
-        type: graphQLString,
+        graphQLString,
       ),
     ],
   );
 
   var schema = graphQLSchema(
-    query: queryType,
-    mutation: mutationType,
+    queryType: queryType,
+    mutationType: mutationType,
   );
 
   app.all('/graphql', graphQLHttp(new GraphQL(schema)));

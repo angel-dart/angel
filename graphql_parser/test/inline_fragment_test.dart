@@ -58,8 +58,9 @@ class _IsInlineFragment extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var fragment =
-        item is InlineFragmentContext ? item : parseInlineFragment(item.toString());
+    var fragment = item is InlineFragmentContext
+        ? item
+        : parseInlineFragment(item.toString());
     if (fragment == null) return false;
     if (fragment.typeCondition.typeName.name != name) return false;
     if (directives != null &&

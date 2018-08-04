@@ -10,8 +10,8 @@ It's easy to define a schema with the
 ```dart
 final GraphQLSchema todoSchema = new GraphQLSchema(
     query: objectType('Todo', [
-  field('text', type: graphQLString.nonNullable()),
-  field('created_at', type: graphQLDate)
+  field('text', graphQLString.nonNullable()),
+  field('created_at', graphQLDate)
 ]));
 ```
 

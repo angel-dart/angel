@@ -1,5 +1,5 @@
 import 'node.dart';
 
-abstract class ValueContext extends Node {
-  get value;
+abstract class ValueContext<T> extends Node {
+  T get value;
 }

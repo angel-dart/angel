@@ -3,10 +3,12 @@ environment:
   sdk: ">=1.8.0 <3.0.0"
 dependencies:
   angel_serialize: ^2.0.0
+  collection: ^1.0.0
   graphql_schema:
     path: ../graphql_schema
   graphql_parser:
     path: ../graphql_parser
+  meta: ^1.0.0
   recase: ^1.0.0
   tuple: ^1.0.0
 dev_dependencies:

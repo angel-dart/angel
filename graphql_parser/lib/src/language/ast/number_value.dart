@@ -3,7 +3,7 @@ import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'value.dart';
 
-class NumberValueContext extends ValueContext {
+class NumberValueContext extends ValueContext<num> {
   final Token NUMBER;
 
   NumberValueContext(this.NUMBER);
@@ -21,7 +21,7 @@ class NumberValueContext extends ValueContext {
   }
 
   @override
-  get value => numberValue;
+  num get value => numberValue;
 
   @override
   FileSpan get span => NUMBER.span;

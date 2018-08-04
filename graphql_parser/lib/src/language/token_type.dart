@@ -21,6 +21,8 @@ enum TokenType {
   BOOLEAN,
   NUMBER,
   STRING,
+  BLOCK_STRING,
 
-  NAME
+  NAME,
+  NULL
 }

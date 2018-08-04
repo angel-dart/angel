@@ -36,12 +36,27 @@ class GraphQLEnumType<Value> extends GraphQLScalarType<Value, String>
   @override
   ValidationResult<String> validate(String key, String input) {
     if (!values.any((v) => v.name == input)) {
+      if (input == null) {
+        return new ValidationResult<String>._failure(
+            ['The enum "$name" does not accept null values.']);
+      }
+
       return new ValidationResult<String>._failure(
           ['"$input" is not a valid value for the enum "$name".']);
     }
 
     return new ValidationResult<String>._ok(input);
   }
+
+  @override
+  bool operator ==(other) =>
+      other is GraphQLEnumType &&
+      other.name == name &&
+      other.description == description &&
+      const ListEquality<GraphQLEnumValue>().equals(other.values, values);
+
+  @override
+  GraphQLType<Value, String> coerceToInputObject() => this;
 }
 
 class GraphQLEnumValue<Value> {
@@ -50,10 +65,16 @@ class GraphQLEnumValue<Value> {
   final String description;
   final String deprecationReason;
 
-  GraphQLEnumValue(this.name, this.value, {this.description, this.deprecationReason});
+  GraphQLEnumValue(this.name, this.value,
+      {this.description, this.deprecationReason});
 
   bool get isDeprecated => deprecationReason != null;
 
   @override
-  bool operator ==(other) => other is GraphQLEnumValue && other.name == name;
+  bool operator ==(other) =>
+      other is GraphQLEnumValue &&
+      other.name == name &&
+      other.value == value &&
+      other.description == description &&
+      other.deprecationReason == deprecationReason;
 }

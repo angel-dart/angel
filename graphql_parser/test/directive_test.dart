@@ -58,7 +58,8 @@ class _IsDirective extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var directive = item is DirectiveContext ? item : parseDirective(item.toString());
+    var directive =
+        item is DirectiveContext ? item : parseDirective(item.toString());
     if (directive == null) return false;
     if (valueOrVariable != null) {
       if (directive.valueOrVariable == null)
@@ -90,8 +91,9 @@ class _IsDirectiveList extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var args =
-        item is List<DirectiveContext> ? item : parse(item.toString()).parseDirectives();
+    var args = item is List<DirectiveContext>
+        ? item
+        : parse(item.toString()).parseDirectives();
 
     if (args.length != directives.length) return false;
 

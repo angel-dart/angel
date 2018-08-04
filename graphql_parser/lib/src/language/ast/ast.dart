@@ -14,6 +14,7 @@ export 'fragment_definition.dart';
 export 'fragment_spread.dart';
 export 'inline_fragment.dart';
 export 'list_type.dart';
+export 'misc_value.dart';
 export 'node.dart';
 export 'number_value.dart';
 export 'operation_definition.dart';

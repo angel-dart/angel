@@ -15,7 +15,7 @@ class ValidationResult<T> {
       : value = null,
         successful = false;
 
-  ValidationResult<T> _asFailure() {
-    return new ValidationResult<T>._(false, value, errors);
-  }
+//  ValidationResult<T> _asFailure() {
+//    return new ValidationResult<T>._(false, value, errors);
+//  }
 }

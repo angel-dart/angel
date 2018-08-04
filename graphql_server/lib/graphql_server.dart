@@ -29,15 +29,16 @@ class GraphQL {
       allTypes.addAll(this.customTypes);
       _schema = reflectSchema(_schema, allTypes);
 
-      for (var type in allTypes) {
+      for (var type in allTypes.toSet()) {
         if (!this.customTypes.contains(type)) {
           this.customTypes.add(type);
         }
       }
     }
 
-    if (_schema.query != null) this.customTypes.add(_schema.query);
-    if (_schema.mutation != null) this.customTypes.add(_schema.mutation);
+    if (_schema.queryType != null) this.customTypes.add(_schema.queryType);
+    if (_schema.mutationType != null)
+      this.customTypes.add(_schema.mutationType);
   }
 
   GraphQLType convertType(TypeContext ctx) {
@@ -76,6 +77,15 @@ class GraphQL {
     var tokens = scan(text, sourceUrl: sourceUrl);
     var parser = new Parser(tokens);
     var document = parser.parseDocument();
+
+    if (parser.errors.isNotEmpty) {
+      throw new GraphQLException(parser.errors
+          .map((e) => new GraphQLExceptionError(e.message, locations: [
+                new GraphExceptionErrorLocation.fromSourceLocation(e.span.start)
+              ]))
+          .toList());
+    }
+
     return executeRequest(_schema, document,
         operationName: operationName,
         initialValue: initialValue,
@@ -166,7 +176,7 @@ class GraphQL {
       GraphQLSchema schema,
       Map<String, dynamic> variableValues,
       initialValue) async {
-    var queryType = schema.query;
+    var queryType = schema.queryType;
     var selectionSet = query.selectionSet;
     return await executeSelectionSet(
         document, selectionSet, queryType, initialValue, variableValues);
@@ -178,7 +188,7 @@ class GraphQL {
       GraphQLSchema schema,
       Map<String, dynamic> variableValues,
       initialValue) async {
-    var mutationType = schema.mutation;
+    var mutationType = schema.mutationType;
 
     if (mutationType == null) {
       throw new GraphQLException.fromMessage(
@@ -241,7 +251,7 @@ class GraphQL {
     var argumentValues = field.field.arguments;
     var fieldName = field.field.fieldName.name;
     var desiredField = objectType.fields.firstWhere((f) => f.name == fieldName);
-    var argumentDefinitions = desiredField.arguments;
+    var argumentDefinitions = desiredField.inputs;
 
     for (var argumentDefinition in argumentDefinitions) {
       var argumentName = argumentDefinition.name;
@@ -260,7 +270,7 @@ class GraphQL {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
           throw new GraphQLException.fromSourceSpan(
-              'Missing value for argument "$argumentName".',
+              'Missing value for argument "$argumentName" of field "$fieldName".',
               value.valueOrVariable.span);
         } else {
           continue;
@@ -270,21 +280,60 @@ class GraphQL {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
           throw new GraphQLException.fromMessage(
-              'Missing value for argument "$argumentName".');
+              'Missing value for argument "$argumentName" of field "$fieldName".');
         } else {
           continue;
         }
       } else {
-        var validation =
-            argumentType.validate(fieldName, value.valueOrVariable.value.value);
+        try {
+          var validation = argumentType.validate(
+              fieldName, value.valueOrVariable.value.value);
 
-        if (!validation.successful) {
-          throw new GraphQLException.fromSourceSpan(
-              'Coercion error for value of argument "$argumentName".',
-              value.valueOrVariable.span);
-        } else {
-          var coercedValue = validation.value;
-          coercedValues[argumentName] = coercedValue;
+          if (!validation.successful) {
+            var errors = <GraphQLExceptionError>[
+              new GraphQLExceptionError(
+                'Type coercion error for value of argument "$argumentName" of field "$fieldName".',
+                locations: [
+                  new GraphExceptionErrorLocation.fromSourceLocation(
+                      value.valueOrVariable.span.start)
+                ],
+              )
+            ];
+
+            for (var error in validation.errors) {
+              errors.add(
+                new GraphQLExceptionError(
+                  error,
+                  locations: [
+                    new GraphExceptionErrorLocation.fromSourceLocation(
+                        value.valueOrVariable.span.start)
+                  ],
+                ),
+              );
+            }
+
+            throw new GraphQLException(errors);
+          } else {
+            var coercedValue = validation.value;
+            coercedValues[argumentName] = coercedValue;
+          }
+        } on TypeError catch (e) {
+          throw new GraphQLException(<GraphQLExceptionError>[
+            new GraphQLExceptionError(
+              'Type coercion error for value of argument "$argumentName" of field "$fieldName".',
+              locations: [
+                new GraphExceptionErrorLocation.fromSourceLocation(
+                    value.valueOrVariable.span.start)
+              ],
+            ),
+            new GraphQLExceptionError(
+              e.message.toString(),
+              locations: [
+                new GraphExceptionErrorLocation.fromSourceLocation(
+                    value.valueOrVariable.span.start)
+              ],
+            ),
+          ]);
         }
       }
     }
@@ -311,7 +360,7 @@ class GraphQL {
       result,
       Map<String, dynamic> variableValues) async {
     if (fieldType is GraphQLNonNullableType) {
-      var innerType = fieldType.innerType;
+      var innerType = fieldType.ofType;
       var completedResult = completeValue(
           document, fieldName, innerType, fields, result, variableValues);
 
@@ -333,7 +382,7 @@ class GraphQL {
             'Value of field "$fieldName" must be a list or iterable, got $result instead.');
       }
 
-      var innerType = fieldType.innerType;
+      var innerType = fieldType.ofType;
       var out = [];
 
       for (var resultItem in (result as Iterable)) {
@@ -376,7 +425,8 @@ class GraphQL {
     throw new UnsupportedError('Unsupported type: $fieldType');
   }
 
-  GraphQLObjectType resolveAbstractType(String fieldName, GraphQLType type, result) {
+  GraphQLObjectType resolveAbstractType(
+      String fieldName, GraphQLType type, result) {
     List<GraphQLObjectType> possibleTypes;
 
     if (type is GraphQLObjectType) {

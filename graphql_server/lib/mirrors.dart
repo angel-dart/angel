@@ -21,8 +21,7 @@ GraphQLObjectType convertDartClass(Type type, [List<Type> typeArguments]) {
   return convertDartType(type, typeArguments) as GraphQLObjectType;
 }
 
-final Map<Type, GraphQLType> _cache =
-    <Type, GraphQLType>{};
+final Map<Type, GraphQLType> _cache = <Type, GraphQLType>{};
 
 GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
   if (type == bool) {
@@ -73,10 +72,9 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
 GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   if (_cache[mirror.reflectedType] != null) {
     return _cache[mirror.reflectedType] as GraphQLObjectType;
-  } else {
-  }
+  } else {}
 
-  var fields = <GraphQLField>[];
+  var fields = <GraphQLObjectField>[];
   var ready = <Symbol, MethodMirror>{};
   var forward = <Symbol, MethodMirror>{};
 
@@ -219,7 +217,7 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
   );
 }
 
-GraphQLField fieldFromGetter(
+GraphQLObjectField fieldFromGetter(
     Symbol name, MethodMirror mirror, Exclude exclude, ClassMirror clazz) {
   var type = _getProvidedType(mirror.metadata);
   var wasProvided = type != null;
@@ -242,7 +240,7 @@ GraphQLField fieldFromGetter(
 
   return field(
     nameString,
-    type: type,
+    type,
     deprecationReason: _getDeprecationReason(mirror.metadata),
     resolve: (obj, _) {
       if (obj is Map && exclude?.canSerialize != true) {

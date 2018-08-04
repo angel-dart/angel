@@ -7,5 +7,6 @@ class SyntaxError implements Exception {
   SyntaxError(this.message, this.span);
 
   @override
-  String toString() => 'Syntax error at ${span.start.toolString}: $message\n${span.highlight()}';
+  String toString() =>
+      'Syntax error at ${span.start.toolString}: $message\n${span.highlight()}';
 }

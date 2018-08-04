@@ -11,11 +11,11 @@ void main() {
   var pokemonType = objectType('Pokémon', fields: [
     field(
       'name',
-      type: graphQLString.nonNullable(),
+      graphQLString.nonNullable(),
     ),
     field(
       'type',
-      type: typeType,
+      typeType,
     ),
   ]);
 

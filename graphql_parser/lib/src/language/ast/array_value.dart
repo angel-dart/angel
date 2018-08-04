@@ -2,11 +2,11 @@ import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'value.dart';
 
-class ArrayValueContext extends ValueContext {
+class ListValueContext extends ValueContext {
   final Token LBRACKET, RBRACKET;
   final List<ValueContext> values = [];
 
-  ArrayValueContext(this.LBRACKET, this.RBRACKET);
+  ListValueContext(this.LBRACKET, this.RBRACKET);
 
   @override
   FileSpan get span {

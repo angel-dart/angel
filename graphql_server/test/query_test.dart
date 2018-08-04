@@ -4,24 +4,24 @@ import 'package:test/test.dart';
 
 void main() {
   test('single element', () async {
-    var todoType = objectType('todo',fields: [
+    var todoType = objectType('todo', fields: [
       field(
         'text',
-        type: graphQLString,
+        graphQLString,
         resolve: (obj, args) => obj.text,
       ),
       field(
         'completed',
-        type: graphQLBoolean,
+        graphQLBoolean,
         resolve: (obj, args) => obj.completed,
       ),
     ]);
 
     var schema = graphQLSchema(
-      query: objectType('api', fields:[
+      queryType: objectType('api', fields: [
         field(
           'todos',
-          type: listType(todoType),
+          listType(todoType),
           resolve: (_, __) => [
                 new Todo(
                   text: 'Clean your room!',

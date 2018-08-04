@@ -95,7 +95,7 @@ class GraphQLVisitor {
       visitNumberValue(ctx);
     else if (ctx is BooleanValueContext)
       visitBooleanValue(ctx);
-    else if (ctx is ArrayValueContext) visitArrayValue(ctx);
+    else if (ctx is ListValueContext) visitArrayValue(ctx);
   }
 
   visitStringValue(StringValueContext ctx) {}
@@ -104,7 +104,7 @@ class GraphQLVisitor {
 
   visitNumberValue(NumberValueContext ctx) {}
 
-  visitArrayValue(ArrayValueContext ctx) {
+  visitArrayValue(ListValueContext ctx) {
     ctx.values.forEach(visitValue);
   }
 

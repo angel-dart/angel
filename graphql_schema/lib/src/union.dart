@@ -7,16 +7,28 @@ class GraphQLUnionType
   final List<GraphQLObjectType> possibleTypes = [];
 
   GraphQLUnionType(
-    this.name,
-    Iterable<GraphQLObjectType> possibleTypes,
-  ) {
+      this.name,
+      Iterable<GraphQLType<Map<String, dynamic>, Map<String, dynamic>>>
+          possibleTypes) {
+    assert(possibleTypes.every((t) => t is GraphQLObjectType),
+        'The member types of a Union type must all be Object base types; Scalar, Interface and Union types must not be member types of a Union. Similarly, wrapping types must not be member types of a Union.');
     assert(possibleTypes.isNotEmpty,
         'A Union type must define one or more member types.');
-    this.possibleTypes.addAll(possibleTypes.toSet());
+
+    for (var t in possibleTypes.toSet()) {
+      this.possibleTypes.add(t as GraphQLObjectType);
+    }
   }
 
   @override
   String get description => possibleTypes.map((t) => t.name).join(' | ');
+
+  @override
+  GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
+      coerceToInputObject() {
+    return new GraphQLUnionType(
+        '${name}Input', possibleTypes.map((t) => t.coerceToInputObject()));
+  }
 
   @override
   Map<String, dynamic> serialize(Map<String, dynamic> value) {
@@ -57,4 +69,12 @@ class GraphQLUnionType
 
     return new ValidationResult<Map<String, dynamic>>._failure(errors);
   }
+
+  @override
+  bool operator ==(other) =>
+      other is GraphQLUnionType &&
+      other.name == name &&
+      other.description == description &&
+      const ListEquality<GraphQLObjectType>()
+          .equals(other.possibleTypes, possibleTypes);
 }

@@ -10,7 +10,8 @@ final GraphQLScalarType<String, String> graphQLString =
 /// The ID scalar type represents a unique identifier, often used to refetch an object or as the key for a cache.
 ///
 /// The ID type is serialized in the same way as a String; however, defining it as an ID signifies that it is not intended to be human‐readable.
-final GraphQLScalarType<String, String> graphQLId = new _GraphQLStringType._('ID');
+final GraphQLScalarType<String, String> graphQLId =
+    new _GraphQLStringType._('ID');
 
 /// A [DateTime].
 final GraphQLScalarType<DateTime, String> graphQLDate =
@@ -60,6 +61,9 @@ class _GraphQLBoolType extends GraphQLScalarType<bool, bool> {
   bool deserialize(bool serialized) {
     return serialized;
   }
+
+  @override
+  GraphQLType<bool, bool> coerceToInputObject() => this;
 }
 
 class _GraphQLNumType<T extends num> extends GraphQLScalarType<T, T> {
@@ -88,6 +92,9 @@ class _GraphQLNumType<T extends num> extends GraphQLScalarType<T, T> {
   T serialize(T value) {
     return value;
   }
+
+  @override
+  GraphQLType<T, T> coerceToInputObject() => this;
 }
 
 class _GraphQLStringType extends GraphQLScalarType<String, String> {
@@ -109,6 +116,9 @@ class _GraphQLStringType extends GraphQLScalarType<String, String> {
       input == null || input is String
           ? new ValidationResult<String>._ok(input)
           : new ValidationResult._failure(['Expected "$key" to be a string.']);
+
+  @override
+  GraphQLType<String, String> coerceToInputObject() => this;
 }
 
 class _GraphQLDateType extends GraphQLScalarType<DateTime, String>
@@ -142,4 +152,7 @@ class _GraphQLDateType extends GraphQLScalarType<DateTime, String>
           ['$key must be an ISO 8601-formatted date string.']);
     }
   }
+
+  @override
+  GraphQLType<DateTime, String> coerceToInputObject() => this;
 }

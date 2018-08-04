@@ -9,6 +9,7 @@ final RegExp _boolean = new RegExp(r'true|false');
 final RegExp _number = new RegExp(r'-?[0-9]+(\.[0-9]+)?(E|e(\+|-)?[0-9]+)?');
 final RegExp _string = new RegExp(
     r'"((\\(["\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^"\\]))*"');
+final RegExp _blockString = new RegExp(r'"""(([^"])|(\\"""))*"""');
 final RegExp _name = new RegExp(r'[_A-Za-z][_0-9A-Za-z]*');
 
 final Map<Pattern, TokenType> _patterns = {
@@ -29,9 +30,11 @@ final Map<Pattern, TokenType> _patterns = {
   'mutation': TokenType.MUTATION,
   'on': TokenType.ON,
   'query': TokenType.QUERY,
+  'null': TokenType.NULL,
   _boolean: TokenType.BOOLEAN,
   _number: TokenType.NUMBER,
   _string: TokenType.STRING,
+  _blockString: TokenType.BLOCK_STRING,
   _name: TokenType.NAME
 };
 
@@ -53,8 +56,7 @@ List<Token> scan(String text, {sourceUrl}) {
 
     if (potential.isEmpty) {
       var ch = new String.fromCharCode(scanner.readChar());
-      throw new SyntaxError(
-          "Unexpected token '$ch'.", scanner.emptySpan);
+      throw new SyntaxError("Unexpected token '$ch'.", scanner.emptySpan);
     } else {
       // Choose longest token
       potential.sort((a, b) => b.text.length.compareTo(a.text.length));

@@ -23,6 +23,8 @@ Future configureServer(Angel app) async {
   var episodeType = convertDartType(Episode);
   var humanType = convertDartClass(Human);
   var starshipType = convertDartType(Starship);
+
+  // A Hero can be either a Droid or Human; create a union type that represents this.
   var heroType = new GraphQLUnionType('Hero', [droidType, humanType]);
 
   // Create the query type.
@@ -35,48 +37,62 @@ Future configureServer(Angel app) async {
     fields: [
       field(
         'droids',
-        type: listType(droidType.nonNullable()),
+        listType(droidType.nonNullable()),
+        description: 'All droids in the known galaxy.',
         resolve: resolveViaServiceIndex(droidService),
       ),
       field(
         'humans',
-        type: listType(humanType.nonNullable()),
+        listType(humanType.nonNullable()),
+        description: 'All humans in the known galaxy.',
         resolve: resolveViaServiceIndex(humansService),
       ),
       field(
         'starships',
-        type: listType(starshipType.nonNullable()),
+        listType(starshipType.nonNullable()),
+        description: 'All starships in the known galaxy.',
         resolve: resolveViaServiceIndex(starshipService),
       ),
       field(
         'hero',
-        type: heroType,
-        arguments: [
-          new GraphQLFieldArgument('ep', episodeType),
+        heroType,
+        description:
+            'Finds a random hero within the known galaxy, whether a Droid or Human.',
+        inputs: [
+          new GraphQLFieldInput('ep', episodeType),
         ],
-        resolve: (_, args) async {
-          var allHeroes = [];
-          var allDroids = await droidService.index() as Iterable;
-          var allHumans = await humansService.index() as Iterable;
-          allHeroes..addAll(allDroids)..addAll(allHumans);
+        resolve: randomHeroResolver(droidService, humansService, rnd),
+      ),
+    ],
+  );
 
-          // Ignore the annoying cast here, hopefully Dart 2 fixes cases like this
-          allHeroes = allHeroes
-              .where((m) =>
-                  !args.containsKey('ep') ||
-                  (m['appears_in'].contains(args['ep']) as bool))
-              .toList();
+  // Convert our object types to input objects, so that they can be passed to
+  // mutations.
+  var humanChangesType = humanType.asInputObject('HumanChanges');
 
-          return allHeroes.isEmpty
-              ? null
-              : allHeroes[rnd.nextInt(allHeroes.length)];
-        },
+  // Create the mutation type.
+  var mutationType = objectType(
+    'StarWarsMutation',
+    fields: [
+      // We'll use the `modify_human` mutation to modify a human in the database.
+      field(
+        'modify_human',
+        humanType.nonNullable(),
+        description: 'Modifies a human in the database.',
+        inputs: [
+          new GraphQLFieldInput('id', graphQLId.nonNullable()),
+          new GraphQLFieldInput('data', humanChangesType.nonNullable()),
+        ],
+        resolve: resolveViaServiceModify(humansService),
       ),
     ],
   );
 
   // Finally, create the schema.
-  var schema = graphQLSchema(query: queryType);
+  var schema = graphQLSchema(
+    queryType: queryType,
+    mutationType: mutationType,
+  );
 
   // Next, create a GraphQL object, which will be passed to `graphQLHttp`, and
   // used to mount a spec-compliant GraphQL endpoint on the server.
@@ -110,12 +126,32 @@ Future configureServer(Angel app) async {
     'friends': [leia, lando],
   });
 
-  var luke = await humansService.create({
+  // Luke, of course.
+  await humansService.create({
     'name': 'Luke Skywalker',
     'appears_in': ['NEWHOPE', 'EMPIRE', 'JEDI'],
     'total_credits': 682,
     'friends': [leia, hanSolo, lando],
   });
+}
+
+GraphQLFieldResolver randomHeroResolver(
+    Service droidService, Service humansService, Random rnd) {
+  return (_, args) async {
+    var allHeroes = [];
+    var allDroids = await droidService.index() as Iterable;
+    var allHumans = await humansService.index() as Iterable;
+    allHeroes..addAll(allDroids)..addAll(allHumans);
+
+    // Ignore the annoying cast here, hopefully Dart 2 fixes cases like this
+    allHeroes = allHeroes
+        .where((m) =>
+            !args.containsKey('ep') ||
+            (m['appears_in'].contains(args['ep']) as bool))
+        .toList();
+
+    return allHeroes.isEmpty ? null : allHeroes[rnd.nextInt(allHeroes.length)];
+  };
 }
 
 Service mountService<T extends Model>(Angel app, String path) =>
