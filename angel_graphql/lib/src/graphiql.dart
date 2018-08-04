@@ -2,11 +2,15 @@ import 'dart:io';
 
 import 'package:angel_framework/angel_framework.dart';
 
-RequestHandler graphiql({String graphqlEndpoint: '/graphql'}) {
+/// Returns a simple [RequestHandler] that renders the GraphiQL visual interface for GraphQL.
+///
+/// By default, the interface expects your backend to be mounted at `/graphql`; this is configurable
+/// via [graphQLEndpoint].
+RequestHandler graphiQL({String graphQLEndpoint: '/graphql'}) {
   return (req, res) {
     res
       ..contentType = new ContentType('text', 'html')
-      ..write(renderGraphiql(graphqlEndpoint: graphqlEndpoint))
+      ..write(renderGraphiql(graphqlEndpoint: graphQLEndpoint))
       ..end();
   };
 }

@@ -3,20 +3,21 @@ import 'dart:mirrors';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:recase/recase.dart';
-import 'package:tuple/tuple.dart';
 
 /// Reflects upon a given [type] and dynamically generates a [GraphQLType] that corresponds to it.
 ///
 /// This function is aware of the annotations from `package:angel_serialize`, and works seamlessly
 /// with them.
 GraphQLType convertDartType(Type type, [List<Type> typeArguments]) {
-  var tuple = new Tuple2(type, typeArguments);
-  return _cache.putIfAbsent(
-      tuple, () => _objectTypeFromDartType(type, typeArguments));
+  if (_cache[type] != null) {
+    return _cache[type];
+  } else {
+    return _objectTypeFromDartType(type, typeArguments);
+  }
 }
 
-final Map<Tuple2<Type, List<Type>>, GraphQLType> _cache =
-    <Tuple2<Type, List<Type>>, GraphQLType>{};
+final Map<Type, GraphQLType> _cache =
+    <Type, GraphQLType>{};
 
 GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
   if (type == bool) {
@@ -46,6 +47,17 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
 
   var clazz = mirror as ClassMirror;
 
+  if (clazz.isAssignableTo(reflectType(Iterable))) {
+    if (clazz.typeArguments.isNotEmpty) {
+      var inner = convertDartType(clazz.typeArguments[0].reflectedType);
+      //if (inner == null) return null;
+      return listType(inner.nonNullable());
+    }
+
+    throw new ArgumentError(
+        'Cannot convert ${clazz.reflectedType}, an iterable WITHOUT a type argument, into a GraphQL type.');
+  }
+
   if (clazz.isEnum) {
     return enumTypeFromClassMirror(clazz);
   }
@@ -54,7 +66,14 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
 }
 
 GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
+  if (_cache[mirror.reflectedType] != null) {
+    return _cache[mirror.reflectedType] as GraphQLObjectType;
+  } else {
+  }
+
   var fields = <GraphQLField>[];
+  var ready = <Symbol, MethodMirror>{};
+  var forward = <Symbol, MethodMirror>{};
 
   void walkMap(Map<Symbol, MethodMirror> map) {
     for (var name in map.keys) {
@@ -64,13 +83,47 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
           name != #runtimeType &&
           !methodMirror.isPrivate &&
           exclude?.canSerialize != true;
+
       if (methodMirror.isGetter && canAdd) {
         fields.add(fieldFromGetter(name, methodMirror, exclude, mirror));
       }
     }
   }
 
-  walkMap(mirror.instanceMembers);
+  bool isReady(TypeMirror returnType) {
+    var canContinue = returnType.reflectedType != mirror.reflectedType;
+
+    if (canContinue &&
+        returnType.isAssignableTo(reflectType(Iterable)) &&
+        returnType.typeArguments.isNotEmpty &&
+        !isReady(returnType.typeArguments[0])) {
+      canContinue = false;
+    }
+
+    return canContinue;
+  }
+
+  void prepReadyForward(Map<Symbol, MethodMirror> map) {
+    map.forEach((name, methodMirror) {
+      if (methodMirror.isGetter &&
+          name != #_identityHashCode &&
+          name != #runtimeType &&
+          name != #hashCode &&
+          MirrorSystem.getName(name) != '_identityHashCode') {
+        var returnType = methodMirror.returnType;
+
+        if (isReady(returnType)) {
+          ready[name] = methodMirror;
+        } else {
+          forward[name] = methodMirror;
+        }
+      }
+    });
+  }
+
+  prepReadyForward(mirror.instanceMembers);
+
+  walkMap(ready);
 
   if (mirror.isAbstract) {
     var decls = <Symbol, MethodMirror>{};
@@ -81,7 +134,11 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
       }
     });
 
-    walkMap(decls);
+    ready.clear();
+    forward.clear();
+    prepReadyForward(decls);
+    walkMap(ready);
+    //walkMap(decls);
   }
 
   var inheritsFrom = <GraphQLObjectType>[];
@@ -116,13 +173,21 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   walk(mirror.superclass);
   mirror.superinterfaces.forEach(walk);
 
-  return objectType(
-    MirrorSystem.getName(mirror.simpleName),
-    fields: fields,
-    isInterface: mirror.isAbstract,
-    interfaces: inheritsFrom,
-    description: _getDescription(mirror.metadata),
-  );
+  var result = _cache[mirror.reflectedType];
+
+  if (result == null) {
+    result = objectType(
+      MirrorSystem.getName(mirror.simpleName),
+      fields: fields,
+      isInterface: mirror.isAbstract,
+      interfaces: inheritsFrom,
+      description: _getDescription(mirror.metadata),
+    );
+    _cache[mirror.reflectedType] = result;
+    walkMap(forward);
+  }
+
+  return result as GraphQLObjectType;
 }
 
 GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
@@ -155,8 +220,12 @@ GraphQLField fieldFromGetter(
   var wasProvided = type != null;
 
   if (!wasProvided) {
-    type = convertDartType(mirror.returnType.reflectedType,
-        mirror.returnType.typeArguments.map((t) => t.reflectedType).toList());
+    var returnType = mirror.returnType;
+
+    if (!clazz.isAssignableTo(returnType)) {
+      type = convertDartType(returnType.reflectedType,
+          mirror.returnType.typeArguments.map((t) => t.reflectedType).toList());
+    }
   }
 
   var nameString = _getSerializedName(name, mirror, clazz);

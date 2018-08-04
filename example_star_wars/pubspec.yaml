@@ -1,0 +1,8 @@
+name: star_wars
+publish_to: none
+dependencies:
+  #angel_file_service: ^1.0.0
+  angel_graphql:
+    path: ../angel_graphql
+  angel_hot: ^1.0.0
+  io: ^0.3.2

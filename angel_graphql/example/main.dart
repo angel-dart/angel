@@ -56,7 +56,7 @@ main() async {
   );
 
   app.all('/graphql', graphQLHttp(new GraphQL(schema)));
-  app.get('/graphiql', graphiql());
+  app.get('/graphiql', graphiQL());
 
   await todoService
       .create({'text': 'Clean your room!', 'completion_status': 'COMPLETE'});

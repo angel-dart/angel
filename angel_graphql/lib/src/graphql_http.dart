@@ -15,7 +15,11 @@ final Validator graphQlPostBody = new Validator({
   'variables': predicate((v) => v == null || v is String || v is Map),
 });
 
-RequestHandler graphQLHttp(GraphQL graphQl) {
+/// A [RequestHandler] that serves a spec-compliant GraphQL backend.
+///
+/// Follows the guidelines listed here:
+/// https://graphql.org/learn/serving-over-http/
+RequestHandler graphQLHttp(GraphQL graphQL) {
   return (req, res) async {
     executeMap(Map map) async {
       var text = req.body['query'] as String;
@@ -27,7 +31,7 @@ RequestHandler graphQLHttp(GraphQL graphQl) {
       }
 
       return {
-        'data': await graphQl.parseAndExecute(
+        'data': await graphQL.parseAndExecute(
           text,
           sourceUrl: 'input',
           operationName: operationName,
@@ -45,7 +49,7 @@ RequestHandler graphQLHttp(GraphQL graphQl) {
         if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
           var text = utf8.decode(await req.lazyOriginalBuffer());
           return {
-            'data': await graphQl.parseAndExecute(text, sourceUrl: 'input')
+            'data': await graphQL.parseAndExecute(text, sourceUrl: 'input')
           };
         } else if (req.headers.contentType?.mimeType == 'application/json') {
           if (await validate(graphQlPostBody)(req, res)) {

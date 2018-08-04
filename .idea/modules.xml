@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/angel_graphql/angel_graphql.iml" filepath="$PROJECT_DIR$/angel_graphql/angel_graphql.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example_star_wars/example_star_wars.iml" filepath="$PROJECT_DIR$/example_star_wars/example_star_wars.iml" />
       <module fileurl="file://$PROJECT_DIR$/graphql.iml" filepath="$PROJECT_DIR$/graphql.iml" />
       <module fileurl="file://$PROJECT_DIR$/graphql_parser/graphql_parser.iml" filepath="$PROJECT_DIR$/graphql_parser/graphql_parser.iml" />
       <module fileurl="file://$PROJECT_DIR$/graphql_schema/graphql_schema.iml" filepath="$PROJECT_DIR$/graphql_schema/graphql_schema.iml" />
