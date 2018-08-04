@@ -1,22 +1,25 @@
 part of graphql_schema.src.schema;
 
-class GraphQLUnionType<Value, Serialized> extends GraphQLType<Value, Serialized>
-    with _NonNullableMixin<Value, Serialized> {
-  final List<GraphQLType<Value, Serialized>> possibleTypes;
-  final String description;
+class GraphQLUnionType
+    extends GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
+    with _NonNullableMixin<Map<String, dynamic>, Map<String, dynamic>> {
+  final String name;
+  final List<GraphQLObjectType> possibleTypes = [];
 
-  GraphQLUnionType(this.possibleTypes, {this.description}) {
-    assert(possibleTypes.every((t) => t is GraphQLUnionType),
-        'The member types of a Union type must all be Object base types; Scalar, Interface and Union types may not be member types of a Union. Similarly, wrapping types may not be member types of a Union');
+  GraphQLUnionType(
+    this.name,
+    Iterable<GraphQLObjectType> possibleTypes,
+  ) {
     assert(possibleTypes.isNotEmpty,
-        'A Union type must define one or more member types');
+        'A Union type must define one or more member types.');
+    this.possibleTypes.addAll(possibleTypes.toSet());
   }
 
   @override
-  String get name => possibleTypes.map((t) => t.name).join(' | ');
+  String get description => possibleTypes.map((t) => t.name).join(' | ');
 
   @override
-  Serialized serialize(Value value) {
+  Map<String, dynamic> serialize(Map<String, dynamic> value) {
     for (var type in possibleTypes) {
       try {
         return type.serialize(value);
@@ -27,7 +30,7 @@ class GraphQLUnionType<Value, Serialized> extends GraphQLType<Value, Serialized>
   }
 
   @override
-  Value deserialize(Serialized serialized) {
+  Map<String, dynamic> deserialize(Map<String, dynamic> serialized) {
     for (var type in possibleTypes) {
       try {
         return type.deserialize(serialized);
@@ -38,7 +41,8 @@ class GraphQLUnionType<Value, Serialized> extends GraphQLType<Value, Serialized>
   }
 
   @override
-  ValidationResult<Serialized> validate(String key, Serialized input) {
+  ValidationResult<Map<String, dynamic>> validate(
+      String key, Map<String, dynamic> input) {
     List<String> errors = [];
 
     for (var type in possibleTypes) {
@@ -51,6 +55,6 @@ class GraphQLUnionType<Value, Serialized> extends GraphQLType<Value, Serialized>
       }
     }
 
-    return new ValidationResult._failure(errors);
+    return new ValidationResult<Map<String, dynamic>>._failure(errors);
   }
 }

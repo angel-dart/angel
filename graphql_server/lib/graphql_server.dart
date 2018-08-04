@@ -6,22 +6,31 @@ import 'package:graphql_schema/graphql_schema.dart';
 import 'introspection.dart';
 
 class GraphQL {
-  final Map<String, GraphQLType> customTypes = {};
+  final List<GraphQLType> customTypes = [];
   GraphQLSchema _schema;
 
-  GraphQL(GraphQLSchema schema, {bool introspect: true}) : _schema = schema {
+  GraphQL(GraphQLSchema schema,
+      {bool introspect: true,
+      List<GraphQLType> customTypes = const <GraphQLType>[]})
+      : _schema = schema {
+    if (customTypes?.isNotEmpty == true) {
+      this.customTypes.addAll(customTypes);
+    }
+
     if (introspect) {
       var allTypes = <GraphQLType>[];
+      allTypes.addAll(this.customTypes);
       _schema = reflectSchema(_schema, allTypes);
 
       for (var type in allTypes) {
-        customTypes[type.name] = type;
+        if (!this.customTypes.contains(type)) {
+          this.customTypes.add(type);
+        }
       }
     }
 
-    if (_schema.query != null) customTypes[_schema.query.name] = _schema.query;
-    if (_schema.mutation != null)
-      customTypes[_schema.mutation.name] = _schema.mutation;
+    if (_schema.query != null) this.customTypes.add(_schema.query);
+    if (_schema.mutation != null) this.customTypes.add(_schema.mutation);
   }
 
   GraphQLType convertType(TypeContext ctx) {
@@ -43,11 +52,9 @@ class GraphQL {
         case 'DateTime':
           return graphQLDate;
         default:
-          if (customTypes.containsKey(ctx.typeName.name))
-            return customTypes[ctx.typeName.name];
-          throw new ArgumentError(
-              'Unknown GraphQL type: "${ctx.typeName.name}"');
-          break;
+          return customTypes.firstWhere((t) => t.name == ctx.typeName.name,
+              orElse: () => throw new ArgumentError(
+                  'Unknown GraphQL type: "${ctx.typeName.name}"'));
       }
     } else {
       throw new ArgumentError('Invalid GraphQL type: "${ctx.span.text}"');
@@ -435,7 +442,8 @@ class GraphQL {
 
     var vname = vv.variable.name;
     if (!variableValues.containsKey(vname))
-      throw new GraphQLException.fromSourceSpan('Unknown variable: "$vname"', vv.span);
+      throw new GraphQLException.fromSourceSpan(
+          'Unknown variable: "$vname"', vv.span);
 
     return variableValues[vname];
   }

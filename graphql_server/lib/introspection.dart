@@ -3,6 +3,16 @@ import 'package:graphql_schema/graphql_schema.dart';
 
 // TODO: How to handle custom types???
 GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
+  for (var type in allTypes.toList()) {
+    var custom = _fetchAllTypesFromType(type);
+
+    for (var t in custom) {
+      if (!allTypes.contains(t)) {
+        allTypes.add(t);
+      }
+    }
+  }
+
   var objectTypes = fetchAllTypes(schema, allTypes);
   var typeType = _reflectSchemaTypes();
   var directiveType = _reflectDirectiveType();
@@ -210,8 +220,7 @@ GraphQLObjectType _createTypeType() {
         else if (t is GraphQLUnionType)
           return 'UNION';
         else
-          throw new UnsupportedError(
-              'Cannot get the kind of $t.');
+          throw new UnsupportedError('Cannot get the kind of $t.');
       },
     ),
     field(
@@ -395,25 +404,28 @@ GraphQLObjectType _reflectEnumValueType() {
       );
 }
 
-List<GraphQLObjectType> fetchAllTypes(
+List<GraphQLType> fetchAllTypes(
     GraphQLSchema schema, List<GraphQLType> allTypes) {
-  var typess = <GraphQLType>[];
-  typess.addAll(_fetchAllTypesFromObject(schema.query));
+  var types = <GraphQLType>[];
+
+  types.addAll(_fetchAllTypesFromObject(schema.query));
 
   if (schema.mutation != null) {
-    typess.addAll(_fetchAllTypesFromObject(schema.mutation)
+    types.addAll(_fetchAllTypesFromObject(schema.mutation)
         .where((t) => t is GraphQLObjectType));
   }
 
-  var types = <GraphQLObjectType>[];
+  return types;
 
-  for (var type in typess) {
-    if (type is GraphQLObjectType)
-      types.add(type);
-    else if (!allTypes.contains(type)) allTypes.add(type);
-  }
-
-  return types.toSet().toList();
+//  var types = <GraphQLObjectType>[];
+//
+//  for (var type in typess) {
+//    if (type is GraphQLObjectType)
+//      types.add(type);
+//    else if (!allTypes.contains(type)) allTypes.add(type);
+//  }
+//
+//  return types.toSet().toList();
 }
 
 List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
@@ -449,7 +461,7 @@ Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
     types.addAll(_fetchAllTypesFromObject(type));
   } else if (type is GraphQLEnumType) {
     types.add(type);
-  } else if ( type is GraphQLUnionType) {
+  } else if (type is GraphQLUnionType) {
     for (var t in type.possibleTypes) {
       types.addAll(_fetchAllTypesFromType(t));
     }
