@@ -17,21 +17,34 @@ Future configureServer(Angel app) async {
 
   // Create the GraphQL schema.
   // This code uses dart:mirrors to easily create GraphQL types from Dart PODO's.
-  //var droidType = convertDartType(Droid);
-  //var episodeType = convertDartType(Episode);
+  var droidType = convertDartType(Droid);
+  var episodeType = convertDartType(Episode);
   var humanType = convertDartType(Human);
+  var starshipType = convertDartType(Starship);
 
   // Create the query type.
   //
   // Use the `resolveViaServiceIndex` helper to load data directly from an
   // Angel service.
-  var queryType = objectType('StarWarsQuery', fields: [
-    field(
-      'humans',
-      type: listType(humanType.nonNullable()),
-      resolve: resolveViaServiceIndex(humansService),
-    ),
-  ]);
+  var queryType = objectType('StarWarsQuery',
+      description: 'A long time ago, in a galaxy far, far away...',
+      fields: [
+        field(
+          'droids',
+          type: listType(droidType.nonNullable()),
+          resolve: resolveViaServiceIndex(droidService),
+        ),
+        field(
+          'humans',
+          type: listType(humanType.nonNullable()),
+          resolve: resolveViaServiceIndex(humansService),
+        ),
+        field(
+          'starships',
+          type: listType(starshipType.nonNullable()),
+          resolve: resolveViaServiceIndex(starshipService),
+        ),
+      ]);
 
   // Finally, create the schema.
   var schema = graphQLSchema(query: queryType);
