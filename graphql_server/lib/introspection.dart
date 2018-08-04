@@ -122,6 +122,8 @@ GraphQLObjectType _reflectSchemaTypes() {
         resolve: (type, _) {
           if (type is GraphQLObjectType && type.isInterface) {
             return type.possibleTypes;
+          } else if (type is GraphQLUnionType) {
+            return type.possibleTypes;
           } else {
             return null;
           }
@@ -205,9 +207,11 @@ GraphQLObjectType _createTypeType() {
           return 'NON_NULL';
         else if (t is GraphQLEnumType)
           return 'ENUM';
+        else if (t is GraphQLUnionType)
+          return 'UNION';
         else
           throw new UnsupportedError(
-              'Cannot get the kind of $t.'); // TODO: union
+              'Cannot get the kind of $t.');
       },
     ),
     field(
@@ -445,8 +449,10 @@ Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
     types.addAll(_fetchAllTypesFromObject(type));
   } else if (type is GraphQLEnumType) {
     types.add(type);
+  } else if ( type is GraphQLUnionType) {
+    for (var t in type.possibleTypes) {
+      types.addAll(_fetchAllTypesFromType(t));
+    }
   }
-
-  // TODO:  union
   return types;
 }

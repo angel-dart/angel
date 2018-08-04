@@ -19,6 +19,8 @@ part 'scalar.dart';
 
 part 'type.dart';
 
+part 'union.dart';
+
 part 'validation_result.dart';
 
 class GraphQLSchema {
