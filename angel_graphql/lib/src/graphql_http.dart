@@ -22,6 +22,11 @@ final Validator graphQlPostBody = new Validator({
 /// https://graphql.org/learn/serving-over-http/
 RequestHandler graphQLHttp(GraphQL graphQL) {
   return (req, res) async {
+    var globalVariables = <String, dynamic>{
+      '__requestctx': req,
+      '__responsectx': res,
+    };
+
     executeMap(Map map) async {
       var text = req.body['query'] as String;
       var operationName = req.body['operation_name'] as String;
@@ -37,6 +42,7 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
           sourceUrl: 'input',
           operationName: operationName,
           variableValues: foldToStringDynamic(variables as Map),
+          globalVariables: globalVariables,
         ),
       };
     }
@@ -50,7 +56,11 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
         if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
           var text = utf8.decode(await req.lazyOriginalBuffer());
           return {
-            'data': await graphQL.parseAndExecute(text, sourceUrl: 'input')
+            'data': await graphQL.parseAndExecute(
+              text,
+              sourceUrl: 'input',
+              globalVariables: globalVariables,
+            ),
           };
         } else if (req.headers.contentType?.mimeType == 'application/json') {
           if (await validate(graphQlPostBody)(req, res)) {

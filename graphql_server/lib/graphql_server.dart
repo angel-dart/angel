@@ -73,7 +73,8 @@ class GraphQL {
       {String operationName,
       sourceUrl,
       Map<String, dynamic> variableValues: const {},
-      initialValue}) {
+      initialValue,
+      Map<String, dynamic> globalVariables}) {
     var tokens = scan(text, sourceUrl: sourceUrl);
     var parser = new Parser(tokens);
     var document = parser.parseDocument();
@@ -86,26 +87,31 @@ class GraphQL {
           .toList());
     }
 
-    return executeRequest(_schema, document,
-        operationName: operationName,
-        initialValue: initialValue,
-        variableValues: variableValues);
+    return executeRequest(
+      _schema,
+      document,
+      operationName: operationName,
+      initialValue: initialValue,
+      variableValues: variableValues,
+      globalVariables: globalVariables,
+    );
   }
 
   Future<Map<String, dynamic>> executeRequest(
       GraphQLSchema schema, DocumentContext document,
       {String operationName,
       Map<String, dynamic> variableValues: const {},
-      initialValue}) async {
+      initialValue,
+      Map<String, dynamic> globalVariables}) async {
     var operation = getOperation(document, operationName);
     var coercedVariableValues =
         coerceVariableValues(schema, operation, variableValues ?? {});
     if (operation.isQuery)
-      return await executeQuery(
-          document, operation, schema, coercedVariableValues, initialValue);
+      return await executeQuery(document, operation, schema,
+          coercedVariableValues, initialValue, globalVariables);
     else {
-      return executeMutation(
-          document, operation, schema, coercedVariableValues, initialValue);
+      return executeMutation(document, operation, schema, coercedVariableValues,
+          initialValue, globalVariables);
     }
   }
 
@@ -175,11 +181,12 @@ class GraphQL {
       OperationDefinitionContext query,
       GraphQLSchema schema,
       Map<String, dynamic> variableValues,
-      initialValue) async {
+      initialValue,
+      Map<String, dynamic> globalVariables) async {
     var queryType = schema.queryType;
     var selectionSet = query.selectionSet;
-    return await executeSelectionSet(
-        document, selectionSet, queryType, initialValue, variableValues);
+    return await executeSelectionSet(document, selectionSet, queryType,
+        initialValue, variableValues, globalVariables);
   }
 
   Future<Map<String, dynamic>> executeMutation(
@@ -187,7 +194,8 @@ class GraphQL {
       OperationDefinitionContext mutation,
       GraphQLSchema schema,
       Map<String, dynamic> variableValues,
-      initialValue) async {
+      initialValue,
+      Map<String, dynamic> globalVariables) async {
     var mutationType = schema.mutationType;
 
     if (mutationType == null) {
@@ -196,8 +204,8 @@ class GraphQL {
     }
 
     var selectionSet = mutation.selectionSet;
-    return await executeSelectionSet(
-        document, selectionSet, mutationType, initialValue, variableValues);
+    return await executeSelectionSet(document, selectionSet, mutationType,
+        initialValue, variableValues, globalVariables);
   }
 
   Future<Map<String, dynamic>> executeSelectionSet(
@@ -205,7 +213,8 @@ class GraphQL {
       SelectionSetContext selectionSet,
       GraphQLObjectType objectType,
       objectValue,
-      Map<String, dynamic> variableValues) async {
+      Map<String, dynamic> variableValues,
+      Map<String, dynamic> globalVariables) async {
     var groupedFieldSet =
         collectFields(document, objectType, selectionSet, variableValues);
     var resultMap = <String, dynamic>{};
@@ -224,8 +233,16 @@ class GraphQL {
               .firstWhere((f) => f.name == fieldName, orElse: () => null)
               ?.type;
           if (fieldType == null) continue;
-          responseValue = await executeField(document, fieldName, objectType,
-              objectValue, fields, fieldType, variableValues);
+          responseValue = await executeField(
+              document,
+              fieldName,
+              objectType,
+              objectValue,
+              fields,
+              fieldType,
+              new Map<String, dynamic>.from(globalVariables)
+                ..addAll(variableValues),
+              globalVariables);
         }
 
         resultMap[responseKey] = responseValue;
@@ -242,14 +259,15 @@ class GraphQL {
       objectValue,
       List<SelectionContext> fields,
       GraphQLType fieldType,
-      Map<String, dynamic> variableValues) async {
+      Map<String, dynamic> variableValues,
+      Map<String, dynamic> globalVariables) async {
     var field = fields[0];
     var argumentValues =
         coerceArgumentValues(objectType, field, variableValues);
     var resolvedValue = await resolveFieldValue(
         objectType, objectValue, field.field.fieldName.name, argumentValues);
-    return completeValue(
-        document, fieldName, fieldType, fields, resolvedValue, variableValues);
+    return completeValue(document, fieldName, fieldType, fields, resolvedValue,
+        variableValues, globalVariables);
   }
 
   Map<String, dynamic> coerceArgumentValues(GraphQLObjectType objectType,
@@ -365,11 +383,12 @@ class GraphQL {
       GraphQLType fieldType,
       List<SelectionContext> fields,
       result,
-      Map<String, dynamic> variableValues) async {
+      Map<String, dynamic> variableValues,
+      Map<String, dynamic> globalVariables) async {
     if (fieldType is GraphQLNonNullableType) {
       var innerType = fieldType.ofType;
-      var completedResult = completeValue(
-          document, fieldName, innerType, fields, result, variableValues);
+      var completedResult = completeValue(document, fieldName, innerType,
+          fields, result, variableValues, globalVariables);
 
       if (completedResult == null) {
         throw new GraphQLException.fromMessage(
@@ -394,7 +413,7 @@ class GraphQL {
 
       for (var resultItem in (result as Iterable)) {
         out.add(await completeValue(document, '(item in "$fieldName")',
-            innerType, fields, resultItem, variableValues));
+            innerType, fields, resultItem, variableValues, globalVariables));
       }
 
       return out;
@@ -425,8 +444,8 @@ class GraphQL {
       }
 
       var subSelectionSet = mergeSelectionSets(fields);
-      return await executeSelectionSet(
-          document, subSelectionSet, objectType, result, variableValues);
+      return await executeSelectionSet(document, subSelectionSet, objectType,
+          result, variableValues, globalVariables);
     }
 
     throw new UnsupportedError('Unsupported type: $fieldType');

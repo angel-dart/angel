@@ -23,7 +23,8 @@ class GraphQLObjectType
   GraphQLObjectType(this.name, this.description, {this.isInterface: false});
 
   @override
-  GraphQLType<Map<String, dynamic>, Map<String, dynamic>> coerceToInputObject() {
+  GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
+      coerceToInputObject() {
     return asInputObject('${name}Input', description: description);
   }
 
@@ -31,8 +32,9 @@ class GraphQLObjectType
   GraphQLInputObjectType asInputObject(String name, {String description}) {
     return new GraphQLInputObjectType(name,
         description: description ?? this.description,
-        inputFields:
-            fields.map((f) => new GraphQLInputObjectField(f.name, f.type.coerceToInputObject())));
+        inputFields: fields.map((f) => new GraphQLInputObjectField(
+            f.name, f.type.coerceToInputObject(),
+            description: f.description)));
   }
 
   void inheritFrom(GraphQLObjectType other) {
@@ -242,7 +244,8 @@ class GraphQLInputObjectType
   }
 
   @override
-  GraphQLType<Map<String, dynamic>, Map<String, dynamic>> coerceToInputObject() => this;
+  GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
+      coerceToInputObject() => this;
 }
 
 class GraphQLInputObjectField<Value, Serialized> {
