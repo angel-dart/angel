@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_validate/server.dart';
 import 'package:dart2_constant/convert.dart';
@@ -13,30 +12,47 @@ final ContentType graphQlContentType =
 final Validator graphQlPostBody = new Validator({
   'query*': isNonEmptyString,
   'operation_name': isNonEmptyString,
-  'variables': predicate((v) => v == null || v is Map),
+  'variables': predicate((v) => v == null || v is String || v is Map),
 });
 
 RequestHandler graphQLHttp(GraphQL graphQl) {
   return (req, res) async {
+    executeMap(Map map) async {
+      var text = req.body['query'] as String;
+      var operationName = req.body['operation_name'] as String;
+      var variables = req.body['variables'];
+
+      if (variables is String) {
+        variables = json.decode(variables as String);
+      }
+
+      return {
+        'data': await graphQl.parseAndExecute(
+          text,
+          sourceUrl: 'input',
+          operationName: operationName,
+          variableValues: foldToStringDynamic(variables as Map),
+        ),
+      };
+    }
+
     try {
-      if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
-        var text = utf8.decode(await req.lazyOriginalBuffer());
-        return {
-          'data': await graphQl.parseAndExecute(text, sourceUrl: 'input')
-        };
-      } else if (req.headers.contentType?.mimeType == 'application/json') {
-        if (await validate(graphQlPostBody)(req, res)) {
-          var text = req.body['query'] as String;
-          var operationName = req.body['operation_name'] as String;
-          var variables = req.body['variables'] as Map;
+      if (req.method == 'GET') {
+        if (await validateQuery(graphQlPostBody)(req, res)) {
+          return await executeMap(req.query);
+        }
+      } else if (req.method == 'POST') {
+        if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
+          var text = utf8.decode(await req.lazyOriginalBuffer());
           return {
-            'data': await graphQl.parseAndExecute(
-              text,
-              sourceUrl: 'input',
-              operationName: operationName,
-              variableValues: foldToStringDynamic(variables),
-            ),
+            'data': await graphQl.parseAndExecute(text, sourceUrl: 'input')
           };
+        } else if (req.headers.contentType?.mimeType == 'application/json') {
+          if (await validate(graphQlPostBody)(req, res)) {
+            return await executeMap(req.body);
+          }
+        } else {
+          throw new AngelHttpException.badRequest();
         }
       } else {
         throw new AngelHttpException.badRequest();

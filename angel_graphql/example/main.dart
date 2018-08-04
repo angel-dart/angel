@@ -19,7 +19,7 @@ main() async {
 
   var todoService = app.use('api/todos', new MapService()) as Service;
 
-  var api = objectType(
+  var queryType = objectType(
     'Query',
     description: 'A simple API that manages your to-do list.',
     fields: [
@@ -39,7 +39,21 @@ main() async {
     ],
   );
 
-  var schema = graphQLSchema(query: api);
+  var mutationType = objectType(
+    'Mutation',
+    description: 'Modify the to-do list.',
+    fields: [
+      field(
+        'create',
+        type: graphQLString,
+      ),
+    ],
+  );
+
+  var schema = graphQLSchema(
+    query: queryType,
+    mutation: mutationType,
+  );
 
   app.all('/graphql', graphQLHttp(new GraphQL(schema)));
   app.get('/graphiql', graphiql());

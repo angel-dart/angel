@@ -56,23 +56,17 @@ class Parser {
     else {
       if (next(TokenType.MUTATION) || next(TokenType.QUERY)) {
         var TYPE = current;
-        if (next(TokenType.NAME)) {
-          var NAME = current;
-          var variables = parseVariableDefinitions();
-          var dirs = parseDirectives();
-          var selectionSet = parseSelectionSet();
-          if (selectionSet != null)
-            return new OperationDefinitionContext(
-                TYPE, NAME, variables, selectionSet)
-              ..directives.addAll(dirs);
-          else
-            throw new SyntaxError(
-                'Expected selection set in fragment definition.',
-                NAME.span);
-        } else
+        Token NAME = next(TokenType.NAME) ? current : null;
+        var variables = parseVariableDefinitions();
+        var dirs = parseDirectives();
+        var selectionSet = parseSelectionSet();
+        if (selectionSet != null)
+          return new OperationDefinitionContext(
+              TYPE, NAME, variables, selectionSet)
+            ..directives.addAll(dirs);
+        else
           throw new SyntaxError(
-              'Expected name after operation type "${TYPE.text}" in operation definition.',
-              TYPE.span);
+              'Expected selection set in fragment definition.', NAME.span);
       } else
         return null;
     }
@@ -142,11 +136,8 @@ class Parser {
                 ELLIPSIS, ON, typeCondition, selectionSet)
               ..directives.addAll(directives);
           } else
-            throw new SyntaxError(
-                'Expected selection set in inline fragment.',
-                directives.isEmpty
-                    ? typeCondition.span
-                    : directives.last.span);
+            throw new SyntaxError('Expected selection set in inline fragment.',
+                directives.isEmpty ? typeCondition.span : directives.last.span);
         } else
           throw new SyntaxError(
               'Expected type condition after "on" in inline fragment.',
@@ -174,8 +165,7 @@ class Parser {
         return new SelectionSetContext(LBRACE, current)
           ..selections.addAll(selections);
       else
-        throw new SyntaxError(
-            'Expected "}" after selection set.',
+        throw new SyntaxError('Expected "}" after selection set.',
             selections.isEmpty ? LBRACE.span : selections.last.span);
     } else
       return null;
@@ -287,11 +277,9 @@ class Parser {
         if (next(TokenType.RBRACKET)) {
           return new ListTypeContext(LBRACKET, type, current);
         } else
-          throw new SyntaxError(
-              'Expected "]" in list type.', type.span);
+          throw new SyntaxError('Expected "]" in list type.', type.span);
       } else
-        throw new SyntaxError(
-            'Expected type after "[".', LBRACKET.span);
+        throw new SyntaxError('Expected type after "[".', LBRACKET.span);
     } else
       return null;
   }
@@ -331,8 +319,7 @@ class Parser {
               return new DirectiveContext(
                   ARROBA, NAME, null, LPAREN, current, arg, null);
             } else
-              throw new SyntaxError(
-                  'Expected \')\'', arg.valueOrVariable.span);
+              throw new SyntaxError('Expected \')\'', arg.valueOrVariable.span);
           } else
             throw new SyntaxError(
                 'Expected argument in directive.', LPAREN.span);
@@ -340,8 +327,7 @@ class Parser {
           return new DirectiveContext(
               ARROBA, NAME, null, null, null, null, null);
       } else
-        throw new SyntaxError(
-            'Expected name for directive.', ARROBA.span);
+        throw new SyntaxError('Expected name for directive.', ARROBA.span);
     } else
       return null;
   }
@@ -363,8 +349,7 @@ class Parser {
       if (next(TokenType.RPAREN))
         return out;
       else
-        throw new SyntaxError(
-            'Expected ")" in argument list.', LPAREN.span);
+        throw new SyntaxError('Expected ")" in argument list.', LPAREN.span);
     } else
       return [];
   }
@@ -420,8 +405,7 @@ class Parser {
       if (value != null) {
         return new DefaultValueContext(EQUALS, value);
       } else
-        throw new SyntaxError(
-            'Expected value after "=" sign.', EQUALS.span);
+        throw new SyntaxError('Expected value after "=" sign.', EQUALS.span);
     } else
       return null;
   }
@@ -474,8 +458,7 @@ class Parser {
       if (next(TokenType.RBRACKET)) {
         return new ArrayValueContext(LBRACKET, current)..values.addAll(values);
       } else
-        throw new SyntaxError(
-            'Unterminated array literal.', LBRACKET.span);
+        throw new SyntaxError('Unterminated array literal.', LBRACKET.span);
     } else
       return null;
   }
