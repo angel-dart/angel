@@ -215,12 +215,19 @@ class GraphQL {
 
       for (var field in fields) {
         var fieldName = field.field.fieldName.name;
-        var fieldType = objectType.fields
-            .firstWhere((f) => f.name == fieldName, orElse: () => null)
-            ?.type;
-        if (fieldType == null) continue;
-        var responseValue = await executeField(document, fieldName, objectType,
-            objectValue, fields, fieldType, variableValues);
+        var responseValue;
+
+        if (fieldName == '__typename') {
+          responseValue = objectType.name;
+        } else {
+          var fieldType = objectType.fields
+              .firstWhere((f) => f.name == fieldName, orElse: () => null)
+              ?.type;
+          if (fieldType == null) continue;
+          responseValue = await executeField(document, fieldName, objectType,
+              objectValue, fields, fieldType, variableValues);
+        }
+
         resultMap[responseKey] = responseValue;
       }
     }

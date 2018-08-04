@@ -1,4 +1,5 @@
 import 'package:string_scanner/string_scanner.dart';
+
 import 'syntax_error.dart';
 import 'token.dart';
 import 'token_type.dart';
@@ -45,7 +46,10 @@ List<Token> scan(String text, {sourceUrl}) {
   while (!scanner.isDone) {
     List<Token> potential = [];
 
-    if (scanner.scan(_comment) || scanner.scan(_whitespace)) continue;
+    if (scanner.scan(_comment) ||
+        scanner.scan(_whitespace) ||
+        scanner.scan(',') ||
+        scanner.scan('\ufeff')) continue;
 
     for (var pattern in _patterns.keys) {
       if (scanner.matches(pattern)) {
