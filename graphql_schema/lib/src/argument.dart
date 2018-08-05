@@ -1,9 +1,19 @@
 part of graphql_schema.src.schema;
 
+/// An input to a GraphQL field. This is analogous to a function parameter in Dart.
 class GraphQLFieldInput<Value, Serialized> {
+  /// The name of this field.
   final String name;
+
+  /// The type that input values must conform to.
   final GraphQLType<Value, Serialized> type;
+
+  /// An optional default value for this field.
   final Value defaultValue;
+
+  /// An optional description for this field.
+  ///
+  /// This is useful when documenting your API for consumers like GraphiQL.
   final String description;
 
   /// If [defaultValue] is `null`, and `null` is a valid value for this parameter, set this to `true`.
