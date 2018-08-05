@@ -1,6 +1,8 @@
 import 'dart:math' as math;
+
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:test/test.dart';
+
 import 'common.dart';
 
 main() {
@@ -40,12 +42,38 @@ main() {
     expect('"\\u0123\\u4567"', isValue('\u0123\u4567'));
   });
 
+  test('block string', () {
+    expect('""""""', isValue(''));
+    expect('"""abc"""', isValue('abc'));
+    expect('"""\n\n\nabc\n\n\n"""', isValue('abc'));
+  });
+
+  test('object', () {
+    expect('{}', isValue(<String, dynamic>{}));
+    expect('{a: 2}', isValue(<String, dynamic>{'a': 2}));
+    expect('{a: 2, b: "c"}', isValue(<String, dynamic>{'a': 2, 'b': 'c'}));
+  });
+
+  test('null', () {
+    expect('null', isValue(null));
+  });
+
+  test('enum', () {
+    expect('FOO_BAR', isValue('FOO_BAR'));
+  });
+
   test('exceptions', () {
-    expect(() => parseValue('[1'), throwsSyntaxError);
+    var throwsSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseValue();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse value');
+
+    expect('[1', throwsSyntaxError);
   });
 }
 
 ValueContext parseValue(String text) => parse(text).parseValue();
+
 Matcher isValue(value) => new _IsValue(value);
 
 class _IsValue extends Matcher {

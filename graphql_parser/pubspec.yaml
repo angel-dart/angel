@@ -1,5 +1,5 @@
 name: graphql_parser
-version: 1.0.0+1
+version: 1.1.0
 description: Parses GraphQL queries and schemas.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/thosakwe/graphql_parser

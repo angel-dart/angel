@@ -43,7 +43,12 @@ main() {
   });
 
   test('exceptions', () {
-    expect(() => parseSelectionSet('{foo,bar,baz'), throwsSyntaxError);
+    var throwsSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseSelectionSet();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse selection set');
+    
+    expect('{foo,bar,baz', throwsSyntaxError);
   });
 }
 

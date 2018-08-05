@@ -1,5 +1,6 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:test/test.dart';
+
 import 'common.dart';
 import 'directive_test.dart';
 import 'field_test.dart';
@@ -34,14 +35,15 @@ main() {
   });
 
   test('fragment exceptions', () {
-    expect(
-        () => parse('fragment').parseFragmentDefinition(), throwsSyntaxError);
-    expect(() => parse('fragment foo').parseFragmentDefinition(),
-        throwsSyntaxError);
-    expect(() => parse('fragment foo on').parseFragmentDefinition(),
-        throwsSyntaxError);
-    expect(() => parse('fragment foo on bar').parseFragmentDefinition(),
-        throwsSyntaxError);
+    var throwsSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseFragmentDefinition();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse fragment definition');
+
+    expect('fragment', throwsSyntaxError);
+    expect('fragment foo', throwsSyntaxError);
+    expect('fragment foo on', throwsSyntaxError);
+    expect('fragment foo on bar', throwsSyntaxError);
   });
 
   group('operation', () {
@@ -50,6 +52,20 @@ main() {
       expect(op.variableDefinitions, isNull);
       expect(op.isQuery, isTrue);
       expect(op.isMutation, isFalse);
+      expect(op.name, isNull);
+      expect(
+          op.selectionSet,
+          isSelectionSet([
+            isField(fieldName: isFieldName('foo')),
+            isField(fieldName: isFieldName('bar', alias: 'baz'))
+          ]));
+    });
+
+    test('mutation', () {
+      var op = parse('mutation {foo, bar: baz}').parseOperationDefinition();
+      expect(op.variableDefinitions, isNull);
+      expect(op.isQuery, isFalse);
+      expect(op.isMutation, isTrue);
       expect(op.name, isNull);
       expect(
           op.selectionSet,
@@ -91,10 +107,13 @@ main() {
     });
 
     test('exceptions', () {
-      expect(
-          () => parse('query').parseOperationDefinition(), throwsSyntaxError);
-      expect(() => parse('query foo()').parseOperationDefinition(),
-          throwsSyntaxError);
+      var throwsSyntaxError = predicate((x) {
+        var parser = parse(x.toString())..parseOperationDefinition();
+        return parser.errors.isNotEmpty;
+      }, 'fails to parse operation definition');
+
+      expect('query', throwsSyntaxError);
+      expect('query foo()', throwsSyntaxError);
     });
   });
 }

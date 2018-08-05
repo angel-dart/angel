@@ -35,8 +35,13 @@ main() {
     });
 
     test('exceptions', () {
-      expect(() => parseType('[foo'), throwsSyntaxError);
-      expect(() => parseType('['), throwsSyntaxError);
+      var throwsSyntaxError = predicate((x) {
+        var parser = parse(x.toString())..parseType();
+        return parser.errors.isNotEmpty;
+      }, 'fails to parse type');
+      
+      expect('[foo', throwsSyntaxError);
+      expect('[', throwsSyntaxError);
     });
   });
 }

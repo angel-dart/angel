@@ -1,8 +1,8 @@
 # graphql_parser
 [![Pub](https://img.shields.io/pub/v/graphql_parser.svg)](https://pub.dartlang.org/packages/graphql_parser)
-[![build status](https://travis-ci.org/thosakwe/graphql_parser.svg)](https://travis-ci.org/thosakwe/graphql_parser)
+[![build status](https://travis-ci.org/angel-dart/graphql.svg)](https://travis-ci.org/angel-dart/graphql)
 
-Parses GraphQL queries and schemas. Also includes a `GraphQLVisitor` class.
+Parses GraphQL queries and schemas.
 
 *This library is merely a parser/visitor*. Any sort of actual GraphQL API functionality must be implemented by you,
 or by a third-party package.
@@ -24,12 +24,19 @@ dependencies:
 The AST featured in this library is directly based off this ANTLR4 grammar created by Joseph T. McBride:
 https://github.com/antlr/grammars-v4/blob/master/graphql/GraphQL.g4
 
+It has since been updated to reflect upon the grammar in the official GraphQL
+specification.
+
 ```dart
 import 'package:graphql_parser/graphql_parser.dart';
 
 doSomething(String text) {
   var tokens = scan(text);
   var parser = new Parser(tokens);
+  
+  if (parser.errors.isNotEmpty) {
+    // Handle errors...
+  }
   
   // Parse the GraphQL document using recursive descent
   var doc = parser.parseDocument();

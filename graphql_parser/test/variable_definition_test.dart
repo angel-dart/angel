@@ -1,5 +1,6 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:test/test.dart';
+
 import 'common.dart';
 import 'type_test.dart';
 import 'value_test.dart';
@@ -18,11 +19,21 @@ main() {
   });
 
   test('exceptions', () {
-    expect(() => parseVariableDefinition(r'$foo'), throwsSyntaxError);
-    expect(() => parseVariableDefinition(r'$foo:'), throwsSyntaxError);
-    expect(() => parseVariableDefinition(r'$foo: int ='), throwsSyntaxError);
-    expect(() => parse(r'($foo: int = 2').parseVariableDefinitions(),
-        throwsSyntaxError);
+    var throwsSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseVariableDefinition();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse variable definition');
+
+    var throwsSyntaxErrorOnDefinitions = predicate((x) {
+      var parser = parse(x.toString())..parseVariableDefinitions();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse variable definitions');
+
+    expect(r'$foo', throwsSyntaxError);
+    expect(r'$foo:', throwsSyntaxError);
+    expect(r'$foo: int =', throwsSyntaxError);
+
+    expect(r'($foo: int = 2', throwsSyntaxErrorOnDefinitions);
   });
 }
 

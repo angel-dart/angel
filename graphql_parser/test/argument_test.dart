@@ -1,6 +1,7 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:matcher/matcher.dart';
 import 'package:test/test.dart';
+
 import 'common.dart';
 
 main() {
@@ -10,13 +11,24 @@ main() {
   });
 
   test('exception', () {
-    expect(() => parseArgument('foo'), throwsSyntaxError);
-    expect(() => parseArgument('foo:'), throwsSyntaxError);
-    expect(() => parseArgumentList(r'(foo: $bar'), throwsSyntaxError);
+    var isSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseArgument();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse argument');
+
+    var isSyntaxErrorOnArguments = predicate((x) {
+      var parser = parse(x.toString())..parseArguments();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse arguments');
+
+    expect('foo', isSyntaxError);
+    expect('foo:', isSyntaxError);
+    expect(r'(foo: $bar', isSyntaxErrorOnArguments);
   });
 }
 
 ArgumentContext parseArgument(String text) => parse(text).parseArgument();
+
 List<ArgumentContext> parseArgumentList(String text) =>
     parse(text).parseArguments();
 

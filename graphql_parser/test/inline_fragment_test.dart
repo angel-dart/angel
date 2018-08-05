@@ -31,10 +31,14 @@ main() {
   });
 
   test('exceptions', () {
-    expect(() => parseInlineFragment('... on foo'), throwsSyntaxError);
-    expect(() => parseInlineFragment('... on foo @bar'), throwsSyntaxError);
-    expect(() => parseInlineFragment('... on'), throwsSyntaxError);
-    expect(() => parseInlineFragment('...'), throwsSyntaxError);
+    var throwsSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseInlineFragment();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse inline fragment');
+    expect('... on foo', throwsSyntaxError);
+    expect('... on foo @bar', throwsSyntaxError);
+    expect('... on', throwsSyntaxError);
+    expect('...', throwsSyntaxError);
   });
 }
 

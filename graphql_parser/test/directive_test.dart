@@ -21,11 +21,16 @@ main() {
   });
 
   test('exceptions', () {
-    expect(() => parseDirective('@'), throwsSyntaxError);
-    expect(() => parseDirective('@foo:'), throwsSyntaxError);
-    expect(() => parseDirective('@foo ('), throwsSyntaxError);
-    expect(() => parseDirective('@foo (bar: 2'), throwsSyntaxError);
-    expect(() => parseDirective('@foo ()'), throwsSyntaxError);
+    var isSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseDirective();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse directive');
+    
+    expect('@', isSyntaxError);
+    expect('@foo:', isSyntaxError);
+    expect('@foo (', isSyntaxError);
+    expect('@foo (bar: 2', isSyntaxError);
+    expect('@foo (', isSyntaxError);
   });
 }
 

@@ -1,6 +1,6 @@
 import 'package:graphql_parser/graphql_parser.dart';
 
-final String INPUT = '''
+final String text = '''
 {
   project(name: "GraphQL") {
     tagline
@@ -10,7 +10,7 @@ final String INPUT = '''
     .trim();
 
 main() {
-  var tokens = scan(INPUT);
+  var tokens = scan(text);
   var parser = new Parser(tokens);
   var doc = parser.parseDocument();
 

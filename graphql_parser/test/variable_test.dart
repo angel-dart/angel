@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import 'common.dart';
 
 main() {
@@ -12,7 +13,12 @@ main() {
   });
 
   test('exceptions', () {
-    expect(() => parse(r'$').parseVariable(), throwsSyntaxError);
+    var throwsSyntaxError = predicate((x) {
+      var parser = parse(x.toString())..parseVariable();
+      return parser.errors.isNotEmpty;
+    }, 'fails to parse variable');
+
+    expect(r'$', throwsSyntaxError);
   });
 }
 

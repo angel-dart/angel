@@ -1,7 +1,8 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:test/test.dart';
-import 'common.dart';
+
 import 'argument_test.dart';
+import 'common.dart';
 import 'directive_test.dart';
 import 'fragment_spread_test.dart';
 import 'selection_set_test.dart';
@@ -16,7 +17,12 @@ main() {
       expect('foo: bar', isFieldName('foo', alias: 'bar'));
     });
     test('exceptions', () {
-      expect(() => parseFieldName('foo:'), throwsSyntaxError);
+      var throwsSyntaxError = predicate((x) {
+        var parser = parse(x.toString())..parseFieldName();
+        return parser.errors.isNotEmpty;
+      }, 'fails to parse field name');
+
+      expect('foo:', throwsSyntaxError);
     });
   });
 
