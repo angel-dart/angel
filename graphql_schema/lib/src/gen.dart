@@ -1,5 +1,6 @@
 part of graphql_schema.src.schema;
 
+/// Shorthand for generating a [GraphQLObjectType].
 GraphQLObjectType objectType(String name,
     {String description,
     bool isInterface: false,
@@ -17,6 +18,7 @@ GraphQLObjectType objectType(String name,
   return obj;
 }
 
+/// Shorthand for generating a [GraphQLObjectField].
 GraphQLObjectField<T, Serialized> field<T, Serialized>(
     String name, GraphQLType<T, Serialized> type,
     {Iterable<GraphQLFieldInput<T, Serialized>> inputs: const [],
@@ -29,6 +31,7 @@ GraphQLObjectField<T, Serialized> field<T, Serialized>(
       deprecationReason: deprecationReason);
 }
 
+/// Shorthand for generating a [GraphQLInputObjectType].
 GraphQLInputObjectType inputObjectType(String name,
     {String description,
     Iterable<GraphQLInputObjectField> inputFields: const []}) {
@@ -36,6 +39,7 @@ GraphQLInputObjectType inputObjectType(String name,
       description: description, inputFields: inputFields);
 }
 
+/// Shorthand for generating a [GraphQLInputObjectField].
 GraphQLInputObjectField<T, Serialized> inputField<T, Serialized>(
     String name, GraphQLType<T, Serialized> type,
     {String description, T defaultValue}) {
