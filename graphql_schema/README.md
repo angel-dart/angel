@@ -7,6 +7,24 @@ The decisions made in the design of this library were done to make the experienc
 as similar to the JavaScript reference implementation as possible, and to also
 correctly implement the official specification.
 
+Contains functionality to build *all* GraphQL types:
+* `String`
+* `Int`
+* `Float`
+* `Boolean`
+* `GraphQLObjectType`
+* `GraphQLUnionType`
+* `GraphQLEnumType`
+* `GraphQLInputObjectType`
+* `Date` - ISO-8601 Date string, deserializes to a Dart `DateTime` object
+
+Of course, for a full description of GraphQL's type system, see the official
+specification:
+http://facebook.github.io/graphql/October2016/
+
+Mostly analogous to `graphql-js`; many names are verbatim:
+https://graphql.org/graphql-js/type/
+
 # Usage
 It's easy to define a schema with the
 [helper functions](#helpers):
