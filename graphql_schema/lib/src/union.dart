@@ -1,9 +1,15 @@
 part of graphql_schema.src.schema;
 
+/// A special [GraphQLType] that indicates that an input value may be valid against one or more [possibleTypes].
+///
+/// All provided types must be [GraphQLObjectType]s.
 class GraphQLUnionType
     extends GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
     with _NonNullableMixin<Map<String, dynamic>, Map<String, dynamic>> {
+  /// The name of this type.
   final String name;
+
+  /// A list of all types that conform to this union.
   final List<GraphQLObjectType> possibleTypes = [];
 
   GraphQLUnionType(
