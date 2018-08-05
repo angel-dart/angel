@@ -5,8 +5,10 @@ author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/thosakwe/graphql_parser
 environment:
   sdk: ">=1.8.0 <3.0.0"
-dependencies: 
+dependencies:
+  charcode: ^1.0.0
   source_span: ^1.0.0
   string_scanner: ^1.0.0
 dev_dependencies:
+  matcher: any
   test: ^0.12.0
