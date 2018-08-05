@@ -1,18 +1,31 @@
 part of graphql_schema.src.schema;
 
+/// Strictly dictates the structure of some input data in a GraphQL query.
+///
+/// GraphQL's rigid type system is primarily implemented in Dart using classes that extend from [GraphQLType].
+///
+/// A [GraphQLType] represents values of type [Value] as values of type [Serialized]; for example, a
+/// [GraphQLType] that serializes objects into `String`s.
 abstract class GraphQLType<Value, Serialized> {
+  /// The name of this type.
   String get name;
 
+  /// A description of this type, which, while optional, can be very useful in tools like GraphiQL.
   String get description;
 
+  /// Serializes an arbitrary input value.
   Serialized serialize(Value value);
 
+  /// Deserializes a serialized value.
   Value deserialize(Serialized serialized);
 
+  /// Performs type coercion against an [input] value, and returns a list of errors if the validation was unsuccessful.
   ValidationResult<Serialized> validate(String key, Serialized input);
 
+  /// Creates a non-nullable type that represents this type, and enforces that a field of this type is present in input data.
   GraphQLType<Value, Serialized> nonNullable();
 
+  /// Turns this type into one suitable for being provided as an input to a [GraphQLObjectField].
   GraphQLType<Value, Serialized> coerceToInputObject();
 
   @override
@@ -24,6 +37,7 @@ GraphQLListType<Value, Serialized> listOf<Value, Serialized>(
         GraphQLType<Value, Serialized> innerType) =>
     new GraphQLListType<Value, Serialized>(innerType);
 
+/// A special [GraphQLType] that indicates that input vales should be a list of another type, [ofType].
 class GraphQLListType<Value, Serialized>
     extends GraphQLType<List<Value>, List<Serialized>>
     with _NonNullableMixin<List<Value>, List<Serialized>> {
@@ -90,6 +104,7 @@ abstract class _NonNullableMixin<Value, Serialized>
       new GraphQLNonNullableType<Value, Serialized>._(this);
 }
 
+/// A special [GraphQLType] that indicates that input values should both be non-null, and be valid when asserted against another type, named [ofType].
 class GraphQLNonNullableType<Value, Serialized>
     extends GraphQLType<Value, Serialized> {
   final GraphQLType<Value, Serialized> ofType;
