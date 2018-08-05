@@ -69,7 +69,7 @@ Support for list types is also included. Use the `listType` helper for convenien
 
 ```dart
 /// A non-nullable list of non-nullable integers
-listType(graphQLInt.nonNullable()).nonNullable();
+listOf(graphQLInt.nonNullable()).nonNullable();
 ```
 
 ### Input values and parameters
@@ -92,7 +92,7 @@ The field `characters` accepts a parameter, `title`. To reproduce this in
 ```dart
 final GraphQLObjectType queryType = objectType('AnimeQuery', fields: [
   field('characters',
-    listType(characterType.nonNullable()),
+    listOf(characterType.nonNullable()),
     inputs: [
       new GraphQLFieldInput('title', graphQLString.nonNullable())
     ]

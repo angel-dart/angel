@@ -11,5 +11,5 @@ final GraphQLObjectType trainerType =
 final GraphQLObjectType pokemonRegionType = objectType('PokemonRegion',
     fields: [
       field('trainer', trainerType),
-      field('pokemon_species', listType(pokemonType))
+      field('pokemon_species', listOf(pokemonType))
     ]);

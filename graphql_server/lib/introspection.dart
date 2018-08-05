@@ -22,7 +22,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   var schemaType = objectType('__Schema', fields: [
     field(
       'types',
-      listType(typeType),
+      listOf(typeType),
       resolve: (_, __) => allTypeSet ??= allTypes.toSet(),
     ),
     field(
@@ -42,7 +42,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     ),
     field(
       'directives',
-      listType(directiveType).nonNullable(),
+      listOf(directiveType).nonNullable(),
       resolve: (_, __) => [], // TODO: Actually fetch directives
     ),
   ]);
@@ -113,7 +113,7 @@ GraphQLObjectType _reflectSchemaTypes() {
     _typeType.fields.add(
       field(
         'interfaces',
-        listType(_reflectSchemaTypes().nonNullable()),
+        listOf(_reflectSchemaTypes().nonNullable()),
         resolve: (type, _) {
           if (type is GraphQLObjectType) {
             return type.interfaces;
@@ -127,7 +127,7 @@ GraphQLObjectType _reflectSchemaTypes() {
     _typeType.fields.add(
       field(
         'possibleTypes',
-        listType(_reflectSchemaTypes().nonNullable()),
+        listOf(_reflectSchemaTypes().nonNullable()),
         resolve: (type, _) {
           if (type is GraphQLObjectType && type.isInterface) {
             return type.possibleTypes;
@@ -227,7 +227,7 @@ GraphQLObjectType _createTypeType() {
     ),
     field(
       'fields',
-      listType(fieldType),
+      listOf(fieldType),
       inputs: [
         new GraphQLFieldInput(
           'includeDeprecated',
@@ -244,7 +244,7 @@ GraphQLObjectType _createTypeType() {
     ),
     field(
       'enumValues',
-      listType(enumValueType.nonNullable()),
+      listOf(enumValueType.nonNullable()),
       inputs: [
         new GraphQLFieldInput(
           'includeDeprecated',
@@ -265,7 +265,7 @@ GraphQLObjectType _createTypeType() {
     ),
     field(
       'inputFields',
-      listType(inputValueType.nonNullable()),
+      listOf(inputValueType.nonNullable()),
       resolve: (obj, _) {
         if (obj is GraphQLInputObjectType) {
           return obj.inputFields;
@@ -313,7 +313,7 @@ GraphQLObjectType _createFieldType() {
     ),
     field(
       'args',
-      listType(inputValueType.nonNullable()).nonNullable(),
+      listOf(inputValueType.nonNullable()).nonNullable(),
       resolve: (f, _) => (f as GraphQLObjectField).inputs,
     ),
   ]);
@@ -384,13 +384,13 @@ GraphQLObjectType _reflectDirectiveType() {
     ),
     field(
       'locations',
-      listType(_directiveLocationType.nonNullable()).nonNullable(),
+      listOf(_directiveLocationType.nonNullable()).nonNullable(),
       // TODO: Fetch directiveLocation
       resolve: (obj, _) => <String>[],
     ),
     field(
       'args',
-      listType(inputValueType.nonNullable()).nonNullable(),
+      listOf(inputValueType.nonNullable()).nonNullable(),
       resolve: (obj, _) => [],
     ),
   ]);

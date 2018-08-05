@@ -20,7 +20,7 @@ abstract class GraphQLType<Value, Serialized> {
 }
 
 /// Shorthand to create a [GraphQLListType].
-GraphQLListType<Value, Serialized> listType<Value, Serialized>(
+GraphQLListType<Value, Serialized> listOf<Value, Serialized>(
         GraphQLType<Value, Serialized> innerType) =>
     new GraphQLListType<Value, Serialized>(innerType);
 

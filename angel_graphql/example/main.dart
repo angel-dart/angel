@@ -25,7 +25,7 @@ main() async {
     fields: [
       field(
         'todos',
-        listType(convertDartType(Todo).nonNullable()),
+        listOf(convertDartType(Todo).nonNullable()),
         resolve: resolveViaServiceIndex(todoService),
       ),
       field(

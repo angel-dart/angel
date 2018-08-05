@@ -21,7 +21,7 @@ void main() {
       queryType: objectType('api', fields: [
         field(
           'todos',
-          listType(todoType),
+          listOf(todoType),
           resolve: (_, __) => [
                 new Todo(
                   text: 'Clean your room!',

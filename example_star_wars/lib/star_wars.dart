@@ -37,19 +37,19 @@ Future configureServer(Angel app) async {
     fields: [
       field(
         'droids',
-        listType(droidType.nonNullable()),
+        listOf(droidType.nonNullable()),
         description: 'All droids in the known galaxy.',
         resolve: resolveViaServiceIndex(droidService),
       ),
       field(
         'humans',
-        listType(humanType.nonNullable()),
+        listOf(humanType.nonNullable()),
         description: 'All humans in the known galaxy.',
         resolve: resolveViaServiceIndex(humansService),
       ),
       field(
         'starships',
-        listType(starshipType.nonNullable()),
+        listOf(starshipType.nonNullable()),
         description: 'All starships in the known galaxy.',
         resolve: resolveViaServiceIndex(starshipService),
       ),

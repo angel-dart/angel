@@ -36,11 +36,11 @@ main() {
   });
 
   test('list', () {
-    expect(listType(graphQLString).serialize(['foo', 'bar']), ['foo', 'bar']);
+    expect(listOf(graphQLString).serialize(['foo', 'bar']), ['foo', 'bar']);
 
     var today = new DateTime.now();
     var tomorrow = today.add(new Duration(days: 1));
-    expect(listType(graphQLDate).serialize([today, tomorrow]),
+    expect(listOf(graphQLDate).serialize([today, tomorrow]),
         [today.toIso8601String(), tomorrow.toIso8601String()]);
   });
 

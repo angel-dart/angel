@@ -55,7 +55,7 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
     if (clazz.typeArguments.isNotEmpty) {
       var inner = convertDartType(clazz.typeArguments[0].reflectedType);
       //if (inner == null) return null;
-      return listType(inner.nonNullable());
+      return listOf(inner.nonNullable());
     }
 
     throw new ArgumentError(
