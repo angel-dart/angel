@@ -24,14 +24,25 @@ part 'union.dart';
 
 part 'validation_result.dart';
 
+/// The schema against which queries, mutations, and subscriptions are executed.
 class GraphQLSchema {
+  /// The shape which all queries against the backend must take.
   final GraphQLObjectType queryType;
+
+  /// The shape required for any query that changes the state of the backend.
   final GraphQLObjectType mutationType;
+
+  /// A [GraphQLObjectType] describing the form of data sent to real-time subscribers.
+  ///
+  /// Note that as of August 4th, 2018 (when this text was written), subscriptions are not formalized
+  /// in the GraphQL specification. Therefore, any GraphQL implementation can potentially implement
+  /// subscriptions in its own way.
   final GraphQLObjectType subscriptionType;
 
   GraphQLSchema({this.queryType, this.mutationType, this.subscriptionType});
 }
 
+/// A shorthand for creating a [GraphQLSchema].
 GraphQLSchema graphQLSchema(
         {@required GraphQLObjectType queryType,
         GraphQLObjectType mutationType,
@@ -44,8 +55,9 @@ GraphQLSchema graphQLSchema(
 /// A default resolver that always returns `null`.
 resolveToNull(_, __) => null;
 
-/// An error that occurs during execution of a GraphQL query.
+/// An exception that occurs during execution of a GraphQL query.
 class GraphQLException implements Exception {
+  /// A list of all specific errors, with text representation, that caused this exception.
   final List<GraphQLExceptionError> errors;
 
   GraphQLException(this.errors);
@@ -74,8 +86,17 @@ class GraphQLException implements Exception {
   }
 }
 
+/// One of an arbitrary number of errors that may occur during the execution of a GraphQL query.
+///
+/// This will almost always be passed to a [GraphQLException], as it is useless alone.
 class GraphQLExceptionError {
+  /// The reason execution was halted, whether it is a syntax error, or a runtime error, or some other exception.
   final String message;
+
+  /// An optional list of locations within the source text where this error occurred.
+  ///
+  /// Smart tools can use this information to show end users exactly which part of the errant query
+  /// triggered an error.
   final List<GraphExceptionErrorLocation> locations;
 
   GraphQLExceptionError(this.message, {this.locations: const []});
@@ -89,6 +110,9 @@ class GraphQLExceptionError {
   }
 }
 
+/// Information about a location in source text that caused an error during the execution of a GraphQL query.
+///
+/// This is analogous to a [SourceLocation] from `package:source_span`.
 class GraphExceptionErrorLocation {
   final int line;
   final int column;
@@ -109,8 +133,14 @@ typedef GraphQLType _GraphDocumentationTypeProvider();
 
 /// A metadata annotation used to provide documentation to `package:graphql_server`.
 class GraphQLDocumentation {
+  /// The description of the annotated class, field, or enum value, to be displayed in tools like GraphiQL.
   final String description;
+
+  /// The reason the annotated field or enum value was deprecated, if any.
   final String deprecationReason;
+
+  /// A constant callback that returns an explicit type for the annotated field, rather than having it be assumed
+  /// via `dart:mirrors`.
   final _GraphDocumentationTypeProvider type;
 
   const GraphQLDocumentation(

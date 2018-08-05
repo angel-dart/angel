@@ -7,13 +7,13 @@ final GraphQLScalarType<bool, bool> graphQLBoolean = new _GraphQLBoolType();
 final GraphQLScalarType<String, String> graphQLString =
     new _GraphQLStringType._();
 
-/// The ID scalar type represents a unique identifier, often used to refetch an object or as the key for a cache.
+/// The ID scalar type represents a unique identifier, often used to re-fetch an object or as the key for a cache.
 ///
 /// The ID type is serialized in the same way as a String; however, defining it as an ID signifies that it is not intended to be human‐readable.
 final GraphQLScalarType<String, String> graphQLId =
     new _GraphQLStringType._('ID');
 
-/// A [DateTime].
+/// A [DateTime], serialized as an ISO-8601 string..
 final GraphQLScalarType<DateTime, String> graphQLDate =
     new _GraphQLDateType._();
 
