@@ -48,7 +48,7 @@ if (validation.successful) {
 * `graphQLSchema` - Create a `GraphQLSchema`
 * `objectType` - Create a `GraphQLObjectType` with fields
 * `field` - Create a `GraphQLField` with a type/argument/resolver
-* `listType` - Create a `GraphQLListType` with the provided `innerType`
+* `listOf` - Create a `GraphQLListType` with the provided `innerType`
 * `inputObjectType` - Creates a `GraphQLInputObjectType`
 * `inputField` - Creates a field for a `GraphQLInputObjectType`
 
