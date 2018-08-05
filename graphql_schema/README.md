@@ -1,7 +1,11 @@
 # graphql_schema
 [![Pub](https://img.shields.io/pub/v/graphql_schema.svg)](https://pub.dartlang.org/packages/graphql_schema)
+[![build status](https://travis-ci.org/angel-dart/graphql.svg)](https://travis-ci.org/angel-dart/graphql)
 
 An implementation of GraphQL's type system in Dart. Supports any platform where Dart runs.
+The decisions made in the design of this library were done to make the experience
+as similar to the JavaScript reference implementation as possible, and to also
+correctly implement the official specification.
 
 # Usage
 It's easy to define a schema with the
@@ -45,6 +49,8 @@ if (validation.successful) {
 * `objectType` - Create a `GraphQLObjectType` with fields
 * `field` - Create a `GraphQLField` with a type/argument/resolver
 * `listType` - Create a `GraphQLListType` with the provided `innerType`
+* `inputObjectType` - Creates a `GraphQLInputObjectType`
+* `inputField` - Creates a field for a `GraphQLInputObjectType`
 
 # Types
 All of the GraphQL scalar types are built in, as well as a `Date` type:
@@ -64,4 +70,56 @@ Support for list types is also included. Use the `listType` helper for convenien
 ```dart
 /// A non-nullable list of non-nullable integers
 listType(graphQLInt.nonNullable()).nonNullable();
+```
+
+### Input values and parameters
+Take the following GraphQL query:
+
+```graphql
+{
+   anime {
+     characters(title: "Hunter x Hunter") {
+        name
+        age
+     }
+   }
+}
+```
+
+The field `characters` accepts a parameter, `title`. To reproduce this in
+`package:graphql_schema`, use `GraphQLFieldInput`:
+
+```dart
+final GraphQLObjectType queryType = objectType('AnimeQuery', fields: [
+  field('characters',
+    listType(characterType.nonNullable()),
+    inputs: [
+      new GraphQLFieldInput('title', graphQLString.nonNullable())
+    ]
+  ),
+]);
+
+final GraphQLObjectType characterType = objectType('Character', fields: [
+  field('name', graphQLString),
+  field('age', graphQLInt),
+]);
+```
+
+In the majority of cases where you use GraphQL, you will be delegate the
+actual fetching of data to a database object, or some asynchronous resolver
+function.
+
+`package:graphql_schema` includes this functionality in the `resolve` property,
+which is passed a context object and a `Map<String, dynamic>` of arguments.
+
+A hypothetical example of the above might be:
+
+```dart
+var field = field(
+  'characters',
+  graphQLString,
+  resolve: (_, args) async {
+    return await myDatabase.findCharacters(args['title']);
+  },
+);
 ```

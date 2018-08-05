@@ -6,6 +6,7 @@ homepage: https://github.com/angel-dart/graphql
 environment:
   sdk: ">=1.8.0 <3.0.0"
 dependencies:
+  collection: ^1.0.0
   meta: ^1.0.0
   source_span: ^1.0.0
 dev_dependencies:
