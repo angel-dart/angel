@@ -100,9 +100,9 @@ class GraphQL {
   Future<Map<String, dynamic>> executeRequest(
       GraphQLSchema schema, DocumentContext document,
       {String operationName,
-      Map<String, dynamic> variableValues: const {},
+      Map<String, dynamic> variableValues: const <String, dynamic>{},
       initialValue,
-      Map<String, dynamic> globalVariables}) async {
+      Map<String, dynamic> globalVariables: const <String, dynamic>{}}) async {
     var operation = getOperation(document, operationName);
     var coercedVariableValues = coerceVariableValues(
         schema, operation, variableValues ?? <String, dynamic>{});
@@ -240,7 +240,8 @@ class GraphQL {
               objectValue,
               fields,
               fieldType,
-              new Map<String, dynamic>.from(globalVariables)
+              new Map<String, dynamic>.from(
+                  globalVariables ?? <String, dynamic>{})
                 ..addAll(variableValues),
               globalVariables);
         }
