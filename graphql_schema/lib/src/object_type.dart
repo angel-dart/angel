@@ -1,11 +1,21 @@
 part of graphql_schema.src.schema;
 
+/// A [GraphQLType] that specifies the shape of structured data, with multiple fields that can be resolved independently of one another.
 class GraphQLObjectType
     extends GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
     with _NonNullableMixin<Map<String, dynamic>, Map<String, dynamic>> {
+  /// The name of this type.
   final String name;
+
+  /// An optional description of this type; useful for tools like GraphiQL.
   final String description;
+
+  /// The list of fields that an object of this type is expected to have.
   final List<GraphQLObjectField> fields = [];
+
+  /// `true` if this type should be treated as an *interface*, which child types can [inheritFrom].
+  ///
+  /// In GraphQL, the parent class is *aware* of all the [possibleTypes] that can implement it.
   final bool isInterface;
 
   final List<GraphQLObjectType> _interfaces = [];
@@ -37,6 +47,9 @@ class GraphQLObjectType
             description: f.description)));
   }
 
+  /// Declares that this type inherits from another parent type.
+  ///
+  /// This also has the side effect of notifying the parent that this type is its descendant.
   void inheritFrom(GraphQLObjectType other) {
     if (!_interfaces.contains(other)) {
       _interfaces.add(other);
@@ -123,6 +136,7 @@ class GraphQLObjectType
     });
   }
 
+  /// Returns `true` if this type, or any of its parents, is a direct descendant of another given [type].
   bool isImplementationOf(GraphQLObjectType type) {
     if (type == this) {
       return true;
@@ -156,11 +170,21 @@ Map<String, dynamic> _foldToStringDynamic(Map map) {
           <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
 }
 
+/// A special [GraphQLType] that specifies the shape of an object that can only be used as an input to a [GraphQLField].
+///
+/// GraphQL input object types are different from regular [GraphQLObjectType]s in that they do not support resolution,
+/// and are overall more limiter in utility, because their only purpose is to reduce the number of parameters to a given field,
+/// and to potentially reuse an input structure across multiple fields in the hierarchy.
 class GraphQLInputObjectType
     extends GraphQLType<Map<String, dynamic>, Map<String, dynamic>>
     with _NonNullableMixin<Map<String, dynamic>, Map<String, dynamic>> {
+  /// The name of this type.
   final String name;
+
+  /// An optional type of this type, which is useful for tools like GraphiQL.
   final String description;
+
+  /// A list of the fields that an input object of this type is expected to have.
   final List<GraphQLInputObjectField> inputFields = [];
 
   GraphQLInputObjectType(this.name,
@@ -248,10 +272,18 @@ class GraphQLInputObjectType
       coerceToInputObject() => this;
 }
 
+/// A field expected within a [GraphQLInputObjectType].
 class GraphQLInputObjectField<Value, Serialized> {
+  /// The name of this field.
   final String name;
+
+  /// The type that a value for this field is validated against.
   final GraphQLType<Value, Serialized> type;
+
+  /// A description of this field, which is useful for tools like GraphiQL.
   final String description;
+
+  /// An optional default value for this field in an input object.
   final Value defaultValue;
 
   GraphQLInputObjectField(this.name, this.type,
