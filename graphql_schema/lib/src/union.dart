@@ -34,7 +34,9 @@ class GraphQLUnionType
   Map<String, dynamic> serialize(Map<String, dynamic> value) {
     for (var type in possibleTypes) {
       try {
-        return type.serialize(value);
+        if (type.validate('@root', value).successful) {
+          return type.serialize(value);
+        }
       } catch (_) {}
     }
 

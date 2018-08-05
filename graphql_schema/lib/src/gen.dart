@@ -24,7 +24,7 @@ GraphQLObjectField<T, Serialized> field<T, Serialized>(
     String deprecationReason, String description}) {
   return new GraphQLObjectField<T, Serialized>(name, type,
       arguments: inputs,
-      resolve: resolve ?? (_, __) => null,
+      resolve: resolve,
       description: description,
       deprecationReason: deprecationReason);
 }

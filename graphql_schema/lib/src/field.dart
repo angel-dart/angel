@@ -17,8 +17,8 @@ class GraphQLObjectField<Value, Serialized> {
       this.deprecationReason,
       this.description}) {
     assert(type != null, 'GraphQL fields must specify a `type`.');
-    assert(
-        resolve != null, 'GraphQL fields must specify a `resolve` callback.');
+//    assert(
+//        resolve != null, 'GraphQL fields must specify a `resolve` callback.');
     this.inputs.addAll(arguments ?? <GraphQLFieldInput>[]);
   }
 
