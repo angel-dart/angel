@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:quiver_hashcode/hashcode.dart';
+import 'package:quiver/core.dart';
 
 abstract class Reflector {
   String getName(Symbol symbol);
@@ -9,6 +9,8 @@ abstract class Reflector {
   ReflectedFunction reflectFunction(Function function);
 
   ReflectedType reflectType(Type type);
+
+  ReflectedInstance reflectInstance(Object object);
 }
 
 abstract class ReflectedInstance {
@@ -30,21 +32,23 @@ abstract class ReflectedInstance {
 abstract class ReflectedType {
   final String name;
   final List<ReflectedTypeParameter> typeParameters;
+  final Type reflectedType;
 
-  const ReflectedType(this.name, this.typeParameters);
+  const ReflectedType(this.name, this.typeParameters, this.reflectedType);
 
   @override
-  int get hashCode => hash2(name, typeParameters);
+  int get hashCode => hash3(name, typeParameters, reflectedType);
 
   @override
   bool operator ==(other) =>
       other is ReflectedType &&
       other.name == name &&
       const ListEquality<ReflectedTypeParameter>()
-          .equals(other.typeParameters, typeParameters);
+          .equals(other.typeParameters, typeParameters) &&
+      other.reflectedType == reflectedType;
 
   T newInstance<T>(String constructorName, List positionalArguments,
-      Map<String, dynamic> namedArguments, List<Type> typeArguments);
+      [Map<String, dynamic> namedArguments, List<Type> typeArguments]);
 
   bool isAssignableTo(ReflectedType other);
 }
@@ -54,9 +58,14 @@ abstract class ReflectedClass extends ReflectedType {
   final List<ReflectedFunction> constructors;
   final List<ReflectedDeclaration> declarations;
 
-  const ReflectedClass(String name, List<ReflectedTypeParameter> typeParameters,
-      this.annotations, this.constructors, this.declarations)
-      : super(name, typeParameters);
+  const ReflectedClass(
+      String name,
+      List<ReflectedTypeParameter> typeParameters,
+      this.annotations,
+      this.constructors,
+      this.declarations,
+      Type reflectedType)
+      : super(name, typeParameters, reflectedType);
 
   @override
   int get hashCode =>
@@ -96,7 +105,7 @@ class ReflectedFunction {
   final String name;
   final List<ReflectedTypeParameter> typeParameters;
   final List<ReflectedInstance> annotations;
-  final Type returnType;
+  final ReflectedType returnType;
   final List<ReflectedParameter> parameters;
   final bool isGetter, isSetter;
 
@@ -132,7 +141,7 @@ class ReflectedFunction {
 class ReflectedParameter {
   final String name;
   final List<ReflectedInstance> annotations;
-  final Type type;
+  final ReflectedType type;
   final bool isRequired;
   final bool isNamed;
 

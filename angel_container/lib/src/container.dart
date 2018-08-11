@@ -16,13 +16,17 @@ class Container {
       var named = <String, dynamic>{};
 
       if (reflectedType is ReflectedClass) {
+        bool isDefault(String name) {
+          return name.isEmpty || name == reflectedType.name;
+        }
+
         var constructor = reflectedType.constructors.firstWhere(
-            (c) => c.name.isEmpty,
-            orElse: () => throw new ReflectionException('${reflectedType
-                .name} has no default constructor, and therefore cannot be instantiated.'));
+            (c) => isDefault(c.name),
+            orElse: () => throw new ReflectionException(
+                '${reflectedType.name} has no default constructor, and therefore cannot be instantiated.'));
 
         for (var param in constructor.parameters) {
-          var value = make(param.type);
+          var value = make(param.type.reflectedType);
 
           if (param.isNamed) {
             named[param.name] = value;
@@ -31,8 +35,10 @@ class Container {
           }
         }
 
-        return reflectedType
-            .newInstance(constructor.name, positional, named, []);
+        return reflectedType.newInstance(
+            isDefault(constructor.name) ? '' : constructor.name,
+            positional,
+            named, []);
       } else {
         throw new ReflectionException(
             '$type is not a class, and therefore cannot be instantiated.');
@@ -42,8 +48,8 @@ class Container {
 
   void singleton(Object object, {Type as}) {
     if (_singletons.containsKey(as ?? object.runtimeType)) {
-      throw new StateError('This container already has a singleton for ${as ??
-          object.runtimeType}.');
+      throw new StateError(
+          'This container already has a singleton for ${as ?? object.runtimeType}.');
     }
 
     _singletons[as ?? object.runtimeType] = object;

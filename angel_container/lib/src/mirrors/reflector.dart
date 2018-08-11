@@ -1,9 +1,14 @@
 import 'dart:mirrors' as dart;
+
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_container/src/reflector.dart';
-import 'package:angel_container/src/reflector.dart';
 
+/// A [Reflector] implementation that forwards to `dart:mirrors`.
+///
+/// Useful on the server, where reflection is supported.
 class MirrorsReflector implements Reflector {
+  const MirrorsReflector();
+
   @override
   String getName(Symbol symbol) => dart.MirrorSystem.getName(symbol);
 
@@ -20,7 +25,8 @@ class MirrorsReflector implements Reflector {
 
   @override
   ReflectedFunction reflectFunction(Function function) {
-    // TODO: implement reflectFunction
+    var closure = dart.reflect(function) as dart.ClosureMirror;
+    return new _ReflectedMethodMirror(closure.function);
   }
 
   @override
@@ -32,6 +38,11 @@ class MirrorsReflector implements Reflector {
     } else {
       return new _ReflectedTypeMirror(mirror);
     }
+  }
+
+  @override
+  ReflectedInstance reflectInstance(Object object) {
+    return new _ReflectedInstanceMirror(object);
   }
 }
 
@@ -52,6 +63,7 @@ class _ReflectedTypeMirror extends ReflectedType {
           mirror.typeVariables
               .map((m) => new _ReflectedTypeParameter(m))
               .toList(),
+          mirror.reflectedType,
         );
 
   @override
@@ -61,7 +73,7 @@ class _ReflectedTypeMirror extends ReflectedType {
 
   @override
   T newInstance<T>(String constructorName, List positionalArguments,
-      Map<String, dynamic> namedArguments, List<Type> typeArguments) {
+      [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
     throw new ReflectionException(
         '$name is not a class, and therefore cannot be instantiated.');
   }
@@ -79,6 +91,7 @@ class _ReflectedClassMirror extends ReflectedClass {
           mirror.metadata.map((m) => new _ReflectedInstanceMirror(m)).toList(),
           _constructorsOf(mirror),
           _declarationsOf(mirror),
+          mirror.reflectedType,
         );
 
   static List<ReflectedFunction> _constructorsOf(dart.ClassMirror mirror) {
@@ -86,6 +99,10 @@ class _ReflectedClassMirror extends ReflectedClass {
 
     for (var key in mirror.declarations.keys) {
       var value = mirror.declarations[key];
+
+      if (value is dart.MethodMirror && value.isConstructor) {
+        out.add(new _ReflectedMethodMirror(value));
+      }
     }
 
     return out;
@@ -96,6 +113,11 @@ class _ReflectedClassMirror extends ReflectedClass {
 
     for (var key in mirror.declarations.keys) {
       var value = mirror.declarations[key];
+
+      if (value is dart.MethodMirror && !value.isConstructor) {
+        out.add(new ReflectedDeclaration(dart.MirrorSystem.getName(key),
+            value.isStatic, new _ReflectedMethodMirror(value)));
+      }
     }
 
     return out;
@@ -108,8 +130,10 @@ class _ReflectedClassMirror extends ReflectedClass {
 
   @override
   T newInstance<T>(String constructorName, List positionalArguments,
-      Map<String, dynamic> namedArguments, List<Type> typeArguments) {
-    // TODO: implement newInstance
+      [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
+    return mirror
+        .newInstance(new Symbol(constructorName), positionalArguments)
+        .reflectee as T;
   }
 }
 
@@ -123,5 +147,33 @@ class _ReflectedInstanceMirror extends ReflectedInstance {
   @override
   T invoke<T>(Invocation invocation) {
     return mirror.delegate(invocation) as T;
+  }
+}
+
+class _ReflectedMethodMirror extends ReflectedFunction {
+  final dart.MethodMirror mirror;
+
+  _ReflectedMethodMirror(this.mirror)
+      : super(
+            dart.MirrorSystem.getName(mirror.simpleName),
+            <ReflectedTypeParameter>[],
+            mirror.metadata
+                .map((mirror) => new _ReflectedInstanceMirror(mirror))
+                .toList(),
+            const MirrorsReflector()
+                .reflectType(mirror.returnType.reflectedType),
+            mirror.parameters.map(_reflectParameter).toList(),
+            mirror.isGetter,
+            mirror.isSetter);
+
+  static ReflectedParameter _reflectParameter(dart.ParameterMirror mirror) {
+    return new ReflectedParameter(
+        dart.MirrorSystem.getName(mirror.simpleName),
+        mirror.metadata
+            .map((mirror) => new _ReflectedInstanceMirror(mirror))
+            .toList(),
+        const MirrorsReflector().reflectType(mirror.type.reflectedType),
+        !mirror.isOptional,
+        mirror.isNamed);
   }
 }
