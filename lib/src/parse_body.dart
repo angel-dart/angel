@@ -1,9 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
+
+import 'package:dart2_constant/convert.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:http_server/http_server.dart';
 import 'package:mime/mime.dart';
+
 import 'body_parse_result.dart';
 import 'file_upload_info.dart';
 import 'map_from_uri.dart';
@@ -44,10 +46,10 @@ Future<BodyParseResult> parseBodyFromStream(
     if (storeOriginalBuffer) {
       return getBytes().then((bytes) {
         result.originalBuffer = bytes;
-        return UTF8.decode(bytes);
+        return utf8.decode(bytes);
       });
     } else
-      return data.transform(UTF8.decoder).join();
+      return data.transform(utf8.decoder).join();
   }
 
   try {
@@ -70,14 +72,17 @@ Future<BodyParseResult> parseBodyFromStream(
             .transform(new MimeMultipartTransformer(
                 contentType.parameters['boundary']))
             .map((part) =>
-                HttpMultipartFormData.parse(part, defaultEncoding: UTF8));
+                HttpMultipartFormData.parse(part, defaultEncoding: utf8));
 
         await for (HttpMultipartFormData part in parts) {
           if (part.isBinary ||
               part.contentDisposition.parameters.containsKey("filename")) {
             BytesBuilder builder = await part.fold(
                 new BytesBuilder(copy: false),
-                (BytesBuilder b, d) => b..add(d is! String ? d : d.codeUnits));
+                (BytesBuilder b, d) => b
+                  ..add(d is! String
+                      ? (d as List<int>)
+                      : (d as String).codeUnits));
             var upload = new FileUploadInfo(
                 mimeType: part.contentType.mimeType,
                 name: part.contentDisposition.parameters['name'],
@@ -91,8 +96,9 @@ Future<BodyParseResult> parseBodyFromStream(
                 '${part.contentDisposition.parameters["name"]}=$text');
           }
         }
-      } else if (contentType.mimeType == ContentType.JSON.mimeType) {
-        result.body.addAll(JSON.decode(await getBody()));
+      } else if (contentType.mimeType == 'application/json') {
+        result.body
+            .addAll(_foldToStringDynamic(json.decode(await getBody()) as Map));
       } else if (contentType.mimeType == 'application/x-www-form-urlencoded') {
         String body = await getBody();
         buildMapFromUri(result.body, body);
@@ -134,4 +140,11 @@ class _BodyParseResultImpl implements BodyParseResult {
 
   @override
   StackTrace stack = null;
+}
+
+Map<String, dynamic> _foldToStringDynamic(Map map) {
+  return map == null
+      ? null
+      : map.keys.fold<Map<String, dynamic>>(
+          <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
 }

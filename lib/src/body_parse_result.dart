@@ -12,7 +12,7 @@ abstract class BodyParseResult {
   List<FileUploadInfo> get files;
 
   /// The original body bytes sent with this request.
-  /// 
+  ///
   /// You must set [storeOriginalBuffer] to `true` to see this.
   List<int> get originalBuffer;
 

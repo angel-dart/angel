@@ -30,7 +30,7 @@ buildMapFromUri(Map map, String body) {
         for (int i = 1; i < keys.length; i++) {
           if (i < keys.length - 1) {
             targetMap[keys[i]] = targetMap[keys[i]] ?? {};
-            targetMap = targetMap[keys[i]];
+            targetMap = targetMap[keys[i]] as Map;
           } else {
             targetMap[keys[i]] = getValue(value);
           }
