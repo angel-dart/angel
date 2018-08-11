@@ -9,7 +9,7 @@ dependencies:
   graphql_parser:
     path: ../graphql_parser
   meta: ^1.0.0
-  recase: ^1.0.0
+  recase: ^2.0.0
   tuple: ^1.0.0
 dev_dependencies:
-  test: ^0.12.0
+  test:
