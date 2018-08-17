@@ -1,3 +1,6 @@
+# 1.1.5+2
+* Removed `random_string` dependency.
+
 # 1.1.5+1
 * Patched annoying error that prevented MapServices from working,
 simply because `<dynamic, dynamic>` is incompatible with `<String, dynamic>`.
