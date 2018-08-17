@@ -88,8 +88,8 @@ class _ReflectedClassMirror extends ReflectedClass {
           mirror.typeVariables
               .map((m) => new _ReflectedTypeParameter(m))
               .toList(),
-          mirror.metadata.map((m) => new _ReflectedInstanceMirror(m)).toList(),
-          _constructorsOf(mirror),
+          [],
+          [],
           _declarationsOf(mirror),
           mirror.reflectedType,
         );
@@ -115,13 +115,20 @@ class _ReflectedClassMirror extends ReflectedClass {
       var value = mirror.declarations[key];
 
       if (value is dart.MethodMirror && !value.isConstructor) {
-        out.add(new ReflectedDeclaration(dart.MirrorSystem.getName(key),
-            value.isStatic, new _ReflectedMethodMirror(value)));
+        out.add(new _ReflectedDeclarationMirror(
+            dart.MirrorSystem.getName(key), value));
       }
     }
 
     return out;
   }
+
+  @override
+  List<ReflectedInstance> get annotations =>
+      mirror.metadata.map((m) => new _ReflectedInstanceMirror(m)).toList();
+
+  @override
+  List<ReflectedFunction> get constructors => _constructorsOf(mirror);
 
   @override
   bool isAssignableTo(ReflectedType other) {
@@ -135,6 +142,20 @@ class _ReflectedClassMirror extends ReflectedClass {
         .newInstance(new Symbol(constructorName), positionalArguments)
         .reflectee as T;
   }
+}
+
+class _ReflectedDeclarationMirror extends ReflectedDeclaration {
+  final String name;
+  final dart.MethodMirror mirror;
+
+  _ReflectedDeclarationMirror(this.name, this.mirror)
+      : super(name, mirror.isStatic, null);
+
+  @override
+  bool get isStatic => mirror.isStatic;
+
+  @override
+  ReflectedFunction get function => new _ReflectedMethodMirror(mirror);
 }
 
 class _ReflectedInstanceMirror extends ReflectedInstance {
