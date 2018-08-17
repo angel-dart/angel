@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/map_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/map_service.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -58,8 +56,8 @@
       <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pubspec.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="48">
-              <caret line="3" column="35" lean-forward="true" selection-start-line="3" selection-start-column="35" selection-end-line="3" selection-end-column="35" />
+            <state relative-caret-position="384">
+              <caret line="24" column="14" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -67,7 +65,7 @@
       <file leaf-file-name="map_service.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/src/core/map_service.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
+            <state relative-caret-position="1424">
               <caret line="93" column="28" selection-start-line="93" selection-start-column="28" selection-end-line="93" selection-end-column="28" />
             </state>
           </provider>
@@ -77,7 +75,7 @@
         <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="48">
+              <first_editor relative-caret-position="32">
                 <caret line="2" column="77" selection-start-line="2" selection-start-column="77" selection-end-line="2" selection-end-column="77" />
               </first_editor>
               <second_editor />
@@ -139,8 +137,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>JSON</find>
-      <find>ContentType.JSON.toString()</find>
       <find>(req, res)</find>
       <find>headers: headers,</find>
       <find>_</find>
@@ -169,9 +165,10 @@
       <find>`Iterable`</find>
       <find>instance</find>
       <find>==</find>
+      <find>as Map&lt;String, dynamic&gt;</find>
+      <find>result as Map&lt;String, dynamic&gt;</find>
     </findStrings>
     <replaceStrings>
-      <replace>logger?.warning</replace>
       <replace>JSON.decode</replace>
       <replace>query</replace>
       <replace>cookie</replace>
@@ -201,6 +198,7 @@
       <replace>as Map$1</replace>
       <replace>IsInstanceOf</replace>
       <replace>[Iterable]</replace>
+      <replace>_foldStringDynamic(result)</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\thosa\Source\Angel\framework\lib</dir>
@@ -288,8 +286,8 @@
     <packageJsonPaths />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="60" />
-    <option name="y" value="45" />
+    <option name="x" value="37" />
+    <option name="y" value="23" />
     <option name="width" value="1403" />
     <option name="height" value="784" />
   </component>
@@ -301,8 +299,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="ProjectPane" />
-      <pane id="PackagesPane" />
       <pane id="AndroidView" />
       <pane id="Scope">
         <subPane subId="Project Files">
@@ -355,6 +351,8 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -690,14 +688,8 @@
       <workItem from="1531151880119" duration="141000" />
       <workItem from="1531154836670" duration="378000" />
       <workItem from="1531407760497" duration="1958000" />
-      <workItem from="1533353660185" duration="243000" />
-    </task>
-    <task id="LOCAL-00058" summary="Deprecated createZoneForRequest">
-      <created>1517976806435</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1517976806435</updated>
+      <workItem from="1533353660185" duration="262000" />
+      <workItem from="1534009494986" duration="594000" />
     </task>
     <task id="LOCAL-00059" summary="Deprecated `ServerGenerator`">
       <created>1517977060369</created>
@@ -1035,7 +1027,14 @@
       <option name="project" value="LOCAL" />
       <updated>1531409300283</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="Patched another cast bug">
+      <created>1533353912000</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1533353912001</updated>
+    </task>
+    <option name="localTasksCounter" value="108" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1071,7 +1070,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="161333000" />
+    <option name="totallyTimeSpent" value="161946000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1083,7 +1082,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="60" y="45" width="1403" height="784" extended-state="0" />
+    <frame x="141" y="23" width="1403" height="784" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
@@ -1108,22 +1107,22 @@
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4964476" weight="0.3973799" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32905984" />
       <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.44978166" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.27185893" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2755327" />
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="Theme Preview" order="3" />
       <window_info id="Favorites" order="3" side_tool="true" />
       <window_info anchor="right" id="Flutter Inspector" order="4" />
       <window_info anchor="bottom" id="DB Execution Console" order="8" />
       <window_info anchor="right" id="Coverage" order="3" side_tool="true" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info id="DB Browser" order="2" weight="0.32998413" />
+      <window_info anchor="bottom" id="Messages" order="7" weight="0.33478895" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32905984" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="bottom" id="Messages" order="7" weight="0.33478895" />
-      <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="right" id="Data View" order="4" />
+      <window_info anchor="bottom" id="Message" order="0" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1134,7 +1133,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Use dart2_constant" />
     <MESSAGE value="Fixed all broken tests" />
     <MESSAGE value="1.1.3" />
     <MESSAGE value="Test against Dart 1.x" />
@@ -1159,7 +1157,8 @@
     <MESSAGE value="Added findOne to `Service`" />
     <MESSAGE value="Added `Service.findOne` tests" />
     <MESSAGE value="Bump version -&gt; 1.1.5" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bump version -&gt; 1.1.5" />
+    <MESSAGE value="Patched another cast bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="Patched another cast bug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1473,7 +1472,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/core/map_service.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
+        <state relative-caret-position="1424">
           <caret line="93" column="28" selection-start-line="93" selection-start-column="28" selection-end-line="93" selection-end-column="28" />
         </state>
       </provider>
@@ -1481,7 +1480,7 @@
     <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="48">
+          <first_editor relative-caret-position="32">
             <caret line="2" column="77" selection-start-line="2" selection-start-column="77" selection-end-line="2" selection-end-column="77" />
           </first_editor>
           <second_editor />
@@ -1490,8 +1489,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pubspec.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="48">
-          <caret line="3" column="35" lean-forward="true" selection-start-line="3" selection-start-column="35" selection-end-line="3" selection-end-column="35" />
+        <state relative-caret-position="384">
+          <caret line="24" column="14" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
         </state>
       </provider>
     </entry>

@@ -23,7 +23,6 @@ dependencies:
   mime: ^0.9.3
   path: ">=1.0.0 <2.0.0"
   pool: ^1.0.0
-  random_string: ^0.0.1
   stack_trace: ^1.0.0
   tuple: ^1.0.0
 dev_dependencies:
