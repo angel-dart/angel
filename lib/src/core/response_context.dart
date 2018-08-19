@@ -171,18 +171,12 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   void json(value) => serialize(value, contentType: 'application/json');
 
   /// Returns a JSONP response.
+  ///
+  /// You can override the [contentType] sent; by default it is `application/javascript`.
   void jsonp(value, {String callbackName: "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
     write("$callbackName(${serializer(value)})");
-
-    if (contentType != null) {
-      if (contentType is ContentType)
-        this.contentType = contentType;
-      else
-        headers['content-type'] = contentType.toString();
-    } else
-      headers['content-type'] = 'application/javascript';
-
+    this.contentType = contentType ?? new MediaType('application', 'javascript');
     end();
   }
 
