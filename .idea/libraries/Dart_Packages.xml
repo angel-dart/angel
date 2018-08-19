@@ -198,13 +198,6 @@
             </list>
           </value>
         </entry>
-        <entry key="json_god">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/json_god-2.0.0-beta+3/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="json_rpc_2">
           <value>
             <list>
@@ -488,7 +481,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/intl-0.15.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/io-0.3.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/js-0.6.1+1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/json_god-2.0.0-beta+3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/json_rpc_2-2.0.9/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/kernel-0.3.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/logging-0.11.3+2/lib" />

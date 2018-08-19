@@ -2,7 +2,6 @@ import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart' as god;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 
@@ -51,7 +50,7 @@ main() {
     });
 
     test('can create data', () async {
-      String postData = god.serialize({'text': 'Hello, world!'});
+      String postData = json.encode({'text': 'Hello, world!'});
       var response = await client.post("$url/todos",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 201);
@@ -61,7 +60,7 @@ main() {
     });
 
     test('can fetch data', () async {
-      String postData = god.serialize({'text': 'Hello, world!'});
+      String postData = json.encode({'text': 'Hello, world!'});
       await client.post("$url/todos",
           headers: headers as Map<String, String>, body: postData);
       var response = await client.get("$url/todos/0");
@@ -72,10 +71,10 @@ main() {
     });
 
     test('can modify data', () async {
-      String postData = god.serialize({'text': 'Hello, world!'});
+      String postData = json.encode({'text': 'Hello, world!'});
       await client.post("$url/todos",
           headers: headers as Map<String, String>, body: postData);
-      postData = god.serialize({'text': 'modified'});
+      postData = json.encode({'text': 'modified'});
       var response = await client.patch("$url/todos/0",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 200);
@@ -85,10 +84,10 @@ main() {
     });
 
     test('can overwrite data', () async {
-      String postData = god.serialize({'text': 'Hello, world!'});
+      String postData = json.encode({'text': 'Hello, world!'});
       await client.post("$url/todos",
           headers: headers as Map<String, String>, body: postData);
-      postData = god.serialize({'over': 'write'});
+      postData = json.encode({'over': 'write'});
       var response = await client.post("$url/todos/0",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 200);
@@ -99,7 +98,7 @@ main() {
     });
 
     test('can delete data', () async {
-      String postData = god.serialize({'text': 'Hello, world!'});
+      String postData = json.encode({'text': 'Hello, world!'});
       var created = await client
           .post("$url/todos",
               headers: headers as Map<String, String>, body: postData)

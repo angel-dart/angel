@@ -2,8 +2,8 @@
 library angel_framework.hooks;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:mirrors';
-import 'package:json_god/json_god.dart' as god;
 import 'angel_framework.dart';
 
 /// Sequentially runs a set of [listeners].
@@ -36,7 +36,7 @@ AngelConfigurer hookAllServices(callback(Service service)) {
 ///
 /// The [condition] is optional, and is passed to [transform].
 HookedServiceEventListener toJson([condition]) =>
-    transform(god.serializeObject, condition);
+    transform(json.encode, condition);
 
 /// Mutates `e.data` or `e.result` using the given [transformer].
 ///

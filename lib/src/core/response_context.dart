@@ -3,16 +3,17 @@ library angel_framework.http.response_context;
 import 'dart:async';
 import 'dart:convert' show Converter, Encoding;
 import 'dart:io' show BytesBuilder, HttpResponse;
+
 import 'package:angel_route/angel_route.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
 import 'package:pool/pool.dart';
+
 import '../http/http.dart';
-import 'server.dart' show Angel;
 import 'request_context.dart';
+import 'server.dart' show Angel;
 
 final RegExp _contentType =
     new RegExp(r'([^/\n]+)\/\s*([^;\n]+)\s*(;\s*charset=([^$;\n]+))?');
@@ -80,7 +81,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// ```dart
   /// app.injectSerializer(JSON.encode);
   /// ```
-  String Function(dynamic) serializer = god.serialize;
+  String Function(dynamic) serializer = json.encode;
 
   /// This response's status code.
   int get statusCode => _statusCode;
@@ -176,16 +177,18 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   void jsonp(value, {String callbackName: "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
     write("$callbackName(${serializer(value)})");
-    this.contentType = contentType ?? new MediaType('application', 'javascript');
+    this.contentType =
+        contentType ?? new MediaType('application', 'javascript');
     end();
   }
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map<String, dynamic> data]) {
     if (!isOpen) throw closed();
-    return app
-        .viewGenerator(view, new Map<String, dynamic>.from(renderParams)..addAll(data ?? <String, dynamic>{}))
-        .then((content) {
+    return Future<String>.sync(() => app.viewGenerator(
+        view,
+        new Map<String, dynamic>.from(renderParams)
+          ..addAll(data ?? <String, dynamic>{}))).then((content) {
       write(content);
       headers['content-type'] = 'text/html';
       end();

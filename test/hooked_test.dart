@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart' as god;
 import 'package:test/test.dart';
 import 'common.dart';
 
@@ -72,7 +71,7 @@ main() {
       });
 
     var response = await client.post("$url/todos",
-        body: god.serialize({"arbitrary": "data"}),
+        body: json.encode({"arbitrary": "data"}),
         headers: headers as Map<String, String>);
     print(response.body);
     Map result = god.deserialize(response.body);

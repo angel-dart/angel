@@ -12,7 +12,6 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:dart2_constant/io.dart';
-import 'package:json_god/json_god.dart' as god;
 import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:tuple/tuple.dart';
@@ -356,7 +355,7 @@ class AngelHttp {
           [RequestContext correspondingRequest]) =>
       new Future<ResponseContext>.value(new HttpResponseContextImpl(
           response, app, correspondingRequest as HttpRequestContextImpl)
-        ..serializer = (app.serializer ?? god.serialize)
+        ..serializer = (app.serializer ?? json.encode)
         ..encoders.addAll(app.encoders ?? {}));
 
   /// Limits the maximum number of requests to be handled concurrently by this instance.

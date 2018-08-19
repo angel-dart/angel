@@ -5,6 +5,8 @@
 * `ResponseContext.sendFile` now uses `package:file`.
 * Abandon `ContentType` in favor of `MediaType`.
 * Changed view engine to use `Map<String, dynamic>`.
+* Remove dependency on `package:json_god` by default.
+* Remove dependency on `package:dart2_constant`.
 
 # 1.1.5+1
 * Patched annoying error that prevented MapServices from working,
