@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
@@ -42,7 +43,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel();
+    app = new Angel(MirrorsReflector());
     app.requestMiddleware["foo"] = (req, res) async {
       res.write("Hello, ");
       return true;
@@ -76,7 +77,7 @@ main() {
 
   test('require expose', () async {
     try {
-      var app = new Angel();
+      var app = new Angel(MirrorsReflector());
       await app.configure(new NoExposeController().configureServer);
       throw 'Should require @Expose';
     } on Exception {
@@ -85,7 +86,7 @@ main() {
   });
 
   test('create dynamic handler', () async {
-    var app = new Angel();
+    var app = new Angel(MirrorsReflector());
     app.get(
         '/foo',
         createDynamicHandler(({String bar}) {
@@ -98,7 +99,7 @@ main() {
   });
 
   test('optional name', () async {
-    var app = new Angel();
+    var app = new Angel(MirrorsReflector());
     await app.configure(new NamedController().configureServer);
     expect(app.controllers['foo'], const IsInstanceOf<NamedController>());
   });

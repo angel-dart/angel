@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel()
+  var app = new Angel(MirrorsReflector())
     ..lazyParseBodies = true
     ..logger = (new Logger('angel')..onRecord.listen(print))
     ..encoders.addAll({'gzip': gzip.encoder});

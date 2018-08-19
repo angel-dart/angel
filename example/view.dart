@@ -1,7 +1,8 @@
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
-  var app = new Angel();
+  var app = new Angel(MirrorsReflector());
 
   app.viewGenerator = (name, [data]) async =>
       'View generator invoked with name $name and data: $data';

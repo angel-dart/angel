@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:mock_request/mock_request.dart';
@@ -27,7 +28,7 @@ parameterMetaTests() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel()..lazyParseBodies = true;
+    app = new Angel(MirrorsReflector())..lazyParseBodies = true;
     http = new AngelHttp(app);
 
     app.get('/cookie', (@CookieValue('token') String jwt) {

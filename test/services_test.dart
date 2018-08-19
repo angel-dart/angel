@@ -1,3 +1,4 @@
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
@@ -20,7 +21,7 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel()
+    app = new Angel(MirrorsReflector())
       ..use('/todos', new TypedService<Todo>(new MapService()))
       ..errorHandler = (e, req, res) {
         print('Whoops: ${e.error}');

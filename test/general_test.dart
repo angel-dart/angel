@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel()
+    app = new Angel(MirrorsReflector())
       ..post('/foo', () => {'hello': 'world'})
       ..all('*', () => throw new AngelHttpException.notFound());
     client = new http.Client();

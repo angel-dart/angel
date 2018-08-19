@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show stderr;
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:dart2_constant/io.dart';
@@ -13,7 +14,7 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel();
+    app = new Angel(MirrorsReflector());
     http = new AngelHttp(app);
 
     app.logger = new Logger('streaming_test')

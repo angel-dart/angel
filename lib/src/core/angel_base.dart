@@ -1,7 +1,7 @@
 library angel_framework.http.angel_base;
 
 import 'dart:async';
-import 'package:container/container.dart';
+import 'package:angel_container/angel_container.dart';
 import 'routable.dart';
 
 /// A function that asynchronously generates a view from the given path and data.
@@ -12,7 +12,11 @@ class AngelBase extends Routable {
   static ViewGenerator noViewEngineConfigured = (String view, [Map data]) =>
       new Future<String>.value("No view engine has been configured yet.");
 
-  Container _container = new Container();
+  Container _container;
+
+  AngelBase(Reflector reflector) {
+    _container = new Container(reflector);
+  }
 
   final Map configuration = {};
 

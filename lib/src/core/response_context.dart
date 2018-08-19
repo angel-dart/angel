@@ -2,9 +2,11 @@ library angel_framework.http.response_context;
 
 import 'dart:async';
 import 'dart:convert' show Converter, Encoding;
-import 'dart:io';
-import 'package:dart2_constant/convert.dart';
+import 'dart:io' show BytesBuilder, HttpResponse;
 import 'package:angel_route/angel_route.dart';
+import 'package:dart2_constant/convert.dart';
+import 'package:file/file.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:mime/mime.dart';
 import 'package:pool/pool.dart';
@@ -102,26 +104,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// The underlying [HttpResponse] under this instance.
   HttpResponse get io;
 
-  /// Gets the Content-Type header.
-  ContentType get contentType {
-    if (!headers.containsKey('content-type')) return null;
-
-    var header = headers['content-type'];
-    var match = _contentType.firstMatch(header);
-
-    if (match == null)
-      throw new Exception('Malformed Content-Type response header: "$header".');
-
-    if (match[4]?.isNotEmpty != true)
-      return new ContentType(match[1], match[2]);
-    else
-      return new ContentType(match[1], match[2], charset: match[4]);
-  }
-
-  /// Sets the Content-Type header.
-  void set contentType(ContentType contentType) {
-    headers['content-type'] = contentType.toString();
-  }
+  /// Gets or sets the content type to send back to a client.
+  MediaType contentType = new MediaType('text', 'plain');
 
   /// Set this to true if you will manually close the response.
   ///
@@ -187,7 +171,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   void json(value) => serialize(value, contentType: 'application/json');
 
   /// Returns a JSONP response.
-  void jsonp(value, {String callbackName: "callback", contentType}) {
+  void jsonp(value, {String callbackName: "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
     write("$callbackName(${serializer(value)})");
 

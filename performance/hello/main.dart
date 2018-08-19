@@ -4,6 +4,7 @@ library performance.hello;
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
@@ -22,7 +23,7 @@ main() async {
 }
 
 void start(int id) {
-  var app = new Angel()..lazyParseBodies = true;
+  var app = new Angel(MirrorsReflector())..lazyParseBodies = true;
   var http = new AngelHttp.custom(app, startShared, useZone: false);
 
   app.get('/', (ResponseContext res) => res.write('Hello, world!'));

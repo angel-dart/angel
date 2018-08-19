@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
@@ -24,7 +25,7 @@ main() {
 
 Future<RequestContext> makeRequest(String path) {
   var rq = new MockHttpRequest('GET', ENDPOINT.replace(path: path))..close();
-  var app = new Angel();
+  var app = new Angel(MirrorsReflector());
   var http = new AngelHttp(app);
   return http.createRequestContext(rq);
 }

@@ -1,4 +1,5 @@
 import 'dart:io' show stderr;
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:mock_request/mock_request.dart';
@@ -9,7 +10,7 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel()..inject('global', 305); // Pitbull!
+    app = new Angel(MirrorsReflector())..inject('global', 305); // Pitbull!
     http = new AngelHttp(app);
 
     app.get('/string/:string', (String string) => string);

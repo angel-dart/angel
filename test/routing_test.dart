@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
@@ -27,9 +28,9 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel();
-    nested = new Angel();
-    todos = new Angel();
+    app = new Angel(MirrorsReflector());
+    nested = new Angel(MirrorsReflector());
+    todos = new Angel(MirrorsReflector());
 
     // Lazy-parse in production
     [app, nested, todos].forEach((Angel app) {

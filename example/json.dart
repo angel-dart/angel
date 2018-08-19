@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'package:dart2_constant/convert.dart';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
@@ -28,7 +29,7 @@ main() async {
 }
 
 serverMain(_) async {
-  var app = new Angel();
+  var app = new Angel(MirrorsReflector());
   var http = new AngelHttp.custom(app, startShared); // Run a cluster
 
   app.get('/', {
