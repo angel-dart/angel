@@ -4,6 +4,7 @@
 * Upgraded `package:file` to `5.0.0`.
 * `ResponseContext.sendFile` now uses `package:file`.
 * Abandon `ContentType` in favor of `MediaType`.
+* Changed view engine to use `Map<String, dynamic>`.
 
 # 1.1.5+1
 * Patched annoying error that prevented MapServices from working,

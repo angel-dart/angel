@@ -51,7 +51,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// A [Map] of data to inject when `res.render` is called.
   ///
   /// This can be used to reduce boilerplate when using templating engines.
-  final Map renderParams = {};
+  final Map<String, dynamic> renderParams = {};
 
   /// Points to the [RequestContext] corresponding to this response.
   RequestContext get correspondingRequest;
@@ -181,10 +181,10 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Renders a view to the response stream, and closes the response.
-  Future render(String view, [Map data]) {
+  Future render(String view, [Map<String, dynamic> data]) {
     if (!isOpen) throw closed();
     return app
-        .viewGenerator(view, new Map.from(renderParams)..addAll(data ?? {}))
+        .viewGenerator(view, new Map<String, dynamic>.from(renderParams)..addAll(data ?? <String, dynamic>{}))
         .then((content) {
       write(content);
       headers['content-type'] = 'text/html';
