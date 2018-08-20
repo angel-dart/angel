@@ -14,7 +14,7 @@ is a very straightforward interface that allows for your code to take a shape si
 the route tree. Users of Laravel and Express will be very happy.
 
 `angel_route` does not require the use of [Angel](https://github.com/angel-dart/angel),
-and has no dependencies. Thus, it can be used in any application, regardless of
+and has minimal dependencies. Thus, it can be used in any application, regardless of
 framework. This includes Web apps, Flutter apps, CLI apps, and smaller servers which do
 not need all the features of the Angel framework.
 
