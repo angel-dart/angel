@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io' show Cookie, HttpHeaders, HttpSession, InternetAddress;
 import 'dart:mirrors';
 
+import 'package:angel_container/angel_container.dart';
 import 'package:body_parser/body_parser.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:meta/meta.dart';
@@ -43,10 +44,11 @@ abstract class RequestContext<RawRequest> {
   /// The requested hostname.
   String get hostname;
 
-  final Map _injections = {};
-
-  /// A [Map] of singletons injected via [inject].
-  Map get injections => _injections;
+  /// The IoC container that can be used to provide functionality to produce
+  /// objects of a given type.
+  ///
+  /// This is a *child* of the container found in `app`.
+  Container get container;
 
   /// The user's IP.
   String get ip => remoteAddress.address;
