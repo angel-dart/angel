@@ -175,24 +175,25 @@ class Angel extends Routable {
   }
 
   @override
-  mount(Pattern path, Router router, {bool hooked: true, String namespace}) {
+  mount(Pattern path, Router router) {
     if (_flattened != null) {
       logger?.warning(
           'WARNING: You added mounted a child router ($path) on the router, after it had been optimized.');
       logger?.warning(
           'This route will be ignored, and no requests will ever reach it.');
     }
-    return super.mount(path.toString(), router,
-        hooked: hooked != false, namespace: namespace);
+    return super.mount(path.toString(), router);
   }
 
   /// Loads some base dependencies into the service container.
   void bootstrapContainer() {
-    if (runtimeType != Angel) container.singleton(this, as: Angel);
-    container.singleton(this, as: Angel);
-    container.singleton(this, as: Routable);
-    container.singleton(this, as: Router);
-    container.singleton(this);
+    if (runtimeType != Angel) {
+      container.registerSingleton(this);
+    }
+
+    container.registerSingleton<Angel>(this);
+    container.registerSingleton<Routable>(this);
+    container.registerSingleton<Router>(this);
   }
 
   /// Shuts down the server, and closes any open [StreamController]s.

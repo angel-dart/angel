@@ -51,14 +51,8 @@ class Routable extends Router {
   void close() {
     _services.clear();
     configuration.clear();
-    requestMiddleware.clear();
     _onService.close();
   }
-
-  /// Additional filters to be run on designated requests.
-  @override
-  final Map<String, RequestHandler> requestMiddleware =
-      <String, RequestHandler>{};
 
   /// A set of [Service] objects that have been mapped into routes.
   Map<Pattern, Service> get services => _services;
@@ -77,8 +71,8 @@ class Routable extends Router {
       _services[path.toString().replaceAll(_straySlashes, '')];
 
   @override
-  Route addRoute(String method, Pattern path, Object handler,
-      {List middleware: const []}) {
+  Route addRoute(String method, String path, Object handler,
+      {Iterable middleware: const []}) {
     final List handlers = [];
     // Merge @Middleware declaration, if any
     Middleware middlewareDeclaration = getAnnotation(handler, Middleware);
@@ -131,18 +125,12 @@ class Routable extends Router {
     // Let's copy middleware, heeding the optional middleware namespace.
     String middlewarePrefix = namespace != null ? "$namespace." : "";
 
-    Map copiedMiddleware = new Map.from(router.requestMiddleware);
-    for (String middlewareName in copiedMiddleware.keys) {
-      requestMiddleware.putIfAbsent("$middlewarePrefix$middlewareName",
-          () => copiedMiddleware[middlewareName] as RequestHandler);
-    }
-
     // Also copy properties...
     if (router is Routable) {
       Map copiedProperties = new Map.from(router.configuration);
       for (String propertyName in copiedProperties.keys) {
         configuration.putIfAbsent("$middlewarePrefix$propertyName",
-            () => copiedMiddleware[propertyName]);
+            () => copiedProperties[propertyName]);
       }
     }
 
