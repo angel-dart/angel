@@ -12,7 +12,7 @@ dependencies:
   angel_route: ^2.0.0
   body_parser: ^1.0.0-dev
   charcode: ^1.0.0
-  combinator: ">=1.0.0-beta <2.0.0"
+  combinator: ^1.0.0
   dart2_constant: ^1.0.0
   file: ^5.0.0
   http_parser: ^3.0.0
