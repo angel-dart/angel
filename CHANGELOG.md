@@ -15,3 +15,6 @@
 * `Service.toId` was renamed to `Service.parseId`; it also now uses its
 single type argument to determine how to parse a value.
     * In addition, this method was also made `static`.
+* `RequestContext` and `ResponseContext` are now generic, and take a
+single type argument pointing to the underlying request/response type,
+respectively.
