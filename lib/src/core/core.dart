@@ -1,4 +1,3 @@
-export 'angel_base.dart';
 export 'anonymous_service.dart';
 export 'hooked_service.dart';
 export 'map_service.dart';

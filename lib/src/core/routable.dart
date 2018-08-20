@@ -3,7 +3,6 @@ library angel_framework.http.routable;
 import 'dart:async';
 import 'package:angel_route/angel_route.dart';
 import '../util.dart';
-import 'angel_base.dart';
 import 'hooked_service.dart';
 import 'metadata.dart';
 import 'request_context.dart';
