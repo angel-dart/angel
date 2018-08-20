@@ -553,6 +553,7 @@ class HookedServiceEventDispatcher {
   /// *NOTE*: Callbacks on the returned [Stream] cannot be guaranteed to run before other [listeners].
   /// Use this only if you need a read-only stream of events.
   Stream<HookedServiceEvent> asStream() {
+    // TODO: Close StreamController
     var ctrl = new StreamController<HookedServiceEvent>();
     _ctrl.add(ctrl);
     listen(ctrl.add);

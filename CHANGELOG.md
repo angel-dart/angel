@@ -11,3 +11,4 @@
 * Moved `lib/hooks.dart` into `package:angel_hooks`.
 * Moved `TypedService` into `package:angel_typed_service`.
 * Completely removed the `AngelBase` class.
+* Removed all `@deprecated` symbols.

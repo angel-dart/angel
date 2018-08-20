@@ -17,12 +17,6 @@ import 'server.dart' show Angel;
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
-/// Serializes response data into a String.
-///
-/// Prefer the String Function(dynamic) syntax.
-@deprecated
-typedef String ResponseSerializer(data);
-
 /// A convenience wrapper around an outgoing HTTP request.
 abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   final Map properties = {};

@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:angel_container/angel_container.dart';
-import 'package:angel_container/mirrors.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
@@ -21,12 +20,6 @@ import 'routable.dart';
 import 'service.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
-
-/// A function that binds an [Angel] server to an Internet address and port.
-///
-/// Prefer the Future<HttpServer> Function(dynamic, int) syntax.
-@deprecated
-typedef Future<HttpServer> ServerGenerator(address, int port);
 
 /// A function that configures an [Angel] server in some way.
 typedef FutureOr AngelConfigurer(Angel app);
@@ -54,7 +47,11 @@ class Angel extends Routable {
 
   final Map _injections = {};
 
-  @deprecated
+  /// A function that is called on every request to create a [Zone], A.K.A an asynchronous
+  /// execution context.
+  ///
+  /// The utility of zones in Angel is to safely catch errors without crashing the application;
+  /// this also lets the driver wrap failures in instances of [AngelHttpException].
   Future<ZoneSpecification> Function(
           HttpRequest request, RequestContext req, ResponseContext res)
       createZoneForRequest;
@@ -94,11 +91,6 @@ class Angel extends Routable {
     return _isProduction ??=
         (Platform.environment['ANGEL_ENV'] == 'production');
   }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  ServerGenerator get serverGenerator =>
-      (_http ??= new AngelHttp(this)).serverGenerator;
 
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
@@ -150,22 +142,6 @@ class Angel extends Routable {
   /// Called by [ResponseContext]@`render`.
   ViewGenerator viewGenerator = noViewEngineConfigured;
 
-  /// //
-  /// Use [configuration] instead.
-  @deprecated
-  Map get properties {
-    try {
-      throw new Error();
-    } catch (e, st) {
-      logger?.warning(
-        '`properties` is deprecated, and should not be used.',
-        new UnsupportedError('`properties` is deprecated.'),
-        st,
-      );
-    }
-    return configuration;
-  }
-
   /// The handler currently configured to run on [AngelHttpException]s.
   Function(AngelHttpException e, RequestContext req, ResponseContext res)
       errorHandler =
@@ -189,17 +165,6 @@ class Angel extends Routable {
     res.write("</ul></body></html>");
     res.end();
   };
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  HttpServer get httpServer => _http?.httpServer;
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  Future<HttpServer> startServer([address, int port]) {
-    _http ??= new AngelHttp(this);
-    return _http.startServer(address, port);
-  }
 
   @override
   Route addRoute(String method, Pattern path, Object handler,
@@ -301,12 +266,6 @@ class Angel extends Routable {
     this.encoders.addAll(encoders);
   }
 
-  /// Prefer directly setting [serializer].
-  @deprecated
-  void injectSerializer(String serializer(x)) {
-    this.serializer = serializer;
-  }
-
   Future getHandlerResult(handler, RequestContext req, ResponseContext res) {
     if (handler is RequestHandler) {
       var result = handler(req, res);
@@ -349,22 +308,6 @@ class Angel extends Routable {
     });
   }
 
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  Future<RequestContext> createRequestContext(HttpRequest request) {
-    _http ??= new AngelHttp(this);
-    return _http.createRequestContext(request);
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  Future<ResponseContext> createResponseContext(HttpResponse response,
-      [RequestContext correspondingRequest]) {
-    _http ??= new AngelHttp(this);
-
-    return _http.createResponseContext(response, correspondingRequest);
-  }
-
   /// Attempts to find a middleware by the given name within this application.
   findMiddleware(key) {
     if (requestMiddleware.containsKey(key)) return requestMiddleware[key];
@@ -375,23 +318,6 @@ class Angel extends Routable {
   findProperty(key) {
     if (configuration.containsKey(key)) return configuration[key];
     return parent != null ? parent.findProperty(key) : null;
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  Future handleAngelHttpException(AngelHttpException e, StackTrace st,
-      RequestContext req, ResponseContext res, HttpRequest request,
-      {bool ignoreFinalizers: false}) {
-    _http ??= new AngelHttp(this);
-    return _http.handleAngelHttpException(e, st, req, res, request,
-        ignoreFinalizers: ignoreFinalizers == true);
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  Future handleRequest(HttpRequest request) {
-    _http ??= new AngelHttp(this);
-    return _http.handleRequest(request);
   }
 
   /// Runs several optimizations, *if* [isProduction] is `true`.
@@ -448,21 +374,6 @@ class Angel extends Routable {
         handleContained(handler, _preContained[handler] = preInject(handler));
     return new Future.sync(() => h(req, res));
     // return   closureMirror.apply(args).reflectee;
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  Future sendResponse(
-      HttpRequest request, RequestContext req, ResponseContext res,
-      {bool ignoreFinalizers: false}) {
-    _http ??= new AngelHttp(this);
-    return _http.sendResponse(request, req, res);
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  void throttle(int maxConcurrentRequests, {Duration timeout}) {
-    _http?.throttle(maxConcurrentRequests, timeout: timeout);
   }
 
   /// Applies an [AngelConfigurer] to this instance.
@@ -539,35 +450,5 @@ class Angel extends Routable {
         },
       ),
     );
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  factory Angel.custom(
-      Future<HttpServer> Function(dynamic, int) serverGenerator) {
-    var app = new Angel(reflector: MirrorsReflector());
-    return app.._http = new AngelHttp.custom(app, serverGenerator);
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  factory Angel.fromSecurityContext(SecurityContext context) {
-    var app = new Angel(reflector: MirrorsReflector());
-
-    app._http = new AngelHttp.custom(app, (address, int port) {
-      return HttpServer.bindSecure(address, port, context);
-    });
-
-    return app;
-  }
-
-  /// Use the serving methods in [AngelHttp] instead.
-  @deprecated
-  factory Angel.secure(String certificateChainPath, String serverKeyPath,
-      {String password}) {
-    var app = new Angel(reflector: MirrorsReflector());
-    return app
-      .._http = new AngelHttp.secure(app, certificateChainPath, serverKeyPath,
-          password: password);
   }
 }

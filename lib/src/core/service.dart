@@ -1,8 +1,10 @@
 library angel_framework.http.service;
 
 import 'dart:async';
+
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:merge_map/merge_map.dart';
+
 import '../util.dart';
 import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
@@ -29,7 +31,7 @@ class Providers {
   static const Providers rest = Providers(viaRest);
 
   /// Represents a request over WebSockets.
-  static const Providers websocket =  Providers(viaWebsocket);
+  static const Providers websocket = Providers(viaWebsocket);
 
   /// Represents a request parsed from GraphQL.
   static const Providers graphql = Providers(viaGraphQL);
@@ -48,7 +50,7 @@ class Providers {
 /// Heavily inspired by FeathersJS. <3
 class Service extends Routable {
   /// A [List] of keys that services should ignore, should they see them in the query.
-  static const List<String> specialQueryKeys = <String> [
+  static const List<String> specialQueryKeys = <String>[
     r'$limit',
     r'$sort',
     'page',
@@ -121,12 +123,22 @@ class Service extends Routable {
     throw new AngelHttpException.methodNotAllowed();
   }
 
-  /// Transforms an [id] string into one acceptable by a service.
-  toId<T>(T id) {
+  /// Transforms an [id] (whether it is a String, num, etc.) into one acceptable by a service.
+  T parseId<T>(id) {
     if (id == 'null' || id == null)
       return null;
+    else if (T == String)
+      return id.toString() as T;
+    else if (T == int)
+      return int.parse(id.toString()) as T;
+    else if (T == bool)
+      return (id == true || id?.toString() == 'true') as T;
+    else if (T == double)
+      return int.parse(id.toString()) as T;
+    else if (T == num)
+      return num.parse(id.toString()) as T;
     else
-      return id;
+      return id as T;
   }
 
   /// Generates RESTful routes pointing to this class's methods.
@@ -181,7 +193,7 @@ class Service extends Routable {
     get(
         '/:id',
         (RequestContext req, res) => this.read(
-            toId(req.params['id']),
+            parseId(req.params['id']),
             mergeMap([
               {'query': req.query},
               restProvider,
@@ -195,7 +207,7 @@ class Service extends Routable {
     patch(
         '/:id',
         (RequestContext req, res) => req.lazyBody().then((body) => this.modify(
-            toId(req.params['id']),
+            parseId(req.params['id']),
             body,
             mergeMap([
               {'query': req.query},
@@ -211,7 +223,7 @@ class Service extends Routable {
     post(
         '/:id',
         (RequestContext req, res) => req.lazyBody().then((body) => this.update(
-            toId(req.params['id']),
+            parseId(req.params['id']),
             body,
             mergeMap([
               {'query': req.query},
@@ -225,7 +237,7 @@ class Service extends Routable {
     put(
         '/:id',
         (RequestContext req, res) => req.lazyBody().then((body) => this.update(
-            toId(req.params['id']),
+            parseId(req.params['id']),
             body,
             mergeMap([
               {'query': req.query},
@@ -254,7 +266,7 @@ class Service extends Routable {
     delete(
         '/:id',
         (RequestContext req, res) => this.remove(
-            toId(req.params['id']),
+            parseId(req.params['id']),
             mergeMap([
               {'query': req.query},
               restProvider,

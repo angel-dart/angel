@@ -71,14 +71,6 @@ class Routable extends Router {
   /// **NOTE**: This is a broadcast stream.
   Stream<Service> get onService => _onService.stream;
 
-  /// Assigns a middleware to a name for convenience.
-  @override
-  registerMiddleware(String name, middleware) {
-    assert(middleware is RequestMiddleware);
-    // ignore: deprecated_member_use
-    super.registerMiddleware(name, middleware);
-  }
-
   /// Retrieves the service assigned to the given path.
   Service service(Pattern path) =>
       _services[path] ??
