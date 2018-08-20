@@ -11,7 +11,6 @@ import 'dart:io'
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
-import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:tuple/tuple.dart';
 import 'http_request_context.dart';
@@ -28,8 +27,6 @@ class AngelHttp {
   HttpServer _server;
   Future<HttpServer> Function(dynamic, int) _serverGenerator = HttpServer.bind;
   StreamSubscription<HttpRequest> _sub;
-
-  Pool _pool;
 
   AngelHttp(this.app, {this.useZone: true});
 
@@ -323,10 +320,6 @@ class AngelHttp {
         ..add(outputBuffer);
 
       return request.response.close().then((_) {
-        if (req.injections.containsKey(PoolResource)) {
-          req.injections[PoolResource].release();
-        }
-
         if (!app.isProduction && app.logger != null) {
           var sw = req.grab<Stopwatch>(Stopwatch);
 
@@ -343,11 +336,7 @@ class AngelHttp {
   Future<HttpRequestContext> createRequestContext(HttpRequest request) {
     var path = request.uri.path.replaceAll(_straySlashes, '');
     if (path.length == 0) path = '/';
-    return HttpRequestContext.from(request, app, path).then((req) {
-      if (_pool != null) req.inject(PoolResource, _pool.request());
-      if (app.injections.isNotEmpty) app.injections.forEach(req.inject);
-      return req;
-    });
+    return HttpRequestContext.from(request, app, path);
   }
 
   Future<ResponseContext> createResponseContext(HttpResponse response,
@@ -356,12 +345,4 @@ class AngelHttp {
           response, app, correspondingRequest as HttpRequestContext)
         ..serializer = (app.serializer ?? json.encode)
         ..encoders.addAll(app.encoders ?? {}));
-
-  /// Limits the maximum number of requests to be handled concurrently by this instance.
-  ///
-  /// You can optionally provide a [timeout] to limit the amount of time a request can be
-  /// handled before.
-  void throttle(int maxConcurrentRequests, {Duration timeout}) {
-    _pool = new Pool(maxConcurrentRequests, timeout: timeout);
-  }
 }
