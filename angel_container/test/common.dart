@@ -7,20 +7,24 @@ void testReflector(Reflector reflector) {
 
   setUp(() {
     container = new Container(reflector);
-    container.singleton(blaziken);
+    container.registerSingleton(blaziken);
   });
 
   test('make on singleton type returns singleton', () {
     expect(container.make(Pokemon), blaziken);
   });
 
+  test('make with generic returns same as make with explicit type', () {
+    expect(container.make<Pokemon>(), blaziken);
+  });
+
   test('make on aliased singleton returns singleton', () {
-    container.singleton(blaziken, as: StateError);
+    container.registerSingleton(blaziken, as: StateError);
     expect(container.make(StateError), blaziken);
   });
 
   test('constructor injects singleton', () {
-    var lower = container.make(LowerPokemon) as LowerPokemon;
+    var lower = container.make<LowerPokemon>();
     expect(lower.lowercaseName, blaziken.name.toLowerCase());
   });
 
