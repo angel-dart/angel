@@ -1,23 +1,35 @@
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:io/ansi.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
+
 import 'common.dart';
 
-@Middleware(const ['interceptor'])
+@Middleware([interceptor])
 testMiddlewareMetadata(RequestContext req, ResponseContext res) async {
   return "This should not be shown.";
 }
 
-@Middleware(const ['intercept_service'])
+@Middleware([interceptService])
 class QueryService extends Service {
   @override
-  @Middleware(const ['interceptor'])
+  @Middleware([interceptor])
   read(id, [Map params]) async => params;
+}
+
+void interceptor(RequestContext req, ResponseContext res) {
+  res
+    ..write('Middleware')
+    ..end();
+}
+
+void interceptService(RequestContext req, ResponseContext res) {
+  res.write("Service with ");
 }
 
 main() {
@@ -44,16 +56,6 @@ main() {
         });
     });
 
-    app.requestMiddleware
-      ..['interceptor'] = (req, res) async {
-        res.write('Middleware');
-        return false;
-      }
-      ..['intercept_service'] = (RequestContext req, res) async {
-        res.write("Service with ");
-        return true;
-      };
-
     todos.get('/action/:action', (req, res) => res.json(req.params));
 
     Route ted;
@@ -67,8 +69,7 @@ main() {
 
     app.use('/nes', nested);
     app.get('/meta', testMiddlewareMetadata);
-    app.get('/intercepted', 'This should not be shown',
-        middleware: ['interceptor']);
+    app.get('/intercepted', 'This should not be shown', middleware: ['interceptor']);
     app.get('/hello', 'world');
     app.get('/name/:first/last/:last', (req, res) => req.params);
     app.post('/lambda', (RequestContext req, res) => req.parseBody());
@@ -90,16 +91,14 @@ main() {
 
     app.use('/query', new QueryService());
 
-    RequestMiddleware write(String message) {
-      return (req, res) async {
+    RequestHandler write(String message) {
+      return (req, res) {
         res.write(message);
-        return true;
       };
     }
 
-    app
-        .chain(write('a'))
-        .chain([write('b'), write('c')]).get('/chained', () => false);
+    app.chain([write('a')]).chain([write('b'), write('c')]).get(
+        '/chained', () => false);
 
     app.use('MJ');
 
@@ -179,7 +178,7 @@ main() {
   });
 
   test('Can name routes', () {
-    Route foo = app.get('/framework/:id', [])..name = 'frm';
+    Route foo = app.get('/framework/:id', null)..name = 'frm';
     print('Foo: $foo');
     String uri = foo.makeUri({'id': 'angel'});
     print(uri);

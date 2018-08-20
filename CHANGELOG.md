@@ -35,3 +35,8 @@ as well as `query`.
 * Remove the `RequestMiddleware` typedef; from now on, one should use `ResponseContext.end`
 exclusively to close responses.
 * `waterfall` will now only accept `RequestHandler`.
+* `Routable`, and all of its subclasses, now extend `Router<RequestHandler>`, and therefore only
+take routes in the form of `FutureOr myFunc(RequestContext, ResponseContext res)`.
+* `@Middleware` now takes an `Iterable` of `RequestHandler`s.
+* `@Expose.path` now *must* be a `String`, not just any `Pattern`.
+* `@Expose.middleware` now takes `Iterable<RequestHandler>`, instead of just `List`.

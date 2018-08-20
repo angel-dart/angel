@@ -8,7 +8,7 @@ main() async {
       'View generator invoked with name $name and data: $data';
 
   // Index route. Returns JSON.
-  app.get('/', (ResponseContext res) => res.render('index', {'foo': 'bar'}));
+  app.get('/', (req, res) => res.render('index', {'foo': 'bar'}));
 
   var http = new AngelHttp(app);
   var server = await http.startServer('127.0.0.1', 3000);

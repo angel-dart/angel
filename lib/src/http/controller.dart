@@ -60,7 +60,7 @@ class Controller {
   }
 
   void Function(Symbol, MethodMirror) _routeBuilder(
-      InstanceMirror instanceMirror, Routable routable, List handlers) {
+      InstanceMirror instanceMirror, Routable routable, Iterable<RequestHandler> handlers) {
     return (Symbol methodName, MethodMirror method) {
       if (method.isRegularMethod &&
           methodName != #toString &&
@@ -76,7 +76,7 @@ class Controller {
 
         var reflectedMethod =
             instanceMirror.getField(methodName).reflectee as Function;
-        var middleware = []..addAll(handlers)..addAll(exposeDecl.middleware);
+        var middleware = <RequestHandler>[]..addAll(handlers)..addAll(exposeDecl.middleware);
         String name = exposeDecl.as?.isNotEmpty == true
             ? exposeDecl.as
             : MirrorSystem.getName(methodName);

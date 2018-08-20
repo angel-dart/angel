@@ -58,7 +58,7 @@ class Service extends Routable {
   ];
 
   /// Handlers that must run to ensure this service's functionality.
-  List get bootstrappers => [];
+  List<RequestHandler> get bootstrappers => [];
 
   /// The [Angel] app powering this service.
   Angel app;
@@ -150,8 +150,9 @@ class Service extends Routable {
     _addRoutesInner(service ?? this, bootstrappers);
   }
 
-  void _addRoutesInner(Service service, List handlers) {
-    Map restProvider = {'provider': Providers.rest};
+  void _addRoutesInner(Service service, Iterable<RequestHandler> handlerss) {
+    var restProvider = {'provider': Providers.rest};
+    var handlers = new List<RequestHandler>.from(handlerss);
 
     // Add global middleware if declared on the instance itself
     Middleware before = getAnnotation(service, Middleware);
@@ -168,7 +169,7 @@ class Service extends Routable {
         ]));
       });
     },
-        middleware: []
+        middleware: <RequestHandler>[]
           ..addAll(handlers)
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 

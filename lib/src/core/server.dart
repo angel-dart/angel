@@ -162,8 +162,8 @@ class Angel extends Routable {
   };
 
   @override
-  Route addRoute(String method, Pattern path, Object handler,
-      {List middleware: const []}) {
+  Route addRoute(String method, String path, Object handler,
+      {Iterable middleware: const []}) {
     if (_flattened != null) {
       logger?.warning(
           'WARNING: You added a route ($method $path) to the router, after it had been optimized.');

@@ -42,7 +42,7 @@ RequestHandler waterfall(Iterable<RequestHandler> handlers) {
 }
 
 /// A routable server that can handle dynamic requests.
-class Routable extends Router {
+class Routable extends Router<RequestHandler> {
   final Map<Pattern, Service> _services = {};
   final Map configuration = {};
 
@@ -71,16 +71,17 @@ class Routable extends Router {
       _services[path.toString().replaceAll(_straySlashes, '')];
 
   @override
-  Route addRoute(String method, String path, Object handler,
-      {Iterable middleware: const []}) {
-    final List handlers = [];
+  Route<RequestHandler> addRoute(
+      String method, String path, RequestHandler handler,
+      {Iterable<RequestHandler> middleware: const <RequestHandler>[]}) {
+    final handlers = <RequestHandler>[];
     // Merge @Middleware declaration, if any
     Middleware middlewareDeclaration = getAnnotation(handler, Middleware);
     if (middlewareDeclaration != null) {
       handlers.addAll(middlewareDeclaration.handlers);
     }
 
-    final List handlerSequence = [];
+    final handlerSequence = <RequestHandler>[];
     handlerSequence.addAll(middleware ?? []);
     handlerSequence.addAll(handlers);
 
@@ -94,8 +95,8 @@ class Routable extends Router {
   /// an [Angel] instance.
   ///
   /// Returns either a [Route] or a [Service] (if one was mounted).
-  use(path, [Router router, String namespace = null]) {
-    Router _router = router;
+  use(path, [Router<RequestHandler> router, String namespace = null]) {
+    Router<RequestHandler> _router = router;
     Service service;
 
     // If we need to hook this service, do it here. It has to be first, or

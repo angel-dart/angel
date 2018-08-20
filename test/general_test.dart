@@ -13,8 +13,8 @@ main() {
 
   setUp(() async {
     app = new Angel(reflector: MirrorsReflector())
-      ..post('/foo', () => {'hello': 'world'})
-      ..all('*', () => throw new AngelHttpException.notFound());
+      ..post('/foo', (req, res) => res.serialize({'hello': 'world'}))
+      ..all('*', (req, res) => throw new AngelHttpException.notFound());
     client = new http.Client();
 
     server = await new AngelHttp(app).startServer();

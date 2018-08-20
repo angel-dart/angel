@@ -1,12 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show stderr;
+import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
-import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
+
 import 'encoders_buffer_test.dart' show encodingTests;
 
 main() {
@@ -30,18 +32,18 @@ main() {
       },
     );
 
-    app.get('/hello', (ResponseContext res) {
+    app.get('/hello', (req,  res) {
       new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]).pipe(res);
     });
 
-    app.get('/write', (res) async {
+    app.get('/write', (req, res) async {
       await res.addStream(
           new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
       res.write('bye');
       await res.close();
     });
 
-    app.get('/multiple', (res) async {
+    app.get('/multiple', (req, res) async {
       await res.addStream(
           new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
       await res
@@ -49,7 +51,7 @@ main() {
       await res.close();
     });
 
-    app.get('/overwrite', (ResponseContext res) async {
+    app.get('/overwrite', (req, res) async {
       res.statusCode = 32;
       await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res);
@@ -63,7 +65,7 @@ main() {
       }
     });
 
-    app.get('/error', (res) => res.addError(new StateError('wtf')));
+    app.get('/error', (req, res) => res.addError(new StateError('wtf')));
 
     app.errorHandler = (e, req, res) async {
       stderr..writeln(e.error)..writeln(e.stackTrace);

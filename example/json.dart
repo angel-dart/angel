@@ -32,15 +32,16 @@ serverMain(_) async {
   var app = new Angel(reflector: MirrorsReflector());
   var http = new AngelHttp.custom(app, startShared); // Run a cluster
 
-  app.get('/', {
-    "foo": "bar",
-    "one": [2, "three"],
-    "bar": {"baz": "quux"}
+  app.get('/', (req, res) {
+    res.serialize({
+      "foo": "bar",
+      "one": [2, "three"],
+      "bar": {"baz": "quux"}
+    });
   });
 
   // Performance tuning
-  app
-    ..serializer = json.encode;
+  app..serializer = json.encode;
 
   app.errorHandler = (e, req, res) {
     print(e.message ?? e.error ?? e);

@@ -1,12 +1,14 @@
 library angel_framework.http.metadata;
 
-import 'hooked_service.dart' show HookedServiceEventListener;
 import 'package:angel_http_exception/angel_http_exception.dart';
+
+import 'hooked_service.dart' show HookedServiceEventListener;
 import 'request_context.dart';
+import 'routable.dart';
 
 /// Annotation to map middleware onto a handler.
 class Middleware {
-  final List handlers;
+  final Iterable<RequestHandler> handlers;
 
   const Middleware(this.handlers);
 }
@@ -22,8 +24,8 @@ class Hooks {
 /// Exposes a [Controller] to the Internet.
 class Expose {
   final String method;
-  final Pattern path;
-  final List middleware;
+  final String path;
+  final Iterable<RequestHandler> middleware;
   final String as;
   final List<String> allowNull;
 
@@ -91,7 +93,8 @@ class Parameter {
       return req.headers.value(header) ?? defaultValue;
     if (session?.isNotEmpty == true)
       return req.session[session] ?? defaultValue;
-    if (query?.isNotEmpty == true) return req.uri.queryParameters[query] ?? defaultValue;
+    if (query?.isNotEmpty == true)
+      return req.uri.queryParameters[query] ?? defaultValue;
     return defaultValue;
   }
 }

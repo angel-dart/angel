@@ -4,6 +4,7 @@ import 'dart:async';
 import '../util.dart';
 import 'request_context.dart';
 import 'response_context.dart';
+import 'routable.dart';
 import 'metadata.dart';
 import 'service.dart';
 
@@ -119,7 +120,7 @@ class HookedService extends Service {
     applyListeners(inner.remove, afterRemoved, true);
   }
 
-  List get bootstrappers => new List.from(super.bootstrappers)
+  List<RequestHandler> get bootstrappers => new List<RequestHandler>.from(super.bootstrappers)
     ..add((RequestContext req, ResponseContext res) {
       req.serviceParams
         ..['__requestctx'] = req
