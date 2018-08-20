@@ -129,7 +129,7 @@ class Routable extends Router {
 
     final handlers = [];
 
-    if (_router is AngelBase) {
+    if (_router is Angel) {
       handlers.add((RequestContext req, ResponseContext res) {
         req.app = _router as Angel;
         res.app = _router as Angel;

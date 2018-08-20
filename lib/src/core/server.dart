@@ -15,7 +15,6 @@ import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
 
 import '../http/http.dart';
-import 'angel_base.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -32,8 +31,15 @@ typedef Future<HttpServer> ServerGenerator(address, int port);
 /// A function that configures an [Angel] server in some way.
 typedef FutureOr AngelConfigurer(Angel app);
 
+/// A function that asynchronously generates a view from the given path and data.
+typedef FutureOr<String> ViewGenerator(String path,
+    [Map<String, dynamic> data]);
+
 /// A powerful real-time/REST/MVC server class.
-class Angel extends AngelBase {
+class Angel extends Routable {
+  static ViewGenerator noViewEngineConfigured =
+      (String view, [Map data]) => 'No view engine has been configured yet.';
+
   final List<Angel> _children = [];
   final Map<String, Tuple3<List, Map, ParseResult<Map<String, dynamic>>>>
       handlerCache = new HashMap();
@@ -118,6 +124,33 @@ class Angel extends AngelBase {
   /// All global dependencies injected into the application.
   Map get injections => _injections;
 
+  Container _container;
+
+  /// A [Map] of application-specific data that can be accessed by any
+  /// piece of code that can see this [Angel] instance.
+  ///
+  /// Packages like `package:angel_configuration` populate this map
+  /// for you.
+  final Map configuration = {};
+
+  /// When set to true, the request body will not be parsed
+  /// automatically. You can call `req.parse()` manually,
+  /// or use `lazyBody()`.
+  bool lazyParseBodies = false;
+
+  /// When set to `true`, the original body bytes will be stored
+  /// on requests. `false` by default.
+  bool storeOriginalBuffer = false;
+
+  /// A [Container] used to inject dependencies.
+  Container get container => _container;
+
+  /// A function that renders views.
+  ///
+  /// Called by [ResponseContext]@`render`.
+  ViewGenerator viewGenerator = noViewEngineConfigured;
+
+  /// //
   /// Use [configuration] instead.
   @deprecated
   Map get properties {
@@ -196,7 +229,7 @@ class Angel extends AngelBase {
   /// Loads some base dependencies into the service container.
   void bootstrapContainer() {
     if (runtimeType != Angel) container.singleton(this, as: Angel);
-    container.singleton(this, as: AngelBase);
+    container.singleton(this, as: Angel);
     container.singleton(this, as: Routable);
     container.singleton(this, as: Router);
     container.singleton(this);
@@ -204,13 +237,15 @@ class Angel extends AngelBase {
 
   /// Shuts down the server, and closes any open [StreamController]s.
   ///
-  /// The server will be **COMPLETE DEFUNCT** after this operation!
+  /// The server will be **COMPLETELY DEFUNCT** after this operation!
   Future close() {
     Future.forEach(services.values, (Service service) {
       service.close();
     });
 
     super.close();
+    _container = null;
+    viewGenerator = noViewEngineConfigured;
     _preContained.clear();
     handlerCache.clear();
     _injections.clear();
@@ -484,8 +519,8 @@ class Angel extends AngelBase {
     return super.use(path, routable, namespace);
   }
 
-  /// Default constructor. ;)
-  Angel({@required Reflector reflector}) : super(reflector) {
+  Angel({@required Reflector reflector}) {
+    _container = new Container(reflector);
     bootstrapContainer();
     // ignore: deprecated_member_use
     createZoneForRequest = defaultZoneCreator;
