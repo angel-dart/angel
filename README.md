@@ -46,6 +46,13 @@ main() {
     return { 'result': pow(int.parse(n), 0.5) };
   });
   
+  // You can also have parameters auto-parsed.
+  //
+  // Supports int, double, and num.
+  router.get('/square_root/int:id([0-9]+)', (int n) { 
+      return { 'result': pow(n, 0.5) };
+    });
+  
   router.group('/show/:id', (router) {
     router.get('/reviews', (id) {
       return someQuery(id).reviews;

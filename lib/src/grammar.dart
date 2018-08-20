@@ -3,7 +3,10 @@ part of angel_route.src.router;
 class RouteGrammar {
   static final Parser<String> notSlash =
       match(new RegExp(r'[^/]+')).value((r) => r.span.text);
-  static final Parser<RegExp> regExp = new _RegExpParser();
+
+  static final Parser<RegExp> regExp = match<RegExp>(new RegExp(r'\((.+)\)'))
+      .value((r) => new RegExp(r.scanner.lastMatch[1]));
+
   static final Parser<String> parameterName =
       match(new RegExp(r':([A-Za-z0-9_]+)'))
           .value((r) => r.span.text.substring(1));
@@ -17,30 +20,32 @@ class RouteGrammar {
     return r.value[1] == true ? new OptionalSegment(s) : s;
   });
 
+  static final Parser<ParsedParameterSegment> parsedParameterSegment = chain([
+    match(new RegExp(r'(int|num|double)'),
+            errorMessage: 'Expected "int","double", or "num".')
+        .map((r) => r.span.text),
+    parameterSegment,
+  ]).map((r) {
+    return new ParsedParameterSegment(r.value[0], r.value[1]);
+  });
+
   static final Parser<WildcardSegment> wildcardSegment =
       match('*').value((r) => new WildcardSegment());
 
   static final Parser<ConstantSegment> constantSegment =
       notSlash.map((r) => new ConstantSegment(r.value));
 
-  static final Parser<RouteSegment> routeSegment =
-      any([parameterSegment, wildcardSegment, constantSegment]);
+  static final Parser<RouteSegment> routeSegment = any([
+    parsedParameterSegment,
+    parameterSegment,
+    wildcardSegment,
+    constantSegment
+  ]);
 
   static final Parser<RouteDefinition> routeDefinition = routeSegment
       .separatedBy(match('/'))
       .map((r) => new RouteDefinition(r.value ?? []))
       .surroundedBy(match('/').star().opt());
-}
-
-class _RegExpParser extends Parser<RegExp> {
-  static final RegExp rgx = new RegExp(r'\((.+)\)');
-
-  @override
-  ParseResult<RegExp> parse(SpanScanner scanner, [int depth = 1]) {
-    if (!scanner.matches(rgx)) return new ParseResult(this, false, []);
-    return new ParseResult(this, true, [],
-        span: scanner.lastSpan, value: new RegExp(scanner.lastMatch[1]));
-  }
 }
 
 class RouteDefinition {
@@ -66,6 +71,7 @@ class RouteDefinition {
 
 abstract class RouteSegment {
   Parser<Map<String, dynamic>> compile(bool isLast);
+
   Parser<Map<String, dynamic>> compileNext(
       Parser<Map<String, dynamic>> p, bool isLast);
 }
@@ -168,6 +174,39 @@ class ParameterSegment extends RouteSegment {
       Parser<Map<String, dynamic>> p, bool isLast) {
     return p.then(_compile()).map((r) {
       return r.value[0]..addAll({name: Uri.decodeComponent(r.value[1])});
+    });
+  }
+}
+
+class ParsedParameterSegment extends RouteSegment {
+  final String type;
+  final ParameterSegment parameter;
+
+  ParsedParameterSegment(this.type, this.parameter);
+
+  num getValue(String s) {
+    switch (type) {
+      case 'int':
+        return int.parse(s);
+      case 'double':
+        return double.parse(s);
+      default:
+        return num.parse(s);
+    }
+  }
+
+  @override
+  Parser<Map<String, dynamic>> compile(bool isLast) {
+    return parameter._compile().map(
+        (r) => {parameter.name: getValue(Uri.decodeComponent(r.span.text))});
+  }
+
+  @override
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast) {
+    return p.then(parameter._compile()).map((r) {
+      return r.value[0]
+        ..addAll({parameter.name: getValue(Uri.decodeComponent(r.value[1]))});
     });
   }
 }
