@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:angel_container/angel_container.dart';
 import 'package:body_parser/body_parser.dart';
 import 'package:http_parser/http_parser.dart';
 
@@ -8,9 +9,13 @@ import '../core/core.dart';
 
 /// An implementation of [RequestContext] that wraps a [HttpRequest].
 class HttpRequestContext extends RequestContext<HttpRequest> {
+  Container _container;
   MediaType _contentType;
   HttpRequest _io;
   String _override, _path;
+
+  @override
+  Container get container => _container;
 
   @override
   MediaType get contentType {
@@ -77,7 +82,8 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
   /// Magically transforms an [HttpRequest] into a [RequestContext].
   static Future<HttpRequestContext> from(
       HttpRequest request, Angel app, String path) {
-    HttpRequestContext ctx = new HttpRequestContext();
+    HttpRequestContext ctx = new HttpRequestContext()
+      .._container = app.container.createChild();
 
     String override = request.method;
 
