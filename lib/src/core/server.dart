@@ -14,6 +14,7 @@ import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
 
 import '../http/http.dart';
+import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -361,6 +362,11 @@ class Angel extends Routable {
     return new Future.sync(() => configurer(this));
   }
 
+  /// Shorthand for calling `all('*', handler)`.
+  Route<RequestHandler> fallback(RequestHandler handler) {
+    return all('*', handler);
+  }
+
   /// Mounts the child on this router. If [routable] is `null`,
   /// then this method will add a handler as a global middleware instead.
   ///
@@ -372,8 +378,7 @@ class Angel extends Routable {
   /// NOTE: The above will not be properly copied if [path] is
   /// a [RegExp].
   @override
-  use(path, [Router routable, String namespace = null]) {
-    if (routable == null) return all('*', path);
+  HookedService use(path, [Router<RequestHandler> routable, String namespace = null]) {
 
     var head = path.toString().replaceAll(_straySlashes, '');
 

@@ -94,10 +94,10 @@ class Routable extends Router<RequestHandler> {
   /// The [router] may only omitted when called via
   /// an [Angel] instance.
   ///
-  /// Returns either a [Route] or a [Service] (if one was mounted).
-  use(path, [Router<RequestHandler> router, String namespace = null]) {
+  /// Returns a [HookedService] (if one was mounted).
+  HookedService use(path, [Router<RequestHandler> router, String namespace = null]) {
     Router<RequestHandler> _router = router;
-    Service service;
+    HookedService service;
 
     // If we need to hook this service, do it here. It has to be first, or
     // else all routes will point to the old service.
@@ -153,6 +153,6 @@ class Routable extends Router<RequestHandler> {
       if (_onService.hasListener) _onService.add(service);
     }
 
-    return service ?? mounted;
+    return service;
   }
 }
