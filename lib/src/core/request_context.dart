@@ -24,8 +24,6 @@ abstract class RequestContext<RawRequest> {
   BodyParseResult _body;
   Map _provisionalQuery;
 
-  final Map properties = {};
-
   /// The underlying [RawRequest] provided by the driver.
   RawRequest get rawRequest;
 
@@ -87,31 +85,6 @@ abstract class RequestContext<RawRequest> {
   /// Includes the leading `.`, if there is one.
   String get extension => _extensionCache ??= p.extension(uri.path);
 
-  /// Grabs an object by key or type from [params], [_injections], or
-  /// [app].container. Use this to perform dependency injection
-  /// within a service hook.
-  T grab<T>(key) {
-    if (params.containsKey(key))
-      return params[key] as T;
-    else if (_injections.containsKey(key))
-      return _injections[key] as T;
-    else if (properties.containsKey(key))
-      return properties[key] as T;
-    else {
-      var prop = app?.findProperty(key);
-      if (prop != null)
-        return prop as T;
-      else if (key is Type) {
-        try {
-          return app.container.make(key) as T;
-        } catch (e) {
-          return null;
-        }
-      } else
-        return null;
-    }
-  }
-
   /// Returns `true` if the client's `Accept` header indicates that the given [contentType] is considered a valid response.
   ///
   /// You cannot provide a `null` [contentType].
@@ -148,7 +121,8 @@ abstract class RequestContext<RawRequest> {
   Future<Map> parseBody() => parse().then((b) => b.body);
 
   /// Retrieves a list of all uploaded files if it has already been parsed, or lazy-parses it before returning the files.
-  Future<List<FileUploadInfo>> parseUploadedFiles() => parse().then((b) => b.files);
+  Future<List<FileUploadInfo>> parseUploadedFiles() =>
+      parse().then((b) => b.files);
 
   /// Retrieves the original request buffer if it has already been parsed, or lazy-parses it before returning the buffer..
   ///
@@ -185,8 +159,6 @@ abstract class RequestContext<RawRequest> {
     _acceptsAllCache = null;
     _acceptHeaderCache = null;
     _provisionalQuery?.clear();
-    properties.clear();
-    _injections.clear();
     serviceParams.clear();
     params.clear();
     return new Future.value();

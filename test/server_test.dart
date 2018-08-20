@@ -89,7 +89,8 @@ main() {
   });
 
   test('global injection added to injection map', () async {
-    var app = new Angel(reflector: MirrorsReflector())..inject('a', 'b');
+    var app = new Angel(reflector: MirrorsReflector())
+      ..configuration['a'] = 'b';
     var http = new AngelHttp(app);
     app.get('/', ioc((String a) => a));
     var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();

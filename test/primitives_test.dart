@@ -12,7 +12,7 @@ main() {
 
   setUp(() {
     app = new Angel(reflector: MirrorsReflector())
-      ..inject('global', 305); // Pitbull!
+      ..configuration['global'] = 305; // Pitbull!
     http = new AngelHttp(app);
 
     app.get('/string/:string', ioc((String string) => string));

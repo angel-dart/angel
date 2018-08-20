@@ -34,7 +34,8 @@ class Angel extends Routable {
       (String view, [Map data]) => 'No view engine has been configured yet.';
 
   final List<Angel> _children = [];
-  final Map<String, Tuple3<List, Map, ParseResult<Map<String, dynamic>>>>
+  final Map<String,
+          Tuple3<List, Map<String, dynamic>, ParseResult<Map<String, dynamic>>>>
       handlerCache = new HashMap();
 
   Router _flattened;

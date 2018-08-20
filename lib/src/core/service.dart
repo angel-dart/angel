@@ -8,7 +8,6 @@ import 'package:merge_map/merge_map.dart';
 import '../util.dart';
 import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
-import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
 import 'server.dart';

@@ -15,8 +15,6 @@ class Controller {
   /// The [Angel] application powering this controller.
   Angel get app => _app;
 
-  final bool debug;
-
   /// If `true` (default), this class will inject itself as a singleton into the [app]'s container when bootstrapped.
   final bool injectSingleton;
 
@@ -26,7 +24,7 @@ class Controller {
   /// A mapping of route paths to routes, produced from the [Expose] annotations on this class.
   Map<String, Route> routeMappings = {};
 
-  Controller({this.debug: false, this.injectSingleton: true});
+  Controller({this.injectSingleton: true});
 
   @mustCallSuper
   Future configureServer(Angel app) {

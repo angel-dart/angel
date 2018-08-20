@@ -9,7 +9,6 @@ import 'package:angel_route/angel_route.dart';
 import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
-import 'package:pool/pool.dart';
 
 import '../http/http.dart';
 import 'request_context.dart';
@@ -18,7 +17,8 @@ import 'server.dart' show Angel;
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A convenience wrapper around an outgoing HTTP request.
-abstract class ResponseContext<RawResponse> implements StreamSink<List<int>>, StringSink {
+abstract class ResponseContext<RawResponse>
+    implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
   final BytesBuilder _buffer = new _LockableBytesBuilder();
   final Map<String, String> _headers = {'server': 'angel'};
@@ -313,12 +313,9 @@ abstract class ResponseContext<RawResponse> implements StreamSink<List<int>>, St
 
   /// Releases critical resources from the [correspondingRequest].
   void releaseCorrespondingRequest() {
-    if (correspondingRequest?.injections?.containsKey(Stopwatch) == true) {
-      (correspondingRequest.injections[Stopwatch] as Stopwatch).stop();
-    }
-
-    if (correspondingRequest?.injections?.containsKey(PoolResource) == true) {
-      (correspondingRequest.injections[PoolResource] as PoolResource).release();
+    if (!correspondingRequest.app.isProduction &&
+        correspondingRequest.app.logger != null) {
+      correspondingRequest.container.make<Stopwatch>().stop();
     }
   }
 

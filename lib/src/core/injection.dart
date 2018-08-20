@@ -1,12 +1,11 @@
 part of angel_framework.http.request_context;
 
-const List<Type> _primitiveTypes =  [String, int, num, double, Null];
+const List<Type> _primitiveTypes = [String, int, num, double, Null];
 
 /// Shortcut for calling [preInject], and then [handleContained].
 ///
 /// Use this to instantly create a request handler for a DI-enabled method.
-RequestHandler ioc(Function handler,
-    {Iterable<String> optional: const []}) {
+RequestHandler ioc(Function handler, {Iterable<String> optional: const []}) {
   var injection = preInject(handler);
   injection.optional.addAll(optional ?? []);
   return handleContained(handler, injection);
@@ -29,11 +28,7 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
   } else if (requirement is String) {
     if (req.params.containsKey(requirement)) {
       return req.params[requirement];
-    } else if (req._injections.containsKey(requirement))
-      return req._injections[requirement];
-    else if (req.properties.containsKey(requirement))
-      return req.properties[requirement];
-    else if ((propFromApp = req.app.findProperty(requirement)) != null)
+    } else if ((propFromApp = req.app.findProperty(requirement)) != null)
       return propFromApp;
     else if (injection.optional.contains(requirement))
       return null;
@@ -48,18 +43,13 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     String key = requirement.first;
     Type type = requirement.last;
     if (req.params.containsKey(key) ||
-        req._injections.containsKey(key) ||
-        req.properties.containsKey(key) ||
         req.app.configuration.containsKey(key) ||
         _primitiveTypes.contains(type)) {
       return resolveInjection(key, injection, req, res, throwOnUnresolved);
     } else
       return resolveInjection(type, injection, req, res, throwOnUnresolved);
   } else if (requirement is Type && requirement != dynamic) {
-    if (req._injections.containsKey(requirement))
-      return req._injections[requirement];
-    else
-      return req.app.container.make(requirement);
+    return req.app.container.make(requirement);
   } else if (throwOnUnresolved) {
     throw new ArgumentError(
         '$requirement cannot be injected into a request handler.');

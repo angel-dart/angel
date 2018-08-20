@@ -43,3 +43,6 @@ take routes in the form of `FutureOr myFunc(RequestContext, ResponseContext res)
 * `createDynamicHandler` was renamed to `ioc`, and is now used to run IoC-aware handlers in a
 type-safe manner.
 * `RequestContext.params` is now a `Map<String, dynamic>`, rather than just a `Map`.
+* Removed `RequestContext.grab`.
+* Removed `RequestContext.properties`.
+* Removed the defunct `debug` property where it still existed.

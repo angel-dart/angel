@@ -8,14 +8,16 @@ import 'dart:io'
         HttpServer,
         Platform,
         SecurityContext;
+
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:tuple/tuple.dart';
+
+import '../core/core.dart';
 import 'http_request_context.dart';
 import 'http_response_context.dart';
-import '../core/core.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -60,7 +62,7 @@ class AngelHttp {
   /// the server.
   factory AngelHttp.secure(
       Angel app, String certificateChainPath, String serverKeyPath,
-      {bool debug: false, String password, bool useZone: true}) {
+      { String password, bool useZone: true}) {
     var certificateChain =
         Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
@@ -107,14 +109,16 @@ class AngelHttp {
           var path = req.path;
           if (path == '/') path = '';
 
-          Tuple3<List, Map, ParseResult<Map<String, dynamic>>> resolveTuple() {
+          Tuple3<List, Map<String, dynamic>, ParseResult<Map<String, dynamic>>>
+              resolveTuple() {
             Router r = app.optimizedRouter;
             var resolved =
                 r.resolveAbsolute(path, method: req.method, strip: false);
 
             return new Tuple3(
               new MiddlewarePipeline(resolved).handlers,
-              resolved.fold<Map>({}, (out, r) => out..addAll(r.allParams)),
+              resolved.fold<Map<String, dynamic>>(
+                  <String, dynamic>{}, (out, r) => out..addAll(r.allParams)),
               resolved.isEmpty ? null : resolved.first.parseResult,
             );
           }
@@ -125,10 +129,15 @@ class AngelHttp {
               : resolveTuple();
 
           req.params.addAll(tuple.item2);
-          req.inject(ParseResult, tuple.item3);
 
-          if (!app.isProduction && app.logger != null)
-            req.inject(Stopwatch, new Stopwatch()..start());
+          req.container.registerSingleton<ParseResult<Map<String, dynamic>>>(
+              tuple.item3);
+          req.container.registerSingleton<ParseResult>(tuple.item3);
+
+          if (!app.isProduction && app.logger != null) {
+            req.container
+                .registerSingleton<Stopwatch>(new Stopwatch()..start());
+          }
 
           var pipeline = tuple.item1;
 
@@ -215,8 +224,9 @@ class AngelHttp {
           );
 
           var zone = Zone.current.fork(specification: zoneSpec);
-          req.inject(Zone, zone);
-          req.inject(ZoneSpecification, zoneSpec);
+          req.container.registerSingleton<Zone>(zone);
+          req.container.registerSingleton<ZoneSpecification>(zoneSpec);
+
           return zone.run(handle).whenComplete(() {
             res.dispose();
           });
@@ -321,7 +331,7 @@ class AngelHttp {
 
       return request.response.close().then((_) {
         if (!app.isProduction && app.logger != null) {
-          var sw = req.grab<Stopwatch>(Stopwatch);
+          var sw = req.container.make<Stopwatch>();
 
           if (sw.isRunning) {
             sw?.stop();
