@@ -25,7 +25,6 @@ dependencies:
   stack_trace: ^1.0.0
   tuple: ^1.0.0
 dev_dependencies:
-  #angel_jael: ^1.0.0
   file: ^5.0.0
   http: ^0.11.3
   io: ^0.3.0
