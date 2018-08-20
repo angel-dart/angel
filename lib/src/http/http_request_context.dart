@@ -144,6 +144,6 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
             ? new MediaType.parse(rawRequest.headers.contentType.toString())
             : null,
         rawRequest.uri,
-        storeOriginalBuffer: app.storeOriginalBuffer == true);
+        storeOriginalBuffer: app.keepRawRequestBuffers == true);
   }
 }

@@ -24,3 +24,6 @@ gone.
 `HttpRequestContext` and `HttpResponseContext`.
 * Lazy-parsing request bodies is now the default; `Angel.lazyParseBodies` was replaced
 with `Angel.eagerParseRequestBodies`.
+* `Angel.storeOriginalBuffer` -> `Angel.storeRawRequestBuffers`.
+* The methods `lazyBody`, `lazyFiles`, and `lazyOriginalBuffer` on `ResponseContext` were all
+replaced with `parseBody`, `parseUploadedFiles`, and `parseRawRequestBuffer`, respectively.

@@ -67,7 +67,7 @@ abstract class RequestContext<RawRequest> {
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then an error will be thrown.
   ///
-  /// **If you are writing a plug-in, use [lazyBody] instead.**
+  /// **If you are writing a plug-in, use [parseBody] instead.**
   Map get body {
     if (_body == null)
       throw _unparsed('body', 'Body');
@@ -83,7 +83,7 @@ abstract class RequestContext<RawRequest> {
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then an error will be thrown.
   ///
-  /// **If you are writing a plug-in, use [lazyFiles] instead.**
+  /// **If you are writing a plug-in, use [parseUploadedFiles] instead.**
   List<FileUploadInfo> get files {
     if (_body == null)
       throw _unparsed('query', 'Files');
@@ -96,7 +96,7 @@ abstract class RequestContext<RawRequest> {
   /// If you are lazy-parsing request bodies, but have not manually [parse]d this one,
   /// then an error will be thrown.
   ///
-  /// **If you are writing a plug-in, use [lazyOriginalBuffer] instead.**
+  /// **If you are writing a plug-in, use [parseRawRequestBuffer] instead.**
   List<int> get originalBuffer {
     if (_body == null)
       throw _unparsed('original buffer', 'OriginalBuffer');
@@ -209,15 +209,15 @@ abstract class RequestContext<RawRequest> {
   bool get acceptsAll => _acceptsAllCache ??= accepts('*/*');
 
   /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the body.
-  Future<Map> lazyBody() => parse().then((b) => b.body);
+  Future<Map> parseBody() => parse().then((b) => b.body);
 
-  /// Retrieves the request files if it has already been parsed, or lazy-parses it before returning the files.
-  Future<List<FileUploadInfo>> lazyFiles() => parse().then((b) => b.files);
+  /// Retrieves a list of all uploaded files if it has already been parsed, or lazy-parses it before returning the files.
+  Future<List<FileUploadInfo>> parseUploadedFiles() => parse().then((b) => b.files);
 
-  /// Retrieves the original request buffer if it has already been parsed, or lazy-parses it before returning the files.
+  /// Retrieves the original request buffer if it has already been parsed, or lazy-parses it before returning the buffer..
   ///
-  /// This will return an empty `List` if you have not enabled `storeOriginalBuffer` on your [app] instance.
-  Future<List<int>> lazyOriginalBuffer() =>
+  /// This will return an empty `List` if you have not enabled `keepRawRequestBuffers` on your [Angel] instance.
+  Future<List<int>> parseRawRequestBuffer() =>
       parse().then((b) => b.originalBuffer);
 
   /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the query.

@@ -71,7 +71,7 @@ main() {
         middleware: ['interceptor']);
     app.get('/hello', 'world');
     app.get('/name/:first/last/:last', (req, res) => req.params);
-    app.post('/lambda', (RequestContext req, res) => req.lazyBody());
+    app.post('/lambda', (RequestContext req, res) => req.parseBody());
     app.use('/todos/:id', todos);
     app
         .get('/greet/:name',

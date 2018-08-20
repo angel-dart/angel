@@ -132,7 +132,7 @@ class Angel extends Routable {
 
   /// When set to `true`, the original body bytes will be stored
   /// on requests. `false` by default.
-  bool storeOriginalBuffer = false;
+  bool keepRawRequestBuffers = false;
 
   /// A [Container] used to inject dependencies.
   Container get container => _container;

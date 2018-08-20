@@ -172,7 +172,7 @@ class Service extends Routable {
 
     Middleware createMiddleware = getAnnotation(service.create, Middleware);
     post('/', (RequestContext req, ResponseContext res) {
-      return req.lazyBody().then((body) {
+      return req.parseBody().then((body) {
         return this
             .create(
                 body,
@@ -210,7 +210,7 @@ class Service extends Routable {
     Middleware modifyMiddleware = getAnnotation(service.modify, Middleware);
     patch(
         '/:id',
-        (RequestContext req, res) => req.lazyBody().then((body) => this.modify(
+        (RequestContext req, res) => req.parseBody().then((body) => this.modify(
             parseId(req.params['id']),
             body,
             mergeMap([
@@ -226,7 +226,7 @@ class Service extends Routable {
     Middleware updateMiddleware = getAnnotation(service.update, Middleware);
     post(
         '/:id',
-        (RequestContext req, res) => req.lazyBody().then((body) => this.update(
+        (RequestContext req, res) => req.parseBody().then((body) => this.update(
             parseId(req.params['id']),
             body,
             mergeMap([
@@ -240,7 +240,7 @@ class Service extends Routable {
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
     put(
         '/:id',
-        (RequestContext req, res) => req.lazyBody().then((body) => this.update(
+        (RequestContext req, res) => req.parseBody().then((body) => this.update(
             parseId(req.params['id']),
             body,
             mergeMap([
