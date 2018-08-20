@@ -121,7 +121,7 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
     ctx._path = path;
     ctx._io = request;
 
-    if (app.lazyParseBodies != true) {
+    if (app.eagerParseRequestBodies == true) {
       return ctx.parse().then((_) => ctx);
     }
 

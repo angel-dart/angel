@@ -22,3 +22,5 @@ respectively.
 gone.
 * `HttpRequestContextImpl` and `HttpResponseContextImpl` were renamed to
 `HttpRequestContext` and `HttpResponseContext`.
+* Lazy-parsing request bodies is now the default; `Angel.lazyParseBodies` was replaced
+with `Angel.eagerParseRequestBodies`.

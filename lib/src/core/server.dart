@@ -125,10 +125,10 @@ class Angel extends Routable {
   /// for you.
   final Map configuration = {};
 
-  /// When set to true, the request body will not be parsed
-  /// automatically. You can call `req.parse()` manually,
+  /// When set to `true` (default: `false`), the request body will be parsed
+  /// automatically; otherwise, you must call [RequestContext].parseBody() manually,
   /// or use `lazyBody()`.
-  bool lazyParseBodies = false;
+  bool eagerParseRequestBodies = false;
 
   /// When set to `true`, the original body bytes will be stored
   /// on requests. `false` by default.

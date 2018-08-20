@@ -32,9 +32,7 @@ main() {
     nested = new Angel(reflector: MirrorsReflector());
     todos = new Angel(reflector: MirrorsReflector());
 
-    // Lazy-parse in production
     [app, nested, todos].forEach((Angel app) {
-      app.lazyParseBodies = app.isProduction;
       app.logger = new Logger('routing_test')
         ..onRecord.listen((rec) {
           if (rec.error != null) {
