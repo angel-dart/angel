@@ -4,16 +4,16 @@ import 'dart:io';
 import '../core/core.dart';
 import 'http_request_context.dart';
 
-class HttpResponseContextImpl extends ResponseContext {
+class HttpResponseContextImpl extends ResponseContext<HttpResponse> {
   /// The underlying [HttpResponse] under this instance.
   @override
-  final HttpResponse io;
+  final HttpResponse rawResponse;
   Angel app;
 
   final HttpRequestContextImpl _correspondingRequest;
   bool _isClosed = false, _useStream = false;
 
-  HttpResponseContextImpl(this.io, this.app, [this._correspondingRequest]);
+  HttpResponseContextImpl(this.rawResponse, this.app, [this._correspondingRequest]);
 
   @override
   RequestContext get correspondingRequest {
@@ -32,7 +32,7 @@ class HttpResponseContextImpl extends ResponseContext {
 
   @override
   void addError(Object error, [StackTrace stackTrace]) {
-    io.addError(error, stackTrace);
+    rawResponse.addError(error, stackTrace);
     super.addError(error, stackTrace);
   }
 
@@ -41,10 +41,10 @@ class HttpResponseContextImpl extends ResponseContext {
     if (!_useStream) {
       // If this is the first stream added to this response,
       // then add headers, status code, etc.
-      io
+      rawResponse
         ..statusCode = statusCode
         ..cookies.addAll(cookies);
-      headers.forEach(io.headers.set);
+      headers.forEach(rawResponse.headers.set);
       willCloseItself = _useStream = _isClosed = true;
       releaseCorrespondingRequest();
       return true;
@@ -92,7 +92,7 @@ class HttpResponseContextImpl extends ResponseContext {
 
           if (encoder != null) {
             if (firstStream) {
-              io.headers.set('content-encoding', key);
+              rawResponse.headers.set('content-encoding', key);
             }
 
             output = encoders[key].bind(output);
@@ -102,7 +102,7 @@ class HttpResponseContextImpl extends ResponseContext {
       }
     }
 
-    return io.addStream(output);
+    return rawResponse.addStream(output);
   }
 
   @override
@@ -110,7 +110,7 @@ class HttpResponseContextImpl extends ResponseContext {
     if (_isClosed && !_useStream)
       throw ResponseContext.closed();
     else if (_useStream)
-      io.add(data);
+      rawResponse.add(data);
     else
       buffer.add(data);
   }
@@ -119,7 +119,7 @@ class HttpResponseContextImpl extends ResponseContext {
   Future close() {
     if (_useStream) {
       try {
-        io.close();
+        rawResponse.close();
       } catch (_) {
         // This only seems to occur on `MockHttpRequest`, but
         // this try/catch prevents a crash.

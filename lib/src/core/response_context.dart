@@ -3,7 +3,7 @@ library angel_framework.http.response_context;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:convert' as c show json;
-import 'dart:io' show BytesBuilder, Cookie, HttpResponse;
+import 'dart:io' show BytesBuilder, Cookie;
 
 import 'package:angel_route/angel_route.dart';
 import 'package:file/file.dart';
@@ -18,7 +18,7 @@ import 'server.dart' show Angel;
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A convenience wrapper around an outgoing HTTP request.
-abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
+abstract class ResponseContext<RawResponse> implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
   final BytesBuilder _buffer = new _LockableBytesBuilder();
   final Map<String, String> _headers = {'server': 'angel'};
@@ -93,8 +93,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// A set of UTF-8 encoded bytes that will be written to the response.
   BytesBuilder get buffer => _buffer;
 
-  /// The underlying [HttpResponse] under this instance.
-  HttpResponse get io;
+  /// The underlying [RawResponse] under this instance.
+  RawResponse get rawResponse;
 
   /// Gets or sets the content type to send back to a client.
   MediaType contentType = new MediaType('text', 'plain');
@@ -305,11 +305,8 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Streams a file to this response.
-  ///
-  /// You can optionally transform the file stream with a [codec].
   Future streamFile(File file) {
     if (!isOpen) throw closed();
-
     headers['content-type'] = lookupMimeType(file.path);
     return file.openRead().pipe(this);
   }
