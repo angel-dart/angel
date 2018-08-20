@@ -1,6 +1,11 @@
 name: angel_framework
 version: 2.0.0-alpha
-description: A high-powered HTTP server with DI, routing and more.
+description: >
+  A high-powered HTTP server with DI, routing and more.
+  When combined with the other packages in the Angel ecosystem, this
+  package can be used to make robust application servers for API's,
+  traditional server-side applications, and much more, along with
+  a rich client API.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_framework
 environment:
@@ -21,7 +26,7 @@ dependencies:
   merge_map: ^1.0.0
   meta: ^1.0.0
   mime: ^0.9.3
-  path: ">=1.0.0 <2.0.0"
+  path: ^1.0.0
   pool: ^1.0.0
   stack_trace: ^1.0.0
   tuple: ^1.0.0
