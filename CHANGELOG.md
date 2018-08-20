@@ -29,4 +29,5 @@ with `Angel.eagerParseRequestBodies`.
 replaced with `parseBody`, `parseUploadedFiles`, and `parseRawRequestBuffer`, respectively.
 * Removed the synchronous equivalents of the above methods (`body`, `files`, and `originalBuffer`),
 as well as `query`.
-* Remove `Angel.injections` and `RequestContext.injections`.
+* Removed `Angel.injections` and `RequestContext.injections`.
+* Removed `Angel.inject`.

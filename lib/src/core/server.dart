@@ -45,8 +45,6 @@ class Angel extends Routable {
   /// A global Map of converters that can transform responses bodies.
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
 
-  final Map _injections = {};
-
   /// A function that is called on every request to create a [Zone], A.K.A an asynchronous
   /// execution context.
   ///
@@ -112,9 +110,6 @@ class Angel extends Routable {
   ///
   /// These will only not run if a response's `willCloseItself` is set to `true`.
   final List<RequestHandler> responseFinalizers = [];
-
-  /// All global dependencies injected into the application.
-  Map get injections => _injections;
 
   Container _container;
 
@@ -213,7 +208,6 @@ class Angel extends Routable {
     viewGenerator = noViewEngineConfigured;
     _preContained.clear();
     handlerCache.clear();
-    _injections.clear();
     encoders.clear();
     //_serializer = json.encode;
     _children.clear();
@@ -254,11 +248,6 @@ class Angel extends Routable {
                   : 'Dumping route tree:'),
           tab: tab ?? '  ');
     }
-  }
-
-  /// Shortcut for adding a middleware to inject a key/value pair on every request.
-  void inject(key, value) {
-    _injections[key] = value;
   }
 
   /// Shortcuts for adding converters to transform the response buffer/stream of any request.
