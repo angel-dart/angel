@@ -112,17 +112,6 @@ abstract class RequestContext<RawRequest> {
     }
   }
 
-  /// Shorthand to add to [_injections].
-  void inject(type, value) {
-    if (!app.isProduction && type is Type) {
-      if (!reflect(value).type.isAssignableTo(reflectType(type)))
-        throw new ArgumentError(
-            'Cannot inject $value (${value.runtimeType}) as an instance of $type.');
-    }
-
-    _injections[type] = value;
-  }
-
   /// Returns `true` if the client's `Accept` header indicates that the given [contentType] is considered a valid response.
   ///
   /// You cannot provide a `null` [contentType].

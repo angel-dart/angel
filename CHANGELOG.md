@@ -30,7 +30,8 @@ replaced with `parseBody`, `parseUploadedFiles`, and `parseRawRequestBuffer`, re
 * Removed the synchronous equivalents of the above methods (`body`, `files`, and `originalBuffer`),
 as well as `query`.
 * Removed `Angel.injections` and `RequestContext.injections`.
-* Removed `Angel.inject`.
+* Removed `Angel.inject` and `RequestContext.inject`.
 * Removed a dependency on `package:pool`, which also meant removing `AngelHttp.throttle`.
 * Remove the `RequestMiddleware` typedef; from now on, one should use `ResponseContext.end`
 exclusively to close responses.
+* `waterfall` will now only accept `RequestHandler`.
