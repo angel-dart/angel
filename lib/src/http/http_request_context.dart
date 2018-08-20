@@ -1,37 +1,39 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:body_parser/body_parser.dart';
 import 'package:http_parser/http_parser.dart';
+
 import '../core/core.dart';
 
 /// An implementation of [RequestContext] that wraps a [HttpRequest].
-class HttpRequestContextImpl extends RequestContext {
-  ContentType _contentType;
+class HttpRequestContextImpl extends RequestContext<HttpRequest> {
+  MediaType _contentType;
   HttpRequest _io;
   String _override, _path;
 
   @override
-  ContentType get contentType {
+  MediaType get contentType {
     return _contentType;
   }
 
   @override
   List<Cookie> get cookies {
-    return io.cookies;
+    return rawRequest.cookies;
   }
 
   @override
   HttpHeaders get headers {
-    return io.headers;
+    return rawRequest.headers;
   }
 
   @override
   String get hostname {
-    return io.headers.value('host');
+    return rawRequest.headers.value('host');
   }
 
   /// The underlying [HttpRequest] instance underneath this context.
-  HttpRequest get io => _io;
+  HttpRequest get rawRequest => _io;
 
   @override
   String get method {
@@ -40,7 +42,7 @@ class HttpRequestContextImpl extends RequestContext {
 
   @override
   String get originalMethod {
-    return io.method;
+    return rawRequest.method;
   }
 
   @override
@@ -50,22 +52,25 @@ class HttpRequestContextImpl extends RequestContext {
 
   @override
   InternetAddress get remoteAddress {
-    return io.connectionInfo.remoteAddress;
+    return rawRequest.connectionInfo.remoteAddress;
   }
 
   @override
   HttpSession get session {
-    return io.session;
+    return rawRequest.session;
   }
 
   @override
   Uri get uri {
-    return io.uri;
+    return rawRequest.uri;
   }
 
   @override
   bool get xhr {
-    return io.headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
+    return rawRequest.headers
+            .value("X-Requested-With")
+            ?.trim()
+            ?.toLowerCase() ==
         'xmlhttprequest';
   }
 
@@ -82,7 +87,7 @@ class HttpRequestContextImpl extends RequestContext {
               request.method;
 
     ctx.app = app;
-    ctx._contentType = request.headers.contentType;
+    ctx._contentType = MediaType.parse(request.headers.contentType.toString());
     ctx._override = override;
 
     /*
@@ -134,11 +139,11 @@ class HttpRequestContextImpl extends RequestContext {
   @override
   Future<BodyParseResult> parseOnce() {
     return parseBodyFromStream(
-        io,
-        io.headers.contentType != null
-            ? new MediaType.parse(io.headers.contentType.toString())
+        rawRequest,
+        rawRequest.headers.contentType != null
+            ? new MediaType.parse(rawRequest.headers.contentType.toString())
             : null,
-        io.uri,
+        rawRequest.uri,
         storeOriginalBuffer: app.storeOriginalBuffer == true);
   }
 }

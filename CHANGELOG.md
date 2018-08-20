@@ -18,3 +18,5 @@ single type argument to determine how to parse a value.
 * `RequestContext` and `ResponseContext` are now generic, and take a
 single type argument pointing to the underlying request/response type,
 respectively.
+* `RequestContext.io` and `ResponseContext.io` are now permanently
+gone.
