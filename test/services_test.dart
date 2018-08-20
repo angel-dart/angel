@@ -21,7 +21,7 @@ main() {
 
   setUp(() async {
     app = new Angel(MirrorsReflector())
-      ..use('/todos', new TypedService<Todo>(new MapService()))
+      ..use('/todos', new MapService())
       ..errorHandler = (e, req, res) {
         print('Whoops: ${e.error}');
         if (e.stackTrace != null) print(new Chain.forTrace(e.stackTrace).terse);

@@ -21,7 +21,6 @@ import 'serialize_test.dart' as serialize;
 import 'server_test.dart' as server;
 import 'services_test.dart' as services;
 import 'streaming_test.dart' as streaming;
-import 'typed_service_test.dart' as typed_service;
 import 'view_generator_test.dart' as view_generator;
 import 'package:test/test.dart';
 
@@ -47,6 +46,5 @@ main() {
   group('server', server.main);
   group('services', services.main);
   group('streaming', streaming.main);
-  group('typed_service', typed_service.main);
   group('view generator', view_generator.main);
 }

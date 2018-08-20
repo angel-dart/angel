@@ -21,7 +21,7 @@ main() {
   setUp(() async {
     app = new Angel(MirrorsReflector());
     client = new http.Client();
-    app.use('/todos', new TypedService<Todo>(new MapService()));
+    app.use('/todos', new MapService());
     app.use('/books', new BookService());
     Todos = app.service("todos") as HookedService;
 

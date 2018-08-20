@@ -8,6 +8,8 @@
 * Remove dependency on `package:json_god` by default.
 * Remove dependency on `package:dart2_constant`.
 * Remove `contentType` argument in `ResponseContext.serialize`.
+* Moved `lib/hooks.dart` into `package:angel_hooks`.
+* Moved `TypedService` into `package:angel_typed_service`.
 
 # 1.1.5+1
 * Patched annoying error that prevented MapServices from working,
