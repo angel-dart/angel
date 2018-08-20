@@ -1,25 +1,27 @@
 import 'dart:async' show Stream, StreamController;
 import 'dart:html';
-import 'angel_route.dart';
+
 import 'package:path/path.dart' as p;
+
+import 'angel_route.dart';
 
 final RegExp _hash = new RegExp(r'^#/');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A variation of the [Router] support both hash routing and push state.
-abstract class BrowserRouter extends Router {
+abstract class BrowserRouter<T> extends Router<T> {
   /// Fires whenever the active route changes. Fires `null` if none is selected (404).
-  Stream<RoutingResult> get onResolve;
+  Stream<RoutingResult<T>> get onResolve;
 
   /// Fires whenever the active route changes. Fires `null` if none is selected (404).
-  Stream<Route> get onRoute;
+  Stream<Route<T>> get onRoute;
 
   /// Set `hash` to true to use hash routing instead of push state.
   /// `listen` as `true` will call `listen` after initialization.
   factory BrowserRouter({bool hash: false, bool listen: false}) {
     return hash
-        ? new _HashRouter(listen: listen)
-        : new _PushStateRouter(listen: listen);
+        ? new _HashRouter<T>(listen: listen)
+        : new _PushStateRouter<T>(listen: listen);
   }
 
   BrowserRouter._() : super();
@@ -39,22 +41,24 @@ abstract class BrowserRouter extends Router {
   void listen();
 
   /// Identical to [all].
-  Route on(String path, handler, {List middleware});
+  Route on(String path, T handler, {Iterable<T> middleware});
 }
 
-abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
+abstract class _BrowserRouterImpl<T> extends Router<T>
+    implements BrowserRouter<T> {
   bool _listening = false;
   Route _current;
-  StreamController<RoutingResult> _onResolve =
-      new StreamController<RoutingResult>();
-  StreamController<Route> _onRoute = new StreamController<Route>();
+  StreamController<RoutingResult<T>> _onResolve =
+      new StreamController<RoutingResult<T>>();
+  StreamController<Route<T>> _onRoute = new StreamController<Route<T>>();
+
   Route get currentRoute => _current;
 
   @override
-  Stream<RoutingResult> get onResolve => _onResolve.stream;
+  Stream<RoutingResult<T>> get onResolve => _onResolve.stream;
 
   @override
-  Stream<Route> get onRoute => _onRoute.stream;
+  Stream<Route<T>> get onRoute => _onRoute.stream;
 
   _BrowserRouterImpl({bool listen}) : super() {
     if (listen != false) this.listen();
@@ -64,11 +68,11 @@ abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
   @override
   void go(Iterable linkParams) => _goTo(navigate(linkParams));
 
-  Route on(String path, handler, {List middleware}) =>
+  Route on(String path, T handler, {Iterable<T> middleware}) =>
       all(path, handler, middleware: middleware);
 
   void prepareAnchors() {
-    final anchors = window.document.querySelectorAll('a:not([dynamic])');
+    final anchors = window.document.querySelectorAll('a'); //:not([dynamic])');
 
     for (final AnchorElement $a in anchors) {
       if ($a.attributes.containsKey('href') &&
@@ -77,7 +81,8 @@ abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
           $a.attributes['rel'] != 'external') {
         $a.onClick.listen((e) {
           e.preventDefault();
-          go($a.attributes['href'].split('/').where((str) => str.isNotEmpty));
+          _goTo($a.attributes['href']);
+          //go($a.attributes['href'].split('/').where((str) => str.isNotEmpty));
         });
       }
 
@@ -96,7 +101,7 @@ abstract class _BrowserRouterImpl extends Router implements BrowserRouter {
   }
 }
 
-class _HashRouter extends _BrowserRouterImpl {
+class _HashRouter<T> extends _BrowserRouterImpl<T> {
   _HashRouter({bool listen}) : super(listen: listen) {
     if (listen) this.listen();
   }
@@ -108,7 +113,9 @@ class _HashRouter extends _BrowserRouterImpl {
 
   void handleHash([_]) {
     final path = window.location.hash.replaceAll(_hash, '');
-    final resolved = resolveAbsolute(path).first;
+    var allResolved = resolveAbsolute(path);
+
+    final resolved = allResolved.isEmpty ? null : allResolved.first;
 
     if (resolved == null) {
       _onResolve.add(null);
@@ -138,7 +145,7 @@ class _HashRouter extends _BrowserRouterImpl {
   }
 }
 
-class _PushStateRouter extends _BrowserRouterImpl {
+class _PushStateRouter<T> extends _BrowserRouterImpl<T> {
   String _basePath;
 
   _PushStateRouter({bool listen, Route root}) : super(listen: listen) {
@@ -165,10 +172,8 @@ class _PushStateRouter extends _BrowserRouterImpl {
       _onRoute.add(_current = null);
     } else {
       final route = resolved.route;
-      window.history.pushState(
-          {'path': route.path, 'params': {}},
-          route.name ?? route.path,
-          relativeUri);
+      window.history.pushState({'path': route.path, 'params': {}},
+          route.name ?? route.path, relativeUri);
       _onResolve.add(resolved);
       _onRoute.add(_current = route);
     }

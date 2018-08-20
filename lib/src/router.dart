@@ -25,7 +25,7 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
 class Router<T> {
-  final Map<String, Iterable<RoutingResult>> _cache = {};
+  final Map<String, Iterable<RoutingResult<T>>> _cache = {};
 
   //final List<_ChainedRouter> _chained = [];
   final List<T> _middleware = [];
@@ -142,7 +142,7 @@ class Router<T> {
         if (route is! SymlinkRoute) buf.write('${route.method} ');
         buf.write('${route.path.isNotEmpty ? route.path : '/'}');
 
-        if (route is SymlinkRoute) {
+        if (route is SymlinkRoute<T>) {
           buf.writeln();
           dumpRouter(route.router);
         } else {
@@ -212,7 +212,7 @@ class Router<T> {
             segments.add(route.path.replaceAll(_straySlashes, ''));
             lastRoute = route;
 
-            if (route is SymlinkRoute) {
+            if (route is SymlinkRoute<T>) {
               search = route.router;
             }
 
@@ -230,7 +230,7 @@ class Router<T> {
               segments.add(route.path.replaceAll(_straySlashes, ''));
               lastRoute = route;
 
-              if (route is SymlinkRoute) {
+              if (route is SymlinkRoute<T>) {
                 search = route.router;
               }
 
@@ -279,7 +279,7 @@ class Router<T> {
       for (Route route in r.routes) {
         int pos = scanner.position;
 
-        if (route is SymlinkRoute) {
+        if (route is SymlinkRoute<T>) {
           if (route.parser.parse(scanner).successful) {
             var s = crawl(route.router);
             if (s) success = true;
@@ -311,13 +311,13 @@ class Router<T> {
 
   /// Returns the result of [resolve] with [path] passed as
   /// both `absolute` and `relative`.
-  Iterable<RoutingResult> resolveAbsolute(String path,
+  Iterable<RoutingResult<T>> resolveAbsolute(String path,
           {String method: 'GET', bool strip: true}) =>
       resolveAll(path, path, method: method, strip: strip);
 
   /// Finds every possible [Route] that matches the given path,
   /// with the given method.
-  Iterable<RoutingResult> resolveAll(String absolute, String relative,
+  Iterable<RoutingResult<T>> resolveAll(String absolute, String relative,
       {String method: 'GET', bool strip: true}) {
     if (_useCache == true) {
       return _cache.putIfAbsent('$method$absolute',
@@ -327,9 +327,9 @@ class Router<T> {
     return _resolveAll(absolute, relative, method: method, strip: strip);
   }
 
-  Iterable<RoutingResult> _resolveAll(String absolute, String relative,
+  Iterable<RoutingResult<T>> _resolveAll(String absolute, String relative,
       {String method: 'GET', bool strip: true}) {
-    final List<RoutingResult> results = [];
+    var results = <RoutingResult<T>>[];
     resolve(absolute, relative, results, method: method, strip: strip);
 
     // _printDebug(
@@ -435,11 +435,11 @@ class _ChainedRouter<T> extends Router<T> {
 }
 
 /// Optimizes a router by condensing all its routes into one level.
-Router flatten(Router router) {
-  var flattened = new Router();
+Router<T> flatten<T>(Router<T> router) {
+  var flattened = new Router<T>();
 
   for (var route in router.routes) {
-    if (route is SymlinkRoute) {
+    if (route is SymlinkRoute<T>) {
       var base = route.path.replaceAll(_straySlashes, '');
       var child = flatten(route.router);
 
