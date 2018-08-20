@@ -32,3 +32,5 @@ as well as `query`.
 * Removed `Angel.injections` and `RequestContext.injections`.
 * Removed `Angel.inject`.
 * Removed a dependency on `package:pool`, which also meant removing `AngelHttp.throttle`.
+* Remove the `RequestMiddleware` typedef; from now on, one should use `ResponseContext.end`
+exclusively to close responses.

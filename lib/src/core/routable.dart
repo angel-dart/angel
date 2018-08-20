@@ -1,7 +1,9 @@
 library angel_framework.http.routable;
 
 import 'dart:async';
+
 import 'package:angel_route/angel_route.dart';
+
 import '../util.dart';
 import 'hooked_service.dart';
 import 'metadata.dart';
@@ -12,32 +14,29 @@ import 'service.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
-/// A function that intercepts a request and determines whether handling of it should continue.
-typedef Future<bool> RequestMiddleware(RequestContext req, ResponseContext res);
-
 /// A function that receives an incoming [RequestContext] and responds to it.
 typedef FutureOr RequestHandler(RequestContext req, ResponseContext res);
 
 /// Sequentially runs a list of [handlers] of middleware, and returns early if any does not
 /// return `true`. Works well with [Router].chain.
-RequestMiddleware waterfall(List handlers) {
+RequestHandler waterfall(Iterable<RequestHandler> handlers) {
   return (req, res) {
-    Future<bool> Function() runPipeline;
+    Future Function() runPipeline;
 
     for (var handler in handlers) {
       if (handler == null) break;
 
       if (runPipeline == null)
-        runPipeline = () => req.app.executeHandler(handler, req, res);
+        runPipeline = () => Future.sync(() => handler(req, res));
       else {
         var current = runPipeline;
-        runPipeline = () => current().then((result) => !result
+        runPipeline = () => current().then((result) => !res.isOpen
             ? new Future.value(result)
             : req.app.executeHandler(handler, req, res));
       }
     }
 
-    runPipeline ??= () => new Future.value(true);
+    runPipeline ??= () => new Future.value();
     return runPipeline();
   };
 }
@@ -58,7 +57,8 @@ class Routable extends Router {
 
   /// Additional filters to be run on designated requests.
   @override
-  final Map<String, RequestHandler> requestMiddleware = <String, RequestHandler>{};
+  final Map<String, RequestHandler> requestMiddleware =
+      <String, RequestHandler>{};
 
   /// A set of [Service] objects that have been mapped into routes.
   Map<Pattern, Service> get services => _services;
