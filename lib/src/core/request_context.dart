@@ -1,11 +1,14 @@
 library angel_framework.http.request_context;
 
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Cookie, HttpHeaders, HttpSession, InternetAddress;
 import 'dart:mirrors';
+
 import 'package:body_parser/body_parser.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
+
 import 'metadata.dart';
 import 'response_context.dart';
 import 'routable.dart';
@@ -13,14 +16,17 @@ import 'server.dart' show Angel;
 
 part 'injection.dart';
 
-/// A convenience wrapper around an incoming HTTP request.
-abstract class RequestContext {
+/// A convenience wrapper around an incoming [RawRequest].
+abstract class RequestContext<RawRequest> {
   String _acceptHeaderCache, _extensionCache;
   bool _acceptsAllCache;
   BodyParseResult _body;
   Map _provisionalQuery;
 
   final Map properties = {};
+
+  /// The underlying [RawRequest] provided by the driver.
+  RawRequest get rawRequest;
 
   /// Additional params to be passed to services.
   final Map serviceParams = {};
@@ -41,10 +47,6 @@ abstract class RequestContext {
 
   /// A [Map] of singletons injected via [inject].
   Map get injections => _injections;
-
-  /// This feature does not map to other adapters (i.e. HTTP/2), so it will be removed in a future version.
-  @deprecated
-  HttpRequest get io;
 
   /// The user's IP.
   String get ip => remoteAddress.address;
@@ -74,7 +76,7 @@ abstract class RequestContext {
   }
 
   /// The content type of an incoming request.
-  ContentType get contentType;
+  MediaType get contentType;
 
   /// Any and all files sent to the server with this request.
   ///
@@ -184,7 +186,7 @@ abstract class RequestContext {
   /// * A [ContentType], in which case the `Accept` header will be compared against its `mimeType` property.
   /// * Any other Dart value, in which case the `Accept` header will be compared against the result of a `toString()` call.
   bool accepts(contentType, {bool strict: false}) {
-    var contentTypeString = contentType is ContentType
+    var contentTypeString = contentType is MediaType
         ? contentType.mimeType
         : contentType?.toString();
 
