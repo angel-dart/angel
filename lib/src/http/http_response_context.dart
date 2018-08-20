@@ -4,16 +4,16 @@ import 'dart:io';
 import '../core/core.dart';
 import 'http_request_context.dart';
 
-class HttpResponseContextImpl extends ResponseContext<HttpResponse> {
+class HttpResponseContext extends ResponseContext<HttpResponse> {
   /// The underlying [HttpResponse] under this instance.
   @override
   final HttpResponse rawResponse;
   Angel app;
 
-  final HttpRequestContextImpl _correspondingRequest;
+  final HttpRequestContext _correspondingRequest;
   bool _isClosed = false, _useStream = false;
 
-  HttpResponseContextImpl(this.rawResponse, this.app, [this._correspondingRequest]);
+  HttpResponseContext(this.rawResponse, this.app, [this._correspondingRequest]);
 
   @override
   RequestContext get correspondingRequest {

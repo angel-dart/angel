@@ -7,7 +7,7 @@ import 'package:http_parser/http_parser.dart';
 import '../core/core.dart';
 
 /// An implementation of [RequestContext] that wraps a [HttpRequest].
-class HttpRequestContextImpl extends RequestContext<HttpRequest> {
+class HttpRequestContext extends RequestContext<HttpRequest> {
   MediaType _contentType;
   HttpRequest _io;
   String _override, _path;
@@ -75,9 +75,9 @@ class HttpRequestContextImpl extends RequestContext<HttpRequest> {
   }
 
   /// Magically transforms an [HttpRequest] into a [RequestContext].
-  static Future<HttpRequestContextImpl> from(
+  static Future<HttpRequestContext> from(
       HttpRequest request, Angel app, String path) {
-    HttpRequestContextImpl ctx = new HttpRequestContextImpl();
+    HttpRequestContext ctx = new HttpRequestContext();
 
     String override = request.method;
 

@@ -340,10 +340,10 @@ class AngelHttp {
     });
   }
 
-  Future<HttpRequestContextImpl> createRequestContext(HttpRequest request) {
+  Future<HttpRequestContext> createRequestContext(HttpRequest request) {
     var path = request.uri.path.replaceAll(_straySlashes, '');
     if (path.length == 0) path = '/';
-    return HttpRequestContextImpl.from(request, app, path).then((req) {
+    return HttpRequestContext.from(request, app, path).then((req) {
       if (_pool != null) req.inject(PoolResource, _pool.request());
       if (app.injections.isNotEmpty) app.injections.forEach(req.inject);
       return req;
@@ -352,8 +352,8 @@ class AngelHttp {
 
   Future<ResponseContext> createResponseContext(HttpResponse response,
           [RequestContext correspondingRequest]) =>
-      new Future<ResponseContext>.value(new HttpResponseContextImpl(
-          response, app, correspondingRequest as HttpRequestContextImpl)
+      new Future<ResponseContext>.value(new HttpResponseContext(
+          response, app, correspondingRequest as HttpRequestContext)
         ..serializer = (app.serializer ?? json.encode)
         ..encoders.addAll(app.encoders ?? {}));
 

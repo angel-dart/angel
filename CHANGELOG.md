@@ -20,3 +20,5 @@ single type argument pointing to the underlying request/response type,
 respectively.
 * `RequestContext.io` and `ResponseContext.io` are now permanently
 gone.
+* `HttpRequestContextImpl` and `HttpResponseContextImpl` were renamed to
+`HttpRequestContext` and `HttpResponseContext`.
