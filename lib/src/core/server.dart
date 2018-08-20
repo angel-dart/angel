@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:collection' show HashMap;
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
@@ -11,6 +12,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:logging/logging.dart';
 import 'package:tuple/tuple.dart';
+
 import '../http/http.dart';
 import 'angel_base.dart';
 import 'request_context.dart';
@@ -305,8 +307,7 @@ class Angel extends AngelBase {
       else if (result is bool) {
         return result;
       } else if (result != null) {
-        return res.serialize(result,
-            contentType: res.headers['content-type'] ?? 'application/json');
+        return res.serialize(result);
       } else
         return res.isOpen;
     });

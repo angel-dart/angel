@@ -54,9 +54,9 @@ main() {
       var response = await client.post("$url/todos",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 201);
-      var json = god.deserialize(response.body);
-      print(json);
-      expect(json['text'], equals('Hello, world!'));
+      var jsons = json.decode(response.body);
+      print(jsons);
+      expect(jsons['text'], equals('Hello, world!'));
     });
 
     test('can fetch data', () async {
@@ -65,9 +65,9 @@ main() {
           headers: headers as Map<String, String>, body: postData);
       var response = await client.get("$url/todos/0");
       expect(response.statusCode, 200);
-      var json = god.deserialize(response.body);
-      print(json);
-      expect(json['text'], equals('Hello, world!'));
+      var jsons = json.decode(response.body);
+      print(jsons);
+      expect(jsons['text'], equals('Hello, world!'));
     });
 
     test('can modify data', () async {
@@ -78,9 +78,9 @@ main() {
       var response = await client.patch("$url/todos/0",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 200);
-      var json = god.deserialize(response.body);
-      print(json);
-      expect(json['text'], equals('modified'));
+      var jsons = json.decode(response.body);
+      print(jsons);
+      expect(jsons['text'], equals('modified'));
     });
 
     test('can overwrite data', () async {
@@ -91,10 +91,10 @@ main() {
       var response = await client.post("$url/todos/0",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 200);
-      var json = god.deserialize(response.body);
-      print(json);
-      expect(json['text'], equals(null));
-      expect(json['over'], equals('write'));
+      var jsons = json.decode(response.body);
+      print(jsons);
+      expect(jsons['text'], equals(null));
+      expect(jsons['over'], equals('write'));
     });
 
     test('can delete data', () async {
@@ -105,7 +105,7 @@ main() {
           .then((r) => json.decode(r.body));
       var response = await client.delete("$url/todos/${created['id']}");
       expect(response.statusCode, 200);
-      var json_ = god.deserialize(response.body);
+      var json_ = json.decode(response.body);
       print(json_);
       expect(json_['text'], equals('Hello, world!'));
     });

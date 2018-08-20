@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
@@ -74,7 +75,7 @@ main() {
         body: json.encode({"arbitrary": "data"}),
         headers: headers as Map<String, String>);
     print(response.body);
-    Map result = god.deserialize(response.body);
+    Map result = json.decode(response.body);
     expect(result["hello"], equals("hooked world"));
   });
 
@@ -92,7 +93,7 @@ main() {
 
     var response = await client.get("$url/todos");
     print(response.body);
-    List result = god.deserialize(response.body);
+    List result = json.decode(response.body);
     expect(result[0]["angel"], equals("framework"));
   });
 
@@ -115,7 +116,7 @@ main() {
     var response = await client.get('$url/books');
     print(response.body);
 
-    var result = god.deserialize(response.body);
+    var result = json.decode(response.body);
     expect(result, isList);
     expect(result, isNotEmpty);
     expect(result[0], equals({'foo': 'bar'}));

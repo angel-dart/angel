@@ -1,7 +1,9 @@
 import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -13,10 +15,10 @@ main() {
   setUp(() async {
     app = new Angel(MirrorsReflector())
       ..get('/foo', () => {'hello': 'world'})
-      ..get(
-          '/bar',
-          (req, ResponseContext res) =>
-              res.serialize({'hello': 'world'}, contentType: 'text/html'));
+      ..get('/bar', (req, ResponseContext res) async {
+        res.contentType = new MediaType('text', 'html');
+        await res.serialize({'hello': 'world'});
+      });
     client = new http.Client();
 
     server = await new AngelHttp(app).startServer();

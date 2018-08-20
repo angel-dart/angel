@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:mirrors';
+
 import '../../common.dart';
 import 'service.dart';
 
@@ -54,9 +55,11 @@ class TypedService<T> extends Service {
   }
 
   serialize(x) {
-    if (x is Model)
-      return json.encodeObject(x);
-    else if (x is Map)
+    // TODO: Custom serializer, i.e. json_god?
+//    if (x is Model)
+//      return json.encodeObject(x);
+//    else
+    if (x is Map)
       return x;
     else if (x is Iterable)
       return x.map(serialize).toList();

@@ -2,7 +2,8 @@ library angel_framework.http.response_context;
 
 import 'dart:async';
 import 'dart:convert' show Converter, Encoding;
-import 'dart:io' show BytesBuilder, HttpResponse;
+import 'dart:convert' as c show json;
+import 'dart:io' show BytesBuilder, Cookie, HttpResponse;
 
 import 'package:angel_route/angel_route.dart';
 import 'package:dart2_constant/convert.dart';
@@ -14,9 +15,6 @@ import 'package:pool/pool.dart';
 import '../http/http.dart';
 import 'request_context.dart';
 import 'server.dart' show Angel;
-
-final RegExp _contentType =
-    new RegExp(r'([^/\n]+)\/\s*([^;\n]+)\s*(;\s*charset=([^$;\n]+))?');
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
@@ -81,7 +79,7 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   /// ```dart
   /// app.injectSerializer(JSON.encode);
   /// ```
-  String Function(dynamic) serializer = json.encode;
+  String Function(dynamic) serializer = c.json.encode;
 
   /// This response's status code.
   int get statusCode => _statusCode;
@@ -169,7 +167,9 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Serializes JSON to the response.
-  void json(value) => serialize(value, contentType: 'application/json');
+  void json(value) => this
+    ..contentType = MediaType('application', 'json')
+    ..serialize(value);
 
   /// Returns a JSONP response.
   ///
@@ -302,21 +302,11 @@ abstract class ResponseContext implements StreamSink<List<int>>, StringSink {
   }
 
   /// Serializes data to the response.
-  ///
-  /// [contentType] can be either a [String], or a [ContentType].
-  bool serialize(value, {contentType}) {
+  bool serialize(value) {
     if (!isOpen) throw closed();
-
     var text = serializer(value);
-
     if (text.isEmpty) return true;
-
-    if (contentType is String)
-      headers['content-type'] = contentType;
-    else if (contentType is ContentType) this.contentType = contentType;
-
     write(text);
-
     end();
     return false;
   }
