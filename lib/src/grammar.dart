@@ -1,6 +1,7 @@
 part of angel_route.src.router;
 
 class RouteGrammar {
+  static final RegExp rgx = new RegExp(r'\((.+)\)');
   static final Parser<String> notSlash =
       match<String>(new RegExp(r'[^/]+')).value((r) => r.span.text);
 
@@ -13,7 +14,7 @@ class RouteGrammar {
 
   static final Parser<ParameterSegment> parameterSegment = chain([
     parameterName,
-    match('?').value((r) => true).opt(),
+    match<bool>('?').value((r) => true).opt(),
     regExp.opt(),
   ]).map((r) {
     var s = new ParameterSegment(r.value[0] as String, r.value[2] as RegExp);
@@ -45,7 +46,7 @@ class RouteGrammar {
 
   static final Parser<RouteDefinition> routeDefinition = routeSegment
       .separatedBy(match('/'))
-      .map((r) => new RouteDefinition(r.value ?? []))
+      .map<RouteDefinition>((r) => new RouteDefinition(r.value ?? []))
       .surroundedBy(match('/').star().opt());
 }
 
