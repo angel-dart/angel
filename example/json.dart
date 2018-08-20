@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:isolate';
-import 'package:dart2_constant/convert.dart';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 

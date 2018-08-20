@@ -11,7 +11,6 @@ import 'dart:io'
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
-import 'package:dart2_constant/io.dart';
 import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:tuple/tuple.dart';
@@ -237,7 +236,7 @@ class AngelHttp {
       try {
         app.logger?.severe(e, st);
         request.response
-          ..statusCode = HttpStatus.internalServerError
+          ..statusCode = 500
           ..write('500 Internal Server Error')
           ..close();
       } finally {

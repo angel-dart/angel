@@ -1,12 +1,11 @@
 library angel_framework.http.response_context;
 
 import 'dart:async';
-import 'dart:convert' show Converter, Encoding;
+import 'dart:convert';
 import 'dart:convert' as c show json;
 import 'dart:io' show BytesBuilder, Cookie, HttpResponse;
 
 import 'package:angel_route/angel_route.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';

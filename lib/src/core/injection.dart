@@ -1,6 +1,6 @@
 part of angel_framework.http.request_context;
 
-const List<Type> _primitiveTypes = const [String, int, num, double, Null];
+const List<Type> _primitiveTypes =  [String, int, num, double, Null];
 
 /// Shortcut for calling [preInject], and then [handleContained].
 ///

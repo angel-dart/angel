@@ -1,18 +1,20 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/convert.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
+
 import 'common.dart';
 
-@Expose("/todos", middleware: const ["foo"])
+@Expose("/todos", middleware: ["foo"])
 class TodoController extends Controller {
   List<Todo> todos = [new Todo(text: "Hello", over: "world")];
 
-  @Expose("/:id", middleware: const ["bar"])
+  @Expose("/:id", middleware: ["bar"])
   Future<Todo> fetchTodo(
       String id, RequestContext req, ResponseContext res) async {
     expect(req, isNotNull);

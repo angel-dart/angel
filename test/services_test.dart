@@ -1,6 +1,6 @@
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/convert.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';

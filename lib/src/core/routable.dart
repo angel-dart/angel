@@ -58,7 +58,7 @@ class Routable extends Router {
 
   /// Additional filters to be run on designated requests.
   @override
-  final Map<String, RequestHandler> requestMiddleware = {};
+  final Map<String, RequestHandler> requestMiddleware = <String, RequestHandler>{};
 
   /// A set of [Service] objects that have been mapped into routes.
   Map<Pattern, Service> get services => _services;

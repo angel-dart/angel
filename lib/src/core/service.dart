@@ -26,13 +26,13 @@ class Providers {
   static const String viaGraphQL = "graphql";
 
   /// Represents a request via REST.
-  static const Providers rest = const Providers(viaRest);
+  static const Providers rest = Providers(viaRest);
 
   /// Represents a request over WebSockets.
-  static const Providers websocket = const Providers(viaWebsocket);
+  static const Providers websocket =  Providers(viaWebsocket);
 
   /// Represents a request parsed from GraphQL.
-  static const Providers graphql = const Providers(viaGraphQL);
+  static const Providers graphql = Providers(viaGraphQL);
 
   @override
   bool operator ==(other) => other is Providers && other.via == via;
@@ -48,7 +48,7 @@ class Providers {
 /// Heavily inspired by FeathersJS. <3
 class Service extends Routable {
   /// A [List] of keys that services should ignore, should they see them in the query.
-  static const List<String> specialQueryKeys = const [
+  static const List<String> specialQueryKeys = <String> [
     r'$limit',
     r'$sort',
     'page',
