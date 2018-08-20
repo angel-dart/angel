@@ -10,7 +10,7 @@ dependencies:
   angel_http_exception: ^1.0.0
   angel_model: ^1.0.0
   angel_route: ^2.0.0
-  body_parser: ^1.0.0-dev
+  body_parser: ^1.0.0
   charcode: ^1.0.0
   combinator: ^1.0.0
   dart2_constant: ^1.0.0
