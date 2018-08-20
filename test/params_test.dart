@@ -2,9 +2,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  final router = new Router()
-    ..get('/hello', '')
-    ..get('/user/:id', '');
+  final router = new Router()..get('/hello', '')..get('/user/:id', '');
 
   router.group('/book/:id', (router) {
     router.get('/reviews', '');

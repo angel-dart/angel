@@ -4,5 +4,6 @@ part of angel_route.src.router;
 /// to a mounted [Router].
 class SymlinkRoute<T> extends Route<T> {
   final Router<T> router;
-  SymlinkRoute(String path, this.router) : super(path, method: null, handlers: null);
+  SymlinkRoute(String path, this.router)
+      : super(path, method: null, handlers: null);
 }

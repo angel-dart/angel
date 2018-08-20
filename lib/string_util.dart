@@ -20,8 +20,7 @@ String stripStray(String haystack, String needle) {
     if (haystack[i] != needle) {
       var sub = haystack.substring(i);
 
-      if (!sub.endsWith(needle))
-        return sub;
+      if (!sub.endsWith(needle)) return sub;
 
       var lastSlash = sub.lastIndexOf(needle);
 

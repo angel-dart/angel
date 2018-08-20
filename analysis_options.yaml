@@ -1,7 +1,3 @@
 analyzer:
   strong-mode:
-<<<<<<< HEAD
     implicit-casts: false
-=======
-      implicit-casts: false
->>>>>>> 6bf72feffc1af269e2ebfa5d1fbcd4f08ba3ea90

@@ -41,7 +41,9 @@ class RoutingResult<T> {
 
   /// The handlers at this sub-path.
   List<T> get handlers {
-    return <T>[]..addAll(shallowRouter.middleware)..addAll(shallowRoute.handlers);
+    return <T>[]
+      ..addAll(shallowRouter.middleware)
+      ..addAll(shallowRoute.handlers);
   }
 
   /// All handlers on this sub-path and its children.
@@ -52,8 +54,7 @@ class RoutingResult<T> {
       handlers.addAll(result.handlers);
 
       if (result.nested?.isNotEmpty == true) {
-        for (var r in result.nested)
-          crawl(r);
+        for (var r in result.nested) crawl(r);
       }
     }
 
@@ -70,8 +71,7 @@ class RoutingResult<T> {
       params.addAll(result.params);
 
       if (result.nested?.isNotEmpty == true) {
-        for (var r in result.nested)
-          crawl(r);
+        for (var r in result.nested) crawl(r);
       }
     }
 

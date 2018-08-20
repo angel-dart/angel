@@ -267,16 +267,16 @@ class Router<T> {
 
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
-  bool resolve(String absolute, String relative, List<RoutingResult> out,
+  bool resolve(String absolute, String relative, List<RoutingResult<T>> out,
       {String method: 'GET', bool strip: true}) {
     final cleanRelative =
         strip == false ? relative : stripStraySlashes(relative);
     var scanner = new SpanScanner(cleanRelative);
 
-    bool crawl(Router r) {
+    bool crawl(Router<T> r) {
       bool success = false;
 
-      for (Route route in r.routes) {
+      for (var route in r.routes) {
         int pos = scanner.position;
 
         if (route is SymlinkRoute<T>) {
@@ -290,7 +290,7 @@ class Router<T> {
           var parseResult = route.parser.parse(scanner);
 
           if (parseResult.successful && scanner.isDone) {
-            var result = new RoutingResult(
+            var result = new RoutingResult<T>(
                 parseResult: parseResult,
                 params: parseResult.value,
                 shallowRoute: route,
