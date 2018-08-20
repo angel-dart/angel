@@ -27,4 +27,5 @@ with `Angel.eagerParseRequestBodies`.
 * `Angel.storeOriginalBuffer` -> `Angel.storeRawRequestBuffers`.
 * The methods `lazyBody`, `lazyFiles`, and `lazyOriginalBuffer` on `ResponseContext` were all
 replaced with `parseBody`, `parseUploadedFiles`, and `parseRawRequestBuffer`, respectively.
-* Removed the synchronous equivalents of the above methods (`body`, `files`, and `originalBuffer`).
+* Removed the synchronous equivalents of the above methods (`body`, `files`, and `originalBuffer`),
+as well as `query`.
