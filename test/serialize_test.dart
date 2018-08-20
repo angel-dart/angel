@@ -14,8 +14,8 @@ main() {
 
   setUp(() async {
     app = new Angel(reflector: MirrorsReflector())
-      ..get('/foo', () => {'hello': 'world'})
-      ..get('/bar', (req, ResponseContext res) async {
+      ..get('/foo', ioc(() => {'hello': 'world'}))
+      ..get('/bar', (req, res) async {
         res.contentType = new MediaType('text', 'html');
         await res.serialize({'hello': 'world'});
       });

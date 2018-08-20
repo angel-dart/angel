@@ -69,8 +69,9 @@ main() {
 
     app.use('/nes', nested);
     app.get('/meta', testMiddlewareMetadata);
-    app.get('/intercepted', 'This should not be shown', middleware: ['interceptor']);
-    app.get('/hello', 'world');
+    app.get('/intercepted', (req, res) => 'This should not be shown',
+        middleware: [interceptor]);
+    app.get('/hello', (req, res) => 'world');
     app.get('/name/:first/last/:last', (req, res) => req.params);
     app.post('/lambda', (RequestContext req, res) => req.parseBody());
     app.use('/todos/:id', todos);
@@ -86,8 +87,8 @@ main() {
       return "Logged";
     });
 
-    app.get('/method', () => 'Only GET');
-    app.post('/method', () => 'Only POST');
+    app.get('/method', (req, res) => 'Only GET');
+    app.post('/method', (req, res) => 'Only POST');
 
     app.use('/query', new QueryService());
 
@@ -98,7 +99,7 @@ main() {
     }
 
     app.chain([write('a')]).chain([write('b'), write('c')]).get(
-        '/chained', () => false);
+        '/chained', (req, res) => false);
 
     app.use('MJ');
 

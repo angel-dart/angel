@@ -26,7 +26,7 @@ main() {
       },
     );
 
-    app.get('/hello', (res) {
+    app.get('/hello', (req, res) {
       res.write('Hello, world!');
     });
   });

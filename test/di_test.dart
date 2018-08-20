@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
+
 import 'common.dart';
 
 final String TEXT = "make your bed";
@@ -20,11 +22,13 @@ main() {
     client = new http.Client();
 
     // Inject some todos
-    app.container.singleton(new Todo(text: TEXT, over: OVER));
+    app.container.registerSingleton(new Todo(text: TEXT, over: OVER));
 
-    app.get("/errands", (Todo singleton) => singleton);
-    app.get("/errands3",
-        ({Errand singleton, Todo foo, RequestContext req}) => singleton.text);
+    app.get("/errands", ioc((Todo singleton) => singleton));
+    app.get(
+        "/errands3",
+        ioc(({Errand singleton, Todo foo, RequestContext req}) =>
+            singleton.text));
     await app.configure(new SingletonController().configureServer);
     await app.configure(new ErrandController().configureServer);
 

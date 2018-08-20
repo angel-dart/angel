@@ -65,7 +65,7 @@ abstract class RequestContext<RawRequest> {
   MediaType get contentType;
 
   /// The URL parameters extracted from the request URI.
-  Map params = {};
+  Map<String, dynamic> params = <String, dynamic>{};
 
   /// The requested path.
   String get path;

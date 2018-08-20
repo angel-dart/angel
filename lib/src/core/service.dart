@@ -160,7 +160,7 @@ class Service extends Routable {
     if (before != null) handlers.addAll(before.handlers);
 
     Middleware indexMiddleware = getAnnotation(service.index, Middleware);
-    get('/', (RequestContext req, res) {
+    get('/', (req, res) {
       return req.parseQuery().then((query) {
         return this.index(mergeMap([
           {'query': query},
@@ -174,7 +174,7 @@ class Service extends Routable {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware = getAnnotation(service.create, Middleware);
-    post('/', (RequestContext req, ResponseContext res) {
+    post('/', (req, ResponseContext res) {
       return req.parseQuery().then((query) {
         return req.parseBody().then((body) {
           return this
@@ -199,7 +199,7 @@ class Service extends Routable {
 
     Middleware readMiddleware = getAnnotation(service.read, Middleware);
 
-    get('/:id', (RequestContext req, res) {
+    get('/:id', (req, res) {
       return req.parseQuery().then((query) {
         return this.read(
             parseId(req.params['id']),
@@ -217,7 +217,7 @@ class Service extends Routable {
     Middleware modifyMiddleware = getAnnotation(service.modify, Middleware);
     patch(
         '/:id',
-        (RequestContext req, res) => req.parseBody().then((body) {
+        (req, res) => req.parseBody().then((body) {
               return req.parseQuery().then((query) {
                 return this.modify(
                     parseId(req.params['id']),
@@ -237,7 +237,7 @@ class Service extends Routable {
     Middleware updateMiddleware = getAnnotation(service.update, Middleware);
     post(
         '/:id',
-        (RequestContext req, res) => req.parseBody().then((body) {
+        (req, res) => req.parseBody().then((body) {
               return req.parseQuery().then((query) {
                 return this.update(
                     parseId(req.params['id']),
@@ -255,7 +255,7 @@ class Service extends Routable {
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
     put(
         '/:id',
-        (RequestContext req, res) => req.parseBody().then((body) {
+        (req, res) => req.parseBody().then((body) {
               return req.parseQuery().then((query) {
                 return this.update(
                     parseId(req.params['id']),
@@ -273,7 +273,7 @@ class Service extends Routable {
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware = getAnnotation(service.remove, Middleware);
-    delete('/', (RequestContext req, res) {
+    delete('/', (req, res) {
       return req.parseQuery().then((query) {
         return this.remove(
             null,
@@ -288,7 +288,7 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
-    delete('/:id', (RequestContext req, res) {
+    delete('/:id', (req, res) {
       return req.parseQuery().then((query) {
         return this.remove(
             parseId(req.params['id']),
@@ -305,8 +305,8 @@ class Service extends Routable {
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
 
     // REST compliance
-    put('/', () => throw new AngelHttpException.notFound());
-    patch('/', () => throw new AngelHttpException.notFound());
+    put('/', (req, res) => throw new AngelHttpException.notFound());
+    patch('/', (req, res) => throw new AngelHttpException.notFound());
   }
 
   /// Invoked when this service is wrapped within a [HookedService].

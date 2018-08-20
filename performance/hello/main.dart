@@ -26,7 +26,7 @@ void start(int id) {
   var app = new Angel(reflector: MirrorsReflector());
   var http = new AngelHttp.custom(app, startShared, useZone: false);
 
-  app.get('/', (ResponseContext res) => res.write('Hello, world!'));
+  app.get('/', (req, res) => res.write('Hello, world!'));
 
   var oldHandler = app.errorHandler;
   app.errorHandler = (e, req, res) {

@@ -1,20 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
 
-@Expose("/todos", middleware: ["foo"])
+@Expose("/todos", middleware: [foo])
 class TodoController extends Controller {
   List<Todo> todos = [new Todo(text: "Hello", over: "world")];
 
-  @Expose("/:id", middleware: ["bar"])
+  @Expose("/:id", middleware: [bar])
   Future<Todo> fetchTodo(
       String id, RequestContext req, ResponseContext res) async {
     expect(req, isNotNull);
@@ -37,6 +37,14 @@ class NamedController extends Controller {
   optional() => 2;
 }
 
+void foo(RequestContext req, ResponseContext res) {
+  res.write("Hello, ");
+}
+
+void bar(RequestContext req, ResponseContext res) {
+  res.write("world!");
+}
+
 main() {
   Angel app;
   TodoController ctrl;
@@ -46,17 +54,9 @@ main() {
 
   setUp(() async {
     app = new Angel(reflector: MirrorsReflector());
-    app.requestMiddleware["foo"] = (req, res) async {
-      res.write("Hello, ");
-      return true;
-    };
-    app.requestMiddleware["bar"] = (req, res) async {
-      res.write("world!");
-      return true;
-    };
     app.get(
         "/redirect",
-        (req, ResponseContext res) async =>
+        (req, res) async =>
             res.redirectToAction("TodoController@foo", {"foo": "world"}));
     await app.configure((ctrl = new TodoController()).configureServer);
 
@@ -91,7 +91,7 @@ main() {
     var app = new Angel(reflector: MirrorsReflector());
     app.get(
         '/foo',
-        createDynamicHandler(({String bar}) {
+        ioc(({String bar}) {
           return 2;
         }, optional: ['bar']));
     var rq = new MockHttpRequest('GET', new Uri(path: 'foo'));

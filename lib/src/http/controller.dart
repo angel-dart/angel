@@ -2,8 +2,10 @@ library angel_framework.http.controller;
 
 import 'dart:async';
 import 'dart:mirrors';
+
 import 'package:angel_route/angel_route.dart';
 import 'package:meta/meta.dart';
+
 import '../core/core.dart';
 
 /// Supports grouping routes with shared functionality.
@@ -19,7 +21,7 @@ class Controller {
   final bool injectSingleton;
 
   /// Middleware to run before all handlers in this class.
-  List middleware = [];
+  List<RequestHandler> middleware = [];
 
   /// A mapping of route paths to routes, produced from the [Expose] annotations on this class.
   Map<String, Route> routeMappings = {};
@@ -30,7 +32,9 @@ class Controller {
   Future configureServer(Angel app) {
     _app = app;
 
-    if (injectSingleton != false) _app.container.singleton(this);
+    if (injectSingleton != false) {
+      _app.container.registerSingleton(this, as: runtimeType);
+    }
 
     // Load global expose decl
     ClassMirror classMirror = reflectClass(this.runtimeType);
@@ -52,7 +56,9 @@ class Controller {
 
     // Pre-reflect methods
     InstanceMirror instanceMirror = reflect(this);
-    final handlers = []..addAll(exposeDecl.middleware)..addAll(middleware);
+    final handlers = <RequestHandler>[]
+      ..addAll(exposeDecl.middleware)
+      ..addAll(middleware);
     final routeBuilder = _routeBuilder(instanceMirror, routable, handlers);
     classMirror.instanceMembers.forEach(routeBuilder);
     configureRoutes(routable);
@@ -60,7 +66,9 @@ class Controller {
   }
 
   void Function(Symbol, MethodMirror) _routeBuilder(
-      InstanceMirror instanceMirror, Routable routable, Iterable<RequestHandler> handlers) {
+      InstanceMirror instanceMirror,
+      Routable routable,
+      Iterable<RequestHandler> handlers) {
     return (Symbol methodName, MethodMirror method) {
       if (method.isRegularMethod &&
           methodName != #toString &&
@@ -76,7 +84,9 @@ class Controller {
 
         var reflectedMethod =
             instanceMirror.getField(methodName).reflectee as Function;
-        var middleware = <RequestHandler>[]..addAll(handlers)..addAll(exposeDecl.middleware);
+        var middleware = <RequestHandler>[]
+          ..addAll(handlers)
+          ..addAll(exposeDecl.middleware);
         String name = exposeDecl.as?.isNotEmpty == true
             ? exposeDecl.as
             : MirrorSystem.getName(methodName);

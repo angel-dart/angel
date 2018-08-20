@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io' show stderr;
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:mock_request/mock_request.dart';
@@ -10,22 +11,23 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(reflector: MirrorsReflector())..inject('global', 305); // Pitbull!
+    app = new Angel(reflector: MirrorsReflector())
+      ..inject('global', 305); // Pitbull!
     http = new AngelHttp(app);
 
-    app.get('/string/:string', (String string) => string);
+    app.get('/string/:string', ioc((String string) => string));
 
     app.get(
         '/num/parsed/:num',
         waterfall([
-          (RequestContext req) {
+          (req, res) {
             req.params['n'] = num.parse(req.params['num'].toString());
             return true;
           },
-          (num n) => n,
+          ioc((num n) => n),
         ]));
 
-    app.get('/num/global', (num global) => global);
+    app.get('/num/global', ioc((num global) => global));
 
     app.errorHandler = (e, req, res) {
       stderr..writeln(e.error)..writeln(e.stackTrace);

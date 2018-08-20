@@ -162,8 +162,9 @@ class Angel extends Routable {
   };
 
   @override
-  Route addRoute(String method, String path, Object handler,
-      {Iterable middleware: const []}) {
+  Route<RequestHandler> addRoute(
+      String method, String path, RequestHandler handler,
+      {Iterable<RequestHandler> middleware: const <RequestHandler>[]}) {
     if (_flattened != null) {
       logger?.warning(
           'WARNING: You added a route ($method $path) to the router, after it had been optimized.');
@@ -175,7 +176,7 @@ class Angel extends Routable {
   }
 
   @override
-  mount(Pattern path, Router router) {
+  mount(String path, Router<RequestHandler> router) {
     if (_flattened != null) {
       logger?.warning(
           'WARNING: You added mounted a child router ($path) on the router, after it had been optimized.');
@@ -275,11 +276,6 @@ class Angel extends Routable {
       return getHandlerResult(handler.toList(), req, res);
     }
 
-    var middleware = (req.app ?? this).findMiddleware(handler);
-    if (middleware != null) {
-      return getHandlerResult(middleware, req, res);
-    }
-
     return new Future.value(handler);
   }
 
@@ -296,12 +292,6 @@ class Angel extends Routable {
       } else
         return res.isOpen;
     });
-  }
-
-  /// Attempts to find a middleware by the given name within this application.
-  findMiddleware(key) {
-    if (requestMiddleware.containsKey(key)) return requestMiddleware[key];
-    return parent != null ? parent.findMiddleware(key) : null;
   }
 
   /// Attempts to find a property by the given name within this application.
@@ -327,7 +317,6 @@ class Angel extends Routable {
       }
 
       void _walk(Router router) {
-        router.requestMiddleware.forEach((k, v) => _add(v));
         router.middleware.forEach(_add);
         router.routes.forEach((r) {
           r.handlers.forEach(_add);

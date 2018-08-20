@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
@@ -8,7 +9,7 @@ main() {
   test('preinjects functions', () async {
     var app = new Angel(reflector: MirrorsReflector())
       ..configuration['foo'] = 'bar'
-      ..get('/foo', echoAppFoo);
+      ..get('/foo', ioc(echoAppFoo));
     app.optimizeForProduction(force: true);
     print(app.preContained);
     expect(app.preContained, contains(echoAppFoo));

@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
 import 'package:matcher/matcher.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
@@ -12,7 +13,8 @@ final Uri $foo = Uri.parse('http://localhost:3000/foo');
 /// Additional tests to improve coverage of server.dart
 main() {
   group('scoping', () {
-    var parent = new Angel(reflector: MirrorsReflector())..configuration['two'] = 2;
+    var parent = new Angel(reflector: MirrorsReflector())
+      ..configuration['two'] = 2;
     var child = new Angel(reflector: MirrorsReflector());
     parent.use('/child', child);
 
@@ -70,10 +72,11 @@ main() {
   });
 
   test('warning when adding routes to flattened router', () {
-    var app = new Angel(reflector: MirrorsReflector())..optimizeForProduction(force: true);
+    var app = new Angel(reflector: MirrorsReflector())
+      ..optimizeForProduction(force: true);
     app.dumpTree();
-    app.get('/', () => 2);
-    app.mount('/foo', new Router()..get('/', 3));
+    app.get('/', (req, res) => 2);
+    app.mount('/foo', new Router()..get('/', (req, res) => 3));
   });
 
   test('services close on close call', () async {
@@ -88,7 +91,7 @@ main() {
   test('global injection added to injection map', () async {
     var app = new Angel(reflector: MirrorsReflector())..inject('a', 'b');
     var http = new AngelHttp(app);
-    app.get('/', (String a) => a);
+    app.get('/', ioc((String a) => a));
     var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
@@ -153,8 +156,8 @@ main() {
 
     setUp(() async {
       app = new Angel(reflector: MirrorsReflector());
-      app.get('/wtf', () => throw new AngelHttpException.forbidden());
-      app.get('/wtf2', () => throw new AngelHttpException.forbidden());
+      app.get('/wtf', (req, res) => throw new AngelHttpException.forbidden());
+      app.get('/wtf2', (req, res) => throw new AngelHttpException.forbidden());
       http = new AngelHttp(app);
       await http.startServer('127.0.0.1', 0);
 
