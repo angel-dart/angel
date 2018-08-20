@@ -12,3 +12,6 @@
 * Moved `TypedService` into `package:angel_typed_service`.
 * Completely removed the `AngelBase` class.
 * Removed all `@deprecated` symbols.
+* `Service.toId` was renamed to `Service.parseId`; it also now uses its
+single type argument to determine how to parse a value.
+    * In addition, this method was also made `static`.

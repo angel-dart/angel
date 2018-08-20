@@ -124,7 +124,11 @@ class Service extends Routable {
   }
 
   /// Transforms an [id] (whether it is a String, num, etc.) into one acceptable by a service.
-  T parseId<T>(id) {
+  ///
+  /// The single type argument, [T], is used to determine how to parse the [id].
+  ///
+  /// For example, `parseId<bool>` attempts to parse the value as a [bool].
+  static T parseId<T>(id) {
     if (id == 'null' || id == null)
       return null;
     else if (T == String)
