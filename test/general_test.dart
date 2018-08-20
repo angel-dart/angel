@@ -12,7 +12,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(MirrorsReflector())
+    app = new Angel(reflector: MirrorsReflector())
       ..post('/foo', () => {'hello': 'world'})
       ..all('*', () => throw new AngelHttpException.notFound());
     client = new http.Client();

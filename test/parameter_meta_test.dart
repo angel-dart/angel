@@ -28,7 +28,7 @@ parameterMetaTests() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(MirrorsReflector())..lazyParseBodies = true;
+    app = new Angel(reflector: MirrorsReflector())..lazyParseBodies = true;
     http = new AngelHttp(app);
 
     app.get('/cookie', (@CookieValue('token') String jwt) {

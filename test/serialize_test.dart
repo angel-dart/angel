@@ -13,7 +13,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(MirrorsReflector())
+    app = new Angel(reflector: MirrorsReflector())
       ..get('/foo', () => {'hello': 'world'})
       ..get('/bar', (req, ResponseContext res) async {
         res.contentType = new MediaType('text', 'html');

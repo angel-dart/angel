@@ -19,7 +19,7 @@ main() {
   HookedService Todos;
 
   setUp(() async {
-    app = new Angel(MirrorsReflector());
+    app = new Angel(reflector: MirrorsReflector());
     client = new http.Client();
     app.use('/todos', new MapService());
     app.use('/books', new BookService());

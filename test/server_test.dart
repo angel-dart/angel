@@ -12,8 +12,8 @@ final Uri $foo = Uri.parse('http://localhost:3000/foo');
 /// Additional tests to improve coverage of server.dart
 main() {
   group('scoping', () {
-    var parent = new Angel(MirrorsReflector())..configuration['two'] = 2;
-    var child = new Angel(MirrorsReflector());
+    var parent = new Angel(reflector: MirrorsReflector())..configuration['two'] = 2;
+    var child = new Angel(reflector: MirrorsReflector());
     parent.use('/child', child);
 
     test('sets children', () {
@@ -30,13 +30,13 @@ main() {
   });
 
   test('custom server generator', () {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     var http = new AngelHttp.custom(app, HttpServer.bind);
     expect(http.serverGenerator, HttpServer.bind);
   });
 
   test('default error handler', () async {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     var http = new AngelHttp(app);
     var rq = new MockHttpRequest('GET', $foo);
     rq.close();
@@ -59,7 +59,7 @@ main() {
   });
 
   test('plug-ins run on startup', () async {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     app.startupHooks.add((app) => app.configuration['two'] = 2);
 
     var http = new AngelHttp(app);
@@ -70,14 +70,14 @@ main() {
   });
 
   test('warning when adding routes to flattened router', () {
-    var app = new Angel(MirrorsReflector())..optimizeForProduction(force: true);
+    var app = new Angel(reflector: MirrorsReflector())..optimizeForProduction(force: true);
     app.dumpTree();
     app.get('/', () => 2);
     app.mount('/foo', new Router()..get('/', 3));
   });
 
   test('services close on close call', () async {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     var svc = new CustomCloseService();
     expect(svc.value, 2);
     app.use('/', svc);
@@ -86,7 +86,7 @@ main() {
   });
 
   test('global injection added to injection map', () async {
-    var app = new Angel(MirrorsReflector())..inject('a', 'b');
+    var app = new Angel(reflector: MirrorsReflector())..inject('a', 'b');
     var http = new AngelHttp(app);
     app.get('/', (String a) => a);
     var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();
@@ -96,7 +96,7 @@ main() {
   });
 
   test('global injected serializer', () async {
-    var app = new Angel(MirrorsReflector())..serializer = (_) => 'x';
+    var app = new Angel(reflector: MirrorsReflector())..serializer = (_) => 'x';
     var http = new AngelHttp(app);
     app.get($foo.path, (req, ResponseContext res) => res.serialize(null));
     var rq = new MockHttpRequest('GET', $foo)..close();
@@ -106,7 +106,7 @@ main() {
   });
 
   group('handler results', () {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     var http = new AngelHttp(app);
     app.responseFinalizers
         .add((req, res) => throw new AngelHttpException.forbidden());
@@ -152,7 +152,7 @@ main() {
     AngelHttp http;
 
     setUp(() async {
-      app = new Angel(MirrorsReflector());
+      app = new Angel(reflector: MirrorsReflector());
       app.get('/wtf', () => throw new AngelHttpException.forbidden());
       app.get('/wtf2', () => throw new AngelHttpException.forbidden());
       http = new AngelHttp(app);

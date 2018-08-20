@@ -11,7 +11,7 @@ main() {
   }
 
   test('can request the same url twice', () async {
-    var app = new Angel(MirrorsReflector())..get('/test/:id', (id) => 'Hello $id');
+    var app = new Angel(reflector: MirrorsReflector())..get('/test/:id', (id) => 'Hello $id');
     var rq1 = mk(1), rq2 = mk(2), rq3 = mk(1);
     await Future.wait([rq1, rq2, rq3].map(new AngelHttp(app).handleRequest));
     var body1 = await rq1.response.transform(utf8.decoder).join(),

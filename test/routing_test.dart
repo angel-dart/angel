@@ -28,9 +28,9 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel(MirrorsReflector());
-    nested = new Angel(MirrorsReflector());
-    todos = new Angel(MirrorsReflector());
+    app = new Angel(reflector: MirrorsReflector());
+    nested = new Angel(reflector: MirrorsReflector());
+    todos = new Angel(reflector: MirrorsReflector());
 
     // Lazy-parse in production
     [app, nested, todos].forEach((Angel app) {

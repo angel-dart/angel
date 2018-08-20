@@ -11,6 +11,7 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
 
 import '../http/http.dart';
@@ -484,7 +485,7 @@ class Angel extends AngelBase {
   }
 
   /// Default constructor. ;)
-  Angel(Reflector reflector) : super(reflector) {
+  Angel({@required Reflector reflector}) : super(reflector) {
     bootstrapContainer();
     // ignore: deprecated_member_use
     createZoneForRequest = defaultZoneCreator;
@@ -509,14 +510,14 @@ class Angel extends AngelBase {
   @deprecated
   factory Angel.custom(
       Future<HttpServer> Function(dynamic, int) serverGenerator) {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     return app.._http = new AngelHttp.custom(app, serverGenerator);
   }
 
   /// Use the serving methods in [AngelHttp] instead.
   @deprecated
   factory Angel.fromSecurityContext(SecurityContext context) {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
 
     app._http = new AngelHttp.custom(app, (address, int port) {
       return HttpServer.bindSecure(address, port, context);
@@ -529,7 +530,7 @@ class Angel extends AngelBase {
   @deprecated
   factory Angel.secure(String certificateChainPath, String serverKeyPath,
       {String password}) {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     return app
       .._http = new AngelHttp.secure(app, certificateChainPath, serverKeyPath,
           password: password);

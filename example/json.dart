@@ -29,7 +29,7 @@ main() async {
 }
 
 serverMain(_) async {
-  var app = new Angel(MirrorsReflector());
+  var app = new Angel(reflector: MirrorsReflector());
   var http = new AngelHttp.custom(app, startShared); // Run a cluster
 
   app.get('/', {

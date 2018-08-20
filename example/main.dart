@@ -2,7 +2,7 @@ import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
-  var app = new Angel(MirrorsReflector());
+  var app = new Angel(reflector: MirrorsReflector());
 
   // Index route. Returns JSON.
   app.get('/', () => 'Welcome to Angel!');

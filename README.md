@@ -12,7 +12,7 @@ To build real-world applications, please see the [homepage](https://angel-dart.g
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
-  var app = new Angel(MirrorsReflector());
+  var app = new Angel(reflector: MirrorsReflector());
 
   // Index route. Returns JSON.
   app.get('/', () => 'Welcome to Angel!');

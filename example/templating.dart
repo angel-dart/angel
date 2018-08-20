@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 main() async {
-  var app = new Angel(MirrorsReflector())
+  var app = new Angel(reflector: MirrorsReflector())
     ..lazyParseBodies = true
     ..logger = (new Logger('angel')..onRecord.listen(print))
     ..encoders.addAll({'gzip': gzip.encoder});

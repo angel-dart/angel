@@ -10,7 +10,7 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(MirrorsReflector())..inject('global', 305); // Pitbull!
+    app = new Angel(reflector: MirrorsReflector())..inject('global', 305); // Pitbull!
     http = new AngelHttp(app);
 
     app.get('/string/:string', (String string) => string);

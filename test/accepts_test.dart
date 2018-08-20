@@ -61,7 +61,7 @@ Future<RequestContext> acceptContentTypes(
   var rq = new MockHttpRequest('GET', ENDPOINT);
   rq.headers.set('accept', headerString);
   rq.close();
-  var app = new Angel(MirrorsReflector());
+  var app = new Angel(reflector: MirrorsReflector());
   var http = new AngelHttp(app);
   return http.createRequestContext(rq);
 }

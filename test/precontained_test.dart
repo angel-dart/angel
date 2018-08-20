@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 main() {
   test('preinjects functions', () async {
-    var app = new Angel(MirrorsReflector())
+    var app = new Angel(reflector: MirrorsReflector())
       ..configuration['foo'] = 'bar'
       ..get('/foo', echoAppFoo);
     app.optimizeForProduction(force: true);

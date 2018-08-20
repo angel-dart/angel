@@ -18,7 +18,7 @@ main() {
   Angel app;
 
   setUp(() {
-    app = new Angel(MirrorsReflector());
+    app = new Angel(reflector: MirrorsReflector());
     app.injectEncoders(
       {
         'deflate': zlib.encoder,

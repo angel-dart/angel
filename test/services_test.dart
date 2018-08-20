@@ -20,7 +20,7 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel(MirrorsReflector())
+    app = new Angel(reflector: MirrorsReflector())
       ..use('/todos', new MapService())
       ..errorHandler = (e, req, res) {
         print('Whoops: ${e.error}');

@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 main() {
   test('default view generator', () async {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     var view = await app.viewGenerator('foo', {'bar': 'baz'});
     expect(view, contains('No view engine'));
   });

@@ -14,7 +14,7 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(MirrorsReflector());
+    app = new Angel(reflector: MirrorsReflector());
     http = new AngelHttp(app);
 
     app.logger = new Logger('streaming_test')

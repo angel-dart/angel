@@ -23,7 +23,7 @@ main() async {
 }
 
 void start(int id) {
-  var app = new Angel(MirrorsReflector())..lazyParseBodies = true;
+  var app = new Angel(reflector: MirrorsReflector())..lazyParseBodies = true;
   var http = new AngelHttp.custom(app, startShared, useZone: false);
 
   app.get('/', (ResponseContext res) => res.write('Hello, world!'));

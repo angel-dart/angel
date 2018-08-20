@@ -43,7 +43,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(MirrorsReflector());
+    app = new Angel(reflector: MirrorsReflector());
     app.requestMiddleware["foo"] = (req, res) async {
       res.write("Hello, ");
       return true;
@@ -77,7 +77,7 @@ main() {
 
   test('require expose', () async {
     try {
-      var app = new Angel(MirrorsReflector());
+      var app = new Angel(reflector: MirrorsReflector());
       await app.configure(new NoExposeController().configureServer);
       throw 'Should require @Expose';
     } on Exception {
@@ -86,7 +86,7 @@ main() {
   });
 
   test('create dynamic handler', () async {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     app.get(
         '/foo',
         createDynamicHandler(({String bar}) {
@@ -99,7 +99,7 @@ main() {
   });
 
   test('optional name', () async {
-    var app = new Angel(MirrorsReflector());
+    var app = new Angel(reflector: MirrorsReflector());
     await app.configure(new NamedController().configureServer);
     expect(app.controllers['foo'], const IsInstanceOf<NamedController>());
   });
