@@ -3,42 +3,46 @@ library angel_route.src.router;
 import 'package:combinator/combinator.dart';
 import 'package:meta/meta.dart';
 import 'package:string_scanner/string_scanner.dart';
-import 'routing_exception.dart';
+
 import '../string_util.dart';
+import 'routing_exception.dart';
+
 part 'grammar.dart';
-part 'symlink_route.dart';
+
 part 'route.dart';
+
 part 'routing_result.dart';
 
-final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
-final RegExp _rgxEnd = new RegExp(r'\$+$');
-final RegExp _rgxStart = new RegExp(r'^\^+');
-final RegExp _rgxStraySlashes =
-    new RegExp(r'(^((\\+/)|(/))+)|(((\\+/)|(/))+$)');
-final RegExp _slashDollar = new RegExp(r'/+\$');
+part 'symlink_route.dart';
+
+//final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
+//final RegExp _rgxEnd = new RegExp(r'\$+$');
+//final RegExp _rgxStart = new RegExp(r'^\^+');
+//final RegExp _rgxStraySlashes =
+//    new RegExp(r'(^((\\+/)|(/))+)|(((\\+/)|(/))+$)');
+//final RegExp _slashDollar = new RegExp(r'/+\$');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
-class Router {
+class Router<T> {
   final Map<String, Iterable<RoutingResult>> _cache = {};
+
   //final List<_ChainedRouter> _chained = [];
-  final List _middleware = [];
-  final Map<Pattern, Router> _mounted = {};
-  final List<Route> _routes = [];
+  final List<T> _middleware = [];
+  final Map<Pattern, Router<T>> _mounted = {};
+  final List<Route<T>> _routes = [];
   bool _useCache = false;
 
-  List get middleware => new List.unmodifiable(_middleware);
+  List<T> get middleware => new List<T>.unmodifiable(_middleware);
 
   Map<Pattern, Router> get mounted =>
       new Map<Pattern, Router>.unmodifiable(_mounted);
 
-  /// Additional filters to be run on designated requests.
-  Map<String, dynamic> requestMiddleware = {};
-
-  List<Route> get routes {
-    return _routes.fold<List<Route>>([], (out, route) {
-      if (route is SymlinkRoute) {
-        var childRoutes = route.router.routes.fold<List<Route>>([], (out, r) {
+  List<Route<T>> get routes {
+    return _routes.fold<List<Route<T>>>([], (out, route) {
+      if (route is SymlinkRoute<T>) {
+        var childRoutes =
+            route.router.routes.fold<List<Route<T>>>([], (out, r) {
           return out
             ..add(
               route.path.isEmpty ? r : new Route.join(route, r),
@@ -64,46 +68,44 @@ class Router {
   /// Adds a route that responds to the given path
   /// for requests with the given method (case-insensitive).
   /// Provide '*' as the method to respond to all methods.
-  Route addRoute(String method, String path, Object handler,
-      {List middleware: const []}) {
+  Route<T> addRoute(String method, String path, T handler,
+      {Iterable<T> middleware: const []}) {
     if (_useCache == true)
       throw new StateError('Cannot add routes after caching is enabled.');
 
     // Check if any mounted routers can match this
-    final handlers = [handler];
+    final handlers = <T>[handler];
 
     if (middleware != null) handlers.insertAll(0, middleware);
 
-    final route = new Route(path, method: method, handlers: handlers);
+    final route = new Route<T>(path, method: method, handlers: handlers);
     _routes.add(route);
     return route;
   }
 
-  /// Prepends the given middleware to any routes created
+  /// Prepends the given [middleware] to any routes created
   /// by the resulting router.
   ///
-  /// [middleware] can be either an `Iterable`, or a single object.
-  ///
   /// The resulting router can be chained, too.
-  _ChainedRouter chain(middleware) {
-    var piped = new _ChainedRouter(this, middleware);
-    var route = new SymlinkRoute('/', piped);
+  _ChainedRouter<T> chain(Iterable<T> middleware) {
+    var piped = new _ChainedRouter<T>(this, middleware);
+    var route = new SymlinkRoute<T>('/', piped);
     _routes.add(route);
     return piped;
   }
 
   /// Returns a [Router] with a duplicated version of this tree.
-  Router clone() {
-    final router = new Router();
-    final newMounted = new Map<Pattern, Router>.from(mounted);
+  Router<T> clone() {
+    final router = new Router<T>();
+    final newMounted = new Map<Pattern, Router<T>>.from(mounted);
 
-    for (Route route in routes) {
-      if (route is! SymlinkRoute) {
+    for (var route in routes) {
+      if (route is! SymlinkRoute<T>) {
         router._routes.add(route.clone());
-      } else if (route is SymlinkRoute) {
+      } else if (route is SymlinkRoute<T>) {
         final newRouter = route.router.clone();
         newMounted[route.path] = newRouter;
-        final symlink = new SymlinkRoute(route.path, newRouter);
+        final symlink = new SymlinkRoute<T>(route.path, newRouter);
         router._routes.add(symlink);
       }
     }
@@ -161,13 +163,11 @@ class Router {
   ///
   /// Returns the created route.
   /// You can also register middleware within the router.
-  SymlinkRoute group(String path, void callback(Router router),
-      {Iterable middleware: const [],
-      String name: null,
-      String namespace: null}) {
-    final router = new Router().._middleware.addAll(middleware);
+  SymlinkRoute<T> group(String path, void callback(Router router),
+      {Iterable<T> middleware: const [], String name: null}) {
+    final router = new Router<T>().._middleware.addAll(middleware);
     callback(router);
-    return mount(path, router, namespace: namespace)..name = name;
+    return mount(path, router)..name = name;
   }
 
   /// Generates a URI string based on the given input.
@@ -265,12 +265,6 @@ class Router {
         : segments.join('/');
   }
 
-  /// Manually assign via [requestMiddleware] instead.
-  @deprecated
-  registerMiddleware(String name, middleware) {
-    requestMiddleware[name] = middleware;
-  }
-
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
   bool resolve(String absolute, String relative, List<RoutingResult> out,
@@ -344,122 +338,97 @@ class Router {
   }
 
   /// Incorporates another [Router]'s routes into this one's.
-  ///
-  /// If `hooked` is set to `true` and a [Service] is provided,
-  /// then that service will be wired to a [HookedService] proxy.
-  /// If a `namespace` is provided, then any middleware
-  /// from the provided [Router] will be prefixed by that namespace,
-  /// with a dot.
-  /// For example, if the [Router] has a middleware 'y', and the `namespace`
-  /// is 'x', then that middleware will be available as 'x.y' in the main router.
-  /// These namespaces can be nested.
-  SymlinkRoute mount(String path, Router router,
-      {bool hooked: true, String namespace: null}) {
-    // Let's copy middleware, heeding the optional middleware namespace.
-    String middlewarePrefix = namespace != null ? "$namespace." : "";
-
-    Map copiedMiddleware = new Map.from(router.requestMiddleware);
-    for (String middlewareName in copiedMiddleware.keys) {
-      requestMiddleware["$middlewarePrefix$middlewareName"] =
-          copiedMiddleware[middlewareName];
-    }
-
-    final route = new SymlinkRoute(path, router);
+  SymlinkRoute<T> mount(String path, Router<T> router) {
+    final route = new SymlinkRoute<T>(path, router);
     _mounted[route.path] = router;
     _routes.add(route);
     //route._head = new RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));
 
-    return route..name = namespace;
+    return route;
   }
 
   /// Adds a route that responds to any request matching the given path.
-  Route all(String path, Object handler, {List middleware}) {
+  Route<T> all(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('*', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a DELETE request.
-  Route delete(String path, Object handler, {List middleware}) {
+  Route<T> delete(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('DELETE', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a GET request.
-  Route get(String path, Object handler, {List middleware}) {
+  Route<T> get(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('GET', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a HEAD request.
-  Route head(String path, Object handler, {List middleware}) {
+  Route<T> head(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('HEAD', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a OPTIONS request.
-  Route options(String path, Object handler, {List middleware}) {
+  Route<T> options(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('OPTIONS', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a POST request.
-  Route post(String path, Object handler, {List middleware}) {
+  Route<T> post(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('POST', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a PATCH request.
-  Route patch(String path, Object handler, {List middleware}) {
+  Route<T> patch(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('PATCH', path, handler, middleware: middleware);
   }
 
   /// Adds a route that responds to a PUT request.
-  Route put(String path, Object handler, {List middleware}) {
+  Route put(String path, T handler, {Iterable<T> middleware}) {
     return addRoute('PUT', path, handler, middleware: middleware);
   }
 }
 
-class _ChainedRouter extends Router {
-  final List _handlers = [];
+class _ChainedRouter<T> extends Router<T> {
+  final List<T> _handlers = <T>[];
   Router _root;
 
   _ChainedRouter.empty();
 
-  _ChainedRouter(Router root, middleware) {
+  _ChainedRouter(Router root, Iterable<T> middleware) {
     this._root = root;
-    _handlers.addAll(middleware is Iterable ? middleware : [middleware]);
+    _handlers.addAll(middleware);
   }
 
   @override
-  Route addRoute(String method, String path, handler,
-      {List middleware: const []}) {
+  Route<T> addRoute(String method, String path, handler,
+      {Iterable<T> middleware: const []}) {
     var route = super.addRoute(method, path, handler,
         middleware: []..addAll(_handlers)..addAll(middleware ?? []));
     //_root._routes.add(route);
     return route;
   }
 
-  SymlinkRoute group(String path, void callback(Router router),
-      {Iterable middleware: const [],
-      String name: null,
-      String namespace: null}) {
+  SymlinkRoute<T> group(String path, void callback(Router<T> router),
+      {Iterable<T> middleware: const [], String name: null}) {
     final router =
-        new _ChainedRouter(_root, []..addAll(_handlers)..addAll(middleware));
+        new _ChainedRouter<T>(_root, []..addAll(_handlers)..addAll(middleware));
     callback(router);
-    return mount(path, router, namespace: namespace)..name = name;
+    return mount(path, router)..name = name;
   }
 
   @override
-  SymlinkRoute mount(String path, Router router,
-      {bool hooked: true, String namespace: null}) {
-    final route =
-        super.mount(path, router, hooked: hooked, namespace: namespace);
+  SymlinkRoute<T> mount(String path, Router<T> router) {
+    final route = super.mount(path, router);
     route.router._middleware.insertAll(0, _handlers);
     //_root._routes.add(route);
     return route;
   }
 
   @override
-  _ChainedRouter chain(middleware) {
-    final piped = new _ChainedRouter.empty().._root = _root;
-    piped._handlers.addAll([]
-      ..addAll(_handlers)
-      ..addAll(middleware is Iterable ? middleware : [middleware]));
-    var route = new SymlinkRoute('/', piped);
+  _ChainedRouter<T> chain(Iterable<T> middleware) {
+    final piped = new _ChainedRouter<T>.empty().._root = _root;
+    piped._handlers.addAll([]..addAll(_handlers)..addAll(middleware));
+    var route = new SymlinkRoute<T>('/', piped);
     _routes.add(route);
     return piped;
   }
@@ -467,14 +436,12 @@ class _ChainedRouter extends Router {
 
 /// Optimizes a router by condensing all its routes into one level.
 Router flatten(Router router) {
-  var flattened = new Router()
-    ..requestMiddleware.addAll(router.requestMiddleware);
+  var flattened = new Router();
 
   for (var route in router.routes) {
     if (route is SymlinkRoute) {
       var base = route.path.replaceAll(_straySlashes, '');
       var child = flatten(route.router);
-      flattened.requestMiddleware.addAll(child.requestMiddleware);
 
       for (var route in child.routes) {
         var path = route.path.replaceAll(_straySlashes, '');

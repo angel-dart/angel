@@ -1,10 +1,10 @@
 part of angel_route.src.router;
 
 /// Represents a virtual location within an application.
-class Route {
+class Route<T> {
   final String method;
   final String path;
-  final List handlers;
+  final List<T> handlers;
   final Map<String, Map<String, dynamic>> _cache = {};
   final RouteDefinition _routeDefinition;
   String name;
@@ -14,10 +14,12 @@ class Route {
       : _routeDefinition = RouteGrammar.routeDefinition
             .parse(new SpanScanner(path.replaceAll(_straySlashes, '')))
             .value {
-    if (_routeDefinition.segments.isEmpty) _parser = match('').value((r) => {});
+    if (_routeDefinition?.segments?.isNotEmpty != true)
+      _parser =
+          match<Map<String, dynamic>>('').value((r) => <String, dynamic>{});
   }
 
-  factory Route.join(Route a, Route b) {
+  factory Route.join(Route<T> a, Route<T> b) {
     var start = a.path.replaceAll(_straySlashes, '');
     var end = b.path.replaceAll(_straySlashes, '');
     return new Route('$start/$end'.replaceAll(_straySlashes, ''),
@@ -27,21 +29,14 @@ class Route {
   Parser<Map<String, dynamic>> get parser =>
       _parser ??= _routeDefinition.compile();
 
-
   @override
   String toString() {
     return '$method $path => $handlers';
   }
 
-  Route clone() {
-    return new Route(path, method: method, handlers: handlers)
+  Route<T> clone() {
+    return new Route<T>(path, method: method, handlers: handlers)
       .._cache.addAll(_cache);
-  }
-
-  /// Use the setter instead.
-  @deprecated
-  void as(String n) {
-    name = n;
   }
 
   String makeUri(Map<String, dynamic> params) {

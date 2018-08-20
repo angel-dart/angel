@@ -2,9 +2,9 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  var router = new Router()
-    ..chain('a').group('/b', (router) {
-      router.chain('c').chain('d').group('/e', (router) {
+  var router = new Router<String>()
+    ..chain(['a']).group('/b', (router) {
+      router.chain(['c']).chain(['d']).group('/e', (router) {
         router.get('f', 'g');
       });
     })

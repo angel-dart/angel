@@ -9,7 +9,7 @@ main() {
   router.get('/first/:first/last/:last', 'GET').name = 'full_name';
 
   navigate(params) {
-    final uri = router.navigate(params);
+    final uri = router.navigate(params as Iterable);
     print('Uri: $uri');
     return uri;
   }

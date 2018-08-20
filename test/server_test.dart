@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:angel_route/angel_route.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
@@ -76,7 +77,7 @@ main() {
     client = new http.Client();
 
     router.dumpTree();
-    server = await HttpServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     url = 'http://${server.address.address}:${server.port}';
 
     server.listen((req) async {
@@ -89,11 +90,11 @@ main() {
 
       if (pipeline.handlers.isEmpty) {
         res
-          ..statusCode = HttpStatus.NOT_FOUND
+          ..statusCode = 404
           ..writeln('404 Not Found');
       } else {
         for (final handler in pipeline.handlers) {
-          if (!await handler(req, res)) break;
+          if (!((await handler(req, res)) as bool)) break;
         }
       }
 

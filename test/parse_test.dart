@@ -9,7 +9,7 @@ void main() {
 
   num getId(String path) {
     var result = router.resolveAbsolute(path).first;
-    return result.allParams['id'];
+    return result.allParams['id'] as num;
   }
 
   test('parse', () {

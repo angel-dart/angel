@@ -1,12 +1,12 @@
 part of angel_route.src.router;
 
 /// Represents a complex result of navigating to a path.
-class RoutingResult {
+class RoutingResult<T> {
   /// The parse result that matched the given sub-path.
   final ParseResult<Map<String, dynamic>> parseResult;
 
   /// A nested instance, if a sub-path was matched.
-  final Iterable<RoutingResult> nested;
+  final Iterable<RoutingResult<T>> nested;
 
   /// All route params matching this route on the current sub-path.
   final Map<String, dynamic> params = {};
@@ -14,18 +14,18 @@ class RoutingResult {
   /// The [Route] that answered this sub-path.
   ///
   /// This is mostly for internal use, and useless in production.
-  final Route shallowRoute;
+  final Route<T> shallowRoute;
 
   /// The [Router] that answered this sub-path.
   ///
   /// Only really for internal use.
-  final Router shallowRouter;
+  final Router<T> shallowRouter;
 
   /// The remainder of the full path that was not matched, and was passed to [nested] routes.
   final String tail;
 
   /// The [RoutingResult] that matched the most specific sub-path.
-  RoutingResult get deepest {
+  RoutingResult<T> get deepest {
     var search = this;
 
     while (search?.nested?.isNotEmpty == true) search = search.nested.first;
@@ -34,21 +34,21 @@ class RoutingResult {
   }
 
   /// The most specific route.
-  Route get route => deepest.shallowRoute;
+  Route<T> get route => deepest.shallowRoute;
 
   /// The most specific router.
-  Router get router => deepest.shallowRouter;
+  Router<T> get router => deepest.shallowRouter;
 
   /// The handlers at this sub-path.
-  List get handlers {
-    return []..addAll(shallowRouter.middleware)..addAll(shallowRoute.handlers);
+  List<T> get handlers {
+    return <T>[]..addAll(shallowRouter.middleware)..addAll(shallowRoute.handlers);
   }
 
   /// All handlers on this sub-path and its children.
-  List get allHandlers {
-    final handlers = [];
+  List<T> get allHandlers {
+    final handlers = <T>[];
 
-    void crawl(RoutingResult result) {
+    void crawl(RoutingResult<T> result) {
       handlers.addAll(result.handlers);
 
       if (result.nested?.isNotEmpty == true) {
