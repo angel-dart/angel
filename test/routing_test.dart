@@ -81,7 +81,7 @@ main() {
       res.redirectTo('Named routes', {'name': 'tests'});
     });
     app.get('/log', (RequestContext req, res) async {
-      print("Query: ${req.query}");
+      print("Query: ${await req.parseQuery()}");
       return "Logged";
     });
 

@@ -91,7 +91,7 @@ class Parameter {
       return req.headers.value(header) ?? defaultValue;
     if (session?.isNotEmpty == true)
       return req.session[session] ?? defaultValue;
-    if (query?.isNotEmpty == true) return req.query[query] ?? defaultValue;
+    if (query?.isNotEmpty == true) return req.uri.queryParameters[query] ?? defaultValue;
     return defaultValue;
   }
 }

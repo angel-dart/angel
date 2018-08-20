@@ -160,11 +160,13 @@ class Service extends Routable {
 
     Middleware indexMiddleware = getAnnotation(service.index, Middleware);
     get('/', (RequestContext req, res) {
-      return this.index(mergeMap([
-        {'query': req.query},
-        restProvider,
-        req.serviceParams
-      ]));
+      return req.parseQuery().then((query) {
+        return this.index(mergeMap([
+          {'query': query},
+          restProvider,
+          req.serviceParams
+        ]));
+      });
     },
         middleware: []
           ..addAll(handlers)
@@ -172,18 +174,20 @@ class Service extends Routable {
 
     Middleware createMiddleware = getAnnotation(service.create, Middleware);
     post('/', (RequestContext req, ResponseContext res) {
-      return req.parseBody().then((body) {
-        return this
-            .create(
-                body,
-                mergeMap([
-                  {'query': req.query},
-                  restProvider,
-                  req.serviceParams
-                ]))
-            .then((r) {
-          res.statusCode = 201;
-          return r;
+      return req.parseQuery().then((query) {
+        return req.parseBody().then((body) {
+          return this
+              .create(
+                  body,
+                  mergeMap([
+                    {'query': query},
+                    restProvider,
+                    req.serviceParams
+                  ]))
+              .then((r) {
+            res.statusCode = 201;
+            return r;
+          });
         });
       });
     },
@@ -194,15 +198,17 @@ class Service extends Routable {
 
     Middleware readMiddleware = getAnnotation(service.read, Middleware);
 
-    get(
-        '/:id',
-        (RequestContext req, res) => this.read(
+    get('/:id', (RequestContext req, res) {
+      return req.parseQuery().then((query) {
+        return this.read(
             parseId(req.params['id']),
             mergeMap([
-              {'query': req.query},
+              {'query': query},
               restProvider,
               req.serviceParams
-            ])),
+            ]));
+      });
+    },
         middleware: []
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
@@ -210,14 +216,18 @@ class Service extends Routable {
     Middleware modifyMiddleware = getAnnotation(service.modify, Middleware);
     patch(
         '/:id',
-        (RequestContext req, res) => req.parseBody().then((body) => this.modify(
-            parseId(req.params['id']),
-            body,
-            mergeMap([
-              {'query': req.query},
-              restProvider,
-              req.serviceParams
-            ]))),
+        (RequestContext req, res) => req.parseBody().then((body) {
+              return req.parseQuery().then((query) {
+                return this.modify(
+                    parseId(req.params['id']),
+                    body,
+                    mergeMap([
+                      {'query': query},
+                      restProvider,
+                      req.serviceParams
+                    ]));
+              });
+            }),
         middleware: []
           ..addAll(handlers)
           ..addAll(
@@ -226,56 +236,68 @@ class Service extends Routable {
     Middleware updateMiddleware = getAnnotation(service.update, Middleware);
     post(
         '/:id',
-        (RequestContext req, res) => req.parseBody().then((body) => this.update(
-            parseId(req.params['id']),
-            body,
-            mergeMap([
-              {'query': req.query},
-              restProvider,
-              req.serviceParams
-            ]))),
+        (RequestContext req, res) => req.parseBody().then((body) {
+              return req.parseQuery().then((query) {
+                return this.update(
+                    parseId(req.params['id']),
+                    body,
+                    mergeMap([
+                      {'query': query},
+                      restProvider,
+                      req.serviceParams
+                    ]));
+              });
+            }),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
     put(
         '/:id',
-        (RequestContext req, res) => req.parseBody().then((body) => this.update(
-            parseId(req.params['id']),
-            body,
-            mergeMap([
-              {'query': req.query},
-              restProvider,
-              req.serviceParams
-            ]))),
+        (RequestContext req, res) => req.parseBody().then((body) {
+              return req.parseQuery().then((query) {
+                return this.update(
+                    parseId(req.params['id']),
+                    body,
+                    mergeMap([
+                      {'query': query},
+                      restProvider,
+                      req.serviceParams
+                    ]));
+              });
+            }),
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware = getAnnotation(service.remove, Middleware);
-    delete(
-        '/',
-        (RequestContext req, res) => this.remove(
+    delete('/', (RequestContext req, res) {
+      return req.parseQuery().then((query) {
+        return this.remove(
             null,
             mergeMap([
-              {'query': req.query},
+              {'query': query},
               restProvider,
               req.serviceParams
-            ])),
+            ]));
+      });
+    },
         middleware: []
           ..addAll(handlers)
           ..addAll(
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
-    delete(
-        '/:id',
-        (RequestContext req, res) => this.remove(
+    delete('/:id', (RequestContext req, res) {
+      return req.parseQuery().then((query) {
+        return this.remove(
             parseId(req.params['id']),
             mergeMap([
-              {'query': req.query},
+              {'query': query},
               restProvider,
               req.serviceParams
-            ])),
+            ]));
+      });
+    },
         middleware: []
           ..addAll(handlers)
           ..addAll(
