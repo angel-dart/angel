@@ -1,3 +1,6 @@
+# 1.0.0-alpha.5
+* Remove concrete type from `ReflectedTypeParameter`.
+
 # 1.0.0-alpha.4
 * Safely handle `void` return types of methods.
 

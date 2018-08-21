@@ -54,8 +54,7 @@ class _ReflectedTypeParameter extends ReflectedTypeParameter {
   final dart.TypeVariableMirror mirror;
 
   _ReflectedTypeParameter(this.mirror)
-      : super(
-            dart.MirrorSystem.getName(mirror.simpleName), mirror.reflectedType);
+      : super(dart.MirrorSystem.getName(mirror.simpleName));
 }
 
 class _ReflectedTypeMirror extends ReflectedType {

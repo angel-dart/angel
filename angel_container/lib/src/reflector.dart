@@ -166,16 +166,13 @@ class ReflectedParameter {
 
 class ReflectedTypeParameter {
   final String name;
-  final Type type;
 
-  const ReflectedTypeParameter(this.name, this.type);
+  const ReflectedTypeParameter(this.name);
 
   @override
-  int get hashCode => hash2(name, type);
+  int get hashCode => hashObjects([name]);
 
   @override
   bool operator ==(other) =>
-      other is ReflectedTypeParameter &&
-      other.name == name &&
-      other.type == type;
+      other is ReflectedTypeParameter && other.name == name;
 }
