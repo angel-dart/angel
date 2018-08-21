@@ -52,13 +52,9 @@ abstract class ResponseContext<RawResponse>
   Future get done => (_done ?? new Completer()).future;
 
   /// Headers that will be sent to the user.
-  Map<String, String> get headers {
-    /// If the response is closed, then this getter will return an immutable `Map`.
-    if (!isBuffered)
-      return new Map<String, String>.unmodifiable(_headers);
-    else
-      return _headers;
-  }
+  ///
+  /// Note that if you have already started writing to the underlying stream, headers will not persist.
+  Map<String, String> get headers => _headers;
 
   /// Serializes response data into a String.
   ///
@@ -128,10 +124,8 @@ abstract class ResponseContext<RawResponse>
   ///
   /// This method should be overwritten, setting [streaming] to `false`, **after** a `super` call.
   Future close() {
-    if (!isBuffered) {
-      _buffer?.clear();
-    } else if (_buffer is _LockableBytesBuilder) {
-      (_buffer as _LockableBytesBuilder)._lock();
+    if (_buffer is LockableBytesBuilder) {
+      (_buffer as LockableBytesBuilder).lock();
     }
 
     if (_done?.isCompleted == false) _done.complete();
@@ -319,8 +313,8 @@ abstract class ResponseContext<RawResponse>
     }
   }
 
-  /// Configure the response to write directly to the output stream, instead of buffering.
-  bool useStream();
+  /// Configure the response to write to an intermediate response buffer, rather than to the stream directly.
+  void enableBuffer();
 
   /// Adds a stream directly the underlying response.
   ///
@@ -374,15 +368,15 @@ abstract class ResponseContext<RawResponse>
   }
 }
 
-abstract class _LockableBytesBuilder extends BytesBuilder {
-  factory _LockableBytesBuilder() {
+abstract class LockableBytesBuilder extends BytesBuilder {
+  factory LockableBytesBuilder() {
     return new _LockableBytesBuilderImpl();
   }
 
-  void _lock();
+  void lock();
 }
 
-class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
+class _LockableBytesBuilderImpl implements LockableBytesBuilder {
   final BytesBuilder _buf = new BytesBuilder(copy: false);
   bool _closed = false;
 
@@ -390,7 +384,7 @@ class _LockableBytesBuilderImpl implements _LockableBytesBuilder {
       new StateError('Cannot modified a closed response\'s buffer.');
 
   @override
-  void _lock() {
+  void lock() {
     _closed = true;
   }
 

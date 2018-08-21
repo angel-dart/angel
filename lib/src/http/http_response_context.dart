@@ -11,7 +11,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   Angel app;
 
   final HttpRequestContext _correspondingRequest;
-  bool _isClosed = false, _useStream = false;
+  bool _isClosed = false, _useStream = true;
 
   HttpResponseContext(this.rawResponse, this.app, [this._correspondingRequest]);
 

@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/json_dart.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/templating_dart.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/json.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/json.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/core/response_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/response_context.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/http/angel_http.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/angel_http.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/http/http_response_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/http/http_response_context.dart" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -31,7 +27,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="CHANGELOG.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
@@ -43,13 +39,25 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="response_context.dart" pinned="false" current-in-tab="false">
+      <file leaf-file-name="response_context.dart" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="269">
-              <caret line="118" column="19" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="19" />
+            <state relative-caret-position="260">
+              <caret line="394" column="8" lean-forward="true" selection-start-line="394" selection-start-column="8" selection-end-line="394" selection-end-column="8" />
               <folding>
                 <element signature="e#48#68#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="http_response_context.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/http/http_response_context.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="176">
+              <caret line="13" column="43" selection-start-line="13" selection-start-column="43" selection-end-line="13" selection-end-column="43" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -172,7 +180,6 @@
         <option value="$PROJECT_DIR$/test/all.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/angel_base.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/core.dart" />
-        <option value="$PROJECT_DIR$/lib/src/http/http_response_context.dart" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/test/general_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/metadata.dart" />
@@ -201,8 +208,9 @@
         <option value="$PROJECT_DIR$/example/main.dart" />
         <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
         <option value="$PROJECT_DIR$/example/json.dart" />
-        <option value="$PROJECT_DIR$/lib/src/core/response_context.dart" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
+        <option value="$PROJECT_DIR$/lib/src/http/http_response_context.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/response_context.dart" />
       </list>
     </option>
   </component>
@@ -605,14 +613,7 @@
       <workItem from="1534009494986" duration="594000" />
       <workItem from="1534546784803" duration="353000" />
       <workItem from="1534547885788" duration="9908000" />
-      <workItem from="1534793956753" duration="7749000" />
-    </task>
-    <task id="LOCAL-00105" summary="Added `Service.findOne` tests">
-      <created>1531408765286</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1531408765286</updated>
+      <workItem from="1534793956753" duration="8159000" />
     </task>
     <task id="LOCAL-00106" summary="Bump version -&gt; 1.1.5">
       <created>1531409300283</created>
@@ -950,7 +951,14 @@
       <option name="project" value="LOCAL" />
       <updated>1534813932227</updated>
     </task>
-    <option name="localTasksCounter" value="154" />
+    <task id="LOCAL-00154" summary="ResponseContext.isBuffered">
+      <created>1534814859355</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1534814859355</updated>
+    </task>
+    <option name="localTasksCounter" value="155" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -986,7 +994,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="179956000" />
+    <option name="totallyTimeSpent" value="180366000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1049,7 +1057,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Remove all usage of dart2_constant" />
     <MESSAGE value="Add more to parseId" />
     <MESSAGE value="Make parseId static + docs" />
     <MESSAGE value="Make RequestContext generic" />
@@ -1074,7 +1081,8 @@
     <MESSAGE value="Routable.use only accepts a Service" />
     <MESSAGE value="Add flags to Angel constructor" />
     <MESSAGE value="Catch sync errors when using zone" />
-    <option name="LAST_COMMIT_MESSAGE" value="Catch sync errors when using zone" />
+    <MESSAGE value="ResponseContext.isBuffered" />
+    <option name="LAST_COMMIT_MESSAGE" value="ResponseContext.isBuffered" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1112,16 +1120,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
           <caret line="6" column="36" selection-start-line="6" selection-start-column="36" selection-end-line="6" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/http/http_response_context.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1368">
-          <caret line="6" column="22" selection-start-line="6" selection-start-column="22" selection-end-line="6" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1443,16 +1441,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="269">
-          <caret line="118" column="19" selection-start-line="118" selection-start-column="19" selection-end-line="118" selection-end-column="19" />
-          <folding>
-            <element signature="e#48#68#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -1460,6 +1448,26 @@
             <caret line="58" column="75" selection-start-line="58" selection-start-column="75" selection-end-line="58" selection-end-column="75" />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/http_response_context.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="13" column="43" selection-start-line="13" selection-start-column="43" selection-end-line="13" selection-end-column="43" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="260">
+          <caret line="394" column="8" lean-forward="true" selection-start-line="394" selection-start-column="8" selection-end-line="394" selection-end-column="8" />
+          <folding>
+            <element signature="e#48#68#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
