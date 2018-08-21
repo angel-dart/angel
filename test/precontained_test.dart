@@ -12,7 +12,7 @@ main() {
       ..get('/foo', ioc(echoAppFoo));
     app.optimizeForProduction(force: true);
     print(app.preContained);
-    expect(app.preContained, contains(echoAppFoo));
+    expect(app.preContained.keys, contains(echoAppFoo));
 
     var rq = new MockHttpRequest('GET', new Uri(path: '/foo'));
     rq.close();
@@ -20,7 +20,7 @@ main() {
     var rs = rq.response;
     var body = await rs.transform(utf8.decoder).join();
     expect(body, json.encode('bar'));
-  });
+  }, skip: 'Angel no longer has to preinject functions');
 }
 
 echoAppFoo(String foo) => foo;

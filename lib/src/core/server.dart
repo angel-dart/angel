@@ -9,6 +9,7 @@ import 'package:angel_container/angel_container.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
 import 'package:tuple/tuple.dart';
 
@@ -135,7 +136,7 @@ class Angel extends Routable {
       return;
     }
 
-    res.headers['content-type'] = 'text/html';
+    res.contentType = new MediaType('text', 'html', {'charset': 'utf8'});
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
@@ -170,6 +171,12 @@ class Angel extends Routable {
       logger?.warning(
           'This route will be ignored, and no requests will ever reach it.');
     }
+
+    if (router is Angel) {
+      router._parent = this;
+      _children.add(router);
+    }
+
     return super.mount(path.toString(), router);
   }
 
@@ -238,11 +245,6 @@ class Angel extends Routable {
     }
   }
 
-  /// Shortcuts for adding converters to transform the response buffer/stream of any request.
-  void injectEncoders(Map<String, Converter<List<int>, List<int>>> encoders) {
-    this.encoders.addAll(encoders);
-  }
-
   Future getHandlerResult(handler, RequestContext req, ResponseContext res) {
     if (handler is RequestHandler) {
       var result = handler(req, res);
@@ -296,24 +298,7 @@ class Angel extends Routable {
   void optimizeForProduction({bool force: false}) {
     if (isProduction == true || force == true) {
       _isProduction = true;
-      _add(v) {
-        if (v is Function && !_preContained.containsKey(v)) {
-          _preContained[v] = preInject(v, container.reflector);
-        }
-      }
-
-      void _walk(Router router) {
-        router.middleware.forEach(_add);
-        router.routes.forEach((r) {
-          r.handlers.forEach(_add);
-          if (r is SymlinkRoute) _walk(r.router);
-        });
-      }
-
       _flattened ??= flatten(this);
-
-      _walk(_flattened);
-
       logger?.config('Angel is running in production mode.');
     }
   }

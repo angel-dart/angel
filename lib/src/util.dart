@@ -4,10 +4,11 @@ final RegExp straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 matchingAnnotation(List<ReflectedInstance> metadata, Type T) {
   for (ReflectedInstance metaDatum in metadata) {
-    if (metaDatum.type == T) {
+    if (metaDatum.type.reflectedType == T) {
       return metaDatum.reflectee;
     }
   }
+
   return null;
 }
 

@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show BytesBuilder;
+import 'dart:io';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'dart:convert';
-import 'dart:io';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
@@ -19,7 +20,7 @@ main() {
 
   setUp(() {
     app = new Angel(reflector: MirrorsReflector());
-    app.injectEncoders(
+    app.encoders.addAll(
       {
         'deflate': zlib.encoder,
         'gzip': gzip.encoder,
@@ -27,7 +28,9 @@ main() {
     );
 
     app.get('/hello', (req, res) {
-      res.write('Hello, world!');
+      res
+        ..useBuffer()
+        ..write('Hello, world!');
     });
   });
 
@@ -63,6 +66,7 @@ void encodingTests(Angel getApp()) {
       await http.handleRequest(rq);
 
       var body = await getBody(rs);
+      print(rs.headers);
       expect(rs.headers.value('content-encoding'), 'deflate');
       expect(body, zlib.encode(utf8.encode('Hello, world!')));
     });

@@ -103,7 +103,7 @@ abstract class ResponseContext<RawResponse>
 
     headers["Content-Disposition"] =
         'attachment; filename="${filename ?? file.path}"';
-    headers['content-type'] = lookupMimeType(file.path);
+    contentType = MediaType.parse(lookupMimeType(file.path));
     headers['content-length'] = file.lengthSync().toString();
 
     if (!isBuffered) {
@@ -150,7 +150,7 @@ abstract class ResponseContext<RawResponse>
         new Map<String, dynamic>.from(renderParams)
           ..addAll(data ?? <String, dynamic>{}))).then((content) {
       write(content);
-      headers['content-type'] = 'text/html';
+      contentType = new MediaType('text', 'html');
       close();
     });
   }
@@ -241,8 +241,11 @@ abstract class ResponseContext<RawResponse>
       throw new Exception(
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
-    final head =
-        controller.findExpose(app.container.reflector).path.toString().replaceAll(_straySlashes, '');
+    final head = controller
+        .findExpose(app.container.reflector)
+        .path
+        .toString()
+        .replaceAll(_straySlashes, '');
     final tail = matched
         .makeUri(params.keys.fold<Map<String, dynamic>>({}, (out, k) {
           return out..[k.toString()] = params[k];
@@ -256,14 +259,15 @@ abstract class ResponseContext<RawResponse>
   void sendFile(File file) {
     if (!isOpen) throw closed();
 
-    headers['content-type'] = lookupMimeType(file.path);
+    contentType = MediaType.parse(lookupMimeType(file.path));
     buffer.add(file.readAsBytesSync());
     close();
   }
 
   /// Serializes data to the response.
-  bool serialize(value) {
+  bool serialize(value, {MediaType contentType}) {
     if (!isOpen) throw closed();
+    this.contentType = contentType ?? new MediaType('application', 'json');
     var text = serializer(value);
     if (text.isEmpty) return true;
     write(text);
@@ -274,12 +278,12 @@ abstract class ResponseContext<RawResponse>
   /// Streams a file to this response.
   Future streamFile(File file) {
     if (!isOpen) throw closed();
-    headers['content-type'] = lookupMimeType(file.path);
+    contentType = MediaType.parse(lookupMimeType(file.path));
     return file.openRead().pipe(this);
   }
 
   /// Configure the response to write to an intermediate response buffer, rather than to the stream directly.
-  void enableBuffer();
+  void useBuffer();
 
   /// Adds a stream directly the underlying response.
   ///
@@ -304,10 +308,7 @@ abstract class ResponseContext<RawResponse>
     else if (!isBuffered) {
       add(encoding.encode(value.toString()));
     } else {
-      if (value is List<int>)
-        buffer.add(value);
-      else
-        buffer.add(encoding.encode(value.toString()));
+      buffer.add(encoding.encode(value.toString()));
     }
   }
 

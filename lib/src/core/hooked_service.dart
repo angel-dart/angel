@@ -121,13 +121,14 @@ class HookedService extends Service {
     applyListeners(inner.remove, afterRemoved, true);
   }
 
-  List<RequestHandler> get bootstrappers => new List<RequestHandler>.from(super.bootstrappers)
-    ..add((RequestContext req, ResponseContext res) {
-      req.serviceParams
-        ..['__requestctx'] = req
-        ..['__responsectx'] = res;
-      return true;
-    });
+  List<RequestHandler> get bootstrappers =>
+      new List<RequestHandler>.from(super.bootstrappers)
+        ..add((RequestContext req, ResponseContext res) {
+          req.serviceParams
+            ..['__requestctx'] = req
+            ..['__responsectx'] = res;
+          return true;
+        });
 
   void addRoutes([Service s]) {
     super.addRoutes(s ?? inner);

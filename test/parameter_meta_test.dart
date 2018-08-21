@@ -18,10 +18,7 @@ Future printResponse(MockHttpResponse rs) {
 }
 
 void main() {
-  group('parameter_meta', parameterMetaTests,
-      skip: !Platform.version.contains('2.0.0')
-          ? null
-          : 'Blocked on https://github.com/dart-lang/sdk/issues/33774');
+  group('parameter_meta', parameterMetaTests);
 }
 
 parameterMetaTests() {

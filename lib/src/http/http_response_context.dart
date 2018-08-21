@@ -42,8 +42,24 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   }
 
   @override
-  void enableBuffer() {
+  void useBuffer() {
     _buffer = new LockableBytesBuilder();
+  }
+
+  Iterable<String> __allowedEncodings;
+
+  Iterable<String> get _allowedEncodings {
+    return __allowedEncodings ??= correspondingRequest.headers
+        .value('accept-encoding')
+        ?.split(',')
+        ?.map((s) => s.trim())
+        ?.where((s) => s.isNotEmpty)
+        ?.map((str) {
+      // Ignore quality specifications in accept-encoding
+      // ex. gzip;q=0.8
+      if (!str.contains(';')) return str;
+      return str.split(';')[0];
+    });
   }
 
   bool _openStream() {
@@ -54,6 +70,31 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
         ..statusCode = statusCode
         ..cookies.addAll(cookies);
       headers.forEach(rawResponse.headers.set);
+      rawResponse.headers.contentType = new ContentType(
+          contentType.type, contentType.subtype,
+          charset: contentType.parameters['charset'],
+          parameters: contentType.parameters);
+
+      if (encoders.isNotEmpty && correspondingRequest != null) {
+        if (_allowedEncodings != null) {
+          for (var encodingName in _allowedEncodings) {
+            Converter<List<int>, List<int>> encoder;
+            String key = encodingName;
+
+            if (encoders.containsKey(encodingName))
+              encoder = encoders[encodingName];
+            else if (encodingName == '*') {
+              encoder = encoders[key = encoders.keys.first];
+            }
+
+            if (encoder != null) {
+              rawResponse.headers.set('content-encoding', key);
+              break;
+            }
+          }
+        }
+      }
+
       //_isClosed = true;
       return _streamInitialized = true;
     }
@@ -64,25 +105,13 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   @override
   Future addStream(Stream<List<int>> stream) {
     if (_isClosed && isBuffered) throw ResponseContext.closed();
-    var firstStream = _openStream();
+    _openStream();
 
     Stream<List<int>> output = stream;
 
     if (encoders.isNotEmpty && correspondingRequest != null) {
-      var allowedEncodings = correspondingRequest.headers
-          .value('accept-encoding')
-          ?.split(',')
-          ?.map((s) => s.trim())
-          ?.where((s) => s.isNotEmpty)
-          ?.map((str) {
-        // Ignore quality specifications in accept-encoding
-        // ex. gzip;q=0.8
-        if (!str.contains(';')) return str;
-        return str.split(';')[0];
-      });
-
-      if (allowedEncodings != null) {
-        for (var encodingName in allowedEncodings) {
+      if (_allowedEncodings != null) {
+        for (var encodingName in _allowedEncodings) {
           Converter<List<int>, List<int>> encoder;
           String key = encodingName;
 
@@ -93,10 +122,6 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
           }
 
           if (encoder != null) {
-            if (firstStream) {
-              rawResponse.headers.set('content-encoding', key);
-            }
-
             output = encoders[key].bind(output);
             break;
           }
@@ -113,6 +138,27 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
       throw ResponseContext.closed();
     else if (!isBuffered) {
       _openStream();
+
+      if (encoders.isNotEmpty && correspondingRequest != null) {
+        if (_allowedEncodings != null) {
+          for (var encodingName in _allowedEncodings) {
+            Converter<List<int>, List<int>> encoder;
+            String key = encodingName;
+
+            if (encoders.containsKey(encodingName))
+              encoder = encoders[encodingName];
+            else if (encodingName == '*') {
+              encoder = encoders[key = encoders.keys.first];
+            }
+
+            if (encoder != null) {
+              data = encoders[key].convert(data);
+              break;
+            }
+          }
+        }
+      }
+
       rawResponse.add(data);
     } else
       buffer.add(data);

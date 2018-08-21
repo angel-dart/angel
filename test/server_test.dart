@@ -145,7 +145,7 @@ main() {
       });
 
       test('end response', () async {
-        var handler = (req, res) => res.end();
+        var handler = (req, ResponseContext res) => res.close();
         expect(await app.executeHandler(handler, req, res), isFalse);
       });
     });

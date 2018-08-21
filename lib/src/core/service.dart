@@ -33,10 +33,14 @@ class Providers {
   static const Providers websocket = Providers(viaWebsocket);
 
   /// Represents a request parsed from GraphQL.
-  static const Providers graphql = Providers(viaGraphQL);
+  static const Providers graphQL = Providers(viaGraphQL);
 
   @override
   bool operator ==(other) => other is Providers && other.via == via;
+
+  Map<String, String> toJson() {
+    return {'via': via};
+  }
 
   @override
   String toString() {
@@ -154,11 +158,13 @@ class Service extends Routable {
     var handlers = new List<RequestHandler>.from(handlerss);
 
     // Add global middleware if declared on the instance itself
-    Middleware before = getAnnotation(service, Middleware, app.container.reflector);
+    Middleware before =
+        getAnnotation(service, Middleware, app.container.reflector);
 
     if (before != null) handlers.addAll(before.handlers);
 
-    Middleware indexMiddleware = getAnnotation(service.index, Middleware, app.container.reflector);
+    Middleware indexMiddleware =
+        getAnnotation(service.index, Middleware, app.container.reflector);
     get('/', (req, res) {
       return req.parseQuery().then((query) {
         return this.index(mergeMap([
@@ -172,7 +178,8 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
-    Middleware createMiddleware = getAnnotation(service.create, Middleware, app.container.reflector);
+    Middleware createMiddleware =
+        getAnnotation(service.create, Middleware, app.container.reflector);
     post('/', (req, ResponseContext res) {
       return req.parseQuery().then((query) {
         return req.parseBody().then((body) {
@@ -196,7 +203,8 @@ class Service extends Routable {
           ..addAll(
               (createMiddleware == null) ? [] : createMiddleware.handlers));
 
-    Middleware readMiddleware = getAnnotation(service.read, Middleware, app.container.reflector);
+    Middleware readMiddleware =
+        getAnnotation(service.read, Middleware, app.container.reflector);
 
     get('/:id', (req, res) {
       return req.parseQuery().then((query) {
@@ -213,7 +221,8 @@ class Service extends Routable {
           ..addAll(handlers)
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
 
-    Middleware modifyMiddleware = getAnnotation(service.modify, Middleware, app.container.reflector);
+    Middleware modifyMiddleware =
+        getAnnotation(service.modify, Middleware, app.container.reflector);
     patch(
         '/:id',
         (req, res) => req.parseBody().then((body) {
@@ -233,7 +242,8 @@ class Service extends Routable {
           ..addAll(
               (modifyMiddleware == null) ? [] : modifyMiddleware.handlers));
 
-    Middleware updateMiddleware = getAnnotation(service.update, Middleware, app.container.reflector);
+    Middleware updateMiddleware =
+        getAnnotation(service.update, Middleware, app.container.reflector);
     post(
         '/:id',
         (req, res) => req.parseBody().then((body) {
@@ -271,7 +281,8 @@ class Service extends Routable {
           ..addAll(
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
-    Middleware removeMiddleware = getAnnotation(service.remove, Middleware, app.container.reflector);
+    Middleware removeMiddleware =
+        getAnnotation(service.remove, Middleware, app.container.reflector);
     delete('/', (req, res) {
       return req.parseQuery().then((query) {
         return this.remove(

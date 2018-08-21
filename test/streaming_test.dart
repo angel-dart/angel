@@ -17,7 +17,7 @@ main() {
 
   setUp(() {
     app = new Angel(reflector: MirrorsReflector());
-    http = new AngelHttp(app);
+    http = new AngelHttp(app, useZone: true);
 
     app.logger = new Logger('streaming_test')
       ..onRecord.listen((rec) {
@@ -25,15 +25,16 @@ main() {
         if (rec.stackTrace != null) print(rec.stackTrace);
       });
 
-    app.injectEncoders(
+    app.encoders.addAll(
       {
         'deflate': zlib.encoder,
         'gzip': gzip.encoder,
       },
     );
 
-    app.get('/hello', (req,  res) {
-      new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]).pipe(res);
+    app.get('/hello', (req, res) {
+      return new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
+          .pipe(res);
     });
 
     app.get('/write', (req, res) async {
@@ -56,13 +57,12 @@ main() {
       await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res);
 
-      try {
-        await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
-            .pipe(res);
-        throw new Exception('Should throw on rewrite...');
-      } on StateError {
-        // Yay!!!
-      }
+      var f = new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
+          .pipe(res)
+          .then((_) => false)
+          .catchError((_) => true);
+
+      expect(f, completion(true));
     });
 
     app.get('/error', (req, res) => res.addError(new StateError('wtf')));
@@ -86,12 +86,16 @@ main() {
   test('multiple addStream', () => _expectHelloBye('/multiple'));
 
   test('cannot write after close', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))..close();
-    await http.handleRequest(rq);
-    var body = await rq.response.transform(utf8.decoder).join();
+    try {
+      var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))..close();
+      await http.handleRequest(rq);
+      var body = await rq.response.transform(utf8.decoder).join();
 
-    if (rq.response.statusCode != 32)
-      throw 'overwrite should throw error; response: $body';
+      if (rq.response.statusCode != 32)
+        throw 'overwrite should throw error; response: $body';
+    } on StateError {
+      // Success
+    }
   });
 
   test('res => addError', () async {

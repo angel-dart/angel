@@ -99,7 +99,7 @@ main() {
     }
 
     app.chain([write('a')]).chain([write('b'), write('c')]).get(
-        '/chained', (req, res) => false);
+        '/chained', (req, res) => res.close());
 
     app.fallback((req, res) => 'MJ');
 

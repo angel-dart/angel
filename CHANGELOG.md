@@ -7,7 +7,6 @@
 * Changed view engine to use `Map<String, dynamic>`.
 * Remove dependency on `package:json_god` by default.
 * Remove dependency on `package:dart2_constant`.
-* Remove `contentType` argument in `ResponseContext.serialize`.
 * Moved `lib/hooks.dart` into `package:angel_hooks`.
 * Moved `TypedService` into `package:angel_typed_service`.
 * Completely removed the `AngelBase` class.
@@ -47,8 +46,6 @@ type-safe manner.
 * Removed `RequestContext.properties`.
 * Removed the defunct `debug` property where it still existed.
 * `Routable.use` now only accepts a `Service`.
-* The above change removes the concept of "nested apps," which are messy to maintain, and
-not very elegant.
 * Removed `Angel.createZoneForRequest`.
 * Removed `Angel.defaultZoneCreator`.
 * Added all flags to the `Angel` constructor, ex. `Angel.eagerParseBodies`.
@@ -65,3 +62,8 @@ as in many cases it is unnecessary and slows down response time.
 * `preInject` now takes a `Reflector` as its second argument.
 * `Angel.reflector` defaults to `const EmptyReflector()`, disabling
 reflection out-of-the-box.
+* Removed `Angel.injectEncoders`.
+* Added `Providers.toJson`.
+* Moved `Providers.graphql` to `Providers.graphQL`.
+* `Angel.optimizeForProduction` no longer calls `preInject`,
+as it does not need to.

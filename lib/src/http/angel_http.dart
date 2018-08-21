@@ -147,11 +147,13 @@ class AngelHttp {
             if (handler == null) break;
 
             if (runPipeline == null)
-              runPipeline = () => Future.sync(() => handler(req, res));
+              runPipeline = () =>
+                  Future.sync(() => app.executeHandler(handler, req, res));
             else {
               var current = runPipeline;
-              runPipeline = () => current().then((result) =>
-                  !res.isOpen ? new Future.value(result) : handler(req, res));
+              runPipeline = () => current().then((result) => !res.isOpen
+                  ? new Future.value(result)
+                  : app.executeHandler(handler, req, res));
             }
           }
 

@@ -45,9 +45,8 @@ class Controller {
     var routable = new Routable();
     app.mount(exposeDecl.path, routable);
     var typeMirror = app.container.reflector.reflectType(this.runtimeType);
-    String name = exposeDecl.as?.isNotEmpty == true
-        ? exposeDecl.as
-        : typeMirror.name;
+    String name =
+        exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : typeMirror.name;
 
     app.controllers[name] = this;
 
@@ -85,9 +84,8 @@ class Controller {
         var middleware = <RequestHandler>[]
           ..addAll(handlers)
           ..addAll(exposeDecl.middleware);
-        String name = exposeDecl.as?.isNotEmpty == true
-            ? exposeDecl.as
-            : methodName;
+        String name =
+            exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : methodName;
 
         // Check if normal
         var method = decl.function;
@@ -120,7 +118,8 @@ class Controller {
   void configureRoutes(Routable routable) {}
 
   /// Finds the [Expose] declaration for this class.
-  Expose findExpose(Reflector reflector) => reflector.reflectClass(runtimeType)
+  Expose findExpose(Reflector reflector) => reflector
+      .reflectClass(runtimeType)
       .annotations
       .map((m) => m.reflectee)
       .firstWhere((r) => r is Expose, orElse: () => null) as Expose;

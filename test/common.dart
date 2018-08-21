@@ -8,6 +8,13 @@ class Todo extends Model {
   String over;
 
   Todo({String this.text, String this.over});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'text': text,
+      'over': over,
+    };
+  }
 }
 
 class BookService extends Service {
