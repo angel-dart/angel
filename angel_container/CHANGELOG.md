@@ -1,3 +1,6 @@
+# 1.0.0-alpha.4
+* Safely handle `void` return types of methods.
+
 # 1.0.0-alpha.3
 * Reflecting `void` in `MirrorsReflector` now forwards to `dynamic`.
 

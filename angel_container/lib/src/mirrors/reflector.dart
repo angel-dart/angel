@@ -33,7 +33,7 @@ class MirrorsReflector implements Reflector {
   ReflectedType reflectType(Type type) {
     var mirror = dart.reflectType(type);
 
-    if (mirror.hasReflectedType) {
+    if (!mirror.hasReflectedType) {
       return reflectType(dynamic);
     } else {
       if (mirror is dart.ClassMirror) {
@@ -185,8 +185,10 @@ class _ReflectedMethodMirror extends ReflectedFunction {
             mirror.metadata
                 .map((mirror) => new _ReflectedInstanceMirror(mirror))
                 .toList(),
-            const MirrorsReflector()
-                .reflectType(mirror.returnType.reflectedType),
+            !mirror.returnType.hasReflectedType
+                ? const MirrorsReflector().reflectType(dynamic)
+                : const MirrorsReflector()
+                    .reflectType(mirror.returnType.reflectedType),
             mirror.parameters.map(_reflectParameter).toList(),
             mirror.isGetter,
             mirror.isSetter);
