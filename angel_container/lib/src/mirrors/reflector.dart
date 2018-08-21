@@ -163,7 +163,7 @@ class _ReflectedInstanceMirror extends ReflectedInstance {
 
   _ReflectedInstanceMirror(this.mirror)
       : super(new _ReflectedClassMirror(mirror.type),
-            new _ReflectedClassMirror(mirror.type));
+            new _ReflectedClassMirror(mirror.type), mirror.reflectee);
 
   @override
   T invoke<T>(Invocation invocation) {

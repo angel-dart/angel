@@ -16,8 +16,9 @@ abstract class Reflector {
 abstract class ReflectedInstance {
   final ReflectedType type;
   final ReflectedClass clazz;
+  final Object reflectee;
 
-  const ReflectedInstance(this.type, this.clazz);
+  const ReflectedInstance(this.type, this.clazz, this.reflectee);
 
   @override
   int get hashCode => hash2(type, clazz);
