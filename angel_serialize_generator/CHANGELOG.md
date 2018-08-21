@@ -1,3 +1,7 @@
+# 2.1.0
+* Removed dependency on `package:id`.
+* Update dependencies for Dart2Stable.
+
 # 2.0.10
 * Generate `XFields.allFields` constant.
 * No longer breaks in cases where `dynamic` is present.
