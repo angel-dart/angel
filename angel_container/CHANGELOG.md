@@ -1,3 +1,7 @@
+# 1.0.0-alpha.8
+* Fixed a bug where `_ReflectedTypeInstance.isAssignableTo` always failed.
+* Added `@GenerateReflector` annotation.
+
 # 1.0.0-alpha.7
 * Add `EmptyReflector`.
 * `ReflectedType.newInstance` now returns a `ReflectedInstance`.
