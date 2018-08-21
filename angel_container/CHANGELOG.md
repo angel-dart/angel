@@ -1,3 +1,6 @@
+# 1.0.0-alpha.3
+* Reflecting `void` in `MirrorsReflector` now forwards to `dynamic`.
+
 # 1.0.0-alpha.2
 * Added `ReflectedInstance.reflectee`.
 

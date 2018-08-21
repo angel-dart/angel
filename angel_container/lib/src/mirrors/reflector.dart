@@ -33,10 +33,14 @@ class MirrorsReflector implements Reflector {
   ReflectedType reflectType(Type type) {
     var mirror = dart.reflectType(type);
 
-    if (mirror is dart.ClassMirror) {
-      return new _ReflectedClassMirror(mirror);
+    if (mirror.hasReflectedType) {
+      return reflectType(dynamic);
     } else {
-      return new _ReflectedTypeMirror(mirror);
+      if (mirror is dart.ClassMirror) {
+        return new _ReflectedClassMirror(mirror);
+      } else {
+        return new _ReflectedTypeMirror(mirror);
+      }
     }
   }
 
