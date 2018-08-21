@@ -1,6 +1,7 @@
 library angel_serialize_generator;
 
 import 'dart:async';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_model/angel_model.dart';
@@ -11,6 +12,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
+
 import 'build_context.dart';
 import 'context.dart';
 
@@ -23,14 +25,14 @@ part 'typescript.dart';
 Builder jsonModelBuilder(_) {
   return new PartBuilder(
     const [const JsonModelGenerator()],
-    generatedExtension: '.g.dart',
+    '.g.dart',
   );
 }
 
 Builder serializerBuilder(_) {
   return new PartBuilder(
     const [const SerializerGenerator()],
-    generatedExtension: '.serializer.g.dart',
+    '.serializer.g.dart',
   );
 }
 
