@@ -1,3 +1,6 @@
+# 2.0.0
+* Use Angel 2.
+
 # 1.2.0-rc.0
 * Removed the `Configuration` class.
 * Removed the `ConfigurationTransformer` class.
