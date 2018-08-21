@@ -11,18 +11,21 @@ import 'util.dart';
 class AngelContainerGenerator
     extends GeneratorForAnnotation<GenerateReflector> {
   @override
-  Future<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) async {
-    if (element is LibraryElement) {
-      var reader = new GenerateReflectorReader(annotation);
-      var generator = new ReflectorLibraryGenerator(element, reader)
-        ..generate();
-      return generator.toSource();
-    } else if (element is ClassElement) {
+  FutureOr<String> generate(LibraryReader library, BuildStep buildStep) {
+    var annotation = typeChecker.firstAnnotationOf(library.element);
+
+    if (annotation == null) {
       return null;
     } else {
-      throw new UnsupportedError(
-          '@GenerateReflector() can only be added to a library or class element.');
+      var reader = new GenerateReflectorReader(new ConstantReader(annotation));
+      var generator = new ReflectorLibraryGenerator(library.element, reader);
+      return generator.toSource();
     }
+  }
+
+  @override
+  generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) {
+    throw new UnimplementedError();
   }
 }

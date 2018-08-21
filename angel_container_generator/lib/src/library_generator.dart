@@ -8,16 +8,15 @@ import 'util.dart';
 class ReflectorLibraryGenerator {
   final LibraryElement element;
   final GenerateReflectorReader annotation;
-  Library _lib;
 
   ReflectorLibraryGenerator(this.element, this.annotation);
 
   String toSource() {
-    return _lib.accept(new DartEmitter()).toString();
+    return generate().accept(new DartEmitter()).toString();
   }
 
-  void generate() {
-    _lib = new Library((lib) {
+  Library generate() {
+    return new Library((lib) {
       lib.body.add(generateReflectorClass());
     });
   }

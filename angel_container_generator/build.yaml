@@ -5,18 +5,8 @@ builders:
       - angelContainerBuilder
     build_extensions:
       .dart:
-        - .reflector.g.dart
+        - ".reflector.g.dart"
     auto_apply: root_package
     build_to: source
     required_inputs:
       - .dart
-targets:
-  $default:
-    sources:
-      - test/reflector.dart
-    builders:
-      angel_container_generator|angel_container:
-        generate_for:
-          - test/reflector.dart
-          - test/**.dart
-          - test/*.dart
