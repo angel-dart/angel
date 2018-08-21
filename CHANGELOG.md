@@ -1,3 +1,11 @@
+# 2.0.0-alpha.1
+* Removed `Angel.injectEncoders`.
+* Added `Providers.toJson`.
+* Moved `Providers.graphql` to `Providers.graphQL`.
+* `Angel.optimizeForProduction` no longer calls `preInject`,
+as it does not need to.
+* Rename `ResponseContext.enableBuffer` to `ResponseContext.useBuffer`.
+
 # 2.0.0-alpha
 * Removed `random_string` dependency.
 * Moved reflection to `package:angel_container`.
@@ -62,8 +70,3 @@ as in many cases it is unnecessary and slows down response time.
 * `preInject` now takes a `Reflector` as its second argument.
 * `Angel.reflector` defaults to `const EmptyReflector()`, disabling
 reflection out-of-the-box.
-* Removed `Angel.injectEncoders`.
-* Added `Providers.toJson`.
-* Moved `Providers.graphql` to `Providers.graphQL`.
-* `Angel.optimizeForProduction` no longer calls `preInject`,
-as it does not need to.
