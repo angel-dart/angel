@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 
@@ -16,13 +18,15 @@ main() async {
     }
   });
 
-  for (int i = 0; i < 50; i++) {
+  for (int i = 1; i < Platform.numberOfProcessors; i++) {
     var isolate = await Isolate.spawn(serverMain, null);
     isolates.add(isolate);
     print('Spawned isolate #${i + 1}...');
 
     isolate.addOnExitListener(exit.sendPort);
   }
+
+  serverMain(null);
 
   print('Angel listening at http://localhost:3000');
   await c.future;
@@ -39,9 +43,6 @@ serverMain(_) async {
       "bar": {"baz": "quux"}
     });
   });
-
-  // Performance tuning
-  app..serializer = json.encode;
 
   app.errorHandler = (e, req, res) {
     print(e.message ?? e.error ?? e);

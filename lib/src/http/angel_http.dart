@@ -30,7 +30,7 @@ class AngelHttp {
   Future<HttpServer> Function(dynamic, int) _serverGenerator = HttpServer.bind;
   StreamSubscription<HttpRequest> _sub;
 
-  AngelHttp(this.app, {this.useZone: true});
+  AngelHttp(this.app, {this.useZone: false});
 
   /// The function used to bind this instance to an HTTP server.
   Future<HttpServer> Function(dynamic, int) get serverGenerator =>
@@ -62,7 +62,7 @@ class AngelHttp {
   /// the server.
   factory AngelHttp.secure(
       Angel app, String certificateChainPath, String serverKeyPath,
-      { String password, bool useZone: true}) {
+      {String password, bool useZone: true}) {
     var certificateChain =
         Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
@@ -162,7 +162,15 @@ class AngelHttp {
         }
 
         if (useZone == false) {
-          return handle().catchError((e, StackTrace st) {
+          Future f;
+
+          try {
+            f = handle();
+          } catch (e, st) {
+            f = Future.error(e, st);
+          }
+
+          return f.catchError((e, StackTrace st) {
             if (e is FormatException)
               throw new AngelHttpException.badRequest(message: e.message)
                 ..stackTrace = st;

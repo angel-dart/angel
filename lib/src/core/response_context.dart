@@ -20,7 +20,7 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 abstract class ResponseContext<RawResponse>
     implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
-  final BytesBuilder _buffer = new _LockableBytesBuilder();
+  BytesBuilder _buffer;
   final Map<String, String> _headers = {'server': 'angel'};
 
   Completer _done;
@@ -54,7 +54,7 @@ abstract class ResponseContext<RawResponse>
   /// Headers that will be sent to the user.
   Map<String, String> get headers {
     /// If the response is closed, then this getter will return an immutable `Map`.
-    if (streaming)
+    if (!isBuffered)
       return new Map<String, String>.unmodifiable(_headers);
     else
       return _headers;
@@ -87,8 +87,8 @@ abstract class ResponseContext<RawResponse>
   /// Can we still write to this response?
   bool get isOpen;
 
-  /// Returns `true` if a [Stream] is being written directly.
-  bool get streaming;
+  /// Returns `true` if response data is being written to a buffer, rather than to the underlying stream.
+  bool get isBuffered;
 
   /// A set of UTF-8 encoded bytes that will be written to the response.
   BytesBuilder get buffer => _buffer;
@@ -116,7 +116,7 @@ abstract class ResponseContext<RawResponse>
     headers['content-type'] = lookupMimeType(file.path);
     headers['content-length'] = file.lengthSync().toString();
 
-    if (streaming) {
+    if (!isBuffered) {
       file.openRead().pipe(this);
     } else {
       buffer.add(file.readAsBytesSync());
@@ -128,7 +128,7 @@ abstract class ResponseContext<RawResponse>
   ///
   /// This method should be overwritten, setting [streaming] to `false`, **after** a `super` call.
   Future close() {
-    if (streaming) {
+    if (!isBuffered) {
       _buffer?.clear();
     } else if (_buffer is _LockableBytesBuilder) {
       (_buffer as _LockableBytesBuilder)._lock();
@@ -340,13 +340,10 @@ abstract class ResponseContext<RawResponse>
   void write(value, {Encoding encoding}) {
     encoding ??= utf8;
 
-    if (!isOpen && !streaming)
+    if (!isOpen && isBuffered)
       throw closed();
-    else if (streaming) {
-      if (value is List<int>)
-        add(value);
-      else
-        add(encoding.encode(value.toString()));
+    else if (!isBuffered) {
+      add(encoding.encode(value.toString()));
     } else {
       if (value is List<int>)
         buffer.add(value);
@@ -357,9 +354,9 @@ abstract class ResponseContext<RawResponse>
 
   @override
   void writeCharCode(int charCode) {
-    if (!isOpen && !streaming)
+    if (!isOpen && isBuffered)
       throw closed();
-    else if (streaming)
+    else if (!isBuffered)
       add([charCode]);
     else
       buffer.addByte(charCode);

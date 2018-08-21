@@ -52,3 +52,8 @@ not very elegant.
 * Removed `Angel.createZoneForRequest`.
 * Removed `Angel.defaultZoneCreator`.
 * Added all flags to the `Angel` constructor, ex. `Angel.eagerParseBodies`.
+* Fix a bug where synchronous errors in `handleRequest` would not be caught.
+* `AngelHttp.useZone` now defaults to `false`.
+* `ResponseContext` now starts in streaming mode by default; the response buffer is opt-in,
+as in many cases it is unnecessary and slows down response time.
+* `ResponseContext.streaming` was replaced by `ResponseContext.isBuffered`.
