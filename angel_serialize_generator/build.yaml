@@ -13,9 +13,7 @@ builders:
         - "angel_serialize.g.part"
         - ".serializer.g.dart"
         - ".d.ts"
-    required_inputs:
-      - .dart
-    applies_builders: ["source_gen|combining_builder"]
+    applies_builders: ["source_gen|combining_builder", "source_gen|part_cleanup"]
 targets:
   _book:
     sources:
