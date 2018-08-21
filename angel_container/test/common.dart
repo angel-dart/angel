@@ -69,6 +69,17 @@ void testReflector(Reflector reflector) {
     expect(instance.name, 'Charizard');
     expect(instance.type, PokemonType.fire);
   });
+
+  test('isAssignableTo', () {
+    var pokemonType = container.reflector.reflectType(Pokemon);
+    var kantoPokemonType = container.reflector.reflectType(KantoPokemon);
+
+    expect(kantoPokemonType.isAssignableTo(pokemonType), true);
+    expect(
+        kantoPokemonType
+            .isAssignableTo(container.reflector.reflectType(String)),
+        false);
+  });
 }
 
 class LowerPokemon {
@@ -91,6 +102,10 @@ class Pokemon {
 
   @override
   String toString() => 'NAME: $name, TYPE: $type';
+}
+
+class KantoPokemon extends Pokemon {
+  KantoPokemon(String name, PokemonType type) : super(name, type);
 }
 
 enum PokemonType { water, fire, grass, ice, poison, flying }

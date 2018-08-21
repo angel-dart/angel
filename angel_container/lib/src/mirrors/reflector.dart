@@ -71,7 +71,13 @@ class _ReflectedTypeMirror extends ReflectedType {
 
   @override
   bool isAssignableTo(ReflectedType other) {
-    return other is _ReflectedTypeMirror && mirror.isAssignableTo(other.mirror);
+    if (other is _ReflectedClassMirror) {
+      return mirror.isAssignableTo(other.mirror);
+    } else if (other is _ReflectedTypeMirror) {
+      return mirror.isAssignableTo(other.mirror);
+    } else {
+      return false;
+    }
   }
 
   @override
@@ -136,7 +142,13 @@ class _ReflectedClassMirror extends ReflectedClass {
 
   @override
   bool isAssignableTo(ReflectedType other) {
-    return other is _ReflectedTypeMirror && mirror.isAssignableTo(other.mirror);
+    if (other is _ReflectedClassMirror) {
+      return mirror.isAssignableTo(other.mirror);
+    } else if (other is _ReflectedTypeMirror) {
+      return mirror.isAssignableTo(other.mirror);
+    } else {
+      return false;
+    }
   }
 
   @override
