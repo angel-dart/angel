@@ -2,6 +2,7 @@ library angel_framework.http.routable;
 
 import 'dart:async';
 
+import 'package:angel_container/angel_container.dart';
 import 'package:angel_route/angel_route.dart';
 
 import '../util.dart';
@@ -45,7 +46,14 @@ class Routable extends Router<RequestHandler> {
   final Map<Pattern, Service> _services = {};
   final Map configuration = {};
 
-  Routable() : super();
+  final Container _container;
+
+  Routable([Reflector reflector])
+      : _container = reflector == null ? null : new Container(reflector),
+        super();
+
+  /// A [Container] used to inject dependencies.
+  Container get container => _container;
 
   void close() {
     _services.clear();
@@ -75,7 +83,8 @@ class Routable extends Router<RequestHandler> {
       {Iterable<RequestHandler> middleware: const <RequestHandler>[]}) {
     final handlers = <RequestHandler>[];
     // Merge @Middleware declaration, if any
-    Middleware middlewareDeclaration = getAnnotation(handler, Middleware);
+    Middleware middlewareDeclaration =
+        getAnnotation(handler, Middleware, _container?.reflector);
     if (middlewareDeclaration != null) {
       handlers.addAll(middlewareDeclaration.handlers);
     }

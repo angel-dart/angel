@@ -98,7 +98,7 @@ main() {
   });
 
   test('metadata', () async {
-    final service = new HookedService(new IncrementService())..addHooks();
+    final service = new HookedService(new IncrementService())..addHooks(app);
     expect(service.inner, isNot(const IsInstanceOf<MapService>()));
     IncrementService.TIMES = 0;
     await service.index();

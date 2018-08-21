@@ -1,26 +1,26 @@
-import 'dart:async';
-import 'dart:mirrors';
+import 'package:angel_container/angel_container.dart';
 
 final RegExp straySlashes = new RegExp(r'(^/+)|(/+$)');
 
-matchingAnnotation(List<InstanceMirror> metadata, Type T) {
-  for (InstanceMirror metaDatum in metadata) {
-    if (metaDatum.hasReflectee) {
-      var reflectee = metaDatum.reflectee;
-      if (reflectee.runtimeType == T) {
-        return reflectee;
-      }
+matchingAnnotation(List<ReflectedInstance> metadata, Type T) {
+  for (ReflectedInstance metaDatum in metadata) {
+    if (metaDatum.type == T) {
+      return metaDatum.reflectee;
     }
   }
   return null;
 }
 
-getAnnotation(obj, Type T) {
-  if (obj is Function || obj is Future) {
-    MethodMirror methodMirror = (reflect(obj) as ClosureMirror).function;
-    return matchingAnnotation(methodMirror.metadata, T);
+getAnnotation(obj, Type T, Reflector reflector) {
+  if (reflector == null) {
+    return null;
   } else {
-    ClassMirror classMirror = reflectClass(obj.runtimeType as Type);
-    return matchingAnnotation(classMirror.metadata, T);
+    if (obj is Function) {
+      var methodMirror = reflector.reflectFunction(obj);
+      return matchingAnnotation(methodMirror.annotations, T);
+    } else {
+      var classMirror = reflector.reflectClass(obj.runtimeType as Type);
+      return matchingAnnotation(classMirror.annotations, T);
+    }
   }
 }

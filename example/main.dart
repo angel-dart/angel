@@ -24,7 +24,9 @@ main() async {
     '/greet/:name',
     (req, res) {
       var name = req.params['name'];
-      res.write('Hello, $name!');
+      res
+        ..write('Hello, $name!')
+        ..close();
     },
   );
 

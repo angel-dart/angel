@@ -6,6 +6,7 @@ import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
 import 'metadata.dart';
+import 'server.dart';
 import 'service.dart';
 
 /// Wraps another service in a service that broadcasts events on actions.
@@ -85,8 +86,8 @@ class HookedService extends Service {
   }
 
   /// Adds hooks to this instance.
-  void addHooks() {
-    Hooks hooks = getAnnotation(inner, Hooks);
+  void addHooks(Angel app) {
+    Hooks hooks = getAnnotation(inner, Hooks, app.container.reflector);
     List<HookedServiceEventListener> before = [], after = [];
 
     if (hooks != null) {
@@ -96,7 +97,7 @@ class HookedService extends Service {
 
     void applyListeners(Function fn, HookedServiceEventDispatcher dispatcher,
         [bool isAfter]) {
-      Hooks hooks = getAnnotation(fn, Hooks);
+      Hooks hooks = getAnnotation(fn, Hooks, app.container.reflector);
       final listeners = <HookedServiceEventListener>[]
         ..addAll(isAfter == true ? after : before);
 

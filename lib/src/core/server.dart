@@ -104,8 +104,6 @@ class Angel extends Routable {
   /// These will only not run if a response's `willCloseItself` is set to `true`.
   final List<RequestHandler> responseFinalizers = [];
 
-  Container _container;
-
   /// A [Map] of application-specific data that can be accessed by any
   /// piece of code that can see this [Angel] instance.
   ///
@@ -121,9 +119,6 @@ class Angel extends Routable {
   /// When set to `true`, the original body bytes will be stored
   /// on requests. `false` by default.
   bool keepRawRequestBuffers = false;
-
-  /// A [Container] used to inject dependencies.
-  Container get container => _container;
 
   /// A function that renders views.
   ///
@@ -199,7 +194,6 @@ class Angel extends Routable {
     });
 
     super.close();
-    _container = null;
     viewGenerator = noViewEngineConfigured;
     _preContained.clear();
     handlerCache.clear();
@@ -371,8 +365,8 @@ class Angel extends Routable {
       this.allowMethodOverrides: true,
       this.keepRawRequestBuffers: false,
       this.serializer,
-      this.viewGenerator}) {
-    _container = new Container(reflector);
+      this.viewGenerator})
+      : super(reflector) {
     bootstrapContainer();
     viewGenerator ??= noViewEngineConfigured;
     serializer ??= json.encode;

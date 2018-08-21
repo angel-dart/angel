@@ -141,18 +141,17 @@ class AngelHttp {
 
           var pipeline = tuple.item1;
 
-          Future<bool> Function() runPipeline;
+          Future Function() runPipeline;
 
           for (var handler in pipeline) {
             if (handler == null) break;
 
             if (runPipeline == null)
-              runPipeline = () => app.executeHandler(handler, req, res);
+              runPipeline = () => Future.sync(() => handler(req, res));
             else {
               var current = runPipeline;
-              runPipeline = () => current().then((result) => !result
-                  ? new Future.value(result)
-                  : app.executeHandler(handler, req, res));
+              runPipeline = () => current().then((result) =>
+                  !res.isOpen ? new Future.value(result) : handler(req, res));
             }
           }
 
