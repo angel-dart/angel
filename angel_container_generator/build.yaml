@@ -1,0 +1,10 @@
+builders:
+  angel_container:
+    import: "package:angel_container_generator/angel_container_generator.dart"
+    builder_factories:
+      - angelContainerBuilder
+    build_extensions:
+      .dart:
+        - .reflector.g.dart
+    auto_apply: root_package
+    build_to: source
