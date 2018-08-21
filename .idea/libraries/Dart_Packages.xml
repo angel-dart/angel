@@ -12,7 +12,7 @@
         <entry key="angel_container">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.5/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.7/lib" />
             </list>
           </value>
         </entry>
@@ -454,7 +454,7 @@
     </properties>
     <CLASSES>
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer-0.32.4/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.5/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_http_exception-1.0.0+3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_model-1.0.0+1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_route-3.0.0/lib" />

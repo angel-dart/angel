@@ -1,8 +1,7 @@
 library angel_framework.http.controller;
 
 import 'dart:async';
-import 'dart:mirrors';
-
+import 'package:angel_container/angel_container.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:meta/meta.dart';
 
@@ -35,8 +34,8 @@ class Controller {
     }
 
     // Load global expose decl
-    ClassMirror classMirror = reflectClass(this.runtimeType);
-    Expose exposeDecl = findExpose();
+    var classMirror = app.container.reflector.reflectClass(this.runtimeType);
+    Expose exposeDecl = findExpose(app.container.reflector);
 
     if (exposeDecl == null) {
       throw new Exception(
@@ -45,36 +44,37 @@ class Controller {
 
     var routable = new Routable();
     app.mount(exposeDecl.path, routable);
-    TypeMirror typeMirror = reflectType(this.runtimeType);
+    var typeMirror = app.container.reflector.reflectType(this.runtimeType);
     String name = exposeDecl.as?.isNotEmpty == true
         ? exposeDecl.as
-        : MirrorSystem.getName(typeMirror.simpleName);
+        : typeMirror.name;
 
     app.controllers[name] = this;
 
     // Pre-reflect methods
-    InstanceMirror instanceMirror = reflect(this);
+    var instanceMirror = app.container.reflector.reflectInstance(this);
     final handlers = <RequestHandler>[]
       ..addAll(exposeDecl.middleware)
       ..addAll(middleware);
     final routeBuilder = _routeBuilder(instanceMirror, routable, handlers);
-    classMirror.instanceMembers.forEach(routeBuilder);
+    classMirror.declarations.forEach(routeBuilder);
     configureRoutes(routable);
     return new Future.value();
   }
 
-  void Function(Symbol, MethodMirror) _routeBuilder(
-      InstanceMirror instanceMirror,
+  void Function(ReflectedDeclaration) _routeBuilder(
+      ReflectedInstance instanceMirror,
       Routable routable,
       Iterable<RequestHandler> handlers) {
-    return (Symbol methodName, MethodMirror method) {
-      if (method.isRegularMethod &&
-          methodName != #toString &&
-          methodName != #noSuchMethod &&
-          methodName != #call &&
-          methodName != #equals &&
-          methodName != #==) {
-        Expose exposeDecl = method.metadata
+    return (ReflectedDeclaration decl) {
+      var methodName = decl.name;
+
+      if (methodName != 'toString' &&
+          methodName != 'noSuchMethod' &&
+          methodName != 'call' &&
+          methodName != 'equals' &&
+          methodName != '==') {
+        Expose exposeDecl = decl.function.annotations
             .map((m) => m.reflectee)
             .firstWhere((r) => r is Expose, orElse: () => null);
 
@@ -87,9 +87,10 @@ class Controller {
           ..addAll(exposeDecl.middleware);
         String name = exposeDecl.as?.isNotEmpty == true
             ? exposeDecl.as
-            : MirrorSystem.getName(methodName);
+            : methodName;
 
         // Check if normal
+        var method = decl.function;
         if (method.parameters.length == 2 &&
             method.parameters[0].type.reflectedType == RequestContext &&
             method.parameters[1].type.reflectedType == ResponseContext) {
@@ -103,7 +104,7 @@ class Controller {
           return;
         }
 
-        var injection = preInject(reflectedMethod);
+        var injection = preInject(reflectedMethod, app.container.reflector);
 
         if (exposeDecl?.allowNull?.isNotEmpty == true)
           injection.optional?.addAll(exposeDecl.allowNull);
@@ -119,8 +120,8 @@ class Controller {
   void configureRoutes(Routable routable) {}
 
   /// Finds the [Expose] declaration for this class.
-  Expose findExpose() => reflectClass(runtimeType)
-      .metadata
+  Expose findExpose(Reflector reflector) => reflector.reflectClass(runtimeType)
+      .annotations
       .map((m) => m.reflectee)
       .firstWhere((r) => r is Expose, orElse: () => null) as Expose;
 }

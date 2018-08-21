@@ -62,3 +62,6 @@ as in many cases it is unnecessary and slows down response time.
 * Removed `ResponseContext.dispose`.
 * Removed the now-obsolete `ResponseContext.end`.
 * Removed the now-obsolete `ResponseContext.releaseCorrespondingRequest`.
+* `preInject` now takes a `Reflector` as its second argument.
+* `Angel.reflector` defaults to `const EmptyReflector()`, disabling
+reflection out-of-the-box.

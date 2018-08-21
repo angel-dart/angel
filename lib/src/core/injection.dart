@@ -8,10 +8,16 @@ const List<Type> _primitiveTypes = [String, int, num, double, Null];
 ///
 /// Calling [ioc] also auto-serializes the result of a [handler].
 RequestHandler ioc(Function handler, {Iterable<String> optional: const []}) {
-  var injection = preInject(handler);
-  injection.optional.addAll(optional ?? []);
-  var contained = handleContained(handler, injection);
+  InjectionRequest injection;
+  RequestHandler contained;
+
   return (req, res) {
+    if (injection == null) {
+      injection = preInject(handler, req.app.container.reflector);
+      injection.optional.addAll(optional ?? []);
+      contained = handleContained(handler, injection);
+    }
+
     return req.app.executeHandler(contained, req, res);
   };
 }
@@ -127,22 +133,22 @@ class InjectionRequest {
         parameters = {};
 }
 
-final TypeMirror _Parameter = reflectType(Parameter);
-
 /// Predetermines what needs to be injected for a handler to run.
-InjectionRequest preInject(Function handler) {
+InjectionRequest preInject(Function handler, Reflector reflector) {
   var injection = new InjectionRequest();
 
-  ClosureMirror closureMirror = reflect(handler);
+  var closureMirror = reflector.reflectFunction(handler);
 
-  if (closureMirror.function.parameters.isEmpty) return injection;
+  if (closureMirror.parameters.isEmpty) return injection;
 
   // Load parameters
-  for (var parameter in closureMirror.function.parameters) {
-    var name = MirrorSystem.getName(parameter.simpleName);
+  for (var parameter in closureMirror.parameters) {
+    var name = parameter.name;
     var type = parameter.type.reflectedType;
 
-    var p = parameter.metadata
+    var _Parameter = reflector.reflectType(Parameter);
+
+    var p = parameter.annotations
         .firstWhere((m) => m.type.isAssignableTo(_Parameter),
             orElse: () => null)
         ?.reflectee as Parameter;
@@ -160,7 +166,7 @@ InjectionRequest preInject(Function handler) {
     }
 
     if (!parameter.isNamed) {
-      if (parameter.isOptional) injection.optional.add(name);
+      if (!parameter.isRequired) injection.optional.add(name);
 
       if (type == RequestContext || type == ResponseContext) {
         injection.required.add(type);

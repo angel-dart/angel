@@ -10,7 +10,6 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:logging/logging.dart';
-import 'package:meta/meta.dart';
 import 'package:tuple/tuple.dart';
 
 import '../http/http.dart';
@@ -299,7 +298,7 @@ class Angel extends Routable {
       _isProduction = true;
       _add(v) {
         if (v is Function && !_preContained.containsKey(v)) {
-          _preContained[v] = preInject(v);
+          _preContained[v] = preInject(v, container.reflector);
         }
       }
 
@@ -336,8 +335,10 @@ class Angel extends Routable {
   /// Runs with DI, and *always* reflects. Prefer [runContained].
   Future runReflected(
       Function handler, RequestContext req, ResponseContext res) {
-    var h =
-        handleContained(handler, _preContained[handler] = preInject(handler));
+    var h = handleContained(
+        handler,
+        _preContained[handler] =
+            preInject(handler, req.app.container.reflector));
     return new Future.sync(() => h(req, res));
     // return   closureMirror.apply(args).reflectee;
   }
@@ -359,7 +360,7 @@ class Angel extends Routable {
   }
 
   Angel(
-      {@required Reflector reflector,
+      {Reflector reflector: const EmptyReflector(),
       this.logger,
       this.eagerParseRequestBodies: false,
       this.allowMethodOverrides: true,

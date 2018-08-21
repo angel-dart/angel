@@ -242,7 +242,7 @@ abstract class ResponseContext<RawResponse>
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
     final head =
-        controller.findExpose().path.toString().replaceAll(_straySlashes, '');
+        controller.findExpose(app.container.reflector).path.toString().replaceAll(_straySlashes, '');
     final tail = matched
         .makeUri(params.keys.fold<Map<String, dynamic>>({}, (out, k) {
           return out..[k.toString()] = params[k];
