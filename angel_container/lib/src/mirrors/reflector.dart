@@ -150,8 +150,6 @@ class _ReflectedClassMirror extends ReflectedClass {
   bool operator ==(other) {
     return other is _ReflectedClassMirror && other.mirror == mirror;
   }
-
-
 }
 
 class _ReflectedDeclarationMirror extends ReflectedDeclaration {

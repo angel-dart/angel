@@ -1,9 +1,7 @@
 import 'package:angel_container/angel_container.dart';
 import 'package:test/test.dart';
 
-void returnVoidFromAFunction(int x) {
-
-}
+void returnVoidFromAFunction(int x) {}
 
 void testReflector(Reflector reflector) {
   var blaziken = new Pokemon('Blaziken', PokemonType.fire);
