@@ -67,14 +67,14 @@ main() {
       return req.params;
     });
 
-    app.use('/nes', nested);
+    app.mount('/nes', nested);
     app.get('/meta', testMiddlewareMetadata);
     app.get('/intercepted', (req, res) => 'This should not be shown',
         middleware: [interceptor]);
     app.get('/hello', (req, res) => 'world');
     app.get('/name/:first/last/:last', (req, res) => req.params);
     app.post('/lambda', (RequestContext req, res) => req.parseBody());
-    app.use('/todos/:id', todos);
+    app.mount('/todos/:id', todos);
     app
         .get('/greet/:name',
             (RequestContext req, res) async => "Hello ${req.params['name']}")
@@ -101,7 +101,7 @@ main() {
     app.chain([write('a')]).chain([write('b'), write('c')]).get(
         '/chained', (req, res) => false);
 
-    app.use('MJ');
+    app.fallback((req, res) => 'MJ');
 
     app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 

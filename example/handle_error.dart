@@ -9,7 +9,7 @@ main() async {
     ..logger = (new Logger('angel')..onRecord.listen(print))
     ..encoders.addAll({'gzip': gzip.encoder});
 
-  app.use(() => new Future.error('Throwing just because I feel like!'));
+  app.fallback((req, res) => new Future.error('Throwing just because I feel like!'));
 
   var http = new AngelHttp(app);
   var server = await http.startServer('127.0.0.1', 3000);

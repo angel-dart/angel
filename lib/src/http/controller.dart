@@ -44,7 +44,7 @@ class Controller {
     }
 
     var routable = new Routable();
-    app.use(exposeDecl.path, routable);
+    app.mount(exposeDecl.path, routable);
     TypeMirror typeMirror = reflectType(this.runtimeType);
     String name = exposeDecl.as?.isNotEmpty == true
         ? exposeDecl.as

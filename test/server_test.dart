@@ -16,7 +16,7 @@ main() {
     var parent = new Angel(reflector: MirrorsReflector())
       ..configuration['two'] = 2;
     var child = new Angel(reflector: MirrorsReflector());
-    parent.use('/child', child);
+    parent.mount('/child', child);
 
     test('sets children', () {
       expect(parent.children, contains(child));

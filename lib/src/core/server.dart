@@ -20,7 +20,7 @@ import 'response_context.dart';
 import 'routable.dart';
 import 'service.dart';
 
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+//final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 /// A function that configures an [Angel] server in some way.
 typedef FutureOr AngelConfigurer(Angel app);
@@ -46,15 +46,6 @@ class Angel extends Routable {
 
   /// A global Map of converters that can transform responses bodies.
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
-
-  /// A function that is called on every request to create a [Zone], A.K.A an asynchronous
-  /// execution context.
-  ///
-  /// The utility of zones in Angel is to safely catch errors without crashing the application;
-  /// this also lets the driver wrap failures in instances of [AngelHttpException].
-  Future<ZoneSpecification> Function(
-          HttpRequest request, RequestContext req, ResponseContext res)
-      createZoneForRequest;
 
   final Map<dynamic, InjectionRequest> _preContained = {};
 
@@ -373,25 +364,17 @@ class Angel extends Routable {
     return super.use(path, service)..app = this;
   }
 
-  Angel({@required Reflector reflector}) {
+  Angel(
+      {@required Reflector reflector,
+      this.logger,
+      this.eagerParseRequestBodies: false,
+      this.allowMethodOverrides: true,
+      this.keepRawRequestBuffers: false,
+      this.serializer,
+      this.viewGenerator}) {
     _container = new Container(reflector);
     bootstrapContainer();
-    // ignore: deprecated_member_use
-    createZoneForRequest = defaultZoneCreator;
-  }
-
-  @deprecated
-  Future<ZoneSpecification> defaultZoneCreator(request, req, res) {
-    return new Future.value(
-      new ZoneSpecification(
-        print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-          if (logger != null) {
-            logger.info(line);
-          } else {
-            return parent.print(zone, line);
-          }
-        },
-      ),
-    );
+    viewGenerator ??= noViewEngineConfigured;
+    serializer ??= json.encode;
   }
 }

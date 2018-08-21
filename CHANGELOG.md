@@ -47,3 +47,8 @@ type-safe manner.
 * Removed `RequestContext.properties`.
 * Removed the defunct `debug` property where it still existed.
 * `Routable.use` now only accepts a `Service`.
+* The above change removes the concept of "nested apps," which are messy to maintain, and
+not very elegant.
+* Removed `Angel.createZoneForRequest`.
+* Removed `Angel.defaultZoneCreator`.
+* Added all flags to the `Angel` constructor, ex. `Angel.eagerParseBodies`.
