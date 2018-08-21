@@ -151,7 +151,7 @@ class Angel extends Routable {
     }
 
     res.write("</ul></body></html>");
-    res.end();
+    res.close();
   };
 
   @override

@@ -110,7 +110,7 @@ abstract class ResponseContext<RawResponse>
       file.openRead().pipe(this);
     } else {
       buffer.add(file.readAsBytesSync());
-      end();
+      close();
     }
   }
 
@@ -126,15 +126,6 @@ abstract class ResponseContext<RawResponse>
     return new Future.value();
   }
 
-  /// Prevents further request handlers from running on the response, except for response finalizers.
-  ///
-  /// To disable response finalizers, see [willCloseItself].
-  ///
-  /// This method should also set [!isOpen] to true.
-  void end() {
-    if (_done?.isCompleted == false) _done.complete();
-  }
-
   /// Serializes JSON to the response.
   void json(value) => this
     ..contentType = MediaType('application', 'json')
@@ -148,7 +139,7 @@ abstract class ResponseContext<RawResponse>
     write("$callbackName(${serializer(value)})");
     this.contentType =
         contentType ?? new MediaType('application', 'javascript');
-    end();
+    close();
   }
 
   /// Renders a view to the response stream, and closes the response.
@@ -160,7 +151,7 @@ abstract class ResponseContext<RawResponse>
           ..addAll(data ?? <String, dynamic>{}))).then((content) {
       write(content);
       headers['content-type'] = 'text/html';
-      end();
+      close();
     });
   }
 
@@ -196,7 +187,7 @@ abstract class ResponseContext<RawResponse>
       </body>
     </html>
     ''');
-    end();
+    close();
   }
 
   /// Redirects to the given named [Route].
@@ -267,7 +258,7 @@ abstract class ResponseContext<RawResponse>
 
     headers['content-type'] = lookupMimeType(file.path);
     buffer.add(file.readAsBytesSync());
-    end();
+    close();
   }
 
   /// Serializes data to the response.
@@ -276,7 +267,7 @@ abstract class ResponseContext<RawResponse>
     var text = serializer(value);
     if (text.isEmpty) return true;
     write(text);
-    end();
+    close();
     return false;
   }
 
@@ -285,14 +276,6 @@ abstract class ResponseContext<RawResponse>
     if (!isOpen) throw closed();
     headers['content-type'] = lookupMimeType(file.path);
     return file.openRead().pipe(this);
-  }
-
-  /// Releases critical resources from the [correspondingRequest].
-  void releaseCorrespondingRequest() {
-    if (!correspondingRequest.app.isProduction &&
-        correspondingRequest.app.logger != null) {
-      correspondingRequest.container.make<Stopwatch>().stop();
-    }
   }
 
   /// Configure the response to write to an intermediate response buffer, rather than to the stream directly.

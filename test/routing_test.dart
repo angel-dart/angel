@@ -25,7 +25,7 @@ class QueryService extends Service {
 void interceptor(RequestContext req, ResponseContext res) {
   res
     ..write('Middleware')
-    ..end();
+    ..close();
 }
 
 void interceptService(RequestContext req, ResponseContext res) {

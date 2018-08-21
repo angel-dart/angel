@@ -60,3 +60,5 @@ as in many cases it is unnecessary and slows down response time.
 * Made `LockableBytesBuilder` public.
 * Removed the now-obsolete `ResponseContext.willCloseItself`.
 * Removed `ResponseContext.dispose`.
+* Removed the now-obsolete `ResponseContext.end`.
+* Removed the now-obsolete `ResponseContext.releaseCorrespondingRequest`.

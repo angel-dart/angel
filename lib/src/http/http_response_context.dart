@@ -5,6 +5,7 @@ import 'dart:io';
 import '../core/core.dart';
 import 'http_request_context.dart';
 
+/// An implementation of [ResponseContext] that abstracts over an [HttpResponse].
 class HttpResponseContext extends ResponseContext<HttpResponse> {
   /// The underlying [HttpResponse] under this instance.
   @override
@@ -53,19 +54,11 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
         ..statusCode = statusCode
         ..cookies.addAll(cookies);
       headers.forEach(rawResponse.headers.set);
-      _isClosed = true;
-      releaseCorrespondingRequest();
+      //_isClosed = true;
       return _streamInitialized = true;
     }
 
     return false;
-  }
-
-  @override
-  void end() {
-    _buffer?.lock();
-    _isClosed = true;
-    super.end();
   }
 
   @override
@@ -127,16 +120,21 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   Future close() {
-    if (!isBuffered) {
-      try {
-        rawResponse.close();
-      } catch (_) {
-        // This only seems to occur on `MockHttpRequest`, but
-        // this try/catch prevents a crash.
+    if (!_isClosed) {
+      if (!isBuffered) {
+        try {
+          rawResponse.close();
+        } catch (_) {
+          // This only seems to occur on `MockHttpRequest`, but
+          // this try/catch prevents a crash.
+        }
+      } else {
+        _buffer.lock();
       }
+
+      _isClosed = true;
     }
 
-    _isClosed = true;
     super.close();
     return new Future.value();
   }

@@ -273,7 +273,7 @@ class AngelHttp {
       res.statusCode = e.statusCode;
       handleError =
           new Future.sync(() => app.errorHandler(e, req, res)).then((result) {
-        return app.executeHandler(result, req, res).then((_) => res.end());
+        return app.executeHandler(result, req, res).then((_) => res.close());
       });
     }
 
@@ -285,7 +285,15 @@ class AngelHttp {
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
-    if (!res.isBuffered) return new Future.value();
+    void _cleanup(_) {
+      if (!app.isProduction && app.logger != null) {
+        var sw = req.container.make<Stopwatch>();
+        app.logger.info(
+            "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
+      }
+    }
+
+    if (!res.isBuffered) return res.close().then(_cleanup);
 
     Future finalizers = ignoreFinalizers == true
         ? new Future.value()
@@ -293,7 +301,7 @@ class AngelHttp {
             new Future.value(), (out, f) => out.then((_) => f(req, res)));
 
     return finalizers.then((_) {
-      if (res.isOpen) res.end();
+      if (res.isOpen) res.close();
 
       for (var key in res.headers.keys) {
         request.response.headers.add(key, res.headers[key]);
@@ -343,17 +351,7 @@ class AngelHttp {
         ..cookies.addAll(res.cookies)
         ..add(outputBuffer);
 
-      return request.response.close().then((_) {
-        if (!app.isProduction && app.logger != null) {
-          var sw = req.container.make<Stopwatch>();
-
-          if (sw.isRunning) {
-            sw?.stop();
-            app.logger.info(
-                "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
-          }
-        }
-      });
+      return request.response.close().then(_cleanup);
     });
   }
 
