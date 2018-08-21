@@ -173,10 +173,21 @@ class AngelHttp {
             if (e is FormatException)
               throw new AngelHttpException.badRequest(message: e.message)
                 ..stackTrace = st;
-            throw new AngelHttpException(e, stackTrace: st, statusCode: 500);
+            throw new AngelHttpException(e,
+                stackTrace: st,
+                statusCode: 500,
+                message: e?.toString() ?? '500 Internal Server Error');
           }, test: (e) => e is! AngelHttpException).catchError(
               (ee, StackTrace st) {
             var e = ee as AngelHttpException;
+
+            if (app.logger != null) {
+              var error = e.error ?? e;
+              var trace =
+                  new Trace.from(e.stackTrace ?? StackTrace.current).terse;
+              app.logger.severe(e.message ?? e.toString(), error, trace);
+            }
+
             return handleAngelHttpException(
                 e, e.stackTrace ?? st, req, res, request);
           });
@@ -201,7 +212,9 @@ class AngelHttp {
                   e = error;
                 } else {
                   e = new AngelHttpException(error,
-                      stackTrace: stackTrace, message: error?.toString());
+                      stackTrace: stackTrace,
+                      message:
+                          error?.toString() ?? '500 Internal Server Error');
                 }
 
                 if (app.logger != null) {
