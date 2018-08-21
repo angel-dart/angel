@@ -14,7 +14,7 @@ void testReflector(Reflector reflector) {
 
   test('get field', () {
     var blazikenMirror = reflector.reflectInstance(blaziken);
-    expect(blazikenMirror.getField<PokemonType>('type'), blaziken.type);
+    expect(blazikenMirror.getField('type').reflectee, blaziken.type);
   });
 
   group('reflectFunction', () {
@@ -63,7 +63,7 @@ void testReflector(Reflector reflector) {
   test('newInstance works', () {
     var type = container.reflector.reflectType(Pokemon);
     var instance =
-        type.newInstance('changeName', [blaziken, 'Charizard']) as Pokemon;
+        type.newInstance('changeName', [blaziken, 'Charizard']).reflectee as Pokemon;
     print(instance);
     expect(instance.name, 'Charizard');
     expect(instance.type, PokemonType.fire);

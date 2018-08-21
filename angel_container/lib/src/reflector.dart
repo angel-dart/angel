@@ -27,9 +27,7 @@ abstract class ReflectedInstance {
   bool operator ==(other) =>
       other is ReflectedInstance && other.type == type && other.clazz == clazz;
 
-  T invoke<T>(Invocation invocation);
-
-  T getField<T>(String name);
+  ReflectedInstance getField(String name);
 }
 
 abstract class ReflectedType {
@@ -50,7 +48,8 @@ abstract class ReflectedType {
           .equals(other.typeParameters, typeParameters) &&
       other.reflectedType == reflectedType;
 
-  T newInstance<T>(String constructorName, List positionalArguments,
+  ReflectedInstance newInstance(
+      String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]);
 
   bool isAssignableTo(ReflectedType other);
@@ -104,7 +103,7 @@ class ReflectedDeclaration {
       other.function == function;
 }
 
-class ReflectedFunction {
+abstract class ReflectedFunction {
   final String name;
   final List<ReflectedTypeParameter> typeParameters;
   final List<ReflectedInstance> annotations;
@@ -139,6 +138,8 @@ class ReflectedFunction {
           .equals(other.parameters, other.parameters) &&
       other.isGetter == isGetter &&
       other.isSetter == isSetter;
+
+  ReflectedInstance invoke(Invocation invocation);
 }
 
 class ReflectedParameter {

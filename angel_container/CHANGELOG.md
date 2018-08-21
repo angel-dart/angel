@@ -1,3 +1,8 @@
+# 1.0.0-alpha.7
+* Add `EmptyReflector`.
+* `ReflectedType.newInstance` now returns a `ReflectedInstance`.
+* Moved `ReflectedInstance.invoke` to `ReflectedFunction.invoke`.
+
 # 1.0.0-alpha.6
 * Add `getField` to `ReflectedInstance`.
 

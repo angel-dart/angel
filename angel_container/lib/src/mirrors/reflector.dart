@@ -26,7 +26,7 @@ class MirrorsReflector implements Reflector {
   @override
   ReflectedFunction reflectFunction(Function function) {
     var closure = dart.reflect(function) as dart.ClosureMirror;
-    return new _ReflectedMethodMirror(closure.function);
+    return new _ReflectedMethodMirror(closure.function, closure);
   }
 
   @override
@@ -75,7 +75,8 @@ class _ReflectedTypeMirror extends ReflectedType {
   }
 
   @override
-  T newInstance<T>(String constructorName, List positionalArguments,
+  ReflectedInstance newInstance(
+      String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
     throw new ReflectionException(
         '$name is not a class, and therefore cannot be instantiated.');
@@ -139,11 +140,11 @@ class _ReflectedClassMirror extends ReflectedClass {
   }
 
   @override
-  T newInstance<T>(String constructorName, List positionalArguments,
+  ReflectedInstance newInstance(
+      String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
-    return mirror
-        .newInstance(new Symbol(constructorName), positionalArguments)
-        .reflectee as T;
+    return new _ReflectedInstanceMirror(
+        mirror.newInstance(new Symbol(constructorName), positionalArguments));
   }
 
   @override
@@ -174,20 +175,16 @@ class _ReflectedInstanceMirror extends ReflectedInstance {
             new _ReflectedClassMirror(mirror.type), mirror.reflectee);
 
   @override
-  T invoke<T>(Invocation invocation) {
-    return mirror.delegate(invocation) as T;
-  }
-
-  @override
-  T getField<T>(String name) {
-    return mirror.getField(new Symbol(name)).reflectee as T;
+  ReflectedInstance getField(String name) {
+    return new _ReflectedInstanceMirror(mirror.getField(new Symbol(name)));
   }
 }
 
 class _ReflectedMethodMirror extends ReflectedFunction {
   final dart.MethodMirror mirror;
+  final dart.ClosureMirror closureMirror;
 
-  _ReflectedMethodMirror(this.mirror)
+  _ReflectedMethodMirror(this.mirror, [this.closureMirror])
       : super(
             dart.MirrorSystem.getName(mirror.simpleName),
             <ReflectedTypeParameter>[],
@@ -211,5 +208,18 @@ class _ReflectedMethodMirror extends ReflectedFunction {
         const MirrorsReflector().reflectType(mirror.type.reflectedType),
         !mirror.isOptional,
         mirror.isNamed);
+  }
+
+  @override
+  ReflectedInstance invoke(Invocation invocation) {
+    if (closureMirror == null) {
+      throw new StateError(
+          'This object was reflected without a ClosureMirror, and therefore cannot be directly invoked.');
+    }
+
+    return new _ReflectedInstanceMirror(closureMirror.invoke(
+        invocation.memberName,
+        invocation.positionalArguments,
+        invocation.namedArguments));
   }
 }
