@@ -28,6 +28,8 @@ abstract class ReflectedInstance {
       other is ReflectedInstance && other.type == type && other.clazz == clazz;
 
   T invoke<T>(Invocation invocation);
+
+  T getField<T>(String name);
 }
 
 abstract class ReflectedType {

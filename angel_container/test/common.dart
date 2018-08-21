@@ -1,6 +1,10 @@
 import 'package:angel_container/angel_container.dart';
 import 'package:test/test.dart';
 
+void returnVoidFromAFunction(int x) {
+
+}
+
 void testReflector(Reflector reflector) {
   var blaziken = new Pokemon('Blaziken', PokemonType.fire);
   Container container;
@@ -8,6 +12,36 @@ void testReflector(Reflector reflector) {
   setUp(() {
     container = new Container(reflector);
     container.registerSingleton(blaziken);
+  });
+
+  test('get field', () {
+    var blazikenMirror = reflector.reflectInstance(blaziken);
+    expect(blazikenMirror.getField<PokemonType>('type'), blaziken.type);
+  });
+
+  group('reflectFunction', () {
+    var mirror = reflector.reflectFunction(returnVoidFromAFunction);
+
+    test('void return type returns dynamic', () {
+      expect(mirror.returnType, reflector.reflectType(dynamic));
+    });
+
+    test('counts parameters', () {
+      expect(mirror.parameters, hasLength(1));
+    });
+
+    test('counts types parameters', () {
+      expect(mirror.typeParameters, isEmpty);
+    });
+
+    test('correctly reflects parameter types', () {
+      var p = mirror.parameters[0];
+      expect(p.name, 'x');
+      expect(p.isRequired, true);
+      expect(p.isNamed, false);
+      expect(p.annotations, isEmpty);
+      expect(p.type, reflector.reflectType(int));
+    });
   });
 
   test('make on singleton type returns singleton', () {

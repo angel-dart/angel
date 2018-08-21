@@ -46,7 +46,7 @@ class MirrorsReflector implements Reflector {
 
   @override
   ReflectedInstance reflectInstance(Object object) {
-    return new _ReflectedInstanceMirror(object);
+    return new _ReflectedInstanceMirror(dart.reflect(object));
   }
 }
 
@@ -145,6 +145,13 @@ class _ReflectedClassMirror extends ReflectedClass {
         .newInstance(new Symbol(constructorName), positionalArguments)
         .reflectee as T;
   }
+
+  @override
+  bool operator ==(other) {
+    return other is _ReflectedClassMirror && other.mirror == mirror;
+  }
+
+
 }
 
 class _ReflectedDeclarationMirror extends ReflectedDeclaration {
@@ -171,6 +178,11 @@ class _ReflectedInstanceMirror extends ReflectedInstance {
   @override
   T invoke<T>(Invocation invocation) {
     return mirror.delegate(invocation) as T;
+  }
+
+  @override
+  T getField<T>(String name) {
+    return mirror.getField(new Symbol(name)).reflectee as T;
   }
 }
 

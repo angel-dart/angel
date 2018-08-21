@@ -1,3 +1,6 @@
+# 1.0.0-alpha.6
+* Add `getField` to `ReflectedInstance`.
+
 # 1.0.0-alpha.5
 * Remove concrete type from `ReflectedTypeParameter`.
 
