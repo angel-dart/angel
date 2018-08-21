@@ -23,10 +23,8 @@ part 'serialize.dart';
 part 'typescript.dart';
 
 Builder jsonModelBuilder(_) {
-  return new PartBuilder(
-    const [const JsonModelGenerator()],
-    '.g.dart',
-  );
+  return new SharedPartBuilder(
+      const [const JsonModelGenerator()], 'angel_serialize');
 }
 
 Builder serializerBuilder(_) {

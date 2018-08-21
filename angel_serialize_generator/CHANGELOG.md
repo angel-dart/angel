@@ -1,6 +1,8 @@
 # 2.1.0
 * Removed dependency on `package:id`.
 * Update dependencies for Dart2Stable.
+* `jsonModelBuilder` now uses `SharedPartBuilder`, rather than
+`PartBuilder`.
 
 # 2.0.10
 * Generate `XFields.allFields` constant.
