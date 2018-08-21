@@ -367,52 +367,10 @@ class Angel extends Routable {
     return all('*', handler);
   }
 
-  /// Mounts the child on this router. If [routable] is `null`,
-  /// then this method will add a handler as a global middleware instead.
-  ///
-  /// If the router is an [Angel] instance, all controllers
-  /// will be copied, as well as services and response finalizers.
-  ///
-  /// [before] and [after] will be preserved.
-  ///
-  /// NOTE: The above will not be properly copied if [path] is
-  /// a [RegExp].
   @override
-  HookedService use(path, [Router<RequestHandler> routable, String namespace = null]) {
-
-    var head = path.toString().replaceAll(_straySlashes, '');
-
-    if (routable is Angel) {
-      _children.add(routable.._parent = this);
-      _preContained.addAll(routable._preContained);
-
-      if (routable.responseFinalizers.isNotEmpty) {
-        responseFinalizers.add((req, res) {
-          if (req.path.replaceAll(_straySlashes, '').startsWith(head)) {
-            for (var finalizer in routable.responseFinalizers)
-              finalizer(req, res);
-          }
-
-          return new Future.value(true);
-        });
-      }
-
-      routable._controllers.forEach((k, v) {
-        var tail = k.toString().replaceAll(_straySlashes, '');
-        _controllers['$head/$tail'.replaceAll(_straySlashes, '')] = v;
-      });
-
-      routable.services.forEach((k, v) {
-        var tail = k.toString().replaceAll(_straySlashes, '');
-        services['$head/$tail'.replaceAll(_straySlashes, '')] = v;
-      });
-    }
-
-    if (routable is Service) {
-      routable.app = this;
-    }
-
-    return super.use(path, routable, namespace);
+  HookedService use(String path, Service service) {
+    service.app = this;
+    return super.use(path, service)..app = this;
   }
 
   Angel({@required Reflector reflector}) {

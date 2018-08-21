@@ -9,7 +9,6 @@ import 'hooked_service.dart';
 import 'metadata.dart';
 import 'request_context.dart';
 import 'response_context.dart';
-import 'server.dart';
 import 'service.dart';
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
@@ -89,70 +88,20 @@ class Routable extends Router<RequestHandler> {
         middleware: handlerSequence);
   }
 
-  /// Mounts the given [router] on this instance.
+  /// Mounts a [service] at the given [path].
   ///
-  /// The [router] may only omitted when called via
-  /// an [Angel] instance.
-  ///
-  /// Returns a [HookedService] (if one was mounted).
-  HookedService use(path, [Router<RequestHandler> router, String namespace = null]) {
-    Router<RequestHandler> _router = router;
-    HookedService service;
-
-    // If we need to hook this service, do it here. It has to be first, or
-    // else all routes will point to the old service.
-    if (router is Service) {
-      _router = service = new HookedService(router);
-      _services[path
-          .toString()
-          .trim()
-          .replaceAll(new RegExp(r'(^/+)|(/+$)'), '')] = service;
-      service.addRoutes();
-
-      if (_router is HookedService && _router != router)
-        router.onHooked(_router);
-    }
-
-    final handlers = [];
-
-    if (_router is Angel) {
-      handlers.add((RequestContext req, ResponseContext res) {
-        req.app = _router as Angel;
-        res.app = _router as Angel;
-        return true;
-      });
-    }
-
-    // Let's copy middleware, heeding the optional middleware namespace.
-    String middlewarePrefix = namespace != null ? "$namespace." : "";
-
-    // Also copy properties...
-    if (router is Routable) {
-      Map copiedProperties = new Map.from(router.configuration);
-      for (String propertyName in copiedProperties.keys) {
-        configuration.putIfAbsent("$middlewarePrefix$propertyName",
-            () => copiedProperties[propertyName]);
-      }
-    }
-
-    // _router.dumpTree(header: 'Mounting on "$path":');
-    // root.child(path, debug: debug, handlers: handlers).addChild(router.root);
-    var mounted = mount(path.toString(), _router);
-
-    if (_router is Routable) {
-      // Copy services, too. :)
-      for (Pattern servicePath in _router._services.keys) {
-        String newServicePath =
-            path.toString().trim().replaceAll(new RegExp(r'(^/+)|(/+$)'), '') +
-                '/$servicePath';
-        _services[newServicePath] = _router._services[servicePath];
-      }
-    }
-
-    if (service != null) {
-      if (_onService.hasListener) _onService.add(service);
-    }
-
-    return service;
+  /// Returns a [HookedService] that can be used to hook into
+  /// events dispatched by this service.
+  HookedService use(String path, Service service) {
+    var hooked = new HookedService(service);
+    _services[path
+        .toString()
+        .trim()
+        .replaceAll(new RegExp(r'(^/+)|(/+$)'), '')] = hooked;
+    hooked.addRoutes();
+    mount(path.toString(), hooked);
+    service.onHooked(hooked);
+    _onService.add(hooked);
+    return hooked;
   }
 }

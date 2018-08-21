@@ -29,7 +29,7 @@ main() async {
   );
 
   // Simple fallback to throw a 404 on unknown paths.
-  app.use((RequestContext req) async {
+  app.fallback((req, res) {
     throw new AngelHttpException.notFound(
       message: 'Unknown path: "${req.uri.path}"',
     );

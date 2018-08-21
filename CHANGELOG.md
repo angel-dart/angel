@@ -46,3 +46,4 @@ type-safe manner.
 * Removed `RequestContext.grab`.
 * Removed `RequestContext.properties`.
 * Removed the defunct `debug` property where it still existed.
+* `Routable.use` now only accepts a `Service`.
