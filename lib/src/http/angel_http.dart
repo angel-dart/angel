@@ -180,7 +180,7 @@ class AngelHttp {
             var e = ee as AngelHttpException;
             return handleAngelHttpException(
                 e, e.stackTrace ?? st, req, res, request);
-          }).whenComplete(() => res.dispose());
+          });
         } else {
           var zoneSpec = new ZoneSpecification(
             print: (self, parent, zone, line) {
@@ -239,9 +239,7 @@ class AngelHttp {
           // so use a try/catch, and recover when need be.
 
           try {
-            return zone.run(handle).whenComplete(() {
-              res.dispose();
-            });
+            return zone.run(handle);
           } catch (e, st) {
             zone.handleUncaughtError(e, st);
             return Future.value();
@@ -287,7 +285,7 @@ class AngelHttp {
   Future sendResponse(
       HttpRequest request, RequestContext req, ResponseContext res,
       {bool ignoreFinalizers: false}) {
-    if (res.willCloseItself) return new Future.value();
+    if (!res.isBuffered) return new Future.value();
 
     Future finalizers = ignoreFinalizers == true
         ? new Future.value()

@@ -20,7 +20,6 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 abstract class ResponseContext<RawResponse>
     implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
-  BytesBuilder _buffer;
   final Map<String, String> _headers = {'server': 'angel'};
 
   Completer _done;
@@ -87,18 +86,13 @@ abstract class ResponseContext<RawResponse>
   bool get isBuffered;
 
   /// A set of UTF-8 encoded bytes that will be written to the response.
-  BytesBuilder get buffer => _buffer;
+  BytesBuilder get buffer;
 
   /// The underlying [RawResponse] under this instance.
   RawResponse get rawResponse;
 
   /// Gets or sets the content type to send back to a client.
   MediaType contentType = new MediaType('text', 'plain');
-
-  /// Set this to true if you will manually close the response.
-  ///
-  /// If `true`, all response finalizers will be skipped.
-  bool willCloseItself = false;
 
   static StateError closed() =>
       new StateError('Cannot modify a closed response.');
@@ -124,24 +118,12 @@ abstract class ResponseContext<RawResponse>
   ///
   /// This method should be overwritten, setting [streaming] to `false`, **after** a `super` call.
   Future close() {
-    if (_buffer is LockableBytesBuilder) {
-      (_buffer as LockableBytesBuilder).lock();
+    if (buffer is LockableBytesBuilder) {
+      (buffer as LockableBytesBuilder).lock();
     }
 
     if (_done?.isCompleted == false) _done.complete();
     return new Future.value();
-  }
-
-  /// Disposes of all resources.
-  void dispose() {
-    close();
-    properties.clear();
-    encoders.clear();
-    _buffer.clear();
-    cookies.clear();
-    app = null;
-    _headers.clear();
-    serializer = null;
   }
 
   /// Prevents further request handlers from running on the response, except for response finalizers.

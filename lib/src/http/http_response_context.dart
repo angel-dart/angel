@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import '../core/core.dart';
 import 'http_request_context.dart';
 
@@ -10,8 +11,10 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   final HttpResponse rawResponse;
   Angel app;
 
+  LockableBytesBuilder _buffer;
+
   final HttpRequestContext _correspondingRequest;
-  bool _isClosed = false, _useStream = true;
+  bool _isClosed = false, _streamInitialized = false;
 
   HttpResponseContext(this.rawResponse, this.app, [this._correspondingRequest]);
 
@@ -26,9 +29,10 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   }
 
   @override
-  bool get streaming {
-    return _useStream;
-  }
+  bool get isBuffered => _buffer != null;
+
+  @override
+  BytesBuilder get buffer => _buffer;
 
   @override
   void addError(Object error, [StackTrace stackTrace]) {
@@ -37,17 +41,21 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   }
 
   @override
-  bool useStream() {
-    if (!_useStream) {
+  void enableBuffer() {
+    _buffer = new LockableBytesBuilder();
+  }
+
+  bool _openStream() {
+    if (!_streamInitialized) {
       // If this is the first stream added to this response,
       // then add headers, status code, etc.
       rawResponse
         ..statusCode = statusCode
         ..cookies.addAll(cookies);
       headers.forEach(rawResponse.headers.set);
-      willCloseItself = _useStream = _isClosed = true;
+      _isClosed = true;
       releaseCorrespondingRequest();
-      return true;
+      return _streamInitialized = true;
     }
 
     return false;
@@ -55,14 +63,15 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   void end() {
+    _buffer?.lock();
     _isClosed = true;
     super.end();
   }
 
   @override
   Future addStream(Stream<List<int>> stream) {
-    if (_isClosed && !_useStream) throw ResponseContext.closed();
-    var firstStream = useStream();
+    if (_isClosed && isBuffered) throw ResponseContext.closed();
+    var firstStream = _openStream();
 
     Stream<List<int>> output = stream;
 
@@ -107,17 +116,18 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   void add(List<int> data) {
-    if (_isClosed && !_useStream)
+    if (_isClosed && isBuffered)
       throw ResponseContext.closed();
-    else if (_useStream)
+    else if (!isBuffered) {
+      _openStream();
       rawResponse.add(data);
-    else
+    } else
       buffer.add(data);
   }
 
   @override
   Future close() {
-    if (_useStream) {
+    if (!isBuffered) {
       try {
         rawResponse.close();
       } catch (_) {
@@ -128,7 +138,6 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
     _isClosed = true;
     super.close();
-    _useStream = false;
     return new Future.value();
   }
 }

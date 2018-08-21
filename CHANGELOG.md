@@ -57,3 +57,6 @@ not very elegant.
 * `ResponseContext` now starts in streaming mode by default; the response buffer is opt-in,
 as in many cases it is unnecessary and slows down response time.
 * `ResponseContext.streaming` was replaced by `ResponseContext.isBuffered`.
+* Made `LockableBytesBuilder` public.
+* Removed the now-obsolete `ResponseContext.willCloseItself`.
+* Removed `ResponseContext.dispose`.
