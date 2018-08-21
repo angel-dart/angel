@@ -63,7 +63,8 @@ void testReflector(Reflector reflector) {
   test('newInstance works', () {
     var type = container.reflector.reflectType(Pokemon);
     var instance =
-        type.newInstance('changeName', [blaziken, 'Charizard']).reflectee as Pokemon;
+        type.newInstance('changeName', [blaziken, 'Charizard']).reflectee
+            as Pokemon;
     print(instance);
     expect(instance.name, 'Charizard');
     expect(instance.type, PokemonType.fire);
