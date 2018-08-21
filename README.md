@@ -43,34 +43,7 @@ applying YAML configuration.
 
 **Server-side**
 Call `configuration()`. The loaded configuration will be available in your application's
-`configuration` map, which means you can access them like normal instance members.
-
-```dart
-main() {
-  print(app.foo == app.configuration['foo']); // true
-}
-```
-
-An instance of `Configuration` will also be injected to your application, and it works
-the same way:
-
-```dart
-import 'dart:io';
-import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_configuration/angel_configuration.dart';
-import 'package:file/local.dart';
-
-main() async {
-    var app = new Angel();
-    var fileSystem = const LocalFileSystem();
-    
-    await app.configure(configuration(fileSystem)); // It's that easy!
-    
-    app.get('/foo', (Configuration config) {
-      return config.some_key;
-    });
-}
-```
+`configuration` map.
 
 `configuration` also accepts a `sourceDirectory` or `overrideEnvironmentName` parameter.
 The former will allow you to search in a directory other than `config`, and the latter lets you
