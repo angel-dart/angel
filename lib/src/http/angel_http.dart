@@ -227,9 +227,17 @@ class AngelHttp {
           req.container.registerSingleton<Zone>(zone);
           req.container.registerSingleton<ZoneSpecification>(zoneSpec);
 
-          return zone.run(handle).whenComplete(() {
-            res.dispose();
-          });
+          // If a synchronous error is thrown, it's not caught by `zone.run`,
+          // so use a try/catch, and recover when need be.
+
+          try {
+            return zone.run(handle).whenComplete(() {
+              res.dispose();
+            });
+          } catch (e, st) {
+            zone.handleUncaughtError(e, st);
+            return Future.value();
+          }
         }
       });
     });
