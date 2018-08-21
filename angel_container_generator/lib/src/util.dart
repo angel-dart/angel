@@ -8,14 +8,14 @@ const TypeChecker generateReflectorTypeChecker =
 
 /// Reads data from a [GenerateReflector] annotation.
 class GenerateReflectorReader {
-  final ConstantReader constantReader;
+  final ConstantReader annotation;
 
-  GenerateReflectorReader(this.constantReader);
+  GenerateReflectorReader(this.annotation);
 
-  String get name => constantReader.peek('name')?.stringValue;
+  String get name => annotation.peek('name')?.stringValue;
 
   List<DartType> get types =>
-      constantReader
+      annotation
           .peek('types')
           ?.listValue
           ?.map((o) => ConstantReader(o).typeValue)
@@ -23,7 +23,7 @@ class GenerateReflectorReader {
       <DartType>[];
 
   List<Symbol> get symbols =>
-      constantReader
+      annotation
           .peek('symbols')
           ?.listValue
           ?.map((o) => ConstantReader(o).symbolValue)
@@ -31,5 +31,5 @@ class GenerateReflectorReader {
       <Symbol>[];
 
   List<DartObject> get functions =>
-      constantReader.peek('functions')?.listValue ?? <DartObject>[];
+      annotation.peek('functions')?.listValue ?? <DartObject>[];
 }
