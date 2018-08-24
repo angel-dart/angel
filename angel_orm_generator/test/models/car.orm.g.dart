@@ -7,4 +7,11 @@
 import 'dart:async';
 import 'car.dart';
 
-abstract class CarOrm {}
+abstract class CarOrm {
+  Future<List<Car>> getAll();
+  Future<Car> getById(id);
+  Future<Car> updateCar(Car model);
+  CarQuery query();
+}
+
+class CarQuery {}

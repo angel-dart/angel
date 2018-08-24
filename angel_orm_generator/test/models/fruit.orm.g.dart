@@ -7,4 +7,11 @@
 import 'dart:async';
 import 'fruit.dart';
 
-abstract class FruitOrm {}
+abstract class FruitOrm {
+  Future<List<Fruit>> getAll();
+  Future<Fruit> getById(id);
+  Future<Fruit> updateFruit(Fruit model);
+  FruitQuery query();
+}
+
+class FruitQuery {}

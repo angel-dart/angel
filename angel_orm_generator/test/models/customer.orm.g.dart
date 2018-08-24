@@ -7,4 +7,11 @@
 import 'dart:async';
 import 'customer.dart';
 
-abstract class CustomerOrm {}
+abstract class CustomerOrm {
+  Future<List<Customer>> getAll();
+  Future<Customer> getById(id);
+  Future<Customer> updateCustomer(Customer model);
+  CustomerQuery query();
+}
+
+class CustomerQuery {}

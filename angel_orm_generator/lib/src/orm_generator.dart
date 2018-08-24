@@ -15,6 +15,12 @@ Builder ormBuilder(_) {
       generatedExtension: '.orm.g.dart');
 }
 
+TypeReference futureOf(String type) {
+  return new TypeReference((b) => b
+    ..symbol = 'Future'
+    ..types.add(refer(type)));
+}
+
 /// Builder that generates `.orm.g.dart`, with an abstract `FooOrm` class.
 class OrmGenerator extends GeneratorForAnnotation<ORM> {
   final bool autoSnakeCaseNames;
@@ -54,7 +60,44 @@ class OrmGenerator extends GeneratorForAnnotation<ORM> {
         // Next, add method stubs.
         // * getAll
         // * getById
-        // *
+        // * update
+        // * query()
+
+        // getAll
+        clazz.methods.add(new Method((m) {
+          m
+            ..name = 'getAll'
+            ..returns = new TypeReference((b) => b
+              ..symbol = 'Future'
+              ..types.add(new TypeReference((b) => b
+                ..symbol = 'List'
+                ..types.add(ctx.buildContext.modelClassType))));
+        }));
+
+        // getById
+        clazz.methods.add(new Method((m) {
+          m
+            ..name = 'getById'
+            ..returns = futureOf(ctx.buildContext.modelClassName)
+            ..requiredParameters.add(new Parameter((b) => b..name = 'id'));
+        }));
+
+        // update
+        clazz.methods.add(new Method((m) {
+          m
+            ..name = 'update'
+            ..returns = futureOf(ctx.buildContext.modelClassName)
+            ..requiredParameters.add(new Parameter((b) => b
+              ..name = 'model'
+              ..type = ctx.buildContext.modelClassType));
+        }));
+
+        // query()
+        clazz.methods.add(new Method((m) {
+          m
+            ..name = 'query'
+            ..returns = refer('${rc.pascalCase}Query');
+        }));
       }));
 
       // Create `FooQuery` class
