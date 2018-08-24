@@ -1,5 +1,6 @@
 # 2.0.0-dev.2
 * Renamed `ORM` to `Orm`.
+* `Orm` now requires a database type.
 
 # 2.0.0-dev.1
 * Restored all old PostgreSQL-specific annotations. Rather than a smart runtime,

@@ -5,14 +5,14 @@ main() {
 
 }
 
-@orm
+@postgreSqlOrm
 abstract class Company extends Model {
   String get name;
 
   bool get isFortune500;
 }
 
-@orm
+@postgreSqlOrm
 abstract class _Employee extends Model {
   @belongsTo
   Company get company;
