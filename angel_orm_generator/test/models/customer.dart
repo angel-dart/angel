@@ -6,7 +6,7 @@ import 'package:angel_serialize/angel_serialize.dart';
 part 'customer.g.dart';
 part 'customer.serializer.g.dart';
 
-@orm
+@postgreSqlOrm
 @serializable
 class _Customer extends Model {
 }

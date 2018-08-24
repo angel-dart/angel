@@ -8,7 +8,7 @@ part 'book.g.dart';
 part 'book.serializer.g.dart';
 
 @serializable
-@orm
+@postgreSqlOrm
 class _Book extends Model {
   @belongsTo
   Author author;

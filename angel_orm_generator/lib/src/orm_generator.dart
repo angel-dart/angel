@@ -49,6 +49,22 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         new Directive.import(p.basename(inputId.uri.path)),
       ]);
 
+      // Add the corresponding `part`
+      String dbExtension;
+
+      switch (ctx.ormAnnotation.type) {
+        case OrmType.mongoDB:
+          dbExtension = 'mongo';
+          break;
+        default:
+          throw 'Unsupported ORM type: ${ctx.ormAnnotation.type}';
+      }
+
+      var dbFile =
+          p.setExtension(p.basename(inputId.uri.path), '.$dbExtension.dart');
+
+      lib.body.add(new Code("part '$dbFile';"));
+
       // Create `FooOrm` abstract class
       var rc = new ReCase(ctx.buildContext.modelClassName);
 

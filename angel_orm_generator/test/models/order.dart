@@ -7,7 +7,7 @@ import 'customer.dart';
 part 'order.g.dart';
 part 'order.serializer.g.dart';
 
-@orm
+@postgreSqlOrm
 @serializable
 class _Order extends Model {
   @CanJoin(Customer, 'id')

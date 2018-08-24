@@ -7,7 +7,7 @@ part 'role.g.dart';
 part 'role.serializer.g.dart';
 
 @serializable
-@orm
+@postgreSqlOrm
 class _Role extends Model {
   String name;
 }

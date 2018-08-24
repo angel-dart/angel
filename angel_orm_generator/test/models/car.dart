@@ -7,7 +7,7 @@ part 'car.g.dart';
 part 'car.serializer.g.dart';
 
 @serializable
-@orm
+@postgreSqlOrm
 class _Car extends Model {
   String make;
   String description;
