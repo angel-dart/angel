@@ -4,6 +4,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart' hide LibraryBuilder;
+import 'package:path/path.dart' as p;
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'orm_build_context.dart';
@@ -26,16 +28,29 @@ class OrmGenerator extends GeneratorForAnnotation<ORM> {
     if (element is ClassElement) {
       var ctx = await buildOrmContext(element, annotation, buildStep,
           buildStep.resolver, autoSnakeCaseNames, autoIdAndDateFields);
-      var lib = buildOrmBaseLibrary(ctx);
+      var lib = buildOrmBaseLibrary(buildStep.inputId, ctx);
       return lib.accept(new DartEmitter()).toString();
     } else {
       throw 'The @Orm() annotation can only be applied to classes.';
     }
   }
 
-  Library buildOrmBaseLibrary(OrmBuildContext ctx) {
+  Library buildOrmBaseLibrary(AssetId inputId, OrmBuildContext ctx) {
     return new Library((lib) {
+      // Necessary imports
+      lib.directives.addAll([
+        new Directive.import('dart:async'),
+        new Directive.import(p.basename(inputId.uri.path)),
+      ]);
 
+      // Create `FooOrm` abstract class
+      var rc = new ReCase(ctx.buildContext.modelClassName);
+
+      lib.body.add(new Class((clazz) {
+        clazz
+          ..name = '${rc.pascalCase}Orm'
+          ..abstract = true;
+      }));
     });
   }
 }
