@@ -2,10 +2,12 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$/angel_orm">
+      <excludeFolder url="file://$MODULE_DIR$/angel_orm/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/angel_orm/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_orm/build" />
     </content>
     <content url="file://$MODULE_DIR$/angel_orm_generator">
+      <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/angel_orm_generator/build" />
     </content>

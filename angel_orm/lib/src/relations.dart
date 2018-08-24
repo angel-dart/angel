@@ -1,8 +1,8 @@
 abstract class RelationshipType {
-  static const int HAS_MANY = 0;
-  static const int HAS_ONE = 1;
-  static const int BELONGS_TO = 2;
-  static const int BELONGS_TO_MANY = 3;
+  static const int hasMany = 0;
+  static const int hasOne = 1;
+  static const int belongsTo = 2;
+  static const int belongsToMany = 3;
 }
 
 class Relationship {
@@ -25,7 +25,7 @@ class HasMany extends Relationship {
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete: false})
-      : super(RelationshipType.HAS_MANY,
+      : super(RelationshipType.hasMany,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
@@ -40,7 +40,7 @@ class HasOne extends Relationship {
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete: false})
-      : super(RelationshipType.HAS_ONE,
+      : super(RelationshipType.hasOne,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
@@ -52,7 +52,7 @@ const HasOne hasOne = const HasOne();
 class BelongsTo extends Relationship {
   const BelongsTo(
       {String localKey: 'id', String foreignKey, String foreignTable})
-      : super(RelationshipType.BELONGS_TO,
+      : super(RelationshipType.belongsTo,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable);
@@ -63,7 +63,7 @@ const BelongsTo belongsTo = const BelongsTo();
 class BelongsToMany extends Relationship {
   const BelongsToMany(
       {String localKey: 'id', String foreignKey, String foreignTable})
-      : super(RelationshipType.BELONGS_TO_MANY,
+      : super(RelationshipType.belongsToMany,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable);

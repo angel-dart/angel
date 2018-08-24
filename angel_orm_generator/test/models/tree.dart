@@ -9,7 +9,7 @@ part 'tree.g.dart';
 @serializable
 @orm
 class _Tree extends Model {
-  @Column(index: IndexType.UNIQUE, type: ColumnType.SMALL_INT)
+  @Column(indexType: IndexType.UNIQUE, type: ColumnType.smallInt)
   int rings;
 
   @hasMany

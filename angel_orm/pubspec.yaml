@@ -1,10 +1,13 @@
 name: angel_orm
-version: 1.0.0-alpha+11
+version: 2.0.0-dev
 description: Runtime support for Angel's ORM.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/orm
 environment:
-  sdk: '>=2.0.0-dev.1.2 <2.0.0'
+  sdk: '>=2.0.0-dev.1.2 <3.0.0'
 dependencies:
-  angel_model: ^1.0.0
+  intl: ^0.15.7
   meta: ^1.0.0
+  string_scanner: ^1.0.0
+dev_dependencies:
+  angel_model: ^1.0.0

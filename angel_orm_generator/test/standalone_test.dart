@@ -28,9 +28,9 @@ main() {
       'Mazda',
       'CX9',
       true,
-      DATE_YMD_HMS.format(MILENNIUM),
-      DATE_YMD_HMS.format(MILENNIUM),
-      DATE_YMD_HMS.format(MILENNIUM)
+      dateYmdHms.format(MILENNIUM),
+      dateYmdHms.format(MILENNIUM),
+      dateYmdHms.format(MILENNIUM)
     ];
     print(row);
     var car = CarQuery.parseRow(row);
@@ -167,7 +167,7 @@ main() {
       expect(car.description, 'Hello');
       expect(car.familyFriendly, isTrue);
       expect(
-          DATE_YMD_HMS.format(car.recalledAt), DATE_YMD_HMS.format(recalledAt));
+          dateYmdHms.format(car.recalledAt), dateYmdHms.format(recalledAt));
       expect(car.createdAt, allOf(isNotNull, equals(car.updatedAt)));
     });
 
@@ -183,8 +183,8 @@ main() {
       expect(car.make, beetle.make);
       expect(car.description, beetle.description);
       expect(car.familyFriendly, beetle.familyFriendly);
-      expect(DATE_YMD_HMS.format(car.recalledAt),
-          DATE_YMD_HMS.format(beetle.recalledAt));
+      expect(dateYmdHms.format(car.recalledAt),
+          dateYmdHms.format(beetle.recalledAt));
     });
   });
 }

@@ -1,114 +1,340 @@
-/// Expects a field to be equal to a given [value].
-Predicate<T> equals<T>(T value) =>
-    new Predicate<T>._(PredicateType.equals, value);
+import 'package:intl/intl.dart';
+import 'package:string_scanner/string_scanner.dart';
 
-/// Expects at least one of the given [predicates] to be true.
-Predicate<T> anyOf<T>(Iterable<Predicate<T>> predicates) =>
-    new MultiPredicate<T>._(PredicateType.any, predicates);
+final DateFormat dateYmd = new DateFormat('yyyy-MM-dd');
+final DateFormat dateYmdHms = new DateFormat('yyyy-MM-dd HH:mm:ss');
 
-/// Expects a field to be contained within a set of [values].
-Predicate<T> isIn<T>(Iterable<T> values) => new Predicate<T>._(PredicateType.isIn, null, values);
+/// Cleans an input SQL expression of common SQL injection points.
+String sanitizeExpression(String unsafe) {
+  var buf = new StringBuffer();
+  var scanner = new StringScanner(unsafe);
+  int ch;
 
-/// Expects a field to be `null`.
-Predicate<T> isNull<T>() => equals(null);
+  while (!scanner.isDone) {
+    // Ignore comment starts
+    if (scanner.scan('--') || scanner.scan('/*'))
+      continue;
 
-/// Expects a given [predicate] to not be true.
-Predicate<T> not<T>(Predicate<T> predicate) =>
-    new MultiPredicate<T>._(PredicateType.negate, [predicate]);
+    // Ignore all single quotes and attempted escape sequences
+    else if (scanner.scan("'") || scanner.scan('\\'))
+      continue;
 
-/// Expects a field to be not be `null`.
-Predicate<T> notNull<T>() => not(isNull());
-
-/// Expects a field to be less than a given [value].
-Predicate<T> lessThan<T>(T value) =>
-    new Predicate<T>._(PredicateType.less, value);
-
-/// Expects a field to be less than or equal to a given [value].
-Predicate<T> lessThanOrEqual<T>(T value) => lessThan(value) | equals(value);
-
-/// Expects a field to be greater than a given [value].
-Predicate<T> greaterThan<T>(T value) =>
-    new Predicate<T>._(PredicateType.greater, value);
-
-/// Expects a field to be greater than or equal to a given [value].
-Predicate<T> greaterThanOrEqual<T>(T value) =>
-    greaterThan(value) | equals(value);
-
-/// A generic query class.
-///
-/// Angel services can translate these into driver-specific queries.
-/// This allows the Angel ORM to be flexible and support multiple platforms.
-class Query {
-  final Map<String, Predicate> _fields = {};
-  final Map<String, SortType> _sort = {};
-
-  /// Each field in a query is actually a [Predicate], and therefore acts as a contract
-  /// with the underlying service.
-  Map<String, Predicate> get fields =>
-      new Map<String, Predicate>.unmodifiable(_fields);
-
-  /// The sorting order applied to this query.
-  Map<String, SortType> get sorting =>
-      new Map<String, SortType>.unmodifiable(_sort);
-
-  /// Sets the [Predicate] assigned to the given [key].
-  void operator []=(String key, Predicate value) => _fields[key] = value;
-
-  /// Gets the [Predicate] assigned to the given [key].
-  Predicate operator [](String key) => _fields[key];
-
-  /// Sort output by the given [key].
-  void sortBy(String key, [SortType type = SortType.descending]) =>
-      _sort[key] = type;
-}
-
-/// A mechanism used to express an expectation about some object ([target]).
-class Predicate<T> {
-  /// The type of expectation we are declaring.
-  final PredicateType type;
-
-  /// The single argument of this target.
-  final T target;
-  final Iterable<T> args;
-
-  Predicate._(this.type, this.target, [this.args]);
-
-  Predicate<T> operator &(Predicate<T> other) => and(other);
-
-  Predicate<T> operator |(Predicate<T> other) => or(other);
-
-  Predicate<T> and(Predicate<T> other) {
-    return new MultiPredicate._(PredicateType.and, [this, other]);
+    // Otherwise, add the next char, unless it's a null byte.
+    else if ((ch = scanner.readChar()) != 0 && ch != null)
+      buf.writeCharCode(ch);
   }
 
-  Predicate<T> or(Predicate<T> other) {
-    return new MultiPredicate._(PredicateType.or, [this, other]);
+  return buf.toString();
+}
+
+abstract class SqlExpressionBuilder<T> {
+  bool get hasValue;
+
+  String compile();
+
+  void isBetween(T lower, T upper);
+
+  void isNotBetween(T lower, T upper);
+
+  void isIn(Iterable<T> values);
+
+  void isNotIn(Iterable<T> values);
+}
+
+class NumericSqlExpressionBuilder<T extends num>
+    implements SqlExpressionBuilder<T> {
+  bool _hasValue = false;
+  String _op = '=';
+  String _raw;
+  T _value;
+
+  @override
+  bool get hasValue => _hasValue;
+
+  bool _change(String op, T value) {
+    _raw = null;
+    _op = op;
+    _value = value;
+    return _hasValue = true;
+  }
+
+  @override
+  String compile() {
+    if (_raw != null) return _raw;
+    if (_value == null) return null;
+    return '$_op $_value';
+  }
+
+  operator <(T value) => _change('<', value);
+
+  operator >(T value) => _change('>', value);
+
+  operator <=(T value) => _change('<=', value);
+
+  operator >=(T value) => _change('>=', value);
+
+  void lessThan(T value) {
+    _change('<', value);
+  }
+
+  void lessThanOrEqualTo(T value) {
+    _change('<=', value);
+  }
+
+  void greaterThan(T value) {
+    _change('>', value);
+  }
+
+  void greaterThanOrEqualTo(T value) {
+    _change('>=', value);
+  }
+
+  void equals(T value) {
+    _change('=', value);
+  }
+
+  void notEquals(T value) {
+    _change('!=', value);
+  }
+
+  @override
+  void isBetween(T lower, T upper) {
+    _raw = 'BETWEEN $lower AND $upper';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotBetween(T lower, T upper) {
+    _raw = 'NOT BETWEEN $lower AND $upper';
+    _hasValue = true;
+  }
+
+  @override
+  void isIn(Iterable<T> values) {
+    _raw = 'IN (' + values.join(', ') + ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(Iterable<T> values) {
+    _raw = 'NOT IN (' + values.join(', ') + ')';
+    _hasValue = true;
   }
 }
 
-/// An advanced [Predicate] that performs an operation of multiple other predicates.
-class MultiPredicate<T> extends Predicate<T> {
-  final Iterable<Predicate<T>> targets;
+class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
+  bool _hasValue = false;
+  String _op = '=', _raw, _value;
 
-  MultiPredicate._(PredicateType type, this.targets) : super._(type, null);
+  @override
+  bool get hasValue => _hasValue;
 
-  /// Use [targets] instead.
-  @deprecated
-  T get target => throw new UnsupportedError(
-      'IterablePredicate has no `target`. Use `targets` instead.');
+  bool _change(String op, String value) {
+    _raw = null;
+    _op = op;
+    _value = value;
+    return _hasValue = true;
+  }
+
+  @override
+  String compile() {
+    if (_raw != null) return _raw;
+    if (_value == null) return null;
+    var v = sanitizeExpression(_value);
+    return "$_op '$v'";
+  }
+
+  void isEmpty() => equals('');
+
+  void equals(String value) {
+    _change('=', value);
+  }
+
+  void notEquals(String value) {
+    _change('!=', value);
+  }
+
+  void like(String value) {
+    _change('LIKE', value);
+  }
+
+  @override
+  void isBetween(String lower, String upper) {
+    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
+    _raw = "BETWEEN '$l' AND '$u'";
+    _hasValue = true;
+  }
+
+  @override
+  void isNotBetween(String lower, String upper) {
+    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
+    _raw = "NOT BETWEEN '$l' AND '$u'";
+    _hasValue = true;
+  }
+
+  @override
+  void isIn(Iterable<String> values) {
+    _raw = 'IN (' +
+        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
+        ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(Iterable<String> values) {
+    _raw = 'NOT IN (' +
+        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
+        ')';
+    _hasValue = true;
+  }
 }
 
-/// The various types of predicate.
-enum PredicateType {
-  equals,
-  any,
-  isIn,
-  negate,
-  and,
-  or,
-  less,
-  greater,
+class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
+  bool _hasValue = false;
+  String _op = '=', _raw;
+  bool _value;
+
+  @override
+  bool get hasValue => _hasValue;
+
+  bool _change(String op, bool value) {
+    _raw = null;
+    _op = op;
+    _value = value;
+    return _hasValue = true;
+  }
+
+  @override
+  String compile() {
+    if (_raw != null) return _raw;
+    if (_value == null) return null;
+    var v = _value ? 'TRUE' : 'FALSE';
+    return '$_op $v';
+  }
+
+  void equals(bool value) {
+    _change('=', value);
+  }
+
+  void notEquals(bool value) {
+    _change('!=', value);
+  }
+
+  @override
+  void isBetween(bool lower, bool upper) => throw new UnsupportedError(
+      'Booleans do not support BETWEEN expressions.');
+
+  @override
+  void isNotBetween(bool lower, bool upper) => isBetween(lower, upper);
+
+  @override
+  void isIn(Iterable<bool> values) {
+    _raw = 'IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(Iterable<bool> values) {
+    _raw =
+        'NOT IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
+    _hasValue = true;
+  }
 }
 
-/// The various modes of sorting.
-enum SortType { ascending, descending }
+class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder<DateTime> {
+  final NumericSqlExpressionBuilder<int> year =
+          new NumericSqlExpressionBuilder<int>(),
+      month = new NumericSqlExpressionBuilder<int>(),
+      day = new NumericSqlExpressionBuilder<int>(),
+      hour = new NumericSqlExpressionBuilder<int>(),
+      minute = new NumericSqlExpressionBuilder<int>(),
+      second = new NumericSqlExpressionBuilder<int>();
+  final String columnName;
+  String _raw;
+
+  DateTimeSqlExpressionBuilder(this.columnName);
+
+  @override
+  bool get hasValue =>
+      _raw?.isNotEmpty == true ||
+      year.hasValue ||
+      month.hasValue ||
+      day.hasValue ||
+      hour.hasValue ||
+      minute.hasValue ||
+      second.hasValue;
+
+  bool _change(String _op, DateTime dt, bool time) {
+    var dateString = time ? dateYmdHms.format(dt) : dateYmd.format(dt);
+    _raw = '$columnName $_op \'$dateString\'';
+    return true;
+  }
+
+  operator <(DateTime value) => _change('<', value, true);
+
+  operator <=(DateTime value) => _change('<=', value, true);
+
+  operator >(DateTime value) => _change('>', value, true);
+
+  operator >=(DateTime value) => _change('>=', value, true);
+
+  void equals(DateTime value, {bool includeTime: true}) {
+    _change('=', value, includeTime != false);
+  }
+
+  void lessThan(DateTime value, {bool includeTime: true}) {
+    _change('<', value, includeTime != false);
+  }
+
+  void lessThanOrEqualTo(DateTime value, {bool includeTime: true}) {
+    _change('<=', value, includeTime != false);
+  }
+
+  void greaterThan(DateTime value, {bool includeTime: true}) {
+    _change('>', value, includeTime != false);
+  }
+
+  void greaterThanOrEqualTo(DateTime value, {bool includeTime: true}) {
+    _change('>=', value, includeTime != false);
+  }
+
+  @override
+  void isIn(Iterable<DateTime> values) {
+    _raw = '$columnName IN (' +
+        values.map(dateYmdHms.format).map((s) => '$s').join(', ') +
+        ')';
+  }
+
+  @override
+  void isNotIn(Iterable<DateTime> values) {
+    _raw = '$columnName NOT IN (' +
+        values.map(dateYmdHms.format).map((s) => '$s').join(', ') +
+        ')';
+  }
+
+  @override
+  void isBetween(DateTime lower, DateTime upper) {
+    var l = dateYmdHms.format(lower), u = dateYmdHms.format(upper);
+    _raw = "$columnName BETWEEN '$l' and '$u'";
+  }
+
+  @override
+  void isNotBetween(DateTime lower, DateTime upper) {
+    var l = dateYmdHms.format(lower), u = dateYmdHms.format(upper);
+    _raw = "$columnName NOT BETWEEN '$l' and '$u'";
+  }
+
+  @override
+  String compile() {
+    if (_raw?.isNotEmpty == true) return _raw;
+    List<String> parts = [];
+    if (year.hasValue) parts.add('YEAR($columnName) ${year.compile()}');
+    if (month.hasValue) parts.add('MONTH($columnName) ${month.compile()}');
+    if (day.hasValue) parts.add('DAY($columnName) ${day.compile()}');
+    if (hour.hasValue) parts.add('HOUR($columnName) ${hour.compile()}');
+    if (minute.hasValue) parts.add('MINUTE($columnName) ${minute.compile()}');
+    if (second.hasValue) parts.add('SECOND($columnName) ${second.compile()}');
+
+    return parts.isEmpty ? null : parts.join(' AND ');
+  }
+}

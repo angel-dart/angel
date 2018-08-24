@@ -1,30 +1,17 @@
 const ORM orm = const ORM();
 
 class ORM {
-  /// The path to an Angel service that queries objects of the
-  /// annotated type at runtime.
-  ///
-  /// Ex. `api/users`, etc.
-  final String servicePath;
-  const ORM([this.servicePath]);
+  final String tableName;
+
+  const ORM([this.tableName]);
 }
 
-/// Specifies that the ORM should build a join builder
-/// that combines the results of queries on two services.
-class Join {
-  /// The [Model] type to join against.
+class CanJoin {
   final Type type;
-
-  /// The path to an Angel service that queries objects of the
-  /// [type] being joined against, at runtime.
-  ///
-  /// Ex. `api/users`, etc.
-  final String servicePath;
-
-  /// The type of join this is.
+  final String foreignKey;
   final JoinType joinType;
 
-  const Join(this.type, this.servicePath, [this.joinType = JoinType.join]);
+  const CanJoin(this.type, this.foreignKey, {this.joinType: JoinType.full});
 }
 
 /// The various types of [Join].
