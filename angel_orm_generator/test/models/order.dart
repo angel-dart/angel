@@ -5,6 +5,7 @@ import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'customer.dart';
 part 'order.g.dart';
+part 'order.serializer.g.dart';
 
 @orm
 @serializable

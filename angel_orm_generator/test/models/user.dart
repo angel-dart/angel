@@ -5,6 +5,7 @@ import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'role.dart';
 part 'user.g.dart';
+part 'user.serializer.g.dart';
 
 @serializable
 @orm
