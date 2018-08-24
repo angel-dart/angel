@@ -50,6 +50,16 @@ class OrmGenerator extends GeneratorForAnnotation<ORM> {
         clazz
           ..name = '${rc.pascalCase}Orm'
           ..abstract = true;
+
+        // Next, add method stubs.
+        // * getAll
+        // * getById
+        // *
+      }));
+
+      // Create `FooQuery` class
+      lib.body.add(new Class((clazz) {
+        clazz..name = '${rc.pascalCase}Query';
       }));
     });
   }
