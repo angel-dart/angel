@@ -10,7 +10,7 @@ import 'order.dart';
 abstract class OrderOrm {
   Future<List<Order>> getAll();
   Future<Order> getById(id);
-  Future<Order> updateOrder(Order model);
+  Future<Order> update(Order model);
   OrderQuery query();
 }
 

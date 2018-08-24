@@ -10,7 +10,7 @@ import 'car.dart';
 abstract class CarOrm {
   Future<List<Car>> getAll();
   Future<Car> getById(id);
-  Future<Car> updateCar(Car model);
+  Future<Car> update(Car model);
   CarQuery query();
 }
 

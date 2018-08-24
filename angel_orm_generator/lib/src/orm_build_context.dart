@@ -114,7 +114,7 @@ Column reviveColumn(ConstantReader cr) {
 
 class OrmBuildContext {
   final BuildContext buildContext;
-  final ORM ormAnnotation;
+  final Orm ormAnnotation;
   final String tableName;
 
   final Map<String, Column> columns = {};

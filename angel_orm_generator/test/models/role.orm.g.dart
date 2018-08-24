@@ -10,7 +10,7 @@ import 'role.dart';
 abstract class RoleOrm {
   Future<List<Role>> getAll();
   Future<Role> getById(id);
-  Future<Role> updateRole(Role model);
+  Future<Role> update(Role model);
   RoleQuery query();
 }
 

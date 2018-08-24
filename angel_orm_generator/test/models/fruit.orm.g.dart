@@ -10,7 +10,7 @@ import 'fruit.dart';
 abstract class FruitOrm {
   Future<List<Fruit>> getAll();
   Future<Fruit> getById(id);
-  Future<Fruit> updateFruit(Fruit model);
+  Future<Fruit> update(Fruit model);
   FruitQuery query();
 }
 

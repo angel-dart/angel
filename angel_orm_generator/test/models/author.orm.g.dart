@@ -10,7 +10,7 @@ import 'author.dart';
 abstract class AuthorOrm {
   Future<List<Author>> getAll();
   Future<Author> getById(id);
-  Future<Author> updateAuthor(Author model);
+  Future<Author> update(Author model);
   AuthorQuery query();
 }
 

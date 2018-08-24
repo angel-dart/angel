@@ -10,7 +10,7 @@ import 'customer.dart';
 abstract class CustomerOrm {
   Future<List<Customer>> getAll();
   Future<Customer> getById(id);
-  Future<Customer> updateCustomer(Customer model);
+  Future<Customer> update(Customer model);
   CustomerQuery query();
 }
 

@@ -22,7 +22,7 @@ TypeReference futureOf(String type) {
 }
 
 /// Builder that generates `.orm.g.dart`, with an abstract `FooOrm` class.
-class OrmGenerator extends GeneratorForAnnotation<ORM> {
+class OrmGenerator extends GeneratorForAnnotation<Orm> {
   final bool autoSnakeCaseNames;
   final bool autoIdAndDateFields;
 
