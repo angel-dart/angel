@@ -21,7 +21,8 @@ Future<OrmBuildContext> buildOrmContext(
     bool autoIdAndDateFields,
     {bool heedExclude: true}) async {
   var buildCtx = await buildContext(clazz, annotation, buildStep, resolver,
-      autoSnakeCaseNames, autoIdAndDateFields);
+      autoSnakeCaseNames, autoIdAndDateFields,
+      heedExclude: heedExclude);
   var ormAnnotation = reviveORMAnnotation(annotation);
   var ctx = new OrmBuildContext(
       buildCtx,
