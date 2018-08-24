@@ -54,14 +54,23 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
       switch (ctx.ormAnnotation.type) {
         case OrmType.mongoDB:
-          dbExtension = 'mongo';
+          dbExtension = 'mongodb';
+          break;
+        case OrmType.rethinkDB:
+          dbExtension = 'rethinkdb';
+          break;
+        case OrmType.mySql:
+          dbExtension = 'mysql';
+          break;
+        case OrmType.postgreSql:
+          dbExtension = 'postgresql';
           break;
         default:
           throw 'Unsupported ORM type: ${ctx.ormAnnotation.type}';
       }
 
       var dbFile =
-          p.setExtension(p.basename(inputId.uri.path), '.$dbExtension.dart');
+          p.setExtension(p.basename(inputId.uri.path), '.$dbExtension.orm.g.dart');
 
       lib.body.add(new Code("part '$dbFile';"));
 

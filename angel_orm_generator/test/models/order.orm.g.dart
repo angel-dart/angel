@@ -6,6 +6,7 @@
 
 import 'dart:async';
 import 'order.dart';
+part 'order.postgresql.orm.dart';
 
 abstract class OrderOrm {
   Future<List<Order>> getAll();

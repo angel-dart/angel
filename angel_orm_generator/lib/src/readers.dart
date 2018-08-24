@@ -6,7 +6,7 @@ const TypeChecker columnTypeChecker = const TypeChecker.fromRuntime(Column);
 
 Orm reviveORMAnnotation(ConstantReader reader) {
   return Orm(
-    OrmType.values[reader.read('type').intValue],
+    OrmType.values[reader.read('type').objectValue.getField('index').toIntValue()],
     tableName: reader.peek('tableName')?.stringValue,
   );
 }

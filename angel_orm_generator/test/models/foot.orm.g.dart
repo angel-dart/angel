@@ -6,6 +6,7 @@
 
 import 'dart:async';
 import 'foot.dart';
+part 'foot.postgresql.orm.dart';
 
 abstract class FootOrm {
   Future<List<Foot>> getAll();

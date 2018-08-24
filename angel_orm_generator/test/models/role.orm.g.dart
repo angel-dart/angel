@@ -6,6 +6,7 @@
 
 import 'dart:async';
 import 'role.dart';
+part 'role.postgresql.orm.dart';
 
 abstract class RoleOrm {
   Future<List<Role>> getAll();

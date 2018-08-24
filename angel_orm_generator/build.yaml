@@ -3,8 +3,14 @@ builders:
     import: "package:angel_orm_generator/angel_orm_generator.dart"
     builder_factories:
       - ormBuilder
+      - mongoDBOrmBuilder
+      - postgreSqlOrmBuilder
     auto_apply: root_package
     build_to: source
     build_extensions:
       .dart:
         - ".orm.g.dart"
+        - ".mongodb.orm.g.dart"
+        - ".mysql.orm.g.dart"
+        - ".rethinkdb.orm.g.dart"
+        - ".postgresql.orm.g.dart"
