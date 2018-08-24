@@ -9,7 +9,7 @@ part 'order.g.dart';
 @orm
 @serializable
 class _Order extends Model {
-  @Join(Customer, 'id')
+  @CanJoin(Customer, 'id')
   int customerId;
   int employeeId;
   DateTime orderDate;

@@ -1,0 +1,10 @@
+builders:
+  angel_orm:
+    import: "package:angel_orm_generator/angel_orm_generator.dart"
+    builder_factories:
+      - ormBuilder
+    auto_apply: root_package
+    build_to: source
+    build_extensions:
+      .dart:
+        - ".orm.g.dart"
