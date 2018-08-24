@@ -6,6 +6,8 @@ import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/build_context.dart';
 import 'package:angel_serialize_generator/context.dart';
 import 'package:build/build.dart';
+import 'package:inflection/inflection.dart';
+import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'readers.dart';
@@ -21,7 +23,12 @@ Future<OrmBuildContext> buildOrmContext(
   var buildCtx = await buildContext(clazz, annotation, buildStep, resolver,
       autoSnakeCaseNames, autoIdAndDateFields);
   var ormAnnotation = reviveORMAnnotation(annotation);
-  var ctx = new OrmBuildContext(buildCtx, ormAnnotation);
+  var ctx = new OrmBuildContext(
+      buildCtx,
+      ormAnnotation,
+      (ormAnnotation.tableName?.isNotEmpty == true)
+          ? ormAnnotation.tableName
+          : pluralize(new ReCase(clazz.name).snakeCase));
 
   // Read all fields
   for (var field in buildCtx.fields) {
@@ -107,10 +114,11 @@ Column reviveColumn(ConstantReader cr) {
 class OrmBuildContext {
   final BuildContext buildContext;
   final ORM ormAnnotation;
+  final String tableName;
 
   final Map<String, Column> columns = {};
 
-  OrmBuildContext(this.buildContext, this.ormAnnotation);
+  OrmBuildContext(this.buildContext, this.ormAnnotation, this.tableName);
 }
 
 class _ColumnType implements ColumnType {
