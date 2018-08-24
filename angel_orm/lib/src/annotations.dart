@@ -1,9 +1,16 @@
-const Orm orm = const Orm();
+const Orm mongoDBOrm = const Orm(OrmType.mongoDB);
+
+const Orm rethinkDBOrm = const Orm(OrmType.rethinkDB);
+
+const Orm postgreSqlOrm = const Orm(OrmType.postgreSql);
+
+const Orm mySqlOrm = const Orm(OrmType.mySql);
 
 class Orm {
+  final OrmType type;
   final String tableName;
 
-  const Orm({this.tableName});
+  const Orm(this.type, {this.tableName});
 }
 
 enum OrmType {
