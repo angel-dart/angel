@@ -9,6 +9,7 @@ dependencies:
   angel_orm: ^2.0.0-dev
   angel_serialize_generator: ^2.0.0
   build: ^0.12.0
+  build_config: ^0.3.0
   code_builder: ^3.0.0
   inflection:
     git:
