@@ -1,9 +1,9 @@
-# 2.0.0-dev
+# 2.0.0-dev.1
 * Restored all old PostgreSQL-specific annotations. Rather than a smart runtime,
 having a codegen capable of building ORM's for multiple databases can potentially
 provide a very fast ORM for everyone.
 
-# 1.0.0-alpha+11
+# 2.0.0-dev
 * Removed PostgreSQL-specific functionality, so that the ORM can ultimately
 target all services.
 * Created a better `Join` model.
