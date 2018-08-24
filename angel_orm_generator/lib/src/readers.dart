@@ -2,6 +2,8 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:source_gen/source_gen.dart';
 
+const TypeChecker columnTypeChecker = const TypeChecker.fromRuntime(Column);
+
 ORM reviveORMAnnotation(ConstantReader reader) {
   return ORM(reader.peek('tableName')?.stringValue);
 }
