@@ -1,3 +1,6 @@
+# 1.0.0-alpha.9
+* Added `Container.has<T>`.
+
 # 1.0.0-alpha.8
 * Fixed a bug where `_ReflectedTypeInstance.isAssignableTo` always failed.
 * Added `@GenerateReflector` annotation.

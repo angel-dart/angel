@@ -20,6 +20,23 @@ class Container {
     return new Container._child(this);
   }
 
+  bool has<T>([Type t]) {
+    var search = this;
+    t ??= T == dynamic ? t : T;
+
+    while (search != null) {
+      if (search._singletons.containsKey(t)) {
+        return true;
+      } else if (search._factories.containsKey(t)) {
+        return true;
+      } else {
+        search = search._parent;
+      }
+    }
+
+    return false;
+  }
+
   /// Instantiates an instance of [T].
   ///
   /// In contexts where a static generic type cannot be used, use
@@ -27,22 +44,14 @@ class Container {
   T make<T>([Type type]) {
     type ??= T;
 
-    // Find a singleton, if any.
     var search = this;
 
     while (search != null) {
       if (search._singletons.containsKey(type)) {
+        // Find a singleton, if any.
         return search._singletons[type] as T;
-      } else {
-        search = search._parent;
-      }
-    }
-
-    // Find a factory, if any.
-    search = this;
-
-    while (search != null) {
-      if (search._factories.containsKey(type)) {
+      } else if (search._factories.containsKey(type)) {
+        // Find a factory, if any.
         return search._factories[type](this) as T;
       } else {
         search = search._parent;
