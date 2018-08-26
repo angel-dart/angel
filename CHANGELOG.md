@@ -1,3 +1,9 @@
+# 2.0.0-alpha
+* Depend on Dart 2 and Angel 2.
+* Remove `dart2_constant`.
+* Remove `requireAuth`.
+* Remove `userKey`, instead favoring generic parameters.
+
 # 1.2.0
 * Deprecate `requireAuth`, in favor of `requireAuthentication`.
 * Allow configuring of the `userKey`.

@@ -1,12 +1,12 @@
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:http_parser/http_parser.dart';
 import 'options.dart';
 
 /// Displays a default callback page to confirm authentication via popups.
 AngelAuthCallback confirmPopupAuthentication({String eventName: 'token'}) {
   return (req, ResponseContext res, String jwt) async {
     res
-      ..contentType = new ContentType('text', 'html')
+      ..contentType = new MediaType('text', 'html')
       ..write('''
       <!DOCTYPE html>
       <html>

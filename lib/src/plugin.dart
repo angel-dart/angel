@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math' as Math;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
-import 'middleware/require_auth.dart';
 import 'auth_token.dart';
 import 'defs.dart';
 import 'options.dart';
@@ -37,15 +36,6 @@ class AngelAuth<T> {
   ///
   /// Only applies if [allowCookie] is `true`.
   final String cookiePath;
-
-  /// The name to register [requireAuthentication] as. Default: `auth`.
-  @deprecated
-  String middlewareName;
-
-  /// The name to inject authenticated users as.
-  ///
-  /// Defaults to `'user'`.
-  final String userKey;
 
   /// If `true` (default), then JWT's will be considered invalid if used from a different IP than the first user's it was issued to.
   ///
@@ -90,10 +80,8 @@ class AngelAuth<T> {
       this.allowTokenInQuery: true,
       this.enforceIp: true,
       this.cookieDomain,
-      this.userKey: 'user',
       this.cookiePath: '/',
       this.secureCookies: true,
-      this.middlewareName: 'auth',
       this.reviveTokenEndpoint: "/auth/token"})
       : super() {
     _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
@@ -108,11 +96,9 @@ class AngelAuth<T> {
       throw new StateError(
           'An `AngelAuth` plug-in was called without its `deserializer` being set. All authentication will fail.');
 
-    app.container.singleton(this);
-    if (runtimeType != AngelAuth) app.container.singleton(this, as: AngelAuth);
-
-    // ignore: deprecated_member_use
-    app.registerMiddleware(middlewareName, requireAuthentication());
+    app.container.registerSingleton(this);
+    if (runtimeType != AngelAuth)
+      app.container.registerSingleton(this, as: AngelAuth);
 
     if (reviveTokenEndpoint != null) {
       app.post(reviveTokenEndpoint, reviveJwt);
@@ -123,10 +109,11 @@ class AngelAuth<T> {
     });
   }
 
-  void _apply(RequestContext req, ResponseContext res, AuthToken token, user) {
-    req
-      ..inject(AuthToken, req.properties['token'] = token)
-      ..inject(user.runtimeType, req.properties[userKey] = user);
+  void _apply(
+      RequestContext req, ResponseContext res, AuthToken token, T user) {
+    req.container
+      ..registerSingleton<AuthToken>(token)
+      ..registerSingleton<T>(user);
 
     if (allowCookie == true) {
       _addProtectedCookie(res, 'token', token.serialize(_hs256));
@@ -176,8 +163,9 @@ class AngelAuth<T> {
     } else if (allowCookie &&
         req.cookies.any((cookie) => cookie.name == "token")) {
       return req.cookies.firstWhere((cookie) => cookie.name == "token").value;
-    } else if (allowTokenInQuery && req.query['token'] is String) {
-      return req.query['token']?.toString();
+    } else if (allowTokenInQuery &&
+        req.uri.queryParameters['token'] is String) {
+      return req.uri.queryParameters['token']?.toString();
     }
 
     return null;
@@ -214,7 +202,7 @@ class AngelAuth<T> {
       var jwt = getJwt(req);
 
       if (jwt == null) {
-        var body = await req.lazyBody();
+        var body = await req.parseBody();
         jwt = body['token']?.toString();
       }
       if (jwt == null) {
@@ -282,14 +270,14 @@ class AngelAuth<T> {
             orElse: () =>
                 throw new ArgumentError('No strategy "$name" found.'));
 
-        var hasExisting = req.properties.containsKey(userKey);
+        var hasExisting = req.container.has<T>();
         var result = hasExisting
-            ? req.properties[userKey]
-            : await strategy.authenticate(req, res, options);
+            ? req.container.make<T>()
+            : await strategy.authenticate(req, res, options) as T;
         if (result == true)
           return result;
         else if (result != false) {
-          var userId = await serializer(result as T);
+          var userId = await serializer(result);
 
           // Create JWT
           var token = new AuthToken(
@@ -297,8 +285,8 @@ class AngelAuth<T> {
           var jwt = token.serialize(_hs256);
 
           if (options?.tokenCallback != null) {
-            var r = await options.tokenCallback(
-                req, res, token, req.properties[userKey] = result);
+            req.container.registerSingleton<T>(result);
+            var r = await options.tokenCallback(req, res, token, result);
             if (r != null) return r;
             jwt = token.serialize(_hs256);
           }
@@ -319,8 +307,8 @@ class AngelAuth<T> {
           } else if (options?.canRespondWithJson != false &&
               req.accepts('application/json')) {
             var user = hasExisting
-                ? result as T
-                : await deserializer(await serializer(result as T));
+                ? result
+                : await deserializer(await serializer(result));
             _onLogin.add(user);
             return {"data": user, "token": jwt};
           }
@@ -365,7 +353,7 @@ class AngelAuth<T> {
   }
 
   /// Log an authenticated user out.
-  RequestMiddleware logout([AngelAuthOptions options]) {
+  RequestHandler logout([AngelAuthOptions options]) {
     return (RequestContext req, ResponseContext res) async {
       for (AuthStrategy strategy in strategies) {
         if (!(await strategy.canLogout(req, res))) {
@@ -379,11 +367,10 @@ class AngelAuth<T> {
         }
       }
 
-      var user = req.grab(userKey);
-      if (user != null) _onLogout.add(user as T);
-
-      req.injections..remove(AuthToken)..remove(userKey);
-      req.properties.remove(userKey);
+      if (req.container.has<T>()) {
+        var user = req.container.make<T>();
+        _onLogout.add(user);
+      }
 
       if (allowCookie == true) {
         res.cookies.removeWhere((cookie) => cookie.name == "token");

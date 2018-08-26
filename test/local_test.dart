@@ -6,11 +6,12 @@ import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
-final AngelAuth auth = new AngelAuth();
+final AngelAuth<Map<String, String>> auth =
+    new AngelAuth<Map<String, String>>();
 var headers = <String, String>{'accept': 'application/json'};
 AngelAuthOptions localOpts = new AngelAuthOptions(
     failureRedirect: '/failure', successRedirect: '/success');
-Map sampleUser = {'hello': 'world'};
+Map<String, String> sampleUser = {'hello': 'world'};
 
 Future verifier(String username, String password) async {
   if (username == 'username' && password == 'password') {
@@ -25,7 +26,7 @@ Future wireAuth(Angel app) async {
 
   auth.strategies.add(new LocalAuthStrategy(verifier));
   await app.configure(auth.configureServer);
-  app.use(auth.decodeJwt);
+  app.fallback(auth.decodeJwt);
 }
 
 main() async {
@@ -40,11 +41,14 @@ main() async {
     app = new Angel();
     angelHttp = new AngelHttp(app, useZone: false);
     await app.configure(wireAuth);
-    app.get('/hello', 'Woo auth', middleware: [auth.authenticate('local')]);
-    app.post('/login', 'This should not be shown',
+    app.get('/hello', (req, res) => 'Woo auth',
+        middleware: [auth.authenticate('local')]);
+    app.post('/login', (req, res) => 'This should not be shown',
         middleware: [auth.authenticate('local', localOpts)]);
-    app.get('/success', "yep", middleware: ['auth']);
-    app.get('/failure', "nope");
+    app.get('/success', (req, res) => "yep", middleware: [
+      requireAuthentication<Map<String, String>>(),
+    ]);
+    app.get('/failure', (req, res) => "nope");
 
     HttpServer server = await angelHttp.startServer('127.0.0.1', 0);
     url = "http://${server.address.host}:${server.port}";

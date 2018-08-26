@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/common.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:http/http.dart' as http;
 import 'package:io/ansi.dart';
@@ -17,7 +16,7 @@ class User extends Model {
 main() {
   Angel app;
   AngelHttp angelHttp;
-  AngelAuth auth;
+  AngelAuth<User> auth;
   http.Client client;
   HttpServer server;
   String url;
@@ -26,7 +25,7 @@ main() {
     hierarchicalLoggingEnabled = true;
     app = new Angel();
     angelHttp = new AngelHttp(app);
-    app.use('/users', new TypedService<User>(new MapService()));
+    app.use('/users', new MapService());
 
     var oldErrorHandler = app.errorHandler;
     app.errorHandler = (e, req, res) {
@@ -58,7 +57,7 @@ main() {
         (id) async => await app.service('users').read(id) as User;
 
     await app.configure(auth.configureServer);
-    app.use(auth.decodeJwt);
+    app.fallback(auth.decodeJwt);
 
     auth.strategies.add(new LocalAuthStrategy((username, password) async {
       final List<User> users = await app.service('users').index();
@@ -75,14 +74,19 @@ main() {
             new AngelAuthOptions(callback: (req, res, token) {
           res
             ..write('Hello!')
-            ..end();
+            ..close();
         })));
 
-    app.chain((RequestContext req) {
-      req.properties['user'] =
-          new User(username: req.params['name']?.toString());
-      return true;
-    }).post('/existing/:name', auth.authenticate('local'));
+    app.chain([
+      (req, res) {
+        req.container.registerSingleton<User>(
+            new User(username: req.params['name']?.toString()));
+        return true;
+      }
+    ]).post(
+      '/existing/:name',
+      auth.authenticate('local'),
+    );
 
     client = new http.Client();
     server = await angelHttp.startServer();
