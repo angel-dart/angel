@@ -10,7 +10,7 @@ export 'src/async.dart';
 export 'angel_validate.dart';
 
 /// Auto-parses numbers in `req.body`.
-RequestMiddleware autoParseBody(List<String> fields) {
+RequestHandler autoParseBody(List<String> fields) {
   return (RequestContext req, res) async {
     (await req.lazyBody()).addAll(autoParse(req.body, fields));
     return true;
@@ -18,7 +18,7 @@ RequestMiddleware autoParseBody(List<String> fields) {
 }
 
 /// Auto-parses numbers in `req.query`.
-RequestMiddleware autoParseQuery(List<String> fields) {
+RequestHandler autoParseQuery(List<String> fields) {
   return (RequestContext req, res) async {
     req.query.addAll(autoParse(req.query, fields));
     return true;
@@ -26,7 +26,7 @@ RequestMiddleware autoParseQuery(List<String> fields) {
 }
 
 /// Filters unwanted data out of `req.body`.
-RequestMiddleware filterBody(Iterable<String> only) {
+RequestHandler filterBody(Iterable<String> only) {
   return (RequestContext req, res) async {
     var filtered = filter(await req.lazyBody(), only);
     req.body
@@ -37,7 +37,7 @@ RequestMiddleware filterBody(Iterable<String> only) {
 }
 
 /// Filters unwanted data out of `req.query`.
-RequestMiddleware filterQuery(Iterable<String> only) {
+RequestHandler filterQuery(Iterable<String> only) {
   return (RequestContext req, res) async {
     var filtered = filter(req.query, only);
     req.query
@@ -49,11 +49,11 @@ RequestMiddleware filterQuery(Iterable<String> only) {
 
 /// Validates the data in `req.body`, and sets the body to
 /// filtered data before continuing the response.
-RequestMiddleware validate(Validator validator,
+RequestHandler validate(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
     var result =
-        await asyncApplyValidator(validator, await req.lazyBody(), req.app);
+        await asyncApplyValidator(validator, await req.parseBody(), req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
@@ -70,10 +70,10 @@ RequestMiddleware validate(Validator validator,
 
 /// Validates the data in `req.query`, and sets the query to
 /// filtered data before continuing the response.
-RequestMiddleware validateQuery(Validator validator,
+RequestHandler validateQuery(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var result = await asyncApplyValidator(validator, req.query, req.app);
+    var result = await asyncApplyValidator(validator, await req.parseQuery(), req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
@@ -94,7 +94,7 @@ HookedServiceEventListener validateEvent(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (HookedServiceEvent e) async {
     var result = await asyncApplyValidator(
-        validator, e.data as Map, (e.request?.app ?? e.service.app) as Angel);
+        validator, e.data as Map, (e.request?.app ?? e.service.app));
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
