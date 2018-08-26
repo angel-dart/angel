@@ -3,7 +3,7 @@ library angel_client;
 
 import 'dart:async';
 import 'package:collection/collection.dart';
-import 'package:dart2_constant/convert.dart';
+import 'dart:convert';
 import 'package:http/src/response.dart' as http;
 export 'package:angel_http_exception/angel_http_exception.dart';
 
@@ -75,15 +75,16 @@ class AngelAuthResult {
     final result = new AngelAuthResult();
 
     if (data is Map && data.containsKey('token') && data['token'] is String)
-      result._token = data['token'];
+      result._token = data['token'].toString();
 
-    if (data is Map) result.data.addAll(data['data'] ?? {});
+    if (data is Map)
+      result.data.addAll((data['data'] as Map<String, dynamic>) ?? {});
 
     return result;
   }
 
   factory AngelAuthResult.fromJson(String s) =>
-      new AngelAuthResult.fromMap(json.decode(s));
+      new AngelAuthResult.fromMap(json.decode(s) as Map);
 
   Map<String, dynamic> toJson() {
     return {'token': token, 'data': data};
@@ -163,7 +164,7 @@ class ServiceList extends DelegatingList {
       var items = asPaginated == true ? data['data'] : data;
       this
         ..clear()
-        ..addAll(items);
+        ..addAll(items as Iterable);
       _onChange.add(this);
     }));
 

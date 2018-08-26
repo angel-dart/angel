@@ -1,3 +1,8 @@
+# 2.0.0-alpha
+* Depend on Dart 2.
+* Depend on Angel 2.
+* Remove `dart2_constant`.
+
 # 1.2.0+2
 * Code cleanup + housekeeping, update to `dart2_constant`, and
 ensured build works with `2.0.0-dev.64.1`.

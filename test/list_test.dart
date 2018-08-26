@@ -32,7 +32,9 @@ main() {
   test('listens on create', () async {
     list.service.create({'foo': 'bar'});
     await list.onChange.first;
-    expect(list, [{'foo': 'bar'}]);
+    expect(list, [
+      {'foo': 'bar'}
+    ]);
   });
 
   test('listens on modify', () async {
@@ -41,7 +43,9 @@ main() {
 
     await list.service.update(1, {'id': 1, 'bar': 'baz'});
     await queue.next;
-    expect(list, [{'id': 1, 'bar': 'baz'}]);
+    expect(list, [
+      {'id': 1, 'bar': 'baz'}
+    ]);
   });
 
   test('listens on remove', () async {

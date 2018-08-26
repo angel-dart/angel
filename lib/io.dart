@@ -12,20 +12,20 @@ export 'angel_client.dart';
 class Rest extends BaseAngelClient {
   final List<Service> _services = [];
 
-  Rest(String path) : super(new http.Client(), path);
+  Rest(String path) : super(new http.Client() as http.BaseClient, path);
 
   @override
   Service service(String path, {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(straySlashes, "");
-    var s = new RestService(
-        client, this, "$basePath/$uri", type);
+    var s = new RestService(client, this, "$basePath/$uri", type);
     _services.add(s);
     return s;
   }
 
   @override
   Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
-    throw new UnimplementedError('Opening popup windows is not supported in the `dart:io` client.');
+    throw new UnimplementedError(
+        'Opening popup windows is not supported in the `dart:io` client.');
   }
 
   Future close() async {
@@ -40,7 +40,8 @@ class Rest extends BaseAngelClient {
 class RestService extends BaseAngelService {
   final Type type;
 
-  RestService(http.BaseClient client, Angel app, String url, this.type)
+  RestService(
+      http.BaseClient client, BaseAngelClient app, String url, this.type)
       : super(client, app, url);
 
   @override

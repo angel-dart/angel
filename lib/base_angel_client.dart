@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert' show Encoding;
 import 'package:angel_http_exception/angel_http_exception.dart';
-import 'package:dart2_constant/convert.dart';
+import 'dart:convert';
 import 'package:http/src/base_client.dart' as http;
 import 'package:http/src/base_request.dart' as http;
 import 'package:http/src/request.dart' as http;
@@ -77,7 +77,7 @@ abstract class BaseAngelClient extends Angel {
       if (credentials is String)
         token = credentials;
       else if (credentials is Map && credentials.containsKey('token'))
-        token = credentials['token'];
+        token = credentials['token'].toString();
 
       if (token == null) {
         throw new ArgumentError(
@@ -98,14 +98,14 @@ abstract class BaseAngelClient extends Angel {
         final v = json.decode(response.body);
 
         if (v is! Map ||
-            !v.containsKey('data') ||
-            !v.containsKey('token')) {
+            !(v as Map).containsKey('data') ||
+            !(v as Map).containsKey('token')) {
           throw new AngelHttpException.notAuthenticated(
               message:
                   "Auth endpoint '$url' did not return a proper response.");
         }
 
-        var r = new AngelAuthResult.fromMap(v);
+        var r = new AngelAuthResult.fromMap(v as Map);
         _onAuthenticated.add(r);
         return r;
       } on AngelHttpException {
@@ -132,14 +132,14 @@ abstract class BaseAngelClient extends Angel {
         final v = json.decode(response.body);
 
         if (v is! Map ||
-            !v.containsKey('data') ||
-            !v.containsKey('token')) {
+            !(v as Map).containsKey('data') ||
+            !(v as Map).containsKey('token')) {
           throw new AngelHttpException.notAuthenticated(
               message:
                   "Auth endpoint '$url' did not return a proper response.");
         }
 
-        var r = new AngelAuthResult.fromMap(v);
+        var r = new AngelAuthResult.fromMap(v as Map);
         _onAuthenticated.add(r);
         return r;
       } on AngelHttpException {
@@ -166,8 +166,8 @@ abstract class BaseAngelClient extends Angel {
   Future<http.Response> sendUnstreamed(
       String method, url, Map<String, String> headers,
       [body, Encoding encoding]) async {
-    if (url is String) url = Uri.parse(url);
-    var request = new http.Request(method, url);
+    var request =
+        new http.Request(method, url is Uri ? url : Uri.parse(url.toString()));
 
     if (headers != null) request.headers.addAll(headers);
 

@@ -9,7 +9,9 @@ class Postcard extends Model {
   }
 
   factory Postcard.fromJson(Map data) => new Postcard(
-      id: data['id'], location: data['location'], message: data['message']);
+      id: data['id'].toString(),
+      location: data['location'].toString(),
+      message: data['message'].toString());
 
   @override
   bool operator ==(other) {

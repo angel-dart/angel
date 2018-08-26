@@ -1,9 +1,10 @@
 /// Browser client library for the Angel framework.
 library angel_client.browser;
 
-import 'dart:async' show Future, Stream, StreamController, StreamSubscription, Timer;
+import 'dart:async'
+    show Future, Stream, StreamController, StreamSubscription, Timer;
 import 'dart:html' show CustomEvent, Event, window;
-import 'package:dart2_constant/convert.dart';
+import 'dart:convert';
 import 'package:http/browser_client.dart' as http;
 import 'angel_client.dart';
 // import 'auth_types.dart' as auth_types;
@@ -72,7 +73,7 @@ class Rest extends BaseAngelClient {
     sub = window.on[eventName ?? 'token'].listen((Event ev) {
       var e = ev as CustomEvent;
       if (!ctrl.isClosed) {
-        ctrl.add(e.detail);
+        ctrl.add(e.detail.toString());
         t.cancel();
         ctrl.close();
         sub.cancel();
