@@ -1,3 +1,5 @@
+**Angel v1 users should stick to Dart 2.0.0-dev or lower. Dart 2 users will very soon be able to use version 2.0.0 of the entire Angel framework (try it now - `package:angel_framework@2.0.0-alpha`)!**
+
 [![The Angel Framework](https://angel-dart.github.io/assets/images/logo.png)](https://angel-dart.github.io)
 
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/angel_dart/discussion)
