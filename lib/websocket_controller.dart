@@ -39,7 +39,8 @@ class WebSocketController extends Controller {
 
   @override
   Future configureServer(Angel app) async {
-    if (findExpose() != null) await super.configureServer(app);
+    if (findExpose(app.container.reflector) != null)
+      await super.configureServer(app);
 
     InstanceMirror instanceMirror = reflect(this);
     ClassMirror classMirror = reflectClass(this.runtimeType);
@@ -58,16 +59,16 @@ class WebSocketController extends Controller {
     });
 
     ws.onConnection.listen((socket) async {
-      socket.request
-        ..inject('socket', socket)
-        ..inject(WebSocketContext, socket);
+      if (!socket.request.container.has<WebSocketContext>()) {
+        socket.request.container.registerSingleton<WebSocketContext>(socket);
+      }
 
       await onConnect(socket);
 
       socket.onData.listen((data) => onData(data, socket));
 
       socket.onAction.listen((WebSocketAction action) async {
-        socket.request.inject(WebSocketAction, action);
+        socket.request.container.registerSingleton<WebSocketAction>(action);
 
         try {
           await onAction(action, socket);
@@ -75,7 +76,8 @@ class WebSocketController extends Controller {
           if (_handlers.containsKey(action.eventName)) {
             var methodMirror = _handlers[action.eventName];
             var fn = instanceMirror.getField(methodMirror.simpleName).reflectee;
-            return app.runContained(fn as Function, socket.request, socket.response);
+            return app.runContained(
+                fn as Function, socket.request, socket.response);
           }
         } catch (e, st) {
           ws.catchError(e, st, socket);

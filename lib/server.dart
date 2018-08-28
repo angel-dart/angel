@@ -202,16 +202,15 @@ class AngelWebSocket {
         action.params['query'] is Map &&
         action.params['query']['jwt'] is String) {
       try {
-        var auth = socket.request.grab<AngelAuth>(AngelAuth);
+        var auth = socket.request.container.make<AngelAuth>();
         var jwt = action.params['query']['jwt'] as String;
         AuthToken token;
 
         token = new AuthToken.validate(jwt, auth.hmac);
         var user = await auth.deserializer(token.userId);
-        var req = socket.request;
-        req
-          ..inject(AuthToken, req.properties['token'] = token)
-          ..inject(user.runtimeType, req.properties["user"] = user);
+        socket.request
+          ..container.registerSingleton<AuthToken>(token)
+          ..container.registerSingleton(user, as: user.runtimeType as Type);
         socket.send(EVENT_AUTHENTICATED,
             {'token': token.serialize(auth.hmac), 'data': user});
       } catch (e, st) {
@@ -314,10 +313,10 @@ class AngelWebSocket {
 
   /// Configures an [Angel] instance to listen for WebSocket connections.
   Future configureServer(Angel app) async {
-    app..container.singleton(this);
+    app..container.registerSingleton(this);
 
     if (runtimeType != AngelWebSocket)
-      app.container.singleton(this, as: AngelWebSocket);
+      app..container.registerSingleton<AngelWebSocket>(this);
 
     // Set up services
     wireAllServices(app);
@@ -340,12 +339,10 @@ class AngelWebSocket {
 
     _onConnection.add(socket);
 
-    socket.request
-      ..properties['socket'] = socket
-      ..inject(WebSocketContext, socket);
+    socket.request.container.registerSingleton<WebSocketContext>(socket);
 
     socket.channel.stream.listen(
-          (data) {
+      (data) {
         _onData.add(data);
         handleData(socket, data);
       },
@@ -363,15 +360,12 @@ class AngelWebSocket {
 
   /// Handles an incoming HTTP request.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
-    if (req is HttpRequestContextImpl) {
-      if (!WebSocketTransformer.isUpgradeRequest(req.io))
+    if (req is HttpRequestContext && res is HttpResponseContext) {
+      if (!WebSocketTransformer.isUpgradeRequest(req.rawRequest))
         throw new AngelHttpException.badRequest();
 
-      res
-        ..willCloseItself = true
-        ..end();
-
-      var ws = await WebSocketTransformer.upgrade(req.io);
+      await res.detach();
+      var ws = await WebSocketTransformer.upgrade(req.rawRequest);
       var channel = new IOWebSocketChannel(ws);
       var socket = new WebSocketContext(channel, req, res);
       handleClient(socket);

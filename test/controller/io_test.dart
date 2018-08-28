@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart' as srv;
 import 'package:angel_websocket/io.dart' as ws;
 import 'package:angel_websocket/server.dart' as srv;
@@ -15,7 +16,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new srv.Angel();
+    app = new srv.Angel(reflector: const MirrorsReflector());
     http = new srv.AngelHttp(app, useZone: false);
 
     websockets = new srv.AngelWebSocket(app)
@@ -33,6 +34,8 @@ main() {
 
     client = new ws.WebSockets(url);
     await client.connect(timeout: new Duration(seconds: 3));
+
+    print('Connected');
 
     client
       ..onData.listen((data) {
