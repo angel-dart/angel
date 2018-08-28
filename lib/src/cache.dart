@@ -59,7 +59,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
       this.onlyInProduction: false,
       this.useEtags: true,
       bool allowDirectoryListing,
-      bool useStream,
+      bool useBuffer,
       String publicPath,
       callback(File file, RequestContext req, ResponseContext res)})
       : super(app, fileSystem,
@@ -68,7 +68,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
             publicPath: publicPath ?? '/',
             callback: callback,
             allowDirectoryListing: allowDirectoryListing,
-            useStream: useStream);
+            useBuffer: useBuffer);
 
   @override
   Future<bool> serveFile(

@@ -12,7 +12,7 @@ main() async {
     allowDirectoryListing: true,
     source: fs.directory(fs.currentDirectory),
   );
-  app.use(vDir.handleRequest);
+  app.fallback(vDir.handleRequest);
 
   var server = await http.startServer('127.0.0.1', 3000);
   print('Listening at http://${server.address.address}:${server.port}');

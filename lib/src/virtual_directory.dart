@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 
@@ -49,7 +50,7 @@ class VirtualDirectory {
   /// If `true` (default: `true`), then files will be opened as streams and piped into the request.
   ///
   /// If not, the response buffer will be used instead.
-  final bool useStream;
+  final bool useBuffer;
 
   VirtualDirectory(this.app, this.fileSystem,
       {Directory source,
@@ -57,7 +58,7 @@ class VirtualDirectory {
       this.publicPath: '/',
       this.callback,
       this.allowDirectoryListing: false,
-      this.useStream: true}) {
+      this.useBuffer: true}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
     if (source != null) {
       _source = source;
@@ -83,7 +84,7 @@ class VirtualDirectory {
   /// You can also limit this functionality to specific values of the `Accept` header, ex. `text/html`.
   /// If [accepts] is `null`, OR at least one of the content types in [accepts] is present,
   /// the view will be served.
-  RequestMiddleware pushState(String path, {Iterable accepts}) {
+  RequestHandler pushState(String path, {Iterable accepts}) {
     var vPath = path.replaceAll(_straySlashes, '');
     if (_prefix?.isNotEmpty == true) vPath = '$_prefix/$vPath';
 
@@ -120,12 +121,12 @@ class VirtualDirectory {
   /// Writes the file at the path given by the [stat] to a response.
   Future<bool> serveStat(String absolute, String relative, FileStat stat,
       RequestContext req, ResponseContext res) async {
-    if (stat.type == FileSystemEntityType.DIRECTORY)
+    if (stat.type == FileSystemEntityType.directory)
       return await serveDirectory(
           fileSystem.directory(absolute), relative, stat, req, res);
-    else if (stat.type == FileSystemEntityType.FILE)
+    else if (stat.type == FileSystemEntityType.file)
       return await serveFile(fileSystem.file(absolute), stat, req, res);
-    else if (stat.type == FileSystemEntityType.LINK) {
+    else if (stat.type == FileSystemEntityType.link) {
       var link = fileSystem.link(absolute);
       return await servePath(await link.resolveSymbolicLinks(), req, res);
     } else
@@ -144,7 +145,7 @@ class VirtualDirectory {
     }
 
     if (allowDirectoryListing == true) {
-      res.headers['content-type'] = 'text/html';
+      res.contentType = new MediaType('text', 'html');
       res
         ..write('<!DOCTYPE html>')
         ..write('<html>')
@@ -226,12 +227,12 @@ class VirtualDirectory {
 
     var type = lookupMimeType(file.path) ?? 'application/octet-stream';
     _ensureContentTypeAllowed(type, req);
-    res.headers['content-type'] = type;
+    res.contentType = new MediaType.parse(type);
 
-    if (useStream != true) {
-      res.buffer.add(await file.readAsBytes());
+    if (useBuffer == true) {
+      await res.sendFile(file);
     } else {
-      await file.openRead().pipe(res);
+      await res.streamFile(file);
     }
 
     return false;

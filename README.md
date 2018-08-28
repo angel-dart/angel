@@ -9,7 +9,7 @@ In `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    angel_static: ^1.3.0-alpha
+    angel_static: ^2.0.0-alpha
 ```
 
 # Usage

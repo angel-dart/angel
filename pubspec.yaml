@@ -4,16 +4,15 @@ environment:
   sdk: ">=1.8.0 <3.0.0"
 homepage: https://github.com/angel-dart/static
 author: Tobe O <thosakwe@gmail.com>
-version: 1.3.0+1
+version: 2.0.0-alpha
 dependencies:
-  angel_framework: ^1.1.0-alpha
-  dart2_constant: ^1.0.0
-  file: ^2.0.0
+  angel_framework: ^2.0.0-alpha
+  file: ^5.0.0
   intl: ">=0.0.0 <1.0.0"
   mime: ^0.9.3
   path: ^1.4.2
 dev_dependencies:
-  angel_test: ^1.1.0-alpha
+  angel_test: ^2.0.0-alpha
   http: ^0.11.3
-  mustache4dart: ^1.1.0
-  test: ^0.12.13
+  mustache4dart: ^3.0.0-dev.0.0
+  test: ^1.0.0

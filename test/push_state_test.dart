@@ -28,9 +28,9 @@ main() {
     );
 
     app
-      ..use(vDir.handleRequest)
-      ..use(vDir.pushState('index.html'))
-      ..use('Fallback');
+      ..fallback(vDir.handleRequest)
+      ..fallback(vDir.pushState('index.html'))
+      ..fallback((req, res) => 'Fallback');
 
     app.logger = new Logger('push_state')
       ..onRecord.listen(

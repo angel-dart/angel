@@ -26,7 +26,7 @@ main() async {
     var app = new Angel();
     app.logger = new Logger('angel')..onRecord.listen(print);
 
-    app.use(
+    app.fallback(
       new VirtualDirectory(app, const LocalFileSystem(),
               source: swaggerUiDistDir, publicPath: 'swagger/')
           .handleRequest,

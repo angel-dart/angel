@@ -18,21 +18,21 @@ main() {
     http = new AngelHttp(app);
     app.logger = new Logger('angel')..onRecord.listen(print);
 
-    app.use(
+    app.fallback(
       new VirtualDirectory(app, const LocalFileSystem(),
           source: testDir,
           publicPath: '/virtual',
           indexFileNames: ['index.txt']).handleRequest,
     );
 
-    app.use(
+    app.fallback(
       new VirtualDirectory(app, const LocalFileSystem(),
           source: testDir,
-          useStream: false,
+          useBuffer: true,
           indexFileNames: ['index.php', 'index.txt']).handleRequest,
     );
 
-    app.use('Fallback');
+    app.fallback((req, res) => 'Fallback');
 
     app.dumpTree(showMatchers: true);
 

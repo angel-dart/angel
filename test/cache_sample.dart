@@ -10,7 +10,7 @@ main() async {
   app = new Angel();
   http = new AngelHttp(app);
 
-  app.use(
+  app.fallback(
     new CachingVirtualDirectory(app, const LocalFileSystem(),
         source: testDir,
         maxAge: 350,
@@ -18,7 +18,7 @@ main() async {
         indexFileNames: ['index.txt']).handleRequest,
   );
 
-  app.get('*', 'Fallback');
+  app.get('*', (req, res) => 'Fallback');
 
   app.dumpTree(showMatchers: true);
 
