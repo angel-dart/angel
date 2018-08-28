@@ -12,30 +12,31 @@ main() {
 
   setUp(() async {
     app = new Angel()
-      ..get('/hello', 'Hello')
+      ..get('/hello', (req, res) => 'Hello')
       ..get(
           '/error',
-          () => throw new AngelHttpException.forbidden(message: 'Test')
+          (req, res) => throw new AngelHttpException.forbidden(message: 'Test')
             ..errors.addAll(['foo', 'bar']))
-      ..get('/body', (ResponseContext res) {
+      ..get('/body', (req, res) {
         res
           ..write('OK')
-          ..end();
+          ..close();
       })
       ..get(
           '/valid',
-          () => {
+          (req, res) => {
                 'michael': 'jackson',
                 'billie': {'jean': 'hee-hee', 'is_my_lover': false}
               })
       ..post('/hello', (req, res) async {
-        return {'bar': req.body['foo']};
+        var body = await req.parseBody();
+        return {'bar': body['foo']};
       })
       ..get('/gzip', (req, res) async {
         res
           ..headers['content-encoding'] = 'gzip'
           ..write(gzip.encode('Poop'.codeUnits))
-          ..end();
+          ..close();
       })
       ..use(
           '/foo',
