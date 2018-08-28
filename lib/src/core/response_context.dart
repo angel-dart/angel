@@ -80,7 +80,7 @@ abstract class ResponseContext<RawResponse>
   }
 
   /// Returns `true` if the response is still available for processing by Angel.
-  /// 
+  ///
   /// If it is `false`, then Angel will stop executing handlers, and will only run
   /// response finalizers if the response [isBuffered].
   bool get isOpen;
