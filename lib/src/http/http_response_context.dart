@@ -15,9 +15,15 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   LockableBytesBuilder _buffer;
 
   final HttpRequestContext _correspondingRequest;
-  bool _isClosed = false, _streamInitialized = false;
+  bool _detached = false, _isClosed = false, _streamInitialized = false;
 
   HttpResponseContext(this.rawResponse, this.app, [this._correspondingRequest]);
+
+  @override
+  HttpResponse detach() {
+    _detached = true;
+    return rawResponse;
+  }
 
   @override
   RequestContext get correspondingRequest {
@@ -166,22 +172,24 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   Future close() {
-    if (!_isClosed) {
-      if (!isBuffered) {
-        try {
-          rawResponse.close();
-        } catch (_) {
-          // This only seems to occur on `MockHttpRequest`, but
-          // this try/catch prevents a crash.
+    if (!_detached) {
+      if (!_isClosed) {
+        if (!isBuffered) {
+          try {
+            rawResponse.close();
+          } catch (_) {
+            // This only seems to occur on `MockHttpRequest`, but
+            // this try/catch prevents a crash.
+          }
+        } else {
+          _buffer.lock();
         }
-      } else {
-        _buffer.lock();
+
+        _isClosed = true;
       }
 
-      _isClosed = true;
+      super.close();
     }
-
-    super.close();
     return new Future.value();
   }
 }
