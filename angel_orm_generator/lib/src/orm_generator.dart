@@ -86,12 +86,32 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       lib.body.add(new Code("part '$dbFile';"));
 
       // Create `FooOrm` abstract class
-      var rc = new ReCase(ctx.buildContext.modelClassName);
+      var rc = ctx.buildContext.modelClassNameRecase;
 
       lib.body.add(new Class((clazz) {
         clazz
           ..name = '${rc.pascalCase}Orm'
           ..abstract = true;
+
+        // Add factory constructors.
+        switch (ctx.ormAnnotation.type) {
+          case OrmType.postgreSql:
+            clazz.constructors.add(new Constructor((b) {
+              b
+                ..name = 'postgreSql'
+                ..factory = true
+                ..redirect = refer('_PostgreSql${rc.pascalCase}OrmImpl')
+                ..requiredParameters.add(new Parameter((b) {
+                  b
+                    ..name = 'connection'
+                    ..type = refer('PostgreSQLConnection');
+                }));
+            }));
+            dbExtension = 'postgresql';
+            break;
+          default:
+            break;
+        }
 
         // Next, add method stubs.
         // * getAll

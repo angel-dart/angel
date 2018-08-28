@@ -49,7 +49,7 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
     return new Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
       clazz
-        ..name = '_Postgresql${rc.pascalCase}OrmImpl'
+        ..name = '_PostgreSql${rc.pascalCase}OrmImpl'
         ..implements.add(refer('${rc.pascalCase}Orm'))
 
         // final PostgreSQLConnection connection;
