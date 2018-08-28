@@ -1,3 +1,6 @@
+# 2.0.0-alpha
+* Depend on Dart 2 and Angel 2.
+
 # 1.1.2
 * Dart 2 updates.
 * Added `handleClient`, which is nice for external implementations
