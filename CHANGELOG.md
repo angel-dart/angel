@@ -1,3 +1,6 @@
+# 2.0.0-alpha.2
+* Added `ResponseContext.detach`.
+
 # 2.0.0-alpha.1
 * Removed `Angel.injectEncoders`.
 * Added `Providers.toJson`.
