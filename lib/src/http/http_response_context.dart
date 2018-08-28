@@ -15,13 +15,13 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   LockableBytesBuilder _buffer;
 
   final HttpRequestContext _correspondingRequest;
-  bool _detached = false, _isClosed = false, _streamInitialized = false;
+  bool _isDetached = false, _isClosed = false, _streamInitialized = false;
 
   HttpResponseContext(this.rawResponse, this.app, [this._correspondingRequest]);
 
   @override
   HttpResponse detach() {
-    _detached = true;
+    _isDetached = true;
     return rawResponse;
   }
 
@@ -32,7 +32,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   bool get isOpen {
-    return !_isClosed;
+    return !_isClosed && !_isDetached;
   }
 
   @override
@@ -172,7 +172,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   Future close() {
-    if (!_detached) {
+    if (!_isDetached) {
       if (!_isClosed) {
         if (!isBuffered) {
           try {

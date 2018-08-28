@@ -79,7 +79,10 @@ abstract class ResponseContext<RawResponse>
       _statusCode = value ?? 200;
   }
 
-  /// Can we still write to this response?
+  /// Returns `true` if the response is still available for processing by Angel.
+  /// 
+  /// If it is `false`, then Angel will stop executing handlers, and will only run
+  /// response finalizers if the response [isBuffered].
   bool get isOpen;
 
   /// Returns `true` if response data is being written to a buffer, rather than to the underlying stream.
@@ -92,10 +95,10 @@ abstract class ResponseContext<RawResponse>
   RawResponse get rawResponse;
 
   /// Signals Angel that the response is being held alive deliberately, and that the framework should not automatically close it.
-  /// 
+  ///
   /// This is mostly used in situations like WebSocket handlers, where the connection should remain
   /// open indefinitely.
-  RawResponse detach();
+  FutureOr<RawResponse> detach();
 
   /// Gets or sets the content type to send back to a client.
   MediaType contentType = new MediaType('text', 'plain');
