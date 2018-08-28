@@ -91,6 +91,12 @@ abstract class ResponseContext<RawResponse>
   /// The underlying [RawResponse] under this instance.
   RawResponse get rawResponse;
 
+  /// Signals Angel that the response is being held alive deliberately, and that the framework should not automatically close it.
+  /// 
+  /// This is mostly used in situations like WebSocket handlers, where the connection should remain
+  /// open indefinitely.
+  RawResponse detach();
+
   /// Gets or sets the content type to send back to a client.
   MediaType contentType = new MediaType('text', 'plain');
 
