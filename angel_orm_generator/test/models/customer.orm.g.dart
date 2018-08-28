@@ -4,11 +4,15 @@
 // OrmGenerator
 // **************************************************************************
 
-import 'dart:async';
 import 'customer.dart';
+import 'dart:async';
+import 'package:postgres/postgres.dart';
 part 'customer.postgresql.orm.g.dart';
 
 abstract class CustomerOrm {
+  factory CustomerOrm.postgreSql(PostgreSQLConnection connection) =
+      _PostgreSqlCustomerOrmImpl;
+
   Future<List<Customer>> getAll();
   Future<Customer> getById(id);
   Future<Customer> update(Customer model);

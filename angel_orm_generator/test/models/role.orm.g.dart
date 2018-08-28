@@ -5,10 +5,14 @@
 // **************************************************************************
 
 import 'dart:async';
+import 'package:postgres/postgres.dart';
 import 'role.dart';
 part 'role.postgresql.orm.g.dart';
 
 abstract class RoleOrm {
+  factory RoleOrm.postgreSql(PostgreSQLConnection connection) =
+      _PostgreSqlRoleOrmImpl;
+
   Future<List<Role>> getAll();
   Future<Role> getById(id);
   Future<Role> update(Role model);
