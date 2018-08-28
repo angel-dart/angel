@@ -6,7 +6,7 @@
 
 import 'dart:async';
 import 'fruit.dart';
-part 'fruit.postgresql.orm.dart';
+part 'fruit.postgresql.orm.g.dart';
 
 abstract class FruitOrm {
   Future<List<Fruit>> getAll();

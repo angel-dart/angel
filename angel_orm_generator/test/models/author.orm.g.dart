@@ -6,7 +6,7 @@
 
 import 'dart:async';
 import 'author.dart';
-part 'author.postgresql.orm.dart';
+part 'author.postgresql.orm.g.dart';
 
 abstract class AuthorOrm {
   Future<List<Author>> getAll();

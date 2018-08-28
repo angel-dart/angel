@@ -37,9 +37,36 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
   Library buildOrmLibrary(AssetId inputId, OrmBuildContext ctx) {
     return new Library((lib) {
       // Add part of
-      var libFile =
-      p.setExtension(p.basename(inputId.uri.path), '.orm.g.dart');
+      var libFile = p.setExtension(p.basename(inputId.uri.path), '.orm.g.dart');
       lib.body.add(new Code("part of '$libFile';"));
+
+      // Add _PostgresqlFooOrmImpl
+      lib.body.add(buildOrmClass(ctx));
+    });
+  }
+
+  Class buildOrmClass(OrmBuildContext ctx) {
+    return new Class((clazz) {
+      var rc = ctx.buildContext.modelClassNameRecase;
+      clazz
+        ..name = '_Postgresql${rc.pascalCase}OrmImpl'
+        ..implements.add(refer('${rc.pascalCase}Orm'))
+
+        // final PostgreSQLConnection connection;
+        ..fields.add(new Field((b) {
+          b
+            ..modifier = FieldModifier.final$
+            ..name = 'connection'
+            ..type = refer('PostgreSQLConnection');
+        }))
+
+        // _PostgresqlFooOrmImpl(this.connection);
+        ..constructors.add(new Constructor((b) {
+          b
+            ..requiredParameters.add(new Parameter((b) => b
+              ..name = 'connection'
+              ..toThis = true));
+        }));
     });
   }
 }
