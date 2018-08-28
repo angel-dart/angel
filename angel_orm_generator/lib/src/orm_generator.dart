@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:collection';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:build/build.dart';
@@ -44,10 +44,21 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   Library buildOrmBaseLibrary(AssetId inputId, OrmBuildContext ctx) {
     return new Library((lib) {
       // Necessary imports
-      lib.directives.addAll([
-        new Directive.import('dart:async'),
-        new Directive.import(p.basename(inputId.uri.path)),
-      ]);
+      var imports = new SplayTreeSet<String>.from(
+          ['dart:async', p.basename(inputId.uri.path)]);
+
+      switch (ctx.ormAnnotation.type) {
+        case OrmType.mongoDB:
+          imports.add('package:mongo_dart/mongo_dart.dart');
+          break;
+        case OrmType.postgreSql:
+          imports.add('package:postgres/postgres.dart');
+          break;
+        default:
+          break;
+      }
+
+      lib.directives.addAll(imports.map((url) => new Directive.import(url)));
 
       // Add the corresponding `part`
       String dbExtension;
@@ -69,8 +80,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           throw 'Unsupported ORM type: ${ctx.ormAnnotation.type}';
       }
 
-      var dbFile =
-          p.setExtension(p.basename(inputId.uri.path), '.$dbExtension.orm.g.dart');
+      var dbFile = p.setExtension(
+          p.basename(inputId.uri.path), '.$dbExtension.orm.g.dart');
 
       lib.body.add(new Code("part '$dbFile';"));
 
