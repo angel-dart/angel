@@ -11,3 +11,4 @@ dependencies:
   args: ^1.0.0
   io: ^0.3.2
   logging: ^0.11.3
+  pub_sub: ^2.0.0
