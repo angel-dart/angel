@@ -1,0 +1,6 @@
+name: angel_production
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  args: ^1.0.0
+  io: ^0.3.2
+  logging: ^0.11.3
