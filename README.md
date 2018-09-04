@@ -1,6 +1,8 @@
 # production
 Helpers for concurrency, message-passing, rotating loggers, and other production functionality in Angel.
 
+![Screenshot](screenshot.png)
+
 This will become the de-facto way to run Angel applications in deployed environments, as it
 takes care of inter-isolate communication, respawning dead processes, and other housekeeping for you automatically.
 
@@ -48,4 +50,35 @@ It is injected into your application's `Container` as
 `pub_sub.Client`, so you can use it as follows:
 
 ```dart
+```
+
+## Command-line Options
+The `Runner` class supplies options like the following:
+
+```
+wg-dhcp201d194d221:production thosakwe$ dart example/main.dart --help
+____________   ________________________ 
+___    |__  | / /_  ____/__  ____/__  / 
+__  /| |_   |/ /_  / __ __  __/  __  /  
+_  ___ |  /|  / / /_/ / _  /___  _  /___
+/_/  |_/_/ |_/  ____/  /_____/  /_____/
+
+A batteries-included, full-featured, full-stack framework in Dart.
+
+https://angel-dart.github.io
+
+Options:
+-h, --help            Print this help information.
+    --[no-]respawn    Automatically respawn crashed application instances.
+                      (defaults to on)
+
+    --use-zone        Create a new Zone for each request.
+-a, --address         The address to listen on.
+                      (defaults to "127.0.0.1")
+
+-j, --concurrency     The number of isolates to spawn.
+                      (defaults to "4")
+
+-p, --port            The port to listen on.
+                      (defaults to "3000")
 ```
