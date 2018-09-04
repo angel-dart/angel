@@ -50,6 +50,28 @@ It is injected into your application's `Container` as
 `pub_sub.Client`, so you can use it as follows:
 
 ```dart
+// Use the injected `pub_sub.Client` to send messages.
+var client = app.container.make<pub_sub.Client>();
+
+// We can listen for an event to perform some behavior.
+//
+// Here, we use message passing to synchronize some common state.
+var onGreetingChanged = await client.subscribe('user_upgraded');
+onGreetingChanged
+    .cast<User>()
+    .listen((user) {
+      // Do something...
+    });
+```
+
+## Run-time Metadata
+At run-time, you may want to know information about the currently-running instance,
+for example, which number instance. For this, the `InstanceInfo` class is injected
+into each instance:
+
+```dart
+var instanceInfo = app.container.make<InstanceInfo>();
+print('This is instance #${instanceInfo.id}');
 ```
 
 ## Command-line Options

@@ -4,9 +4,12 @@ import 'dart:isolate';
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:args/args.dart';
-import 'package:logging/logging.dart';
 import 'package:io/ansi.dart';
 import 'package:io/io.dart';
+import 'package:logging/logging.dart';
+import 'package:pub_sub/isolate.dart' as pub_sub;
+import 'package:pub_sub/pub_sub.dart' as pub_sub;
+import 'instance_info.dart';
 import 'options.dart';
 
 /// A command-line utility for easier running of multiple instances of an Angel application.
@@ -68,18 +71,20 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
   /// The returned [Future] completes when the application instance exits.
   ///
   /// If respawning is enabled, the [Future] will *never* complete.
-  Future spawnIsolate(RunnerOptions options) {
-    return _spawnIsolate(new Completer(), options);
+  Future spawnIsolate(int id, RunnerOptions options, SendPort pubSubSendPort) {
+    return _spawnIsolate(id, new Completer(), options, pubSubSendPort);
   }
 
-  Future _spawnIsolate(Completer c, RunnerOptions options) {
+  Future _spawnIsolate(
+      int id, Completer c, RunnerOptions options, SendPort pubSubSendPort) {
     var onLogRecord = new ReceivePort();
     var onExit = new ReceivePort();
     var onError = new ReceivePort();
-    var runnerArgs = new _RunnerArgs(
-        name, configureServer, options, reflector, onLogRecord.sendPort);
+    var runnerArgs = new _RunnerArgs(name, configureServer, options, reflector,
+        onLogRecord.sendPort, pubSubSendPort);
+    var argsWithId = new _RunnerArgsWithId(id, runnerArgs);
 
-    Isolate.spawn(isolateMain, runnerArgs,
+    Isolate.spawn(isolateMain, argsWithId,
             onExit: onExit.sendPort,
             onError: onError.sendPort,
             errorsAreFatal: true && false)
@@ -103,9 +108,9 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
       if (options.respawn) {
         handleLogRecord(new LogRecord(
             Level.WARNING,
-            'Detected a crashed instance at ${new DateTime.now()}. Respawning immediately...',
+            'Instance #$id at ${new DateTime.now()}. Respawning immediately...',
             runnerArgs.loggerName));
-        _spawnIsolate(c, options);
+        _spawnIsolate(id, c, options, pubSubSendPort);
       } else {
         c.complete();
       }
@@ -119,6 +124,8 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
 
   /// Starts a number of isolates, running identical instances of an Angel application.
   Future run(List<String> args) async {
+    pub_sub.Server server;
+
     try {
       var argResults = RunnerOptions.argParser.parse(args);
       var options = new RunnerOptions.fromArgResults(argResults);
@@ -137,8 +144,18 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
       print('Starting `${name}` application...');
       print('Arguments: $args...\n');
 
-      await Future.wait(
-          new List.generate(options.concurrency, (_) => spawnIsolate(options)));
+      var adapter = new pub_sub.IsolateAdapter();
+      server = new pub_sub.Server([adapter]);
+
+      // Register clients
+      for (int i = 0; i < Platform.numberOfProcessors; i++) {
+        server.registerClient(new pub_sub.ClientInfo('client$i'));
+      }
+
+      server.start();
+
+      await Future.wait(new List.generate(options.concurrency,
+          (id) => spawnIsolate(id, options, adapter.receivePort.sendPort)));
     } on ArgParserException catch (e) {
       stderr
         ..writeln(e.message)
@@ -149,10 +166,13 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
     } catch (e) {
       stderr..writeln('fatal error: $e');
       exitCode = 1;
+    } finally {
+      server?.close();
     }
   }
 
-  static void isolateMain(_RunnerArgs args) {
+  static void isolateMain(_RunnerArgsWithId argsWithId) {
+    var args = argsWithId.args;
     hierarchicalLoggingEnabled = true;
 
     var zone = Zone.current.fork(specification: new ZoneSpecification(
@@ -163,7 +183,15 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
     ));
 
     zone.run(() async {
-      var app = new Angel(reflector: args.reflector);
+      var client = new pub_sub.IsolateClient(
+          'client${argsWithId.id}', args.pubSubSendPort);
+
+      var app = new Angel(reflector: args.reflector)
+        ..container.registerSingleton<pub_sub.Client>(client)
+        ..container.registerSingleton(new InstanceInfo(id: argsWithId.id));
+
+      app.shutdownHooks.add((_) => client.close());
+
       await app.configure(args.configureServer);
 
       if (app.logger == null) {
@@ -177,9 +205,16 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
           await http.startServer(args.options.hostname, args.options.port);
       var url = new Uri(
           scheme: 'http', host: server.address.address, port: server.port);
-      print('Listening at $url');
+      print('Instance #${argsWithId.id} listening at $url');
     });
   }
+}
+
+class _RunnerArgsWithId {
+  final int id;
+  final _RunnerArgs args;
+
+  _RunnerArgsWithId(this.id, this.args);
 }
 
 class _RunnerArgs {
@@ -191,10 +226,10 @@ class _RunnerArgs {
 
   final Reflector reflector;
 
-  final SendPort loggingSendPort;
+  final SendPort loggingSendPort, pubSubSendPort;
 
   _RunnerArgs(this.name, this.configureServer, this.options, this.reflector,
-      this.loggingSendPort);
+      this.loggingSendPort, this.pubSubSendPort);
 
   String get loggerName => name;
 }
