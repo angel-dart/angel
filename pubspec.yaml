@@ -1,4 +1,9 @@
 name: angel_production
+version: 1.0.0-alpha
+description: Helpers for concurrency, message-passing, rotating loggers, and other production functionality in Angel.
+homepage: https://github.com/angel-dart/production
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
   angel_framework: ^2.0.0-alpha
   args: ^1.0.0

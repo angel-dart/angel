@@ -3,10 +3,7 @@ import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_production/angel_production.dart';
 
-main(List<String> args) {
-  var runner = new Runner('example', configureServer);
-  return runner.run(args);
-}
+main(List<String> args) => new Runner('example', configureServer).run(args);
 
 Future configureServer(Angel app) async {
   app.get('/', (req, res) => 'Hello, production world!');
