@@ -39,11 +39,11 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
         fileSystem,
         source: fileSystem.directory('web'),
       );
-      app.use(vDir.handleRequest);
+      app.fallback(vDir.handleRequest);
     }
 
     // Throw a 404 if no route matched the request.
-    app.use(() => throw new AngelHttpException.notFound());
+    app.fallback((req, res) => throw new AngelHttpException.notFound());
 
     // Set our application up to handle different errors.
     //
