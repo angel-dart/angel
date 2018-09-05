@@ -10,6 +10,7 @@ dependencies:
   #angel_cors: ^1.0.0 # CORS support
   angel_framework: ^2.0.0-alpha # The core server library.
   #angel_jael: ^1.0.0 # Server-side templating engine
+  angel_production: ^1.0.0-alpha
   angel_static: ^2.0.0-alpha # Static file server
   angel_validate: ^2.0.0-alpha # Allows for validation of input data
 dev_dependencies:
