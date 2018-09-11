@@ -1,25 +1,23 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:user_agent/user_agent.dart';
-export 'package:user_agent/user_agent.dart';
 
-/// Injects a [UserAgent] into requests.
+/// Injects a [UserAgent] factory into requests.
 ///
-/// If [strict] is `true`, then requests without a user agent will be rejected.
-RequestMiddleware parseUserAgent({bool strict: true}) {
-  return (RequestContext req, res) async {
+/// Because it is an injected factory, the user agent will not be
+/// parsed until you request it via `req.container.make<UserAgent>()`.
+bool parseUserAgent(RequestContext req, ResponseContext res) {
+  req.container.registerFactory<UserAgent>((container) {
     var agentString = req.headers.value('user-agent');
 
-    if (agentString == null && strict) {
+    if (agentString?.trim()?.isNotEmpty != true) {
       throw new AngelHttpException.badRequest(
           message: 'User-Agent header is required.');
     } else if (agentString != null) {
-      Map<String, List<String>> map = {};
-      req.headers.forEach((k, v) => map[k] = v);
+      var userAgent = new UserAgent(agentString);
+      container.registerSingleton<UserAgent>(userAgent);
+      return userAgent;
+    }
+  });
 
-      req.inject(UserAgent, new UserAgent(agentString, headers: map));
-    } else
-      req.inject(UserAgent, null);
-
-    return true;
-  };
+  return true;
 }
