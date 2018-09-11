@@ -1,6 +1,6 @@
 import 'dart:collection';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/convert.dart';
+import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 /// Calls [BASE64URL], but also works for strings with lengths
