@@ -6,11 +6,8 @@ import 'package:angel_framework/angel_framework.dart';
 RequestHandler forceBasicAuth<User>({String realm}) {
   return (RequestContext req, ResponseContext res) async {
     if (req.container.has<User>()) return true;
-
-    res
-      ..statusCode = 401
-      ..headers['www-authenticate'] = 'Basic realm="${realm ?? 'angel_auth'}"'
-      ..close();
+    res.headers['www-authenticate'] = 'Basic realm="${realm ?? 'angel_auth'}"';
+    throw new AngelHttpException.notAuthenticated();
   };
 }
 
