@@ -339,7 +339,8 @@ class Angel extends Routable {
   }
 
   @override
-  HookedService use(String path, Service service) {
+  HookedService<Id, Data, T> use<Id, Data, T extends Service<Id, Data>>(
+      String path, T service) {
     service.app = this;
     return super.use(path, service)..app = this;
   }

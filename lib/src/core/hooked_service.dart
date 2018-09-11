@@ -10,11 +10,12 @@ import 'server.dart';
 import 'service.dart';
 
 /// Wraps another service in a service that broadcasts events on actions.
-class HookedService extends Service {
+class HookedService<Id, Data, T extends Service<Id, Data>>
+    extends Service<Id, Data> {
   final List<StreamController<HookedServiceEvent>> _ctrl = [];
 
   /// Tbe service that is proxied by this hooked one.
-  final Service inner;
+  final T inner;
 
   final HookedServiceEventDispatcher beforeIndexed =
       new HookedServiceEventDispatcher();
@@ -41,7 +42,7 @@ class HookedService extends Service {
   final HookedServiceEventDispatcher afterRemoved =
       new HookedServiceEventDispatcher();
 
-  HookedService(Service this.inner) {
+  HookedService(this.inner) {
     // Clone app instance
     if (inner.app != null) this.app = inner.app;
   }
@@ -56,13 +57,14 @@ class HookedService extends Service {
     return params['__responsectx'] as ResponseContext;
   }
 
-  Map _stripReq(Map params) {
+  Map<String, dynamic> _stripReq(Map<String, dynamic> params) {
     if (params == null)
       return params;
     else
       return params.keys
           .where((key) => key != '__requestctx' && key != '__responsectx')
-          .fold({}, (map, key) => map..[key] = params[key]);
+          .fold<Map<String, dynamic>>(
+              {}, (map, key) => map..[key] = params[key]);
   }
 
   /// Closes any open [StreamController]s on this instance. **Internal use only**.
@@ -257,7 +259,7 @@ class HookedService extends Service {
   }
 
   @override
-  Future index([Map _params]) {
+  Future index([Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeIndexed
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -283,7 +285,7 @@ class HookedService extends Service {
   }
 
   @override
-  Future read(id, [Map _params]) {
+  Future read(id, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeRead
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -309,7 +311,7 @@ class HookedService extends Service {
   }
 
   @override
-  Future create(data, [Map _params]) {
+  Future create(data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeCreated
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -335,7 +337,7 @@ class HookedService extends Service {
   }
 
   @override
-  Future modify(id, data, [Map _params]) {
+  Future modify(id, data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeModified
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -361,7 +363,7 @@ class HookedService extends Service {
   }
 
   @override
-  Future update(id, data, [Map _params]) {
+  Future update(id, data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeUpdated
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -387,7 +389,7 @@ class HookedService extends Service {
   }
 
   @override
-  Future remove(id, [Map _params]) {
+  Future remove(id, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeRemoved
         ._emit(new HookedServiceEvent(false, _getRequest(_params),

@@ -1,3 +1,7 @@
+# 2.0.0-alpha.3
+* Added `<Id, Data>` type parameters to `Service`.
+* `HookedService` now follows suit, and takes a third parameter, pointing to the inner service.
+
 # 2.0.0-alpha.2
 * Added `ResponseContext.detach`.
 

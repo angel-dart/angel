@@ -27,7 +27,7 @@ abstract class RequestContext<RawRequest> {
   RawRequest get rawRequest;
 
   /// Additional params to be passed to services.
-  final Map serviceParams = {};
+  final Map<String, dynamic> serviceParams = {};
 
   /// The [Angel] instance that is responding to this request.
   Angel app;

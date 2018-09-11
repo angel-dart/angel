@@ -101,8 +101,9 @@ class Routable extends Router<RequestHandler> {
   ///
   /// Returns a [HookedService] that can be used to hook into
   /// events dispatched by this service.
-  HookedService use(String path, Service service) {
-    var hooked = new HookedService(service);
+  HookedService<Id, Data, T> use<Id, Data, T extends Service<Id, Data>>(
+      String path, T service) {
+    var hooked = new HookedService<Id, Data, T>(service);
     _services[path
         .toString()
         .trim()

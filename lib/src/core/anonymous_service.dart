@@ -1,21 +1,23 @@
 import 'dart:async';
+
 import 'service.dart';
 
 /// An easy helper class to create one-off services without having to create an entire class.
 ///
 /// Well-suited for testing.
-class AnonymousService extends Service {
-  FutureOr Function([Map]) _index;
-  FutureOr Function(Object, [Map]) _read, _create, _remove;
-  FutureOr Function(Object, Object, [Map]) _modify, _update;
+class AnonymousService<Id, Data> extends Service<Id, Data> {
+  FutureOr Function([Map<String, dynamic>]) _index;
+  FutureOr Function(Id, [Map<String, dynamic>]) _read, _remove;
+  FutureOr Function(Data, [Map<String, dynamic>]) _create;
+  Function(Id, Data, [Map<String, dynamic>]) _modify, _update;
 
   AnonymousService(
       {FutureOr index([Map params]),
-      FutureOr read(id, [Map params]),
-      FutureOr create(data, [Map params]),
-      FutureOr modify(id, data, [Map params]),
-      FutureOr update(id, data, [Map params]),
-      FutureOr remove(id, [Map params])})
+      FutureOr read(Id id, [Map params]),
+      FutureOr create(Data data, [Map params]),
+      FutureOr modify(Id id, Data data, [Map params]),
+      FutureOr update(Id id, Data data, [Map params]),
+      FutureOr remove(Id id, [Map params])})
       : super() {
     _index = index;
     _read = read;
@@ -26,28 +28,30 @@ class AnonymousService extends Service {
   }
 
   @override
-  index([Map params]) => new Future.sync(
+  index([Map<String, dynamic> params]) => new Future.sync(
       () => _index != null ? _index(params) : super.index(params));
 
   @override
-  read(id, [Map params]) => new Future.sync(
+  read(Id id, [Map<String, dynamic> params]) => new Future.sync(
       () => _read != null ? _read(id, params) : super.read(id, params));
 
   @override
-  create(data, [Map params]) => new Future.sync(() =>
+  create(Data data, [Map<String, dynamic> params]) => new Future.sync(() =>
       _create != null ? _create(data, params) : super.create(data, params));
 
   @override
-  modify(id, data, [Map params]) => new Future.sync(() => _modify != null
-      ? _modify(id, data, params)
-      : super.modify(id, data, params));
+  modify(Id id, Data data, [Map<String, dynamic> params]) =>
+      new Future.sync(() => _modify != null
+          ? _modify(id, data, params)
+          : super.modify(id, data, params));
 
   @override
-  update(id, data, [Map params]) => new Future.sync(() => _update != null
-      ? _update(id, data, params)
-      : super.update(id, data, params));
+  update(Id id, Data data, [Map<String, dynamic> params]) =>
+      new Future.sync(() => _update != null
+          ? _update(id, data, params)
+          : super.update(id, data, params));
 
   @override
-  remove(id, [Map params]) => new Future.sync(
+  remove(Id id, [Map<String, dynamic> params]) => new Future.sync(
       () => _remove != null ? _remove(id, params) : super.remove(id, params));
 }

@@ -79,7 +79,7 @@ class Service<Id, Data> extends Routable {
   ///
   /// A custom [errorMessage] may be provided.
   Future findOne(
-      [Map params,
+      [Map<String, dynamic> params,
       String errorMessage = 'No record was found matching the given query.']) {
     return index(params).then((result) {
       if (result == null) {
@@ -97,32 +97,32 @@ class Service<Id, Data> extends Routable {
   }
 
   /// Retrieves all resources.
-  Future index([Map params]) {
+  Future index([Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Retrieves the desired resource.
-  Future read(Id id, [Map params]) {
+  Future read(Id id, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Creates a resource.
-  Future create(Data data, [Map params]) {
+  Future create(Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Modifies a resource.
-  Future modify(Id id, Data data, [Map params]) {
+  Future modify(Id id, Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Overwrites a resource.
-  Future update(Id id, Data data, [Map params]) {
+  Future update(Id id, Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Removes the given resource.
-  Future remove(Id id, [Map params]) {
+  Future remove(Id id, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 

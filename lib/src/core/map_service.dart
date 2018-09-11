@@ -5,7 +5,7 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'service.dart';
 
 /// A basic service that manages an in-memory list of maps.
-class MapService extends Service {
+class MapService extends Service<String, Map<String, dynamic>> {
   /// If set to `true`, clients can remove all items by passing a `null` `id` to `remove`.
   ///
   /// `false` by default.
@@ -35,8 +35,8 @@ class MapService extends Service {
   String get updatedAtKey =>
       autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at';
 
-  bool Function(Map) _matchesId(id) {
-    return (Map item) {
+  bool Function(Map<String, dynamic>) _matchesId(id) {
+    return (Map<String, dynamic> item) {
       if (item['id'] == null)
         return false;
       else if (autoIdAndDateFields != false)
@@ -47,7 +47,7 @@ class MapService extends Service {
   }
 
   @override
-  Future<List> index([Map params]) {
+  Future<List> index([Map<String, dynamic> params]) {
     if (allowQuery == false || params == null || params['query'] is! Map)
       return new Future.value(items);
     else {
@@ -66,20 +66,20 @@ class MapService extends Service {
   }
 
   @override
-  Future<Map> read(id, [Map params]) {
+  Future<Map> read(String id, [Map<String, dynamic> params]) {
     return new Future.value(items.firstWhere(_matchesId(id),
         orElse: () => throw new AngelHttpException.notFound(
             message: 'No record found for ID $id')));
   }
 
   @override
-  Future<Map> create(data, [Map params]) {
+  Future<Map> create(Map<String, dynamic> data, [Map<String, dynamic> params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
     var now = new DateTime.now().toIso8601String();
-    var result = data as Map;
+    var result = new Map<String, dynamic>.from(data);
 
     if (autoIdAndDateFields == true) {
       result
@@ -87,19 +87,13 @@ class MapService extends Service {
         ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] = now
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
-    items.add(_foldStringDynamic(result));
+    items.add(result);
     return new Future.value(result);
   }
 
-  Map<String, dynamic> _foldStringDynamic(Map map) {
-    return map == null
-        ? null
-        : map.keys.fold<Map<String, dynamic>>(
-            <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
-  }
-
   @override
-  Future<Map> modify(id, data, [Map params]) {
+  Future<Map> modify(String id, Map<String, dynamic> data,
+      [Map<String, dynamic> params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
@@ -107,7 +101,7 @@ class MapService extends Service {
     if (!items.any(_matchesId(id))) return create(data, params);
 
     return read(id).then((item) {
-      var result = item..addAll(data as Map);
+      var result = new Map<String, dynamic>.from(item)..addAll(data);
 
       if (autoIdAndDateFields == true)
         result
@@ -118,7 +112,8 @@ class MapService extends Service {
   }
 
   @override
-  Future<Map> update(id, data, [Map params]) {
+  Future<Map> update(String id, Map<String, dynamic> data,
+      [Map<String, dynamic> params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
@@ -130,7 +125,7 @@ class MapService extends Service {
         throw new AngelHttpException.notFound(
             message: 'No record found for ID $id');
 
-      var result = data as Map;
+      var result = new Map<String, dynamic>.from(data);
       if (autoIdAndDateFields == true) {
         result
           ..['id'] = id?.toString()
@@ -139,13 +134,13 @@ class MapService extends Service {
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
               new DateTime.now().toIso8601String();
       }
-      items.add(_foldStringDynamic(result));
+      items.add(result);
       return new Future.value(result);
     });
   }
 
   @override
-  Future<Map> remove(id, [Map params]) {
+  Future<Map> remove(String id, [Map<String, dynamic> params]) {
     if (id == null ||
         id == 'null' &&
             (allowRemoveAll == true ||
