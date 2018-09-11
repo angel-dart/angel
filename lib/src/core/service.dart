@@ -51,7 +51,7 @@ class Providers {
 /// A front-facing interface that can present data to and operate on data on behalf of the user.
 ///
 /// Heavily inspired by FeathersJS. <3
-class Service extends Routable {
+class Service<Id, Data> extends Routable {
   /// A [List] of keys that services should ignore, should they see them in the query.
   static const List<String> specialQueryKeys = <String>[
     r'$limit',
@@ -102,27 +102,27 @@ class Service extends Routable {
   }
 
   /// Retrieves the desired resource.
-  Future read(id, [Map params]) {
+  Future read(Id id, [Map params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Creates a resource.
-  Future create(data, [Map params]) {
+  Future create(Data data, [Map params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Modifies a resource.
-  Future modify(id, data, [Map params]) {
+  Future modify(Id id, Data data, [Map params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Overwrites a resource.
-  Future update(id, data, [Map params]) {
+  Future update(Id id, Data data, [Map params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Removes the given resource.
-  Future remove(id, [Map params]) {
+  Future remove(Id id, [Map params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
@@ -185,7 +185,7 @@ class Service extends Routable {
         return req.parseBody().then((body) {
           return this
               .create(
-                  body,
+                  body as Data,
                   mergeMap([
                     {'query': query},
                     restProvider,
@@ -229,7 +229,7 @@ class Service extends Routable {
               return req.parseQuery().then((query) {
                 return this.modify(
                     parseId(req.params['id']),
-                    body,
+                    body as Data,
                     mergeMap([
                       {'query': query},
                       restProvider,
@@ -250,7 +250,7 @@ class Service extends Routable {
               return req.parseQuery().then((query) {
                 return this.update(
                     parseId(req.params['id']),
-                    body,
+                    body as Data,
                     mergeMap([
                       {'query': query},
                       restProvider,
@@ -268,7 +268,7 @@ class Service extends Routable {
               return req.parseQuery().then((query) {
                 return this.update(
                     parseId(req.params['id']),
-                    body,
+                    body as Data,
                     mergeMap([
                       {'query': query},
                       restProvider,
