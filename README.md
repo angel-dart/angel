@@ -20,7 +20,7 @@ configureServer(Angel app) async {
   var auth = new AngelAuth();
   auth.serializer = ...;
   auth.deserializer = ...;
-  auth.strategies.add(new LocalAuthStrategy(...));
+  auth.strategies['local'] = new LocalAuthStrategy(...);
   
   // POST route to handle username+password
   app.post('/local', auth.authenticate('local'));
