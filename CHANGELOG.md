@@ -1,4 +1,4 @@
-# 2.0.0-alpha.1
+# 2.0.0-beta
 * Made `AuthStrategy` generic.
 * `AngelAuth.strategies` is now a `Map<String, AuthStrategy<User>>`.
 * Removed `AuthStrategy.canLogout`.
