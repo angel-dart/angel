@@ -3,6 +3,7 @@
 * `HookedService` now follows suit, and takes a third parameter, pointing to the inner service.
 * `Routable.use` now uses the generic parameters added to `Service`.
 * Added generic usage to `HookedServiceListener`, etc.
+* All service methods take `Map<String, dynamic>` as `params` now.
 
 # 2.0.0-alpha.2
 * Added `ResponseContext.detach`.
