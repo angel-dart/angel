@@ -9,11 +9,11 @@ import 'options.dart';
 import 'strategy.dart';
 
 /// Handles authentication within an Angel application.
-class AngelAuth<T> {
+class AngelAuth<User> {
   Hmac _hs256;
   int _jwtLifeSpan;
-  final StreamController<T> _onLogin = new StreamController<T>(),
-      _onLogout = new StreamController<T>();
+  final StreamController<User> _onLogin = new StreamController<User>(),
+      _onLogout = new StreamController<User>();
   Math.Random _random = new Math.Random.secure();
   final RegExp _rgxBearer = new RegExp(r"^Bearer");
 
@@ -46,19 +46,19 @@ class AngelAuth<T> {
   String reviveTokenEndpoint;
 
   /// A set of [AuthStrategy] instances used to authenticate users.
-  List<AuthStrategy> strategies = [];
+  Map<String, AuthStrategy<User>> strategies = {};
 
   /// Serializes a user into a unique identifier associated only with one identity.
-  UserSerializer<T> serializer;
+  UserSerializer<User> serializer;
 
   /// Deserializes a unique identifier into its associated identity. In most cases, this is a user object or model instance.
-  UserDeserializer<T> deserializer;
+  UserDeserializer<User> deserializer;
 
   /// Fires the result of [deserializer] whenever a user signs in to the application.
-  Stream<T> get onLogin => _onLogin.stream;
+  Stream<User> get onLogin => _onLogin.stream;
 
   /// Fires `req.user`, which is usually the result of [deserializer], whenever a user signs out of the application.
-  Stream<T> get onLogout => _onLogout.stream;
+  Stream<User> get onLogout => _onLogout.stream;
 
   /// The [Hmac] being used to encode JWT's.
   Hmac get hmac => _hs256;
@@ -110,10 +110,12 @@ class AngelAuth<T> {
   }
 
   void _apply(
-      RequestContext req, ResponseContext res, AuthToken token, T user) {
-    req.container
-      ..registerSingleton<AuthToken>(token)
-      ..registerSingleton<T>(user);
+      RequestContext req, ResponseContext res, AuthToken token, User user) {
+    if (!req.container.has<User>()) {
+      req.container
+        ..registerSingleton<AuthToken>(token)
+        ..registerSingleton<User>(user);
+    }
 
     if (allowCookie == true) {
       _addProtectedCookie(res, 'token', token.serialize(_hs256));
@@ -265,15 +267,13 @@ class AngelAuth<T> {
       for (int i = 0; i < names.length; i++) {
         var name = names[i];
 
-        AuthStrategy strategy = strategies.firstWhere(
-            (AuthStrategy x) => x.name == name,
-            orElse: () =>
-                throw new ArgumentError('No strategy "$name" found.'));
+        var strategy = strategies[name] ??=
+            throw new ArgumentError('No strategy "$name" found.');
 
-        var hasExisting = req.container.has<T>();
+        var hasExisting = req.container.has<User>();
         var result = hasExisting
-            ? req.container.make<T>()
-            : await strategy.authenticate(req, res, options) as T;
+            ? req.container.make<User>()
+            : await strategy.authenticate(req, res, options);
         if (result == true)
           return result;
         else if (result != false) {
@@ -285,7 +285,10 @@ class AngelAuth<T> {
           var jwt = token.serialize(_hs256);
 
           if (options?.tokenCallback != null) {
-            req.container.registerSingleton<T>(result);
+            if (!req.container.has<User>()) {
+              req.container.registerSingleton<User>(result);
+            }
+
             var r = await options.tokenCallback(req, res, token, result);
             if (r != null) return r;
             jwt = token.serialize(_hs256);
@@ -355,20 +358,8 @@ class AngelAuth<T> {
   /// Log an authenticated user out.
   RequestHandler logout([AngelAuthOptions options]) {
     return (RequestContext req, ResponseContext res) async {
-      for (AuthStrategy strategy in strategies) {
-        if (!(await strategy.canLogout(req, res))) {
-          if (options != null &&
-              options.failureRedirect != null &&
-              options.failureRedirect.isNotEmpty) {
-            res.redirect(options.failureRedirect);
-          }
-
-          return false;
-        }
-      }
-
-      if (req.container.has<T>()) {
-        var user = req.container.make<T>();
+      if (req.container.has<User>()) {
+        var user = req.container.make<User>();
         _onLogout.add(user);
       }
 

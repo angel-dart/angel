@@ -7,15 +7,14 @@ import '../strategy.dart';
 bool _validateString(String str) => str != null && str.isNotEmpty;
 
 /// Determines the validity of an incoming username and password.
-typedef Future LocalAuthVerifier(String username, String password);
+typedef FutureOr<User> LocalAuthVerifier<User>(
+    String username, String password);
 
-class LocalAuthStrategy extends AuthStrategy {
+class LocalAuthStrategy<User> extends AuthStrategy<User> {
   RegExp _rgxBasic = new RegExp(r'^Basic (.+)$', caseSensitive: false);
   RegExp _rgxUsrPass = new RegExp(r'^([^:]+):(.+)$');
 
-  @override
-  String name = 'local';
-  LocalAuthVerifier verifier;
+  LocalAuthVerifier<User> verifier;
   String usernameField;
   String passwordField;
   String invalidMessage;
@@ -23,7 +22,7 @@ class LocalAuthStrategy extends AuthStrategy {
   final bool forceBasic;
   String realm;
 
-  LocalAuthStrategy(LocalAuthVerifier this.verifier,
+  LocalAuthStrategy(this.verifier,
       {String this.usernameField: 'username',
       String this.passwordField: 'password',
       String this.invalidMessage:
@@ -33,15 +32,10 @@ class LocalAuthStrategy extends AuthStrategy {
       String this.realm: 'Authentication is required.'}) {}
 
   @override
-  Future<bool> canLogout(RequestContext req, ResponseContext res) async {
-    return true;
-  }
-
-  @override
-  Future authenticate(RequestContext req, ResponseContext res,
+  Future<User> authenticate(RequestContext req, ResponseContext res,
       [AngelAuthOptions options_]) async {
     AngelAuthOptions options = options_ ?? new AngelAuthOptions();
-    var verificationResult;
+    User verificationResult;
 
     if (allowBasic) {
       String authHeader = req.headers.value('authorization') ?? "";
@@ -62,7 +56,7 @@ class LocalAuthStrategy extends AuthStrategy {
             ..statusCode = 401
             ..headers['www-authenticate'] = 'Basic realm="$realm"'
             ..close();
-          return false;
+          return null;
         }
 
         return verificationResult;
@@ -82,17 +76,15 @@ class LocalAuthStrategy extends AuthStrategy {
       if (options.failureRedirect != null &&
           options.failureRedirect.isNotEmpty) {
         res.redirect(options.failureRedirect, code: 401);
-        return false;
+        return null;
       }
 
       if (forceBasic) {
-        res
-          ..statusCode = 401
-          ..headers['www-authenticate'] = 'Basic realm="$realm"'
-          ..close();
+        res.headers['www-authenticate'] = 'Basic realm="$realm"';
+        throw new AngelHttpException.notAuthenticated();
       }
 
-      return false;
+      return null;
     } else if (verificationResult != null && verificationResult != false) {
       return verificationResult;
     } else {

@@ -1,3 +1,8 @@
+# 2.0.0-alpha.1
+* Made `AuthStrategy` generic.
+* `AngelAuth.strategies` is now a `Map<String, AuthStrategy<User>>`.
+* Removed `AuthStrategy.canLogout`.
+
 # 2.0.0-alpha
 * Depend on Dart 2 and Angel 2.
 * Remove `dart2_constant`.

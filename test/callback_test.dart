@@ -11,6 +11,23 @@ class User extends Model {
   String username, password;
 
   User({this.username, this.password});
+
+  static User parse(Map map) {
+    return new User(
+      username: map['username'] as String,
+      password: map['password'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'password': password,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String()
+    };
+  }
 }
 
 main() {
@@ -59,14 +76,16 @@ main() {
     await app.configure(auth.configureServer);
     app.fallback(auth.decodeJwt);
 
-    auth.strategies.add(new LocalAuthStrategy((username, password) async {
-      final List<User> users = await app.service('users').index();
-      final found = users.firstWhere(
+    auth.strategies['local'] =
+        new LocalAuthStrategy((username, password) async {
+      var users = (await app
+          .service('users')
+          .index()
+          .then((it) => it.map<User>(User.parse).toList())) as Iterable<User>;
+      return users.firstWhere(
           (user) => user.username == username && user.password == password,
           orElse: () => null);
-
-      return found != null ? found : false;
-    }));
+    });
 
     app.post(
         '/login',
@@ -79,8 +98,10 @@ main() {
 
     app.chain([
       (req, res) {
-        req.container.registerSingleton<User>(
-            new User(username: req.params['name']?.toString()));
+        if (!req.container.has<User>()) {
+          req.container.registerSingleton<User>(
+              new User(username: req.params['name']?.toString()));
+        }
         return true;
       }
     ]).post(

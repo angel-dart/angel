@@ -13,18 +13,18 @@ AngelAuthOptions localOpts = new AngelAuthOptions(
     failureRedirect: '/failure', successRedirect: '/success');
 Map<String, String> sampleUser = {'hello': 'world'};
 
-Future verifier(String username, String password) async {
+Future<Map<String, String>> verifier(String username, String password) async {
   if (username == 'username' && password == 'password') {
     return sampleUser;
   } else
-    return false;
+    return null;
 }
 
 Future wireAuth(Angel app) async {
   auth.serializer = (user) async => 1337;
   auth.deserializer = (id) async => sampleUser;
 
-  auth.strategies.add(new LocalAuthStrategy(verifier));
+  auth.strategies['local'] = new LocalAuthStrategy(verifier);
   await app.configure(auth.configureServer);
   app.fallback(auth.decodeJwt);
 }
@@ -103,10 +103,11 @@ main() async {
 
   test('force basic', () async {
     auth.strategies.clear();
-    auth.strategies
-        .add(new LocalAuthStrategy(verifier, forceBasic: true, realm: 'test'));
+    auth.strategies['local'] =
+        new LocalAuthStrategy(verifier, forceBasic: true, realm: 'test');
     var response = await client.get("$url/hello", headers: headers);
     print(response.headers);
+    print('Body <${response.body}>');
     expect(response.headers['www-authenticate'], equals('Basic realm="test"'));
   });
 }
