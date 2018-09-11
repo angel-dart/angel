@@ -7,4 +7,3 @@ export 'response_context.dart';
 export 'routable.dart';
 export 'server.dart';
 export 'service.dart';
-export 'typed_service.dart';

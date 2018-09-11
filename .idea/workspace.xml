@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/anonymous_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/anonymous_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/core/core.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/core.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/core/hooked_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/hooked_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/map_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/map_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/request_context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/request_context.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/core/service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/core/service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/core/typed_service.dart" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -30,46 +29,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="124">
-                <caret line="20" column="49" selection-start-line="20" selection-start-column="49" selection-end-line="20" selection-end-column="49" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hooked_service.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/core/hooked_service.dart">
+      <file leaf-file-name="services_test.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/services_test.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="181">
-              <caret line="60" column="20" lean-forward="true" selection-start-line="60" selection-start-column="20" selection-end-line="60" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="service.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/core/service.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="79" column="33" selection-start-line="79" selection-start-column="33" selection-end-line="79" selection-end-column="33" />
+            <state relative-caret-position="125">
+              <caret line="23" column="29" lean-forward="true" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
               <folding>
-                <element signature="e#39#59#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="request_context.dart" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/core/request_context.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="149">
-              <caret line="29" column="28" selection-start-line="29" selection-start-column="28" selection-end-line="29" selection-end-column="28" />
-              <folding>
-                <element signature="e#47#67#0" expanded="true" />
+                <element signature="e#0#46#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -79,10 +45,43 @@
         <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="32">
-                <caret line="2" column="95" selection-start-line="2" selection-start-column="95" selection-end-line="2" selection-end-column="95" />
+              <first_editor relative-caret-position="64">
+                <caret line="4" column="54" selection-start-line="4" selection-start-column="54" selection-end-line="4" selection-end-column="54" />
               </first_editor>
               <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="map_service.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/map_service.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="384">
+              <caret line="24" column="2" selection-start-line="24" selection-start-column="2" selection-end-line="24" selection-end-column="2" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="hooked_service.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/hooked_service.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1386">
+              <caret line="459" column="46" selection-start-line="459" selection-start-column="46" selection-end-line="459" selection-end-column="46" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="core.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/core.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="128">
+              <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
+              <folding>
+                <element signature="e#0#32#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -99,7 +98,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>sopw</find>
       <find>stopw</find>
       <find>release</find>
       <find>handleRe</find>
@@ -129,6 +127,7 @@
       <find>/meta</find>
       <find>complet</find>
       <find>parseI</find>
+      <find>read(</find>
     </findStrings>
     <replaceStrings>
       <replace>FutureOr</replace>
@@ -192,10 +191,8 @@
         <option value="$PROJECT_DIR$/lib/hooks.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/typed_service.dart" />
         <option value="$PROJECT_DIR$/test/typed_service_test.dart" />
-        <option value="$PROJECT_DIR$/test/services_test.dart" />
         <option value="$PROJECT_DIR$/test/all.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/angel_base.dart" />
-        <option value="$PROJECT_DIR$/lib/src/core/core.dart" />
         <option value="$PROJECT_DIR$/test/general_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/metadata.dart" />
         <option value="$PROJECT_DIR$/example/view.dart" />
@@ -217,9 +214,7 @@
         <option value="$PROJECT_DIR$/test/server_test.dart" />
         <option value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
         <option value="$PROJECT_DIR$/test/serialize_test.dart" />
-        <option value="$PROJECT_DIR$/lib/src/core/routable.dart" />
         <option value="$PROJECT_DIR$/test/precontained_test.dart" />
-        <option value="$PROJECT_DIR$/lib/src/core/server.dart" />
         <option value="$PROJECT_DIR$/test/encoders_buffer_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/util.dart" />
         <option value="$PROJECT_DIR$/test/routing_test.dart" />
@@ -231,9 +226,13 @@
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/src/core/request_context.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/anonymous_service.dart" />
-        <option value="$PROJECT_DIR$/lib/src/core/hooked_service.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/service.dart" />
         <option value="$PROJECT_DIR$/lib/src/core/map_service.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/routable.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/server.dart" />
+        <option value="$PROJECT_DIR$/test/services_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/hooked_service.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/core.dart" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
       </list>
     </option>
@@ -662,14 +661,7 @@
       <workItem from="1534793956753" duration="15012000" />
       <workItem from="1534863259966" duration="198000" />
       <workItem from="1534873119036" duration="4624000" />
-      <workItem from="1536696642254" duration="760000" />
-    </task>
-    <task id="LOCAL-00115" summary="Remove lib/hooks.dart">
-      <created>1534732365272</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1534732365272</updated>
+      <workItem from="1536696642254" duration="1416000" />
     </task>
     <task id="LOCAL-00116" summary="Remove lib/common.dart">
       <created>1534732527424</created>
@@ -1007,7 +999,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536696871864</updated>
     </task>
-    <option name="localTasksCounter" value="164" />
+    <task id="LOCAL-00164" summary="Added generic to Routable.use">
+      <created>1536697507787</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1536697507787</updated>
+    </task>
+    <option name="localTasksCounter" value="165" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1043,7 +1042,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="192801000" />
+    <option name="totallyTimeSpent" value="193457000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1063,7 +1062,7 @@
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5035524" side_tool="true" weight="0.34188035" />
       <window_info anchor="right" id="Maven Projects" order="3" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Dart Analysis" order="7" weight="0.31004366" />
+      <window_info anchor="bottom" id="Dart Analysis" order="7" visible="true" weight="0.31004366" />
       <window_info anchor="right" id="Flutter Outline" order="4" />
       <window_info id="Capture Tool" order="2" />
       <window_info id="Designer" order="2" />
@@ -1106,7 +1105,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Update CHANGELOG" />
     <MESSAGE value="Remove req.injections" />
     <MESSAGE value="Remove Angel.inject" />
     <MESSAGE value="Remove dep on package:pool" />
@@ -1131,7 +1129,8 @@
     <MESSAGE value="All tests pass" />
     <MESSAGE value="CHANGELOG + bump to 2.0.0-alpha.1" />
     <MESSAGE value="Add &lt;Id, Data&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add &lt;Id, Data&gt;" />
+    <MESSAGE value="Added generic to Routable.use" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added generic to Routable.use" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1139,28 +1138,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/performance/hello/angel.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="-663" />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/performance/hello/raw.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/http/http_request_context.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="5" column="46" lean-forward="true" selection-start-line="5" selection-start-column="46" selection-end-line="5" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/example/json.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-282">
@@ -1309,16 +1286,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/core/routable.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="86" column="66" lean-forward="true" selection-start-line="86" selection-start-column="66" selection-end-line="86" selection-end-column="66" />
-          <folding>
-            <element signature="e#40#60#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/serialize_test.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="134">
@@ -1389,13 +1356,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/core/server.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="249" column="26" selection-start-line="249" selection-start-column="26" selection-end-line="249" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pubspec.yaml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="128">
@@ -1445,22 +1405,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="124">
-            <caret line="20" column="49" selection-start-line="20" selection-start-column="49" selection-end-line="20" selection-end-column="49" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/core/anonymous_service.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="112">
           <caret line="9" column="63" lean-forward="true" selection-start-line="9" selection-start-column="63" selection-end-line="9" selection-end-column="63" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/service.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="292" column="11" selection-start-line="292" selection-start-column="11" selection-end-line="292" selection-end-column="11" />
+          <folding>
+            <element signature="e#39#59#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/typed_service.dart">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/core/request_context.dart">
       <provider selected="true" editor-type-id="text-editor">
@@ -1472,29 +1435,69 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/core/hooked_service.dart">
+    <entry file="file://$PROJECT_DIR$/lib/src/core/server.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="60" column="20" lean-forward="true" selection-start-line="60" selection-start-column="20" selection-end-line="60" selection-end-column="20" />
+        <state relative-caret-position="38">
+          <caret line="328" column="3" lean-forward="true" selection-start-line="328" selection-start-column="3" selection-end-line="328" selection-end-column="3" />
+          <folding>
+            <element signature="e#38#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/routable.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="86" column="17" selection-start-line="86" selection-start-column="17" selection-end-line="86" selection-end-column="17" />
+          <folding>
+            <element signature="e#40#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="124">
+            <caret line="20" column="49" selection-start-line="20" selection-start-column="49" selection-end-line="20" selection-end-column="49" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/services_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="23" column="29" lean-forward="true" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#46#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/core/map_service.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="64">
-          <caret line="4" column="22" lean-forward="true" selection-start-line="4" selection-start-column="22" selection-end-line="4" selection-end-column="22" />
+        <state relative-caret-position="384">
+          <caret line="24" column="2" selection-start-line="24" selection-start-column="2" selection-end-line="24" selection-end-column="2" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/core/service.dart">
+    <entry file="file://$PROJECT_DIR$/lib/src/core/hooked_service.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="79" column="33" selection-start-line="79" selection-start-column="33" selection-end-line="79" selection-end-column="33" />
+        <state relative-caret-position="-1386">
+          <caret line="459" column="46" selection-start-line="459" selection-start-column="46" selection-end-line="459" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/core.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
           <folding>
-            <element signature="e#39#59#0" expanded="true" />
+            <element signature="e#0#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1502,8 +1505,8 @@
     <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="32">
-            <caret line="2" column="95" selection-start-line="2" selection-start-column="95" selection-end-line="2" selection-end-column="95" />
+          <first_editor relative-caret-position="64">
+            <caret line="4" column="54" selection-start-line="4" selection-start-column="54" selection-end-line="4" selection-end-column="54" />
           </first_editor>
           <second_editor />
         </state>
