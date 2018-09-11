@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 final AngelAuth<Map<String, String>> auth =
     new AngelAuth<Map<String, String>>();
 var headers = <String, String>{'accept': 'application/json'};
-AngelAuthOptions localOpts = new AngelAuthOptions(
+var localOpts = new AngelAuthOptions<Map<String, String>>(
     failureRedirect: '/failure', successRedirect: '/success');
 Map<String, String> sampleUser = {'hello': 'world'};
 

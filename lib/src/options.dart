@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'auth_token.dart';
 
-typedef AngelAuthCallback(
+typedef FutureOr AngelAuthCallback(
     RequestContext req, ResponseContext res, String token);
 
-typedef AngelAuthTokenCallback(
-    RequestContext req, ResponseContext res, AuthToken token, user);
+typedef FutureOr AngelAuthTokenCallback<User>(
+    RequestContext req, ResponseContext res, AuthToken token, User user);
 
-class AngelAuthOptions {
+class AngelAuthOptions<User> {
   AngelAuthCallback callback;
-  AngelAuthTokenCallback tokenCallback;
+  AngelAuthTokenCallback<User> tokenCallback;
   String successRedirect;
   String failureRedirect;
 

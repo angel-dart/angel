@@ -4,7 +4,6 @@ import 'dart:math' as Math;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
 import 'auth_token.dart';
-import 'defs.dart';
 import 'options.dart';
 import 'strategy.dart';
 
@@ -49,10 +48,10 @@ class AngelAuth<User> {
   Map<String, AuthStrategy<User>> strategies = {};
 
   /// Serializes a user into a unique identifier associated only with one identity.
-  UserSerializer<User> serializer;
+  FutureOr Function(User) serializer;
 
   /// Deserializes a unique identifier into its associated identity. In most cases, this is a user object or model instance.
-  UserDeserializer<User> deserializer;
+  FutureOr<User> Function(Object) deserializer;
 
   /// Fires the result of [deserializer] whenever a user signs in to the application.
   Stream<User> get onLogin => _onLogin.stream;
@@ -75,6 +74,8 @@ class AngelAuth<User> {
   /// `jwtLifeSpan` - should be in *milliseconds*.
   AngelAuth(
       {String jwtKey,
+      this.serializer,
+      this.deserializer,
       num jwtLifeSpan,
       this.allowCookie: true,
       this.allowTokenInQuery: true,
@@ -250,7 +251,7 @@ class AngelAuth<User> {
   /// or a `401 Not Authenticated` is thrown, if it is the last one.
   ///
   /// Any other result is considered an authenticated user, and terminates the loop.
-  RequestHandler authenticate(type, [AngelAuthOptions options]) {
+  RequestHandler authenticate(type, [AngelAuthOptions<User> options]) {
     return (RequestContext req, ResponseContext res) async {
       List<String> names = [];
       var arr = type is Iterable ? type.toList() : [type];
@@ -356,7 +357,7 @@ class AngelAuth<User> {
   }
 
   /// Log an authenticated user out.
-  RequestHandler logout([AngelAuthOptions options]) {
+  RequestHandler logout([AngelAuthOptions<User> options]) {
     return (RequestContext req, ResponseContext res) async {
       if (req.container.has<User>()) {
         var user = req.container.make<User>();
