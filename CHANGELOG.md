@@ -1,3 +1,6 @@
+# 2.0.0+1
+* Meta update to improve Pub score.
+
 # 2.0.0
 * Made `AuthStrategy` generic.
 * `AngelAuth.strategies` is now a `Map<String, AuthStrategy<User>>`.
