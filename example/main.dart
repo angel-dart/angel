@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/common.dart';
 import 'package:angel_auth_oauth2/angel_auth_oauth2.dart';
 import 'package:logging/logging.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
@@ -17,45 +16,48 @@ final AngelAuthOAuth2Options oAuth2Config = new AngelAuthOAuth2Options(
       if (contentType.type == 'application') {
         if (contentType.subtype == 'x-www-form-urlencoded')
           return Uri.splitQueryString(body);
-        else if (contentType.subtype == 'json') return JSON.decode(body);
+        else if (contentType.subtype == 'json')
+          return (json.decode(body) as Map).cast<String, String>();
       }
 
-      throw new FormatException('Invalid content-type $contentType; expected application/x-www-form-urlencoded or application/json.');
+      throw new FormatException(
+          'Invalid content-type $contentType; expected application/x-www-form-urlencoded or application/json.');
     });
 
 main() async {
   var app = new Angel();
-  app.lazyParseBodies = true;
   app.use('/users', new MapService());
 
   var auth =
       new AngelAuth<User>(jwtKey: 'oauth2 example secret', allowCookie: false);
 
   auth.deserializer =
-      (id) => app.service('users').read(id).then((u) => User.parse(u));
+      (id) => app.service('users').read(id).then((u) => User.parse(u as Map));
 
   auth.serializer = (User user) async => user.id;
 
-  auth.strategies.add(
-      new OAuth2Strategy('github', oAuth2Config, (oauth2.Client client) async {
-    var response = await client.get('https://api.github.com/user');
-    var ghUser = JSON.decode(response.body);
-    var id = ghUser['id'];
+  auth.strategies['github'] = new OAuth2Strategy(
+    oAuth2Config,
+    (oauth2.Client client) async {
+      var response = await client.get('https://api.github.com/user');
+      var ghUser = json.decode(response.body);
+      var id = ghUser['id'];
 
-    Iterable<Map> matchingUsers = await app.service('users').index({
-      'query': {'githubId': id}
-    });
+      Iterable<Map> matchingUsers = await app.service('users').index({
+        'query': {'githubId': id}
+      });
 
-    if (matchingUsers.isNotEmpty) {
-      // Return the corresponding user, if it exists
-      return User.parse(matchingUsers.firstWhere((u) => u['githubId'] == id));
-    } else {
-      // Otherwise,create a user
-      return await app
-          .service('users')
-          .create({'githubId': id}).then((u) => User.parse(u));
-    }
-  }));
+      if (matchingUsers.isNotEmpty) {
+        // Return the corresponding user, if it exists
+        return User.parse(matchingUsers.firstWhere((u) => u['githubId'] == id));
+      } else {
+        // Otherwise,create a user
+        return await app
+            .service('users')
+            .create({'githubId': id}).then((u) => User.parse(u as Map));
+      }
+    },
+  );
 
   app.get('/auth/github', auth.authenticate('github'));
   app.get(
@@ -74,7 +76,7 @@ main() async {
   app.logger = new Logger('angel')..onRecord.listen(print);
 
   var http = new AngelHttp(app);
-  var server = await http.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
+  var server = await http.startServer(InternetAddress.loopbackIPv4, 3000);
   var url = 'http://${server.address.address}:${server.port}';
   print('Listening on $url');
   print('View user listing: $url/users');
@@ -89,7 +91,7 @@ class User extends Model {
   User({this.id, this.githubId});
 
   static User parse(Map map) =>
-      new User(id: map['id'], githubId: map['github_id']);
+      new User(id: map['id'] as String, githubId: map['github_id'] as int);
 
   Map<String, dynamic> toJson() => {'id': id, 'github_id': githubId};
 }

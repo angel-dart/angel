@@ -75,7 +75,7 @@ a popup window. In this case, use `confirmPopupAuthentication`, which is bundled
 configureServer(Angel app) async {
   // ...
   var auth = new AngelAuth();
-  auth.strategies.add(oauth2Strategy);
+  auth.strategies['github'] = oauth2Strategy;
   
   // Redirect
   app.get('/auth/github', auth.authenticate('github'));
