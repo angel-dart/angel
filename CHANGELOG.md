@@ -1,5 +1,7 @@
 # 2.0.0-alpha.4
 * Renamed `waterfall` to `chain`.
+* Renamed `Routable.service` to `Routable.findService`.
+    * Also `Routable.findHookedService`.
 
 # 2.0.0-alpha.3
 * Added `<Id, Data>` type parameters to `Service`.

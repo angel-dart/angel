@@ -1,5 +1,5 @@
 name: angel_framework
-version: 2.0.0-alpha.3
+version: 2.0.0-alpha.4
 description: >
   A high-powered HTTP server with DI, routing and more.
   When combined with the other packages in the Angel ecosystem, this
