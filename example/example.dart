@@ -34,4 +34,5 @@ class User {
 
 Future<User> fetchAUserByIdSomehow(id) async {
   // Fetch a user somehow...
+  throw new UnimplementedError();
 }

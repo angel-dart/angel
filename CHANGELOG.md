@@ -1,3 +1,6 @@
+# 2.0.1
+* Add generic parameter to `options` on `AuthStrategy.authenticate`.
+
 # 2.0.0+1
 * Meta update to improve Pub score.
 

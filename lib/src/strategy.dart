@@ -6,5 +6,5 @@ import 'options.dart';
 abstract class AuthStrategy<User> {
   /// Authenticates or rejects an incoming user.
   FutureOr<User> authenticate(RequestContext req, ResponseContext res,
-      [AngelAuthOptions options]);
+      [AngelAuthOptions<User> options]);
 }
