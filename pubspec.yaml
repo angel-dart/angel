@@ -9,4 +9,7 @@ dependencies:
   angel_auth: ^2.0.0
   angel_framework: ^2.0.0-alpha
   angel_validate: ^2.0.0-alpha
+  http_parser: ^3.0.0
   oauth2: ^1.0.0
+dev_dependencies:
+  logging: ^0.11.0
