@@ -16,16 +16,17 @@ main() {
   HttpServer server;
   String url;
   http.Client client;
-  HookedService Todos;
+  HookedService todoService;
 
   setUp(() async {
     app = new Angel(reflector: MirrorsReflector());
     client = new http.Client();
     app.use('/todos', new MapService());
     app.use('/books', new BookService());
-    Todos = app.service("todos") as HookedService;
 
-    Todos.beforeAllStream().listen((e) {
+    todoService = app.findHookedService<MapService>('todos');
+
+    todoService.beforeAllStream().listen((e) {
       print('Fired ${e.eventName}! Data: ${e.data}; Params: ${e.params}');
     });
 
@@ -43,13 +44,13 @@ main() {
     url = null;
     client.close();
     client = null;
-    Todos = null;
+    todoService = null;
   });
 
   test("listen before and after", () async {
     int count = 0;
 
-    Todos
+    todoService
       ..beforeIndexed.listen((_) {
         count++;
       })
@@ -63,7 +64,7 @@ main() {
   });
 
   test("cancel before", () async {
-    Todos.beforeCreated
+    todoService.beforeCreated
       ..listen((HookedServiceEvent event) {
         event.cancel({"hello": "hooked world"});
       })
@@ -80,7 +81,7 @@ main() {
   });
 
   test("cancel after", () async {
-    Todos.afterIndexed
+    todoService.afterIndexed
       ..listen((HookedServiceEvent event) async {
         // Hooks can be Futures ;)
         event.cancel([
@@ -106,7 +107,7 @@ main() {
   });
 
   test('inject request + response', () async {
-    HookedService books = app.service('books');
+    HookedService books = app.findService('books');
 
     books.beforeIndexed.listen((e) {
       expect([e.request, e.response], everyElement(isNotNull));

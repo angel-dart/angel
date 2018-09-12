@@ -44,6 +44,7 @@ RequestHandler chain(Iterable<RequestHandler> handlers) {
 /// A routable server that can handle dynamic requests.
 class Routable extends Router<RequestHandler> {
   final Map<Pattern, Service> _services = {};
+  final Map<Pattern, Service> _serviceLookups = {};
   final Map configuration = {};
 
   final Container _container;
@@ -73,9 +74,18 @@ class Routable extends Router<RequestHandler> {
   Stream<Service> get onService => _onService.stream;
 
   /// Retrieves the service assigned to the given path.
-  Service service(Pattern path) =>
-      _services[path] ??
-      _services[path.toString().replaceAll(_straySlashes, '')];
+  T findService<T extends Service>(Pattern path) {
+    return _serviceLookups.putIfAbsent(path, () {
+      return _services[path] ??
+          _services[path.toString().replaceAll(_straySlashes, '')];
+    }) as T;
+  }
+
+  /// Shorthand for finding a [HookedService] in a statically-typed
+  HookedService<dynamic, dynamic, T> findHookedService<T extends Service>(
+      Pattern path) {
+    return findService(path) as HookedService<dynamic, dynamic, T>;
+  }
 
   @override
   Route<RequestHandler> addRoute(

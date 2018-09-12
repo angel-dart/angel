@@ -493,7 +493,7 @@ class HookedServiceEvent<Id, Data, T extends Service<Id, Data>> {
   /// Resolves a service from the application.
   ///
   /// Shorthand for `e.service.app.service(...)`.
-  Service getService(Pattern path) => service.app.service(path);
+  Service getService(Pattern path) => service.app.findService(path);
 
   bool _canceled = false;
   String _eventName;
