@@ -19,7 +19,7 @@ main() {
 
     app.get(
         '/num/parsed/:num',
-        waterfall([
+        chain([
           (req, res) {
             req.params['n'] = num.parse(req.params['num'].toString());
             return true;

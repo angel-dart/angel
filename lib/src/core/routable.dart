@@ -19,7 +19,7 @@ typedef FutureOr RequestHandler(RequestContext req, ResponseContext res);
 
 /// Sequentially runs a list of [handlers] of middleware, and returns early if any does not
 /// return `true`. Works well with [Router].chain.
-RequestHandler waterfall(Iterable<RequestHandler> handlers) {
+RequestHandler chain(Iterable<RequestHandler> handlers) {
   return (req, res) {
     Future Function() runPipeline;
 
