@@ -16,7 +16,7 @@ const Map<String, String> _writeHeaders = const {
   'Content-Type': 'application/json'
 };
 
-_buildQuery(Map params) {
+_buildQuery(Map<String, dynamic> params) {
   if (params == null || params.isEmpty || params['query'] is! Map) return "";
 
   List<String> query = [];
@@ -191,9 +191,10 @@ abstract class BaseAngelClient extends Angel {
   }
 
   @override
-  Service service(String path, {Type type, AngelDeserializer deserializer}) {
+  Service<Id, Data> service<Id, Data>(String path,
+      {Type type, AngelDeserializer<Data> deserializer}) {
     String uri = path.toString().replaceAll(straySlashes, "");
-    var s = new BaseAngelService(client, this, '$basePath/$uri',
+    var s = new BaseAngelService<Id, Data>(client, this, '$basePath/$uri',
         deserializer: deserializer);
     _services.add(s);
     return s;
@@ -240,15 +241,15 @@ abstract class BaseAngelClient extends Angel {
   }
 }
 
-class BaseAngelService extends Service {
+class BaseAngelService<Id, Data> extends Service<Id, Data> {
   @override
   final BaseAngelClient app;
   final String basePath;
   final http.BaseClient client;
-  final AngelDeserializer deserializer;
+  final AngelDeserializer<Data> deserializer;
 
-  final StreamController _onIndexed = new StreamController(),
-      _onRead = new StreamController(),
+  final StreamController _onIndexed = new StreamController();
+  final StreamController<Data> _onRead = new StreamController(),
       _onCreated = new StreamController(),
       _onModified = new StreamController(),
       _onUpdated = new StreamController(),
@@ -258,19 +259,19 @@ class BaseAngelService extends Service {
   Stream get onIndexed => _onIndexed.stream;
 
   @override
-  Stream get onRead => _onRead.stream;
+  Stream<Data> get onRead => _onRead.stream;
 
   @override
-  Stream get onCreated => _onCreated.stream;
+  Stream<Data> get onCreated => _onCreated.stream;
 
   @override
-  Stream get onModified => _onModified.stream;
+  Stream<Data> get onModified => _onModified.stream;
 
   @override
-  Stream get onUpdated => _onUpdated.stream;
+  Stream<Data> get onUpdated => _onUpdated.stream;
 
   @override
-  Stream get onRemoved => _onRemoved.stream;
+  Stream<Data> get onRemoved => _onRemoved.stream;
 
   @override
   Future close() async {
@@ -284,8 +285,8 @@ class BaseAngelService extends Service {
 
   BaseAngelService(this.client, this.app, this.basePath, {this.deserializer});
 
-  deserialize(x) {
-    return deserializer != null ? deserializer(x) : x;
+  Data deserialize(x) {
+    return deserializer != null ? deserializer(x) : x as Data;
   }
 
   makeBody(x) {
@@ -301,7 +302,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future index([Map params]) async {
+  Future index([Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed(
         'GET', '$basePath${_buildQuery(params)}', _readHeaders);
 
@@ -316,7 +317,7 @@ class BaseAngelService extends Service {
       final v = json.decode(response.body);
 
       if (v is! List) {
-        _onIndexed.add(v);
+        _onIndexed.add(v as Data);
         return v;
       }
 
@@ -332,7 +333,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future read(id, [Map params]) async {
+  Future read(id, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed(
         'GET', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
@@ -356,7 +357,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future create(data, [Map params]) async {
+  Future create(data, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed('POST',
         '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
@@ -380,7 +381,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future modify(id, data, [Map params]) async {
+  Future modify(id, data, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed('PATCH',
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
@@ -404,7 +405,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future update(id, data, [Map params]) async {
+  Future update(id, data, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed('POST',
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
@@ -428,7 +429,7 @@ class BaseAngelService extends Service {
   }
 
   @override
-  Future remove(id, [Map params]) async {
+  Future remove(id, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed(
         'DELETE', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 

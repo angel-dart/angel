@@ -15,9 +15,10 @@ class Rest extends BaseAngelClient {
   Rest(String path) : super(new http.Client() as http.BaseClient, path);
 
   @override
-  Service service(String path, {Type type, AngelDeserializer deserializer}) {
+  Service<Id, Data> service<Id, Data>(String path,
+      {Type type, AngelDeserializer deserializer}) {
     String uri = path.replaceAll(straySlashes, "");
-    var s = new RestService(client, this, "$basePath/$uri", type);
+    var s = new RestService<Id, Data>(client, this, "$basePath/$uri", type);
     _services.add(s);
     return s;
   }
@@ -37,7 +38,7 @@ class Rest extends BaseAngelClient {
 }
 
 /// Queries an Angel service via REST.
-class RestService extends BaseAngelService {
+class RestService<Id, Data> extends BaseAngelService<Id, Data> {
   final Type type;
 
   RestService(
@@ -45,14 +46,14 @@ class RestService extends BaseAngelService {
       : super(client, app, url);
 
   @override
-  deserialize(x) {
+  Data deserialize(x) {
     if (type != null) {
       return x.runtimeType == type
-          ? x
-          : god.deserializeDatum(x, outputType: type);
+          ? x as Data
+          : god.deserializeDatum(x, outputType: type) as Data;
     }
 
-    return x;
+    return x as Data;
   }
 
   @override

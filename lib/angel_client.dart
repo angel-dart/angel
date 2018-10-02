@@ -8,13 +8,13 @@ import 'package:http/src/response.dart' as http;
 export 'package:angel_http_exception/angel_http_exception.dart';
 
 /// A function that configures an [Angel] client in some way.
-typedef Future AngelConfigurer(Angel app);
+typedef FutureOr AngelConfigurer(Angel app);
 
 /// A function that deserializes data received from the server.
 ///
 /// This is only really necessary in the browser, where `json_god`
 /// doesn't work.
-typedef AngelDeserializer(x);
+typedef T AngelDeserializer<T>(x);
 
 /// Represents an Angel server that we are querying.
 abstract class Angel {
@@ -45,7 +45,8 @@ abstract class Angel {
   /// Logs the current user out of the application.
   Future logout();
 
-  Service service(String path, {Type type, AngelDeserializer deserializer});
+  Service<Id, Data> service<Id, Data>(String path,
+      {Type type, AngelDeserializer<Data> deserializer});
 
   Future<http.Response> delete(String url, {Map<String, String> headers});
 
@@ -92,24 +93,24 @@ class AngelAuthResult {
 }
 
 /// Queries a service on an Angel server, with the same API.
-abstract class Service {
+abstract class Service<Id, Data> {
   /// Fired on `indexed` events.
   Stream get onIndexed;
 
   /// Fired on `read` events.
-  Stream get onRead;
+  Stream<Data> get onRead;
 
   /// Fired on `created` events.
-  Stream get onCreated;
+  Stream<Data> get onCreated;
 
   /// Fired on `modified` events.
-  Stream get onModified;
+  Stream<Data> get onModified;
 
   /// Fired on `updated` events.
-  Stream get onUpdated;
+  Stream<Data> get onUpdated;
 
   /// Fired on `removed` events.
-  Stream get onRemoved;
+  Stream<Data> get onRemoved;
 
   /// The Angel instance powering this service.
   Angel get app;
@@ -117,26 +118,26 @@ abstract class Service {
   Future close();
 
   /// Retrieves all resources.
-  Future index([Map params]);
+  Future index([Map<String, dynamic> params]);
 
   /// Retrieves the desired resource.
-  Future read(id, [Map params]);
+  Future read(Id id, [Map<String, dynamic> params]);
 
   /// Creates a resource.
-  Future create(data, [Map params]);
+  Future create(Data data, [Map<String, dynamic> params]);
 
   /// Modifies a resource.
-  Future modify(id, data, [Map params]);
+  Future modify(Id id, Data data, [Map<String, dynamic> params]);
 
   /// Overwrites a resource.
-  Future update(id, data, [Map params]);
+  Future update(Id id, Data data, [Map<String, dynamic> params]);
 
   /// Removes the given resource.
-  Future remove(id, [Map params]);
+  Future remove(Id id, [Map<String, dynamic> params]);
 }
 
 /// A [List] that automatically updates itself whenever the referenced [service] fires an event.
-class ServiceList extends DelegatingList {
+class ServiceList<Id, Data> extends DelegatingList {
   /// A field name used to compare [Map] by ID.
   final String idField;
 
@@ -150,9 +151,10 @@ class ServiceList extends DelegatingList {
   /// Defaults to comparing the [idField] of `Map` instances.
   final Equality _compare;
 
-  final Service service;
+  final Service<Id, Data> service;
 
-  final StreamController<ServiceList> _onChange = new StreamController();
+  final StreamController<ServiceList<Id, Data>> _onChange =
+      new StreamController();
   final List<StreamSubscription> _subs = [];
 
   ServiceList(this.service,
@@ -175,7 +177,7 @@ class ServiceList extends DelegatingList {
     }));
 
     // Modified/Updated
-    handleModified(item) {
+    handleModified(Data item) {
       var indices = <int>[];
 
       for (int i = 0; i < length; i++) {
@@ -202,7 +204,7 @@ class ServiceList extends DelegatingList {
   }
 
   /// Fires whenever the underlying [service] fires a change event.
-  Stream<ServiceList> get onChange => _onChange.stream;
+  Stream<ServiceList<Id, Data>> get onChange => _onChange.stream;
 
   Future close() async {
     _onChange.close();

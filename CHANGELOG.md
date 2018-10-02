@@ -1,3 +1,6 @@
+# 2.0.0-alpha.1
+* Refactor `params` to `Map<String, dynamic>`.
+
 # 2.0.0-alpha
 * Depend on Dart 2.
 * Depend on Angel 2.
