@@ -229,8 +229,7 @@ class HotReloader {
 
     if (r == null) {
       print(
-          'WARNING: Unable to watch path "$path" from working directory "${Directory
-              .current.path}". Please ensure that it exists.');
+          'WARNING: Unable to watch path "$path" from working directory "${Directory.current.path}". Please ensure that it exists.');
     }
   }
 
@@ -249,8 +248,7 @@ class HotReloader {
             await client.close(WebSocketStatus.goingAway);
           } catch (e) {
             stderr.writeln(
-                'Couldn\'t close WebSocket from session #${client.request
-                    .session.id}: $e');
+                'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
           }
         }
 

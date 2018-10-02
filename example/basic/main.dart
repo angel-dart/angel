@@ -15,23 +15,20 @@ main() async {
     Uri.parse('package:angel_hot/angel_hot.dart')
   ]);
   var server = await hot.startServer('127.0.0.1', 3000);
-  print('Hot server listening at http://${server.address.address}:${server
-      .port}');
+  print(
+      'Hot server listening at http://${server.address.address}:${server.port}');
 }
 
 Future<Angel> createServer() async {
-  var app = new Angel();
-
-  app.lazyParseBodies = true;
-  app.serializer = json.encode;
+  var app = new Angel()..serializer = json.encode;
 
   // Edit this line, and then refresh the page in your browser!
-  app.get('/', {'hello': 'hot world!'});
-  app.get('/foo', new Foo(bar: 'baz'));
+  app.get('/', (req, res) => {'hello': 'hot world!'});
+  app.get('/foo', (req, res) => new Foo(bar: 'baz'));
 
-  app.use(() => throw new AngelHttpException.notFound());
+  app.fallback((req, res) => throw new AngelHttpException.notFound());
 
-  app.injectEncoders({
+  app.encoders.addAll({
     'gzip': gzip.encoder,
     'deflate': zlib.encoder,
   });
