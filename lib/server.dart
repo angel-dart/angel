@@ -2,11 +2,11 @@
 library angel_websocket.server;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
 import 'package:web_socket_channel/io.dart';
@@ -132,7 +132,7 @@ class AngelWebSocket {
       return null;
     }
 
-    var service = app.service(split[0]);
+    var service = app.findService(split[0]);
 
     if (service == null) {
       socket.sendError(new AngelHttpException.notFound(
@@ -142,7 +142,7 @@ class AngelWebSocket {
 
     var actionName = split[1];
 
-    if (action.params is! Map) action.params = {};
+    if (action.params is! Map) action.params = <String, dynamic>{};
 
     if (allowClientParams != true) {
       if (action.params['query'] is Map)
@@ -151,8 +151,9 @@ class AngelWebSocket {
         action.params = {};
     }
 
-    var params = mergeMap([
-      ((deserializer ?? (params) => params)(action.params)) as Map,
+    var params = mergeMap<String, dynamic>([
+      ((deserializer ?? (params) => params)(action.params))
+          as Map<String, dynamic>,
       {
         "provider": Providers.websocket,
         '__requestctx': socket.request,

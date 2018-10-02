@@ -1,3 +1,7 @@
+# 2.0.0-alpha.1
+* Refactorings for updated Angel 2 versions.
+* Remove `package:dart2_constant`.
+
 # 2.0.0-alpha
 * Depend on Dart 2 and Angel 2.
 

@@ -23,9 +23,11 @@ main() {
     auth.serializer = (_) async => 'baz';
     auth.deserializer = (_) async => USER;
 
-    auth.strategies.add(new LocalAuthStrategy((username, password) async {
-      if (username == 'foo' && password == 'bar') return USER;
-    }));
+    auth.strategies['local'] = new LocalAuthStrategy(
+      (username, password) async {
+        if (username == 'foo' && password == 'bar') return USER;
+      },
+    );
 
     app.post('/auth/local', auth.authenticate('local'));
 

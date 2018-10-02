@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'package:angel_client/angel_client.dart';
 import 'package:angel_client/base_angel_client.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:http/src/base_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -159,7 +159,8 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
               }
 
               if (event.eventName == EVENT_ERROR) {
-                var error = new AngelHttpException.fromMap((event.data ?? {}) as Map);
+                var error =
+                    new AngelHttpException.fromMap((event.data ?? {}) as Map);
                 _onError.add(error);
               } else if (event.eventName == EVENT_AUTHENTICATED) {
                 var authResult = new AngelAuthResult.fromMap(event.data as Map);
@@ -240,18 +241,12 @@ class WebSocketsService extends Service {
 
   final StreamController<WebSocketEvent> _onAllEvents =
       new StreamController<WebSocketEvent>();
-  final StreamController _onIndexed =
-      new StreamController();
-  final StreamController _onRead =
-      new StreamController();
-  final StreamController _onCreated =
-      new StreamController();
-  final StreamController _onModified =
-      new StreamController();
-  final StreamController _onUpdated =
-      new StreamController();
-  final StreamController _onRemoved =
-      new StreamController();
+  final StreamController _onIndexed = new StreamController();
+  final StreamController _onRead = new StreamController();
+  final StreamController _onCreated = new StreamController();
+  final StreamController _onModified = new StreamController();
+  final StreamController _onUpdated = new StreamController();
+  final StreamController _onRemoved = new StreamController();
 
   /// Fired on all events.
   Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
@@ -340,21 +335,23 @@ class WebSocketsService extends Service {
   }
 
   @override
-  Future index([Map params]) async {
+  Future index([Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_INDEX}', params: params ?? {}));
     return null;
   }
 
   @override
-  Future read(id, [Map params]) async {
+  Future read(id, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_READ}', id: id.toString(), params: params ?? {}));
+        eventName: '$path::${ACTION_READ}',
+        id: id.toString(),
+        params: params ?? {}));
     return null;
   }
 
   @override
-  Future create(data, [Map params]) async {
+  Future create(data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_CREATE}',
         data: data,
@@ -363,7 +360,7 @@ class WebSocketsService extends Service {
   }
 
   @override
-  Future modify(id, data, [Map params]) async {
+  Future modify(id, data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_MODIFY}',
         id: id.toString(),
@@ -373,7 +370,7 @@ class WebSocketsService extends Service {
   }
 
   @override
-  Future update(id, data, [Map params]) async {
+  Future update(id, data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_UPDATE}',
         id: id.toString(),
@@ -383,9 +380,11 @@ class WebSocketsService extends Service {
   }
 
   @override
-  Future remove(id, [Map params]) async {
+  Future remove(id, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_REMOVE}', id: id.toString(), params: params ?? {}));
+        eventName: '$path::${ACTION_REMOVE}',
+        id: id.toString(),
+        params: params ?? {}));
     return null;
   }
 

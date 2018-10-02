@@ -45,8 +45,8 @@ class WebSocketEvent {
 
   WebSocketEvent({String this.eventName, this.data});
 
-  factory WebSocketEvent.fromJson(Map data) =>
-      new WebSocketEvent(eventName: data['eventName'].toString(), data: data['data']);
+  factory WebSocketEvent.fromJson(Map data) => new WebSocketEvent(
+      eventName: data['eventName'].toString(), data: data['data']);
 
   Map toJson() {
     return {'eventName': eventName, 'data': data};
@@ -58,7 +58,7 @@ class WebSocketAction {
   String id;
   String eventName;
   var data;
-  var params;
+  Map<String, dynamic> params;
 
   WebSocketAction(
       {String this.id, String this.eventName, this.data, this.params});
@@ -67,7 +67,7 @@ class WebSocketAction {
       id: data['id'].toString(),
       eventName: data['eventName'].toString(),
       data: data['data'],
-      params: data['params']);
+      params: data['params'] as Map<String, dynamic>);
 
   Map toJson() {
     return {'id': id, 'eventName': eventName, 'data': data, 'params': params};
