@@ -14,9 +14,7 @@ main() async {
     'main.dart',
     Uri.parse('package:angel_hot/angel_hot.dart')
   ]);
-  var server = await hot.startServer('127.0.0.1', 3000);
-  print(
-      'Hot server listening at http://${server.address.address}:${server.port}');
+  await hot.startServer('127.0.0.1', 3000);
 }
 
 Future<Angel> createServer() async {

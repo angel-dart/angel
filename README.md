@@ -1,6 +1,8 @@
 # hot
 [![Pub](https://img.shields.io/pub/v/angel_hot.svg)](https://pub.dartlang.org/packages/angel_hot)
 
+![Screenshot of terminal](screenshots/screenshot.png)
+
 Supports *hot reloading* of Angel servers on file changes. This is faster and
 more reliable than merely reactively restarting a `Process`.
 
@@ -22,7 +24,9 @@ Usage is fairly simple. Pass a function that creates an `Angel` server, along wi
 to watch, to the `HotReloader` constructor. The rest is history!!!
 
 The recommended pattern is to only use hot-reloading in your application entry point. Create your `Angel` instance
-within a separate function, conventionally named `createServer`. Using this in production mode is pointless.
+within a separate function, conventionally named `createServer`. 
+
+**Using this in production mode is pointless.**
 
 You can watch:
   * Files

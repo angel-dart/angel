@@ -15,10 +15,12 @@ import 'dart:io'
         Platform,
         exit,
         stderr,
+        stdin,
         stdout;
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_websocket/server.dart';
+import 'package:charcode/ascii.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:dart2_constant/io.dart';
 import 'package:glob/glob.dart';
@@ -102,16 +104,16 @@ class HotReloader {
     var response = request.response;
     response.statusCode = HttpStatus.badGateway;
     response.headers
-      ..contentType = ContentType.HTML
-      ..set(HttpHeaders.SERVER, 'angel_hot');
+      ..contentType = ContentType.html
+      ..set(HttpHeaders.serverHeader, 'angel_hot');
 
     if (request.headers
-            .value(HttpHeaders.ACCEPT_ENCODING)
+            .value(HttpHeaders.acceptEncodingHeader)
             ?.toLowerCase()
             ?.contains('gzip') ==
         true) {
       response
-        ..headers.set(HttpHeaders.CONTENT_ENCODING, 'gzip')
+        ..headers.set(HttpHeaders.contentEncodingHeader, 'gzip')
         ..add(gzip.encode(utf8.encode(_renderer.render(doc))));
     } else
       response.write(_renderer.render(doc));
@@ -148,28 +150,30 @@ class HotReloader {
 
   /// Starts listening to requests and filesystem events.
   Future<HttpServer> startServer([address, int port]) async {
+    var isHot = true;
     _server = await _generateServer();
 
     if (_paths?.isNotEmpty != true)
-      print(
-          'WARNING: You have instantiated a HotReloader without providing any filesystem paths to watch.');
+      print(yellow.wrap(
+          'WARNING: You have instantiated a HotReloader without providing any filesystem paths to watch.'));
 
     if (!Platform.executableArguments.contains('--observe') &&
         !Platform.executableArguments.contains('--enable-vm-service')) {
-      stderr.writeln(
-          'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.');
+      stderr.writeln(yellow.wrap(
+          'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.'));
+      isHot = false;
     } else {
       _client = await vm.vmServiceConnect(
           vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
       _vmachine ??= await _client.getVM();
       _mainIsolate ??= _vmachine.isolates.first;
       await _client.setExceptionPauseMode(_mainIsolate.id, 'None');
-
-      _onChange.stream
-          .transform(new _Debounce(new Duration(seconds: 1)))
-          .listen(_handleWatchEvent);
       await _listenToFilesystem();
     }
+
+    _onChange.stream
+        //.transform(new _Debounce(new Duration(seconds: 1)))
+        .listen(_handleWatchEvent);
 
     while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
     var server = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
@@ -177,15 +181,63 @@ class HotReloader {
 
     // Print a Flutter-like prompt...
     if (enableHotkeys) {
+      var serverUri = new Uri(
+          scheme: 'http', host: server.address.address, port: server.port);
       var host = vmServiceHost == 'localhost' ? '127.0.0.1' : vmServiceHost;
       var observatoryUri =
           new Uri(scheme: 'http', host: host, port: vmServicePort);
+
       print(styleBold.wrap(
-          '🔥  To hot reload changes while running, press "r". To hot restart (and rebuild state), press "R".'));
+          '\n🔥  To hot reload changes while running, press "r". To hot restart (and rebuild state), press "R".'));
+      stdout.write('Your Angel server is listening at: ');
+      print(wrapWith('$serverUri', [cyan, styleUnderlined]));
       stdout.write(
-          'An Observatory debugger and profiler on iPhone XS Max is available at: ');
+          'An Observatory debugger and profiler on ${Platform.operatingSystem} is available at: ');
       print(wrapWith('$observatoryUri', [cyan, styleUnderlined]));
-      print('To quit, press "q".');
+      print(
+          'For a more detailed help message, press "h". To quit, press "q".\n');
+
+      if (_paths.isNotEmpty) {
+        print(darkGray.wrap(
+            'Changes to the following path(s) will also trigger a hot reload:'));
+
+        for (var p in _paths) {
+          print(darkGray.wrap('  * $p'));
+        }
+
+        stdout.writeln();
+      }
+
+      // Listen for hotkeys
+      stdin.lineMode = stdin.echoMode = false;
+
+      StreamSubscription<int> sub;
+      sub = stdin.expand((l) => l).listen((ch) async {
+        var ch = stdin.readByteSync();
+
+        if (ch == $r) {
+          _handleWatchEvent(
+              new WatchEvent(ChangeType.MODIFY, '[manual-reload]'), isHot);
+        }
+        if (ch == $R) {
+          //print('Manually restarting server...\n');
+          _handleWatchEvent(
+              new WatchEvent(ChangeType.MODIFY, '[manual-restart]'), false);
+        } else if (ch == $q) {
+          stdin.echoMode = stdin.lineMode = true;
+          close();
+          sub.cancel();
+          exit(0);
+        } else if (ch == $h) {
+          print(
+              'Press "r" to hot reload the Dart VM, and restart the active server.');
+          print(
+              'Press "R" to restart the server, WITHOUT a hot reload of the VM.');
+          print('Press "q" to quit the server.');
+          print('Press "h" to display this help information.');
+          stdout.writeln();
+        }
+      });
     }
 
     return server;
@@ -240,7 +292,7 @@ class HotReloader {
           stderr.writeln('Could not listen to file changes at ${path}: $e');
         });
 
-        print('Listening for file changes at ${path}...');
+        // print('Listening for file changes at ${path}...');
         return true;
       } catch (e) {
         if (e is! FileSystemException) rethrow;
@@ -255,37 +307,43 @@ class HotReloader {
     }
   }
 
-  _handleWatchEvent(WatchEvent e) async {
-    print('${e.path} changed. Reloading server...');
+  _handleWatchEvent(WatchEvent e, [bool hot = true]) async {
+    print('${e.path} changed. Reloading server...\n');
     var old = _server;
 
     if (old != null) {
       // Do this asynchronously, because we really don't care about the old server anymore.
       new Future(() async {
-        // TODO: Instead of disconnecting, just forward websockets to the next server.
         // Disconnect active WebSockets
-        var ws = old.app.container.make(AngelWebSocket) as AngelWebSocket;
+        try {
+          var ws = old.app.container.make<AngelWebSocket>();
 
-        for (var client in ws.clients) {
-          try {
-            await client.close(WebSocketStatus.goingAway);
-          } catch (e) {
-            stderr.writeln(
-                'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
+          for (var client in ws.clients) {
+            try {
+              await client.close(WebSocketStatus.goingAway);
+            } catch (e) {
+              stderr.writeln(
+                  'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
+            }
           }
-        }
 
-        Future.forEach(old.app.shutdownHooks, old.app.configure);
+          await Future.forEach(old.app.shutdownHooks, old.app.configure);
+        } catch (_) {
+          // Fail silently...
+        }
       });
     }
 
     _server = null;
-    var report = await _client.reloadSources(_mainIsolate.id);
 
-    if (!report.success) {
-      stderr.writeln('Hot reload failed!!!');
-      stderr.writeln(report.toString());
-      exit(1);
+    if (hot) {
+      var report = await _client.reloadSources(_mainIsolate.id);
+
+      if (!report.success) {
+        stderr.writeln('Hot reload failed!!!');
+        stderr.writeln(report.toString());
+        exit(1);
+      }
     }
 
     var s = await _generateServer();
@@ -294,6 +352,7 @@ class HotReloader {
   }
 }
 
+/*
 class _Debounce<S> extends StreamTransformerBase<S, S> {
   final Duration _delay;
 
@@ -313,3 +372,4 @@ class _Debounce<S> extends StreamTransformerBase<S, S> {
     });
   }
 }
+*/
