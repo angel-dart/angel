@@ -14,7 +14,8 @@ import 'dart:io'
         Link,
         Platform,
         exit,
-        stderr;
+        stderr,
+        stdout;
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_websocket/server.dart';
@@ -23,6 +24,7 @@ import 'package:dart2_constant/io.dart';
 import 'package:glob/glob.dart';
 import 'package:html_builder/elements.dart';
 import 'package:html_builder/html_builder.dart';
+import 'package:io/ansi.dart';
 import 'package:vm_service_lib/vm_service_lib.dart' as vm;
 import 'package:vm_service_lib/vm_service_lib_io.dart' as vm;
 import 'package:watcher/watcher.dart';
@@ -39,6 +41,11 @@ class HotReloader {
   AngelHttp _server;
   Duration _timeout;
   vm.VM _vmachine;
+
+  /// If `true` (default), then developers can `press 'r' to reload` the application on-the-fly.
+  ///
+  /// This option triggers printing a Flutter-like output to the terminal.
+  final bool enableHotkeys;
 
   /// Invoked to load a new instance of [Angel] on file changes.
   final FutureOr<Angel> Function() generator;
@@ -70,7 +77,8 @@ class HotReloader {
   HotReloader(this.generator, Iterable paths,
       {Duration timeout,
       this.vmServiceHost: 'localhost',
-      this.vmServicePort: 8181}) {
+      this.vmServicePort: 8181,
+      this.enableHotkeys: true}) {
     _timeout = timeout ?? new Duration(seconds: 5);
     _paths.addAll(paths ?? []);
   }
@@ -166,6 +174,20 @@ class HotReloader {
     while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
     var server = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
     server.listen(handleRequest);
+
+    // Print a Flutter-like prompt...
+    if (enableHotkeys) {
+      var host = vmServiceHost == 'localhost' ? '127.0.0.1' : vmServiceHost;
+      var observatoryUri =
+          new Uri(scheme: 'http', host: host, port: vmServicePort);
+      print(styleBold.wrap(
+          '🔥  To hot reload changes while running, press "r". To hot restart (and rebuild state), press "R".'));
+      stdout.write(
+          'An Observatory debugger and profiler on iPhone XS Max is available at: ');
+      print(wrapWith('$observatoryUri', [cyan, styleUnderlined]));
+      print('To quit, press "q".');
+    }
+
     return server;
   }
 
@@ -240,6 +262,7 @@ class HotReloader {
     if (old != null) {
       // Do this asynchronously, because we really don't care about the old server anymore.
       new Future(() async {
+        // TODO: Instead of disconnecting, just forward websockets to the next server.
         // Disconnect active WebSockets
         var ws = old.app.container.make(AngelWebSocket) as AngelWebSocket;
 

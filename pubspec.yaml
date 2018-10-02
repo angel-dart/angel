@@ -10,6 +10,7 @@ dependencies:
   angel_websocket: ^2.0.0-alpha
   glob: ^1.0.0
   html_builder: ^1.0.0
+  io: ^0.3.2
   vm_service_lib: ^0.3.5
   watcher: ^0.9.0
 dev_dependencies:
