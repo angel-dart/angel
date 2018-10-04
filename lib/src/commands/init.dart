@@ -131,8 +131,30 @@ class InitCommand extends Command {
 
       print(
           'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
-      var git = await Process.start("git",
-          ["clone", "--depth", "1", boilerplate.url, projectDir.absolute.path]);
+
+      Process git;
+
+      if (boilerplate.ref == null) {
+        git = await Process.start("git", [
+          "clone",
+          "--depth",
+          "1",
+          boilerplate.url,
+          projectDir.absolute.path
+        ]);
+      } else {
+        // git clone --single-branch -b branch host:/dir.git
+        git = await Process.start("git", [
+          "clone",
+          "--depth",
+          "1",
+          "--single-branch",
+          "-b",
+          boilerplate.ref,
+          boilerplate.url,
+          projectDir.absolute.path
+        ]);
+      }
 
       stdout.addStream(git.stdout);
       stderr.addStream(git.stderr);
@@ -141,8 +163,10 @@ class InitCommand extends Command {
         throw new Exception("Could not clone repo.");
       }
 
+      /*
       if (boilerplate.ref != null) {
-        git = await Process.start("git", ["checkout", boilerplate.ref]);
+        git = await Process
+            .start("git", ["checkout", 'origin/${boilerplate.ref}']);
 
         stdout.addStream(git.stdout);
         stderr.addStream(git.stderr);
@@ -151,6 +175,7 @@ class InitCommand extends Command {
           throw new Exception("Could not checkout branch ${boilerplate.ref}.");
         }
       }
+      */
 
       if (boilerplate.needsPrebuild) {
         await preBuild(projectDir).catchError((_) => null);
