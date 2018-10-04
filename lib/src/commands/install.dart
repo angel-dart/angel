@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:glob/glob.dart';
-import 'package:homedir/homedir.dart';
 import 'package:io/ansi.dart';
 import 'package:mustache4dart/mustache4dart.dart' as mustache;
 import 'package:path/path.dart' as p;

@@ -8,6 +8,11 @@ final String checkmark = ansiOutputEnabled ? '\u2713' : '[Success]';
 
 final String ballot = ansiOutputEnabled ? '\u2717' : '[Failure]';
 
+String get homeDirPath =>
+    Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
+
+Directory get homeDir => new Directory(homeDirPath);
+
 Future<Pubspec> loadPubspec([Directory directory]) {
   directory ??= Directory.current;
   var file = new File.fromUri(directory.uri.resolve('pubspec.yaml'));
