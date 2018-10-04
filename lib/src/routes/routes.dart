@@ -57,7 +57,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
       else {
         if (e.statusCode == 404) {
           return await res
-              .render('error', {'message': 'No file exists at ${req.path}.'});
+              .render('error', {'message': 'No file exists at ${req.uri}.'});
         }
 
         return await res.render('error', {'message': e.message});
