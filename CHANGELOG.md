@@ -1,3 +1,7 @@
+# 2.0.1
+* `deploy systemd` now has an `--install` option, where you can immediately
+spawn the service.
+
 # 2.0.0
 * `init` can now produce either 1.x or 2.x projects.
 * Fixed deps for compatibility with Dart2 stable.
