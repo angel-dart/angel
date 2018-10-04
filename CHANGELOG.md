@@ -1,5 +1,6 @@
-# 1.4.0
+# 2.0.0
 * `init` can now produce either 1.x or 2.x projects.
+* Fixed deps for compatibility with Dart2 stable.
 
 # 1.3.4
 * Fix another typo.

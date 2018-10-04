@@ -9,17 +9,16 @@ dependencies:
   code_builder: ^3.0.0
   dart_style: ^1.0.0
   glob: ^1.1.0
-  homedir: ^0.0.4
   http: ^0.11.3
-  id: ^1.0.0
   io: ^0.3.2
-  inflection: ^0.4.1
-  mustache4dart: ^2.0.0
+  inflection: # Note, no new update has been published, even though I sent a PR...
+      git: https://github.com/gmosx/dart-inflection.git
+  mustache4dart: ^3.0.0-dev.1.0
   path: ^1.0.0
   prompts: ^1.0.0
   pubspec_parse: ^0.1.2
   quiver: ">=0.29.0"
-  recase: ^1.0.0
+  recase: ^2.0.0
   watcher: ^0.9.7
   yaml: ^2.0.0
   #yamlicious: ^0.0.5
