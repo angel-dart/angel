@@ -1,3 +1,6 @@
+# 1.4.0
+* `init` can now produce either 1.x or 2.x projects.
+
 # 1.3.4
 * Fix another typo.
 
