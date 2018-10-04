@@ -125,9 +125,9 @@ class InitCommand extends Command {
 
       print('Choose a project type before continuing:');
 
-      var boilerplate = basicBoilerplate;
-//      var boilerplate = prompts.choose(
-//          'Choose a project type before continuing', boilerplates);
+      //var boilerplate = basicBoilerplate;
+      var boilerplate = prompts.choose(
+          'Choose a project type before continuing', boilerplates);
 
       print(
           'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
@@ -200,14 +200,22 @@ const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
 );
 
 const BoilerplateInfo basicBoilerplate = const BoilerplateInfo(
-  'Basic',
-  'Minimal starting point - A simple server with only a few additional packages.',
+    'Basic',
+    'Minimal starting point for Angel 2.x - A simple server with only a few additional packages.',
+    'https://github.com/angel-dart/angel.git',
+    ref: '2.x');
+
+const BoilerplateInfo legacyBoilerplate = const BoilerplateInfo(
+  'Legacy',
+  'Minimal starting point for applications running Angel 1.1.x.',
   'https://github.com/angel-dart/angel.git',
+  ref: '1.1.x',
 );
 
 const List<BoilerplateInfo> boilerplates = const [
   basicBoilerplate,
-  ormBoilerplate,
+  legacyBoilerplate,
+  //ormBoilerplate,
 ];
 
 class BoilerplateInfo {
