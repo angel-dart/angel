@@ -14,6 +14,8 @@ class SystemdCommand extends Command {
 
   SystemdCommand() {
     argParser
+      ..addOption('install',
+          abbr: 'i', help: 'A name to install this service as on the system.')
       ..addOption('user',
           abbr: 'u',
           defaultsTo: 'web',
@@ -45,8 +47,34 @@ WantedBy=multi-user.target
     '''
         .trim();
 
-    if (!argResults.wasParsed('out')) {
+    if (!argResults.wasParsed('out') && !argResults.wasParsed('install')) {
       print(systemdText);
+    } else if (argResults.wasParsed('install')) {
+      var systemdPath = argResults.wasParsed('out')
+          ? argResults['out'] as String
+          : p.join('etc', 'systemd', 'system');
+      var serviceFilename = p.join(systemdPath,
+          p.setExtension(argResults['install'] as String, '.service'));
+      var file = new File(serviceFilename);
+      await file.create(recursive: true);
+      await file.writeAsString(systemdText);
+      print(green.wrap(
+          "$checkmark Successfully generated systemd service in '${file.path}'."));
+
+      // sudo systemctl daemon-reload
+      if (await runCommand('sudo', ['systemctl', 'daemon-reload'])) {
+        // sudo service <name> start
+        if (await runCommand('sudo', [
+          'service',
+          p.basenameWithoutExtension(serviceFilename),
+          'start'
+        ])) {
+        } else {
+          print(red.wrap('$ballot Failed to install service system-wide.'));
+        }
+      } else {
+        print(red.wrap('$ballot Failed to install service system-wide.'));
+      }
     } else {
       var file = new File(argResults['out'] as String);
       await file.create(recursive: true);

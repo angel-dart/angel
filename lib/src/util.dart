@@ -25,3 +25,26 @@ Future savePubspec(Pubspec pubspec) async {
   // TODO: Save pubspec for real?
   //var text = toYamlString(pubspec);
 }
+
+Future<bool> runCommand(String exec, List<String> args) async {
+  var s = '$exec ${args.join(' ')}'.trim();
+  stdout.write(darkGray.wrap('Running `$s`... '));
+
+  try {
+    var p = await Process.start(exec, args);
+    var code = await p.exitCode;
+
+    if (code == 0) {
+      print(green.wrap(checkmark));
+      return true;
+    } else {
+      print(red.wrap(ballot));
+      await stdout.addStream(p.stdout);
+      await stderr.addStream(p.stderr);
+      return false;
+    }
+  } catch (e) {
+    print(red.wrap('$ballot Failed to run process.'));
+    return false;
+  }
+}
