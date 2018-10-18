@@ -10,7 +10,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  angel_mongo: ^1.0.0
+  angel_mongo: ^2.0.0
 ```
 
 # Usage
@@ -27,12 +27,12 @@ class User extends Model {
 }
 
 main() async {
-    Db db = new Db('mongodb://localhost:27017/local');
+    var db = new Db('mongodb://localhost:27017/local');
     await db.open();
     
-    app.use('/api/users', new TypedService<User>(new MongoService(db.collection("users"))));
+    var service = app.use('/api/users', new MongoService(db.collection("users")));
     
-    app.service('api/users').afterCreated.listen((event) {
+    service.afterCreated.listen((event) {
         print("New user: ${event.result}");
     });
 }
