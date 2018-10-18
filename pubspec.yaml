@@ -8,6 +8,7 @@ environment:
 dependencies:
   angel_framework: ^2.0.0-alpha
   json_god: ">=2.0.0-beta <3.0.0"
+  merge_map: ^1.0.0
   mongo_dart: ">= 0.2.7 < 1.0.0"
 dev_dependencies:
   http: ">= 0.11.3 < 0.12.0"
