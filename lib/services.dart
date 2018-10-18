@@ -1,33 +1,19 @@
 library angel_mongo.services;
 
 import 'dart:async';
-import 'dart:io';
-import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/common.dart' show Model;
-import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 part 'mongo_service.dart';
 
-part 'mongo_service_typed.dart';
-
-Map _transformId(Map doc) {
-  Map result = new Map.from(doc);
+Map<String, dynamic> _transformId(Map<String, dynamic> doc) {
+  var result = new Map<String, dynamic>.from(doc);
   result
     ..['id'] = doc['_id']
     ..remove('_id');
 
   return result;
-}
-
-_lastItem(DbCollection collection, Function _jsonify, [Map params]) async {
-  return (await (await collection
-              .find(where.sortBy('\$natural', descending: true)))
-          .toList())
-      .map((x) => _jsonify(x, params))
-      .first;
 }
 
 ObjectId _makeId(id) {
@@ -40,7 +26,7 @@ ObjectId _makeId(id) {
 
 const List<String> _SENSITIVE = const ['id', '_id', 'createdAt', 'updatedAt'];
 
-Map _removeSensitive(Map data) {
+Map<String, dynamic> _removeSensitive(Map<String, dynamic> data) {
   return data.keys
       .where((k) => !_SENSITIVE.contains(k))
       .fold({}, (map, key) => map..[key] = data[key]);
@@ -48,7 +34,7 @@ Map _removeSensitive(Map data) {
 
 const List<String> _NO_QUERY = const ['__requestctx', '__responsectx'];
 
-Map _filterNoQuery(Map data) {
+Map<String, dynamic> _filterNoQuery(Map<String, dynamic> data) {
   return data.keys.fold({}, (map, key) {
     var value = data[key];
 
@@ -56,6 +42,6 @@ Map _filterNoQuery(Map data) {
         value is RequestContext ||
         value is ResponseContext) return map;
     if (key is! Map) return map..[key] = value;
-    return map..[key] = _filterNoQuery(value);
+    return map..[key] = _filterNoQuery(value as Map<String, dynamic>);
   });
 }

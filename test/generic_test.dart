@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_mongo/angel_mongo.dart';
 import 'package:http/http.dart' as http;
@@ -7,8 +6,8 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'package:test/test.dart';
 
 final headers = {
-  HttpHeaders.ACCEPT: ContentType.JSON.mimeType,
-  HttpHeaders.CONTENT_TYPE: ContentType.JSON.mimeType
+  'accept': 'application/json',
+  'content-type': 'application/json'
 };
 
 final Map testGreeting = {'to': 'world'};
@@ -23,18 +22,19 @@ wireHooked(HookedService hooked) {
 main() {
   group('Generic Tests', () {
     Angel app = new Angel();
+    AngelHttp transport = new AngelHttp(app);
     http.Client client;
     Db db = new Db('mongodb://localhost:27017/angel_mongo');
     DbCollection testData;
     String url;
-    HookedService greetingService;
+    HookedService<String, Map<String, dynamic>, MongoService> greetingService;
 
     setUp(() async {
       client = new http.Client();
       await db.open();
       testData = db.collection('test_data');
       // Delete anything before we start
-      await testData.remove();
+      await testData.remove({});
 
       var service = new MongoService(testData, debug: true);
       greetingService = new HookedService(service);
@@ -42,20 +42,15 @@ main() {
 
       app.use('/api', greetingService);
 
-      app.fatalErrorStream.listen((AngelFatalError e) {
-        print('Fatal error: ${e.error}');
-        print(e.stack);
-      });
-
-      var server = await app.startServer(InternetAddress.LOOPBACK_IP_V4, 0);
+      var server = await transport.startServer('127.0.0.1', 0);
       url = "http://${server.address.host}:${server.port}";
     });
 
     tearDown(() async {
       // Delete anything left over
-      await testData.remove();
+      await testData.remove({});
       await db.close();
-      await app.httpServer.close(force: true);
+      await transport.close();
       client = null;
       url = null;
       greetingService = null;
@@ -150,8 +145,10 @@ main() {
       expect(queried[2]["id"], equals(world["id"]));*/
 
       queried = await greetingService.index({
-        "\$query": {"_id": where.id(new ObjectId.fromHexString(world["id"]))}
-      });
+        "\$query": {
+          "_id": where.id(new ObjectId.fromHexString(world["id"] as String))
+        }
+      }) as List<Map<String, dynamic>>;
       print(queried);
       expect(queried.length, equals(1));
       expect(queried[0], equals(world));

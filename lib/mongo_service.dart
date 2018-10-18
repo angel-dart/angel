@@ -1,7 +1,7 @@
 part of angel_mongo.services;
 
 /// Manipulates data from MongoDB as Maps.
-class MongoService extends Service {
+class MongoService extends Service<String, Map<String, dynamic>> {
   DbCollection collection;
 
   /// If set to `true`, clients can remove all items by passing a `null` `id` to `remove`.
@@ -18,14 +18,14 @@ class MongoService extends Service {
       {this.allowRemoveAll: false, this.allowQuery: true, this.debug: true})
       : super();
 
-  SelectorBuilder _makeQuery([Map params_]) {
+  SelectorBuilder _makeQuery([Map<String, dynamic> params_]) {
     Map params = new Map.from(params_ ?? {});
     params = params..remove('provider');
     SelectorBuilder result = where.exists('_id');
 
     // You can pass a SelectorBuilder as 'query';
     if (params['query'] is SelectorBuilder) {
-      return params['query'];
+      return params['query'] as SelectorBuilder;
     }
 
     for (var key in params.keys) {
@@ -47,18 +47,18 @@ class MongoService extends Service {
         } else if (params[key] is String && key == r'$sort') {
           // If they send just a string, then we'll sort
           // by that, ascending
-          result = result.sortBy(params[key]);
+          result = result.sortBy(params[key] as String);
         }
       } else if (key == 'query' &&
           (allowQuery == true || !params.containsKey('provider'))) {
         Map query = params[key];
         query.forEach((key, v) {
-          var value = v is Map ? _filterNoQuery(v) : v;
+          var value = v is Map<String, dynamic> ? _filterNoQuery(v) : v;
 
           if (!_NO_QUERY.contains(key) &&
               value is! RequestContext &&
               value is! ResponseContext) {
-            result = result.and(where.eq(key, value));
+            result = result.and(where.eq(key as String, value));
           }
         });
       }
@@ -67,8 +67,9 @@ class MongoService extends Service {
     return result;
   }
 
-  _jsonify(Map doc, [Map params]) {
-    Map result = {};
+  Map<String, dynamic> _jsonify(Map<String, dynamic> doc,
+      [Map<String, dynamic> params]) {
+    var result = <String, dynamic>{};
 
     for (var key in doc.keys) {
       var value = doc[key];
@@ -83,7 +84,8 @@ class MongoService extends Service {
   }
 
   @override
-  Future<List> index([Map params]) async {
+  Future<List<Map<String, dynamic>>> index(
+      [Map<String, dynamic> params]) async {
     return await (await collection.find(_makeQuery(params)))
         .map((x) => _jsonify(x, params))
         .toList();
@@ -92,9 +94,9 @@ class MongoService extends Service {
   static const String _NONCE_KEY = '__angel__mongo__nonce__key__';
 
   @override
-  Future create(data, [Map params]) async {
-    Map item = (data is Map) ? data : god.serializeObject(data);
-    item = _removeSensitive(item);
+  Future<Map<String, dynamic>> create(Map<String, dynamic> data,
+      [Map<String, dynamic> params]) async {
+    var item = _removeSensitive(data);
 
     try {
       String nonce = (await collection.db.getNonce())['nonce'];
@@ -110,9 +112,10 @@ class MongoService extends Service {
   }
 
   @override
-  Future read(id, [Map params]) async {
+  Future<Map<String, dynamic>> read(String id,
+      [Map<String, dynamic> params]) async {
     ObjectId _id = _makeId(id);
-    Map found = await collection.findOne(where.id(_id).and(_makeQuery(params)));
+    var found = await collection.findOne(where.id(_id).and(_makeQuery(params)));
 
     if (found == null) {
       throw new AngelHttpException.notFound(
@@ -123,22 +126,20 @@ class MongoService extends Service {
   }
 
   @override
-  Future modify(id, data, [Map params]) async {
-    var target;
+  Future<Map<String, dynamic>> modify(String id, data,
+      [Map<String, dynamic> params]) async {
+    Map<String, dynamic> target;
 
     try {
       target = await read(id, params);
     } on AngelHttpException catch (e) {
-      if (e.statusCode == HttpStatus.NOT_FOUND)
+      if (e.statusCode == 404)
         return await create(data, params);
       else
         rethrow;
     }
 
-    Map result = mergeMap([
-      target is Map ? target : god.serializeObject(target),
-      _removeSensitive(data)
-    ]);
+    var result = mergeMap([target, _removeSensitive(data)]);
     //result['updatedAt'] = new DateTime.now().toIso8601String();
 
     try {
@@ -154,8 +155,9 @@ class MongoService extends Service {
   }
 
   @override
-  Future update(id, data, [Map params]) async {
-    Map result = _removeSensitive(data);
+  Future<Map<String, dynamic>> update(String id, Map<String, dynamic> data,
+      [Map<String, dynamic> params]) async {
+    var result = _removeSensitive(data);
     result['_id'] = _makeId(id);
     /*result['createdAt'] =
         target is Map ? target['createdAt'] : target.createdAt;
@@ -181,7 +183,8 @@ class MongoService extends Service {
   }
 
   @override
-  Future remove(id, [Map params]) async {
+  Future<Map<String, dynamic>> remove(String id,
+      [Map<String, dynamic> params]) async {
     if (id == null ||
         id == 'null' &&
             (allowRemoveAll == true ||

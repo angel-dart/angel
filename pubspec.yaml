@@ -1,12 +1,14 @@
 name: angel_mongo
-version: 1.1.6
+version: 2.0.0-rc.0
 description: MongoDB-enabled services for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_mongo
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
-  angel_framework: ">=1.0.0-dev < 2.0.0"
+  angel_framework: ^2.0.0-alpha
   json_god: ">=2.0.0-beta <3.0.0"
   mongo_dart: ">= 0.2.7 < 1.0.0"
 dev_dependencies:
   http: ">= 0.11.3 < 0.12.0"
-  test: ">= 0.12.13 < 0.13.0"
+  test: ^1.0.0
