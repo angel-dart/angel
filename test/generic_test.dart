@@ -21,8 +21,8 @@ wireHooked(HookedService hooked) {
 
 main() {
   group('Generic Tests', () {
-    Angel app = new Angel();
-    AngelHttp transport = new AngelHttp(app);
+    Angel app;
+    AngelHttp transport;
     http.Client client;
     Db db = new Db('mongodb://localhost:27017/angel_mongo');
     DbCollection testData;
@@ -30,11 +30,13 @@ main() {
     HookedService<String, Map<String, dynamic>, MongoService> greetingService;
 
     setUp(() async {
+      app = new Angel();
+      transport = new AngelHttp(app);
       client = new http.Client();
       await db.open();
       testData = db.collection('test_data');
       // Delete anything before we start
-      await testData.remove({});
+      await testData.remove(<String, dynamic>{});
 
       var service = new MongoService(testData, debug: true);
       greetingService = new HookedService(service);
@@ -48,7 +50,7 @@ main() {
 
     tearDown(() async {
       // Delete anything left over
-      await testData.remove({});
+      await testData.remove(<String, dynamic>{});
       await db.close();
       await transport.close();
       client = null;
@@ -63,7 +65,8 @@ main() {
 
       response = await client.get("$url/api");
       expect(response.statusCode, isIn([200, 201]));
-      List<Map> users = god.deserialize(response.body);
+      List<Map> users =
+          god.deserialize(response.body, outputType: <Map>[].runtimeType);
       expect(users.length, equals(1));
     });
 
@@ -130,7 +133,7 @@ main() {
 
       var response = await client.get("$url/api?to=world");
       print(response.body);
-      List<Map> queried = god.deserialize(response.body);
+      List<Map> queried = god.deserialize(response.body, outputType: <Map>[].runtimeType);
       expect(queried.length, equals(1));
       expect(queried[0].keys.length, equals(2));
       expect(queried[0]["id"], equals(world["id"]));
