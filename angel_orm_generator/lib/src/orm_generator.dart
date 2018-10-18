@@ -48,9 +48,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           ['dart:async', p.basename(inputId.uri.path)]);
 
       switch (ctx.ormAnnotation.type) {
-        case OrmType.mongoDB:
-          imports.add('package:mongo_dart/mongo_dart.dart');
-          break;
+//        case OrmType.mongoDB:
+//          imports.add('package:mongo_dart/mongo_dart.dart');
+//          break;
         case OrmType.postgreSql:
           imports.add('package:postgres/postgres.dart');
           break;
@@ -64,9 +64,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       String dbExtension;
 
       switch (ctx.ormAnnotation.type) {
-        case OrmType.mongoDB:
-          dbExtension = 'mongodb';
-          break;
+//        case OrmType.mongoDB:
+//          dbExtension = 'mongodb';
+//          break;
         case OrmType.rethinkDB:
           dbExtension = 'rethinkdb';
           break;

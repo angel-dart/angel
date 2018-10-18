@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart' hide LibraryBuilder;
 import 'package:path/path.dart' as p;
@@ -66,7 +67,34 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
             ..requiredParameters.add(new Parameter((b) => b
               ..name = 'connection'
               ..toThis = true));
-        }));
+        }))
+        ..methods.add(buildParseRowMethod(ctx));
+    });
+  }
+
+  Method buildParseRowMethod(OrmBuildContext ctx) {
+    return new Method((m) {
+      m
+        ..name = 'parseRow'
+        ..static = true
+        ..returns = ctx.buildContext.modelClassType
+        ..requiredParameters.add(new Parameter((b) => b
+          ..name = 'row'
+          ..type = refer('List')))
+        ..body = new Block((b) {
+          var args = <String, Expression>{};
+
+          for (int i = 0; i < ctx.buildContext.fields.length; i++) {
+            var field = ctx.buildContext.fields[i];
+            args[field.name] = refer('row')
+                .index(literalNum(i))
+                .asA(convertTypeReference(field.type));
+          }
+
+          var returnValue =
+              ctx.buildContext.modelClassType.newInstance([], args);
+          b.addExpression(returnValue.returned);
+        });
     });
   }
 }

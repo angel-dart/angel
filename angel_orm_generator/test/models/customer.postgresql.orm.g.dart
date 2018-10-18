@@ -10,4 +10,11 @@ class _PostgreSqlCustomerOrmImpl implements CustomerOrm {
   _PostgreSqlCustomerOrmImpl(this.connection);
 
   final PostgreSQLConnection connection;
+
+  static Customer parseRow(List row) {
+    return new Customer(
+        id: (row[0] as String),
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime));
+  }
 }
