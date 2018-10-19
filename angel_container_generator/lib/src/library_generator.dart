@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_container/angel_container.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:recase/recase.dart';
@@ -18,6 +19,15 @@ class ReflectorLibraryGenerator {
   Library generate() {
     return new Library((lib) {
       lib.body.add(generateReflectorClass());
+
+      // Generate a ReflectedClass for each type
+      for (var type in annotation.types) {
+        if (type is InterfaceType) {
+          lib.body.add(generateReflectedClass(type, lib));
+        } else {
+          // TODO: Handle these
+        }
+      }
     });
   }
 
@@ -38,6 +48,45 @@ class ReflectorLibraryGenerator {
       clazz.constructors.add(new Constructor((b) {
         b..constant = true;
       }));
+    });
+  }
+
+  Reference _convertDartType(DartType type) {
+    if (type is InterfaceType) {
+      return new TypeReference((b) => b
+        ..symbol = type.name
+        ..types.addAll(type.typeArguments.map(_convertDartType)));
+    } else {
+      return refer(type.name);
+    }
+  }
+
+  Class generateReflectedClass(InterfaceType type, LibraryBuilder lib) {
+    return new Class((clazz) {
+      var rc = new ReCase(type.name);
+      clazz
+        ..name = '_Reflected${rc.pascalCase}Class'
+        ..extend = refer('ReflectedClass');
+
+      // Create const instance
+      lib.body.add(refer(clazz.name)
+          .constInstanceNamed('_', [])
+          .assignVar('_reflected${rc.pascalCase}Class', refer('ReflectedClass'))
+          .statement);
+
+      // Add const constructor
+      var superArgs = <Expression>[
+        literalString(type.name), // name
+        literalConstList([]), // typeParameters
+        literalConstList([]), // annotations
+        literalConstList([]), // constructors
+        literalConstList([]), // declarations,
+        _convertDartType(type), // reflectedType
+      ];
+      clazz.constructors.add(new Constructor((b) => b
+        ..constant = true
+        ..name = '_'
+        ..initializers.add(refer('super').call(superArgs).code)));
     });
   }
 }
