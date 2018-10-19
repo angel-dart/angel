@@ -1,3 +1,6 @@
+# 2.0.0-alpha.5
+* `MapService` methods now explicitly return `Map<String, dynamic>`.
+
 # 2.0.0-alpha.4
 * Renamed `waterfall` to `chain`.
 * Renamed `Routable.service` to `Routable.findService`.

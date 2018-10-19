@@ -47,7 +47,7 @@ class MapService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
-  Future<List> index([Map<String, dynamic> params]) {
+  Future<List<Map<String, dynamic>>> index([Map<String, dynamic> params]) {
     if (allowQuery == false || params == null || params['query'] is! Map)
       return new Future.value(items);
     else {
@@ -66,14 +66,15 @@ class MapService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
-  Future<Map> read(String id, [Map<String, dynamic> params]) {
+  Future<Map<String, dynamic>> read(String id, [Map<String, dynamic> params]) {
     return new Future.value(items.firstWhere(_matchesId(id),
         orElse: () => throw new AngelHttpException.notFound(
             message: 'No record found for ID $id')));
   }
 
   @override
-  Future<Map> create(Map<String, dynamic> data, [Map<String, dynamic> params]) {
+  Future<Map<String, dynamic>> create(Map<String, dynamic> data,
+      [Map<String, dynamic> params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
           message:
@@ -92,7 +93,7 @@ class MapService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
-  Future<Map> modify(String id, Map<String, dynamic> data,
+  Future<Map<String, dynamic>> modify(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
@@ -112,7 +113,7 @@ class MapService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
-  Future<Map> update(String id, Map<String, dynamic> data,
+  Future<Map<String, dynamic>> update(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
     if (data is! Map)
       throw new AngelHttpException.badRequest(
@@ -140,7 +141,8 @@ class MapService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
-  Future<Map> remove(String id, [Map<String, dynamic> params]) {
+  Future<Map<String, dynamic>> remove(String id,
+      [Map<String, dynamic> params]) {
     if (id == null ||
         id == 'null' &&
             (allowRemoveAll == true ||
