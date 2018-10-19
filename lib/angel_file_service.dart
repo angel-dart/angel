@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:pool/pool.dart';
 
 /// Persists in-memory changes to a file on disk.
-class JsonFileService extends Service {
+class JsonFileService extends Service<String, Map<String, dynamic>> {
   FileStat _lastStat;
   final Pool _mutex = new Pool(1);
   MapService _store;
@@ -58,15 +58,17 @@ class JsonFileService extends Service {
   }
 
   @override
-  Future<List> index([Map params]) async =>
+  Future<List<Map<String, dynamic>>> index(
+          [Map<String, dynamic> params]) async =>
       _load().then((_) => _store.index(params));
 
   @override
-  Future<Map> read(id, [Map params]) =>
+  Future<Map<String, dynamic>> read(id, [Map<String, dynamic> params]) =>
       _load().then((_) => _store.read(id, params));
 
   @override
-  Future<Map> create(data, [Map params]) async {
+  Future<Map<String, dynamic>> create(data,
+      [Map<String, dynamic> params]) async {
     await _load();
     var created = await _store.create(data, params);
     await _save();
@@ -74,7 +76,7 @@ class JsonFileService extends Service {
   }
 
   @override
-  Future<Map> remove(id, [Map params]) async {
+  Future<Map<String, dynamic>> remove(id, [Map<String, dynamic> params]) async {
     await _load();
     var r = await _store.remove(id, params);
     await _save();
@@ -82,7 +84,8 @@ class JsonFileService extends Service {
   }
 
   @override
-  Future<Map> update(id, data, [Map params]) async {
+  Future<Map<String, dynamic>> update(id, data,
+      [Map<String, dynamic> params]) async {
     await _load();
     var r = await _store.update(id, data, params);
     await _save();
@@ -90,7 +93,8 @@ class JsonFileService extends Service {
   }
 
   @override
-  Future<Map> modify(id, data, [Map params]) async {
+  Future<Map<String, dynamic>> modify(id, data,
+      [Map<String, dynamic> params]) async {
     await _load();
     var r = await _store.update(id, data, params);
     await _save();
@@ -117,7 +121,8 @@ Map _jsonify(Map map) {
 
 dynamic _revive(x) {
   if (x is Map) {
-    return x.keys.fold<Map>({}, (out, k) => out..[k] = _revive(x[k]));
+    return x.keys.fold<Map<String, dynamic>>(
+        {}, (out, k) => out..[k.toString()] = _revive(x[k]));
   } else if (x is Iterable)
     return x.map(_revive).toList();
   else if (x is String) {

@@ -1,5 +1,4 @@
 import 'package:angel_file_service/angel_file_service.dart';
-import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';

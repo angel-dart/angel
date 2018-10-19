@@ -1,14 +1,13 @@
 name: angel_file_service
-version: 1.1.2
+version: 2.0.0
 description: Angel service that persists data to a file on disk.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/file_service
 environment:
-  sdk: ">=1.8.0 <3.0.0"
+  sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
-  angel_framework: ^1.1.0-alpha
-  dart2_constant: ^1.0.0
-  file: ^2.0.0
+  angel_framework: ^2.0.0-alpha
+  file: ^5.0.0
   pool: ^1.0.0
 dev_dependencies:
-  test:
+  test: ^1.0.0

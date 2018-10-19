@@ -1,3 +1,8 @@
+# 2.0.0
+* Dart/Angel 2 update.
+* Remove `package:dart2_constant`
+* Update `package:file` to `^5.0.0`.
+
 # 1.1.2
 * Added tests, because tests.
 
