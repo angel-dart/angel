@@ -1,3 +1,4 @@
+import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_redis/angel_redis.dart';
 import 'package:resp_client/resp_client.dart';
 import 'package:resp_client/resp_commands.dart';
@@ -47,5 +48,11 @@ main() async {
     var id = 'gelatin${new DateTime.now().millisecondsSinceEpoch}';
     var input = await service.create({'id': id, 'bar': 'baz'});
     expect(await service.remove(id), input);
+    expect(await service.respCommands.exists([id]), 0);
+  });
+
+  test('remove nonexistent', () async {
+    expect(() => service.remove('definitely_does_not_exist'),
+        throwsA(const TypeMatcher<AngelHttpException>()));
   });
 }

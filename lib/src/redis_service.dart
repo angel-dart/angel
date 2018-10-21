@@ -64,6 +64,11 @@ class RedisService extends Service<String, Map<String, dynamic>> {
     await client.writeArrayOfBulk(['DEL', _applyPrefix(id)]);
     var result = await client.writeArrayOfBulk(['EXEC']);
     var str = result.payload[0] as RespBulkString;
-    return json.decode(str.payload);
+
+    if (str.payload == null)
+      throw new AngelHttpException.notFound(
+          message: 'No record found for ID $id');
+    else
+      return json.decode(str.payload);
   }
 }
