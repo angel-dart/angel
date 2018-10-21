@@ -7,9 +7,11 @@ environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
   angel_framework: ^2.0.0-alpha
+  collection: ^1.0.0
   meta: ^1.0.0
   pool: ^1.0.0
 dev_dependencies:
   angel_test: ^2.0.0-alpha
   glob: ^1.0.0
+  http: any
   test: ^1.0.0
