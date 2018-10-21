@@ -264,7 +264,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   @override
-  Future index([Map<String, dynamic> _params]) {
+  Future<List<Data>> index([Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeIndexed
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -290,7 +290,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   @override
-  Future read(Id id, [Map<String, dynamic> _params]) {
+  Future<Data> read(Id id, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeRead
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -316,7 +316,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   @override
-  Future create(Data data, [Map<String, dynamic> _params]) {
+  Future<Data> create(Data data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeCreated
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -342,7 +342,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   @override
-  Future modify(Id id, Data data, [Map<String, dynamic> _params]) {
+  Future<Data> modify(Id id, Data data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeModified
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -368,7 +368,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   @override
-  Future update(Id id, Data data, [Map<String, dynamic> _params]) {
+  Future<Data> update(Id id, Data data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeUpdated
         ._emit(new HookedServiceEvent(false, _getRequest(_params),
@@ -394,7 +394,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   @override
-  Future remove(Id id, [Map<String, dynamic> _params]) {
+  Future<Data> remove(Id id, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeRemoved
         ._emit(new HookedServiceEvent(false, _getRequest(_params),

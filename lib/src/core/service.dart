@@ -78,51 +78,49 @@ class Service<Id, Data> extends Routable {
   /// If the result is a non-empty [Iterable], [findOne] will return `it.first`, where `it` is the aforementioned [Iterable].
   ///
   /// A custom [errorMessage] may be provided.
-  Future findOne(
+  Future<Data> findOne(
       [Map<String, dynamic> params,
       String errorMessage = 'No record was found matching the given query.']) {
     return index(params).then((result) {
       if (result == null) {
         throw new AngelHttpException.notFound(message: errorMessage);
-      } else if (result is Iterable) {
+      } else {
         if (result.isEmpty) {
           throw new AngelHttpException.notFound(message: errorMessage);
         } else {
           return result.first;
         }
-      } else {
-        return result;
       }
     });
   }
 
   /// Retrieves all resources.
-  Future index([Map<String, dynamic> params]) {
+  Future<List<Data>> index([Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Retrieves the desired resource.
-  Future read(Id id, [Map<String, dynamic> params]) {
+  Future<Data> read(Id id, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Creates a resource.
-  Future create(Data data, [Map<String, dynamic> params]) {
+  Future<Data> create(Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Modifies a resource.
-  Future modify(Id id, Data data, [Map<String, dynamic> params]) {
+  Future<Data> modify(Id id, Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Overwrites a resource.
-  Future update(Id id, Data data, [Map<String, dynamic> params]) {
+  Future<Data> update(Id id, Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 
   /// Removes the given resource.
-  Future remove(Id id, [Map<String, dynamic> params]) {
+  Future<Data> remove(Id id, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
   }
 

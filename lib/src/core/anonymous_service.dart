@@ -6,18 +6,18 @@ import 'service.dart';
 ///
 /// Well-suited for testing.
 class AnonymousService<Id, Data> extends Service<Id, Data> {
-  FutureOr Function([Map<String, dynamic>]) _index;
-  FutureOr Function(Id, [Map<String, dynamic>]) _read, _remove;
-  FutureOr Function(Data, [Map<String, dynamic>]) _create;
-  Function(Id, Data, [Map<String, dynamic>]) _modify, _update;
+  FutureOr<List<Data>> Function([Map<String, dynamic>]) _index;
+  FutureOr<Data> Function(Id, [Map<String, dynamic>]) _read, _remove;
+  FutureOr<Data> Function(Data, [Map<String, dynamic>]) _create;
+  FutureOr<Data> Function(Id, Data, [Map<String, dynamic>]) _modify, _update;
 
   AnonymousService(
-      {FutureOr index([Map params]),
-      FutureOr read(Id id, [Map params]),
-      FutureOr create(Data data, [Map params]),
-      FutureOr modify(Id id, Data data, [Map params]),
-      FutureOr update(Id id, Data data, [Map params]),
-      FutureOr remove(Id id, [Map params])})
+      {FutureOr<List<Data>> index([Map params]),
+      FutureOr<Data> read(Id id, [Map params]),
+      FutureOr<Data> create(Data data, [Map params]),
+      FutureOr<Data> modify(Id id, Data data, [Map params]),
+      FutureOr<Data> update(Id id, Data data, [Map params]),
+      FutureOr<Data> remove(Id id, [Map params])})
       : super() {
     _index = index;
     _read = read;

@@ -3,8 +3,8 @@ import 'package:test/test.dart';
 
 main() {
   test('custom methods', () async {
-    var svc = new AnonymousService(
-        index: ([p]) async => 'index',
+    var svc = new AnonymousService<String, String>(
+        index: ([p]) async => ['index'],
         read: (id, [p]) async => 'read',
         create: (data, [p]) async => 'create',
         modify: (id, data, [p]) async => 'modify',
