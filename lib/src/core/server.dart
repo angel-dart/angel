@@ -306,24 +306,26 @@ class Angel extends Routable {
   /// Run a function after injecting from service container.
   /// If this function has been reflected before, then
   /// the execution will be faster, as the injection requirements were stored beforehand.
-  Future runContained(
-      Function handler, RequestContext req, ResponseContext res) {
+  Future runContained(Function handler, RequestContext req, ResponseContext res,
+      [Container container]) {
     return new Future.sync(() {
       if (_preContained.containsKey(handler)) {
-        return handleContained(handler, _preContained[handler])(req, res);
+        return handleContained(handler, _preContained[handler], container)(
+            req, res);
       }
 
-      return runReflected(handler, req, res);
+      return runReflected(handler, req, res, container);
     });
   }
 
   /// Runs with DI, and *always* reflects. Prefer [runContained].
-  Future runReflected(
-      Function handler, RequestContext req, ResponseContext res) {
+  Future runReflected(Function handler, RequestContext req, ResponseContext res,
+      [Container container]) {
     var h = handleContained(
         handler,
         _preContained[handler] =
-            preInject(handler, req.app.container.reflector));
+            preInject(handler, req.app.container.reflector),
+        container);
     return new Future.sync(() => h(req, res));
     // return   closureMirror.apply(args).reflectee;
   }

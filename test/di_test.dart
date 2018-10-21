@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:angel_container/angel_container.dart';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
@@ -42,6 +43,15 @@ main() {
     client.close();
     client = null;
     await server.close(force: true);
+  });
+
+  test('runContained with custom container', () async {
+    var app = new Angel();
+    var c = new Container(const EmptyReflector());
+    c.registerSingleton(new Todo(text: 'Hey!'));
+
+    var r = await app.runContained((Todo t) => t, null, null, c);
+    expect(r, c);
   });
 
   test("singleton in route", () async {

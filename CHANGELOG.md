@@ -1,3 +1,6 @@
+# 2.0.0-alpha.6
+* Allow passing a custom `Container` to `handleContained` and co.
+
 # 2.0.0-alpha.5
 * `MapService` methods now explicitly return `Map<String, dynamic>`.
 

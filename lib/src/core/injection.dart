@@ -23,8 +23,9 @@ RequestHandler ioc(Function handler, {Iterable<String> optional: const []}) {
 }
 
 resolveInjection(requirement, InjectionRequest injection, RequestContext req,
-    ResponseContext res, bool throwOnUnresolved) {
+    ResponseContext res, bool throwOnUnresolved, [Container container]) {
   var propFromApp;
+  container ??= req?.container ?? res?.app?.container;
 
   if (requirement == RequestContext) {
     return req;
@@ -56,11 +57,11 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     if (req.params.containsKey(key) ||
         req.app.configuration.containsKey(key) ||
         _primitiveTypes.contains(type)) {
-      return resolveInjection(key, injection, req, res, throwOnUnresolved);
+      return resolveInjection(key, injection, req, res, throwOnUnresolved, container);
     } else
-      return resolveInjection(type, injection, req, res, throwOnUnresolved);
+      return resolveInjection(type, injection, req, res, throwOnUnresolved, container);
   } else if (requirement is Type && requirement != dynamic) {
-    return req.app.container.make(requirement);
+    return container.make(requirement);
   } else if (throwOnUnresolved) {
     throw new ArgumentError(
         '$requirement cannot be injected into a request handler.');
@@ -78,7 +79,8 @@ bool suitableForInjection(
 }
 
 /// Handles a request with a DI-enabled handler.
-RequestHandler handleContained(Function handler, InjectionRequest injection) {
+RequestHandler handleContained(Function handler, InjectionRequest injection,
+    [Container container]) {
   return (RequestContext req, ResponseContext res) {
     if (injection.parameters.isNotEmpty &&
         injection.parameters.values.any((p) => p.match != null) &&
@@ -89,11 +91,12 @@ RequestHandler handleContained(Function handler, InjectionRequest injection) {
 
     Map<Symbol, dynamic> named = {};
     args.addAll(injection.required
-        .map((r) => resolveInjection(r, injection, req, res, true)));
+        .map((r) => resolveInjection(r, injection, req, res, true, container)));
 
     injection.named.forEach((k, v) {
       var name = new Symbol(k);
-      named[name] = resolveInjection([k, v], injection, req, res, false);
+      named[name] =
+          resolveInjection([k, v], injection, req, res, false, container);
     });
 
     return Function.apply(handler, args, named);
