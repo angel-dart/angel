@@ -8,6 +8,8 @@ Redis-enabled services for the Angel framework.
 and thereby cache the results of calling an upstream database.
 
 ## Installation
+`package:angel_redis` requires Angel 2.
+
 In your `pubspec.yaml`:
 
 ```yaml
@@ -36,6 +38,7 @@ when caching another database, you'll preserve the ID or primary key of an item.
 `id` is present, then an ID will be created via an `INCR` call.
 
 ## Example
+Also present at `example/main.dart`:
 
 ```dart
 import 'package:angel_redis/angel_redis.dart';
