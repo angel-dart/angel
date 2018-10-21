@@ -34,4 +34,12 @@ main() async {
     var input = await service.create({'id': id, 'bar': 'baz'});
     expect(await service.read(id), input);
   });
+
+  test('update', () async {
+    var id = 'hoopla${new DateTime.now().millisecondsSinceEpoch}';
+    await service.create({'id': id, 'bar': 'baz'});
+    var output = await service.update(id, {'bar': 'quux'});
+    expect(output, {'id': id, 'bar': 'quux'});
+    expect(await service.read(id), output);
+  });
 }
