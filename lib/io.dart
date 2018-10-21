@@ -46,17 +46,17 @@ class WebSockets extends BaseWebSocketClient {
   }
 
   @override
-  IoWebSocketsService service(String path,
-      {Type type, AngelDeserializer deserializer}) {
+  IoWebSocketsService<Id, Data> service<Id, Data>(String path,
+      {Type type, AngelDeserializer<Data> deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new IoWebSocketsService(socket, this, uri, type);
+    return new IoWebSocketsService<Id, Data>(socket, this, uri, type);
   }
 
   @override
   serialize(x) => god.serialize(x);
 }
 
-class IoWebSocketsService extends WebSocketsService {
+class IoWebSocketsService<Id, Data> extends WebSocketsService<Id, Data> {
   final Type type;
 
   IoWebSocketsService(
@@ -69,7 +69,7 @@ class IoWebSocketsService extends WebSocketsService {
   @override
   deserialize(x) {
     if (type != null && type != dynamic) {
-      return god.deserializeDatum(x, outputType: type);
+      return god.deserializeDatum(x, outputType: type) as Data;
     } else
       return super.deserialize(x);
   }

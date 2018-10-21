@@ -133,10 +133,11 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   Future<WebSocketChannel> getConnectedWebSocket();
 
   @override
-  WebSocketsService service(String path,
-      {Type type, AngelDeserializer deserializer}) {
+  WebSocketsService<Id, Data> service<Id, Data>(String path,
+      {Type type, AngelDeserializer<Data> deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, '');
-    return new WebSocketsService(socket, this, uri, deserializer: deserializer);
+    return new WebSocketsService<Id, Data>(socket, this, uri,
+        deserializer: deserializer);
   }
 
   /// Starts listening for data.
@@ -225,13 +226,13 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 }
 
 /// A [Service] that asynchronously interacts with the server.
-class WebSocketsService extends Service {
+class WebSocketsService<Id, Data> extends Service<Id, Data> {
   /// The [BaseWebSocketClient] that spawned this service.
   @override
   final BaseWebSocketClient app;
 
   /// Used to deserialize JSON into typed data.
-  final AngelDeserializer deserializer;
+  final AngelDeserializer<Data> deserializer;
 
   /// The [WebSocketChannel] to listen to, and send data across.
   final WebSocketChannel socket;
@@ -242,11 +243,11 @@ class WebSocketsService extends Service {
   final StreamController<WebSocketEvent> _onAllEvents =
       new StreamController<WebSocketEvent>();
   final StreamController _onIndexed = new StreamController();
-  final StreamController _onRead = new StreamController();
-  final StreamController _onCreated = new StreamController();
-  final StreamController _onModified = new StreamController();
-  final StreamController _onUpdated = new StreamController();
-  final StreamController _onRemoved = new StreamController();
+  final StreamController<Data> _onRead = new StreamController<Data>();
+  final StreamController<Data> _onCreated = new StreamController<Data>();
+  final StreamController<Data> _onModified = new StreamController<Data>();
+  final StreamController<Data> _onUpdated = new StreamController<Data>();
+  final StreamController<Data> _onRemoved = new StreamController<Data>();
 
   /// Fired on all events.
   Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
@@ -255,19 +256,19 @@ class WebSocketsService extends Service {
   Stream get onIndexed => _onIndexed.stream;
 
   /// Fired on `read` events.
-  Stream get onRead => _onRead.stream;
+  Stream<Data> get onRead => _onRead.stream;
 
   /// Fired on `created` events.
-  Stream get onCreated => _onCreated.stream;
+  Stream<Data> get onCreated => _onCreated.stream;
 
   /// Fired on `modified` events.
-  Stream get onModified => _onModified.stream;
+  Stream<Data> get onModified => _onModified.stream;
 
   /// Fired on `updated` events.
-  Stream get onUpdated => _onUpdated.stream;
+  Stream<Data> get onUpdated => _onUpdated.stream;
 
   /// Fired on `removed` events.
-  Stream get onRemoved => _onRemoved.stream;
+  Stream<Data> get onRemoved => _onRemoved.stream;
 
   WebSocketsService(this.socket, this.app, this.path, {this.deserializer}) {
     listen();
@@ -287,12 +288,12 @@ class WebSocketsService extends Service {
   serialize(WebSocketAction action) => json.encode(action);
 
   /// Deserializes data from a [WebSocketEvent].
-  deserialize(x) {
-    return deserializer != null ? deserializer(x) : x;
+  Data deserialize(x) {
+    return deserializer != null ? deserializer(x) : x as Data;
   }
 
   /// Deserializes the contents of an [event].
-  WebSocketEvent transformEvent(WebSocketEvent event) {
+  WebSocketEvent<Data> transformEvent(WebSocketEvent<Data> event) {
     return event..data = deserialize(event.data);
   }
 
@@ -300,7 +301,7 @@ class WebSocketsService extends Service {
   void listen() {
     app.onServiceEvent.listen((map) {
       if (map.containsKey(path)) {
-        var event = map[path];
+        var event = map[path].cast<Data>();
         var transformed = transformEvent(event).data;
 
         _onAllEvents.add(event);

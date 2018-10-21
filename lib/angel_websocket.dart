@@ -39,16 +39,24 @@ const List<String> EVENTS = const [
 ];
 
 /// A notification from the server that something has occurred.
-class WebSocketEvent {
+class WebSocketEvent<Data> {
   String eventName;
-  var data;
+  Data data;
 
   WebSocketEvent({String this.eventName, this.data});
 
   factory WebSocketEvent.fromJson(Map data) => new WebSocketEvent(
-      eventName: data['eventName'].toString(), data: data['data']);
+      eventName: data['eventName'].toString(), data: data['data'] as Data);
 
-  Map toJson() {
+  WebSocketEvent<T> cast<T>() {
+    if (T == Data) {
+      return this as WebSocketEvent<T>;
+    } else {
+      return new WebSocketEvent<T>(eventName: eventName, data: data as T);
+    }
+  }
+
+  Map<String, dynamic> toJson() {
     return {'eventName': eventName, 'data': data};
   }
 }

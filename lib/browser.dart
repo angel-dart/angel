@@ -83,18 +83,18 @@ class WebSockets extends BaseWebSocketClient {
   }
 
   @override
-  BrowserWebSocketsService service(String path,
-      {Type type, AngelDeserializer deserializer}) {
+  BrowserWebSocketsService<Id, Data> service<Id, Data>(String path,
+      {Type type, AngelDeserializer<Data> deserializer}) {
     String uri = path.replaceAll(_straySlashes, '');
-    return new BrowserWebSocketsService(socket, this, uri,
+    return new BrowserWebSocketsService<Id, Data>(socket, this, uri,
         deserializer: deserializer);
   }
 }
 
-class BrowserWebSocketsService extends WebSocketsService {
+class BrowserWebSocketsService<Id, Data> extends WebSocketsService<Id, Data> {
   final Type type;
 
   BrowserWebSocketsService(WebSocketChannel socket, WebSockets app, String uri,
-      {this.type, AngelDeserializer deserializer})
+      {this.type, AngelDeserializer<Data> deserializer})
       : super(socket, app, uri, deserializer: deserializer);
 }

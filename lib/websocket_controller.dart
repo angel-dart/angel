@@ -68,7 +68,8 @@ class WebSocketController extends Controller {
       socket.onData.listen((data) => onData(data, socket));
 
       socket.onAction.listen((WebSocketAction action) async {
-        socket.request.container.registerSingleton<WebSocketAction>(action);
+        var container = socket.request.container.createChild();
+        container.registerSingleton<WebSocketAction>(action);
 
         try {
           await onAction(action, socket);
@@ -77,7 +78,7 @@ class WebSocketController extends Controller {
             var methodMirror = _handlers[action.eventName];
             var fn = instanceMirror.getField(methodMirror.simpleName).reflectee;
             return app.runContained(
-                fn as Function, socket.request, socket.response);
+                fn as Function, socket.request, socket.response, container);
           }
         } catch (e, st) {
           ws.catchError(e, st, socket);

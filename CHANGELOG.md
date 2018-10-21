@@ -1,3 +1,6 @@
+# 2.0.0-alpha.2
+* Updated for the next version of `angel_client`.
+
 # 2.0.0-alpha.1
 * Refactorings for updated Angel 2 versions.
 * Remove `package:dart2_constant`.
