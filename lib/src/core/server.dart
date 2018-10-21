@@ -321,10 +321,10 @@ class Angel extends Routable {
   /// Runs with DI, and *always* reflects. Prefer [runContained].
   Future runReflected(Function handler, RequestContext req, ResponseContext res,
       [Container container]) {
+    container ??= req?.container ?? res?.app?.container;
     var h = handleContained(
         handler,
-        _preContained[handler] =
-            preInject(handler, req.app.container.reflector),
+        _preContained[handler] = preInject(handler, container.reflector),
         container);
     return new Future.sync(() => h(req, res));
     // return   closureMirror.apply(args).reflectee;

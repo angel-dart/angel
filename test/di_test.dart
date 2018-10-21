@@ -5,6 +5,7 @@ import 'package:angel_container/angel_container.dart';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http/http.dart' as http;
+import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
@@ -47,11 +48,18 @@ main() {
 
   test('runContained with custom container', () async {
     var app = new Angel();
-    var c = new Container(const EmptyReflector());
+    var c = new Container(const MirrorsReflector());
     c.registerSingleton(new Todo(text: 'Hey!'));
 
-    var r = await app.runContained((Todo t) => t, null, null, c);
-    expect(r, c);
+    app.get('/', (req, res) async {
+      return app.runContained((Todo t) => t.text, req, res, c);
+    });
+
+    var rq = new MockHttpRequest('GET', new Uri(path: '/'))..close();
+    var rs = rq.response;
+    await new AngelHttp(app).handleRequest(rq);
+    var text = await rs.transform(utf8.decoder).join();
+    expect(text, json.encode('Hey!'));
   });
 
   test("singleton in route", () async {
