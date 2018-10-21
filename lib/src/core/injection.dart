@@ -23,7 +23,8 @@ RequestHandler ioc(Function handler, {Iterable<String> optional: const []}) {
 }
 
 resolveInjection(requirement, InjectionRequest injection, RequestContext req,
-    ResponseContext res, bool throwOnUnresolved, [Container container]) {
+    ResponseContext res, bool throwOnUnresolved,
+    [Container container]) {
   var propFromApp;
   container ??= req?.container ?? res?.app?.container;
 
@@ -57,9 +58,11 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     if (req.params.containsKey(key) ||
         req.app.configuration.containsKey(key) ||
         _primitiveTypes.contains(type)) {
-      return resolveInjection(key, injection, req, res, throwOnUnresolved, container);
+      return resolveInjection(
+          key, injection, req, res, throwOnUnresolved, container);
     } else
-      return resolveInjection(type, injection, req, res, throwOnUnresolved, container);
+      return resolveInjection(
+          type, injection, req, res, throwOnUnresolved, container);
   } else if (requirement is Type && requirement != dynamic) {
     return container.make(requirement);
   } else if (throwOnUnresolved) {
