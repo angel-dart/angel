@@ -1,3 +1,7 @@
+# 2.0.0-alpha.7
+* Force a tigher contract on services. They now must return `Data` on all
+methods except for `index`, which returns a `List<Data>`.
+
 # 2.0.0-alpha.6
 * Allow passing a custom `Container` to `handleContained` and co.
 
