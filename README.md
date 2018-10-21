@@ -1,7 +1,10 @@
 # redis
+[![Pub](https://img.shields.io/pub/v/angel_redis.svg)](https://pub.dartlang.org/packages/angel_redis)
+[![build status](https://travis-ci.org/angel-dart/redis.svg)](https://travis-ci.org/angel-dart/redis)
+
 Redis-enabled services for the Angel framework.
 `RedisService` can be used alone, *or* as the backend of a
-[`CacheService`](https://angel-dart/cache),
+[`CacheService`](https://github.com/angel-dart/cache),
 and thereby cache the results of calling an upstream database.
 
 ## Installation
