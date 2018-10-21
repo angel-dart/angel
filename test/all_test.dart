@@ -36,11 +36,19 @@ main() async {
     expect(await service.read(id), input);
   });
 
+  test('modify', () async {
+    var id = 'jamboree${new DateTime.now().millisecondsSinceEpoch}';
+    await service.create({'id': id, 'bar': 'baz', 'yes': 'no'});
+    var output = await service.modify(id, {'bar': 'quux'});
+    expect(output, {'id': id, 'bar': 'quux', 'yes': 'no'});
+    expect(await service.read(id), output);
+  });
+
   test('update', () async {
     var id = 'hoopla${new DateTime.now().millisecondsSinceEpoch}';
     await service.create({'id': id, 'bar': 'baz'});
-    var output = await service.update(id, {'bar': 'quux'});
-    expect(output, {'id': id, 'bar': 'quux'});
+    var output = await service.update(id, {'yes': 'no'});
+    expect(output, {'id': id, 'yes': 'no'});
     expect(await service.read(id), output);
   });
 

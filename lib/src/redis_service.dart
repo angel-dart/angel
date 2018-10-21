@@ -4,6 +4,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:resp_client/resp_client.dart';
 import 'package:resp_client/resp_commands.dart';
 
+/// An Angel service that reads and writes JSON within a Redis store.
 class RedisService extends Service<String, Map<String, dynamic>> {
   final RespCommands respCommands;
 
@@ -45,6 +46,14 @@ class RedisService extends Service<String, Map<String, dynamic>> {
 
     await respCommands.set(_applyPrefix(id), json.encode(data));
     return data;
+  }
+
+  @override
+  Future<Map<String, dynamic>> modify(String id, Map<String, dynamic> data,
+      [Map<String, dynamic> params]) async {
+    var input = await read(id);
+    input.addAll(data);
+    return await update(id, input, params);
   }
 
   @override
