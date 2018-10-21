@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert' show Encoding;
-import 'dart:io' show ContentType, Cookie, HttpServer, HttpSession, WebSocket;
-import 'package:dart2_constant/convert.dart';
-import 'package:dart2_constant/io.dart' hide WebSocket;
+import 'dart:convert';
+import 'dart:io';
 import 'package:angel_client/base_angel_client.dart' as client;
 import 'package:angel_client/io.dart' as client;
 import 'package:angel_framework/angel_framework.dart';
@@ -181,22 +179,25 @@ class TestClient extends client.BaseAngelClient {
   }
 
   @override
-  Future configure(client.AngelConfigurer configurer) => configurer(this);
+  Future configure(client.AngelConfigurer configurer) =>
+      new Future.sync(() => configurer(this));
 
   @override
-  client.Service service(String path,
-      {Type type, client.AngelDeserializer deserializer}) {
+  client.Service<Id, Data> service<Id, Data>(String path,
+      {Type type, client.AngelDeserializer<Data> deserializer}) {
     String uri = path.toString().replaceAll(_straySlashes, "");
     return _services.putIfAbsent(
-        uri, () => new _MockService(this, uri, deserializer: deserializer));
+        uri,
+        () => new _MockService<Id, Data>(this, uri,
+            deserializer: deserializer)) as client.Service<Id, Data>;
   }
 }
 
-class _MockService extends client.BaseAngelService {
+class _MockService<Id, Data> extends client.BaseAngelService<Id, Data> {
   final TestClient _app;
 
   _MockService(this._app, String basePath,
-      {client.AngelDeserializer deserializer})
+      {client.AngelDeserializer<Data> deserializer})
       : super(null, _app, basePath, deserializer: deserializer);
 
   @override

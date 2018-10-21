@@ -1,8 +1,8 @@
+import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_validate/angel_validate.dart';
 import 'package:angel_websocket/server.dart';
-import 'package:dart2_constant/io.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -34,7 +34,7 @@ main() {
       ..get('/gzip', (req, res) async {
         res
           ..headers['content-encoding'] = 'gzip'
-          ..write(gzip.encode('Poop'.codeUnits))
+          ..add(gzip.encode('Poop'.codeUnits))
           ..close();
       })
       ..use(

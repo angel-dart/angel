@@ -1,3 +1,6 @@
+# 2.0.0-alpha.1
+* Update for compliance with newer `angel_client`.
+
 # 2.0.0-alpha
 * Depend on Dart 2 and Angel 2.
 
