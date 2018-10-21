@@ -42,4 +42,10 @@ main() async {
     expect(output, {'id': id, 'bar': 'quux'});
     expect(await service.read(id), output);
   });
+
+  test('remove', () async {
+    var id = 'gelatin${new DateTime.now().millisecondsSinceEpoch}';
+    var input = await service.create({'id': id, 'bar': 'baz'});
+    expect(await service.remove(id), input);
+  });
 }

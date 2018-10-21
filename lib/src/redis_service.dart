@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:resp_client/resp_client.dart';
 import 'package:resp_client/resp_commands.dart';
 
 class RedisService extends Service<String, Map<String, dynamic>> {
@@ -58,6 +59,11 @@ class RedisService extends Service<String, Map<String, dynamic>> {
   Future<Map<String, dynamic>> remove(String id,
       [Map<String, dynamic> params]) async {
     var client = respCommands.client;
-    throw await client.writeArrayOfBulk(['MULTI']);
+    await client.writeArrayOfBulk(['MULTI']);
+    await client.writeArrayOfBulk(['GET', _applyPrefix(id)]);
+    await client.writeArrayOfBulk(['DEL', _applyPrefix(id)]);
+    var result = await client.writeArrayOfBulk(['EXEC']);
+    var str = result.payload[0] as RespBulkString;
+    return json.decode(str.payload);
   }
 }
