@@ -38,7 +38,8 @@ class RedisService extends Service<String, Map<String, dynamic>> {
     else {
       var keyVar = await respCommands.client
           .writeArrayOfBulk(['INCR', _applyPrefix('angel_redis:id')]);
-      throw keyVar;
+      id = keyVar.payload.toString();
+      data = new Map<String, dynamic>.from(data)..['id'] = id;
     }
 
     await respCommands.set(_applyPrefix(id), json.encode(data));

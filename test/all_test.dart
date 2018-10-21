@@ -20,4 +20,11 @@ main() async {
     var output = await service.create(input);
     expect(input, output);
   });
+  test('create without id', () async {
+    var input = {'bar': 'baz'};
+    var output = await service.create(input);
+    print(output);
+    expect(output.keys, contains('id'));
+    expect(output, containsPair('bar', 'baz'));
+  });
 }
