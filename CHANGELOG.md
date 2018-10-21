@@ -1,6 +1,7 @@
 # 2.0.0
 * Upgrade dependencies to Angel 2 + file@5.
 * Replace `useStream` with `useBuffer`.
+* Remove `package:intl`, just use `HttpDate` instead.
 
 # 1.3.0+1
 * Dart 2 fixes.

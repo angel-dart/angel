@@ -58,7 +58,7 @@ class VirtualDirectory {
       this.publicPath: '/',
       this.callback,
       this.allowDirectoryListing: false,
-      this.useBuffer: true}) {
+      this.useBuffer: false}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
     if (source != null) {
       _source = source;
@@ -230,6 +230,7 @@ class VirtualDirectory {
     res.contentType = new MediaType.parse(type);
 
     if (useBuffer == true) {
+      res.useBuffer();
       await res.sendFile(file);
     } else {
       await res.streamFile(file);

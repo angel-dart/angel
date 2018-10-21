@@ -1,3 +1,4 @@
+import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:file/file.dart';
@@ -61,7 +62,7 @@ main() {
   test('if-modified-since', () async {
     var response = await client.get("$url", headers: {
       'if-modified-since':
-          formatDateForHttp(new DateTime.now().add(new Duration(days: 365)))
+          HttpDate.format(new DateTime.now().add(new Duration(days: 365)))
     });
 
     print('Response status: ${response.statusCode}');

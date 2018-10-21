@@ -1,15 +1,11 @@
 import 'dart:async';
+import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'virtual_directory.dart';
-
-final DateFormat _fmt = new DateFormat('EEE, d MMM yyyy HH:mm:ss');
-
-/// Formats a date (converted to UTC), ex: `Sun, 03 May 2015 23:02:37 GMT`.
-String formatDateForHttp(DateTime dt) => _fmt.format(dt.toUtc()) + ' GMT';
 
 /// Generates a weak ETag from the given buffer.
 String weakEtag(List<int> buf) {
@@ -59,7 +55,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
       this.onlyInProduction: false,
       this.useEtags: true,
       bool allowDirectoryListing,
-      bool useBuffer,
+      bool useBuffer: false,
       String publicPath,
       callback(File file, RequestContext req, ResponseContext res)})
       : super(app, fileSystem,
@@ -150,11 +146,11 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
     res.headers
       ..['cache-control'] = '$privacy, max-age=${maxAge ?? 0}'
-      ..['last-modified'] = formatDateForHttp(modified);
+      ..['last-modified'] = HttpDate.format(modified);
 
     if (maxAge != null) {
       var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
-      res.headers['expires'] = formatDateForHttp(expiry);
+      res.headers['expires'] = HttpDate.format(expiry);
     }
   }
 }
