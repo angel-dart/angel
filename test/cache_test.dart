@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:angel_cache/src/util.dart';
+import 'dart:io';
 import 'package:angel_cache/angel_cache.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
@@ -20,14 +20,15 @@ main() async {
           new Glob('/*.txt'),
         ]);
 
-      app.use(cache.handleRequest);
+      app.fallback(cache.handleRequest);
 
-      app.get(
-          '/date.txt',
-          (ResponseContext res) =>
-              res.write(new DateTime.now().toIso8601String()));
+      app.get('/date.txt', (req, res) {
+        res
+          ..useBuffer()
+          ..write(new DateTime.now().toIso8601String());
+      });
 
-      app.addRoute('PURGE', '*', (RequestContext req) {
+      app.addRoute('PURGE', '*', (req, res) {
         cache.purge(req.uri.path);
         print('Purged ${req.uri.path}');
       });
@@ -43,7 +44,8 @@ main() async {
       client = await connectTo(app);
       response1 = await client.get('/date.txt');
       response2 = await client.get('/date.txt');
-      lastModified = fmt.parse(response2.headers['last-modified']);
+      print(response2.headers);
+      lastModified = HttpDate.parse(response2.headers['last-modified']);
       print('Response 1 status: ${response1.statusCode}');
       print('Response 2 status: ${response2.statusCode}');
       print('Response 1 body: ${response1.body}');
@@ -80,7 +82,10 @@ main() async {
     });
 
     test('sends 304 on if-modified-since', () async {
-      var headers = {'if-modified-since': formatDateForHttp(lastModified.add(const Duration(days: 1)))};
+      var headers = {
+        'if-modified-since':
+            HttpDate.format(lastModified.add(const Duration(days: 1)))
+      };
       var response = await client.get('/date.txt', headers: headers);
       print('Sending headers: $headers');
       print('Response (${response.statusCode}): ${response.headers}');
@@ -90,7 +95,7 @@ main() async {
     test('last-modified in the past', () async {
       var response = await client.get('/date.txt', headers: {
         'if-modified-since':
-            formatDateForHttp(lastModified.subtract(const Duration(days: 10)))
+            HttpDate.format(lastModified.subtract(const Duration(days: 10)))
       });
       print('Response: ${response.body}');
       expect(response.statusCode, 200);

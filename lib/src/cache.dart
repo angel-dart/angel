@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:pool/pool.dart';
-import 'util.dart';
 
 /// A flexible response cache for Angel.
 ///
@@ -35,9 +35,8 @@ class ResponseCache {
   Future<bool> ifModifiedSince(RequestContext req, ResponseContext res) async {
     if (req.method != 'GET' && req.method != 'HEAD') return true;
 
-    if (req.headers.value('if-modified-since') != null) {
-      var modifiedSince = fmt
-          .parse(req.headers.value('if-modified-since').replaceAll('GMT', ''));
+    if (req.headers.ifModifiedSince != null) {
+      var modifiedSince = req.headers.ifModifiedSince;
 
       // Check if there is a cache entry.
       for (var pattern in patterns) {
@@ -72,7 +71,7 @@ class ResponseCache {
     // Check if there is a cache entry.
     //
     // If `if-modified-since` is present, this check has already been performed.
-    if (req.headers.value('if-modified-since') == null) {
+    if (req.headers.ifModifiedSince == null) {
       for (var pattern in patterns) {
         if (pattern.allMatches(req.uri.path).isNotEmpty) {
           var now = new DateTime.now().toUtc();
@@ -88,9 +87,11 @@ class ResponseCache {
             _setCachedHeaders(response.timestamp, req, res);
             res
               ..headers.addAll(response.headers)
-              ..buffer.add(response.body)
-              ..end();
+              ..add(response.body)
+              ..close();
             return false;
+          } else {
+            _setCachedHeaders(now, req, res);
           }
         }
       }
@@ -131,7 +132,7 @@ class ResponseCache {
               new Map.from(res.headers), res.buffer.toBytes(), now);
         });
 
-       // _setCachedHeaders(now, req, res);
+        _setCachedHeaders(now, req, res);
       }
     }
 
@@ -144,11 +145,11 @@ class ResponseCache {
 
     res.headers
       ..['cache-control'] = '$privacy, max-age=${timeout?.inSeconds ?? 86400}'
-      ..['last-modified'] = formatDateForHttp(modified);
+      ..['last-modified'] = HttpDate.format(modified);
 
     if (timeout != null) {
       var expiry = new DateTime.now().add(timeout);
-      res.headers['expires'] = formatDateForHttp(expiry);
+      res.headers['expires'] = HttpDate.format(expiry);
     }
   }
 }

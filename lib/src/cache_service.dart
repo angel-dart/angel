@@ -7,33 +7,36 @@ import 'package:meta/meta.dart';
 ///
 /// This is useful for applications of scale, where network latency
 /// can have real implications on application performance.
-class CacheService extends Service {
+class CacheService<Id, Data> extends Service<Id, Data> {
   /// The underlying [Service] that represents the original data store.
-  final Service database;
+  final Service<Id, Data> database;
 
   /// The [Service] used to interface with a caching layer.
   ///
   /// If not provided, this defaults to a [MapService].
-  final Service cache;
+  final Service<Id, Data> cache;
 
   final bool ignoreQuery;
 
   final Duration timeout;
 
-  final Map<dynamic, _CachedItem> _cache = {};
-  _CachedItem _indexed;
+  final Map<Id, _CachedItem<Data>> _cache = {};
+  _CachedItem<List<Data>> _indexed;
 
   CacheService(
       {@required this.database,
-      Service cache,
+      @required this.cache,
       this.ignoreQuery: false,
-      this.timeout})
-      : this.cache = cache ?? new MapService() {
+      this.timeout}) {
     assert(database != null);
   }
 
-  Future _getCached(Map params, _CachedItem get(), Future getFresh(),
-      Future getCached(), Future save(data, DateTime now)) async {
+  Future<T> _getCached<T>(
+      Map<String, dynamic> params,
+      _CachedItem get(),
+      FutureOr<T> getFresh(),
+      FutureOr<T> getCached(),
+      FutureOr<T> save(T data, DateTime now)) async {
     var cached = get();
     var now = new DateTime.now().toUtc();
 
@@ -47,8 +50,8 @@ class CacheService extends Service {
         var queryEqual = ignoreQuery == true ||
             (params != null &&
                 cached.params != null &&
-                const MapEquality()
-                    .equals(params['query'], cached.params['query']));
+                const MapEquality().equals(
+                    params['query'] as Map, cached.params['query'] as Map));
         if (queryEqual) {
           return await getCached();
         }
@@ -63,12 +66,12 @@ class CacheService extends Service {
   }
 
   @override
-  Future index([Map params]) {
+  Future<List<Data>> index([Map<String, dynamic> params]) {
     return _getCached(
       params,
       () => _indexed,
       () => database.index(params),
-      () => _indexed.data,
+      () => _indexed?.data ?? [],
       (data, now) async {
         _indexed = new _CachedItem(params, now, data);
         return data;
@@ -77,8 +80,8 @@ class CacheService extends Service {
   }
 
   @override
-  Future read(id, [Map params]) async {
-    return _getCached(
+  Future<Data> read(Id id, [Map<String, dynamic> params]) async {
+    return _getCached<Data>(
       params,
       () => _cache[id],
       () => database.read(id, params),
@@ -91,37 +94,37 @@ class CacheService extends Service {
   }
 
   @override
-  Future create(data, [Map params]) {
+  Future<Data> create(data, [Map<String, dynamic> params]) {
     _indexed = null;
     return database.create(data, params);
   }
 
   @override
-  Future modify(id, data, [Map params]) {
+  Future<Data> modify(Id id, Data data, [Map<String, dynamic> params]) {
     _indexed = null;
     _cache.remove(id);
     return database.modify(id, data, params);
   }
 
   @override
-  Future update(id, data, [Map params]) {
+  Future<Data> update(Id id, Data data, [Map<String, dynamic> params]) {
     _indexed = null;
     _cache.remove(id);
     return database.modify(id, data, params);
   }
 
   @override
-  Future remove(id, [Map params]) {
+  Future<Data> remove(Id id, [Map<String, dynamic> params]) {
     _indexed = null;
     _cache.remove(id);
     return database.remove(id, params);
   }
 }
 
-class _CachedItem {
+class _CachedItem<Data> {
   final params;
   final DateTime timestamp;
-  final data;
+  final Data data;
 
   _CachedItem(this.params, this.timestamp, [this.data]);
 

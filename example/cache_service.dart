@@ -2,20 +2,19 @@ import 'package:angel_cache/angel_cache.dart';
 import 'package:angel_framework/angel_framework.dart';
 
 main() async {
-  var app = new Angel()..lazyParseBodies = true;
+  var app = new Angel();
 
   app.use(
     '/api/todos',
     new CacheService(
-      database: new AnonymousService(
-        index: ([params]) {
-          print('Fetched directly from the underlying service at ${new DateTime.now()}!');
-          return ['foo', 'bar', 'baz'];
-        },
-        read: (id, [params]) {
-          return {id: '$id at ${new DateTime.now()}'};
-        }
-      ),
+      cache: new MapService(),
+      database: new AnonymousService(index: ([params]) {
+        print(
+            'Fetched directly from the underlying service at ${new DateTime.now()}!');
+        return ['foo', 'bar', 'baz'];
+      }, read: (id, [params]) {
+        return {id: '$id at ${new DateTime.now()}'};
+      }),
     ),
   );
 

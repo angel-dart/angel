@@ -3,7 +3,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:glob/glob.dart';
 
 main() async {
-  var app = new Angel()..lazyParseBodies = true;
+  var app = new Angel();
 
   // Cache a glob
   var cache = new ResponseCache()
@@ -12,14 +12,14 @@ main() async {
     ]);
 
   // Handle `if-modified-since` header, and also send cached content
-  app.use(cache.handleRequest);
+  app.fallback(cache.handleRequest);
 
   // A simple handler that returns a different result every time.
   app.get('/date.txt',
-      (ResponseContext res) => res.write(new DateTime.now().toIso8601String()));
+      (req, res) => res.write(new DateTime.now().toIso8601String()));
 
   // Support purging the cache.
-  app.addRoute('PURGE', '*', (RequestContext req) {
+  app.addRoute('PURGE', '*', (req, res) {
     if (req.ip != '127.0.0.1') throw new AngelHttpException.forbidden();
 
     cache.purge(req.uri.path);
