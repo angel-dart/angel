@@ -10,7 +10,7 @@ main() {
         modify: (id, data, [p]) async => 'modify',
         update: (id, data, [p]) async => 'update',
         remove: (id, [p]) async => 'remove');
-    expect(await svc.index(), 'index');
+    expect(await svc.index(), ['index']);
     expect(await svc.read(null), 'read');
     expect(await svc.create(null), 'create');
     expect(await svc.modify(null, null), 'modify');
