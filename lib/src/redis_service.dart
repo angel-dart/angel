@@ -30,6 +30,22 @@ class RedisService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
+  Future<Map<String, dynamic>> create(Map<String, dynamic> data,
+      [Map<String, dynamic> params]) async {
+    String id;
+    if (data['id'] != null)
+      id = data['id'] as String;
+    else {
+      var keyVar = await respCommands.client
+          .writeArrayOfBulk(['INCR', _applyPrefix('angel_redis:id')]);
+      throw keyVar;
+    }
+
+    await respCommands.set(_applyPrefix(id), json.encode(data));
+    return data;
+  }
+
+  @override
   Future<Map<String, dynamic>> update(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) async {
     data = new Map<String, dynamic>.from(data)..['id'] = id;
