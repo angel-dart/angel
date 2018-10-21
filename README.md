@@ -28,3 +28,33 @@ become a bottleneck.
 * `remove` uses `MULTI`+`EXEC` in a transaction.
 * Prefer using `update`, rather than `modify`. The former only performs one query, though it does overwrite the current
 contents for a given key.
+* When calling `create`, it's possible that you may already have an `id` in mind to insert into the store. For example,
+when caching another database, you'll preserve the ID or primary key of an item. `angel_redis` heeds this. If no
+`id` is present, then an ID will be created via an `INCR` call.
+
+## Example
+
+```dart
+import 'package:angel_redis/angel_redis.dart';
+import 'package:resp_client/resp_client.dart';
+import 'package:resp_client/resp_commands.dart';
+
+main() async {
+  var connection = await connectSocket('localhost');
+  var client = new RespClient(connection);
+  var service = new RedisService(new RespCommands(client), prefix: 'example');
+
+  // Create an object
+  await service.create({'id': 'a', 'hello': 'world'});
+
+  // Read it...
+  var read = await service.read('a');
+  print(read['hello']);
+
+  // Delete it.
+  await service.remove('a');
+
+  // Close the connection.
+  await connection.close();
+}
+```
