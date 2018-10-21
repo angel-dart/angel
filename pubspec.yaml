@@ -1,0 +1,4 @@
+name: angel_redis
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  resp_client: ^0.1.6
