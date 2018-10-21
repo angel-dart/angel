@@ -19,6 +19,20 @@ class RedisService extends Service<String, Map<String, dynamic>> {
   String _applyPrefix(String id) => prefix == null ? id : '$prefix:$id';
 
   @override
+  Future<List<Map<String, dynamic>>> index(
+      [Map<String, dynamic> params]) async {
+    var result =
+        await respCommands.client.writeArrayOfBulk(['KEYS', _applyPrefix('*')]);
+    var keys = result.payload.map((RespType s) => s.payload) as Iterable;
+    if (keys.isEmpty) return [];
+    result = await respCommands.client.writeArrayOfBulk(['MGET']..addAll(keys));
+    return result.payload
+        .map<Map<String, dynamic>>(
+            (RespType s) => json.decode(s.payload) as Map<String, dynamic>)
+        .toList();
+  }
+
+  @override
   Future<Map<String, dynamic>> read(String id,
       [Map<String, dynamic> params]) async {
     var value = await respCommands.get(_applyPrefix(id));

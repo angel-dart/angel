@@ -16,6 +16,18 @@ main() async {
 
   tearDown(() => connection.close());
 
+  test('index', () async {
+    // Wipe
+    await service.respCommands.flushDb();
+    await service.create({'id': '0', 'name': 'Tobe'});
+    await service.create({'id': '1', 'name': 'Osakwe'});
+
+    var output = await service.index();
+    expect(output, hasLength(2));
+    expect(output[1], <String, dynamic>{'id': '0', 'name': 'Tobe'});
+    expect(output[0], <String, dynamic>{'id': '1', 'name': 'Osakwe'});
+  });
+
   test('create with id', () async {
     var input = {'id': 'foo', 'bar': 'baz'};
     var output = await service.create(input);
