@@ -19,6 +19,7 @@ import 'repeat_request_test.dart' as repeat_request;
 import 'routing_test.dart' as routing;
 import 'serialize_test.dart' as serialize;
 import 'server_test.dart' as server;
+import 'service_map_test.dart' as service_map;
 import 'services_test.dart' as services;
 import 'streaming_test.dart' as streaming;
 import 'view_generator_test.dart' as view_generator;
@@ -44,6 +45,7 @@ main() {
   group('routing', routing.main);
   group('serialize', serialize.main);
   group('server', server.main);
+  group('service_map', service_map.main);
   group('services', services.main);
   group('streaming', streaming.main);
   group('view generator', view_generator.main);
