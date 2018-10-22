@@ -13,7 +13,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
 import 'package:tuple/tuple.dart';
 
-import '../http/http.dart';
+import 'controller.dart';
 import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
@@ -40,7 +40,6 @@ class Angel extends Routable {
       handlerCache = new HashMap();
 
   Router _flattened;
-  AngelHttp _http;
   bool _isProduction;
   Angel _parent;
 
@@ -212,8 +211,7 @@ class Angel extends Routable {
     shutdownHooks.clear();
     responseFinalizers.clear();
     _flattened = null;
-    _http?.close();
-    return new Future.value(_http?.httpServer);
+    return new Future.value();
   }
 
   @override

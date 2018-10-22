@@ -1,4 +1,5 @@
 export 'anonymous_service.dart';
+export 'controller.dart';
 export 'hooked_service.dart';
 export 'map_service.dart';
 export 'metadata.dart';

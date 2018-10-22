@@ -10,7 +10,7 @@ import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 
-import '../http/http.dart';
+import 'controller.dart';
 import 'request_context.dart';
 import 'server.dart' show Angel;
 
