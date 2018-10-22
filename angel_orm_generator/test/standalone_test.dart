@@ -33,7 +33,7 @@ main() {
       dateYmdHms.format(MILENNIUM)
     ];
     print(row);
-    var car = CarQuery.parseRow(row);
+    var car = PostgreSqlCarOrm.parseRow(row);
     print(car.toJson());
     expect(car.id, '0');
     expect(car.make, 'Mazda');

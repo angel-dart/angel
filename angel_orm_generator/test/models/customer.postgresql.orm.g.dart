@@ -6,8 +6,8 @@
 
 part of 'customer.orm.g.dart';
 
-class _PostgreSqlCustomerOrmImpl implements CustomerOrm {
-  _PostgreSqlCustomerOrmImpl(this.connection);
+class PostgreSqlCustomerOrm implements CustomerOrm {
+  PostgreSqlCustomerOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -66,5 +66,9 @@ class _PostgreSqlCustomerOrmImpl implements CustomerOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  CustomerQuery query() {
+    return null;
   }
 }

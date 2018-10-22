@@ -6,8 +6,8 @@
 
 part of 'foot.orm.g.dart';
 
-class _PostgreSqlFootOrmImpl implements FootOrm {
-  _PostgreSqlFootOrmImpl(this.connection);
+class PostgreSqlFootOrm implements FootOrm {
+  PostgreSqlFootOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -72,5 +72,9 @@ class _PostgreSqlFootOrmImpl implements FootOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  FootQuery query() {
+    return null;
   }
 }

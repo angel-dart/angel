@@ -6,8 +6,8 @@
 
 part of 'fruit.orm.g.dart';
 
-class _PostgreSqlFruitOrmImpl implements FruitOrm {
-  _PostgreSqlFruitOrmImpl(this.connection);
+class PostgreSqlFruitOrm implements FruitOrm {
+  PostgreSqlFruitOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -72,5 +72,9 @@ class _PostgreSqlFruitOrmImpl implements FruitOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  FruitQuery query() {
+    return null;
   }
 }

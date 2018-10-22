@@ -11,7 +11,7 @@ part 'order.postgresql.orm.g.dart';
 
 abstract class OrderOrm {
   factory OrderOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlOrderOrmImpl;
+      PostgreSqlOrderOrm;
 
   Future<List<Order>> getAll();
   Future<Order> getById(String id);

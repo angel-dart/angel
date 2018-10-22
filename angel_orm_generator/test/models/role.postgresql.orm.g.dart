@@ -6,8 +6,8 @@
 
 part of 'role.orm.g.dart';
 
-class _PostgreSqlRoleOrmImpl implements RoleOrm {
-  _PostgreSqlRoleOrmImpl(this.connection);
+class PostgreSqlRoleOrm implements RoleOrm {
+  PostgreSqlRoleOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -69,5 +69,9 @@ class _PostgreSqlRoleOrmImpl implements RoleOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  RoleQuery query() {
+    return null;
   }
 }

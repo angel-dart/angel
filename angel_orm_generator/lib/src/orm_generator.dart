@@ -100,7 +100,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               b
                 ..name = 'postgreSql'
                 ..factory = true
-                ..redirect = refer('_PostgreSql${rc.pascalCase}OrmImpl')
+                ..redirect = refer('PostgreSql${rc.pascalCase}Orm')
                 ..requiredParameters.add(new Parameter((b) {
                   b
                     ..name = 'connection'

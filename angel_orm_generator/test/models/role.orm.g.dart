@@ -11,7 +11,7 @@ part 'role.postgresql.orm.g.dart';
 
 abstract class RoleOrm {
   factory RoleOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlRoleOrmImpl;
+      PostgreSqlRoleOrm;
 
   Future<List<Role>> getAll();
   Future<Role> getById(String id);

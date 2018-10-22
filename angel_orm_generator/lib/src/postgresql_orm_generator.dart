@@ -51,7 +51,7 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
     return new Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
       clazz
-        ..name = '_PostgreSql${rc.pascalCase}OrmImpl'
+        ..name = 'PostgreSql${rc.pascalCase}Orm'
         ..implements.add(refer('${rc.pascalCase}Orm'))
 
         // final PostgreSQLConnection connection;
@@ -74,7 +74,17 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
         ..methods.add(buildDeleteById(ctx))
         ..methods.add(buildGetAll(ctx))
         ..methods.add(buildCreate(ctx))
-        ..methods.add(buildUpdate(ctx));
+        ..methods.add(buildUpdate(ctx))
+        ..methods.add(buildQuery(ctx));
+    });
+  }
+
+  Method buildQuery(OrmBuildContext ctx) {
+    return new Method((m) {
+      m
+        ..name = 'query'
+        ..returns = refer('${ctx.buildContext.modelClassName}Query')
+        ..body = new Block((b) => b.addExpression(literalNull.returned));
     });
   }
 

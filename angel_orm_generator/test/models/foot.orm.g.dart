@@ -11,7 +11,7 @@ part 'foot.postgresql.orm.g.dart';
 
 abstract class FootOrm {
   factory FootOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlFootOrmImpl;
+      PostgreSqlFootOrm;
 
   Future<List<Foot>> getAll();
   Future<Foot> getById(String id);

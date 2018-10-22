@@ -10,8 +10,7 @@ import 'package:postgres/postgres.dart';
 part 'car.postgresql.orm.g.dart';
 
 abstract class CarOrm {
-  factory CarOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlCarOrmImpl;
+  factory CarOrm.postgreSql(PostgreSQLConnection connection) = PostgreSqlCarOrm;
 
   Future<List<Car>> getAll();
   Future<Car> getById(String id);

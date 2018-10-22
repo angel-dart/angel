@@ -11,7 +11,7 @@ part 'author.postgresql.orm.g.dart';
 
 abstract class AuthorOrm {
   factory AuthorOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlAuthorOrmImpl;
+      PostgreSqlAuthorOrm;
 
   Future<List<Author>> getAll();
   Future<Author> getById(String id);

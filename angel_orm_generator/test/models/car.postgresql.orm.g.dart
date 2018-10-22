@@ -6,8 +6,8 @@
 
 part of 'car.orm.g.dart';
 
-class _PostgreSqlCarOrmImpl implements CarOrm {
-  _PostgreSqlCarOrmImpl(this.connection);
+class PostgreSqlCarOrm implements CarOrm {
+  PostgreSqlCarOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -78,5 +78,9 @@ class _PostgreSqlCarOrmImpl implements CarOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  CarQuery query() {
+    return null;
   }
 }

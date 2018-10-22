@@ -6,8 +6,8 @@
 
 part of 'author.orm.g.dart';
 
-class _PostgreSqlAuthorOrmImpl implements AuthorOrm {
-  _PostgreSqlAuthorOrmImpl(this.connection);
+class PostgreSqlAuthorOrm implements AuthorOrm {
+  PostgreSqlAuthorOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -69,5 +69,9 @@ class _PostgreSqlAuthorOrmImpl implements AuthorOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  AuthorQuery query() {
+    return null;
   }
 }

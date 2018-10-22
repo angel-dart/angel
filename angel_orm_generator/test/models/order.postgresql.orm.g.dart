@@ -6,8 +6,8 @@
 
 part of 'order.orm.g.dart';
 
-class _PostgreSqlOrderOrmImpl implements OrderOrm {
-  _PostgreSqlOrderOrmImpl(this.connection);
+class PostgreSqlOrderOrm implements OrderOrm {
+  PostgreSqlOrderOrm(this.connection);
 
   final PostgreSQLConnection connection;
 
@@ -78,5 +78,9 @@ class _PostgreSqlOrderOrmImpl implements OrderOrm {
           'updatedAt': model.updatedAt
         });
     return parseRow(r.first);
+  }
+
+  OrderQuery query() {
+    return null;
   }
 }

@@ -11,7 +11,7 @@ part 'customer.postgresql.orm.g.dart';
 
 abstract class CustomerOrm {
   factory CustomerOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlCustomerOrmImpl;
+      PostgreSqlCustomerOrm;
 
   Future<List<Customer>> getAll();
   Future<Customer> getById(String id);

@@ -11,7 +11,7 @@ part 'fruit.postgresql.orm.g.dart';
 
 abstract class FruitOrm {
   factory FruitOrm.postgreSql(PostgreSQLConnection connection) =
-      _PostgreSqlFruitOrmImpl;
+      PostgreSqlFruitOrm;
 
   Future<List<Fruit>> getAll();
   Future<Fruit> getById(String id);
