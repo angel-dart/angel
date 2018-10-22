@@ -14,8 +14,9 @@ abstract class FootOrm {
       _PostgreSqlFootOrmImpl;
 
   Future<List<Foot>> getAll();
-  Future<Foot> getById(id);
-  Future<Foot> update(Foot model);
+  Future<Foot> getById(String id);
+  Future<Foot> createFoot(Foot model);
+  Future<Foot> updateFoot(Foot model);
   FootQuery query();
 }
 

@@ -14,8 +14,9 @@ abstract class CarOrm {
       _PostgreSqlCarOrmImpl;
 
   Future<List<Car>> getAll();
-  Future<Car> getById(id);
-  Future<Car> update(Car model);
+  Future<Car> getById(String id);
+  Future<Car> createCar(Car model);
+  Future<Car> updateCar(Car model);
   CarQuery query();
 }
 

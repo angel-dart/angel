@@ -14,8 +14,9 @@ abstract class AuthorOrm {
       _PostgreSqlAuthorOrmImpl;
 
   Future<List<Author>> getAll();
-  Future<Author> getById(id);
-  Future<Author> update(Author model);
+  Future<Author> getById(String id);
+  Future<Author> createAuthor(Author model);
+  Future<Author> updateAuthor(Author model);
   AuthorQuery query();
 }
 

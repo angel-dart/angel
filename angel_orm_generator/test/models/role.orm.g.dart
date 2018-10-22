@@ -14,8 +14,9 @@ abstract class RoleOrm {
       _PostgreSqlRoleOrmImpl;
 
   Future<List<Role>> getAll();
-  Future<Role> getById(id);
-  Future<Role> update(Role model);
+  Future<Role> getById(String id);
+  Future<Role> createRole(Role model);
+  Future<Role> updateRole(Role model);
   RoleQuery query();
 }
 

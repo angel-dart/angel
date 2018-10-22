@@ -14,8 +14,9 @@ abstract class FruitOrm {
       _PostgreSqlFruitOrmImpl;
 
   Future<List<Fruit>> getAll();
-  Future<Fruit> getById(id);
-  Future<Fruit> update(Fruit model);
+  Future<Fruit> getById(String id);
+  Future<Fruit> createFruit(Fruit model);
+  Future<Fruit> updateFruit(Fruit model);
   FruitQuery query();
 }
 

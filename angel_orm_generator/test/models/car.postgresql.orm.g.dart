@@ -23,10 +23,52 @@ class _PostgreSqlCarOrmImpl implements CarOrm {
   }
 
   @override
-  Future<Car> getById() async {
+  Future<Car> getById(String id) async {
     var r = await connection.query(
-        'SELECTidmakedescriptionfamily_friendlyrecalled_atcreated_atupdated_at FROM "cars" id = @id;',
-        substitutionValues: {'id': id});
-    parseRow(r.first);
+        'SELECT  id, make, description, family_friendly, recalled_at, created_at, updated_at FROM "cars" WHERE id = @id LIMIT 1;',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<List<Car>> getAll() async {
+    var r = await connection.query(
+        'SELECT  id, make, description, family_friendly, recalled_at, created_at, updated_at FROM "cars";');
+    return r.map(parseRow).toList();
+  }
+
+  @override
+  Future<Car> createCar(Car model) async {
+    model = model.copyWith(
+        createdAt: new DateTime.now(), updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'INSERT INTO "cars" ( "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") VALUES (@id,@make,@description,@familyFriendly,CAST (@recalledAt AS timestamp),CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'make': model.make,
+          'description': model.description,
+          'familyFriendly': model.familyFriendly,
+          'recalledAt': model.recalledAt,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<Car> updateCar(Car model) async {
+    model = model.copyWith(updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'UPDATE "cars" SET ( "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at") = (@id,@make,@description,@familyFriendly,CAST (@recalledAt AS timestamp),CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'make': model.make,
+          'description': model.description,
+          'familyFriendly': model.familyFriendly,
+          'recalledAt': model.recalledAt,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
   }
 }

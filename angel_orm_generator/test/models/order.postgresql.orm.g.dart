@@ -23,10 +23,52 @@ class _PostgreSqlOrderOrmImpl implements OrderOrm {
   }
 
   @override
-  Future<Order> getById() async {
+  Future<Order> getById(String id) async {
     var r = await connection.query(
-        'SELECTidcustomer_idemployee_idorder_dateshipper_idcreated_atupdated_at FROM "orders" id = @id;',
-        substitutionValues: {'id': id});
-    parseRow(r.first);
+        'SELECT  id, customer_id, employee_id, order_date, shipper_id, created_at, updated_at FROM "orders" WHERE id = @id LIMIT 1;',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<List<Order>> getAll() async {
+    var r = await connection.query(
+        'SELECT  id, customer_id, employee_id, order_date, shipper_id, created_at, updated_at FROM "orders";');
+    return r.map(parseRow).toList();
+  }
+
+  @override
+  Future<Order> createOrder(Order model) async {
+    model = model.copyWith(
+        createdAt: new DateTime.now(), updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'INSERT INTO "orders" ( "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") VALUES (@id,@customerId,@employeeId,CAST (@orderDate AS timestamp),@shipperId,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'customerId': model.customerId,
+          'employeeId': model.employeeId,
+          'orderDate': model.orderDate,
+          'shipperId': model.shipperId,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<Order> updateOrder(Order model) async {
+    model = model.copyWith(updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'UPDATE "orders" SET ( "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at") = (@id,@customerId,@employeeId,CAST (@orderDate AS timestamp),@shipperId,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'customerId': model.customerId,
+          'employeeId': model.employeeId,
+          'orderDate': model.orderDate,
+          'shipperId': model.shipperId,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
   }
 }

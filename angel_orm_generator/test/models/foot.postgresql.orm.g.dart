@@ -21,10 +21,48 @@ class _PostgreSqlFootOrmImpl implements FootOrm {
   }
 
   @override
-  Future<Foot> getById() async {
+  Future<Foot> getById(String id) async {
     var r = await connection.query(
-        'SELECTidleg_idn_toescreated_atupdated_at FROM "foots" id = @id;',
-        substitutionValues: {'id': id});
-    parseRow(r.first);
+        'SELECT  id, leg_id, n_toes, created_at, updated_at FROM "foots" WHERE id = @id LIMIT 1;',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<List<Foot>> getAll() async {
+    var r = await connection.query(
+        'SELECT  id, leg_id, n_toes, created_at, updated_at FROM "foots";');
+    return r.map(parseRow).toList();
+  }
+
+  @override
+  Future<Foot> createFoot(Foot model) async {
+    model = model.copyWith(
+        createdAt: new DateTime.now(), updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'INSERT INTO "foots" ( "id", "leg_id", "n_toes", "created_at", "updated_at") VALUES (@id,@legId,@nToes,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "leg_id", "n_toes", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'legId': model.legId,
+          'nToes': model.nToes,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<Foot> updateFoot(Foot model) async {
+    model = model.copyWith(updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'UPDATE "foots" SET ( "id", "leg_id", "n_toes", "created_at", "updated_at") = (@id,@legId,@nToes,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "leg_id", "n_toes", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'legId': model.legId,
+          'nToes': model.nToes,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
   }
 }

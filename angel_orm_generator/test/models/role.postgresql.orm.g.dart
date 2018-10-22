@@ -20,10 +20,46 @@ class _PostgreSqlRoleOrmImpl implements RoleOrm {
   }
 
   @override
-  Future<Role> getById() async {
+  Future<Role> getById(String id) async {
     var r = await connection.query(
-        'SELECTidnamecreated_atupdated_at FROM "roles" id = @id;',
-        substitutionValues: {'id': id});
-    parseRow(r.first);
+        'SELECT  id, name, created_at, updated_at FROM "roles" WHERE id = @id LIMIT 1;',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<List<Role>> getAll() async {
+    var r = await connection
+        .query('SELECT  id, name, created_at, updated_at FROM "roles";');
+    return r.map(parseRow).toList();
+  }
+
+  @override
+  Future<Role> createRole(Role model) async {
+    model = model.copyWith(
+        createdAt: new DateTime.now(), updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'INSERT INTO "roles" ( "id", "name", "created_at", "updated_at") VALUES (@id,@name,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "name", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'name': model.name,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<Role> updateRole(Role model) async {
+    model = model.copyWith(updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'UPDATE "roles" SET ( "id", "name", "created_at", "updated_at") = (@id,@name,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "name", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'name': model.name,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
   }
 }

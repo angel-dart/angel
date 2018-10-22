@@ -20,10 +20,46 @@ class _PostgreSqlAuthorOrmImpl implements AuthorOrm {
   }
 
   @override
-  Future<Author> getById(id) async {
+  Future<Author> getById(String id) async {
     var r = await connection.query(
-        'SELECTidnamecreated_atupdated_at FROM "authors" id = @id;',
-        substitutionValues: {'id': id});
-    parseRow(r.first);
+        'SELECT  id, name, created_at, updated_at FROM "authors" WHERE id = @id LIMIT 1;',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<List<Author>> getAll() async {
+    var r = await connection
+        .query('SELECT  id, name, created_at, updated_at FROM "authors";');
+    return r.map(parseRow).toList();
+  }
+
+  @override
+  Future<Author> createAuthor(Author model) async {
+    model = model.copyWith(
+        createdAt: new DateTime.now(), updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'INSERT INTO "authors" ( "id", "name", "created_at", "updated_at") VALUES (@id,@name,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "name", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'name': model.name,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
+  }
+
+  @override
+  Future<Author> updateAuthor(Author model) async {
+    model = model.copyWith(updatedAt: new DateTime.now());
+    var r = await connection.query(
+        'UPDATE "authors" SET ( "id", "name", "created_at", "updated_at") = (@id,@name,CAST (@createdAt AS timestamp),CAST (@updatedAt AS timestamp)) RETURNING  "id", "name", "created_at", "updated_at";',
+        substitutionValues: {
+          'id': model.id,
+          'name': model.name,
+          'createdAt': model.createdAt,
+          'updatedAt': model.updatedAt
+        });
+    return parseRow(r.first);
   }
 }

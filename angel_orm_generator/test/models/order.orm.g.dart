@@ -14,8 +14,9 @@ abstract class OrderOrm {
       _PostgreSqlOrderOrmImpl;
 
   Future<List<Order>> getAll();
-  Future<Order> getById(id);
-  Future<Order> update(Order model);
+  Future<Order> getById(String id);
+  Future<Order> createOrder(Order model);
+  Future<Order> updateOrder(Order model);
   OrderQuery query();
 }
 

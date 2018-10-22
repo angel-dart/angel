@@ -14,8 +14,9 @@ abstract class CustomerOrm {
       _PostgreSqlCustomerOrmImpl;
 
   Future<List<Customer>> getAll();
-  Future<Customer> getById(id);
-  Future<Customer> update(Customer model);
+  Future<Customer> getById(String id);
+  Future<Customer> createCustomer(Customer model);
+  Future<Customer> updateCustomer(Customer model);
   CustomerQuery query();
 }
 
