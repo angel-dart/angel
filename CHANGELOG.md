@@ -1,3 +1,6 @@
+# 2.0.0-alpha.9
+* Add `Service.map`.
+
 # 2.0.0-alpha.8
 * No longer export HTTP-specific code from `angel_framework.dart`.
 An import of `import 'package:angel_framework/http.dart';` will be necessary in most cases now.

@@ -127,7 +127,7 @@ class Service<Id, Data> extends Routable {
 
   /// Creates an [AnonymousService] that wraps over this one, and maps input and output
   /// using two converter functions.
-  /// 
+  ///
   /// Handy utility for handling data in a type-safe manner.
   Service<Id, U> map<U>(U Function(Data) encoder, Data Function(U) decoder) {
     return new AnonymousService<Id, U>(
