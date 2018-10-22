@@ -1,3 +1,6 @@
+# 1.0.0-alpha.10
+* Added `Container.registerLazySingleton<T>`.
+
 # 1.0.0-alpha.9
 * Added `Container.has<T>`.
 
