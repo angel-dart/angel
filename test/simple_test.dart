@@ -39,11 +39,12 @@ main() {
       })
       ..use(
           '/foo',
-          new AnonymousService(
+          new AnonymousService<String, Map<String, dynamic>>(
               index: ([params]) async => [
-                    {'michael': 'jackson'}
+                    <String, dynamic>{'michael': 'jackson'}
                   ],
-              create: (data, [params]) async => {'foo': 'bar'}));
+              create: (data, [params]) async =>
+                  <String, dynamic>{'foo': 'bar'}));
 
     var ws = new AngelWebSocket(app);
     await app.configure(ws.configureServer);
@@ -123,23 +124,24 @@ main() {
         var foo = client.service('foo');
         var result = await foo.index();
         expect(result, [
-          {'michael': 'jackson'}
+          <String, dynamic>{'michael': 'jackson'}
         ]);
       });
 
       test('index', () async {
         var foo = client.service('foo');
         var result = await foo.create({});
-        expect(result, {'foo': 'bar'});
+        expect(result, <String, dynamic>{'foo': 'bar'});
       });
     });
 
     test('websocket', () async {
       var ws = await client.websocket();
       var foo = ws.service('foo');
-      foo.create({});
+      foo.create(<String, dynamic>{});
       var result = await foo.onCreated.first;
-      expect(result is Map ? result : result.data, equals({'foo': 'bar'}));
+      expect(result is Map ? result : result.data,
+          equals(<String, dynamic>{'foo': 'bar'}));
     });
   });
 }

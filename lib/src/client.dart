@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:angel_client/base_angel_client.dart' as client;
 import 'package:angel_client/io.dart' as client;
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_websocket/io.dart' as client;
 import 'package:http/http.dart' as http hide StreamedResponse;
 import 'package:http/src/streamed_response.dart';
