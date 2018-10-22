@@ -6,6 +6,7 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:merge_map/merge_map.dart';
 
 import '../util.dart';
+import 'anonymous_service.dart';
 import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
 import 'response_context.dart';
@@ -122,6 +123,33 @@ class Service<Id, Data> extends Routable {
   /// Removes the given resource.
   Future<Data> remove(Id id, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();
+  }
+
+  /// Creates an [AnonymousService] that wraps over this one, and maps input and output
+  /// using two converter functions.
+  /// 
+  /// Handy utility for handling data in a type-safe manner.
+  Service<Id, U> map<U>(U Function(Data) encoder, Data Function(U) decoder) {
+    return new AnonymousService<Id, U>(
+      index: ([params]) {
+        return index(params).then((it) => it.map(encoder).toList());
+      },
+      read: (id, [params]) {
+        return read(id, params).then(encoder);
+      },
+      create: (data, [params]) {
+        return create(decoder(data), params).then(encoder);
+      },
+      modify: (id, data, [params]) {
+        return modify(id, decoder(data), params).then(encoder);
+      },
+      update: (id, data, [params]) {
+        return update(id, decoder(data), params).then(encoder);
+      },
+      remove: (id, [params]) {
+        return remove(id, params).then(encoder);
+      },
+    );
   }
 
   /// Transforms an [id] (whether it is a String, num, etc.) into one acceptable by a service.
