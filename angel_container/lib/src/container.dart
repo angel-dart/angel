@@ -129,9 +129,9 @@ class Container {
   }
 
   /// Finds a named singleton.
-  /// 
+  ///
   /// In general, prefer using [registerSingleton] and [registerFactory].
-  /// 
+  ///
   /// [findByName] is best reserved for internal logic that end users of code should
   /// not see.
   T findByName<T>(String name) {
