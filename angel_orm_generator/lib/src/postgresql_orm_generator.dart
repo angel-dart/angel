@@ -136,7 +136,8 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
               .assignVar('r')
               .statement);
           b.addExpression(
-              refer('parseRow').call([refer('r').property('first')]));
+              (refer('parseRow').call([refer('r').property('first')]))
+                  .returned);
         });
     });
   }
