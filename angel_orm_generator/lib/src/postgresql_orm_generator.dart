@@ -71,6 +71,7 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
         }))
         ..methods.add(buildParseRowMethod(ctx))
         ..methods.add(buildGetById(ctx))
+        ..methods.add(buildDeleteById(ctx))
         ..methods.add(buildGetAll(ctx))
         ..methods.add(buildCreate(ctx))
         ..methods.add(buildUpdate(ctx));
@@ -203,6 +204,39 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
           var fields = buildFieldString(ctx);
           var queryString =
               'SELECT $fields FROM "${ctx.tableName}" WHERE id = @id LIMIT 1;';
+          applyQueryAndReturnOne(
+              b,
+              queryString,
+              literalMap({
+                'id': refer('int').property('parse').call([refer('id')])
+              }));
+        });
+    });
+  }
+
+  Method buildDeleteById(OrmBuildContext ctx) {
+    /* 
+      @override
+      Future<Author> getById(id) async  {
+        var r = await connection.query('');
+        return parseRow(r.first);
+      }
+     */
+    return new Method((m) {
+      m
+        ..name = 'deleteById'
+        ..annotations.add(refer('override'))
+        ..modifier = MethodModifier.async
+        ..requiredParameters.add(new Parameter((b) => b
+          ..name = 'id'
+          ..type = refer('String')))
+        ..returns = new TypeReference((b) => b
+          ..symbol = 'Future'
+          ..types.add(ctx.buildContext.modelClassType))
+        ..body = new Block((b) {
+          var fields = buildQuotedFieldString(ctx);
+          var queryString =
+              'DELETE FROM "${ctx.tableName}" WHERE id = @id RETURNING $fields;';
           applyQueryAndReturnOne(
               b,
               queryString,

@@ -15,6 +15,7 @@ abstract class OrderOrm {
 
   Future<List<Order>> getAll();
   Future<Order> getById(String id);
+  Future<Order> deleteById(String id);
   Future<Order> createOrder(Order model);
   Future<Order> updateOrder(Order model);
   OrderQuery query();

@@ -15,6 +15,7 @@ abstract class AuthorOrm {
 
   Future<List<Author>> getAll();
   Future<Author> getById(String id);
+  Future<Author> deleteById(String id);
   Future<Author> createAuthor(Author model);
   Future<Author> updateAuthor(Author model);
   AuthorQuery query();

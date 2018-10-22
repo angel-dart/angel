@@ -31,6 +31,14 @@ class _PostgreSqlCarOrmImpl implements CarOrm {
   }
 
   @override
+  Future<Car> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "cars" WHERE id = @id RETURNING  "id", "make", "description", "family_friendly", "recalled_at", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Car>> getAll() async {
     var r = await connection.query(
         'SELECT  id, make, description, family_friendly, recalled_at, created_at, updated_at FROM "cars";');

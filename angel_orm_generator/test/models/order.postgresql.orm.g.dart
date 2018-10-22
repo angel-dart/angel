@@ -31,6 +31,14 @@ class _PostgreSqlOrderOrmImpl implements OrderOrm {
   }
 
   @override
+  Future<Order> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "orders" WHERE id = @id RETURNING  "id", "customer_id", "employee_id", "order_date", "shipper_id", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Order>> getAll() async {
     var r = await connection.query(
         'SELECT  id, customer_id, employee_id, order_date, shipper_id, created_at, updated_at FROM "orders";');

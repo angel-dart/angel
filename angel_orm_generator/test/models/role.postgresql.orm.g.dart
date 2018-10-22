@@ -28,6 +28,14 @@ class _PostgreSqlRoleOrmImpl implements RoleOrm {
   }
 
   @override
+  Future<Role> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "roles" WHERE id = @id RETURNING  "id", "name", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Role>> getAll() async {
     var r = await connection
         .query('SELECT  id, name, created_at, updated_at FROM "roles";');

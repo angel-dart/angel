@@ -29,6 +29,14 @@ class _PostgreSqlFruitOrmImpl implements FruitOrm {
   }
 
   @override
+  Future<Fruit> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "fruits" WHERE id = @id RETURNING  "id", "tree_id", "common_name", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Fruit>> getAll() async {
     var r = await connection.query(
         'SELECT  id, tree_id, common_name, created_at, updated_at FROM "fruits";');

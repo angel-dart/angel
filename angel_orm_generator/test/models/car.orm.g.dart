@@ -15,6 +15,7 @@ abstract class CarOrm {
 
   Future<List<Car>> getAll();
   Future<Car> getById(String id);
+  Future<Car> deleteById(String id);
   Future<Car> createCar(Car model);
   Future<Car> updateCar(Car model);
   CarQuery query();

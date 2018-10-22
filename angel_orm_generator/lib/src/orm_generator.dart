@@ -116,6 +116,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         // Next, add method stubs.
         // * getAll
         // * getById
+        // * deleteById
         // * updateX()
         // * createX()
         // * query()
@@ -135,6 +136,16 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         clazz.methods.add(new Method((m) {
           m
             ..name = 'getById'
+            ..returns = futureOf(ctx.buildContext.modelClassName)
+            ..requiredParameters.add(new Parameter((b) => b
+              ..name = 'id'
+              ..type = refer('String')));
+        }));
+
+        // deleteById
+        clazz.methods.add(new Method((m) {
+          m
+            ..name = 'deleteById'
             ..returns = futureOf(ctx.buildContext.modelClassName)
             ..requiredParameters.add(new Parameter((b) => b
               ..name = 'id'

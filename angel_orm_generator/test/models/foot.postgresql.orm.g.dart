@@ -29,6 +29,14 @@ class _PostgreSqlFootOrmImpl implements FootOrm {
   }
 
   @override
+  Future<Foot> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "foots" WHERE id = @id RETURNING  "id", "leg_id", "n_toes", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Foot>> getAll() async {
     var r = await connection.query(
         'SELECT  id, leg_id, n_toes, created_at, updated_at FROM "foots";');

@@ -27,6 +27,14 @@ class _PostgreSqlCustomerOrmImpl implements CustomerOrm {
   }
 
   @override
+  Future<Customer> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "customers" WHERE id = @id RETURNING  "id", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Customer>> getAll() async {
     var r = await connection
         .query('SELECT  id, created_at, updated_at FROM "customers";');

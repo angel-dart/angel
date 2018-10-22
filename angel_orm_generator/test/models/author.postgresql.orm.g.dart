@@ -28,6 +28,14 @@ class _PostgreSqlAuthorOrmImpl implements AuthorOrm {
   }
 
   @override
+  Future<Author> deleteById(String id) async {
+    var r = await connection.query(
+        'DELETE FROM "authors" WHERE id = @id RETURNING  "id", "name", "created_at", "updated_at";',
+        substitutionValues: {'id': int.parse(id)});
+    return parseRow(r.first);
+  }
+
+  @override
   Future<List<Author>> getAll() async {
     var r = await connection
         .query('SELECT  id, name, created_at, updated_at FROM "authors";');

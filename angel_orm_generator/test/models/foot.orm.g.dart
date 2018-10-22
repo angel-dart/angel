@@ -15,6 +15,7 @@ abstract class FootOrm {
 
   Future<List<Foot>> getAll();
   Future<Foot> getById(String id);
+  Future<Foot> deleteById(String id);
   Future<Foot> createFoot(Foot model);
   Future<Foot> updateFoot(Foot model);
   FootQuery query();

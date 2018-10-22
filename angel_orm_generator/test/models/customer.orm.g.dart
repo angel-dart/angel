@@ -15,6 +15,7 @@ abstract class CustomerOrm {
 
   Future<List<Customer>> getAll();
   Future<Customer> getById(String id);
+  Future<Customer> deleteById(String id);
   Future<Customer> createCustomer(Customer model);
   Future<Customer> updateCustomer(Customer model);
   CustomerQuery query();

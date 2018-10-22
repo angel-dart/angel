@@ -15,6 +15,7 @@ abstract class FruitOrm {
 
   Future<List<Fruit>> getAll();
   Future<Fruit> getById(String id);
+  Future<Fruit> deleteById(String id);
   Future<Fruit> createFruit(Fruit model);
   Future<Fruit> updateFruit(Fruit model);
   FruitQuery query();

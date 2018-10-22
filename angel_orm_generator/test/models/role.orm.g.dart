@@ -15,6 +15,7 @@ abstract class RoleOrm {
 
   Future<List<Role>> getAll();
   Future<Role> getById(String id);
+  Future<Role> deleteById(String id);
   Future<Role> createRole(Role model);
   Future<Role> updateRole(Role model);
   RoleQuery query();
