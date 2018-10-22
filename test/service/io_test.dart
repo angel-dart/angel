@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart' as srv;
+import "package:angel_framework/http.dart" as srv;
 import 'package:angel_websocket/io.dart' as ws;
 import 'package:angel_websocket/server.dart' as srv;
 import 'package:logging/logging.dart';

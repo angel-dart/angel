@@ -1,3 +1,6 @@
+# 2.0.0-alpha.3
+* Directly import Angel HTTP.
+
 # 2.0.0-alpha.2
 * Updated for the next version of `angel_client`.
 
