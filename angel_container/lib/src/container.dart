@@ -5,6 +5,7 @@ class Container {
   final Reflector reflector;
   final Map<Type, dynamic> _singletons = {};
   final Map<Type, dynamic Function(Container)> _factories = {};
+  final Map<String, dynamic> _namedSingletons = {};
   final Container _parent;
 
   Container(this.reflector) : _parent = null;
@@ -93,7 +94,7 @@ class Container {
   }
 
   /// Shorthand for registering a factory that injects a singleton when it runs.
-  /// 
+  ///
   /// In many cases, you might prefer this to [registerFactory].
   void registerLazySingleton<T>(T Function(Container) f, {Type as}) {
     registerFactory<T>(
@@ -125,5 +126,35 @@ class Container {
     }
 
     _singletons[as ?? object.runtimeType] = object;
+  }
+
+  /// Finds a named singleton.
+  /// 
+  /// In general, prefer using [registerSingleton] and [registerFactory].
+  /// 
+  /// [findByName] is best reserved for internal logic that end users of code should
+  /// not see.
+  T findByName<T>(String name) {
+    if (_namedSingletons.containsKey(name)) {
+      return _namedSingletons[name] as T;
+    } else if (_parent != null) {
+      return _parent.findByName<T>(name);
+    } else {
+      throw new StateError(
+          'This container does not have a singleton named "$name".');
+    }
+  }
+
+  /// Registers a *named* singleton.
+  ///
+  /// Note that this is not related to type-based injections, and exists as a mechanism
+  /// to enable injecting multiple instances of a type within the same container hierarchy.
+  void registerNamedSingleton<T>(String name, T object) {
+    if (_namedSingletons.containsKey(name)) {
+      throw new StateError(
+          'This container already has a singleton named "$name".');
+    }
+
+    _namedSingletons[name] = object;
   }
 }

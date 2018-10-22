@@ -21,8 +21,14 @@ void main() {
   // Use `make` to create an instance.
   var truck = container.make<Truck>();
 
+  // Register a named singleton.
+  container.registerNamedSingleton('the_truck', truck);
+
   // Should print: 'Vroom! I have 40 horsepower in my engine.'
   truck.drive();
+
+  // Should print the same.
+  container.findByName<Truck>('the_truck').drive();
 
   // We can make a child container with its own factory.
   var childContainer = container.createChild();
