@@ -2,6 +2,7 @@ import 'package:async/async.dart';
 import 'dart:io';
 import 'package:angel_client/io.dart' as c;
 import 'package:angel_framework/angel_framework.dart' as s;
+import 'package:angel_framework/http.dart' as s;
 import 'package:test/test.dart';
 
 main() {
