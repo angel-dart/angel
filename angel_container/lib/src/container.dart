@@ -92,6 +92,20 @@ class Container {
     }
   }
 
+  /// Shorthand for registering a factory that injects a singleton when it runs.
+  /// 
+  /// In many cases, you might prefer this to [registerFactory].
+  void registerLazySingleton<T>(T Function(Container) f, {Type as}) {
+    registerFactory<T>(
+      (container) {
+        var r = f(container);
+        container.registerSingleton<T>(r, as: as);
+        return r;
+      },
+      as: as,
+    );
+  }
+
   void registerFactory<T>(T Function(Container) f, {Type as}) {
     as ??= T;
 
