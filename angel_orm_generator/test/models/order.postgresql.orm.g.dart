@@ -21,4 +21,12 @@ class _PostgreSqlOrderOrmImpl implements OrderOrm {
         createdAt: (row[5] as DateTime),
         updatedAt: (row[6] as DateTime));
   }
+
+  @override
+  Future<Order> getById() async {
+    var r = await connection.query(
+        'SELECTidcustomer_idemployee_idorder_dateshipper_idcreated_atupdated_at FROM "orders" id = @id;',
+        substitutionValues: {'id': id});
+    parseRow(r.first);
+  }
 }

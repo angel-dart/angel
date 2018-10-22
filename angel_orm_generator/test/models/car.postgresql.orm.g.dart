@@ -21,4 +21,12 @@ class _PostgreSqlCarOrmImpl implements CarOrm {
         createdAt: (row[5] as DateTime),
         updatedAt: (row[6] as DateTime));
   }
+
+  @override
+  Future<Car> getById() async {
+    var r = await connection.query(
+        'SELECTidmakedescriptionfamily_friendlyrecalled_atcreated_atupdated_at FROM "cars" id = @id;',
+        substitutionValues: {'id': id});
+    parseRow(r.first);
+  }
 }

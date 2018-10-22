@@ -18,4 +18,12 @@ class _PostgreSqlRoleOrmImpl implements RoleOrm {
         createdAt: (row[2] as DateTime),
         updatedAt: (row[3] as DateTime));
   }
+
+  @override
+  Future<Role> getById() async {
+    var r = await connection.query(
+        'SELECTidnamecreated_atupdated_at FROM "roles" id = @id;',
+        substitutionValues: {'id': id});
+    parseRow(r.first);
+  }
 }

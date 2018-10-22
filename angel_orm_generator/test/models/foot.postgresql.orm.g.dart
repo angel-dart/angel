@@ -19,4 +19,12 @@ class _PostgreSqlFootOrmImpl implements FootOrm {
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
   }
+
+  @override
+  Future<Foot> getById() async {
+    var r = await connection.query(
+        'SELECTidleg_idn_toescreated_atupdated_at FROM "foots" id = @id;',
+        substitutionValues: {'id': id});
+    parseRow(r.first);
+  }
 }

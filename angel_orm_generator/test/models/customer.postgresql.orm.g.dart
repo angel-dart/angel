@@ -17,4 +17,12 @@ class _PostgreSqlCustomerOrmImpl implements CustomerOrm {
         createdAt: (row[1] as DateTime),
         updatedAt: (row[2] as DateTime));
   }
+
+  @override
+  Future<Customer> getById() async {
+    var r = await connection.query(
+        'SELECTidcreated_atupdated_at FROM "customers" id = @id;',
+        substitutionValues: {'id': id});
+    parseRow(r.first);
+  }
 }

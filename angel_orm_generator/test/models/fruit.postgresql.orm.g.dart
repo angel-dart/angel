@@ -19,4 +19,12 @@ class _PostgreSqlFruitOrmImpl implements FruitOrm {
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
   }
+
+  @override
+  Future<Fruit> getById() async {
+    var r = await connection.query(
+        'SELECTidtree_idcommon_namecreated_atupdated_at FROM "fruits" id = @id;',
+        substitutionValues: {'id': id});
+    parseRow(r.first);
+  }
 }

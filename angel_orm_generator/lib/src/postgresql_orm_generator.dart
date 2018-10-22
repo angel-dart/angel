@@ -68,7 +68,8 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
               ..name = 'connection'
               ..toThis = true));
         }))
-        ..methods.add(buildParseRowMethod(ctx));
+        ..methods.add(buildParseRowMethod(ctx))
+        ..methods.add(buildGetById(ctx));
     });
   }
 
@@ -94,6 +95,48 @@ class PostgreSqlOrmGenerator extends GeneratorForAnnotation<Orm> {
           var returnValue =
               ctx.buildContext.modelClassType.newInstance([], args);
           b.addExpression(returnValue.returned);
+        });
+    });
+  }
+
+  Method buildGetById(OrmBuildContext ctx) {
+    /* 
+      @override
+      Future<Author> getById(id) async  {
+        var r = await connection.query('');
+        return parseRow(r.first);
+      }
+     */
+    return new Method((m) {
+      m
+        ..name = 'getById'
+        ..annotations.add(refer('override'))
+        ..modifier = MethodModifier.async
+        ..returns = new TypeReference((b) => b
+          ..symbol = 'Future'
+          ..types.add(ctx.buildContext.modelClassType))
+        ..body = new Block((b) {
+          var queryString = new StringBuffer('SELECT');
+          int i = 0;
+
+          for (var field in ctx.buildContext.fields) {
+            if (i > 0) queryString.write(', ');
+            queryString.write(ctx.buildContext.resolveFieldName(field.name));
+          }
+
+          queryString.write(' FROM "${ctx.tableName}" id = @id;');
+          b.statements.add(refer('connection')
+              .property('query')
+              .call([
+                literalString(queryString.toString())
+              ], {
+                'substitutionValues': literalMap({'id': refer('id')})
+              })
+              .awaited
+              .assignVar('r')
+              .statement);
+          b.addExpression(
+              refer('parseRow').call([refer('r').property('first')]));
         });
     });
   }
