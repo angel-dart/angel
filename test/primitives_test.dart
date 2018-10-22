@@ -3,6 +3,7 @@ import 'dart:io' show stderr;
 
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 

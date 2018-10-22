@@ -3,10 +3,6 @@ library angel_framework.http;
 
 import 'dart:async';
 import 'dart:io';
-export 'package:angel_http_exception/angel_http_exception.dart';
-export 'package:angel_model/angel_model.dart';
-export 'package:angel_route/angel_route.dart';
-export 'package:body_parser/body_parser.dart' show FileUploadInfo;
 export 'angel_http.dart';
 export 'controller.dart';
 export 'http_request_context.dart';

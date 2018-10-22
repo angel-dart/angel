@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
 
 main() async {

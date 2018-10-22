@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 
 main() async {
   var isolates = <Isolate>[];

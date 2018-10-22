@@ -1,3 +1,7 @@
+# 2.0.0-alpha.8
+* No longer export HTTP-specific code from `angel_framework.dart`.
+An import of `import 'package:angel_framework/http.dart';` will be necessary in most cases now.
+
 # 2.0.0-alpha.7
 * Force a tigher contract on services. They now must return `Data` on all
 methods except for `index`, which returns a `List<Data>`.
