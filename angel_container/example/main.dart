@@ -3,10 +3,15 @@ import 'package:angel_container/mirrors.dart';
 
 void main() {
   // Create a container instance.
-  var container = new Container(MirrorsReflector());
+  var container = new Container(const MirrorsReflector());
 
   // Register a singleton.
   container.registerSingleton<Engine>(Engine(40));
+
+  // You can also omit the type annotation, in which the object's runtime type will be used.
+  // If you're injecting an abstract class, prefer the type annotation.
+  //
+  // container.registerSingleton(Engine(40));
 
   // Register a factory that creates a truck.
   container.registerFactory<Truck>((container) {

@@ -23,7 +23,7 @@ class ReflectorLibraryGenerator {
       // Generate a ReflectedClass for each type
       for (var type in annotation.types) {
         if (type is InterfaceType) {
-          lib.body.add(generateReflectedClass(type, lib));
+          lib.body.add(generateReflectedClass(type));
         } else {
           // TODO: Handle these
         }
@@ -61,18 +61,12 @@ class ReflectorLibraryGenerator {
     }
   }
 
-  Class generateReflectedClass(InterfaceType type, LibraryBuilder lib) {
+  Class generateReflectedClass(InterfaceType type) {
     return new Class((clazz) {
       var rc = new ReCase(type.name);
       clazz
-        ..name = '_Reflected${rc.pascalCase}Class'
+        ..name = '_Reflected${rc.pascalCase}'
         ..extend = refer('ReflectedClass');
-
-      // Create const instance
-      lib.body.add(refer(clazz.name)
-          .constInstanceNamed('_', [])
-          .assignVar('_reflected${rc.pascalCase}Class', refer('ReflectedClass'))
-          .statement);
 
       // Add const constructor
       var superArgs = <Expression>[
