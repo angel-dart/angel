@@ -19,6 +19,7 @@ import 'dart:io'
         stdout;
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_websocket/server.dart';
 import 'package:charcode/ascii.dart';
 import 'package:dart2_constant/convert.dart';
