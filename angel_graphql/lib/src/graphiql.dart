@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:angel_framework/angel_framework.dart';
+import 'package:http_parser/http_parser.dart';
 
 /// Returns a simple [RequestHandler] that renders the GraphiQL visual interface for GraphQL.
 ///
@@ -9,9 +8,9 @@ import 'package:angel_framework/angel_framework.dart';
 RequestHandler graphiQL({String graphQLEndpoint: '/graphql'}) {
   return (req, res) {
     res
-      ..contentType = new ContentType('text', 'html')
+      ..contentType = new MediaType('text', 'html')
       ..write(renderGraphiql(graphqlEndpoint: graphQLEndpoint))
-      ..end();
+      ..close();
   };
 }
 

@@ -1,4 +1,5 @@
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_graphql/angel_graphql.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
@@ -17,7 +18,7 @@ main() async {
       if (rec.stackTrace != null) print(rec.stackTrace);
     });
 
-  var todoService = app.use('api/todos', new MapService()) as Service;
+  var todoService = app.use('api/todos', new MapService());
 
   var queryType = objectType(
     'Query',

@@ -28,9 +28,10 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
     };
 
     executeMap(Map map) async {
-      var text = req.body['query'] as String;
-      var operationName = req.body['operation_name'] as String;
-      var variables = req.body['variables'];
+      var body = await req.parseBody();
+      var text = body['query'] as String;
+      var operationName = body['operation_name'] as String;
+      var variables = body['variables'];
 
       if (variables is String) {
         variables = json.decode(variables as String);
@@ -49,12 +50,12 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
 
     try {
       if (req.method == 'GET') {
-        if (await validateQuery(graphQlPostBody)(req, res)) {
-          return await executeMap(req.query);
+        if (await validateQuery(graphQlPostBody)(req, res) as bool) {
+          return await executeMap(await req.parseQuery());
         }
       } else if (req.method == 'POST') {
         if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
-          var text = utf8.decode(await req.lazyOriginalBuffer());
+          var text = utf8.decode(await req.parseRawRequestBuffer());
           return {
             'data': await graphQL.parseAndExecute(
               text,
@@ -63,8 +64,8 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
             ),
           };
         } else if (req.headers.contentType?.mimeType == 'application/json') {
-          if (await validate(graphQlPostBody)(req, res)) {
-            return await executeMap(req.body);
+          if (await validate(graphQlPostBody)(req, res) as bool) {
+            return await executeMap(await req.parseBody());
           }
         } else {
           throw new AngelHttpException.badRequest();
