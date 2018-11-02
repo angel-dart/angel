@@ -1,4 +1,5 @@
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_validate/server.dart';
 import 'package:dart2_constant/convert.dart';
@@ -23,9 +24,10 @@ main() {
     app = new Angel();
     http = new AngelHttp(app, useZone: false);
 
-    app.chain(validate(echoSchema)).post('/echo',
+    app.chain([validate(echoSchema)]).post('/echo',
         (RequestContext req, res) async {
-      res.write('Hello, ${req.body['message']}!');
+      var body = await req.parseBody();
+      res.write('Hello, ${body['message']}!');
     });
 
     app.logger = new Logger('angel')..onRecord.listen(printRecord);
@@ -50,10 +52,10 @@ main() {
 
     test('enforce', () async {
       var rq = new MockHttpRequest('POST', new Uri(path: '/echo'))
-      ..headers.add('accept', '*/*')
-      ..headers.add('content-type', 'application/json')
-      ..write(json.encode({'foo': 'bar'}))
-      ..close();
+        ..headers.add('accept', '*/*')
+        ..headers.add('content-type', 'application/json')
+        ..write(json.encode({'foo': 'bar'}))
+        ..close();
       http.handleRequest(rq);
 
       var responseBody = await rq.response.transform(utf8.decoder).join();

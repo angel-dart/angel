@@ -362,9 +362,8 @@ class ValidationResult {
   /// This is empty if validation was successful.
   List<String> get errors => new List<String>.unmodifiable(_errors);
 
-  ValidationResult withData(Map<String, dynamic> data) => new ValidationResult()
-    .._data.addAll(data)
-    .._errors.addAll(_errors);
+  ValidationResult withData(Map<String, dynamic> data) =>
+      new ValidationResult().._data.addAll(data).._errors.addAll(_errors);
 
   ValidationResult withErrors(Iterable<String> errors) =>
       new ValidationResult().._data.addAll(_data).._errors.addAll(errors);

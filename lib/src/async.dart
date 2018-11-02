@@ -60,7 +60,7 @@ AngelMatcher idExistsInService(String servicePath,
   return predicateWithAngel(
     (key, item, app) async {
       try {
-        var result = await app.service(servicePath)?.read(item);
+        var result = await app.findService(servicePath)?.read(item);
         return result != null;
       } on AngelHttpException catch (e) {
         if (e.statusCode == 404) {

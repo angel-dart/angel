@@ -1,3 +1,6 @@
+# 2.0.0-alpha.1
+* Update for Angel 2.
+
 # 1.0.5-beta
 * Use `wrapMatcher` on explicit values instead of throwing.
 * Add async matchers.

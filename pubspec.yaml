@@ -1,6 +1,6 @@
 name: angel_validate
 description: Cross-platform validation library based on `matcher`.
-version: 2.0.0-alpha
+version: 2.0.0-alpha.1
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/validate
 environment:
@@ -10,7 +10,7 @@ dependencies:
   angel_http_exception: ^1.0.0
   matcher: ^0.12.0
 dev_dependencies:
-  #angel_test: ^1.0.0-dev
+  angel_test: ^2.0.0-alpha
   build_runner: ^0.10.0
   build_web_compilers: ^0.4.0
   logging: ^0.11.0

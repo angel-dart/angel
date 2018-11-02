@@ -12,5 +12,4 @@ class ContextValidator extends Matcher {
 
   @override
   bool matches(item, Map matchState) => true;
-
 }

@@ -12,7 +12,7 @@ export 'angel_validate.dart';
 /// Auto-parses numbers in `req.body`.
 RequestHandler autoParseBody(List<String> fields) {
   return (RequestContext req, res) async {
-    (await req.lazyBody()).addAll(autoParse(req.body, fields));
+    (await req.parseBody()).addAll(autoParse(await req.parseBody(), fields));
     return true;
   };
 }
@@ -20,7 +20,7 @@ RequestHandler autoParseBody(List<String> fields) {
 /// Auto-parses numbers in `req.query`.
 RequestHandler autoParseQuery(List<String> fields) {
   return (RequestContext req, res) async {
-    req.query.addAll(autoParse(req.query, fields));
+    (await req.parseQuery()).addAll(autoParse(await req.parseQuery(), fields));
     return true;
   };
 }
@@ -28,8 +28,8 @@ RequestHandler autoParseQuery(List<String> fields) {
 /// Filters unwanted data out of `req.body`.
 RequestHandler filterBody(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var filtered = filter(await req.lazyBody(), only);
-    req.body
+    var filtered = filter(await req.parseBody(), only);
+    (await req.parseBody())
       ..clear()
       ..addAll(filtered);
     return true;
@@ -39,8 +39,9 @@ RequestHandler filterBody(Iterable<String> only) {
 /// Filters unwanted data out of `req.query`.
 RequestHandler filterQuery(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var filtered = filter(req.query, only);
-    req.query
+    var query = await req.parseQuery();
+    var filtered = filter(query, only);
+    query
       ..clear()
       ..addAll(filtered);
     return true;
@@ -60,7 +61,7 @@ RequestHandler validate(Validator validator,
           message: errorMessage, errors: result.errors);
     }
 
-    req.body
+    (await req.parseBody())
       ..clear()
       ..addAll(result.data);
 
@@ -73,14 +74,15 @@ RequestHandler validate(Validator validator,
 RequestHandler validateQuery(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var result = await asyncApplyValidator(validator, await req.parseQuery(), req.app);
+    var result =
+        await asyncApplyValidator(validator, await req.parseQuery(), req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
-    req.query
+    (await req.parseQuery())
       ..clear()
       ..addAll(result.data);
 
