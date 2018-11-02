@@ -67,7 +67,7 @@ class Proxy {
         url = url.replaceAll(_straySlashes, '');
         url = '$url/$mapping';
 
-        if (!url.startsWith('http')) url = 'http://$url';
+        if (!url.startsWith(protocol)) url = '$protocol://$url';
         url = url.replaceAll(_straySlashes, '');
 
         var headers = <String, String>{
