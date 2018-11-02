@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:http/src/base_client.dart' as http;
-import 'package:http/src/request.dart' as http;
-import 'package:http/src/response.dart' as http;
-import 'package:http/src/streamed_response.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:http/http.dart' as http;
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final MediaType _fallbackMediaType = MediaType('application', 'octet-stream');
 
 class Proxy {
   String _prefix;
 
   final Angel app;
-  final http.BaseClient httpClient;
+  final http.Client httpClient;
 
   /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
   final bool recoverFromDead;
@@ -20,6 +20,8 @@ class Proxy {
   final String host, mapTo, publicPath;
   final int port;
   final String protocol;
+
+  /// If `null` then no timout is added for requests
   final Duration timeout;
 
   Proxy(
@@ -34,7 +36,10 @@ class Proxy {
     this.recoverFrom404: true,
     this.timeout,
   }) {
-    _prefix = publicPath.replaceAll(_straySlashes, '');
+    if (this.recoverFromDead == null) throw ArgumentError.notNull("recoverFromDead");
+    if (this.recoverFrom404 == null) throw ArgumentError.notNull("recoverFrom404");
+
+    _prefix = publicPath?.replaceAll(_straySlashes, '') ?? '';
   }
 
   void close() => httpClient.close();
@@ -43,20 +48,17 @@ class Proxy {
   Future<bool> handleRequest(RequestContext req, ResponseContext res) {
     var path = req.path.replaceAll(_straySlashes, '');
 
-    if (_prefix?.isNotEmpty == true) {
-      if (!path.startsWith(_prefix))
-        return new Future<bool>.value(true);
-      else {
-        path = path.replaceFirst(_prefix, '').replaceAll(_straySlashes, '');
-      }
+    if (_prefix.isNotEmpty) {
+      if (!path.startsWith(_prefix)) return new Future<bool>.value(true);
+
+      path = path.replaceFirst(_prefix, '').replaceAll(_straySlashes, '');
     }
 
     return servePath(path, req, res);
   }
 
   /// Proxies a request to the given path on the remote server.
-  Future<bool> servePath(
-      String path, RequestContext req, ResponseContext res) async {
+  Future<bool> servePath(String path, RequestContext req, ResponseContext res) async {
     http.StreamedResponse rs;
 
     final mapping = '$mapTo/$path'.replaceAll(_straySlashes, '');
@@ -74,8 +76,7 @@ class Proxy {
           'host': port == null ? host : '$host:$port',
           'x-forwarded-for': req.remoteAddress.address,
           'x-forwarded-port': req.uri.port.toString(),
-          'x-forwarded-host':
-              req.headers.host ?? req.headers.value('host') ?? 'none',
+          'x-forwarded-host': req.headers.host ?? req.headers.value('host') ?? 'none',
           'x-forwarded-proto': protocol,
         };
 
@@ -83,19 +84,18 @@ class Proxy {
           headers[name] = values.join(',');
         });
 
-        headers['cookie'] =
-            req.cookies.map<String>((c) => '${c.name}=${c.value}').join('; ');
+        headers[HttpHeaders.cookieHeader] = req.cookies.map<String>((c) => '${c.name}=${c.value}').join('; ');
 
         var body;
 
-        if (req.method != 'GET' && app.storeOriginalBuffer == true) {
-          await req.parse();
-          if (req.originalBuffer?.isNotEmpty == true) body = req.originalBuffer;
+        if (req.method != 'GET' && app.keepRawRequestBuffers == true) {
+          body = (await req.parse()).originalBuffer;
         }
 
         var rq = new http.Request(req.method, Uri.parse(url));
         rq.headers.addAll(headers);
         rq.headers['host'] = rq.url.host;
+        rq.encoding = Utf8Codec(allowMalformed: true);
 
         if (body != null) rq.bodyBytes = body;
 
@@ -106,37 +106,51 @@ class Proxy {
       if (timeout != null) future = future.timeout(timeout);
       rs = await future;
     } on TimeoutException catch (e, st) {
-      if (recoverFromDead != false)
-        return true;
-      else
+      if (recoverFromDead) return true;
+
+      throw new AngelHttpException(
+        e,
+        stackTrace: st,
+        statusCode: 504,
+        message: 'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.',
+      );
+    } catch (e) {
+      if (recoverFromDead) return true;
+      rethrow;
+    }
+
+    if (rs.statusCode == 404 && recoverFrom404) return true;
+    if (rs.contentLength == 0 && recoverFromDead) return true;
+
+    MediaType mediaType;
+    if (rs.headers.containsKey(HttpHeaders.contentTypeHeader)) {
+      try {
+        mediaType = MediaType.parse(rs.headers[HttpHeaders.contentTypeHeader]);
+      } on FormatException catch (e, st) {
+        if (recoverFromDead) return true;
+
         throw new AngelHttpException(
           e,
           stackTrace: st,
           statusCode: 504,
-          message:
-              'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.',
+          message: 'Host "$host" returned a malformed content-type',
         );
-    } catch (e) {
-      if (recoverFromDead != false)
-        return true;
-      else
-        rethrow;
+      }
+    } else {
+      mediaType = _fallbackMediaType;
     }
 
-    if (rs.statusCode == 404 && recoverFrom404 != false) return true;
+    var proxiedHeaders = new Map<String, String>.from(rs.headers);
 
-    // http/2 client implementations usually get confused by transfer-encoding
     res
+      ..contentType = mediaType
       ..statusCode = rs.statusCode
-      ..headers.addAll(new Map<String, String>.from(rs.headers)
-        ..remove(HttpHeaders.TRANSFER_ENCODING));
-
-    if (rs.contentLength == 0 && recoverFromDead != false) return true;
+      ..headers.addAll(proxiedHeaders);
 
     var stream = rs.stream;
 
-    if (rs.headers['content-encoding'] == 'gzip')
-      stream = stream.transform(GZIP.encoder);
+    // [upgrading to dart2] Keeping this workaround as a reference. It's not properly typed for dart2
+    //if (rs.headers[HttpHeaders.contentEncodingHeader] == 'gzip') stream = stream.transform(gzip.encoder);
 
     await stream.pipe(res);
 

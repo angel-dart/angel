@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_proxy/angel_proxy.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
@@ -19,7 +20,7 @@ main() async {
     publicPath: '/pub',
     timeout: timeout,
   );
-  app.use(pubProxy.handleRequest);
+  app.all("/pub/*", pubProxy.handleRequest);
 
   // Pub's HTML assumes that the site's styles, etc. are on the absolute path `/static`.
   // This is not the case here. Let's patch that up:
@@ -35,10 +36,10 @@ main() async {
     timeout: timeout,
     recoverFrom404: false,
   );
-  app.use(dartlangProxy.handleRequest);
+  app.all('*', dartlangProxy.handleRequest);
 
   // In case we can't connect to dartlang.org, show an error.
-  app.use('Couldn\'t connect to Pub or dartlang.');
+  app.fallback((req, res) => res.write('Couldn\'t connect to Pub or dartlang.'));
 
   app.logger = new Logger('angel')
     ..onRecord.listen(
@@ -49,7 +50,7 @@ main() async {
       },
     );
 
-  var server = await app.startServer(InternetAddress.LOOPBACK_IP_V4, 8080);
+  var server = await AngelHttp(app).startServer(InternetAddress.loopbackIPv4, 8080);
   print('Listening at http://${server.address.address}:${server.port}');
   print('Check this out! http://${server.address.address}:${server.port}/pub/packages/angel_framework');
 }

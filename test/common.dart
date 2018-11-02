@@ -1,18 +1,26 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
 
-Angel testApp() {
-  final app = new Angel()..lazyParseBodies = true;
+Future<HttpServer> startTestServer() {
+  final app = new Angel()
+    ..eagerParseRequestBodies = false
+    ..keepRawRequestBuffers = true;
 
-  app.get('/hello', 'world');
-  app.get('/foo/bar', 'baz');
+  app.get('/hello', (req, res) => res.write('world'));
+  app.get('/foo/bar', (req, res) => res.write('baz'));
   app.post('/body', (RequestContext req, res) async {
-    var body = await req.lazyBody();
-    print('Body: $body');
+    var body = await req.parseBody();
+    app.logger.info('Body: $body');
     return body;
   });
 
   app.logger = new Logger('testApp');
+  var server = AngelHttp(app);
+  app.dumpTree();
 
-  return app..dumpTree();
+  return server.startServer();
 }
