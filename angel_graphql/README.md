@@ -127,6 +127,53 @@ UI, ready-to-go!
 
 Now you're ready to build a GraphQL API!
 
+## Using Services
+What would Angel be without services? For those unfamiliar - in Angel,
+`Service` is a base class that implements CRUD functionality, and serves
+as the database interface within an Angel application. They are well-suited
+for NoSQL or other databases without a schema (they can be used with
+SQL, but that's not their primary focus).
+
+`package:angel_graphql` has functionality to resolve fields by interacting with
+services.
+
+Consider our previous example, and note the calls to
+`resolveViaServiceIndex` and `resolveViaServiceRead`:
+
+```dart
+var queryType = objectType(
+    'Query',
+    description: 'A simple API that manages your to-do list.',
+    fields: [
+      field(
+        'todos',
+        listOf(convertDartType(Todo).nonNullable()),
+        resolve: resolveViaServiceIndex(todoService),
+      ),
+      field(
+        'todo',
+        convertDartType(Todo),
+        resolve: resolveViaServiceRead(todoService),
+        inputs: [
+          new GraphQLFieldInput('id', graphQLId.nonNullable()),
+        ],
+      ),
+    ],
+  );
+```
+
+In all, there are:
+* `resolveViaServiceIndex`
+* `resolveViaServiceFindOne`
+* `resolveViaServiceRead`
+* `resolveViaServiceModify`
+* `resolveViaServiceUpdate`
+* `resolveViaServiceRemove`
+
+As one might imagine, using these convenience helpers makes
+it much quicker to implement CRUD functionality in a GraphQL
+API.
+
 ## Documentation
 The `convertDartType` function can automatically read the documentation
 from a type like the following:
