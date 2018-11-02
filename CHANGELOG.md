@@ -1,3 +1,10 @@
+# 2.0.1
+* Add import of `package:angel_framework/http.dart`
+  * https://github.com/angel-dart/hot/pull/7
+
+# 2.0.0
+* Update for Dart 2 + Angel 2.
+
 # 1.1.1+1
 * Fix a bug that threw when `--observe` was not present.
 
