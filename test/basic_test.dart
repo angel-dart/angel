@@ -22,14 +22,12 @@ main() {
     testServer = await startTestServer();
 
     var proxy1 = new Proxy(
-      app,
       httpClient,
       testServer.address.address,
       port: testServer.port,
       publicPath: '/proxy',
     );
     var proxy2 = new Proxy(
-      app,
       httpClient,
       testServer.address.address,
       port: testServer.port,

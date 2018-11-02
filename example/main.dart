@@ -14,7 +14,6 @@ main() async {
   // Forward any /api requests to pub.
   // By default, if the host throws a 404, the request will fall through to the next handler.
   var pubProxy = new Proxy(
-    app,
     client,
     'https://pub.dartlang.org',
     publicPath: '/pub',
@@ -30,7 +29,6 @@ main() async {
 
   // Anything else should fall through to dartlang.org.
   var dartlangProxy = new Proxy(
-    app,
     client,
     'https://dartlang.org',
     timeout: timeout,

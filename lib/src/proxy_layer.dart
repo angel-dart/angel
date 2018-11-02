@@ -11,7 +11,6 @@ final MediaType _fallbackMediaType = MediaType('application', 'octet-stream');
 class Proxy {
   String _prefix;
 
-  final Angel app;
   final http.Client httpClient;
 
   /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
@@ -25,7 +24,6 @@ class Proxy {
   final Duration timeout;
 
   Proxy(
-    this.app,
     this.httpClient,
     this.host, {
     this.port,
@@ -88,7 +86,7 @@ class Proxy {
 
         var body;
 
-        if (req.method != 'GET' && app.keepRawRequestBuffers == true) {
+        if (req.method != 'GET' && req.app.keepRawRequestBuffers == true) {
           body = (await req.parse()).originalBuffer;
         }
 
