@@ -27,5 +27,8 @@ targets:
     dependencies:
       - ":_book"
     sources:
+      - "bin/**"
+      - "lib/**"
+      - "web/**"
       - "test/models/author.dart"
       - "test/models/game_pad.dart"

@@ -1,3 +1,5 @@
+export 'package:quiver_hashcode/hashcode.dart' show hashObjects;
+
 /// Excludes a field from being excluded.
 class Exclude {
   final bool canSerialize;

@@ -2,6 +2,7 @@
 
 # Files and directories created by pub
 ../.packages
+.packages
 .pub/
 build/
 # If you're building an application, you may want to check-in your pubspec.lock
