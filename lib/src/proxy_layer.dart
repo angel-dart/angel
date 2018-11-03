@@ -138,19 +138,24 @@ class Proxy {
       mediaType = _fallbackMediaType;
     }
 
-    var proxiedHeaders = new Map<String, String>.from(rs.headers);
+    /// if [http.Client] does not provide us with a content length
+    /// OR [http.Client] is about to decode the response (bytecount returned by [http.Response].stream != known length)
+    /// then we can not provide a value downstream => set to '-1' for 'unspecified length'
+    var isContentLengthUnknown = rs.contentLength == null ||
+        rs.headers[HttpHeaders.contentEncodingHeader]?.isNotEmpty == true ||
+        rs.headers[HttpHeaders.transferEncodingHeader]?.isNotEmpty == true;
+
+    var proxiedHeaders = new Map<String, String>.from(rs.headers)
+      ..remove(HttpHeaders.contentEncodingHeader) // drop, http.Client has decoded
+      ..remove(HttpHeaders.transferEncodingHeader) // drop, http.Client has decoded
+      ..[HttpHeaders.contentLengthHeader] = "${isContentLengthUnknown ? '-1' : rs.contentLength}";
 
     res
       ..contentType = mediaType
       ..statusCode = rs.statusCode
       ..headers.addAll(proxiedHeaders);
 
-    var stream = rs.stream;
-
-    // [upgrading to dart2] Keeping this workaround as a reference. It's not properly typed for dart2
-    //if (rs.headers[HttpHeaders.contentEncodingHeader] == 'gzip') stream = stream.transform(gzip.encoder);
-
-    await stream.pipe(res);
+    await rs.stream.pipe(res);
 
     return false;
   }
