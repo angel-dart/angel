@@ -83,7 +83,8 @@ main() {
 <script aria-label="script">
   window.alert('a string');
 </script>
-'''.trim(),
+'''
+          .trim(),
       sourceUrl: 'test.jl',
     ).tokens;
     tokens.forEach(print);

@@ -18,13 +18,16 @@ void main() {
     var html = render(template, {'sqrt': sqrt});
     print(html);
 
-    expect(html, '''
+    expect(
+        html,
+        '''
 <div>
   <div>
     The square root of 16 is 4.
   </div>
 </div>
-    '''.trim());
+    '''
+            .trim());
   });
 
   test('render into explicit tag name', () {
@@ -40,13 +43,16 @@ void main() {
     var html = render(template, {'sqrt': sqrt});
     print(html);
 
-    expect(html, '''
+    expect(
+        html,
+        '''
 <div>
   <span>
     The square root of 16 is 4.
   </span>
 </div>
-    '''.trim());
+    '''
+            .trim());
   });
 
   test('pass attributes', () {
@@ -62,13 +68,16 @@ void main() {
     var html = render(template, {'sqrt': sqrt});
     print(html);
 
-    expect(html, '''
+    expect(
+        html,
+        '''
 <div>
   <div foo="bar" baz="quux">
     The square root of 16 is 4.
   </div>
 </div>
-    '''.trim());
+    '''
+            .trim());
   });
 
   test('render without tag name', () {
@@ -84,12 +93,15 @@ void main() {
     var html = render(template, {'sqrt': sqrt});
     print(html);
 
-    expect(html, '''
+    expect(
+        html,
+        '''
 <div>
   The square root of 16 is 4.
       
 </div>
-    '''.trim());
+    '''
+            .trim());
   });
 }
 

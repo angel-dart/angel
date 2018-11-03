@@ -29,11 +29,19 @@ main() {
 
     // e.jl
     fileSystem.file('e.jl').writeAsStringSync(
-        '<extend src="c.jl"><block name="greeting">Angel <block name="name">default</block></block></extend>');
+        '<extend src="c.jl"><block name="greeting">Angel <b><block name="name">default</block></b></block></extend>');
 
-    // e.jl
-    fileSystem.file('f.jl').writeAsStringSync(
-        '<extend src="e.jl"><block name="name">framework</block></extend>');
+    // fox.jl
+    fileSystem.file('fox.jl').writeAsStringSync(
+        '<block name="dance">The name is <block name="name"></block></block>');
+
+    // trot.jl
+    fileSystem.file('trot.jl').writeAsStringSync(
+        '<extend src="fox.jl"><block name="name">CONGA <i><block name="exclaim">YEAH</block></i></block></extend>');
+
+    // foxtrot.jl
+    fileSystem.file('foxtrot.jl').writeAsStringSync(
+        '<extend src="trot.jl"><block name="exclaim">framework</block></extend>');
   });
 
   test('blocks are replaced or kept', () async {
@@ -87,7 +95,7 @@ main() {
   });
 
   test('blocks within blocks', () async {
-    var file = fileSystem.file('f.jl');
+    var file = fileSystem.file('foxtrot.jl');
     var original = jael.parseDocument(await file.readAsString(),
         sourceUrl: file.uri, onError: (e) => throw e);
     var processed = await jael.resolve(

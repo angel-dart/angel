@@ -21,7 +21,7 @@ main() {
 
     try {
       document = jael.parseDocument(template, sourceUrl: 'test.jl');
-      scope = new SymbolTable(values: {
+      scope = new SymbolTable<dynamic>(values: {
         'csrf_token': 'foo',
         'profile': {
           'avatar': 'thosakwe.png',
@@ -67,7 +67,7 @@ main() {
     var buf = new CodeBuffer();
     //jael.scan(template, sourceUrl: 'test.jl').tokens.forEach(print);
     var document = jael.parseDocument(template, sourceUrl: 'test.jl');
-    var scope = new SymbolTable(values: {
+    var scope = new SymbolTable<dynamic>(values: {
       'pokemon': const _Pokemon('Darkrai', 'Dark'),
     });
 
@@ -107,7 +107,7 @@ main() {
 
     var buf = new CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jl');
-    var scope = new SymbolTable(values: {
+    var scope = new SymbolTable<dynamic>(values: {
       'starters': starters,
     });
 
@@ -152,7 +152,7 @@ main() {
 
     var buf = new CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jl');
-    var scope = new SymbolTable(values: {
+    var scope = new SymbolTable<dynamic>(values: {
       'starters': starters,
     });
 
@@ -300,7 +300,7 @@ main() {
 
     var buf = new CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jl');
-    var scope = new SymbolTable(values: {
+    var scope = new SymbolTable<dynamic>(values: {
       'account': new _Account(isDisabled: true),
     });
 
@@ -327,7 +327,7 @@ main() {
 
     var buf = new CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jl');
-    var scope = new SymbolTable(values: {
+    var scope = new SymbolTable<dynamic>(values: {
       'account': new _Account(isDisabled: null),
     });
 

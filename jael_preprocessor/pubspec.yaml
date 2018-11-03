@@ -6,7 +6,7 @@ homepage: https://github.com/angel-dart/jael/tree/master/jael_processor
 environment:
   sdk: ">=1.19.0 <=2.0.0"
 dependencies:
-  file: ^2.0.0
+  file: ^5.0.0
   jael: ^1.0.0-alpha
 dev_dependencies:
   test: ^0.12.0

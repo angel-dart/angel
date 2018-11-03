@@ -1,5 +1,5 @@
+import 'dart:convert';
 import 'package:code_buffer/code_buffer.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:symbol_table/symbol_table.dart';
 import 'ast/ast.dart';
 import 'text/parser.dart';
@@ -54,8 +54,8 @@ class Renderer {
       buf
         ..writeln('<li>')
         ..indent()
-        ..writeln('<b>$type:</b> ${error.span.start.toolString}: ${error
-            .message}')
+        ..writeln(
+            '<b>$type:</b> ${error.span.start.toolString}: ${error.message}')
         ..writeln('<br>')
         ..writeln(
           '<span style="color: red;">' +

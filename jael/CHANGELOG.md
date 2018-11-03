@@ -1,5 +1,9 @@
+# 2.0.0
+* Dart 2 updates.
+* Remove usage of `package:dart2_constant`.
+
 # 1.0.6+1
-* Ensure `<element>` pass attributes.
+* Ensure `<element>` passes attributes.
 
 # 1.0.6
 * Add `index-as` to `for-each`.
