@@ -36,6 +36,11 @@ class Gamepad extends _Gamepad {
             .equals(other.dynamicMap, dynamicMap);
   }
 
+  @override
+  int get hashCode {
+    return hashObjects([buttons, dynamicMap]);
+  }
+
   Map<String, dynamic> toJson() {
     return GamepadSerializer.toMap(this);
   }

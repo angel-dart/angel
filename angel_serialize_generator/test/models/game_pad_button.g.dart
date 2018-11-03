@@ -27,6 +27,11 @@ class GamepadButton implements _GamepadButton {
         other.radius == radius;
   }
 
+  @override
+  int get hashCode {
+    return hashObjects([name, radius]);
+  }
+
   Map<String, dynamic> toJson() {
     return GamepadButtonSerializer.toMap(this);
   }

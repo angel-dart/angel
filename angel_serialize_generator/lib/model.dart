@@ -52,6 +52,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       generateConstructor(ctx, clazz, file);
       generateCopyWithMethod(ctx, clazz, file);
       generateEqualsOperator(ctx, clazz, file);
+      generateHashCode(ctx, clazz);
 
       // Generate toJson() method if necessary
       var serializers = annotation.peek('serializers')?.listValue ?? [];
@@ -202,6 +203,21 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     var eq = generateEquality(type, true);
     if (eq == null) return (a, b) => '$a == $b';
     return (a, b) => '$eq.equals($a, $b)';
+  }
+
+  void generateHashCode(BuildContext ctx, ClassBuilder clazz) {
+    clazz
+      ..methods.add(new Method((method) {
+        method
+          ..name = 'hashCode'
+          ..type = MethodType.getter
+          ..returns = refer('int')
+          ..annotations.add(refer('override'))
+          ..body = refer('hashObjects')
+              .call([literalList(ctx.fields.map((f) => refer(f.name)))])
+              .returned
+              .statement;
+      }));
   }
 
   void generateEqualsOperator(

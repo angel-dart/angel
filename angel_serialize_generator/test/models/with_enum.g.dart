@@ -28,6 +28,11 @@ class WithEnum implements _WithEnum {
             .equals(other.finalList, finalList);
   }
 
+  @override
+  int get hashCode {
+    return hashObjects([type, finalList]);
+  }
+
   Map<String, dynamic> toJson() {
     return WithEnumSerializer.toMap(this);
   }

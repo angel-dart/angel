@@ -83,6 +83,21 @@ class Author extends _Author {
         other.updatedAt == updatedAt;
   }
 
+  @override
+  int get hashCode {
+    return hashObjects([
+      id,
+      name,
+      age,
+      books,
+      newestBook,
+      secret,
+      obscured,
+      createdAt,
+      updatedAt
+    ]);
+  }
+
   Map<String, dynamic> toJson() {
     return AuthorSerializer.toMap(this);
   }
@@ -127,6 +142,11 @@ class Library extends _Library {
             .equals(other.collection, collection) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, collection, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
@@ -189,6 +209,11 @@ class Bookmark extends _Bookmark {
         other.comment == comment &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, history, page, comment, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
