@@ -1,3 +1,6 @@
+# 2.0.0-alpha.4
+* Strong typing updates.
+
 # 2.0.0-alpha.3
 * Directly import Angel HTTP.
 
