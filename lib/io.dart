@@ -5,10 +5,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel_client/angel_client.dart';
 import 'package:http/http.dart' as http;
-import 'package:json_god/json_god.dart' as god;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
-import 'angel_websocket.dart';
 import 'base_websocket_client.dart';
 export 'package:angel_client/angel_client.dart';
 export 'angel_websocket.dart';
@@ -51,9 +49,6 @@ class WebSockets extends BaseWebSocketClient {
     String uri = path.replaceAll(_straySlashes, '');
     return new IoWebSocketsService<Id, Data>(socket, this, uri, type);
   }
-
-  @override
-  serialize(x) => god.serialize(x);
 }
 
 class IoWebSocketsService<Id, Data> extends WebSocketsService<Id, Data> {
@@ -62,15 +57,4 @@ class IoWebSocketsService<Id, Data> extends WebSocketsService<Id, Data> {
   IoWebSocketsService(
       WebSocketChannel socket, WebSockets app, String uri, this.type)
       : super(socket, app, uri);
-
-  @override
-  serialize(WebSocketAction action) => god.serialize(action);
-
-  @override
-  deserialize(x) {
-    if (type != null && type != dynamic) {
-      return god.deserializeDatum(x, outputType: type) as Data;
-    } else
-      return super.deserialize(x);
-  }
 }

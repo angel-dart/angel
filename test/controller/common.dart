@@ -10,6 +10,10 @@ class Game {
       playerOne: data['playerOne'].toString(),
       playerTwo: data['playerTwo'].toString());
 
+  Map<String, dynamic> toJson() {
+    return {'playerOne': playerOne, 'playerTwo': playerTwo};
+  }
+
   @override
   bool operator ==(other) =>
       other is Game &&

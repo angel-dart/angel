@@ -77,7 +77,7 @@ class WebSocketAction {
       data: data['data'],
       params: data['params'] as Map<String, dynamic>);
 
-  Map toJson() {
+  Map<String, dynamic> toJson() {
     return {'id': id, 'eventName': eventName, 'data': data, 'params': params};
   }
 }
