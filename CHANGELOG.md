@@ -1,3 +1,6 @@
+# 2.0.0-alpha.5
+* Update `http` dependency.
+
 # 2.0.0-alpha.4
 * Remove `package:json_god`.
 * Make `WebSocketContext` take any `StreamChannel`.
