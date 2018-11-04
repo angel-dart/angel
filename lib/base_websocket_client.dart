@@ -242,7 +242,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
 
   final StreamController<WebSocketEvent> _onAllEvents =
       new StreamController<WebSocketEvent>();
-  final StreamController _onIndexed = new StreamController();
+  final StreamController<List<Data>> _onIndexed = new StreamController();
   final StreamController<Data> _onRead = new StreamController<Data>();
   final StreamController<Data> _onCreated = new StreamController<Data>();
   final StreamController<Data> _onModified = new StreamController<Data>();
@@ -253,7 +253,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   Stream<WebSocketEvent> get onAllEvents => _onAllEvents.stream;
 
   /// Fired on `index` events.
-  Stream get onIndexed => _onIndexed.stream;
+  Stream<List<Data>> get onIndexed => _onIndexed.stream;
 
   /// Fired on `read` events.
   Stream<Data> get onRead => _onRead.stream;
@@ -293,23 +293,31 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   /// Deserializes the contents of an [event].
-  WebSocketEvent<Data> transformEvent(WebSocketEvent<Data> event) {
-    return event..data = deserialize(event.data);
+  WebSocketEvent<Data> transformEvent(WebSocketEvent event) {
+    return new WebSocketEvent(
+        eventName: event.eventName, data: deserialize(event.data));
   }
 
   /// Starts listening for events.
   void listen() {
     app.onServiceEvent.listen((map) {
       if (map.containsKey(path)) {
-        var event = map[path].cast<Data>();
-        var transformed = transformEvent(event).data;
+        var event = map[path];
 
         _onAllEvents.add(event);
 
+        if (event.eventName == EVENT_INDEXED) {
+          var d = event.data;
+          var transformed = new WebSocketEvent(
+              eventName: event.eventName,
+              data: d is Iterable ? d.map(deserialize).toList() : null);
+          if (transformed.data != null) _onIndexed.add(transformed.data);
+          return;
+        }
+
+        var transformed = transformEvent(event).data;
+
         switch (event.eventName) {
-          case EVENT_INDEXED:
-            _onIndexed.add(transformed);
-            break;
           case EVENT_READ:
             _onRead.add(transformed);
             break;
@@ -336,14 +344,14 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  Future index([Map<String, dynamic> params]) async {
+  Future<List<Data>> index([Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_INDEX}', params: params ?? {}));
     return null;
   }
 
   @override
-  Future read(id, [Map<String, dynamic> params]) async {
+  Future<Data> read(id, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_READ}',
         id: id.toString(),
@@ -352,7 +360,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  Future create(data, [Map<String, dynamic> params]) async {
+  Future<Data> create(data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_CREATE}',
         data: data,
@@ -361,7 +369,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  Future modify(id, data, [Map<String, dynamic> params]) async {
+  Future<Data> modify(id, data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_MODIFY}',
         id: id.toString(),
@@ -371,7 +379,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  Future update(id, data, [Map<String, dynamic> params]) async {
+  Future<Data> update(id, data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_UPDATE}',
         id: id.toString(),
@@ -381,7 +389,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  Future remove(id, [Map<String, dynamic> params]) async {
+  Future<Data> remove(id, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
         eventName: '$path::${ACTION_REMOVE}',
         id: id.toString(),
