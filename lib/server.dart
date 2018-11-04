@@ -8,10 +8,9 @@ import 'dart:mirrors';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
 import "package:angel_framework/http.dart";
-import 'package:json_god/json_god.dart' as god;
 import 'package:merge_map/merge_map.dart';
+import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'angel_websocket.dart';
 export 'angel_websocket.dart';
 
@@ -81,7 +80,7 @@ class AngelWebSocket {
       this.synchronizer,
       this.serializer,
       this.deserializer}) {
-    if (serializer == null) serializer = god.serialize;
+    if (serializer == null) serializer = json.encode;
     if (deserializer == null) deserializer = (params) => params;
   }
 
@@ -113,7 +112,7 @@ class AngelWebSocket {
       dynamic result = true;
       if (filter != null) result = await filter(client);
       if (result == true) {
-        client.channel.sink.add((serializer ?? god.serialize)(event.toJson()));
+        client.channel.sink.add((serializer ?? json.encode)(event.toJson()));
       }
     });
 
@@ -365,7 +364,6 @@ class AngelWebSocket {
     if (req is HttpRequestContext && res is HttpResponseContext) {
       if (!WebSocketTransformer.isUpgradeRequest(req.rawRequest))
         throw new AngelHttpException.badRequest();
-
       await res.detach();
       var ws = await WebSocketTransformer.upgrade(req.rawRequest);
       var channel = new IOWebSocketChannel(ws);

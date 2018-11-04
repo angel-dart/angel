@@ -11,7 +11,6 @@ dependencies:
   angel_framework: ^2.0.0-alpha
   angel_http_exception: ^1.0.0
   http: ^0.11.0
-  json_god: ^2.0.0-beta
   merge_map: ^1.0.0
   meta: ^1.0.0
   web_socket_channel: ^1.0.0
