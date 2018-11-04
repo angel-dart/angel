@@ -1,3 +1,7 @@
+# 2.0.0-alpha.2
+* Make Service `index` always return `List<Data>`.
+* Add `Service.map`.
+
 # 2.0.0-alpha.1
 * Refactor `params` to `Map<String, dynamic>`.
 

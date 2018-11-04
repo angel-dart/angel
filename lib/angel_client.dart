@@ -8,7 +8,7 @@ import 'package:http/src/response.dart' as http;
 export 'package:angel_http_exception/angel_http_exception.dart';
 
 /// A function that configures an [Angel] client in some way.
-typedef FutureOr AngelConfigurer(Angel app);
+typedef Future AngelConfigurer(Angel app);
 
 /// A function that deserializes data received from the server.
 ///
@@ -95,7 +95,7 @@ class AngelAuthResult {
 /// Queries a service on an Angel server, with the same API.
 abstract class Service<Id, Data> {
   /// Fired on `indexed` events.
-  Stream get onIndexed;
+  Stream<List<Data>> get onIndexed;
 
   /// Fired on `read` events.
   Stream<Data> get onRead;
@@ -118,60 +118,133 @@ abstract class Service<Id, Data> {
   Future close();
 
   /// Retrieves all resources.
-  Future index([Map<String, dynamic> params]);
+  Future<List<Data>> index([Map<String, dynamic> params]);
 
   /// Retrieves the desired resource.
-  Future read(Id id, [Map<String, dynamic> params]);
+  Future<Data> read(Id id, [Map<String, dynamic> params]);
 
   /// Creates a resource.
-  Future create(Data data, [Map<String, dynamic> params]);
+  Future<Data> create(Data data, [Map<String, dynamic> params]);
 
   /// Modifies a resource.
-  Future modify(Id id, Data data, [Map<String, dynamic> params]);
+  Future<Data> modify(Id id, Data data, [Map<String, dynamic> params]);
 
   /// Overwrites a resource.
-  Future update(Id id, Data data, [Map<String, dynamic> params]);
+  Future<Data> update(Id id, Data data, [Map<String, dynamic> params]);
 
   /// Removes the given resource.
-  Future remove(Id id, [Map<String, dynamic> params]);
+  Future<Data> remove(Id id, [Map<String, dynamic> params]);
+
+  /// Creates a [Service] that wraps over this one, and maps input and output using two converter functions.
+  ///
+  /// Handy utility for handling data in a type-safe manner.
+  Service<Id, U> map<U>(U Function(Data) encoder, Data Function(U) decoder) {
+    return new _MappedService(this, encoder, decoder);
+  }
+}
+
+class _MappedService<Id, Data, U> extends Service<Id, U> {
+  final Service<Id, Data> inner;
+  final U Function(Data) encoder;
+  final Data Function(U) decoder;
+
+  _MappedService(this.inner, this.encoder, this.decoder);
+
+  @override
+  Angel get app => inner.app;
+
+  @override
+  Future close() => new Future.value();
+
+  @override
+  Future<U> create(U data, [Map<String, dynamic> params]) {
+    return inner.create(decoder(data)).then(encoder);
+  }
+
+  @override
+  Future<List<U>> index([Map<String, dynamic> params]) {
+    return inner.index(params).then((l) => l.map(encoder).toList());
+  }
+
+  @override
+  Future<U> modify(Id id, U data, [Map<String, dynamic> params]) {
+    return inner.modify(id, decoder(data), params).then(encoder);
+  }
+
+  @override
+  Stream<U> get onCreated => inner.onCreated.map(encoder);
+
+  @override
+  Stream<List<U>> get onIndexed =>
+      inner.onIndexed.map((l) => l.map(encoder).toList());
+
+  @override
+  Stream<U> get onModified => inner.onModified.map(encoder);
+
+  @override
+  Stream<U> get onRead => inner.onRead.map(encoder);
+
+  @override
+  Stream<U> get onRemoved => inner.onRemoved.map(encoder);
+
+  @override
+  Stream<U> get onUpdated => inner.onUpdated.map(encoder);
+
+  @override
+  Future<U> read(Id id, [Map<String, dynamic> params]) {
+    return inner.read(id, params).then(encoder);
+  }
+
+  @override
+  Future<U> remove(Id id, [Map<String, dynamic> params]) {
+    return inner.remove(id, params).then(encoder);
+  }
+
+  @override
+  Future<U> update(Id id, U data, [Map<String, dynamic> params]) {
+    return inner.update(id, decoder(data), params).then(encoder);
+  }
 }
 
 /// A [List] that automatically updates itself whenever the referenced [service] fires an event.
-class ServiceList<Id, Data> extends DelegatingList {
+class ServiceList<Id, Data> extends DelegatingList<Data> {
   /// A field name used to compare [Map] by ID.
   final String idField;
-
-  /// If `true` (default: `false`), then `index` events will be handled as a [Map] containing a `data` field.
-  ///
-  /// See https://github.com/angel-dart/paginate.
-  final bool asPaginated;
 
   /// A function used to compare the ID's two items for equality.
   ///
   /// Defaults to comparing the [idField] of `Map` instances.
-  final Equality _compare;
+  Equality<Data> get equality => _equality;
+
+  Equality<Data> _equality;
 
   final Service<Id, Data> service;
 
   final StreamController<ServiceList<Id, Data>> _onChange =
       new StreamController();
+
   final List<StreamSubscription> _subs = [];
 
-  ServiceList(this.service,
-      {this.idField, this.asPaginated: false, Equality compare})
-      : _compare = compare ?? new EqualityBy((map) => map[idField ?? 'id']),
-        super([]) {
+  ServiceList(this.service, {this.idField, Equality<Data> equality})
+      : super([]) {
+    _equality = equality;
+    _equality ??= new EqualityBy<Data, Id>((map) {
+      if (map is Map)
+        return map[idField ?? 'id'] as Id;
+      else
+        throw new UnsupportedError(
+            'ServiceList only knows how to find the id from a Map object. Provide a custom `Equality` in your call to the constructor.');
+    });
     // Index
-    _subs.add(service.onIndexed.listen((data) {
-      var items = asPaginated == true ? data['data'] : data;
+    _subs.add(service.onIndexed.where(_notNull).listen((data) {
       this
         ..clear()
-        ..addAll(items as Iterable);
+        ..addAll(data);
       _onChange.add(this);
     }));
 
     // Created
-    _subs.add(service.onCreated.listen((item) {
+    _subs.add(service.onCreated.where(_notNull).listen((item) {
       add(item);
       _onChange.add(this);
     }));
@@ -181,7 +254,7 @@ class ServiceList<Id, Data> extends DelegatingList {
       var indices = <int>[];
 
       for (int i = 0; i < length; i++) {
-        if (_compare.equals(item, this[i])) indices.add(i);
+        if (_equality.equals(item, this[i])) indices.add(i);
       }
 
       if (indices.isNotEmpty) {
@@ -192,16 +265,18 @@ class ServiceList<Id, Data> extends DelegatingList {
     }
 
     _subs.addAll([
-      service.onModified.listen(handleModified),
-      service.onUpdated.listen(handleModified),
+      service.onModified.where(_notNull).listen(handleModified),
+      service.onUpdated.where(_notNull).listen(handleModified),
     ]);
 
     // Removed
-    _subs.add(service.onRemoved.listen((item) {
-      removeWhere((x) => _compare.equals(item, x));
+    _subs.add(service.onRemoved.where(_notNull).listen((item) {
+      removeWhere((x) => _equality.equals(item, x));
       _onChange.add(this);
     }));
   }
+
+  static bool _notNull(x) => x != null;
 
   /// Fires whenever the underlying [service] fires a change event.
   Stream<ServiceList<Id, Data>> get onChange => _onChange.stream;

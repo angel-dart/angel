@@ -33,21 +33,24 @@ bool _invalid(http.Response response) =>
     response.statusCode < 200 ||
     response.statusCode >= 300;
 
-AngelHttpException failure(http.Response response, {error, StackTrace stack}) {
+AngelHttpException failure(http.Response response,
+    {error, String message, StackTrace stack}) {
   try {
     final v = json.decode(response.body);
 
-    if (v is Map && v['isError'] == true) {
-      return new AngelHttpException.fromMap(v);
+    if (v is Map && (v['is_error'] == true) || v['isError'] == true) {
+      return new AngelHttpException.fromMap(v as Map);
     } else {
       return new AngelHttpException(error,
-          message: 'Unhandled exception while connecting to Angel backend.',
+          message: message ??
+              'Unhandled exception while connecting to Angel backend.',
           statusCode: response.statusCode,
           stackTrace: stack);
     }
   } catch (e, st) {
     return new AngelHttpException(error ?? e,
-        message: 'Unhandled exception while connecting to Angel backend.',
+        message: message ??
+            'Angel backend did not return JSON - an error likely occurred.',
         statusCode: response.statusCode,
         stackTrace: stack ?? st);
   }
@@ -248,7 +251,7 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
   final http.BaseClient client;
   final AngelDeserializer<Data> deserializer;
 
-  final StreamController _onIndexed = new StreamController();
+  final StreamController<List<Data>> _onIndexed = new StreamController();
   final StreamController<Data> _onRead = new StreamController(),
       _onCreated = new StreamController(),
       _onModified = new StreamController(),
@@ -256,7 +259,7 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       _onRemoved = new StreamController();
 
   @override
-  Stream get onIndexed => _onIndexed.stream;
+  Stream<List<Data>> get onIndexed => _onIndexed.stream;
 
   @override
   Stream<Data> get onRead => _onRead.stream;
@@ -302,7 +305,7 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  Future index([Map<String, dynamic> params]) async {
+  Future<List<Data>> index([Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed(
         'GET', '$basePath${_buildQuery(params)}', _readHeaders);
 
@@ -314,13 +317,7 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
           throw failure(response);
       }
 
-      final v = json.decode(response.body);
-
-      if (v is! List) {
-        _onIndexed.add(v as Data);
-        return v;
-      }
-
+      final v = json.decode(response.body) as List;
       var r = v.map(deserialize).toList();
       _onIndexed.add(r);
       return r;
@@ -330,10 +327,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       else
         throw failure(response, error: e, stack: st);
     }
+
+    return null;
   }
 
   @override
-  Future read(id, [Map<String, dynamic> params]) async {
+  Future<Data> read(id, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed(
         'GET', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
@@ -354,10 +353,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       else
         throw failure(response, error: e, stack: st);
     }
+
+    return null;
   }
 
   @override
-  Future create(data, [Map<String, dynamic> params]) async {
+  Future<Data> create(data, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed('POST',
         '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
@@ -378,10 +379,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       else
         throw failure(response, error: e, stack: st);
     }
+
+    return null;
   }
 
   @override
-  Future modify(id, data, [Map<String, dynamic> params]) async {
+  Future<Data> modify(id, data, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed('PATCH',
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
@@ -402,10 +405,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       else
         throw failure(response, error: e, stack: st);
     }
+
+    return null;
   }
 
   @override
-  Future update(id, data, [Map<String, dynamic> params]) async {
+  Future<Data> update(id, data, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed('POST',
         '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
 
@@ -426,10 +431,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       else
         throw failure(response, error: e, stack: st);
     }
+
+    return null;
   }
 
   @override
-  Future remove(id, [Map<String, dynamic> params]) async {
+  Future<Data> remove(id, [Map<String, dynamic> params]) async {
     final response = await app.sendUnstreamed(
         'DELETE', '$basePath/$id${_buildQuery(params)}', _readHeaders);
 
@@ -450,5 +457,7 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
       else
         throw failure(response, error: e, stack: st);
     }
+
+    return null;
   }
 }

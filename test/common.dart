@@ -29,13 +29,16 @@ class SpecClient extends http.BaseClient {
   send(http.BaseRequest request) {
     _spec = new Spec(request, request.method, request.url.path, request.headers,
         request.contentLength);
-    var data = {'text': 'Clean your room!', 'completed': true};
+    dynamic data = {'text': 'Clean your room!', 'completed': true};
 
-    if (request.url.path.contains('auth'))
+    if (request.url.path.contains('auth')) {
       data = {
         'token': '<jwt>',
         'data': {'username': 'password'}
       };
+    } else if (request.url.path == '/api/todos' && request.method == 'GET') {
+      data = [data];
+    }
 
     return new Future<http.StreamedResponse>.value(new http.StreamedResponse(
       new Stream<List<int>>.fromIterable([utf8.encode(json.encode(data))]),
