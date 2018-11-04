@@ -1,5 +1,5 @@
 name: angel_client
-version: 2.0.0-alpha.1
+version: 2.0.0-alpha.2
 description: Client library for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_client
@@ -8,7 +8,7 @@ environment:
 dependencies:
   angel_http_exception: ^1.0.0
   collection: ^1.0.0
-  http: ^0.11.3
+  http: ">=0.11.0 <2.0.0"
   json_god: ">=2.0.0-beta <3.0.0"
   merge_map: ^1.0.0
 dev_dependencies:
