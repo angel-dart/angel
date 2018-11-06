@@ -304,7 +304,7 @@ class HotReloader {
 
           for (var client in ws.clients) {
             try {
-              await client.close(WebSocketStatus.goingAway);
+              await client.close();
             } catch (e) {
               stderr.writeln(
                   'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
