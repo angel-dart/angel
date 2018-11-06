@@ -1,3 +1,7 @@
+# 2.0.0-alpha.10
+* All calls to `Service.parseId` are now affixed with the `<Id>` argument.
+* Added `uri` getter to `AngelHttp`.
+
 # 2.0.0-alpha.9
 * Add `Service.map`.
 

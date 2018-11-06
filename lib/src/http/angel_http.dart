@@ -32,6 +32,10 @@ class AngelHttp {
 
   AngelHttp(this.app, {this.useZone: false});
 
+  /// The path at which this server is listening for requests.
+  Uri get uri => new Uri(
+      scheme: 'http', host: _server.address.address, port: _server.port);
+
   /// The function used to bind this instance to an HTTP server.
   Future<HttpServer> Function(dynamic, int) get serverGenerator =>
       _serverGenerator;
