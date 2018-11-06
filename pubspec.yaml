@@ -9,5 +9,7 @@ dependencies:
   angel_framework: ^2.0.0-alpha
   sembast: ^1.9.5
 dev_dependencies:
+  angel_http_exception: ^1.0.0
+  logging:
   test: ^1.0.0
 
