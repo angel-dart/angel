@@ -12,7 +12,8 @@ export 'angel_validate.dart';
 /// Auto-parses numbers in `req.body`.
 RequestHandler autoParseBody(List<String> fields) {
   return (RequestContext req, res) async {
-    (await req.parseBody()).addAll(autoParse(await req.parseBody(), fields));
+    var body = await req.parseBody();
+    body.addAll(autoParse(body, fields));
     return true;
   };
 }
@@ -20,7 +21,8 @@ RequestHandler autoParseBody(List<String> fields) {
 /// Auto-parses numbers in `req.query`.
 RequestHandler autoParseQuery(List<String> fields) {
   return (RequestContext req, res) async {
-    (await req.parseQuery()).addAll(autoParse(await req.parseQuery(), fields));
+    var query = new Map<String, dynamic>.from(await req.parseQuery());
+    (await req.parseQuery()).addAll(autoParse(query, fields));
     return true;
   };
 }
@@ -28,8 +30,9 @@ RequestHandler autoParseQuery(List<String> fields) {
 /// Filters unwanted data out of `req.body`.
 RequestHandler filterBody(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var filtered = filter(await req.parseBody(), only);
-    (await req.parseBody())
+    var body = await req.parseBody();
+    var filtered = filter(body, only);
+    body
       ..clear()
       ..addAll(filtered);
     return true;
@@ -41,7 +44,7 @@ RequestHandler filterQuery(Iterable<String> only) {
   return (RequestContext req, res) async {
     var query = await req.parseQuery();
     var filtered = filter(query, only);
-    query
+    (await req.parseQuery())
       ..clear()
       ..addAll(filtered);
     return true;
@@ -53,15 +56,16 @@ RequestHandler filterQuery(Iterable<String> only) {
 RequestHandler validate(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
+    var body = await req.parseBody();
     var result =
-        await asyncApplyValidator(validator, await req.parseBody(), req.app);
+        await asyncApplyValidator(validator, body, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
-    (await req.parseBody())
+    body
       ..clear()
       ..addAll(result.data);
 
@@ -74,8 +78,9 @@ RequestHandler validate(Validator validator,
 RequestHandler validateQuery(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
+    var query = await req.parseQuery();
     var result =
-        await asyncApplyValidator(validator, await req.parseQuery(), req.app);
+        await asyncApplyValidator(validator, query, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(

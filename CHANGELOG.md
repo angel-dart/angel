@@ -1,3 +1,6 @@
+# 2.0.0
+* Finish update for Angel 2.
+
 # 2.0.0-alpha.1
 * Update for Angel 2.
 
