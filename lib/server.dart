@@ -57,8 +57,7 @@ RequestHandler validate(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
     var body = await req.parseBody();
-    var result =
-        await asyncApplyValidator(validator, body, req.app);
+    var result = await asyncApplyValidator(validator, body, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
@@ -79,8 +78,7 @@ RequestHandler validateQuery(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
     var query = await req.parseQuery();
-    var result =
-        await asyncApplyValidator(validator, query, req.app);
+    var result = await asyncApplyValidator(validator, query, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
