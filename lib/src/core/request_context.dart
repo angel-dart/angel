@@ -134,7 +134,8 @@ abstract class RequestContext<RawRequest> {
   /// If [forceParse] is not `true`, then [uri].query will be returned, and no parsing will be performed.
   Future<Map<String, dynamic>> parseQuery({bool forceParse: false}) {
     if (_body == null && forceParse != true)
-      return new Future.value(uri.queryParameters);
+      return new Future.value(
+          new Map<String, dynamic>.from(uri.queryParameters));
     else
       return parse().then((b) => b.query);
   }
