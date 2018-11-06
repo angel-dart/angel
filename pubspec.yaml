@@ -1,5 +1,5 @@
 name: angel_production
-version: 1.0.0-alpha
+version: 1.0.0-alpha.1
 description: Helpers for concurrency, message-passing, rotating loggers, and other production functionality in Angel.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/production

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:args/args.dart';
 import 'package:io/ansi.dart';
 import 'package:io/io.dart';
