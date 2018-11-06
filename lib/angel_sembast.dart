@@ -151,6 +151,14 @@ class SembastService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> remove(String id,
       [Map<String, dynamic> params]) async {
+    if (id == null ||
+        id == 'null' &&
+            (allowRemoveAll == true ||
+                params?.containsKey('provider') != true)) {
+      await store.deleteAll(await store.findKeys(new Finder()));
+      return {};
+    }
+
     return database.transaction((txn) async {
       var store = txn.getStore(this.store.name);
       var record = await store.get(int.parse(id)) as Map<String, dynamic>;

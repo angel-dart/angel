@@ -66,6 +66,16 @@ main() async {
     expect(await database.get(id), isNull);
   });
 
+  test('remove', () async {
+    await service.create({'bar': 'baz'});
+    await service.create({'bar': 'baz'});
+    await service.create({'bar': 'baz'});
+
+    expect(await service.index(), isNotEmpty);
+    await service.remove(null);
+    expect(await service.index(), isEmpty);
+  });
+
   test('remove nonexistent', () async {
     expect(() => service.remove('440'),
         throwsA(const TypeMatcher<AngelHttpException>()));
