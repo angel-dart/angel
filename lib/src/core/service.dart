@@ -235,7 +235,7 @@ class Service<Id, Data> extends Routable {
     get('/:id', (req, res) {
       return req.parseQuery().then((query) {
         return this.read(
-            parseId(req.params['id']),
+            parseId<Id>(req.params['id']),
             mergeMap([
               {'query': query},
               restProvider,
@@ -254,7 +254,7 @@ class Service<Id, Data> extends Routable {
         (req, res) => req.parseBody().then((body) {
               return req.parseQuery().then((query) {
                 return this.modify(
-                    parseId(req.params['id']),
+                    parseId<Id>(req.params['id']),
                     body as Data,
                     mergeMap([
                       {'query': query},
@@ -275,7 +275,7 @@ class Service<Id, Data> extends Routable {
         (req, res) => req.parseBody().then((body) {
               return req.parseQuery().then((query) {
                 return this.update(
-                    parseId(req.params['id']),
+                    parseId<Id>(req.params['id']),
                     body as Data,
                     mergeMap([
                       {'query': query},
@@ -293,7 +293,7 @@ class Service<Id, Data> extends Routable {
         (req, res) => req.parseBody().then((body) {
               return req.parseQuery().then((query) {
                 return this.update(
-                    parseId(req.params['id']),
+                    parseId<Id>(req.params['id']),
                     body as Data,
                     mergeMap([
                       {'query': query},
@@ -327,7 +327,7 @@ class Service<Id, Data> extends Routable {
     delete('/:id', (req, res) {
       return req.parseQuery().then((query) {
         return this.remove(
-            parseId(req.params['id']),
+            parseId<Id>(req.params['id']),
             mergeMap([
               {'query': query},
               restProvider,
