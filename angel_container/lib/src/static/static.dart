@@ -1,5 +1,4 @@
 import 'package:angel_container/angel_container.dart';
-import 'package:meta/meta.dart';
 
 /// A [Reflector] implementation that performs simple [Map] lookups.
 ///
@@ -11,10 +10,10 @@ class StaticReflector implements Reflector {
   final Map<Object, ReflectedInstance> instances;
 
   const StaticReflector(
-      {@required this.names,
-      @required this.types,
-      @required this.functions,
-      @required this.instances});
+      {this.names: const {},
+      this.types: const {},
+      this.functions: const {},
+      this.instances: const {}});
 
   @override
   String getName(Symbol symbol) {

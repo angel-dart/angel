@@ -1,3 +1,9 @@
+# 1.0.0-alpha.12
+* `StaticReflector` now defaults to empty arguments.
+
+# 1.0.0-alpha.11
+* Added `StaticReflector`.
+
 # 1.0.0-alpha.10
 * Added `Container.registerLazySingleton<T>`.
 * Added named singleton support.
