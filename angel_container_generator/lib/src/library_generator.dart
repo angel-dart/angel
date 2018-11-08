@@ -42,7 +42,9 @@ class ReflectorLibraryGenerator {
       }
 
       // implements Reflector
-      clazz.implements.add(refer('Reflector'));
+      clazz
+        ..extend = refer('StaticReflector')
+        ..implements.add(refer('Reflector'));
 
       // Add a const constructor
       clazz.constructors.add(new Constructor((b) {

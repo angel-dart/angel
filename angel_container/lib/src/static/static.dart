@@ -1,0 +1,62 @@
+import 'package:angel_container/angel_container.dart';
+import 'package:meta/meta.dart';
+
+/// A [Reflector] implementation that performs simple [Map] lookups.
+///
+/// `package:angel_container_generator` uses this to create reflectors from analysis metadata.
+class StaticReflector implements Reflector {
+  final Map<Symbol, String> names;
+  final Map<Type, ReflectedType> types;
+  final Map<Function, ReflectedFunction> functions;
+  final Map<Object, ReflectedInstance> instances;
+
+  const StaticReflector(
+      {@required this.names,
+      @required this.types,
+      @required this.functions,
+      @required this.instances});
+
+  @override
+  String getName(Symbol symbol) {
+    if (!names.containsKey(symbol)) {
+      throw new ArgumentError(
+          'The value of $symbol is unknown - it was not generated.');
+    }
+
+    return names[symbol];
+  }
+
+  @override
+  ReflectedClass reflectClass(Type clazz) =>
+      reflectType(clazz) as ReflectedClass;
+
+  @override
+  ReflectedFunction reflectFunction(Function function) {
+    if (!functions.containsKey(function)) {
+      throw new ArgumentError(
+          'There is no reflection information available about $function.');
+    }
+
+    return functions[function];
+  }
+
+  @override
+  ReflectedInstance reflectInstance(Object object) {
+    if (!instances.containsKey(object)) {
+      throw new ArgumentError(
+          'There is no reflection information available about $object.');
+    }
+
+    return instances[object];
+  }
+
+  @override
+  ReflectedType reflectType(Type type) {
+    if (!types.containsKey(type)) {
+      throw new ArgumentError(
+          'There is no reflection information available about $type.');
+    }
+
+    return types[type];
+  }
+}
