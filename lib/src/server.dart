@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:dart2_constant/convert.dart';
 import 'exception.dart';
 import 'response.dart';
 import 'token_type.dart';

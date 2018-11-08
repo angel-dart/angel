@@ -9,7 +9,9 @@ dependencies:
   angel_framework: ^2.0.0-alpha
   angel_http_exception: ^1.0.0
 dev_dependencies: 
+  angel_validate: ^2.0.0-alpha
   angel_test: ^2.0.0-alpha
+  logging:
   oauth2: ^1.0.0
   test: ^1.0.0
   uuid: ^1.0.0
