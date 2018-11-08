@@ -81,7 +81,12 @@ class Routable extends Router<RequestHandler> {
     }) as T;
   }
 
-  /// Shorthand for finding a [HookedService] in a statically-typed
+  /// Shorthand for finding a [Service] in a statically-typed manner.
+  Service<Id, Data> findServiceOf<Id, Data>(Pattern path) {
+    return findService<Service<Id, Data>>(path);
+  }
+
+  /// Shorthand for finding a [HookedService] in a statically-typed manner.
   HookedService<dynamic, dynamic, T> findHookedService<T extends Service>(
       Pattern path) {
     return findService(path) as HookedService<dynamic, dynamic, T>;
