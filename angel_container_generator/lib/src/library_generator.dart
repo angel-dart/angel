@@ -48,6 +48,18 @@ class ReflectorLibraryGenerator {
       clazz.constructors.add(new Constructor((b) {
         b..constant = true;
       }));
+
+      // Add a reflectClass that just forwards to reflectType
+      clazz.methods.add(new Method((b) {
+        b
+          ..name = 'reflectClass'
+          ..returns = refer('ReflectedClass')
+          ..annotations.add(refer('override'))
+          ..requiredParameters.add(new Parameter((b) => b
+            ..name = 'type'
+            ..type = refer('Type')))
+          ..body = new Code('return reflectType(type) as ReflectedClass;');
+      }));
     });
   }
 
