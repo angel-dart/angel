@@ -13,7 +13,7 @@ In `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    angel_mustache: ^1.1.0
+    angel_mustache: ^2.0.0
 ```
 
 # Usage
