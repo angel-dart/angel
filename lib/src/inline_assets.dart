@@ -1,24 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:html/dom.dart' as html;
 import 'package:html/parser.dart' as html;
 import 'package:path/path.dart' as p;
 
-/// Wraps a `VirtualDirectory` to patch the way it sends
-/// `.html` files.
+/// Inlines assets into buffered responses, resolving paths from an [assetDirectory].
 ///
 /// In any `.html` file sent down, `link` and `script` elements that point to internal resources
 /// will have the contents of said file read, and inlined into the HTML page itself.
 ///
 /// In this case, "internal resources" refers to a URI *without* a scheme, i.e. `/site.css` or
 /// `foo/bar/baz.js`.
-RequestMiddleware inlineAssets(Directory assetDirectory) {
+RequestHandler inlineAssets(Directory assetDirectory) {
   return (req, res) {
-    if (res.willCloseItself ||
-        res.streaming ||
+    if (!res.isOpen ||
+        !res.isBuffered ||
         res.contentType.mimeType != 'text/html') {
       return new Future<bool>.value(true);
     } else {
@@ -112,7 +111,7 @@ class _InlineAssets extends VirtualDirectory {
 
       res
         ..headers['content-type'] = 'text/html; charset=utf8'
-        ..buffer.add(utf8.encode(doc.outerHtml));
+        ..add(utf8.encode(doc.outerHtml));
       return false;
     } else {
       return await inner.serveFile(file, stat, req, res);

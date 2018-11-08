@@ -1,11 +1,12 @@
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_seo/angel_seo.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:dart2_constant/convert.dart';
 import 'package:file/local.dart';
 
 main() async {
-  var app = new Angel()..lazyParseBodies = true;
+  var app = new Angel();
   var fs = const LocalFileSystem();
   var http = new AngelHttp(app);
 
@@ -18,7 +19,7 @@ main() async {
     ),
   );
 
-  app.use(vDir.handleRequest);
+  app.fallback(vDir.handleRequest);
 
   // OR, just add a finalizer. Note that [VirtualDirectory] *streams* its response,
   // so a response finalizer does not touch its contents.
@@ -26,7 +27,7 @@ main() async {
   // You likely won't need to use both; it just depends on your use case.
   app.responseFinalizers.add(inlineAssets(fs.directory('web')));
 
-  app.get('/using_response_buffer', (ResponseContext res) async {
+  app.get('/using_response_buffer', (req, res) async {
     var indexHtml = fs.directory('web').childFile('index.html');
     var contents = await indexHtml.readAsString();
     res
@@ -34,7 +35,7 @@ main() async {
       ..buffer.add(utf8.encode(contents));
   });
 
-  app.use(() => throw new AngelHttpException.notFound());
+  app.fallback((req, res) => throw new AngelHttpException.notFound());
 
   var server = await http.startServer('127.0.0.1', 3000);
   print('Listening at http://${server.address.address}:${server.port}');

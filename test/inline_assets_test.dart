@@ -2,22 +2,24 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_seo/angel_seo.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:angel_test/angel_test.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:html/dom.dart' as html;
 import 'package:html/parser.dart' as html;
+import 'package:http_parser/http_parser.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('inlineAssets', () {
     group('buffer', inlineAssetsTests((app, dir) {
-      app.get('/', (ResponseContext res) async {
+      app.get('/', (req, res) async {
         var indexHtml = dir.childFile('index.html');
-        var contents = await indexHtml.readAsString();
+        var contents = await indexHtml.readAsBytes();
         res
-          ..headers['content-type'] = 'text/html; charset=utf-8'
-          ..buffer.add(utf8.encode(contents));
+          ..useBuffer()
+          ..contentType = new MediaType.parse('text/html; charset=utf-8')
+          ..buffer.add(contents);
       });
 
       app.responseFinalizers.add(inlineAssets(dir));
@@ -26,7 +28,7 @@ void main() {
     group('virtual_directory', inlineAssetsTests((app, dir) {
       var vDir = inlineAssetsFromVirtualDirectory(
           new VirtualDirectory(app, dir.fileSystem, source: dir));
-      app.use(vDir.handleRequest);
+      app.fallback(vDir.handleRequest);
     }));
   });
 }
@@ -49,6 +51,13 @@ void Function() inlineAssetsTests(InlineAssetTest f) {
         var file = fs.file(path);
         await file.writeAsString(contents[path].trim());
       }
+
+      app.logger = new Logger('angel_seo')
+        ..onRecord.listen((rec) {
+          print(rec);
+          if (rec.error != null) print(rec.error);
+          if (rec.stackTrace != null) print(rec.stackTrace);
+        });
     });
 
     tearDown(() => client.close());
@@ -58,6 +67,7 @@ void Function() inlineAssetsTests(InlineAssetTest f) {
 
       setUp(() async {
         var res = await client.get('/', headers: {'accept': 'text/html'});
+        print(res.body);
         doc = html.parse(res.body);
       });
 
@@ -68,7 +78,7 @@ void Function() inlineAssetsTests(InlineAssetTest f) {
 
         test('populates a <style>', () {
           var style = doc.querySelector('style');
-          expect(style.innerHtml.trim(), contents['site.css']);
+          expect(style?.innerHtml?.trim(), contents['site.css']);
         });
 
         test('heeds data-no-inline', () {
