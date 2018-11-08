@@ -333,6 +333,16 @@ class Angel extends Routable {
     return new Future.sync(() => configurer(this));
   }
 
+  /// Shorthand for using the [container] to instantiate, and then mount a [Controller].
+  ///
+  /// Just like [Container].make, in contexts without properly-reified generics (dev releases of Dart 2),
+  /// provide a [type] argument as well.
+  ///
+  /// If you are on `Dart >=2.0.0`, simply call `mountController<T>()`..
+  Future mountController<T extends Controller>([Type type]) {
+    return configure(container.make<T>(type).configureServer);
+  }
+
   /// Shorthand for calling `all('*', handler)`.
   Route<RequestHandler> fallback(RequestHandler handler) {
     return all('*', handler);

@@ -30,7 +30,9 @@ class Controller {
     _app = app;
 
     if (injectSingleton != false) {
-      _app.container.registerSingleton(this, as: runtimeType);
+      if (!app.container.has(runtimeType)) {
+        _app.container.registerSingleton(this, as: runtimeType);
+      }
     }
 
     // Load global expose decl

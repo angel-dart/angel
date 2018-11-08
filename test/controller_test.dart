@@ -59,7 +59,13 @@ main() {
         "/redirect",
         (req, res) async =>
             res.redirectToAction("TodoController@foo", {"foo": "world"}));
-    await app.configure((ctrl = new TodoController()).configureServer);
+
+    // Register as a singleton, just for the purpose of this test
+    if (!app.container.has<TodoController>())
+      app.container.registerSingleton(ctrl = new TodoController());
+
+    // Using mountController<T>();
+    await app.mountController<TodoController>();
 
     print(app.controllers);
     app.dumpTree();
