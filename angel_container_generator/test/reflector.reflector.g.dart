@@ -6,16 +6,13 @@ part of angel_container_generator_test;
 // AngelContainerGenerator
 // **************************************************************************
 
-class AngelContainerGeneratorTestReflector implements Reflector {
-  const AngelContainerGeneratorTestReflector();
-
-  @override
-  ReflectedClass reflectClass(Type type) {
-    return reflectType(type) as ReflectedClass;
-  }
-}
-
 class _ReflectedArtist extends ReflectedClass {
   const _ReflectedArtist._()
       : super('Artist', const [], const [], const [], const [], Artist);
+}
+
+class AngelContainerGeneratorTestReflector extends StaticReflector {
+  const AngelContainerGeneratorTestReflector() : super(types: staticTypes);
+
+  static const staticTypes = const {Artist: const _ReflectedArtist._()};
 }

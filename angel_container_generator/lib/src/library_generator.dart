@@ -12,55 +12,71 @@ class ReflectorLibraryGenerator {
 
   ReflectorLibraryGenerator(this.element, this.annotation);
 
+  String get reflectorClassName {
+// Select the name
+    if (annotation.name?.isNotEmpty == true) {
+      return new ReCase(annotation.name).pascalCase + 'Reflector';
+    } else if (element.name?.isNotEmpty == true) {
+      var rc = new ReCase(element.name);
+      return rc.pascalCase + 'Reflector';
+    } else {
+      throw new StateError(
+          'A statically-generated Reflector must reside in a named library, or include the `name` attribute in @GenerateReflector().');
+    }
+  }
+
+  String get typeMapName => new ReCase(reflectorClassName).camelCase + 'Types';
+
   String toSource() {
     return generate().accept(new DartEmitter()).toString();
   }
 
   Library generate() {
     return new Library((lib) {
-      lib.body.add(generateReflectorClass());
+      var clazz = generateReflectorClass();
 
       // Generate a ReflectedClass for each type
+      var staticTypes = <String, Expression>{};
+
       for (var type in annotation.types) {
         if (type is InterfaceType) {
-          lib.body.add(generateReflectedClass(type));
+          var reflected = generateReflectedClass(type);
+          lib.body.add(reflected);
+          staticTypes[type.name] =
+              refer(reflected.name).constInstanceNamed('_', []);
         } else {
           // TODO: Handle these
         }
       }
+
+      clazz = clazz.rebuild((b) {
+        // Generate static values
+        b.fields.add(new Field((b) => b
+          ..name = 'staticTypes'
+          ..modifier = FieldModifier.constant
+          ..static = true
+          ..assignment = literalConstMap(staticTypes
+              .map((name, type) => new MapEntry(refer(name), type))).code));
+      });
+
+      lib.body.add(clazz);
     });
   }
 
   Class generateReflectorClass() {
     return new Class((clazz) {
-      // Select the name
-      if (annotation.name?.isNotEmpty == true) {
-        clazz.name = annotation.name;
-      } else {
-        var rc = new ReCase(element.name);
-        clazz.name = rc.pascalCase + 'Reflector';
-      }
+      clazz.name = reflectorClassName;
 
-      // implements Reflector
-      clazz
-        ..extend = refer('StaticReflector')
-        ..implements.add(refer('Reflector'));
+      // extends StaticReflector
+      clazz.extend = refer('StaticReflector');
 
       // Add a const constructor
       clazz.constructors.add(new Constructor((b) {
-        b..constant = true;
-      }));
-
-      // Add a reflectClass that just forwards to reflectType
-      clazz.methods.add(new Method((b) {
         b
-          ..name = 'reflectClass'
-          ..returns = refer('ReflectedClass')
-          ..annotations.add(refer('override'))
-          ..requiredParameters.add(new Parameter((b) => b
-            ..name = 'type'
-            ..type = refer('Type')))
-          ..body = new Code('return reflectType(type) as ReflectedClass;');
+          ..constant = true
+          ..initializers.add(
+              refer('super').call([], {'types': refer('staticTypes')}).code);
+        // TODO: Invoke super with static info
       }));
     });
   }

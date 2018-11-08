@@ -7,7 +7,6 @@ environment:
   sdk: ">=1.8.0 <3.0.0"
 dependencies:
   collection: ^1.0.0
-  meta: ^1.0.0
   quiver: ^2.0.0
 dev_dependencies:
   test:
