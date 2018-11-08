@@ -105,6 +105,14 @@ class Service<Id, Data> extends Routable {
     throw new AngelHttpException.methodNotAllowed();
   }
 
+  /// Reads multiple resources at once.
+  ///
+  /// Service implementations should override this to ensure data is fetched within a
+  /// single round trip.
+  Future<List<Data>> readMany(List<Id> ids, [Map<String, dynamic> params]) {
+    return Future.wait(ids.map((id) => read(id, params)));
+  }
+
   /// Creates a resource.
   Future<Data> create(Data data, [Map<String, dynamic> params]) {
     throw new AngelHttpException.methodNotAllowed();

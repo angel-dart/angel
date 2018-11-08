@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
@@ -17,12 +19,13 @@ main() {
     'Content-Type': 'application/json'
   };
   Angel app;
+  MapService service;
   String url;
   http.Client client;
 
   setUp(() async {
     app = new Angel(reflector: MirrorsReflector())
-      ..use('/todos', new MapService())
+      ..use('/todos', service = new MapService())
       ..errorHandler = (e, req, res) {
         print('Whoops: ${e.error}');
         if (e.stackTrace != null) print(new Chain.forTrace(e.stackTrace).terse);
@@ -96,6 +99,17 @@ main() {
       print(jsons);
       expect(jsons['text'], equals(null));
       expect(jsons['over'], equals('write'));
+    });
+
+    test('readMany', () async {
+      var items = <Map>[
+        await service.create({'foo': 'bar'}),
+        await service.create({'bar': 'baz'}),
+        await service.create({'baz': 'quux'})
+      ];
+
+      var ids = items.map((m) => m['id'] as String).toList();
+      expect(await service.readMany(ids), items);
     });
 
     test('can delete data', () async {
