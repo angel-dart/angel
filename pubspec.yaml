@@ -2,14 +2,14 @@ author: Tobe O <thosakwe@gmail.com>
 description: Testing utility library for the Angel framework. Use with package:test.
 homepage: https://github.com/angel-dart/test.git
 name: angel_test
-version: 2.0.0-alpha.3
+version: 2.0.0-alpha.4
 dependencies: 
   angel_client: ^2.0.0-alpha
   angel_framework: ^2.0.0-alpha
   angel_http_exception: ^1.0.0
   angel_validate: ^2.0.0-alpha
   angel_websocket: ^2.0.0-alpha
-  http: ">=0.11.0 <0.13.0"
+  http: ^0.12.0
   matcher: ^0.12.0+2
   mock_request: ^1.0.0
   web_socket_channel: ^1.0.0
