@@ -1,4 +1,7 @@
 # 2.0.0-alpha.2
+* Update `http` dependency.
+
+# 2.0.0-alpha.2
 * Explicitly import `package:angel_framework/http.dart`.
 
 # 2.0.0-alpha.1
