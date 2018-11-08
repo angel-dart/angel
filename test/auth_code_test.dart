@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:dart2_constant/convert.dart';
@@ -15,9 +17,9 @@ main() {
   TestClient testClient;
 
   setUp(() async {
-    app = new Angel()..lazyParseBodies = true;
+    app = new Angel();
     app.configuration['properties'] = app.configuration;
-    app.inject('authCodes', <String, String>{});
+    app.container.registerSingleton(new AuthCodes());
 
     var server = new _Server();
 
@@ -96,7 +98,7 @@ main() {
       var response = await testClient.client.get(url);
       print('Body: ${response.body}');
 
-      var authCode = json.decode(response.body)['code'];
+      var authCode = json.decode(response.body)['code'].toString();
       var client = await grant.handleAuthorizationCode(authCode);
       expect(client.credentials.accessToken, authCode + '_access');
     });
@@ -107,7 +109,7 @@ main() {
       var response = await testClient.client.get(url);
       print('Body: ${response.body}');
 
-      var authCode = json.decode(response.body)['code'];
+      var authCode = json.decode(response.body)['code'].toString();
       var client = await grant.handleAuthorizationCode(authCode);
       expect(client.credentials.accessToken, authCode + '_access');
       expect(client.credentials.canRefresh, isTrue);
@@ -141,8 +143,8 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
     if (state == 'hello')
       return 'Hello ${pseudoApplication.id}:${pseudoApplication.secret}';
 
-    var authCode = _uuid.v4();
-    var authCodes = req.grab<Map<String, String>>('authCodes');
+    var authCode = _uuid.v4() as String;
+    var authCodes = req.container.make<AuthCodes>();
     authCodes[authCode] = state;
 
     res.headers['content-type'] = 'application/json';
@@ -157,10 +159,29 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
       String redirectUri,
       RequestContext req,
       ResponseContext res) async {
-    var authCodes = req.grab<Map<String, String>>('authCodes');
+    var authCodes = req.container.make<AuthCodes>();
     var state = authCodes[authCode];
     var refreshToken = state == 'can_refresh' ? '${authCode}_refresh' : null;
     return new AuthorizationTokenResponse('${authCode}_access',
         refreshToken: refreshToken);
   }
+}
+
+class AuthCodes extends MapBase<String, String> with MapMixin<String, String> {
+  var inner = <String, String>{};
+
+  @override
+  String operator [](Object key) => inner[key];
+
+  @override
+  void operator []=(String key, String value) => inner[key] = value;
+
+  @override
+  void clear() => inner.clear();
+
+  @override
+  Iterable<String> get keys => inner.keys;
+
+  @override
+  String remove(Object key) => inner.remove(key);
 }

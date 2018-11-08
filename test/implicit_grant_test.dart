@@ -10,7 +10,7 @@ main() {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel()..lazyParseBodies = true;
+    var app = new Angel();
     var oauth2 = new _AuthorizationServer();
 
     app.group('/oauth2', (router) {
@@ -38,7 +38,8 @@ main() {
         response,
         allOf(
           hasStatus(302),
-          hasHeader('location', 'http://foo.com#access_token=foo&token_type=bearer&state=bar'),
+          hasHeader('location',
+              'http://foo.com#access_token=foo&token_type=bearer&state=bar'),
         ));
   });
 }

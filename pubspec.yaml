@@ -1,15 +1,15 @@
 name: angel_oauth2
 author: Tobe O <thosakwe@gmail.com>
-description: angel_auth strategy for in-house OAuth2 login.
+description: A class containing handlers that can be used within Angel to build a spec-compliant OAuth 2.0 server.
 homepage: https://github.com/angel-dart/oauth2.git
-version: 1.0.0+1
+version: 2.0.0
 environment:
-  sdk: ">=1.8.0 <3.0.0"
+  sdk: ">=2.0.0-dev <3.0.0"
 dependencies: 
-  angel_framework: ^1.0.0-dev
+  angel_framework: ^2.0.0-alpha
   angel_http_exception: ^1.0.0
-  dart2_constant: ^1.0.0
 dev_dependencies: 
-  angel_test: ^1.1.0-alpha
+  angel_test: ^2.0.0-alpha
   oauth2: ^1.0.0
-  test: ^0.12.0
+  test: ^1.0.0
+  uuid: ^1.0.0

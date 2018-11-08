@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
 import 'package:logging/logging.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
@@ -11,7 +12,7 @@ main() {
   Uri tokenEndpoint;
 
   setUp(() async {
-    app = new Angel()..lazyParseBodies = true;
+    app = new Angel();
     var auth = new _AuthorizationServer();
 
     app.group('/oauth2', (router) {
@@ -120,11 +121,12 @@ class _AuthorizationServer
         orElse: () => null);
 
     if (user == null) {
+      var body = await req.parseBody();
       throw new AuthorizationException(
         new ErrorResponse(
           ErrorResponse.accessDenied,
           'Invalid username or password.',
-          req.body['state'] ?? '',
+          body['state']?.toString() ?? '',
         ),
         statusCode: 401,
       );

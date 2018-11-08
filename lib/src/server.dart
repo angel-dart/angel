@@ -9,9 +9,9 @@ import 'token_type.dart';
 typedef Future<AuthorizationTokenResponse> ExtensionGrant(
     RequestContext req, ResponseContext res);
 
-String _getParam(RequestContext req, String name, String state,
-    {bool body: false}) {
-  var map = body == true ? req.body : req.query;
+Future<String> _getParam(RequestContext req, String name, String state,
+    {bool body: false}) async {
+  var map = body == true ? await req.parseBody() : await req.parseQuery();
   var value = map.containsKey(name) ? map[name]?.toString() : null;
 
   if (value?.isNotEmpty != true) {
@@ -28,8 +28,9 @@ String _getParam(RequestContext req, String name, String state,
   return value;
 }
 
-Iterable<String> _getScopes(RequestContext req, {bool body: false}) {
-  var map = body == true ? req.body : req.query;
+Future<Iterable<String>> _getScopes(RequestContext req,
+    {bool body: false}) async {
+  var map = body == true ? await req.parseBody() : await req.parseQuery();
   return map['scope']?.toString()?.split(' ') ?? [];
 }
 
@@ -46,7 +47,6 @@ abstract class AuthorizationServer<Client, User> {
   /// Finds the [Client] application associated with the given [clientId].
   FutureOr<Client> findClient(String clientId);
 
-  // TODO: Is this ever used???
   /// Verify that a [client] is the one identified by the [clientSecret].
   Future<bool> verifyClient(Client client, String clientSecret);
 
@@ -101,7 +101,7 @@ abstract class AuthorizationServer<Client, User> {
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
         'Authorization code grants are not supported.',
-        req.query['state'] ?? '',
+        req.uri.queryParameters['state'] ?? '',
       ),
       statusCode: 400,
     );
@@ -113,12 +113,13 @@ abstract class AuthorizationServer<Client, User> {
       String refreshToken,
       Iterable<String> scopes,
       RequestContext req,
-      ResponseContext res) {
+      ResponseContext res) async {
+    var body = await req.parseBody();
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
         'Refreshing authorization tokens is not supported.',
-        req.body['state'] ?? '',
+        body['state']?.toString() ?? '',
       ),
       statusCode: 400,
     );
@@ -131,12 +132,13 @@ abstract class AuthorizationServer<Client, User> {
       String password,
       Iterable<String> scopes,
       RequestContext req,
-      ResponseContext res) {
+      ResponseContext res) async {
+    var body = await req.parseBody();
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
         'Resource owner password credentials grants are not supported.',
-        req.body['state'] ?? '',
+        body['state']?.toString() ?? '',
       ),
       statusCode: 400,
     );
@@ -144,12 +146,13 @@ abstract class AuthorizationServer<Client, User> {
 
   /// Performs a client credentials grant. Only use this in situations where the client is 100% trusted.
   Future<AuthorizationTokenResponse> clientCredentialsGrant(
-      Client client, RequestContext req, ResponseContext res) {
+      Client client, RequestContext req, ResponseContext res) async {
+    var body = await req.parseBody();
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
         'Client credentials grants are not supported.',
-        req.body['state'] ?? '',
+        body['state']?.toString() ?? '',
       ),
       statusCode: 400,
     );
@@ -161,13 +164,14 @@ abstract class AuthorizationServer<Client, User> {
     String state = '';
 
     try {
-      state = req.query['state']?.toString() ?? '';
-      var responseType = _getParam(req, 'response_type', state);
+      var query = await req.parseQuery();
+      state = query['state']?.toString() ?? '';
+      var responseType = await _getParam(req, 'response_type', state);
 
       if (responseType == 'code') {
         // Ensure client ID
         // TODO: Handle confidential clients
-        var clientId = _getParam(req, 'client_id', state);
+        var clientId = await _getParam(req, 'client_id', state);
 
         // Find client
         var client = await findClient(clientId);
@@ -181,17 +185,17 @@ abstract class AuthorizationServer<Client, User> {
         }
 
         // Grab redirect URI
-        var redirectUri = _getParam(req, 'redirect_uri', state);
+        var redirectUri = await _getParam(req, 'redirect_uri', state);
 
         // Grab scopes
-        var scopes = _getScopes(req);
+        var scopes = await _getScopes(req);
 
         return await requestAuthorizationCode(
             client, redirectUri, scopes, state, req, res);
       }
 
       if (responseType == 'token') {
-        var clientId = _getParam(req, 'client_id', state);
+        var clientId = await _getParam(req, 'client_id', state);
         var client = await findClient(clientId);
 
         if (client == null) {
@@ -202,10 +206,10 @@ abstract class AuthorizationServer<Client, User> {
           ));
         }
 
-        var redirectUri = _getParam(req, 'redirect_uri', state);
+        var redirectUri = await _getParam(req, 'redirect_uri', state);
 
         // Grab scopes
-        var scopes = _getScopes(req);
+        var scopes = await _getScopes(req);
         var token =
             await implicitGrant(client, redirectUri, scopes, state, req, res);
 
@@ -284,11 +288,11 @@ abstract class AuthorizationServer<Client, User> {
 
     try {
       AuthorizationTokenResponse response;
-      await req.parse();
+      var body = await req.parseBody();
 
-      state = req.body['state'] ?? '';
+      state = body['state']?.toString() ?? '';
 
-      var grantType = _getParam(req, 'grant_type', state, body: true);
+      var grantType = await _getParam(req, 'grant_type', state, body: true);
 
       if (grantType != 'authorization_code') {
         var match =
@@ -337,19 +341,21 @@ abstract class AuthorizationServer<Client, User> {
       }
 
       if (grantType == 'authorization_code') {
-        var code = _getParam(req, 'code', state, body: true);
-        var redirectUri = _getParam(req, 'redirect_uri', state, body: true);
+        var code = await _getParam(req, 'code', state, body: true);
+        var redirectUri =
+            await _getParam(req, 'redirect_uri', state, body: true);
         response = await exchangeAuthorizationCodeForToken(
             code, redirectUri, req, res);
       } else if (grantType == 'refresh_token') {
-        var refreshToken = _getParam(req, 'refresh_token', state, body: true);
-        var scopes = _getScopes(req);
+        var refreshToken =
+            await _getParam(req, 'refresh_token', state, body: true);
+        var scopes = await _getScopes(req);
         response = await refreshAuthorizationToken(
             client, refreshToken, scopes, req, res);
       } else if (grantType == 'password') {
-        var username = _getParam(req, 'username', state, body: true);
-        var password = _getParam(req, 'password', state, body: true);
-        var scopes = _getScopes(req);
+        var username = await _getParam(req, 'username', state, body: true);
+        var password = await _getParam(req, 'password', state, body: true);
+        var scopes = await _getScopes(req);
         response = await resourceOwnerPasswordCredentialsGrant(
             client, username, password, scopes, req, res);
       } else if (grantType == 'client_credentials') {

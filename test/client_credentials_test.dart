@@ -11,7 +11,7 @@ main() {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel()..lazyParseBodies = true;
+    var app = new Angel();
     var oauth2 = new _AuthorizationServer();
 
     app.group('/oauth2', (router) {
@@ -42,14 +42,16 @@ main() {
 
     print('Response: ${response.body}');
 
-    expect(response, allOf(
-      hasStatus(200),
-      hasContentType('application/json'),
-      hasValidBody(new Validator({
-        'token_type': equals('bearer'),
-        'access_token': equals('foo'),
-      })),
-    ));
+    expect(
+        response,
+        allOf(
+          hasStatus(200),
+          hasContentType('application/json'),
+          hasValidBody(new Validator({
+            'token_type': equals('bearer'),
+            'access_token': equals('foo'),
+          })),
+        ));
   });
 
   test('force correct id', () async {

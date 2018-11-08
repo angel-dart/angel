@@ -11,15 +11,15 @@ class AuthorizationException extends AngelHttpException {
 
   @override
   Map toJson() {
-   var m = {
-     'error': errorResponse.code,
-     'error_description': errorResponse.description,
-   };
+    var m = {
+      'error': errorResponse.code,
+      'error_description': errorResponse.description,
+    };
 
-   if (errorResponse.uri != null)
-     m['error_uri'] = errorResponse.uri.toString();
+    if (errorResponse.uri != null)
+      m['error_uri'] = errorResponse.uri.toString();
 
-   return m;
+    return m;
   }
 }
 
@@ -59,4 +59,7 @@ class ErrorResponse {
   final String state;
 
   const ErrorResponse(this.code, this.description, this.state, {this.uri});
+
+  @override
+  String toString() => 'OAuth2 error ($code): $description';
 }
