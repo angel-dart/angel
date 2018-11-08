@@ -8,8 +8,10 @@ environment:
 dependencies:
   angel_framework: ^2.0.0-alpha
   http: ^0.12.0
+  http_parser: ^3.0.0
 dev_dependencies:
   angel_test: ^2.0.0-alpha
   logging:
+  mock_request:
   test: ^1.0.0
   
