@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:angel_client/angel_client.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'base_websocket_client.dart';
