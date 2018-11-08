@@ -34,7 +34,6 @@ main() {
     var httpClient = new http.Client();
 
     layer = new Proxy(
-      app,
       httpClient,
       server.address.address,
       port: server.port,
