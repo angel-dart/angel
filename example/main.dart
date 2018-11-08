@@ -1,25 +1,26 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:angel_eventsource/server.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
+import 'package:angel_websocket/server.dart';
 import 'package:eventsource/eventsource.dart';
-import 'package:eventsource/publisher.dart';
 import 'package:logging/logging.dart';
 import 'pretty_logging.dart';
 
 main() async {
   var app = new Angel();
+  var ws = new AngelWebSocket(app);
+  var events = new AngelEventSourcePublisher(ws);
+
+  await app.configure(ws.configureServer);
 
   app.use('/api/todos', new MapService());
-
-  var publisher = new AngelEventSourcePublisher(new EventSourcePublisher());
-  await app.configure(publisher.configureServer);
-
-  app.get('/sse', publisher.handleRequest);
+  app.all('/ws', ws.handleRequest);
+  app.get('/events', events.handleRequest);
 
   app.logger = new Logger('angel_eventsource')..onRecord.listen(prettyLog);
 
-  var server = await app.startServer('127.0.0.1', 3000);
+  var http = new AngelHttp(app);
+  var server = await http.startServer('127.0.0.1', 3000);
   var url = Uri.parse('http://${server.address.address}:${server.port}');
   print('Listening at $url');
 
@@ -41,11 +42,9 @@ main() async {
   rs.transform(UTF8.decoder).transform(const LineSplitter()).listen(print);
   */
 
-
   var eventSource = await EventSource.connect(url);
 
   await for (var event in eventSource) {
     print(event.data);
   }
-  
 }
