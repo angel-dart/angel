@@ -175,8 +175,8 @@ abstract class ResponseContext<RawResponse>
     if (!isOpen) throw closed();
     headers
       ..['content-type'] = 'text/html'
-      ..['location'] = url is String
-          ? url
+      ..['location'] = (url is String || url is Uri)
+          ? url.toString()
           : app.navigate(url as Iterable, absolute: absolute);
     statusCode = code ?? 302;
     write('''

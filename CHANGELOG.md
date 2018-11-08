@@ -1,5 +1,6 @@
 # 2.0.0-alpha.11
 * Add `readMany` to `Service`.
+* Allow `ResponseContext.redirect` to take a `Uri`.
 
 # 2.0.0-alpha.10
 * All calls to `Service.parseId` are now affixed with the `<Id>` argument.
