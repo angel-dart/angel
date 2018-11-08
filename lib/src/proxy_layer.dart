@@ -11,7 +11,7 @@ final MediaType _fallbackMediaType = MediaType('application', 'octet-stream');
 class Proxy {
   String _prefix;
 
-  final http.Client httpClient;
+  final http.BaseClient httpClient;
 
   /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
   final bool recoverFromDead;
@@ -34,8 +34,10 @@ class Proxy {
     this.recoverFrom404: true,
     this.timeout,
   }) {
-    if (this.recoverFromDead == null) throw ArgumentError.notNull("recoverFromDead");
-    if (this.recoverFrom404 == null) throw ArgumentError.notNull("recoverFrom404");
+    if (this.recoverFromDead == null)
+      throw ArgumentError.notNull("recoverFromDead");
+    if (this.recoverFrom404 == null)
+      throw ArgumentError.notNull("recoverFrom404");
 
     _prefix = publicPath?.replaceAll(_straySlashes, '') ?? '';
   }
@@ -56,7 +58,8 @@ class Proxy {
   }
 
   /// Proxies a request to the given path on the remote server.
-  Future<bool> servePath(String path, RequestContext req, ResponseContext res) async {
+  Future<bool> servePath(
+      String path, RequestContext req, ResponseContext res) async {
     http.StreamedResponse rs;
 
     final mapping = '$mapTo/$path'.replaceAll(_straySlashes, '');
@@ -74,7 +77,8 @@ class Proxy {
           'host': port == null ? host : '$host:$port',
           'x-forwarded-for': req.remoteAddress.address,
           'x-forwarded-port': req.uri.port.toString(),
-          'x-forwarded-host': req.headers.host ?? req.headers.value('host') ?? 'none',
+          'x-forwarded-host':
+              req.headers.host ?? req.headers.value('host') ?? 'none',
           'x-forwarded-proto': protocol,
         };
 
@@ -82,9 +86,10 @@ class Proxy {
           headers[name] = values.join(',');
         });
 
-        headers[HttpHeaders.cookieHeader] = req.cookies.map<String>((c) => '${c.name}=${c.value}').join('; ');
+        headers[HttpHeaders.cookieHeader] =
+            req.cookies.map<String>((c) => '${c.name}=${c.value}').join('; ');
 
-        var body;
+        List<int> body;
 
         if (req.method != 'GET' && req.app.keepRawRequestBuffers == true) {
           body = (await req.parse()).originalBuffer;
@@ -110,7 +115,8 @@ class Proxy {
         e,
         stackTrace: st,
         statusCode: 504,
-        message: 'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.',
+        message:
+            'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.',
       );
     } catch (e) {
       if (recoverFromDead) return true;
@@ -146,9 +152,12 @@ class Proxy {
         rs.headers[HttpHeaders.transferEncodingHeader]?.isNotEmpty == true;
 
     var proxiedHeaders = new Map<String, String>.from(rs.headers)
-      ..remove(HttpHeaders.contentEncodingHeader) // drop, http.Client has decoded
-      ..remove(HttpHeaders.transferEncodingHeader) // drop, http.Client has decoded
-      ..[HttpHeaders.contentLengthHeader] = "${isContentLengthUnknown ? '-1' : rs.contentLength}";
+      ..remove(
+          HttpHeaders.contentEncodingHeader) // drop, http.Client has decoded
+      ..remove(
+          HttpHeaders.transferEncodingHeader) // drop, http.Client has decoded
+      ..[HttpHeaders.contentLengthHeader] =
+          "${isContentLengthUnknown ? '-1' : rs.contentLength}";
 
     res
       ..contentType = mediaType

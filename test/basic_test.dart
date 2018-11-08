@@ -3,21 +3,21 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_proxy/angel_proxy.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
 main() {
   Angel app;
-  http.Client client = new http.Client();
+  var client = new http.IOClient();
   HttpServer server, testServer;
   String url;
 
   setUp(() async {
     app = new Angel()..keepRawRequestBuffers = true;
     var appHttp = AngelHttp(app);
-    var httpClient = new http.Client();
+    var httpClient = new http.IOClient();
 
     testServer = await startTestServer();
 
@@ -86,8 +86,9 @@ main() {
   });
 
   test('original buffer', () async {
-    var response = await client
-        .post('$url/proxy/body', body: json.encode({'foo': 'bar'}), headers: {'content-type': 'application/json'});
+    var response = await client.post('$url/proxy/body',
+        body: json.encode({'foo': 'bar'}),
+        headers: {'content-type': 'application/json'});
     print('Response: ${response.body}');
     expect(response.body, isNotEmpty);
     expect(response.body, isNot('intercept empty'));
