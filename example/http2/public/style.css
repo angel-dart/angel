@@ -1,0 +1,20 @@
+button {
+    margin-top: 2em;
+}
+
+html, body {
+    background-color: #000;
+}
+
+#app {
+    text-align: center;
+}
+
+#app h1 {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+#loading {
+    color: red;
+}
