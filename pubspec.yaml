@@ -10,6 +10,7 @@ dependencies:
   angel_static: ^2.0.0-alpha
   file: ^5.0.0
   html: ^0.13.0
+  http_parser: ^3.0.0
   path: ^1.0.0
 dev_dependencies:
   angel_test: ^2.0.0-alpha

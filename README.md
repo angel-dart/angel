@@ -8,6 +8,13 @@ the infamous
 [flash of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content),
 and other SEO optimizations that can easily become tedious to perform by hand.
 
+## Disabling inlining per-element
+Add a `data-no-inline` attribute to a `link` or `script` to prevent inlining it:
+
+```html
+<script src="main.dart.js" data-no-inline></script>
+```
+
 ## `inlineAssets`
 A
 [response finalizer](https://angel-dart.gitbook.io/angel/the-basics/request-lifecycle)

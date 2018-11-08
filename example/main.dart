@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_seo/angel_seo.dart';
 import 'package:angel_static/angel_static.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:file/local.dart';
+import 'package:http_parser/http_parser.dart';
 
 main() async {
   var app = new Angel();
@@ -31,7 +32,7 @@ main() async {
     var indexHtml = fs.directory('web').childFile('index.html');
     var contents = await indexHtml.readAsString();
     res
-      ..headers['content-type'] = 'text/html; charset=utf-8'
+      ..contentType = new MediaType('text', 'html', {'charset': 'utf-8'})
       ..buffer.add(utf8.encode(contents));
   });
 
