@@ -29,8 +29,6 @@ main() async {
     Uri.parse('http://echo.websocket.org'),
     publicPath: '/echo',
     timeout: timeout,
-    recoverFromDead: false,
-    recoverFrom404: false,
   );
   app.get('/echo', echoProxy.handleRequest);
 

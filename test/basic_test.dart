@@ -23,10 +23,16 @@ main() {
 
     var proxy1 = new Proxy(
       httpClient,
-      new Uri(host: testServer.address.address, port: testServer.port),
+      new Uri(
+          scheme: 'http',
+          host: testServer.address.address,
+          port: testServer.port),
       publicPath: '/proxy',
     );
+
     var proxy2 = new Proxy(httpClient, proxy1.baseUrl.replace(path: '/foo'));
+    print('Proxy 1 on: ${proxy1.baseUrl}');
+    print('Proxy 2 on: ${proxy2.baseUrl}');
 
     app.all("/proxy/*", proxy1.handleRequest);
     app.all("*", proxy2.handleRequest);

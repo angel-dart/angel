@@ -32,10 +32,13 @@ class Proxy {
     this.recoverFrom404: true,
     this.timeout,
   }) {
+    if (!baseUrl.hasScheme || !baseUrl.hasAuthority)
+      throw new ArgumentError(
+          'Invalid `baseUrl`. URI must have both a scheme and authority.');
     if (this.recoverFromDead == null)
-      throw ArgumentError.notNull("recoverFromDead");
+      throw new ArgumentError.notNull("recoverFromDead");
     if (this.recoverFrom404 == null)
-      throw ArgumentError.notNull("recoverFrom404");
+      throw new ArgumentError.notNull("recoverFrom404");
 
     _prefix = publicPath?.replaceAll(_straySlashes, '') ?? '';
   }
@@ -64,35 +67,18 @@ class Proxy {
 
     var uri = baseUrl.replace(path: p.join(baseUrl.path, path));
 
-    print('a $uri');
-
     try {
-      print(req is HttpRequestContext &&
-          WebSocketTransformer.isUpgradeRequest(req.rawRequest));
-
       if (req is HttpRequestContext &&
           WebSocketTransformer.isUpgradeRequest(req.rawRequest)) {
-        print('ws!!!');
         res.detach();
-        print('detached');
         uri = uri.replace(scheme: uri.scheme == 'https' ? 'wss' : 'ws');
-        print(uri);
 
         try {
           var local = await WebSocketTransformer.upgrade(req.rawRequest);
-          print('local!');
           var remote = await WebSocket.connect(uri.toString());
-          print('remote!');
 
-          dynamic Function(dynamic) log(String type) {
-            return (x) {
-              print('$type: $x');
-              return x;
-            };
-          }
-
-          local.map(log('local->remote')).pipe(remote);
-          remote.map(log('local->remote')).pipe(local);
+          local.pipe(remote);
+          remote.pipe(local);
           return false;
         } catch (e, st) {
           throw new AngelHttpException(e,
@@ -126,7 +112,7 @@ class Proxy {
         var rq = new http.Request(req.method, uri);
         rq.headers.addAll(headers);
         rq.headers['host'] = rq.url.host;
-        rq.encoding = Utf8Codec(allowMalformed: true);
+        rq.encoding = new Utf8Codec(allowMalformed: true);
 
         if (body != null) rq.bodyBytes = body;
 
@@ -157,7 +143,8 @@ class Proxy {
     MediaType mediaType;
     if (rs.headers.containsKey(HttpHeaders.contentTypeHeader)) {
       try {
-        mediaType = MediaType.parse(rs.headers[HttpHeaders.contentTypeHeader]);
+        mediaType =
+            new MediaType.parse(rs.headers[HttpHeaders.contentTypeHeader]);
       } on FormatException catch (e, st) {
         if (recoverFromDead) return true;
 

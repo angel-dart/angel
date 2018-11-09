@@ -41,7 +41,7 @@ main() {
 
     layer = new Proxy(
       httpClient,
-      new Uri(host: server.address.address, port: server.port),
+      new Uri(scheme: 'http', host: server.address.address, port: server.port),
       publicPath: '/proxy',
     );
 

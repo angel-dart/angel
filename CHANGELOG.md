@@ -1,5 +1,8 @@
 # 2.1.0
+
 - Use `Uri` instead of archaic `host`, `port`, and `mapTo`. Also cleaner + safer + easier.
+
+* Enable WebSocket proxying.
 
 # 2.0.0
 
