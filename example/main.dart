@@ -15,11 +15,24 @@ main() async {
   // By default, if the host throws a 404, the request will fall through to the next handler.
   var pubProxy = new Proxy(
     client,
-    'https://pub.dartlang.org',
+    Uri.parse('https://pub.dartlang.org'),
     publicPath: '/pub',
     timeout: timeout,
   );
   app.all("/pub/*", pubProxy.handleRequest);
+
+  // Surprise! We can also proxy WebSockets.
+  //
+  // Play around with this at http://www.websocket.org/echo.html.
+  var echoProxy = new Proxy(
+    client,
+    Uri.parse('http://echo.websocket.org'),
+    publicPath: '/echo',
+    timeout: timeout,
+    recoverFromDead: false,
+    recoverFrom404: false,
+  );
+  app.get('/echo', echoProxy.handleRequest);
 
   // Pub's HTML assumes that the site's styles, etc. are on the absolute path `/static`.
   // This is not the case here. Let's patch that up:
@@ -30,7 +43,7 @@ main() async {
   // Anything else should fall through to dartlang.org.
   var dartlangProxy = new Proxy(
     client,
-    'https://dartlang.org',
+    Uri.parse('https://dartlang.org'),
     timeout: timeout,
     recoverFrom404: false,
   );

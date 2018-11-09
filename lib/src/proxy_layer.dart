@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 final MediaType _fallbackMediaType = MediaType('application', 'octet-stream');
@@ -16,20 +18,16 @@ class Proxy {
   /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
   final bool recoverFromDead;
   final bool recoverFrom404;
-  final String host, mapTo, publicPath;
-  final int port;
-  final String protocol;
+  final Uri baseUrl;
+  final String publicPath;
 
   /// If `null` then no timout is added for requests
   final Duration timeout;
 
   Proxy(
     this.httpClient,
-    this.host, {
-    this.port,
-    this.mapTo: '/',
+    this.baseUrl, {
     this.publicPath: '/',
-    this.protocol: 'http',
     this.recoverFromDead: true,
     this.recoverFrom404: true,
     this.timeout,
@@ -49,9 +47,11 @@ class Proxy {
     var path = req.path.replaceAll(_straySlashes, '');
 
     if (_prefix.isNotEmpty) {
-      if (!path.startsWith(_prefix)) return new Future<bool>.value(true);
+      if (!p.isWithin(_prefix, path) && !p.equals(_prefix, path)) {
+        return new Future<bool>.value(true);
+      }
 
-      path = path.replaceFirst(_prefix, '').replaceAll(_straySlashes, '');
+      path = p.relative(path, from: _prefix);
     }
 
     return servePath(path, req, res);
@@ -62,24 +62,52 @@ class Proxy {
       String path, RequestContext req, ResponseContext res) async {
     http.StreamedResponse rs;
 
-    final mapping = '$mapTo/$path'.replaceAll(_straySlashes, '');
+    var uri = baseUrl.replace(path: p.join(baseUrl.path, path));
+
+    print('a $uri');
 
     try {
+      print(req is HttpRequestContext &&
+          WebSocketTransformer.isUpgradeRequest(req.rawRequest));
+
+      if (req is HttpRequestContext &&
+          WebSocketTransformer.isUpgradeRequest(req.rawRequest)) {
+        print('ws!!!');
+        res.detach();
+        print('detached');
+        uri = uri.replace(scheme: uri.scheme == 'https' ? 'wss' : 'ws');
+        print(uri);
+
+        try {
+          var local = await WebSocketTransformer.upgrade(req.rawRequest);
+          print('local!');
+          var remote = await WebSocket.connect(uri.toString());
+          print('remote!');
+
+          dynamic Function(dynamic) log(String type) {
+            return (x) {
+              print('$type: $x');
+              return x;
+            };
+          }
+
+          local.map(log('local->remote')).pipe(remote);
+          remote.map(log('local->remote')).pipe(local);
+          return false;
+        } catch (e, st) {
+          throw new AngelHttpException(e,
+              message: 'Could not connect WebSocket', stackTrace: st);
+        }
+      }
+
       Future<http.StreamedResponse> accessRemote() async {
-        var url = port == null ? host : '$host:$port';
-        url = url.replaceAll(_straySlashes, '');
-        url = '$url/$mapping';
-
-        if (!url.startsWith(protocol)) url = '$protocol://$url';
-        url = url.replaceAll(_straySlashes, '');
-
         var headers = <String, String>{
-          'host': port == null ? host : '$host:$port',
+          'host': uri.authority,
           'x-forwarded-for': req.remoteAddress.address,
           'x-forwarded-port': req.uri.port.toString(),
           'x-forwarded-host':
               req.headers.host ?? req.headers.value('host') ?? 'none',
-          'x-forwarded-proto': protocol,
+          'x-forwarded-proto': uri.scheme,
         };
 
         req.headers.forEach((name, values) {
@@ -95,7 +123,7 @@ class Proxy {
           body = (await req.parse()).originalBuffer;
         }
 
-        var rq = new http.Request(req.method, Uri.parse(url));
+        var rq = new http.Request(req.method, uri);
         rq.headers.addAll(headers);
         rq.headers['host'] = rq.url.host;
         rq.encoding = Utf8Codec(allowMalformed: true);
@@ -116,10 +144,10 @@ class Proxy {
         stackTrace: st,
         statusCode: 504,
         message:
-            'Connection to remote host "$host" timed out after ${timeout.inMilliseconds}ms.',
+            'Connection to remote host "$uri" timed out after ${timeout.inMilliseconds}ms.',
       );
     } catch (e) {
-      if (recoverFromDead) return true;
+      if (recoverFromDead && e is! AngelHttpException) return true;
       rethrow;
     }
 
@@ -137,7 +165,7 @@ class Proxy {
           e,
           stackTrace: st,
           statusCode: 504,
-          message: 'Host "$host" returned a malformed content-type',
+          message: 'Host "$uri" returned a malformed content-type',
         );
       }
     } else {
