@@ -1,3 +1,7 @@
+# 2.0.3
+* Fixed up manual restart.
+* Remove stutter on hotkey press.
+
 # 2.0.2
 * Fixed for compatibility with `package:angel_websocket@^2.0.0-alpha.5`.
 

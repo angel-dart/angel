@@ -11,6 +11,7 @@ main() async {
     new Directory('src'),
     new Directory('src'),
     'main.dart',
+    Platform.script,
     Uri.parse('package:angel_hot/angel_hot.dart')
   ]);
   await hot.startServer('127.0.0.1', 3000);

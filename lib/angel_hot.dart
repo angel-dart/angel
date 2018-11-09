@@ -24,6 +24,7 @@ class HotReloader {
   final List _paths = [];
   final StringRenderer _renderer = new StringRenderer(pretty: false);
   final Queue<HttpRequest> _requestQueue = new Queue<HttpRequest>();
+  HttpServer _io;
   AngelHttp _server;
   Duration _timeout;
   vm.VM _vmachine;
@@ -71,6 +72,7 @@ class HotReloader {
 
   Future close() async {
     _onChange.close();
+    await _io?.close(force: true);
   }
 
   void sendError(HttpRequest request, int status, String title_, e) {
@@ -129,7 +131,7 @@ class HotReloader {
     var s = await generator();
     await Future.forEach(s.startupHooks, s.configure);
     s.optimizeForProduction();
-    return new AngelHttp(s);
+    return new AngelHttp.custom(s, startShared);
   }
 
   /// Starts listening to requests and filesystem events.
@@ -160,7 +162,7 @@ class HotReloader {
         .listen(_handleWatchEvent);
 
     while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
-    var server = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
+    var server = _io = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
     server.listen(handleRequest);
 
     // Print a Flutter-like prompt...
@@ -193,35 +195,42 @@ class HotReloader {
       }
 
       // Listen for hotkeys
-      stdin.lineMode = stdin.echoMode = false;
+      try {
+        stdin.lineMode = stdin.echoMode = false;
+      } catch (_) {}
 
       StreamSubscription<int> sub;
-      sub = stdin.expand((l) => l).listen((ch) async {
-        var ch = stdin.readByteSync();
 
-        if (ch == $r) {
-          _handleWatchEvent(
-              new WatchEvent(ChangeType.MODIFY, '[manual-reload]'), isHot);
-        }
-        if (ch == $R) {
-          //print('Manually restarting server...\n');
-          _handleWatchEvent(
-              new WatchEvent(ChangeType.MODIFY, '[manual-restart]'), false);
-        } else if (ch == $q) {
-          stdin.echoMode = stdin.lineMode = true;
-          close();
-          sub.cancel();
-          exit(0);
-        } else if (ch == $h) {
-          print(
-              'Press "r" to hot reload the Dart VM, and restart the active server.');
-          print(
-              'Press "R" to restart the server, WITHOUT a hot reload of the VM.');
-          print('Press "q" to quit the server.');
-          print('Press "h" to display this help information.');
-          stdout.writeln();
-        }
-      });
+      try {
+        sub = stdin.expand((l) => l).listen((ch) async {
+          if (ch == $r) {
+            _handleWatchEvent(
+                new WatchEvent(ChangeType.MODIFY, '[manual-reload]'), isHot);
+          }
+          if (ch == $R) {
+            print('Manually restarting server...\n');
+            await _killServer();
+            await _server.close();
+            var addr = _io.address.address;
+            var port = _io.port;
+            await _io?.close(force: true);
+            await startServer(addr, port);
+          } else if (ch == $q) {
+            stdin.echoMode = stdin.lineMode = true;
+            close();
+            sub.cancel();
+            exit(0);
+          } else if (ch == $h) {
+            print(
+                'Press "r" to hot reload the Dart VM, and restart the active server.');
+            print(
+                'Press "R" to restart the server, WITHOUT a hot reload of the VM.');
+            print('Press "q" to quit the server.');
+            print('Press "h" to display this help information.');
+            stdout.writeln();
+          }
+        });
+      } catch (_) {}
     }
 
     return server;
@@ -286,21 +295,18 @@ class HotReloader {
     var r = await _listen();
 
     if (r == null) {
-      print(
-          'WARNING: Unable to watch path "$path" from working directory "${Directory.current.path}". Please ensure that it exists.');
+      print(yellow.wrap(
+          'WARNING: Unable to watch path "$path" from working directory "${Directory.current.path}". Please ensure that it exists.'));
     }
   }
 
-  _handleWatchEvent(WatchEvent e, [bool hot = true]) async {
-    print('${e.path} changed. Reloading server...\n');
-    var old = _server;
-
-    if (old != null) {
+  Future _killServer() async {
+    if (_server != null) {
       // Do this asynchronously, because we really don't care about the old server anymore.
       new Future(() async {
         // Disconnect active WebSockets
         try {
-          var ws = old.app.container.make<AngelWebSocket>();
+          var ws = _server.app.container.make<AngelWebSocket>();
 
           for (var client in ws.clients) {
             try {
@@ -311,22 +317,26 @@ class HotReloader {
             }
           }
 
-          await Future.forEach(old.app.shutdownHooks, old.app.configure);
+          await Future.forEach(
+              _server.app.shutdownHooks, _server.app.configure);
         } catch (_) {
           // Fail silently...
         }
       });
     }
+  }
 
+  _handleWatchEvent(WatchEvent e, [bool hot = true]) async {
+    print('${e.path} changed. Reloading server...\n');
+    await _killServer();
     _server = null;
 
     if (hot) {
       var report = await _client.reloadSources(_mainIsolate.id);
 
       if (!report.success) {
-        stderr.writeln('Hot reload failed!!!');
-        stderr.writeln(report.toString());
-        exit(1);
+        stderr.writeln(
+            'Hot reload failed - perhaps some sources have not been generated yet.');
       }
     }
 
