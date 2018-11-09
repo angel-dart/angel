@@ -1,3 +1,6 @@
+# 2.0.2
+* Handle `null` return in `authenticate` + `failureRedirect`.
+
 # 2.0.1
 * Add generic parameter to `options` on `AuthStrategy.authenticate`.
 

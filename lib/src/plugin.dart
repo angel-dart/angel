@@ -277,7 +277,7 @@ class AngelAuth<User> {
             : await strategy.authenticate(req, res, options);
         if (result == true)
           return result;
-        else if (result != false) {
+        else if (result != false && result != null) {
           var userId = await serializer(result);
 
           // Create JWT
@@ -325,7 +325,10 @@ class AngelAuth<User> {
               res.statusCode == 302 ||
               res.headers.containsKey('location'))
             return false;
-          else
+          else if (options?.failureRedirect != null) {
+            res.redirect(options.failureRedirect);
+            return false;
+          } else
             throw new AngelHttpException.notAuthenticated();
         }
       }
