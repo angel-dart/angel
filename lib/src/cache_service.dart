@@ -16,7 +16,10 @@ class CacheService<Id, Data> extends Service<Id, Data> {
   /// If not provided, this defaults to a [MapService].
   final Service<Id, Data> cache;
 
-  final bool ignoreQuery;
+  /// If `true` (default: `false`), then result caching will discard parameters passed to service methods.
+  ///
+  /// If you want to return a cached result more-often-than-not, you may want to enable this.
+  final bool ignoreParams;
 
   final Duration timeout;
 
@@ -26,7 +29,7 @@ class CacheService<Id, Data> extends Service<Id, Data> {
   CacheService(
       {@required this.database,
       @required this.cache,
-      this.ignoreQuery: false,
+      this.ignoreParams: false,
       this.timeout}) {
     assert(database != null);
   }
@@ -47,7 +50,7 @@ class CacheService<Id, Data> extends Service<Id, Data> {
 
       if (timeout == null || !expired) {
         // Read from the cache if necessary
-        var queryEqual = ignoreQuery == true ||
+        var queryEqual = ignoreParams == true ||
             (params != null &&
                 cached.params != null &&
                 const MapEquality().equals(

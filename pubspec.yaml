@@ -1,5 +1,5 @@
 name: angel_cache
-version: 2.0.0
+version: 2.0.1
 homepage: https://github.com/angel-dart/cache
 description: Support for server-side caching in Angel.
 author: Tobe O <thosakwe@gmail.com>

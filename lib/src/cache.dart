@@ -19,7 +19,10 @@ class ResponseCache {
   final Map<String, _CachedResponse> _cache = {};
   final Map<String, Pool> _writeLocks = {};
 
-  ResponseCache({this.timeout});
+  /// If `true` (default: `false`), then caching of results will discard URI query parameters and fragments.
+  final bool ignoreQueryAndFragment;
+
+  ResponseCache({this.timeout, this.ignoreQueryAndFragment: false});
 
   /// Closes all internal write-locks, and closes the cache.
   Future close() async {
@@ -40,9 +43,9 @@ class ResponseCache {
 
       // Check if there is a cache entry.
       for (var pattern in patterns) {
-        if (pattern.allMatches(req.uri.path).isNotEmpty &&
-            _cache.containsKey(req.uri.path)) {
-          var response = _cache[req.uri.path];
+        if (pattern.allMatches(_getEffectivePath(req)).isNotEmpty &&
+            _cache.containsKey(_getEffectivePath(req))) {
+          var response = _cache[_getEffectivePath(req)];
           //print('timestamp ${response.timestamp} vs since ${modifiedSince}');
 
           if (response.timestamp.compareTo(modifiedSince) <= 0) {
@@ -62,6 +65,9 @@ class ResponseCache {
     return true;
   }
 
+  String _getEffectivePath(RequestContext req) =>
+      ignoreQueryAndFragment == true ? req.uri.path : req.uri.toString();
+
   /// Serves content from the cache, if applicable.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) async {
     if (!await ifModifiedSince(req, res)) return false;
@@ -73,11 +79,11 @@ class ResponseCache {
     // If `if-modified-since` is present, this check has already been performed.
     if (req.headers.ifModifiedSince == null) {
       for (var pattern in patterns) {
-        if (pattern.allMatches(req.uri.path).isNotEmpty) {
+        if (pattern.allMatches(_getEffectivePath(req)).isNotEmpty) {
           var now = new DateTime.now().toUtc();
 
-          if (_cache.containsKey(req.uri.path)) {
-            var response = _cache[req.uri.path];
+          if (_cache.containsKey(_getEffectivePath(req))) {
+            var response = _cache[_getEffectivePath(req)];
 
             if (timeout != null) {
               // If the cache timeout has been met, don't send the cached response.
@@ -108,27 +114,27 @@ class ResponseCache {
 
     // Check if there is a cache entry.
     for (var pattern in patterns) {
-      if (pattern.allMatches(req.uri.path).isNotEmpty) {
+      if (pattern.allMatches(_getEffectivePath(req)).isNotEmpty) {
         var now = new DateTime.now().toUtc();
 
         // Invalidate the response, if need be.
-        if (_cache.containsKey(req.uri.path)) {
+        if (_cache.containsKey(_getEffectivePath(req))) {
           // If there is no timeout, don't invalidate.
           if (timeout == null) return true;
 
           // Otherwise, don't invalidate unless the timeout has been exceeded.
-          var response = _cache[req.uri.path];
+          var response = _cache[_getEffectivePath(req)];
           if (now.difference(response.timestamp) < timeout) return true;
 
           // If the cache entry should be invalidated, then invalidate it.
-          purge(req.uri.path);
+          purge(_getEffectivePath(req));
         }
 
         // Save the response.
         var writeLock =
-            _writeLocks.putIfAbsent(req.uri.path, () => new Pool(1));
+            _writeLocks.putIfAbsent(_getEffectivePath(req), () => new Pool(1));
         await writeLock.withResource(() {
-          _cache[req.uri.path] = new _CachedResponse(
+          _cache[_getEffectivePath(req)] = new _CachedResponse(
               new Map.from(res.headers), res.buffer.toBytes(), now);
         });
 
