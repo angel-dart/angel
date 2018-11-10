@@ -17,13 +17,17 @@ main() {
 
     // b.jl
     fileSystem.file('b.jl').writeAsStringSync(
-        '<i><include src="a.jl"><block name="greeting"><p>Hello</p></block></i>');
+        '<i><include src="a.jl" /><block name="greeting"><p>Hello</p></block></i>');
 
     // c.jl
+    // NOTE: This SHOULD NOT produce "yes", because the only children expanded within an <extend>
+    // are <block>s.
     fileSystem.file('c.jl').writeAsStringSync(
         '<extend src="b.jl"><block name="greeting">Goodbye</block>Yes</extend>');
 
     // d.jl
+    // This should not output "Yes", either.
+    // It should actually produce the same as c.jl, since it doesn't define any unique blocks.
     fileSystem.file('d.jl').writeAsStringSync(
         '<extend src="c.jl"><block name="greeting">Saluton!</block>Yes</extend>');
 
@@ -33,7 +37,7 @@ main() {
 
     // fox.jl
     fileSystem.file('fox.jl').writeAsStringSync(
-        '<block name="dance">The name is <block name="name"></block></block>');
+        '<div><block name="dance">The name is <block name="name">default-name</block></block></div>');
 
     // trot.jl
     fileSystem.file('trot.jl').writeAsStringSync(
@@ -63,13 +67,41 @@ main() {
   <b>
     a.jl
   </b>
-  GoodbyeYes
+  Goodbye
 </i>
     '''
             .trim());
   });
 
-  test('block resolution is recursive', () async {
+  test('block defaults are emitted', () async {
+    var file = fileSystem.file('b.jl');
+    var original = jael.parseDocument(await file.readAsString(),
+        sourceUrl: file.uri, onError: (e) => throw e);
+    var processed = await jael.resolve(
+        original, fileSystem.directory(fileSystem.currentDirectory),
+        onError: (e) => throw e);
+    var buf = new CodeBuffer();
+    var scope = new SymbolTable();
+    const jael.Renderer().render(processed, buf, scope);
+    print(buf);
+
+    expect(
+        buf.toString(),
+        '''
+<i>
+  <b>
+    a.jl
+  </b>
+  <p>
+    Hello
+  </p>
+</i>
+    '''
+            .trim());
+  });
+
+  test('block resolution only redefines blocks at one level at a time',
+      () async {
     var file = fileSystem.file('d.jl');
     var original = jael.parseDocument(await file.readAsString(),
         sourceUrl: file.uri, onError: (e) => throw e);
@@ -88,7 +120,7 @@ main() {
   <b>
     a.jl
   </b>
-  Saluton!Yes
+  Goodbye
 </i>
     '''
             .trim());
@@ -109,12 +141,12 @@ main() {
     expect(
         buf.toString(),
         '''
-<i>
-  <b>
-    a.jl
-  </b>
-  Angel frameworkGoodbye
-</i>
+<div>
+  The name is CONGA 
+  <i>
+    framework
+  </i>
+</div>
     '''
             .trim());
   });
