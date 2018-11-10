@@ -8,5 +8,7 @@ environment:
 dependencies:
   file: ^5.0.0
   jael: ^2.0.0
+  symbol_table: ^2.0.0
 dev_dependencies:
+  code_buffer:
   test: ^1.0.0
