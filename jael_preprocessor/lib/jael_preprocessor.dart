@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+
 import 'package:file/file.dart';
 import 'package:jael/jael.dart';
 import 'package:symbol_table/symbol_table.dart';
@@ -20,8 +21,8 @@ Future<Document> resolve(Document document, Directory currentDirectory,
   var includesResolved =
       await resolveIncludes(document, currentDirectory, onError);
 
-  var patched =
-      await applyInheritance(includesResolved, currentDirectory, onError);
+  var patched = await applyInheritance(
+      includesResolved, currentDirectory, onError, patch);
 
   if (patch?.isNotEmpty != true) return patched;
 
@@ -34,7 +35,7 @@ Future<Document> resolve(Document document, Directory currentDirectory,
 
 /// Folds any `extend` declarations.
 Future<Document> applyInheritance(Document document, Directory currentDirectory,
-    void onError(JaelError error)) async {
+    void onError(JaelError error), Iterable<Patcher> patch) async {
   if (document.root.tagName.name != 'extend') return document;
 
   var element = document.root;
@@ -62,8 +63,9 @@ Future<Document> applyInheritance(Document document, Directory currentDirectory,
           .file(currentDirectory.uri.resolve(parent));
       var contents = await file.readAsString();
       document = parseDocument(contents, sourceUrl: file.uri, onError: onError);
-      if (document != null)
-        document = await resolveIncludes(document, file.parent, onError);
+      //document = await resolveIncludes(document, file.parent, onError);
+      document = await resolve(document, currentDirectory,
+          onError: onError, patch: patch);
     }
 
     // Then, for each referenced template, in order, transform the last template
@@ -76,13 +78,14 @@ Future<Document> applyInheritance(Document document, Directory currentDirectory,
       var child = chain.removeFirst();
       var scope = blocks;
       extractBlockDeclarations(scope, child.root, onError);
+
       var blocksExpanded =
           await expandBlocks(document.root, blocks, currentDirectory, onError);
 
       if (blocksExpanded == null) {
-        // This in itself is a block; expand it.
-        // TODO: Ambiguous
-
+        // When this returns null, we've reached a block declaration.
+        // Just continue.
+        continue;
       }
 
       document =
@@ -109,14 +112,6 @@ List<Element> allBlocksRecursive(Element element) {
     if (child is Element) {
       var childBlocks = allBlocksRecursive(child);
       out.addAll(childBlocks);
-//
-//      if (childBlocks.isNotEmpty) {
-//        print('<<<\n${child.span.highlight()}');
-//
-//        for (var b in childBlocks) {
-//          print('!!!!\n${b.span.highlight()}');
-//        }
-//      }
     }
   }
 
@@ -151,7 +146,7 @@ void extractBlockDeclarations(SymbolTable<Element> blocks, Element element,
 /// Finds the name of the parent template.
 String getParent(Document document, void onError(JaelError error)) {
   var element = document.root;
-  if (element.tagName.name != 'extend') return null;
+  if (element?.tagName?.name != 'extend') return null;
 
   var attr =
       element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
@@ -171,16 +166,18 @@ String getParent(Document document, void onError(JaelError error)) {
 }
 
 /// Replaces any `block` tags within the element.
-Future<Element> expandBlocks(Element element, SymbolTable<Element> blockss,
+Future<Element> expandBlocks(Element element, SymbolTable<Element> outerScope,
     Directory currentDirectory, void onError(JaelError error)) async {
-  var blocks = blockss.createChild();
+  var innerScope = outerScope.createChild();
 
   if (element is SelfClosingElement)
     return element;
   else if (element is RegularElement) {
     if (element.children.isEmpty) return element;
 
-    List<ElementChild> expanded = [];
+    var expanded = new Set<ElementChild>();
+
+    element.children.forEach((e) => print(e.span.highlight()));
 
     for (var child in element.children) {
       if (child is Element) {
@@ -205,11 +202,11 @@ Future<Element> expandBlocks(Element element, SymbolTable<Element> blockss,
             var name = (nameAttr.value as StringLiteral).value;
             Iterable<ElementChild> children;
 
-            if (blocks.resolve(name) == null) {
-              print('Hm what? $name');
-              children = child.children;
+            if (innerScope.resolve(name) == null) {
+              print('Why is $name not defined?');
+              children = []; //child.children;
             } else {
-              children = blocks.resolve(name).value.children;
+              children = innerScope.resolve(name).value.children;
             }
 
             expanded.addAll(children);
@@ -229,7 +226,7 @@ Future<Element> expandBlocks(Element element, SymbolTable<Element> blockss,
     for (var c in expanded) {
       if (c is Element) {
         var blocksExpanded =
-            await expandBlocks(c, blocks, currentDirectory, onError);
+            await expandBlocks(c, innerScope, currentDirectory, onError);
         var nameAttr = c.attributes
             .firstWhere((a) => a.name == 'name', orElse: () => null);
         var name = (nameAttr?.value is StringLiteral)
@@ -240,7 +237,7 @@ Future<Element> expandBlocks(Element element, SymbolTable<Element> blockss,
           out.add(blocksExpanded);
         } else {
           // This element itself resolved to a block; expand it.
-          out.addAll(blocks.resolve(name)?.value?.children ?? <ElementChild>[]);
+          out.addAll(innerScope.resolve(name)?.value?.children ?? <ElementChild>[]);
         }
       } else {
         out.add(c);
@@ -273,10 +270,8 @@ Future<Element> expandBlocks(Element element, SymbolTable<Element> blockss,
       }
 
       var name = (nameAttr.value as StringLiteral).value;
-      print('def $name');
-      blockss.assign(name, finalElement);
-
-      return null;
+      outerScope.assign(name, finalElement);
+      throw outerScope.allVariables.map((v) => v.name);
     } else {
       return finalElement;
     }

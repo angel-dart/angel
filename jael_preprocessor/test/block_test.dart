@@ -21,11 +21,11 @@ main() {
 
     // c.jl
     fileSystem.file('c.jl').writeAsStringSync(
-        '<extend src="b.jl"><block name="greeting"><block name="greeting"></block>Goodbye</block></extend>');
+        '<extend src="b.jl"><block name="greeting">Goodbye</block>Yes</extend>');
 
     // d.jl
     fileSystem.file('d.jl').writeAsStringSync(
-        '<extend src="c.jl"><block name="greeting">Saluton!</block></extend>');
+        '<extend src="c.jl"><block name="greeting">Saluton!</block>Yes</extend>');
 
     // e.jl
     fileSystem.file('e.jl').writeAsStringSync(
@@ -63,7 +63,7 @@ main() {
   <b>
     a.jl
   </b>
-  Goodbye
+  GoodbyeYes
 </i>
     '''
             .trim());
@@ -88,7 +88,7 @@ main() {
   <b>
     a.jl
   </b>
-  Saluton!Goodbye
+  Saluton!Yes
 </i>
     '''
             .trim());
