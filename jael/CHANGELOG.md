@@ -1,3 +1,9 @@
+# 2.0.1
+* Fixed bug where the `textarea` name check would never return `true`.
+
+# 2.0.0+1
+* Meta-update for Pub score.
+
 # 2.0.0
 * Dart 2 updates.
 * Remove usage of `package:dart2_constant`.
