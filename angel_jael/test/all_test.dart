@@ -2,6 +2,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_jael/angel_jael.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:file/memory.dart';
+import 'package:html/parser.dart' as html;
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
@@ -19,7 +20,7 @@ main() {
     var fileSystem = new MemoryFileSystem();
     var viewsDirectory = fileSystem.directory('views')..createSync();
 
-    viewsDirectory.childFile('layout.jl').writeAsStringSync('''
+    viewsDirectory.childFile('layout.jael').writeAsStringSync('''
 <!DOCTYPE html>
 <html>
   <head>
@@ -33,13 +34,14 @@ main() {
 </html>
     ''');
 
-    viewsDirectory.childFile('github.jl').writeAsStringSync('''
-<extend src="layout.jl">
+    viewsDirectory.childFile('github.jael').writeAsStringSync('''
+<extend src="layout.jael">
   <block name="content">{{username}}</block>
 </extend>
     ''');
 
-    app.get('/github/:username', (String username, ResponseContext res) {
+    app.get('/github/:username', (req, res) {
+      var username = req.params['username'];
       return res.render('github', {'username': username});
     });
 
@@ -47,7 +49,7 @@ main() {
       jael(viewsDirectory),
     );
 
-    app.use(() => throw new AngelHttpException.notFound());
+    app.fallback((req, res) => throw new AngelHttpException.notFound());
 
     app.logger = new Logger('angel')
       ..onRecord.listen((rec) {
@@ -62,11 +64,10 @@ main() {
   test('can render', () async {
     var response = await client.get('/github/thosakwe');
     print('Body:\n${response.body}');
-
     expect(
-        response,
-        hasBody('''
-<!DOCTYPE html>
+        html.parse(response.body).outerHtml,
+        html
+            .parse('''
 <html>
   <head>
     <title>
@@ -76,8 +77,8 @@ main() {
   <body>
     thosakwe
   </body>
-</html>
-    '''
-            .trim()));
+</html>'''
+                .trim())
+            .outerHtml);
   });
 }

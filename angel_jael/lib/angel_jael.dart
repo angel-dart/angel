@@ -19,7 +19,7 @@ AngelConfigurer jael(Directory viewsDirectory,
     bool asDSX: false,
     CodeBuffer createBuffer()}) {
   var cache = <String, Document>{};
-  fileExtension ??= '.jl';
+  fileExtension ??= '.jael';
   createBuffer ??= () => new CodeBuffer();
 
   return (Angel app) async {

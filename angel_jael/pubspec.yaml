@@ -1,6 +1,6 @@
 name: angel_jael
 version: 2.0.0
-description: Angel support for the Jael templating engine.
+description: Angel support for the Jael templating engine, similar to Blade or Liquid.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/jael/tree/master/jael
 environment:
@@ -9,9 +9,10 @@ dependencies:
   angel_framework: ^2.0.0-alpha
   code_buffer: ^1.0.0
   file: ^5.0.0
-  jael: ^1.0.0-alpha
-  jael_preprocessor: ^1.0.0-alpha
+  jael: ^2.0.0
+  jael_preprocessor: ^2.0.0
   symbol_table: ^2.0.0
 dev_dependencies:
   angel_test: ^2.0.0-alpha
+  html:
   test: ^1.0.0

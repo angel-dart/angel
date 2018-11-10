@@ -62,7 +62,7 @@ main() async {
     jael(fileSystem.directory('views')),
   );
 
-  // Render the contents of views/index.jl
+  // Render the contents of views/index.jael
   app.get('/', (res) => res.render('index', {'title': 'ESKETTIT'}));
 
   app.use(() => throw new AngelHttpException.notFound());

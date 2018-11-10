@@ -1,11 +1,12 @@
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_jael/angel_jael.dart';
-import 'package:dart2_constant/convert.dart';
 import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel()..lazyParseBodies = true;
+  var app = new Angel();
   var http = new AngelHttp(app);
   var fileSystem = const LocalFileSystem();
 
@@ -13,11 +14,13 @@ main() async {
     jael(fileSystem.directory('views')),
   );
 
-  app.get('/',
-      (res) => res.render('index', {'title': 'Sample App', 'message': null}));
+  app.get(
+      '/',
+      (req, res) =>
+          res.render('index', {'title': 'Sample App', 'message': null}));
 
   app.post('/', (RequestContext req, res) async {
-    var body = await req.lazyBody();
+    var body = await req.parseBody();
     print('Body: $body');
     var msg = body['message'] ?? '<unknown>';
     return await res.render('index', {
@@ -27,7 +30,7 @@ main() async {
     });
   });
 
-  app.use(() => throw new AngelHttpException.notFound());
+  app.fallback((req, res) => throw new AngelHttpException.notFound());
 
   app.logger = new Logger('angel')
     ..onRecord.listen((rec) {
@@ -36,6 +39,6 @@ main() async {
       if (rec.stackTrace != null) print(rec.stackTrace);
     });
 
-  var server = await http.startServer(null, 3000);
+  var server = await http.startServer('127.0.0.1', 3000);
   print('Listening at http://${server.address.address}:${server.port}');
 }

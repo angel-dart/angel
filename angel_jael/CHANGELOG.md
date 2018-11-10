@@ -1,3 +1,7 @@
+# 2.0.0
+* Angel 2 and Dart 2 updates.
+* Default to `.jael` instead of `.jl`.
+
 # 1.0.3
 * Update for annoying map casting bug.
 
