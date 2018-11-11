@@ -64,5 +64,5 @@ Future<RequestContext> acceptContentTypes(
   rq.close();
   var app = new Angel(reflector: MirrorsReflector());
   var http = new AngelHttp(app);
-  return http.createRequestContext(rq);
+  return http.createRequestContext(rq, rq.response);
 }

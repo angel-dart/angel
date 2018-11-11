@@ -38,12 +38,14 @@ class NamedController extends Controller {
   optional() => 2;
 }
 
-void foo(RequestContext req, ResponseContext res) {
+bool foo(RequestContext req, ResponseContext res) {
   res.write("Hello, ");
+  return true;
 }
 
-void bar(RequestContext req, ResponseContext res) {
+bool bar(RequestContext req, ResponseContext res) {
   res.write("world!");
+  return true;
 }
 
 main() {

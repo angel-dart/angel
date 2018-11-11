@@ -34,15 +34,22 @@ abstract class Driver<
   /// The native server running this instance.
   Server get server => _server;
 
+  Future<Server> generateServer(address, int port) =>
+      serverGenerator(address, port);
+
   /// Starts, and returns the server.
   Future<Server> startServer([address, int port]) {
     var host = address ?? '127.0.0.1';
-    return serverGenerator(host, port ?? 0).then((server) {
+    return generateServer(host, port ?? 0).then((server) {
       _server = server;
       return Future.wait(app.startupHooks.map(app.configure)).then((_) {
         app.optimizeForProduction();
-        _sub = server.listen((request) =>
-            handleRawRequest(request, createResponseFromRawRequest(request)));
+        _sub = server.listen((request) {
+          var stream = createResponseStreamFromRawRequest(request);
+          stream.listen((response) {
+            return handleRawRequest(request, response);
+          });
+        });
         return _server;
       });
     });
@@ -78,11 +85,9 @@ abstract class Driver<
 
   void writeToResponse(Response response, List<int> data);
 
-  Uri getUriFromRequest(Request request);
-
   Future closeResponse(Response response);
 
-  Response createResponseFromRawRequest(Request request);
+  Stream<Response> createResponseStreamFromRawRequest(Request request);
 
   /// Handles a single request.
   Future handleRawRequest(Request request, Response response) {
@@ -123,26 +128,17 @@ abstract class Driver<
           }
 
           var pipeline = tuple.item1;
+          var it = pipeline.iterator;
 
-          Future Function() runPipeline;
-
-          for (var handler in pipeline) {
-            if (handler == null) break;
-
-            if (runPipeline == null)
-              runPipeline = () =>
-                  Future.sync(() => app.executeHandler(handler, req, res));
-            else {
-              var current = runPipeline;
-              runPipeline = () => current().then((result) => !res.isOpen
-                  ? new Future.value(result)
-                  : app.executeHandler(handler, req, res));
-            }
-          }
+          var runPipeline = pipeline.isEmpty
+              ? null
+              : Future.doWhile(() => !it.moveNext()
+                  ? new Future.value(false)
+                  : app.executeHandler(it.current, req, res));
 
           return runPipeline == null
               ? sendResponse(request, response, req, res)
-              : runPipeline()
+              : runPipeline
                   .then((_) => sendResponse(request, response, req, res));
         }
 
@@ -211,7 +207,6 @@ abstract class Driver<
                     e, trace, req, res, request, response);
               }).catchError((e, StackTrace st) {
                 var trace = new Trace.from(st ?? StackTrace.current).terse;
-                var uri = getUriFromRequest(request);
                 closeResponse(response);
                 // Ideally, we won't be in a position where an absolutely fatal error occurs,
                 // but if so, we'll need to log it.
@@ -221,7 +216,7 @@ abstract class Driver<
                 } else {
                   stderr
                     ..writeln('Fatal error occurred when processing '
-                        '$uri:')
+                        '${req.uri}:')
                     ..writeln(e)
                     ..writeln(trace);
                 }
@@ -299,11 +294,10 @@ abstract class Driver<
 
     Future finalizers = ignoreFinalizers == true
         ? new Future.value()
-        : app.responseFinalizers.fold<Future>(
-            new Future.value(), (out, f) => out.then((_) => f(req, res)));
+        : Future.forEach(app.responseFinalizers, (f) => f(req, res));
 
     return finalizers.then((_) {
-      if (res.isOpen) res.close();
+      //if (res.isOpen) res.close();
 
       for (var key in res.headers.keys) {
         setHeader(response, key, res.headers[key]);

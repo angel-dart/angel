@@ -62,8 +62,8 @@ main() {
     try {
       var rq = new MockHttpRequest('GET', Uri.parse('/num/unparsed/32'))
         ..close();
-      var req = await http.createRequestContext(rq);
-      var res = await http.createResponseContext(rq.response, req);
+      var req = await http.createRequestContext(rq, rq.response);
+      var res = await http.createResponseContext(rq, rq.response, req);
       await app.runContained((num unparsed) => unparsed, req, res);
       throw new StateError(
           'ArgumentError should be thrown if a parameter cannot be resolved.');

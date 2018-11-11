@@ -29,8 +29,9 @@ void interceptor(RequestContext req, ResponseContext res) {
     ..close();
 }
 
-void interceptService(RequestContext req, ResponseContext res) {
+bool interceptService(RequestContext req, ResponseContext res) {
   res.write("Service with ");
+  return true;
 }
 
 main() {
@@ -96,6 +97,7 @@ main() {
     RequestHandler write(String message) {
       return (req, res) {
         res.write(message);
+        return true;
       };
     }
 
@@ -104,7 +106,7 @@ main() {
 
     app.fallback((req, res) => 'MJ');
 
-    app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
+    //app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
     client = new http.Client();
     var server = await new AngelHttp(app).startServer('127.0.0.1', 0);

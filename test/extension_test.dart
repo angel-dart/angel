@@ -28,5 +28,5 @@ Future<RequestContext> makeRequest(String path) {
   var rq = new MockHttpRequest('GET', ENDPOINT.replace(path: path))..close();
   var app = new Angel(reflector: MirrorsReflector());
   var http = new AngelHttp(app);
-  return http.createRequestContext(rq);
+  return http.createRequestContext(rq, rq.response);
 }

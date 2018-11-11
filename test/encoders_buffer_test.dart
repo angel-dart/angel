@@ -67,7 +67,7 @@ void encodingTests(Angel getApp()) {
       await http.handleRequest(rq);
 
       var body = await getBody(rs);
-      print(rs.headers);
+      //print(rs.headers);
       expect(rs.headers.value('content-encoding'), 'deflate');
       expect(body, zlib.encode(utf8.encode('Hello, world!')));
     });

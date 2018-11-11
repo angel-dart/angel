@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:angel_container/src/container.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:body_parser/body_parser.dart';
 import 'package:http_parser/http_parser.dart';
@@ -11,9 +12,9 @@ import 'package:uuid/uuid.dart';
 final RegExp _comma = new RegExp(r',\s*');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
-class Http2RequestContext extends RequestContext {
+class Http2RequestContext extends RequestContext<ServerTransportStream> {
+  final Container container;
   BytesBuilder _buf;
-  ContentType _contentType;
   List<Cookie> _cookies;
   HttpHeaders _headers;
   String _method, _override, _path;
@@ -22,13 +23,15 @@ class Http2RequestContext extends RequestContext {
   ServerTransportStream _stream;
   Uri _uri;
 
+  Http2RequestContext._(this.container);
+
   static Future<Http2RequestContext> from(
       ServerTransportStream stream,
       Socket socket,
       Angel app,
       Map<String, MockHttpSession> sessions,
       Uuid uuid) async {
-    var req = new Http2RequestContext()
+    var req = new Http2RequestContext._(app.container.createChild())
       ..app = app
       .._socket = socket
       .._stream = stream;
@@ -93,7 +96,7 @@ class Http2RequestContext extends RequestContext {
         cookies.firstWhere((c) => c.name == 'DARTSESSID', orElse: () => null);
 
     if (dartSessId == null) {
-      dartSessId = new Cookie('DARTSESSID', uuid.v4());
+      dartSessId = new Cookie('DARTSESSID', uuid.v4() as String);
     }
 
     req._session = sessions.putIfAbsent(
@@ -109,12 +112,6 @@ class Http2RequestContext extends RequestContext {
 
   /// The underlying HTTP/2 [ServerTransportStream].
   ServerTransportStream get stream => _stream;
-
-  @override
-  bool get xhr {
-    return headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
-        'xmlhttprequest';
-  }
 
   @override
   Uri get uri => _uri;
@@ -133,12 +130,6 @@ class Http2RequestContext extends RequestContext {
   }
 
   @override
-  ContentType get contentType =>
-      _contentType ??= (headers['content-type'] == null
-          ? null
-          : ContentType.parse(headers.value('content-type')));
-
-  @override
   String get originalMethod {
     return _method;
   }
@@ -147,9 +138,6 @@ class Http2RequestContext extends RequestContext {
   String get method {
     return _override ?? _method;
   }
-
-  @override
-  HttpRequest get io => null;
 
   @override
   String get hostname => _headers.value('host');
@@ -168,7 +156,10 @@ class Http2RequestContext extends RequestContext {
       new Stream.fromIterable([_buf.takeBytes()]),
       contentType == null ? null : new MediaType.parse(contentType.toString()),
       uri,
-      storeOriginalBuffer: app.storeOriginalBuffer,
+      storeOriginalBuffer: app.keepRawRequestBuffers == true,
     );
   }
+
+  @override
+  ServerTransportStream get rawRequest => _stream;
 }

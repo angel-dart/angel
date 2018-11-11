@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:http_parser/http_parser.dart';
+
 import '../core/core.dart';
 import 'http_request_context.dart';
 
@@ -66,6 +68,14 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
       if (!str.contains(';')) return str;
       return str.split(';')[0];
     });
+  }
+
+  @override
+  void set contentType(MediaType value) {
+    super.contentType = value;
+    if (!_streamInitialized)
+      rawResponse.headers.contentType =
+          ContentType(value.type, value.subtype, parameters: value.parameters);
   }
 
   bool _openStream() {

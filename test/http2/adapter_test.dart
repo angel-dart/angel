@@ -29,10 +29,9 @@ void main() {
       ..keepRawRequestBuffers = true
       ..encoders['gzip'] = gzip.encoder;
 
-    app.get('/', (req, res) {
-      res
-        ..write('Hello world')
-        ..close();
+    app.get('/', (req, res) async {
+      res.write('Hello world');
+      await res.close();
     });
 
     app.all('/method', (req, res) => req.method);
@@ -41,16 +40,14 @@ void main() {
 
     app.get('/stream', (req, res) => jfkStream().pipe(res));
 
-    app.get('/headers', (req, res) {
-      res
-        ..headers.addAll({'foo': 'bar', 'x-angel': 'http2'})
-        ..close();
+    app.get('/headers', (req, res) async {
+      res.headers.addAll({'foo': 'bar', 'x-angel': 'http2'});
+      await res.close();
     });
 
-    app.get('/status', (req, res) {
-      res
-        ..statusCode = 1337
-        ..close();
+    app.get('/status', (req, res) async {
+      res.statusCode = 1337;
+      await res.close();
     });
 
     app.post('/body', (req, res) => req.parseBody());
@@ -63,9 +60,7 @@ void main() {
     });
 
     app.get('/push', (req, res) async {
-      res
-        ..write('ok')
-        ..close();
+      res.write('ok');
 
       if (res is Http2ResponseContext && res.canPush) {
         res.push('a')
@@ -76,6 +71,8 @@ void main() {
           ..write('b')
           ..close();
       }
+
+      await res.close();
     });
 
     var ctx = new SecurityContext()
@@ -211,7 +208,6 @@ void main() {
     expect(getPath(pushA), '/a');
     expect(getPath(pushB), '/b');
 
-    // TODO: Dart http/2 client seems to not be able to get body
     // However, Chrome, Firefox, Edge all can
     //expect(await getBody(pushA.stream), 'a');
     //expect(await getBody(pushB.stream), 'b');

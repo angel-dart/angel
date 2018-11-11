@@ -13,7 +13,7 @@ main() async {
     });
   app.logger = new Logger('angel')..onRecord.listen(prettyLog);
 
-  app.get('/', (_, __) => 'Hello HTTP/2!!!');
+  app.get('/', (req, res) => 'Hello HTTP/2!!!');
 
   app.fallback((req, res) => throw new AngelHttpException.notFound(
       message: 'No file exists at ${req.uri.path}'));
@@ -38,6 +38,6 @@ main() async {
   // HTTP/1.x requests will fallback to `AngelHttp`
   http2.onHttp1.listen(http1.handleRequest);
 
-  var server = await http2.startServer('127.0.0.1', 3000);
-  print('Listening at https://${server.address.address}:${server.port}');
+  await http2.startServer('127.0.0.1', 3000);
+  print('Listening at ${http2.uri}');
 }

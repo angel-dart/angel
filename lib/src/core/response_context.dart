@@ -20,7 +20,10 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 abstract class ResponseContext<RawResponse>
     implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
-  final Map<String, String> _headers = {'server': 'angel'};
+  final Map<String, String> _headers = new CaseInsensitiveMap.from({
+    'content-type': 'text/plain',
+    'server': 'angel',
+  });
 
   Completer _done;
   int _statusCode = 200;
@@ -101,7 +104,18 @@ abstract class ResponseContext<RawResponse>
   FutureOr<RawResponse> detach();
 
   /// Gets or sets the content type to send back to a client.
-  MediaType contentType = new MediaType('text', 'plain');
+  MediaType get contentType {
+    try {
+      return new MediaType.parse(headers['content-type']);
+    } catch (_) {
+      return new MediaType('text', 'plain');
+    }
+  }
+
+  /// Gets or sets the content type to send back to a client.
+  void set contentType(MediaType value) {
+    headers['content-type'] = value.toString();
+  }
 
   static StateError closed() =>
       new StateError('Cannot modify a closed response.');
@@ -124,8 +138,6 @@ abstract class ResponseContext<RawResponse>
   }
 
   /// Prevents more data from being written to the response, and locks it entire from further editing.
-  ///
-  /// This method should be overwritten, setting [streaming] to `false`, **after** a `super` call.
   Future close() {
     if (buffer is LockableBytesBuilder) {
       (buffer as LockableBytesBuilder).lock();
@@ -145,21 +157,21 @@ abstract class ResponseContext<RawResponse>
   /// You can override the [contentType] sent; by default it is `application/javascript`.
   void jsonp(value, {String callbackName: "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
-    write("$callbackName(${serializer(value)})");
     this.contentType =
         contentType ?? new MediaType('application', 'javascript');
+    write("$callbackName(${serializer(value)})");
     close();
   }
 
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map<String, dynamic> data]) {
     if (!isOpen) throw closed();
+    contentType = new MediaType('text', 'html');
     return Future<String>.sync(() => app.viewGenerator(
         view,
         new Map<String, dynamic>.from(renderParams)
           ..addAll(data ?? <String, dynamic>{}))).then((content) {
       write(content);
-      contentType = new MediaType('text', 'html');
       close();
     });
   }
@@ -296,8 +308,6 @@ abstract class ResponseContext<RawResponse>
 
   /// Adds a stream directly the underlying response.
   ///
-  /// This will also set [willCloseItself] to `true`, thus canceling out response finalizers.
-  ///
   /// If this instance has access to a [correspondingRequest], then it will attempt to transform
   /// the content using at most one of the response [encoders].
   @override
@@ -305,7 +315,9 @@ abstract class ResponseContext<RawResponse>
 
   @override
   void addError(Object error, [StackTrace stackTrace]) {
-    if (_done?.isCompleted == false) _done.completeError(error, stackTrace);
+    if (_done?.isCompleted == false)
+      _done.completeError(error, stackTrace);
+    else if (_done == null) Zone.current.handleUncaughtError(error, stackTrace);
   }
 
   /// Writes data to the response.

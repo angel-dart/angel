@@ -59,13 +59,20 @@ abstract class RequestContext<RawRequest> {
   String get originalMethod;
 
   /// The content type of an incoming request.
-  MediaType get contentType;
+  MediaType get contentType =>
+      new MediaType.parse(headers.contentType.toString());
 
   /// The URL parameters extracted from the request URI.
   Map<String, dynamic> params = <String, dynamic>{};
 
   /// The requested path.
   String get path;
+
+  /// Is this an **XMLHttpRequest**?
+  bool get isXhr {
+    return headers.value("X-Requested-With")?.trim()?.toLowerCase() ==
+        'xmlhttprequest';
+  }
 
   /// The remote address requesting this resource.
   InternetAddress get remoteAddress;
@@ -75,9 +82,6 @@ abstract class RequestContext<RawRequest> {
 
   /// The [Uri] instance representing the path this request is responding to.
   Uri get uri;
-
-  /// Is this an **XMLHttpRequest**?
-  bool get xhr;
 
   /// Returns the file extension of the requested path, if any.
   ///

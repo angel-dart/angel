@@ -70,15 +70,6 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
     return rawRequest.uri;
   }
 
-  @override
-  bool get xhr {
-    return rawRequest.headers
-            .value("X-Requested-With")
-            ?.trim()
-            ?.toLowerCase() ==
-        'xmlhttprequest';
-  }
-
   /// Magically transforms an [HttpRequest] into a [RequestContext].
   static Future<HttpRequestContext> from(
       HttpRequest request, Angel app, String path) {

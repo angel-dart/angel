@@ -18,7 +18,7 @@ main() async {
   });
 
   // Index route. Returns JSON.
-  app.get('/', (req, res) => res.write('Welcome to Angel!'));
+  app.get('/', (req, res) => 'Welcome to Angel!');
 
   // Accepts a URL like /greet/foo or /greet/bob.
   app.get(

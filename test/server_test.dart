@@ -44,12 +44,12 @@ main() {
     var rq = new MockHttpRequest('GET', $foo);
     rq.close();
     var rs = rq.response;
-    var req = await http.createRequestContext(rq);
-    var res = await http.createResponseContext(rs);
+    var req = await http.createRequestContext(rq, rs);
+    var res = await http.createResponseContext(rq, rs);
     var e = new AngelHttpException(null,
         statusCode: 321, message: 'Hello', errors: ['foo', 'bar']);
     await app.errorHandler(e, req, res);
-    await http.sendResponse(rq, req, res);
+    await http.sendResponse(rq, rs, req, res);
     expect(
       ContentType.parse(rs.headers.value('content-type')).mimeType,
       'text/html',
@@ -120,8 +120,8 @@ main() {
 
     setUp(() async {
       var rq = new MockHttpRequest('GET', $foo)..close();
-      req = await http.createRequestContext(rq);
-      res = await http.createResponseContext(rq.response);
+      req = await http.createRequestContext(rq, rq.response);
+      res = await http.createResponseContext(rq, rq.response);
     });
 
     group('getHandlerResult', () {

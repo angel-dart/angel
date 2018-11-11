@@ -74,6 +74,12 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
       response.cookies.addAll(cookies);
 
   @override
+  Future<HttpServer> close() async {
+    await server?.close();
+    return await super.close();
+  }
+
+  @override
   Future closeResponse(HttpResponse response) => response.close();
 
   @override
@@ -95,11 +101,9 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
   }
 
   @override
-  HttpResponse createResponseFromRawRequest(HttpRequest request) =>
-      request.response;
-
-  @override
-  Uri getUriFromRequest(HttpRequest request) => request.uri;
+  Stream<HttpResponse> createResponseStreamFromRawRequest(
+          HttpRequest request) =>
+      new Stream.fromIterable([request.response]);
 
   @override
   void setChunkedEncoding(HttpResponse response, bool value) =>
