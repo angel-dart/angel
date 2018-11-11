@@ -1,8 +1,8 @@
 name: jael_preprocessor
-version: 2.0.0
+version: 2.0.0+1
 description: A pre-processor for resolving blocks and includes within Jael templates.
 author: Tobe O <thosakwe@gmail.com>
-homepage: https://github.com/angel-dart/jael/tree/master/jael_processor
+homepage: https://github.com/angel-dart/jael/tree/master/jael_preprocessor
 environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
