@@ -3,6 +3,7 @@
 * Allow `ResponseContext.redirect` to take a `Uri`.
 * Add `Angel.mountController`.
 * Add `Angel.findServiceOf`.
+* Roll in HTTP/2. See `pkg:angel_framework/http2.dart`.
 
 # 2.0.0-alpha.10
 * All calls to `Service.parseId` are now affixed with the `<Id>` argument.
