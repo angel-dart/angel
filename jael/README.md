@@ -4,7 +4,7 @@
 
 A simple server-side HTML templating engine for Dart.
 
-[See documentation.](https://angel-dart.gitbook.io/angel/front-end/jael-template-engine)
+[See documentation.](https://angel-dart.gitbook.io/angel/front-end/jael)
 
 # Installation
 In your `pubspec.yaml`:
