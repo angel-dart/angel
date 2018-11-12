@@ -3,7 +3,7 @@
     "block": {
       "prefix": "block",
       "description": "Insert a named <block> tag.",
-      "body": ["<block name=\"$1\">", "   $2", "<block>"]
+      "body": ["<block name=\"$1\">", "   $2", "</block>"]
     },
     "comment": {
       "prefix": "comment",
@@ -13,22 +13,22 @@
     "declare": {
       "prefix": "declare",
       "description": "Insert a <declare> tag.",
-      "body": ["<declare $1=$2>", "   $3", "<declare>"]
+      "body": ["<declare $1=$2>", "   $3", "</declare>"]
     },
     "element": {
       "prefix": "element",
       "description": "Insert a custom <element> tag.",
-      "body": ["<element name=\"$1\">", "   $2", "<element>"]
+      "body": ["<element name=\"$1\">", "   $2", "</element>"]
     },
     "extend": {
       "prefix": "extend",
       "description": "Insert an <extend> tag.",
-      "body": ["<extend src=\"$1\">", "   $2", "<extend>"]
+      "body": ["<extend src=\"$1\">", "   $2", "</extend>"]
     },
     "for-each": {
       "prefix": "for-each",
       "description": "Insert a <for-each> tag.",
-      "body": ["<${1:div} for-each=$2 as=\"$3\">", "   $4", "<$1>"]
+      "body": ["<${1:div} for-each=$2 as=\"$3\">", "   $4", "</$1>"]
     },
     "include": {
       "prefix": "include",
@@ -46,7 +46,7 @@
         "   <default>",
         "       $4",
         "   </default>",
-        "<switch>"
+        "</switch>"
       ]
     }
   }

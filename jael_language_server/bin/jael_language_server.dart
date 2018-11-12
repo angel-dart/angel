@@ -23,6 +23,19 @@ main(List<String> args) async {
       return;
     } else {
       var jaelServer = new JaelLanguageServer();
+
+      jaelServer.logger.onRecord.listen((rec) async {
+        // TODO: Remove this
+        var f = new File(
+            '/Users/thosakwe/Source/Angel/vscode/jael_language_server/.dart_tool/log.txt');
+        await f.create(recursive: true);
+        var sink = await f.openWrite(mode: FileMode.append);
+        sink.writeln(rec);
+        if (rec.error != null) sink.writeln(rec.error);
+        if (rec.stackTrace != null) sink.writeln(rec.stackTrace);
+        await sink.close();
+      });
+
       var stdio = new StdIOLanguageServer.start(jaelServer);
       await stdio.onDone;
     }
