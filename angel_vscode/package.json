@@ -22,21 +22,21 @@
     "flutter",
     "fuchsia"
   ],
-  "snippets": [
-    {
-      "language": "dart",
-      "path": "./snippets/angel.json"
-    }
-  ],
-  "activationEvents": [
+  "_activationEvents": [
     "onCommand:extension.sayHello"
   ],
-  "main": "./out/extension",
+  "_main": "./out/extension",
   "contributes": {
-    "commands": [
+    "_commands": [
       {
         "command": "extension.sayHello",
         "title": "Hello World"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "dart",
+        "path": "./snippets/angel.json"
       }
     ]
   },

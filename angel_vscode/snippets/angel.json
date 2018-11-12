@@ -12,6 +12,7 @@
         "   String hello() {",
         "       return 'Hello, world';",
         "   }",
+        "   $2",
         "}"
       ]
     },
@@ -28,6 +29,7 @@
         "   void hello(WebSocketContext socket) {",
         "       socket.send('pong', {'message': 'Hello, world!'});",
         "   }",
+        "   $2",
         "}"
       ]
     },
