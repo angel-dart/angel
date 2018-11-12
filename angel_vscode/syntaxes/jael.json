@@ -11,16 +11,16 @@
       "name": "punctuation.jael"
     },
     {
-      "begin": "{{-?",
+      "begin": "{{(?!-)",
       "end": "}}",
       "beginCaptures": {
         "0": {
-          "name": "comment.jael"
+          "name": "keyword.operator.jael"
         }
       },
       "endCaptures": {
         "0": {
-          "name": "comment.jael"
+          "name": "keyword.operator.jael"
         }
       },
       "patterns": [{ "include": "#expressions" }, { "include": "#operators" }]

@@ -1,6 +1,6 @@
 {
   "name": "angel-dart-vscode",
-  "displayName": "Angel Dart Support",
+  "displayName": "Angel",
   "description": "Snippets and IDE support for the Angel server framework within VSCode.",
   "version": "0.0.1",
   "repository": {
@@ -19,6 +19,9 @@
     "angel",
     "angel-dart",
     "dart",
+    "jael",
+    "template",
+    "templating",
     "flutter",
     "fuchsia"
   ],
@@ -56,6 +59,10 @@
       {
         "language": "dart",
         "path": "./snippets/angel.json"
+      },
+      {
+        "language": "jael",
+        "path": "./snippets/jael.json"
       }
     ]
   },
