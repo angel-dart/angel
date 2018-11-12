@@ -1,0 +1,28 @@
+{
+  "attribution-notice": {
+    "author-of-most-of-this-file": "Danny Tuppeny",
+    "source": "https://github.com/Dart-Code/Dart-Code/blob/master/syntaxes/dart.json"
+  },
+  "comments": {
+    "blockComment": ["<!--", "-->"]
+  },
+  "brackets": [["{", "}"], ["[", "]"], ["(", ")"], ["<", ">"]],
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "`", "close": "`", "notIn": ["string", "comment"] },
+    { "open": "/**", "close": " */", "notIn": ["string"] }
+  ],
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["<", ">"],
+    ["'", "'"],
+    ["\"", "\""],
+    ["`", "`"]
+  ]
+}

@@ -33,6 +33,25 @@
         "title": "Hello World"
       }
     ],
+    "languages": [
+      {
+        "id": "jael",
+        "aliases": [
+          "Jael"
+        ],
+        "extensions": [
+          ".jael"
+        ],
+        "configuration": "./syntaxes/jael-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "jael",
+        "scopeName": "source.jael",
+        "path": "./syntaxes/jael.json"
+      }
+    ],
     "snippets": [
       {
         "language": "dart",
