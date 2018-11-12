@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-
 import 'package:file/file.dart';
 import 'package:jael/jael.dart';
 import 'package:symbol_table/symbol_table.dart';
@@ -57,7 +56,7 @@ Future<Document> applyInheritance(Document document, Directory currentDirectory,
         element.tagName.span));
     return null;
   } else {
-// In theory, there exists:
+    // In theory, there exists:
     // * A single root template with a number of blocks
     // * Some amount of <extend src="..."> templates.
 
@@ -68,7 +67,7 @@ Future<Document> applyInheritance(Document document, Directory currentDirectory,
     //  b. Replace matching blocks in the current document
     //  c. If there is no block, and this is the LAST <extend>, fill in the default block content.
     var hierarchy = await resolveHierarchy(document, currentDirectory, onError);
-    var out = hierarchy.root;
+    var out = hierarchy?.root;
 
     if (out is! RegularElement) {
       return hierarchy.rootDocument;
@@ -137,11 +136,17 @@ Future<DocumentHierarchy> resolveHierarchy(Document document,
   String parent;
 
   while (document != null && (parent = getParent(document, onError)) != null) {
-    extendsTemplates.addFirst(document.root);
-    var file = currentDirectory.childFile(parent);
-    var parsed = parseDocument(await file.readAsString(),
-        sourceUrl: file.uri, onError: onError);
-    document = await resolveIncludes(parsed, currentDirectory, onError);
+    try {
+      extendsTemplates.addFirst(document.root);
+      var file = currentDirectory.childFile(parent);
+      var parsed = parseDocument(await file.readAsString(),
+          sourceUrl: file.uri, onError: onError);
+      document = await resolveIncludes(parsed, currentDirectory, onError);
+    } on FileSystemException catch (e) {
+      onError(new JaelError(
+          JaelErrorSeverity.error, e.message, document.root.span));
+      return null;
+    }
   }
 
   if (document == null) return null;

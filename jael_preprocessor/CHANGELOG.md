@@ -1,3 +1,6 @@
+# 2.0.1
+* Fixed a bug where failed file resolutions would not become proper errors.
+
 # 2.0.0+1
 * Homepage update for Pub.
 
