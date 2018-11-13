@@ -20,7 +20,8 @@ final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 abstract class ResponseContext<RawResponse>
     implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
-  final Map<String, String> _headers = new CaseInsensitiveMap.from({
+  final CaseInsensitiveMap<String> _headers =
+      new CaseInsensitiveMap<String>.from({
     'content-type': 'text/plain',
     'server': 'angel',
   });
@@ -56,7 +57,7 @@ abstract class ResponseContext<RawResponse>
   /// Headers that will be sent to the user.
   ///
   /// Note that if you have already started writing to the underlying stream, headers will not persist.
-  Map<String, String> get headers => _headers;
+  CaseInsensitiveMap<String> get headers => _headers;
 
   /// Serializes response data into a String.
   ///

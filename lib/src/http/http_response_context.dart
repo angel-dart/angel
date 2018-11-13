@@ -86,6 +86,12 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
         ..statusCode = statusCode
         ..cookies.addAll(cookies);
       headers.forEach(rawResponse.headers.set);
+
+      if (headers.containsKey('content-length')) {
+        rawResponse.contentLength = int.tryParse(headers['content-length']) ??
+            rawResponse.contentLength;
+      }
+
       rawResponse.headers.contentType = new ContentType(
           contentType.type, contentType.subtype,
           charset: contentType.parameters['charset'],
