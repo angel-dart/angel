@@ -7,22 +7,15 @@
       "include": "#expressions"
     },
     {
-      "match": "!(DOCTYPE|doctype)([>]*)",
-      "captures": {
-        "1": {
-          "name": "keyword.doctype.jael"
-        },
-        "2": {
-          "name": "support.doctype-value.jael"
-        }
-      }
+      "match": "\\b(DOCTYPE|doctype)\\b",
+      "name": "keyword.doctype.jael"
     },
     {
       "match": "[:,\\.]",
       "name": "punctuation.jael"
     },
     {
-      "begin": "{{(?!-)",
+      "begin": "{{-?",
       "end": "}}",
       "beginCaptures": {
         "0": {
@@ -37,14 +30,32 @@
       "patterns": [{ "include": "#expressions" }, { "include": "#operators" }]
     },
     {
+      "begin": "<\\s*(script)[^>]*>",
+      "end": "<\\s*/\\s*(script)[^>]*>",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.tag.jael"
+        }
+      },
+      "endCaptures": {
+        "1": {
+          "name": "keyword.tag.jael"
+        }
+      },
+      "patterns": [{ "include": "source.js" }]
+    },
+    {
       "match": "\\b(block|declare|for-each|extend|if|include|switch)\\b",
       "name": "keyword.control.jael"
     },
     {
-      "match": "<\\s*/?\\s*([A-Za-z_][A-Za-z0-9_-]*)\\b",
+      "match": "<\\s*/?\\s*([A-Za-z_][A-Za-z0-9_-]*)(\\s*[A-Za-z_][A-Za-z0-9_]*(?!=)\\s*)*\\b",
       "captures": {
         "1": {
           "name": "keyword.tag.jael"
+        },
+        "2": {
+          "name": "storage.name.jael"
         }
       }
     },
@@ -53,7 +64,7 @@
       "name": "storage.argument.jael"
     },
     {
-      "match": "\\b(@?[A-Za-z_][A-Za-z0-9_]*)=?",
+      "match": "\\b(@?[A-Za-z_][A-Za-z0-9_]*)=",
       "captures": {
         "1": {
           "name": "storage.name.jael"
@@ -72,6 +83,9 @@
     },
     {
       "include": "#operators"
+    },
+    {
+      "include": "source.html"
     }
   ],
   "repository": {
