@@ -18,6 +18,7 @@ Keep in mind that `angel_static` uses `package:file` instead of `dart:io`.
 
 ```dart
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:file/local.dart';
 
@@ -32,10 +33,10 @@ main() async {
   var vDir = new CachingVirtualDirectory(app, fs, source: new Directory('./public'));
 
   // Mount the VirtualDirectory's request handler
-  app.use(vDir.handleRequest);
+  app.fallback(vDir.handleRequest);
 
   // Start your server!!!
-  await app.startServer();
+  await new AngelHttp(app).startServer();
 }
 ```
 
@@ -49,10 +50,10 @@ the user is requesting that file. This can be very useful for SPA's.
 var vDir = new CachingVirtualDirectory(...);
 
 // Mount it
-app.use(vDir.handleRequest);
+app.fallback(vDir.handleRequest);
 
 // Fallback to index.html on 404
-app.use(vDir.pushState('index.html'));
+app.fallback(vDir.pushState('index.html'));
 ```
 
 # Options

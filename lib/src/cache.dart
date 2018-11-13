@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
-//import 'package:intl/intl.dart';
-import 'package:mime/mime.dart';
 import 'virtual_directory.dart';
 
 /// Generates a weak ETag from the given buffer.
@@ -85,21 +83,21 @@ class CachingVirtualDirectory extends VirtualDirectory {
       return super.serveFile(file, stat, req, res);
     } else {
       if (useEtags == true) {
-        var etags = req.headers['if-none-match'];
+        var etagsToMatchAgainst = req.headers['if-none-match'];
 
-        if (etags?.isNotEmpty == true) {
+        if (etagsToMatchAgainst?.isNotEmpty == true) {
           bool hasBeenModified = false;
 
-          for (var etag in etags) {
+          for (var etag in etagsToMatchAgainst) {
             if (etag == '*')
               hasBeenModified = true;
             else {
-              hasBeenModified = _etags.containsKey(file.absolute.path) &&
-                  _etags[file.absolute.path] == etag;
+              hasBeenModified = !_etags.containsKey(file.absolute.path) ||
+                  _etags[file.absolute.path] != etag;
             }
           }
 
-          if (hasBeenModified) {
+          if (!hasBeenModified) {
             res.statusCode = 304;
             setCachedHeaders(stat.modified, req, res);
             return new Future.value(false);
@@ -128,11 +126,11 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
       return file.readAsBytes().then((buf) {
         var etag = _etags[file.absolute.path] = weakEtag(buf);
-        res.statusCode = 200;
+        //res.statusCode = 200;
         res.headers
           ..['ETag'] = etag
-          ..['content-type'] =
-              lookupMimeType(file.path) ?? 'application/octet-stream';
+          ..['content-type'] = res.app.mimeTypeResolver.lookup(file.path) ??
+              'application/octet-stream';
         setCachedHeaders(stat.modified, req, res);
         res.add(buf);
         return false;

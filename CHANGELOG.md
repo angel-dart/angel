@@ -1,3 +1,8 @@
+# 2.0.1
+* Remove use of `sendFile`.
+* Add a `p.isWithin` check to ensure that paths do not escape the `source` directory.
+* Handle `HEAD` requests.
+
 # 2.0.0
 * Upgrade dependencies to Angel 2 + file@5.
 * Replace `useStream` with `useBuffer`.

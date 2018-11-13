@@ -1,5 +1,6 @@
 import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
@@ -42,7 +43,7 @@ main() {
   });
 
   tearDown(() async {
-    if (http.httpServer != null) await http.httpServer.close(force: true);
+    if (http.server != null) await http.server.close(force: true);
   });
 
   test('sets etag, cache-control, expires, last-modified', () async {

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
@@ -70,7 +69,8 @@ class VirtualDirectory {
 
   /// Responds to incoming HTTP requests.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) {
-    if (req.method != 'GET') return new Future<bool>.value(true);
+    if (req.method != 'GET' && req.method != 'HEAD')
+      return new Future<bool>.value(true);
     var path = req.path.replaceAll(_straySlashes, '');
 
     if (_prefix?.isNotEmpty == true && !path.startsWith(_prefix))
@@ -114,6 +114,11 @@ class VirtualDirectory {
     path = path.replaceAll(_straySlashes, '');
 
     var absolute = source.absolute.uri.resolve(path).toFilePath();
+    var parent = source.absolute.uri.toFilePath();
+
+    if (!p.isWithin(parent, absolute) && !p.equals(parent, absolute))
+      return true;
+
     var stat = await fileSystem.stat(absolute);
     return await serveStat(absolute, path, stat, req, res);
   }
@@ -140,11 +145,13 @@ class VirtualDirectory {
       final index =
           fileSystem.file(directory.absolute.uri.resolve(indexFileName));
       if (await index.exists()) {
+        if (req.method == 'HEAD') return false;
         return await serveFile(index, stat, req, res);
       }
     }
 
     if (allowDirectoryListing == true) {
+      if (req.method == 'HEAD') return false;
       res.contentType = new MediaType('text', 'html');
       res
         ..write('<!DOCTYPE html>')
@@ -216,7 +223,7 @@ class VirtualDirectory {
   /// Writes the contents of a file to a response.
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) async {
-    res.statusCode = 200;
+    if (req.method == 'HEAD') return false;
 
     if (callback != null) {
       var r = callback(file, req, res);
@@ -225,17 +232,13 @@ class VirtualDirectory {
       //if (r != null && r != true) return r;
     }
 
-    var type = lookupMimeType(file.path) ?? 'application/octet-stream';
+    var type =
+        app.mimeTypeResolver.lookup(file.path) ?? 'application/octet-stream';
     _ensureContentTypeAllowed(type, req);
     res.contentType = new MediaType.parse(type);
 
-    if (useBuffer == true) {
-      res.useBuffer();
-      await res.sendFile(file);
-    } else {
-      await res.streamFile(file);
-    }
-
+    if (useBuffer == true) res.useBuffer();
+    await res.streamFile(file);
     return false;
   }
 }
