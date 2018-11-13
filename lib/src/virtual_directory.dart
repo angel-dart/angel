@@ -159,7 +159,7 @@ class VirtualDirectory {
         ..write(
             '<head><meta name="viewport" content="width=device-width,initial-scale=1">')
         ..write('<style>ul { list-style-type: none; }</style>')
-        ..write('</head></html><body>');
+        ..write('</head><body>');
 
       res.write('<li><a href="..">..</a></li>');
 

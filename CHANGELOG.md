@@ -1,3 +1,6 @@
+# 2.0.2
+* Fixed invalid HTML for directory listings.
+
 # 2.0.1
 * Remove use of `sendFile`.
 * Add a `p.isWithin` check to ensure that paths do not escape the `source` directory.
