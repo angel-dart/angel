@@ -276,15 +276,6 @@ abstract class ResponseContext<RawResponse>
     redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
   }
 
-  /// Copies a file's contents into the response buffer.
-  void sendFile(File file) {
-    if (!isOpen) throw closed();
-
-    contentType = MediaType.parse(lookupMimeType(file.path));
-    buffer.add(file.readAsBytesSync());
-    close();
-  }
-
   /// Serializes data to the response.
   bool serialize(value, {MediaType contentType}) {
     if (!isOpen) throw closed();
@@ -299,7 +290,10 @@ abstract class ResponseContext<RawResponse>
   /// Streams a file to this response.
   Future streamFile(File file) {
     if (!isOpen) throw closed();
-    contentType = MediaType.parse(lookupMimeType(file.path));
+    var mimeType = app.mimeTypeResolver.lookup(file.path);
+    contentType = mimeType == null
+        ? new MediaType('application', 'octet-stream')
+        : MediaType.parse(mimeType);
     return file.openRead().pipe(this);
   }
 

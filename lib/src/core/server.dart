@@ -11,6 +11,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
+import 'package:mime/mime.dart';
 import 'package:tuple/tuple.dart';
 
 import 'controller.dart';
@@ -47,6 +48,9 @@ class Angel extends Routable {
   final Map<String, Converter<List<int>, List<int>>> encoders = {};
 
   final Map<dynamic, InjectionRequest> _preContained = {};
+
+  /// A [MimeTypeResolver] that can be used to specify the MIME types of files not known by `package:mime`.
+  final MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
 
   /// A middleware to inject a serialize on every request.
   String Function(dynamic) serializer;
