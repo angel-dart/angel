@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
-
-import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 
@@ -33,11 +31,11 @@ main() async {
 }
 
 serverMain(_) async {
-  var app = new Angel(reflector: MirrorsReflector());
+  var app = new Angel();
   var http = new AngelHttp.custom(app, startShared); // Run a cluster
 
   app.get('/', (req, res) {
-    res.serialize({
+    return res.serialize({
       "foo": "bar",
       "one": [2, "three"],
       "bar": {"baz": "quux"}

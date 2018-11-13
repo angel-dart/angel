@@ -1,3 +1,7 @@
+# 2.0.0-alpha.13
+
+- Fixed a logic error in `HttpResponseContext` that prevented status codes from being sent.
+
 # 2.0.0-alpha.12
 
 - Remove `ResponseContext.sendFile`.

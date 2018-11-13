@@ -186,6 +186,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
       if (!_isClosed) {
         if (!isBuffered) {
           try {
+            _openStream();
             rawResponse.close();
           } catch (_) {
             // This only seems to occur on `MockHttpRequest`, but
