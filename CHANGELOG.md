@@ -1,3 +1,7 @@
+# 2.1.0
+* Include support for the `Range` header.
+* Use MD5 for etags, instead of a weak ETag.
+
 # 2.0.2
 * Fixed invalid HTML for directory listings.
 

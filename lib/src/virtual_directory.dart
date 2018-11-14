@@ -3,6 +3,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
+import 'package:range_header/range_header.dart';
 
 final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
@@ -223,22 +224,108 @@ class VirtualDirectory {
   /// Writes the contents of a file to a response.
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) async {
-    if (req.method == 'HEAD') return false;
+    if (req.method == 'HEAD') {
+      res.headers['accept-ranges'] = 'bytes';
+      return false;
+    }
 
     if (callback != null) {
-      var r = callback(file, req, res);
-      r = r is Future ? await r : r;
-      return r == true;
-      //if (r != null && r != true) return r;
+      return await req.app.executeHandler(
+          (RequestContext req, ResponseContext res) => callback(file, req, res),
+          req,
+          res);
     }
 
     var type =
         app.mimeTypeResolver.lookup(file.path) ?? 'application/octet-stream';
+    res.headers['accept-ranges'] = 'bytes';
     _ensureContentTypeAllowed(type, req);
+    res.headers['accept-ranges'] = 'bytes';
     res.contentType = new MediaType.parse(type);
-
     if (useBuffer == true) res.useBuffer();
-    await res.streamFile(file);
+
+    if (req.headers.value('range')?.startsWith('bytes ') != true) {
+      await res.streamFile(file);
+    } else {
+      var header = new RangeHeader.parse(req.headers.value('range'));
+      var items = RangeHeader.foldItems(header.items);
+      var totalFileSize = await file.length();
+      header = new RangeHeader(items);
+
+      for (var item in header.items) {
+        bool invalid = false;
+
+        if (item.start != -1) {
+          invalid = item.end != -1 && item.end < item.start;
+        } else
+          invalid = item.end == -1;
+
+        if (invalid) {
+          throw new AngelHttpException(
+              new Exception("Semantically invalid, or unbounded range."),
+              statusCode: 416,
+              message: "Semantically invalid, or unbounded range.");
+        }
+
+        // Ensure it's within range.
+        if (item.start >= totalFileSize || item.end >= totalFileSize) {
+          throw new AngelHttpException(
+              new Exception("Given range $item is out of bounds."),
+              statusCode: 416,
+              message: "Given range $item is out of bounds.");
+        }
+      }
+
+      if (header.items.isEmpty) {
+        throw new AngelHttpException(null,
+            statusCode: 416, message: '`Range` header may not be empty.');
+      } else if (header.items.length == 1) {
+        var item = header.items[0];
+        Stream<List<int>> stream;
+        int len = 0, total = totalFileSize;
+
+        if (item.start == -1) {
+          if (item.end == -1) {
+            len = total;
+            stream = file.openRead();
+          } else {
+            len = item.end + 1;
+            stream = file.openRead(0, item.end + 1);
+          }
+        } else {
+          if (item.end == -1) {
+            len = total - item.start;
+            stream = file.openRead(item.start);
+          } else {
+            len = item.end - item.start + 1;
+            stream = file.openRead(item.start, item.end + 1);
+          }
+        }
+
+        res.contentType = new MediaType.parse(
+            app.mimeTypeResolver.lookup(file.path) ??
+                'application/octet-stream');
+        res.statusCode = 206;
+        res.headers['content-length'] = len.toString();
+        res.headers['content-range'] = 'bytes ' + item.toContentRange(total);
+        await stream.pipe(res);
+        return false;
+      } else {
+        var transformer = new RangeHeaderTransformer(
+            header,
+            app.mimeTypeResolver.lookup(file.path) ??
+                'application/octet-stream',
+            await file.length());
+        res.statusCode = 206;
+        res.headers['content-length'] =
+            transformer.computeContentLength(totalFileSize).toString();
+        res.contentType = new MediaType(
+            'multipart', 'byteranges', {'boundary': transformer.boundary});
+        await file.openRead().transform(transformer).pipe(res);
+        return false;
+      }
+    }
+
     return false;
   }
 }

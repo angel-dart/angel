@@ -2,7 +2,9 @@
 [![Pub](https://img.shields.io/pub/v/angel_static.svg)](https://pub.dartlang.org/packages/angel_static)
 [![build status](https://travis-ci.org/angel-dart/static.svg?branch=master)](https://travis-ci.org/angel-dart/static)
 
-Static server middleware for Angel.
+Static server infrastructure for Angel.
+
+*Can also handle `Range` requests now, making it suitable for media streaming, ex. music, video, etc.*
 
 # Installation
 In `pubspec.yaml`:

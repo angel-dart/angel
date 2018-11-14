@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
+import 'package:convert/convert.dart';
+import 'package:crypto/crypto.dart';
 import 'package:file/file.dart';
 import 'virtual_directory.dart';
 
-/// Generates a weak ETag from the given buffer.
-String weakEtag(List<int> buf) {
-  return 'W/${buf.length}' + base64Url.encode(buf.take(50).toList());
+/// Generates an MD5 ETag from the given buffer.
+String md5Etag(List<int> buf) {
+  return hex.encode(md5.convert(buf).bytes);
 }
 
 /// Returns a string representation of the given [CacheAccessLevel].
@@ -67,6 +68,8 @@ class CachingVirtualDirectory extends VirtualDirectory {
   @override
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) {
+    res.headers['accept-ranges'] = 'bytes';
+
     if (onlyInProduction == true && req.app.isProduction != true) {
       return super.serveFile(file, stat, req, res);
     }
@@ -82,8 +85,55 @@ class CachingVirtualDirectory extends VirtualDirectory {
       res.headers['cache-control'] = 'private, max-age=0, no-cache';
       return super.serveFile(file, stat, req, res);
     } else {
+      var ifModified = req.headers.ifModifiedSince;
+      bool ifRange = false;
+
+      try {
+        ifModified = HttpDate.parse(req.headers.value('if-range'));
+        ifRange = true;
+      } catch (_) {
+        // Fail silently...
+      }
+
+      if (ifModified != null) {
+        try {
+          var ifModifiedSince = ifModified;
+
+          if (ifModifiedSince.compareTo(stat.modified) >= 0) {
+            res.statusCode = 304;
+            setCachedHeaders(stat.modified, req, res);
+
+            if (useEtags && _etags.containsKey(file.absolute.path))
+              res.headers['ETag'] = _etags[file.absolute.path];
+
+            if (ifRange) {
+              // Send the 206 like normal
+              res.statusCode = 206;
+              return super.serveFile(file, stat, req, res);
+            }
+
+            return new Future.value(false);
+          } else if (ifRange) {
+            // Return 200, just send the whole thing.
+            return res.streamFile(file).then((_) => false);
+          }
+        } catch (_) {
+          throw new AngelHttpException.badRequest(
+              message:
+                  'Invalid date for ${ifRange ? 'if-range' : 'if-not-modified-since'} header.');
+        }
+      }
+
+      // If-modified didn't work; try etags
+
       if (useEtags == true) {
         var etagsToMatchAgainst = req.headers['if-none-match'];
+        ifRange = false;
+
+        if (etagsToMatchAgainst?.isNotEmpty != true) {
+          etagsToMatchAgainst = req.headers['if-range'];
+          ifRange = etagsToMatchAgainst?.isNotEmpty == true;
+        }
 
         if (etagsToMatchAgainst?.isNotEmpty == true) {
           bool hasBeenModified = false;
@@ -97,38 +147,30 @@ class CachingVirtualDirectory extends VirtualDirectory {
             }
           }
 
-          if (!hasBeenModified) {
-            res.statusCode = 304;
-            setCachedHeaders(stat.modified, req, res);
-            return new Future.value(false);
+          if (!ifRange) {
+            if (!hasBeenModified) {
+              res.statusCode = 304;
+              setCachedHeaders(stat.modified, req, res);
+              return new Future.value(false);
+            }
+          } else {
+            if (!hasBeenModified) {
+              // Continue serving like a regular range...
+              return super.serveFile(file, stat, req, res);
+            } else {
+              // Otherwise, send the whole thing.
+              return res.streamFile(file).then((_) => false);
+            }
           }
-        }
-      }
-
-      if (req.headers.ifModifiedSince != null) {
-        try {
-          var ifModifiedSince = req.headers.ifModifiedSince;
-
-          if (ifModifiedSince.compareTo(stat.modified) >= 0) {
-            res.statusCode = 304;
-            setCachedHeaders(stat.modified, req, res);
-
-            if (_etags.containsKey(file.absolute.path))
-              res.headers['ETag'] = _etags[file.absolute.path];
-
-            return new Future.value(false);
-          }
-        } catch (_) {
-          throw new AngelHttpException.badRequest(
-              message: 'Invalid date for If-Modified-Since header.');
         }
       }
 
       return file.readAsBytes().then((buf) {
-        var etag = _etags[file.absolute.path] = weakEtag(buf);
+        if (useEtags) {
+          res.headers['ETag'] = _etags[file.absolute.path] = md5Etag(buf);
+        }
         //res.statusCode = 200;
         res.headers
-          ..['ETag'] = etag
           ..['content-type'] = res.app.mimeTypeResolver.lookup(file.path) ??
               'application/octet-stream';
         setCachedHeaders(stat.modified, req, res);
