@@ -64,3 +64,5 @@ packages
 pubspec.lock
 
 .dart_tool
+*.mp3
+*.mp4
