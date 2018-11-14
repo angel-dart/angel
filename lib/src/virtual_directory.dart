@@ -72,7 +72,7 @@ class VirtualDirectory {
   Future<bool> handleRequest(RequestContext req, ResponseContext res) {
     if (req.method != 'GET' && req.method != 'HEAD')
       return new Future<bool>.value(true);
-    var path = req.path.replaceAll(_straySlashes, '');
+    var path = req.uri.path.replaceAll(_straySlashes, '');
 
     if (_prefix?.isNotEmpty == true && !path.startsWith(_prefix))
       return new Future<bool>.value(true);
@@ -196,6 +196,7 @@ class VirtualDirectory {
         if (relative.isNotEmpty) href = '/' + relative + '/' + stub;
 
         if (entity is Directory) href += '/';
+        href = Uri.encodeFull(href);
 
         res.write('<li><a href="$href">$type $stub</a></li>');
       }

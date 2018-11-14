@@ -1,3 +1,6 @@
+# 2.1.1
+* URI-encode paths in directory listing. This produces correct URL's, always.
+
 # 2.1.0
 * Include support for the `Range` header.
 * Use MD5 for etags, instead of a weak ETag.
