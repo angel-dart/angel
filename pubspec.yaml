@@ -1,5 +1,5 @@
 name: angel
-description: An easily-extensible web server framework in Dart.
+description: An app that's going to be amazing pretty soon.
 publish_to: none # Ensure we don't accidentally publish our private code! ;)
 environment:
   sdk: '>=2.0.0-dev <3.0.0'
