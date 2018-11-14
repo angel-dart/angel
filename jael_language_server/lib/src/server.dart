@@ -5,19 +5,22 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:jael/jael.dart';
+import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc_2;
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
+import 'package:string_scanner/string_scanner.dart';
 import 'package:symbol_table/symbol_table.dart';
 import 'analyzer.dart';
+import 'formatter.dart';
 import 'object.dart';
 
 class JaelLanguageServer extends LanguageServer {
-  var _diagnostics = new StreamController<Diagnostics>(sync: true);
+  var _diagnostics = new StreamController<Diagnostics>();
   var _done = new Completer();
   var _memFs = new MemoryFileSystem();
   var _localFs = const LocalFileSystem();
-  Directory _localRootDir;
+  Directory _localRootDir, _memRootDir;
   var logger = new Logger('jael');
   Uri _rootUri;
   var _workspaceEdits = new StreamController<ApplyWorkspaceEditParams>();
@@ -40,24 +43,39 @@ class JaelLanguageServer extends LanguageServer {
   }
 
   @override
+  void setupExtraMethods(json_rpc_2.Peer peer) {
+    peer.registerMethod('textDocument/formatting',
+        (json_rpc_2.Parameters params) async {
+      var documentId =
+          new TextDocumentIdentifier.fromJson(params['textDocument'].asMap);
+      var formattingOptions =
+          new FormattingOptions.fromJson(params['options'].asMap);
+      return await textDocumentFormatting(documentId, formattingOptions);
+    });
+  }
+
+  @override
   Future<ServerCapabilities> initialize(int clientPid, String rootUri,
       ClientCapabilities clientCapabilities, String trace) async {
     // Find our real root dir.
     _localRootDir = _localFs.directory(_rootUri = Uri.parse(rootUri));
+    _memRootDir = _memFs.directory('/');
+    await _memRootDir.create(recursive: true);
+    _memFs.currentDirectory = _memRootDir;
 
     // Copy all real files that end in *.jael (and *.jl for legacy) into the in-memory filesystem.
     await for (var entity in _localRootDir.list(recursive: true)) {
       if (entity is File && p.extension(entity.path) == '.jael') {
-        var relativePath =
-            p.relative(entity.absolute.path, from: _localRootDir.absolute.path);
-        var file = _memFs.file(relativePath);
+        logger.info('HEY ${entity.path}');
+        var file = _memFs.file(entity.absolute.path);
         await file.create(recursive: true);
         await entity.openRead().pipe(file.openWrite(mode: FileMode.write));
-        logger.info('Found Jael file ${file.path}');
+        logger.info(
+            'Found Jael file ${file.path}; copied to ${file.absolute.path}');
 
         // Analyze it
         var documentId = new TextDocumentIdentifier((b) {
-          b..uri = _rootUri.replace(path: relativePath).toString();
+          b..uri = _rootUri.replace(path: file.path).toString();
         });
 
         await analyzerForId(documentId);
@@ -66,7 +84,7 @@ class JaelLanguageServer extends LanguageServer {
 
     return new ServerCapabilities((b) {
       b
-      ..codeActionProvider = false
+        ..codeActionProvider = false
         ..completionProvider = new CompletionOptions((b) {
           b
             ..resolveProvider = true
@@ -90,7 +108,7 @@ class JaelLanguageServer extends LanguageServer {
         ..textDocumentSync = new TextDocumentSyncOptions((b) {
           b
             ..openClose = true
-            ..change = TextDocumentSyncKind.incremental
+            ..change = TextDocumentSyncKind.full
             ..save = new SaveOptions((b) {
               b..includeText = false;
             })
@@ -103,8 +121,16 @@ class JaelLanguageServer extends LanguageServer {
 
   Future<File> fileForId(TextDocumentIdentifier documentId) async {
     var uri = Uri.parse(documentId.uri);
-    var relativePath = p.relative(uri.path, from: _rootUri.path);
-    var file = _memFs.file(relativePath);
+    var relativePath = uri.path;
+    var file = _memFs.directory('/').childFile(relativePath);
+
+    /*
+    logger.info('Searching for $relativePath. All:\n');
+
+    await for (var entity in _memFs.directory('/').list(recursive: true)) {
+      if (entity is File) print(' * ${entity.absolute.path}');
+    }
+    */
 
     if (!await file.exists()) {
       await file.create(recursive: true);
@@ -124,9 +150,6 @@ class JaelLanguageServer extends LanguageServer {
     var scanner = await scannerForId(documentId);
     var analyzer = new Analyzer(scanner, logger)..errors.addAll(scanner.errors);
     analyzer.parseDocument();
-    logger.info(
-        'Done ${documentId.uri} ${await (await fileForId(documentId)).readAsString()}');
-    logger.info(analyzer.errors);
     emitDiagnostics(documentId.uri, analyzer.errors.map(toDiagnostic).toList());
     return analyzer;
   }
@@ -203,14 +226,20 @@ class JaelLanguageServer extends LanguageServer {
               ..newText = '<$name\$1>\n    \$2\n</name>';
           });
       });
+    } else if (value is JaelVariable) {
+      return new CompletionItem((b) {
+        b
+          ..kind = CompletionItemKind.variable
+          ..label = symbol.name;
+      });
     }
 
     return null;
   }
 
   void emitDiagnostics(String uri, Iterable<Diagnostic> diagnostics) {
-    if (diagnostics.isEmpty) return;
     _diagnostics.add(new Diagnostics((b) {
+      logger.info('$uri => ${diagnostics.map((d) => d.message).toList()}');
       b
         ..diagnostics = diagnostics.toList()
         ..uri = uri.toString();
@@ -230,9 +259,9 @@ class JaelLanguageServer extends LanguageServer {
     var file = await fileForId(id);
 
     for (var change in changes) {
-      if (change.range != null) {
+      if (change.text != null) {
         await file.writeAsString(change.text);
-      } else {
+      } else if (change.range != null) {
         var contents = await file.readAsString();
 
         int findIndex(Position position) {
@@ -254,6 +283,7 @@ class JaelLanguageServer extends LanguageServer {
           contents = contents.replaceRange(start, end, change.text);
         }
 
+        logger.info('${file.path} => $contents');
         await file.writeAsString(contents);
       }
     }
@@ -281,26 +311,48 @@ class JaelLanguageServer extends LanguageServer {
     });
   }
 
-  Future<JaelObject> currentSymbol(
+  final RegExp _id =
+      new RegExp(r'(([A-Za-z][A-Za-z0-9_]*-)*([A-Za-z][A-Za-z0-9_]*))');
+
+  Future<String> currentName(
       TextDocumentIdentifier documentId, Position position) async {
-    var analyzer = await analyzerForId(documentId);
-    var symbols = analyzer.allDefinitions; // analyzer.scope.allVariables;
-    logger.info('Current synmbols: ${symbols.map((v) => v.name)}');
+    // First, read the file.
+    var file = await fileForId(documentId);
+    var contents = await file.readAsString();
 
-    for (var s in symbols) {
-      var v = s.value;
+    // Next, find the current index.
+    var scanner = new SpanScanner(contents);
 
-      if (position.line == v.span.start.line &&
-          position.character == v.span.start.column) {
-        logger.info('Success ${s.name}');
-        return v;
-      } else {
-        logger.info(
-            'Nope ${s.name} (${v.span.start.toolString} vs ${position.line}:${position.character})');
-      }
+    while (!scanner.isDone &&
+        (scanner.state.line != position.line ||
+            scanner.state.column != position.character)) {
+      scanner.readChar();
     }
 
-    return null;
+    // Next, just read the name.
+    if (scanner.matches(_id)) {
+      var longest = scanner.lastSpan.text;
+
+      while (scanner.matches(_id) && scanner.position > 0 && !scanner.isDone) {
+        longest = scanner.lastSpan.text;
+        scanner.position--;
+      }
+
+      return longest;
+    } else {
+      return null;
+    }
+  }
+
+  Future<JaelObject> currentSymbol(
+      TextDocumentIdentifier documentId, Position position) async {
+    var name = await currentName(documentId, position);
+    if (name == null) return null;
+    var analyzer = await analyzerForId(documentId);
+    var symbols = analyzer.allDefinitions ?? analyzer.scope.allVariables;
+    logger
+        .info('Current symbols, seeking $name: ${symbols.map((v) => v.name)}');
+    return analyzer.scope.resolve(name)?.value;
   }
 
   @override
@@ -337,9 +389,12 @@ class JaelLanguageServer extends LanguageServer {
     var symbol = await currentSymbol(documentId, position);
     if (symbol != null) {
       return new Hover((b) {
-        b..range = toRange(symbol.span);
+        b
+          ..contents = symbol.span.text
+          ..range = toRange(symbol.span);
       });
     }
+
     return null;
   }
 
@@ -377,7 +432,10 @@ class JaelLanguageServer extends LanguageServer {
               return new TextEdit((b) {
                 b
                   ..range = toRange(u.span)
-                  ..newText = newName;
+                  ..newText = (symbol is JaelCustomElement &&
+                          u.type == SymbolUsageType.definition)
+                      ? '"$newName"'
+                      : newName;
               });
             }).toList()
           };
@@ -409,11 +467,73 @@ class JaelLanguageServer extends LanguageServer {
 
   @override
   Future<List<SymbolInformation>> workspaceSymbol(String query) async {
-    // TODO: implement workspaceSymbol
-    return [];
+    var values = <JaelObject>[];
+
+    await for (var file in _memRootDir.list(recursive: true)) {
+      if (file is File) {
+        var id = new TextDocumentIdentifier((b) {
+          b..uri = file.uri.toString();
+        });
+        var analyzer = await analyzerForId(id);
+        values.addAll(analyzer.allDefinitions.map((v) => v.value));
+      }
+    }
+
+    return values.map((o) {
+      return new SymbolInformation((b) {
+        b
+          ..name = o.name
+          ..location = toLocation(o.span.sourceUrl.toString(), o.span)
+          ..containerName = p.basename(o.span.sourceUrl.path)
+          ..kind = o is JaelCustomElement
+              ? SymbolKind.classSymbol
+              : SymbolKind.variable;
+      });
+    }).toList();
+  }
+
+  Future<List<TextEdit>> textDocumentFormatting(
+      TextDocumentIdentifier documentId,
+      FormattingOptions formattingOptions) async {
+    try {
+      var errors = <JaelError>[];
+      var file = await fileForId(documentId);
+      var contents = await file.readAsString();
+      var document =
+          parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
+      if (errors.isNotEmpty) return null;
+      var formatter = new JaelFormatter(
+          formattingOptions.tabSize, formattingOptions.insertSpaces);
+      var formatted = formatter.apply(document);
+      logger.info('Original:${contents}\nFormatted:\n$formatted');
+      if (formatted.isNotEmpty) await file.writeAsString(formatted);
+      return [
+        new TextEdit((b) {
+          b
+            ..newText = formatted
+            ..range = document == null ? emptyRange() : toRange(document.span);
+        })
+      ];
+    } catch (e, st) {
+      logger.severe('Formatter error', e, st);
+      return null;
+    }
   }
 }
 
 abstract class DiagnosticSeverity {
   static const int error = 0, warning = 1, information = 2, hint = 3;
+}
+
+class FormattingOptions {
+  final num tabSize;
+
+  final bool insertSpaces;
+
+  FormattingOptions(this.tabSize, this.insertSpaces);
+
+  factory FormattingOptions.fromJson(Map json) {
+    return new FormattingOptions(
+        json['tabSize'] as num, json['insertSpaces'] as bool);
+  }
 }

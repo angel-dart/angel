@@ -17,6 +17,11 @@ class JaelCustomElement extends JaelObject {
   JaelCustomElement(this.name, FileSpan span) : super(span);
 }
 
+class JaelVariable extends JaelObject {
+  final String name;
+  JaelVariable(this.name, FileSpan span) : super(span);
+}
+
 class SymbolUsage {
   final SymbolUsageType type;
   final FileSpan span;

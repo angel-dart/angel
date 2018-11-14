@@ -31,18 +31,39 @@
     },
     {
       "begin": "<\\s*(script)[^>]*>",
-      "end": "<\\s*/\\s*(script)[^>]*>",
+      "end": "(.*)<\\s*/\\s*(script)[^>]*>",
       "beginCaptures": {
         "1": {
-          "name": "keyword.tag.jael"
+          "name": "keyword.tag.embedded.js.jael"
         }
       },
       "endCaptures": {
         "1": {
-          "name": "keyword.tag.jael"
+          "name": "source.js",
+          "contentName": "source.js"
+        },
+        "2": {
+          "name": "keyword.tag.embedded.js.jael"
         }
       },
+      "contentName": "source.js",
       "patterns": [{ "include": "source.js" }]
+    },
+    {
+      "begin": "<\\s*(style)[^>]*>",
+      "end": "<\\s*/\\s*(style)[^>]*>",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.tag.embedded.css.jael"
+        }
+      },
+      "endCaptures": {
+        "1": {
+          "name": "keyword.tag.embedded.css.jael"
+        }
+      },
+      "contentName": "source.css",
+      "patterns": [{ "include": "source.css" }]
     },
     {
       "match": "\\b(block|declare|for-each|extend|if|include|switch)\\b",
