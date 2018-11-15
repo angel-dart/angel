@@ -24,7 +24,7 @@ main() async {
 }
 
 void start(int id) {
-  var app = new Angel(reflector: MirrorsReflector());
+  var app = new Angel();
   var http = new AngelHttp.custom(app, startShared, useZone: false);
 
   app.get('/', (req, res) => res.write('Hello, world!'));
