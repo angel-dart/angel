@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_sync/angel_sync.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_websocket/io.dart' as client;
@@ -28,34 +29,45 @@ main() {
     app1 = new Angel();
     app2 = new Angel();
 
-    app1.post('/message', (RequestContext req, AngelWebSocket ws) async {
+    app1.post('/message', (req, res) async {
       // Manually broadcast. Even though app1 has no clients, it *should*
       // propagate to app2.
+      var ws = req.container.make<AngelWebSocket>();
+      var body = await req.parseBody();
       ws.batchEvent(new WebSocketEvent(
         eventName: 'message',
-        data: req.body['message'],
+        data: body['message'],
       ));
-      return 'Sent: ${req.body['message']}';
+      return 'Sent: ${body['message']}';
     });
 
     app1Port = new ReceivePort();
-    await app1.configure(new AngelWebSocket(
-      synchronizer: new PubSubWebSocketSynchronizer(
+    var ws1 = new AngelWebSocket(
+      app1,
+      synchronizationChannel: new PubSubSynchronizationChannel(
         new pub_sub.IsolateClient('angel_sync1', adapter.receivePort.sendPort),
       ),
-    ));
+    );
+    await app1.configure(ws1.configureServer);
+    app1.get('/ws', ws1.handleRequest);
     app1Client = await connectTo(app1);
 
     app2Port = new ReceivePort();
-    await app2.configure(new AngelWebSocket(
-      synchronizer: new PubSubWebSocketSynchronizer(
+    var ws2 = new AngelWebSocket(
+      app2,
+      synchronizationChannel: new PubSubSynchronizationChannel(
         new pub_sub.IsolateClient('angel_sync2', adapter.receivePort.sendPort),
       ),
-    ));
+    );
+    await app2.configure(ws2.configureServer);
+    app2.get('/ws', ws2.handleRequest);
 
-    var http = await app2.startServer();
-    app2Client =
-        new client.WebSockets('ws://${http.address.address}:${http.port}/ws');
+    var http = new AngelHttp(app2);
+    await http.startServer();
+    var wsPath =
+        http.uri.replace(scheme: 'ws', path: '/ws').removeFragment().toString();
+    print(wsPath);
+    app2Client = new client.WebSockets(wsPath);
     await app2Client.connect();
   });
 
