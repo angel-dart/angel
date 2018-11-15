@@ -28,6 +28,7 @@ void start(int id) {
   var http = new AngelHttp.custom(app, startShared, useZone: false);
 
   app.get('/', (req, res) => res.write('Hello, world!'));
+  app.optimizeForProduction(force: true);
 
   var oldHandler = app.errorHandler;
   app.errorHandler = (e, req, res) {
