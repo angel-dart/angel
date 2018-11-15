@@ -1,3 +1,6 @@
+# 2.0.0-alpha.7
+* Replace `WebSocketSynchronizer` with `StreamChannel<WebSocketEvent>`.
+
 # 2.0.0-alpha.6
 * Explicit import of `import 'package:http/io_client.dart' as http;`
 

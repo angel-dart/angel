@@ -53,7 +53,7 @@ class AngelWebSocket {
       new List.unmodifiable(_servicesAlreadyWired);
 
   /// Used to notify other nodes of an event's firing. Good for scaled applications.
-  final WebSocketSynchronizer synchronizer;
+  final StreamChannel<WebSocketEvent> synchronizationChannel;
 
   /// Fired on any [WebSocketAction].
   Stream<WebSocketAction> get onAction => _onAction.stream;
@@ -77,7 +77,7 @@ class AngelWebSocket {
       {this.sendErrors: false,
       this.allowClientParams: false,
       this.allowAuth: true,
-      this.synchronizer,
+      this.synchronizationChannel,
       this.serializer,
       this.deserializer}) {
     if (serializer == null) serializer = json.encode;
@@ -116,8 +116,8 @@ class AngelWebSocket {
       }
     });
 
-    if (synchronizer != null && notify != false)
-      synchronizer.notifyOthers(event);
+    if (synchronizationChannel != null && notify != false)
+      synchronizationChannel.sink.add(event);
   }
 
   /// Returns a list of events yet to be sent.
@@ -326,11 +326,11 @@ class AngelWebSocket {
       wireAllServices(app);
     });
 
-    if (synchronizer != null) {
-      synchronizer.stream.listen((e) => batchEvent(e, notify: false));
+    if (synchronizationChannel != null) {
+      synchronizationChannel.stream.listen((e) => batchEvent(e, notify: false));
     }
 
-    app.shutdownHooks.add((_) => synchronizer?.close());
+    app.shutdownHooks.add((_) => synchronizationChannel?.sink?.close());
   }
 
   /// Handles an incoming [WebSocketContext].
@@ -374,14 +374,4 @@ class AngelWebSocket {
       throw new ArgumentError('Not an HTTP/1.1 RequestContext: $req');
     }
   }
-}
-
-/// Notifies other nodes of outgoing WWebSocket events, and listens for
-/// notifications from other nodes.
-abstract class WebSocketSynchronizer {
-  Stream<WebSocketEvent> get stream;
-
-  Future close() => new Future.value();
-
-  void notifyOthers(WebSocketEvent e);
 }
