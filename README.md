@@ -5,7 +5,7 @@
 Easily synchronize and scale WebSockets using package:pub_sub.
 
 # Usage
-This package exposes `PubSubWebSocketSynchronizer`, which
+This package exposes `PubSubSynchronizationChannel`, which
 can simply be dropped into any `AngelWebSocket` constructor.
 
 Once you've set that up, instances of your application will
@@ -14,7 +14,7 @@ to scale a real-time application with Angel!
 
 ```dart
 await app.configure(new AngelWebSocket(
-    synchronizer: new PubSubWebSocketSynchronizer(
+    synchronizationChannel: new PubSubSynchronizationChannel(
         new pub_sub.IsolateClient('<client-id>', adapter.receivePort.sendPort),
     ),
 ));
