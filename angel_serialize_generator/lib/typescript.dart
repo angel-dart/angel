@@ -156,9 +156,9 @@ class TypeScriptDefinitionBuilder implements Builder {
     buf.writeln('// GENERATED CODE - DO NOT MODIFY BY HAND');
 
     // declare module `foo` {
-    //buf
-    //  ..writeln("declare module '${buildStep.inputId.package}' {")
-    //  ..indent();
+    buf
+      ..writeln("declare module '${buildStep.inputId.package}' {")
+      ..indent();
 
     for (var ctx in contexts) {
       // interface Bar { ... }
@@ -190,9 +190,9 @@ class TypeScriptDefinitionBuilder implements Builder {
       }
     }
 
-    //buf
-    //  ..outdent()
-    //  ..writeln('}');
+    buf
+      ..outdent()
+      ..writeln('}');
     var finalBuf = new CodeBuffer();
     refs.forEach(finalBuf.writeln);
     buf.copyInto(finalBuf);

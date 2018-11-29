@@ -1,3 +1,6 @@
+# 2.1.2
+* Add `declare module` to generated TypeScript files.
+
 # 2.1.1
 * Generate `hashCode`.
 
