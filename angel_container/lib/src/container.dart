@@ -86,7 +86,7 @@ class Container {
       return reflectedType.newInstance(
           isDefault(constructor.name) ? '' : constructor.name,
           positional,
-          named, []).reflectee;
+          named, []).reflectee as T;
     } else {
       throw new ReflectionException(
           '$type is not a class, and therefore cannot be instantiated.');

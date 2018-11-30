@@ -8,14 +8,15 @@ const Reflectable contained = const ContainedReflectable();
 class ContainedReflectable extends Reflectable {
   const ContainedReflectable()
       : super(
-            declarationsCapability,
-            instanceInvokeCapability,
-            invokingCapability,
-            metadataCapability,
-            newInstanceCapability,
-            reflectedTypeCapability,
-            typeRelationsCapability,
-            typeCapability);
+          declarationsCapability,
+          instanceInvokeCapability,
+          invokingCapability,
+          metadataCapability,
+          newInstanceCapability,
+          reflectedTypeCapability,
+          typeRelationsCapability,
+          typeCapability,
+        );
 }
 
 /// A [Reflector] instance that uses a [Reflectable] to reflect upon data.
@@ -74,8 +75,9 @@ class GeneratedReflector implements Reflector {
 
 class _GeneratedReflectedInstance extends ReflectedInstance {
   final InstanceMirror mirror;
+  final GeneratedReflector reflector;
 
-  _GeneratedReflectedInstance(this.mirror, Reflector reflector)
+  _GeneratedReflectedInstance(this.mirror, this.reflector)
       : super(null, new _GeneratedReflectedClass(mirror.type, reflector),
             mirror.reflectee);
 
@@ -84,7 +86,9 @@ class _GeneratedReflectedInstance extends ReflectedInstance {
 
   @override
   ReflectedInstance getField(String name) {
-    return mirror.invokeGetter(name);
+    var result = mirror.invokeGetter(name);
+    var instance = reflector.reflectable.reflect(result);
+    return new _GeneratedReflectedInstance(instance, reflector);
   }
 }
 
@@ -93,13 +97,19 @@ class _GeneratedReflectedClass extends ReflectedClass {
   final Reflector reflector;
 
   _GeneratedReflectedClass(this.mirror, this.reflector)
-      : super(
-            mirror.simpleName,
-            mirror.typeVariables.map(_convertTypeVariable).toList(),
-            null,
-            _constructorsOf(mirror.declarations, reflector),
-            _declarationsOf(mirror.declarations, reflector),
-            mirror.reflectedType);
+      : super(mirror.simpleName, null, null, null, null, mirror.reflectedType);
+
+  @override
+  List<ReflectedTypeParameter> get typeParameters =>
+      mirror.typeVariables.map(_convertTypeVariable).toList();
+
+  @override
+  List<ReflectedFunction> get constructors =>
+      _constructorsOf(mirror.declarations, reflector);
+
+  @override
+  List<ReflectedDeclaration> get declarations =>
+      _declarationsOf(mirror.declarations, reflector);
 
   @override
   List<ReflectedInstance> get annotations =>
@@ -120,6 +130,7 @@ class _GeneratedReflectedClass extends ReflectedClass {
   ReflectedInstance newInstance(
       String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
+    namedArguments ??= {};
     var result = mirror.newInstance(constructorName, positionalArguments,
         namedArguments.map((k, v) => new MapEntry(new Symbol(k), v)));
     return reflector.reflectInstance(result);
@@ -130,10 +141,11 @@ class _GeneratedReflectedType extends ReflectedType {
   final TypeMirror mirror;
 
   _GeneratedReflectedType(this.mirror)
-      : super(
-            mirror.simpleName,
-            mirror.typeVariables.map(_convertTypeVariable).toList(),
-            mirror.reflectedType);
+      : super(mirror.simpleName, null, mirror.reflectedType);
+
+  @override
+  List<ReflectedTypeParameter> get typeParameters =>
+      mirror.typeVariables.map(_convertTypeVariable).toList();
 
   @override
   bool isAssignableTo(ReflectedType other) {
