@@ -4,6 +4,7 @@ import 'package:reflectable/reflectable.dart';
 /// A [Reflectable] instance that can be used as an annotation on types to generate metadata for them.
 const Reflectable contained = const ContainedReflectable();
 
+@contained
 class ContainedReflectable extends Reflectable {
   const ContainedReflectable()
       : super(
@@ -13,7 +14,8 @@ class ContainedReflectable extends Reflectable {
             metadataCapability,
             newInstanceCapability,
             reflectedTypeCapability,
-            typeRelationsCapability);
+            typeRelationsCapability,
+            typeCapability);
 }
 
 /// A [Reflector] instance that uses a [Reflectable] to reflect upon data.
@@ -24,8 +26,7 @@ class GeneratedReflector implements Reflector {
 
   @override
   String getName(Symbol symbol) {
-    // TODO: implement getName
-    throw new UnimplementedError();
+    return symbol.toString().substring(7);
   }
 
   @override
@@ -35,8 +36,17 @@ class GeneratedReflector implements Reflector {
 
   @override
   ReflectedFunction reflectFunction(Function function) {
-    // TODO: implement reflectFunction
-    throw new UnimplementedError();
+    if (!reflectable.canReflect(function)) {
+      throw new UnsupportedError('Cannot reflect $function.');
+    }
+
+    var mirror = reflectable.reflect(function);
+
+    if (mirror is ClosureMirror) {
+      return new _GeneratedReflectedFunction(mirror.function, this, mirror);
+    } else {
+      throw new ArgumentError('$function is not a Function.');
+    }
   }
 
   @override
@@ -44,7 +54,8 @@ class GeneratedReflector implements Reflector {
     if (!reflectable.canReflect(object)) {
       throw new UnsupportedError('Cannot reflect $object.');
     } else {
-      return new _GeneratedReflectedInstance(reflectable.reflect(object), this);
+      var mirror = reflectable.reflect(object);
+      return new _GeneratedReflectedInstance(mirror, this);
     }
   }
 
@@ -109,8 +120,9 @@ class _GeneratedReflectedClass extends ReflectedClass {
   ReflectedInstance newInstance(
       String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
-    return mirror.newInstance(constructorName, positionalArguments,
+    var result = mirror.newInstance(constructorName, positionalArguments,
         namedArguments.map((k, v) => new MapEntry(new Symbol(k), v)));
+    return reflector.reflectInstance(result);
   }
 }
 
@@ -143,24 +155,82 @@ class _GeneratedReflectedType extends ReflectedType {
   }
 }
 
-// TODO: Reflect functions?
+class _GeneratedReflectedFunction extends ReflectedFunction {
+  final MethodMirror mirror;
+  final Reflector reflector;
+  final ClosureMirror closure;
+
+  _GeneratedReflectedFunction(this.mirror, this.reflector, [this.closure])
+      : super(
+            mirror.simpleName,
+            [],
+            null,
+            !mirror.isRegularMethod
+                ? null
+                : new _GeneratedReflectedType(mirror.returnType),
+            mirror.parameters
+                .map((p) => _convertParameter(p, reflector))
+                .toList(),
+            mirror.isGetter,
+            mirror.isSetter);
+
+  @override
+  List<ReflectedInstance> get annotations =>
+      mirror.metadata.map(reflector.reflectInstance).toList();
+
+  @override
+  ReflectedInstance invoke(Invocation invocation) {
+    if (closure != null) {
+      throw new UnsupportedError('Only closures can be invoked directly.');
+    } else {
+      var result = closure.delegate(invocation);
+      return reflector.reflectInstance(result);
+    }
+  }
+}
+
 List<ReflectedFunction> _constructorsOf(
     Map<String, DeclarationMirror> map, Reflector reflector) {
-  print(map);
   return map.entries.fold<List<ReflectedFunction>>([], (out, entry) {
-    var k = entry.key, v = entry.value;
-    return out;
+    var v = entry.value;
+
+    if (v is MethodMirror && v.isConstructor) {
+      return out..add(new _GeneratedReflectedFunction(v, reflector));
+    } else {
+      return out;
+    }
   });
 }
 
 List<ReflectedDeclaration> _declarationsOf(
     Map<String, DeclarationMirror> map, Reflector reflector) {
-  print(map);
   return map.entries.fold<List<ReflectedDeclaration>>([], (out, entry) {
-    var k = entry.key, v = entry.value;
+    var v = entry.value;
+
+    if (v is VariableMirror) {
+      var decl = new ReflectedDeclaration(v.simpleName, v.isStatic, null);
+      return out..add(decl);
+    }
+    if (v is MethodMirror) {
+      var decl = new ReflectedDeclaration(v.simpleName, v.isStatic,
+          new _GeneratedReflectedFunction(v, reflector));
+      return out..add(decl);
+    } else {
+      return out;
+    }
   });
 }
 
 ReflectedTypeParameter _convertTypeVariable(TypeVariableMirror mirror) {
   return new ReflectedTypeParameter(mirror.simpleName);
+}
+
+ReflectedParameter _convertParameter(
+    ParameterMirror mirror, Reflector reflector) {
+  return new ReflectedParameter(
+      mirror.simpleName,
+      mirror.metadata.map(reflector.reflectInstance).toList(),
+      reflector.reflectType(mirror.type.reflectedType),
+      !mirror.isOptional,
+      mirror.isNamed);
 }
