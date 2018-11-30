@@ -1,3 +1,6 @@
+# 1.0.0
+* Removed `@GenerateReflector`.
+
 # 1.0.0-alpha.12
 * `StaticReflector` now defaults to empty arguments.
 
