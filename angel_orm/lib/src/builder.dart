@@ -28,6 +28,8 @@ String sanitizeExpression(String unsafe) {
 }
 
 abstract class SqlExpressionBuilder<T> {
+  String get columnName;
+
   bool get hasValue;
 
   String compile();
@@ -43,10 +45,13 @@ abstract class SqlExpressionBuilder<T> {
 
 class NumericSqlExpressionBuilder<T extends num>
     implements SqlExpressionBuilder<T> {
+  final String columnName;
   bool _hasValue = false;
   String _op = '=';
   String _raw;
   T _value;
+
+  NumericSqlExpressionBuilder(this.columnName);
 
   @override
   bool get hasValue => _hasValue;
@@ -123,8 +128,11 @@ class NumericSqlExpressionBuilder<T extends num>
 }
 
 class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
+  final String columnName;
   bool _hasValue = false;
   String _op = '=', _raw, _value;
+
+  StringSqlExpressionBuilder(this.columnName);
 
   @override
   bool get hasValue => _hasValue;
@@ -190,9 +198,12 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
 }
 
 class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
+  final String columnName;
   bool _hasValue = false;
   String _op = '=', _raw;
   bool _value;
+
+  BooleanSqlExpressionBuilder(this.columnName);
 
   @override
   bool get hasValue => _hasValue;
@@ -243,12 +254,12 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
 
 class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder<DateTime> {
   final NumericSqlExpressionBuilder<int> year =
-          new NumericSqlExpressionBuilder<int>(),
-      month = new NumericSqlExpressionBuilder<int>(),
-      day = new NumericSqlExpressionBuilder<int>(),
-      hour = new NumericSqlExpressionBuilder<int>(),
-      minute = new NumericSqlExpressionBuilder<int>(),
-      second = new NumericSqlExpressionBuilder<int>();
+          new NumericSqlExpressionBuilder<int>('year'),
+      month = new NumericSqlExpressionBuilder<int>('month'),
+      day = new NumericSqlExpressionBuilder<int>('day'),
+      hour = new NumericSqlExpressionBuilder<int>('hour'),
+      minute = new NumericSqlExpressionBuilder<int>('minute'),
+      second = new NumericSqlExpressionBuilder<int>('second');
   final String columnName;
   String _raw;
 

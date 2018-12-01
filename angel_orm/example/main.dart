@@ -11,6 +11,8 @@ main() async {
     ..lastName.equals('Person')
     ..or(new EmployeeQueryWhere()..salary.greaterThanOrEqualTo(75000));
 
+  query.join('companies', 'company_id', 'id');
+
   var richPerson = await query.getOne(new _FakeExecutor());
   print(richPerson.toJson());
 }
@@ -63,26 +65,21 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 
 class EmployeeQueryWhere extends QueryWhere {
   @override
-  Map<String, SqlExpressionBuilder> get expressionBuilders {
-    return {
-      'id': id,
-      'first_name': firstName,
-      'last_name': lastName,
-      'salary': salary,
-      'created_at': createdAt,
-      'updated_at': updatedAt
-    };
+  Iterable<SqlExpressionBuilder> get expressionBuilders {
+    return [id, firstName, lastName, salary, createdAt, updatedAt];
   }
 
   final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>();
+      new NumericSqlExpressionBuilder<int>('id');
 
-  final StringSqlExpressionBuilder firstName = new StringSqlExpressionBuilder();
+  final StringSqlExpressionBuilder firstName =
+      new StringSqlExpressionBuilder('first_name');
 
-  final StringSqlExpressionBuilder lastName = new StringSqlExpressionBuilder();
+  final StringSqlExpressionBuilder lastName =
+      new StringSqlExpressionBuilder('last_name');
 
   final NumericSqlExpressionBuilder<double> salary =
-      new NumericSqlExpressionBuilder<double>();
+      new NumericSqlExpressionBuilder<double>('salary');
 
   final DateTimeSqlExpressionBuilder createdAt =
       new DateTimeSqlExpressionBuilder('created_at');

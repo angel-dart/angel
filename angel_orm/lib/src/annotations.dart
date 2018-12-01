@@ -15,4 +15,4 @@ class CanJoin {
 }
 
 /// The various types of [Join].
-enum JoinType { join, left, right, full, self }
+enum JoinType { inner, left, right, full, self }

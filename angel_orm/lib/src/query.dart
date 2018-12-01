@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'annotations.dart';
 import 'builder.dart';
 
 /// A base class for objects that compile to SQL queries, typically within an ORM.
 abstract class QueryBase<T> {
-  String compile();
+  String compile({bool includeTableName: false});
 
   T deserialize(List row);
 
@@ -25,8 +26,22 @@ abstract class QueryBase<T> {
   }
 }
 
+class OrderBy {
+  final String key;
+  final bool descending;
+
+  const OrderBy(this.key, {this.descending: false});
+
+  String compile() => descending ? '$key DESC' : '$key ASC';
+}
+
 /// A SQL `SELECT` query builder.
 abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
+  final List<OrderBy> _orderBy = [];
+  String _crossJoin, _groupBy;
+  int _limit, _offset;
+  Join _join;
+
   /// The table against which to execute this query.
   String get tableName;
 
@@ -40,16 +55,82 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// This is often a generated class.
   Where get where;
 
+  /// Limit the number of rows to return.
+  void limit(int n) {
+    _limit = n;
+  }
+
+  /// Skip a number of rows in the query.
+  void offset(int n) {
+    _offset = n;
+  }
+
+  /// Groups the results by a given key.
+  void groupBy(String key) {
+    _groupBy = key;
+  }
+
+  /// Sorts the results by a key.
+  void orderBy(String key, {bool descending: false}) {
+    _orderBy.add(new OrderBy(key, descending: descending));
+  }
+
+  /// Execute a `CROSS JOIN` (Cartesian product) against another table.
+  void crossJoin(String tableName) {
+    _crossJoin = tableName;
+  }
+
+  /// Execute an `INNER JOIN` against another table.
+  void join(String tableName, String localKey, String foreignKey,
+      {String op: '='}) {
+    _join =
+        new Join(JoinType.inner, this, tableName, localKey, foreignKey, op: op);
+  }
+
+  /// Execute a `LEFT JOIN` against another table.
+  void leftJoin(String tableName, String localKey, String foreignKey,
+      {String op: '='}) {
+    _join =
+        new Join(JoinType.left, this, tableName, localKey, foreignKey, op: op);
+  }
+
+  /// Execute a `RIGHT JOIN` against another table.
+  void rightJoin(String tableName, String localKey, String foreignKey,
+      {String op: '='}) {
+    _join =
+        new Join(JoinType.right, this, tableName, localKey, foreignKey, op: op);
+  }
+
+  /// Execute a `FULL OUTER JOIN` against another table.
+  void fullOuterJoin(String tableName, String localKey, String foreignKey,
+      {String op: '='}) {
+    _join =
+        new Join(JoinType.full, this, tableName, localKey, foreignKey, op: op);
+  }
+
+  /// Execute a `SELF JOIN`.
+  void selfJoin(String tableName, String localKey, String foreignKey,
+      {String op: '='}) {
+    _join =
+        new Join(JoinType.self, this, tableName, localKey, foreignKey, op: op);
+  }
+
   @override
-  String compile() {
+  String compile({bool includeTableName: false}) {
     var b = new StringBuffer('SELECT ');
-    if (fields == null)
-      b.write('*');
-    else
-      b.write(fields.join(', '));
+    var f = fields ?? ['*'];
+    if (includeTableName) f = f.map((s) => '$tableName.$s').toList();
+    b.write(f.join(', '));
     b.write(' FROM $tableName');
-    var whereClause = where.compile();
+    var whereClause =
+        where.compile(tableName: includeTableName ? tableName : null);
     if (whereClause.isNotEmpty) b.write(' WHERE $whereClause');
+    if (_limit != null) b.write(' LIMIT $_limit');
+    if (_offset != null) b.write(' OFFSET $_offset');
+    if (_groupBy != null) b.write(' GROUP BY $_groupBy');
+    for (var item in _orderBy) b.write(' ${item.compile()}');
+    if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
+    if (_join != null) b.write(' ${_join.compile()}');
     return b.toString();
   }
 }
@@ -57,9 +138,10 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 /// Builds a SQL `WHERE` clause.
 abstract class QueryWhere {
   final Set<QueryWhere> _and = new Set();
+  final Set<QueryWhere> _not = new Set();
   final Set<QueryWhere> _or = new Set();
 
-  Map<String, SqlExpressionBuilder> get expressionBuilders;
+  Iterable<SqlExpressionBuilder> get expressionBuilders;
 
   void and(QueryWhere other) {
     _and.add(other);
@@ -69,12 +151,13 @@ abstract class QueryWhere {
     _or.add(other);
   }
 
-  String compile() {
+  String compile({String tableName}) {
     var b = new StringBuffer();
     int i = 0;
 
-    for (var entry in expressionBuilders.entries) {
-      var key = entry.key, builder = entry.value;
+    for (var builder in expressionBuilders) {
+      var key = builder.columnName;
+      if (tableName != null) key = '$tableName.$key';
       if (builder.hasValue) {
         if (i++ > 0) b.write(' AND ');
         b.write('$key ${builder.compile()}');
@@ -84,6 +167,11 @@ abstract class QueryWhere {
     for (var other in _and) {
       var sql = other.compile();
       if (sql.isNotEmpty) b.write(' AND $sql');
+    }
+
+    for (var other in _not) {
+      var sql = other.compile();
+      if (sql.isNotEmpty) b.write(' NOT $sql');
     }
 
     for (var other in _or) {
@@ -106,10 +194,53 @@ class Union<T> extends QueryBase<T> {
   T deserialize(List row) => left.deserialize(row);
 
   @override
-  String compile() {
+  String compile({bool includeTableName: false}) {
     var selector = all == true ? 'UNION ALL' : 'UNION';
-    return '(${left.compile()}) $selector (${right.compile()})';
+    return '(${left.compile(includeTableName: includeTableName)}) $selector (${right.compile(includeTableName: includeTableName)})';
   }
+}
+
+/// Builds a SQL `JOIN` query.
+class Join {
+  final JoinType type;
+  final Query from;
+  final String to, key, value, op;
+
+  Join(this.type, this.from, this.to, this.key, this.value, {this.op: '='});
+
+  String compile() {
+    var b = new StringBuffer();
+    var left = '${from.tableName}.$key';
+    var right = '$to.$value';
+
+    switch (type) {
+      case JoinType.inner:
+        b.write(' INNER JOIN');
+        break;
+      case JoinType.left:
+        b.write(' LEFT JOIN');
+        break;
+      case JoinType.right:
+        b.write(' RIGHT JOIN');
+        break;
+      case JoinType.full:
+        b.write(' FULL OUTER JOIN');
+        break;
+      case JoinType.self:
+        b.write(' SELF JOIN');
+        break;
+    }
+
+    b.write(' $to ON $left$op$right');
+    return b.toString();
+  }
+}
+
+class JoinOn {
+  final SqlExpressionBuilder key;
+  final SqlExpressionBuilder value;
+
+  JoinOn(this.key, this.value);
 }
 
 /// An abstract interface that performs queries.
