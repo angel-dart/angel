@@ -48,6 +48,11 @@ class Leg extends _Leg {
         other.updatedAt == updatedAt;
   }
 
+  @override
+  int get hashCode {
+    return hashObjects([id, foot, name, createdAt, updatedAt]);
+  }
+
   Map<String, dynamic> toJson() {
     return LegSerializer.toMap(this);
   }

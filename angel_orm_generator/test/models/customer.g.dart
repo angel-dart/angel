@@ -3,6 +3,48 @@
 part of angel_orm_generator.test.models.customer;
 
 // **************************************************************************
+// OrmGenerator
+// **************************************************************************
+
+class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
+  @override
+  final CustomerQueryWhere where = new CustomerQueryWhere();
+
+  @override
+  get tableName {
+    return 'customers';
+  }
+
+  @override
+  get fields {
+    return const ['id', 'createdAt', 'updatedAt'];
+  }
+
+  @override
+  deserialize(List row) {
+    return new Customer(
+        id: (row[0] as String),
+        createdAt: (row[0] as DateTime),
+        updatedAt: (row[0] as DateTime));
+  }
+}
+
+class CustomerQueryWhere extends QueryWhere {
+  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+
+  final DateTimeSqlExpressionBuilder createdAt =
+      new DateTimeSqlExpressionBuilder('created_at');
+
+  final DateTimeSqlExpressionBuilder updatedAt =
+      new DateTimeSqlExpressionBuilder('updated_at');
+
+  @override
+  get expressionBuilders {
+    return [id, createdAt, updatedAt];
+  }
+}
+
+// **************************************************************************
 // JsonModelGenerator
 // **************************************************************************
 
@@ -31,6 +73,11 @@ class Customer extends _Customer {
         other.id == id &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {

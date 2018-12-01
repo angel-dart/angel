@@ -55,6 +55,11 @@ class Tree extends _Tree {
         other.updatedAt == updatedAt;
   }
 
+  @override
+  int get hashCode {
+    return hashObjects([id, rings, fruits, createdAt, updatedAt]);
+  }
+
   Map<String, dynamic> toJson() {
     return TreeSerializer.toMap(this);
   }

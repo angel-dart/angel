@@ -1,18 +1,19 @@
 import 'dart:async';
-import 'dart:collection';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart' hide LibraryBuilder;
-import 'package:path/path.dart' as p;
-import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'orm_build_context.dart';
 
-Builder ormBuilder(_) {
-  return new LibraryBuilder(new OrmGenerator(),
-      generatedExtension: '.orm.g.dart');
+Builder ormBuilder(BuilderOptions options) {
+  return new SharedPartBuilder([
+    new OrmGenerator(
+        autoSnakeCaseNames: options.config['auto_snake_case_names'] != false,
+        autoIdAndDateFields: options.config['auto_id_and_date_fields'] != false)
+  ], 'angel_orm');
 }
 
 TypeReference futureOf(String type) {
@@ -34,156 +35,151 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
     if (element is ClassElement) {
       var ctx = await buildOrmContext(element, annotation, buildStep,
           buildStep.resolver, autoSnakeCaseNames, autoIdAndDateFields);
-      var lib = buildOrmBaseLibrary(buildStep.inputId, ctx);
+      var lib = buildOrmLibrary(buildStep.inputId, ctx);
       return lib.accept(new DartEmitter()).toString();
     } else {
       throw 'The @Orm() annotation can only be applied to classes.';
     }
   }
 
-  Library buildOrmBaseLibrary(AssetId inputId, OrmBuildContext ctx) {
+  Library buildOrmLibrary(AssetId inputId, OrmBuildContext ctx) {
     return new Library((lib) {
-      // Necessary imports
-      var imports = new SplayTreeSet<String>.from(
-          ['dart:async', p.basename(inputId.uri.path)]);
+      // Create `FooQuery` class
+      // Create `FooQueryWhere` class
+      lib.body.add(buildQueryClass(ctx));
+      lib.body.add(buildWhereClass(ctx));
+    });
+  }
 
-      switch (ctx.ormAnnotation.type) {
-//        case OrmType.mongoDB:
-//          imports.add('package:mongo_dart/mongo_dart.dart');
-//          break;
-        case OrmType.postgreSql:
-          imports.add('package:postgres/postgres.dart');
-          break;
-        default:
-          break;
-      }
+  Class buildQueryClass(OrmBuildContext ctx) {
+    // TODO: Handle relations
 
-      lib.directives.addAll(imports.map((url) => new Directive.import(url)));
-
-      // Add the corresponding `part`
-      String dbExtension;
-
-      switch (ctx.ormAnnotation.type) {
-//        case OrmType.mongoDB:
-//          dbExtension = 'mongodb';
-//          break;
-        case OrmType.rethinkDB:
-          dbExtension = 'rethinkdb';
-          break;
-        case OrmType.mySql:
-          dbExtension = 'mysql';
-          break;
-        case OrmType.postgreSql:
-          dbExtension = 'postgresql';
-          break;
-        default:
-          throw 'Unsupported ORM type: ${ctx.ormAnnotation.type}';
-      }
-
-      var dbFile = p.setExtension(
-          p.basename(inputId.uri.path), '.$dbExtension.orm.g.dart');
-
-      lib.body.add(new Code("part '$dbFile';"));
-
-      // Create `FooOrm` abstract class
+    return new Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
+      var queryWhereType = refer('${rc.pascalCase}QueryWhere');
+      clazz
+        ..name = '${rc.pascalCase}Query'
+        ..extend = new TypeReference((b) {
+          b
+            ..symbol = 'Query'
+            ..types.addAll([
+              ctx.buildContext.modelClassType,
+              queryWhereType,
+            ]);
+        });
 
-      lib.body.add(new Class((clazz) {
-        clazz
-          ..name = '${rc.pascalCase}Orm'
-          ..abstract = true;
+      // Add tableName
+      clazz.methods.add(new Method((m) {
+        m
+          ..name = 'tableName'
+          ..annotations.add(refer('override'))
+          ..type = MethodType.getter
+          ..body = new Block((b) {
+            b.addExpression(literalString(ctx.tableName).returned);
+          });
+      }));
 
-        // Add factory constructors.
-        switch (ctx.ormAnnotation.type) {
-          case OrmType.postgreSql:
-            clazz.constructors.add(new Constructor((b) {
-              b
-                ..name = 'postgreSql'
-                ..factory = true
-                ..redirect = refer('PostgreSql${rc.pascalCase}Orm')
-                ..requiredParameters.add(new Parameter((b) {
-                  b
-                    ..name = 'connection'
-                    ..type = refer('PostgreSQLConnection');
-                }));
-            }));
-            dbExtension = 'postgresql';
-            break;
-          default:
-            break;
+      // Add fields getter
+      clazz.methods.add(new Method((m) {
+        m
+          ..name = 'fields'
+          ..annotations.add(refer('override'))
+          ..type = MethodType.getter
+          ..body = new Block((b) {
+            var names = ctx.buildContext.fields
+                .map((f) => literalString(f.name))
+                .toList();
+            b.addExpression(literalConstList(names).returned);
+          });
+      }));
+
+      // Add where member
+      clazz.fields.add(new Field((b) {
+        b
+          ..annotations.add(refer('override'))
+          ..name = 'where'
+          ..modifier = FieldModifier.final$
+          ..type = queryWhereType
+          ..assignment = queryWhereType.newInstance([]).code;
+      }));
+
+      // Add deserialize()
+      clazz.methods.add(new Method((m) {
+        m
+          ..name = 'deserialize'
+          ..annotations.add(refer('override'))
+          ..requiredParameters.add(new Parameter((b) => b
+            ..name = 'row'
+            ..type = refer('List')))
+          ..body = new Block((b) {
+            int i = 0;
+            var args = <String, Expression>{};
+
+            for (var field in ctx.buildContext.fields) {
+              var type = convertTypeReference(field.type);
+              args[field.name] = (refer('row').index(literalNum(i))).asA(type);
+            }
+
+            b.addExpression(
+                ctx.buildContext.modelClassType.newInstance([], args).returned);
+          });
+      }));
+    });
+  }
+
+  Class buildWhereClass(OrmBuildContext ctx) {
+    return new Class((clazz) {
+      var rc = ctx.buildContext.modelClassNameRecase;
+      clazz
+        ..name = '${rc.pascalCase}QueryWhere'
+        ..extend = refer('QueryWhere');
+
+      // Build expressionBuilders getter
+      clazz.methods.add(new Method((m) {
+        m
+          ..name = 'expressionBuilders'
+          ..annotations.add(refer('override'))
+          ..type = MethodType.getter
+          ..body = new Block((b) {
+            var references = ctx.buildContext.fields.map((f) => refer(f.name));
+            b.addExpression(literalList(references).returned);
+          });
+      }));
+
+      // Add builders for each field
+      for (var field in ctx.buildContext.fields) {
+        // TODO: Handle fields with relations
+        Reference builderType;
+
+        if (const TypeChecker.fromRuntime(String).isExactlyType(field.type)) {
+          builderType = refer('StringSqlExpressionBuilder');
+        } else if (const TypeChecker.fromRuntime(bool)
+            .isExactlyType(field.type)) {
+          builderType = refer('BooleanSqlExpressionBuilder');
+        } else if (const TypeChecker.fromRuntime(DateTime)
+            .isExactlyType(field.type)) {
+          builderType = refer('DateTimeSqlExpressionBuilder');
+        } else if (const TypeChecker.fromRuntime(int)
+                .isExactlyType(field.type) ||
+            const TypeChecker.fromRuntime(double).isExactlyType(field.type)) {
+          builderType = new TypeReference((b) => b
+            ..symbol = 'NumericSqlExpressionBuilder'
+            ..types.add(refer(field.type.name)));
+        } else {
+          throw new UnsupportedError(
+              'Cannot generate ORM code for field of type ${field.type.name}.');
         }
 
-        // Next, add method stubs.
-        // * getAll
-        // * getById
-        // * deleteById
-        // * updateX()
-        // * createX()
-        // * query()
-
-        // getAll
-        clazz.methods.add(new Method((m) {
-          m
-            ..name = 'getAll'
-            ..returns = new TypeReference((b) => b
-              ..symbol = 'Future'
-              ..types.add(new TypeReference((b) => b
-                ..symbol = 'List'
-                ..types.add(ctx.buildContext.modelClassType))));
+        clazz.fields.add(new Field((b) {
+          b
+            ..name = field.name
+            ..modifier = FieldModifier.final$
+            ..type = builderType
+            ..assignment = builderType.newInstance([
+              literalString(ctx.buildContext.resolveFieldName(field.name))
+            ]).code;
         }));
-
-        // getById
-        clazz.methods.add(new Method((m) {
-          m
-            ..name = 'getById'
-            ..returns = futureOf(ctx.buildContext.modelClassName)
-            ..requiredParameters.add(new Parameter((b) => b
-              ..name = 'id'
-              ..type = refer('String')));
-        }));
-
-        // deleteById
-        clazz.methods.add(new Method((m) {
-          m
-            ..name = 'deleteById'
-            ..returns = futureOf(ctx.buildContext.modelClassName)
-            ..requiredParameters.add(new Parameter((b) => b
-              ..name = 'id'
-              ..type = refer('String')));
-        }));
-
-        // createX()
-        clazz.methods.add(new Method((m) {
-          m
-            ..name = 'create${ctx.buildContext.modelClassName}'
-            ..returns = futureOf(ctx.buildContext.modelClassName)
-            ..requiredParameters.add(new Parameter((b) => b
-              ..name = 'model'
-              ..type = ctx.buildContext.modelClassType));
-        }));
-
-        // updateX()
-        clazz.methods.add(new Method((m) {
-          m
-            ..name = 'update${ctx.buildContext.modelClassName}'
-            ..returns = futureOf(ctx.buildContext.modelClassName)
-            ..requiredParameters.add(new Parameter((b) => b
-              ..name = 'model'
-              ..type = ctx.buildContext.modelClassType));
-        }));
-
-        // query()
-        clazz.methods.add(new Method((m) {
-          m
-            ..name = 'query'
-            ..returns = refer('${rc.pascalCase}Query');
-        }));
-      }));
-
-      // Create `FooQuery` class
-      lib.body.add(new Class((clazz) {
-        clazz..name = '${rc.pascalCase}Query';
-      }));
+      }
     });
   }
 }

@@ -3,6 +3,52 @@
 part of angel_orm_generator.test.models.role;
 
 // **************************************************************************
+// OrmGenerator
+// **************************************************************************
+
+class RoleQuery extends Query<Role, RoleQueryWhere> {
+  @override
+  final RoleQueryWhere where = new RoleQueryWhere();
+
+  @override
+  get tableName {
+    return 'roles';
+  }
+
+  @override
+  get fields {
+    return const ['id', 'name', 'createdAt', 'updatedAt'];
+  }
+
+  @override
+  deserialize(List row) {
+    return new Role(
+        id: (row[0] as String),
+        name: (row[0] as String),
+        createdAt: (row[0] as DateTime),
+        updatedAt: (row[0] as DateTime));
+  }
+}
+
+class RoleQueryWhere extends QueryWhere {
+  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+
+  final StringSqlExpressionBuilder name =
+      new StringSqlExpressionBuilder('name');
+
+  final DateTimeSqlExpressionBuilder createdAt =
+      new DateTimeSqlExpressionBuilder('created_at');
+
+  final DateTimeSqlExpressionBuilder updatedAt =
+      new DateTimeSqlExpressionBuilder('updated_at');
+
+  @override
+  get expressionBuilders {
+    return [id, name, createdAt, updatedAt];
+  }
+}
+
+// **************************************************************************
 // JsonModelGenerator
 // **************************************************************************
 
@@ -37,6 +83,11 @@ class Role extends _Role {
         other.name == name &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, name, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {

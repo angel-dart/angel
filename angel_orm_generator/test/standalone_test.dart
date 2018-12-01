@@ -5,18 +5,17 @@ import 'package:angel_orm/angel_orm.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'models/car.dart';
-import 'models/car.orm.g.dart';
 import 'common.dart';
 
-final DateTime MILENNIUM = new DateTime.utc(2000, 1, 1);
+final DateTime y2k = new DateTime.utc(2000, 1, 1);
 
 main() {
   test('to where', () {
     var query = new CarQuery();
     query.where
       ..familyFriendly.equals(true)
-      ..recalledAt.lessThanOrEqualTo(MILENNIUM, includeTime: false);
-    var whereClause = query.where.toWhereClause();
+      ..recalledAt.lessThanOrEqualTo(y2k, includeTime: false);
+    var whereClause = query.where.compile(tableName: 'cars');
     print('Where clause: $whereClause');
     expect(whereClause,
         'WHERE cars.family_friendly = TRUE AND cars.recalled_at <= \'2000-01-01\'');
@@ -28,23 +27,20 @@ main() {
       'Mazda',
       'CX9',
       true,
-      dateYmdHms.format(MILENNIUM),
-      dateYmdHms.format(MILENNIUM),
-      dateYmdHms.format(MILENNIUM)
+      dateYmdHms.format(y2k),
+      dateYmdHms.format(y2k),
+      dateYmdHms.format(y2k)
     ];
     print(row);
-    var car = PostgreSqlCarOrm.parseRow(row);
+    var car = new CarQuery().deserialize(row);
     print(car.toJson());
     expect(car.id, '0');
     expect(car.make, 'Mazda');
     expect(car.description, 'CX9');
     expect(car.familyFriendly, true);
-    expect(MILENNIUM.toIso8601String(),
-        startsWith(car.recalledAt.toIso8601String()));
-    expect(MILENNIUM.toIso8601String(),
-        startsWith(car.createdAt.toIso8601String()));
-    expect(MILENNIUM.toIso8601String(),
-        startsWith(car.updatedAt.toIso8601String()));
+    expect(y2k.toIso8601String(), startsWith(car.recalledAt.toIso8601String()));
+    expect(y2k.toIso8601String(), startsWith(car.createdAt.toIso8601String()));
+    expect(y2k.toIso8601String(), startsWith(car.updatedAt.toIso8601String()));
   });
 
   group('queries', () {
@@ -56,7 +52,7 @@ main() {
 
     group('selects', () {
       test('select all', () async {
-        var cars = await CarQuery.getAll(connection).toList();
+        var cars = await CarQuery.getAll(connection);
         expect(cars, []);
       });
 
@@ -72,12 +68,12 @@ main() {
 
         test('where clause is applied', () async {
           var query = new CarQuery()..where.familyFriendly.equals(true);
-          var cars = await query.get(connection).toList();
+          var cars = await query.get(connection);
           expect(cars, isEmpty);
 
           var sportsCars = new CarQuery()..where.familyFriendly.notEquals(true);
-          cars = await sportsCars.get(connection).toList();
-          print(cars.map((c) => c.toJson()).toList());
+          cars = await sportsCars.get(connection);
+          print(cars.map((c) => c.toJson()));
 
           var car = cars.first;
           expect(car.make, ferrari.make);
@@ -93,27 +89,26 @@ main() {
           query1
             ..union(query2)
             ..unionAll(query3);
-          print(query1.toSql());
+          print(query1.compile());
 
-          var cars = await query1.get(connection).toList();
+          var cars = await query1.get(connection);
           expect(cars, hasLength(1));
         });
 
         test('or clause', () async {
           var query = new CarQuery()
             ..where.make.like('Fer%')
-            ..or(new CarQueryWhere()
-              ..familyFriendly.equals(true)
-              ..make.equals('Honda'));
-          print(query.toSql());
-          var cars = await query.get(connection).toList();
+            ..orWhere((where) =>
+                where..familyFriendly.equals(true)..make.equals('Honda'));
+          print(query.compile());
+          var cars = await query.get(connection);
           expect(cars, hasLength(1));
         });
 
         test('limit obeyed', () async {
-          var query = new CarQuery()..limit = 0;
-          print(query.toSql());
-          var cars = await query.get(connection).toList();
+          var query = new CarQuery()..limit(0);
+          print(query.compile());
+          var cars = await query.get(connection);
           expect(cars, isEmpty);
         });
 
@@ -126,28 +121,28 @@ main() {
           var car = await CarQuery.deleteOne(int.parse(ferrari.id), connection);
           expect(car.toJson(), ferrari.toJson());
 
-          var cars = await CarQuery.getAll(connection).toList();
+          var cars = await CarQuery.getAll(connection);
           expect(cars, isEmpty);
         });
 
         test('delete stream', () async {
           var query = new CarQuery()..where.make.equals('Ferrari');
           query.or(new CarQueryWhere()..familyFriendly.equals(true));
-          print(query.toSql('DELETE FROM "cars"'));
-          var cars = await query.delete(connection).toList();
+          print(query.compile('DELETE FROM "cars"'));
+          var cars = await query.delete(connection);
           expect(cars, hasLength(1));
           expect(cars.first.toJson(), ferrari.toJson());
         });
 
         test('update', () async {
           var query = new CarQuery()..where.id.equals(int.parse(ferrari.id));
-          var cars = await query.update(connection, make: 'Hyundai').toList();
+          var cars = await query.update(connection, make: 'Hyundai');
           expect(cars, hasLength(1));
           expect(cars.first.make, 'Hyundai');
         });
 
         test('update car', () async {
-          var cloned = ferrari.clone()..make = 'Angel';
+          var cloned = ferrari.copyWith(make: 'Angel');
           var car = await CarQuery.updateCar(connection, cloned);
           print(car.toJson());
           expect(car.toJson(), cloned.toJson());
@@ -166,8 +161,7 @@ main() {
       expect(car.make, 'Honda');
       expect(car.description, 'Hello');
       expect(car.familyFriendly, isTrue);
-      expect(
-          dateYmdHms.format(car.recalledAt), dateYmdHms.format(recalledAt));
+      expect(dateYmdHms.format(car.recalledAt), dateYmdHms.format(recalledAt));
       expect(car.createdAt, allOf(isNotNull, equals(car.updatedAt)));
     });
 

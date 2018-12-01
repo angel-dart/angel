@@ -9,7 +9,7 @@ part 'author.g.dart';
 part 'author.serializer.g.dart';
 
 @serializable
-@postgreSqlOrm
+@orm
 class _Author extends Model {
   @Column(length: 255, indexType: IndexType.unique, defaultValue: 'Tobe Osakwe')
   String name;

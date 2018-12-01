@@ -69,6 +69,12 @@ class User extends _User {
         other.updatedAt == updatedAt;
   }
 
+  @override
+  int get hashCode {
+    return hashObjects(
+        [id, username, password, email, roles, createdAt, updatedAt]);
+  }
+
   Map<String, dynamic> toJson() {
     return UserSerializer.toMap(this);
   }

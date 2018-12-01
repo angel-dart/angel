@@ -7,7 +7,7 @@ part 'fruit.g.dart';
 part 'fruit.serializer.g.dart';
 
 @serializable
-@postgreSqlOrm
+@orm
 class _Fruit extends Model {
   int treeId;
   String commonName;

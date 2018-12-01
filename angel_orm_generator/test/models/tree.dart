@@ -8,7 +8,7 @@ part 'tree.g.dart';
 part 'tree.serializer.g.dart';
 
 @serializable
-@postgreSqlOrm
+@orm
 class _Tree extends Model {
   @Column(indexType: IndexType.unique, type: ColumnType.smallInt)
   int rings;

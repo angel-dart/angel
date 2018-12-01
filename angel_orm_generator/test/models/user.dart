@@ -8,7 +8,7 @@ part 'user.g.dart';
 part 'user.serializer.g.dart';
 
 @serializable
-@postgreSqlOrm
+@orm
 class _User extends Model {
   String username, password, email;
 

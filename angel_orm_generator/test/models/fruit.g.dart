@@ -3,6 +3,56 @@
 part of angel_orm_generator.test.models.fruit;
 
 // **************************************************************************
+// OrmGenerator
+// **************************************************************************
+
+class FruitQuery extends Query<Fruit, FruitQueryWhere> {
+  @override
+  final FruitQueryWhere where = new FruitQueryWhere();
+
+  @override
+  get tableName {
+    return 'fruits';
+  }
+
+  @override
+  get fields {
+    return const ['id', 'treeId', 'commonName', 'createdAt', 'updatedAt'];
+  }
+
+  @override
+  deserialize(List row) {
+    return new Fruit(
+        id: (row[0] as String),
+        treeId: (row[0] as int),
+        commonName: (row[0] as String),
+        createdAt: (row[0] as DateTime),
+        updatedAt: (row[0] as DateTime));
+  }
+}
+
+class FruitQueryWhere extends QueryWhere {
+  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+
+  final NumericSqlExpressionBuilder<int> treeId =
+      new NumericSqlExpressionBuilder<int>('tree_id');
+
+  final StringSqlExpressionBuilder commonName =
+      new StringSqlExpressionBuilder('common_name');
+
+  final DateTimeSqlExpressionBuilder createdAt =
+      new DateTimeSqlExpressionBuilder('created_at');
+
+  final DateTimeSqlExpressionBuilder updatedAt =
+      new DateTimeSqlExpressionBuilder('updated_at');
+
+  @override
+  get expressionBuilders {
+    return [id, treeId, commonName, createdAt, updatedAt];
+  }
+}
+
+// **************************************************************************
 // JsonModelGenerator
 // **************************************************************************
 
@@ -47,6 +97,11 @@ class Fruit extends _Fruit {
         other.commonName == commonName &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, treeId, commonName, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {

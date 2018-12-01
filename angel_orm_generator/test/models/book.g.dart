@@ -67,6 +67,12 @@ class Book extends _Book {
         other.updatedAt == updatedAt;
   }
 
+  @override
+  int get hashCode {
+    return hashObjects(
+        [id, author, partnerAuthor, authorId, name, createdAt, updatedAt]);
+  }
+
   Map<String, dynamic> toJson() {
     return BookSerializer.toMap(this);
   }

@@ -5,10 +5,7 @@ import 'package:source_gen/source_gen.dart';
 const TypeChecker columnTypeChecker = const TypeChecker.fromRuntime(Column);
 
 Orm reviveORMAnnotation(ConstantReader reader) {
-  return Orm(
-    OrmType.values[reader.read('type').objectValue.getField('index').toIntValue()],
-    tableName: reader.peek('tableName')?.stringValue,
-  );
+  return Orm(tableName: reader.peek('tableName')?.stringValue);
 }
 
 class ColumnReader {

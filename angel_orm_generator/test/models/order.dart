@@ -7,7 +7,7 @@ import 'customer.dart';
 part 'order.g.dart';
 part 'order.serializer.g.dart';
 
-@postgreSqlOrm
+@orm
 @serializable
 class _Order extends Model {
   @Join(Customer, CustomerFields.id)

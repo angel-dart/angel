@@ -8,7 +8,7 @@ part 'leg.g.dart';
 part 'leg.serializer.g.dart';
 
 @serializable
-@postgreSqlOrm
+@orm
 class _Leg extends Model {
   @hasOne
   Foot foot;

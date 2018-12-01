@@ -3,6 +3,56 @@
 part of angel_orm_generator.test.models.foot;
 
 // **************************************************************************
+// OrmGenerator
+// **************************************************************************
+
+class FootQuery extends Query<Foot, FootQueryWhere> {
+  @override
+  final FootQueryWhere where = new FootQueryWhere();
+
+  @override
+  get tableName {
+    return 'foots';
+  }
+
+  @override
+  get fields {
+    return const ['id', 'legId', 'nToes', 'createdAt', 'updatedAt'];
+  }
+
+  @override
+  deserialize(List row) {
+    return new Foot(
+        id: (row[0] as String),
+        legId: (row[0] as int),
+        nToes: (row[0] as int),
+        createdAt: (row[0] as DateTime),
+        updatedAt: (row[0] as DateTime));
+  }
+}
+
+class FootQueryWhere extends QueryWhere {
+  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+
+  final NumericSqlExpressionBuilder<int> legId =
+      new NumericSqlExpressionBuilder<int>('leg_id');
+
+  final NumericSqlExpressionBuilder<int> nToes =
+      new NumericSqlExpressionBuilder<int>('n_toes');
+
+  final DateTimeSqlExpressionBuilder createdAt =
+      new DateTimeSqlExpressionBuilder('created_at');
+
+  final DateTimeSqlExpressionBuilder updatedAt =
+      new DateTimeSqlExpressionBuilder('updated_at');
+
+  @override
+  get expressionBuilders {
+    return [id, legId, nToes, createdAt, updatedAt];
+  }
+}
+
+// **************************************************************************
 // JsonModelGenerator
 // **************************************************************************
 
@@ -46,6 +96,11 @@ class Foot extends _Foot {
         other.nToes == nToes &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, legId, nToes, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
