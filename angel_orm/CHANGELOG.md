@@ -1,3 +1,7 @@
+# 2.0.0-dev.4
+* Add more querying methods.
+* Add preamble to `Query.compile`.
+
 # 2.0.0-dev.3
 * Brought back old-style query builder.
 * Strong-mode updates, revised `Join`.

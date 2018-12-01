@@ -4,7 +4,7 @@ import 'builder.dart';
 
 /// A base class for objects that compile to SQL queries, typically within an ORM.
 abstract class QueryBase<T> {
-  String compile({bool includeTableName: false});
+  String compile({bool includeTableName: false, String preamble});
 
   T deserialize(List row);
 
@@ -55,6 +55,33 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// This is often a generated class.
   Where get where;
 
+  /// Makes a new [Where] clause.
+  Where newWhereClause() {
+    throw new UnsupportedError(
+        'This instance does not support creating new WHERE clauses.');
+  }
+
+  /// Shorthand for calling [where].or with a new [Where] clause.
+  void andWhere(void Function(Where) f) {
+    var w = newWhereClause();
+    f(w);
+    where.and(w);
+  }
+
+  /// Shorthand for calling [where].or with a new [Where] clause.
+  void notWhere(void Function(Where) f) {
+    var w = newWhereClause();
+    f(w);
+    where.not(w);
+  }
+
+  /// Shorthand for calling [where].or with a new [Where] clause.
+  void orWhere(void Function(Where) f) {
+    var w = newWhereClause();
+    f(w);
+    where.or(w);
+  }
+
   /// Limit the number of rows to return.
   void limit(int n) {
     _limit = n;
@@ -83,41 +110,46 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// Execute an `INNER JOIN` against another table.
   void join(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
-    _join =
-        new JoinBuilder(JoinType.inner, this, tableName, localKey, foreignKey, op: op);
+    _join = new JoinBuilder(
+        JoinType.inner, this, tableName, localKey, foreignKey,
+        op: op);
   }
 
   /// Execute a `LEFT JOIN` against another table.
   void leftJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
-    _join =
-        new JoinBuilder(JoinType.left, this, tableName, localKey, foreignKey, op: op);
+    _join = new JoinBuilder(
+        JoinType.left, this, tableName, localKey, foreignKey,
+        op: op);
   }
 
   /// Execute a `RIGHT JOIN` against another table.
   void rightJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
-    _join =
-        new JoinBuilder(JoinType.right, this, tableName, localKey, foreignKey, op: op);
+    _join = new JoinBuilder(
+        JoinType.right, this, tableName, localKey, foreignKey,
+        op: op);
   }
 
   /// Execute a `FULL OUTER JOIN` against another table.
   void fullOuterJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
-    _join =
-        new JoinBuilder(JoinType.full, this, tableName, localKey, foreignKey, op: op);
+    _join = new JoinBuilder(
+        JoinType.full, this, tableName, localKey, foreignKey,
+        op: op);
   }
 
   /// Execute a `SELF JOIN`.
   void selfJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
-    _join =
-        new JoinBuilder(JoinType.self, this, tableName, localKey, foreignKey, op: op);
+    _join = new JoinBuilder(
+        JoinType.self, this, tableName, localKey, foreignKey,
+        op: op);
   }
 
   @override
-  String compile({bool includeTableName: false}) {
-    var b = new StringBuffer('SELECT ');
+  String compile({bool includeTableName: false, String preamble}) {
+    var b = new StringBuffer(preamble ?? 'SELECT ');
     var f = fields ?? ['*'];
     if (includeTableName) f = f.map((s) => '$tableName.$s').toList();
     b.write(f.join(', '));
@@ -145,6 +177,10 @@ abstract class QueryWhere {
 
   void and(QueryWhere other) {
     _and.add(other);
+  }
+
+  void not(QueryWhere other) {
+    _not.add(other);
   }
 
   void or(QueryWhere other) {
@@ -194,7 +230,7 @@ class Union<T> extends QueryBase<T> {
   T deserialize(List row) => left.deserialize(row);
 
   @override
-  String compile({bool includeTableName: false}) {
+  String compile({bool includeTableName: false, String preamble}) {
     var selector = all == true ? 'UNION ALL' : 'UNION';
     return '(${left.compile(includeTableName: includeTableName)}) $selector (${right.compile(includeTableName: includeTableName)})';
   }
@@ -206,7 +242,8 @@ class JoinBuilder {
   final Query from;
   final String to, key, value, op;
 
-  JoinBuilder(this.type, this.from, this.to, this.key, this.value, {this.op: '='});
+  JoinBuilder(this.type, this.from, this.to, this.key, this.value,
+      {this.op: '='});
 
   String compile() {
     var b = new StringBuffer();
