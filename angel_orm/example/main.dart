@@ -1,27 +1,92 @@
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_serialize/angel_serialize.dart';
+part 'main.g.dart';
+part 'main.serializer.g.dart';
 
-main() {
+main() async {
+  var query = new EmployeeQuery();
+  query.where
+    ..firstName.equals('Rich')
+    ..lastName.equals('Person')
+    ..or(new EmployeeQueryWhere()..salary.greaterThanOrEqualTo(75000));
 
+  var richPerson = await query.getOne(new _FakeExecutor());
+  print(richPerson.toJson());
 }
 
-@postgreSqlOrm
-abstract class Company extends Model {
-  String get name;
+class _FakeExecutor extends QueryExecutor {
+  const _FakeExecutor();
 
-  bool get isFortune500;
+  @override
+  Future<List<List>> query(String query) async {
+    var now = new DateTime.now();
+    print('_FakeExecutor received query: $query');
+    return [
+      [1, 'Rich', 'Person', 100000.0, now, now]
+    ];
+  }
 }
 
-@postgreSqlOrm
+@orm
+@serializable
 abstract class _Employee extends Model {
-  @belongsTo
-  Company get company;
-
   String get firstName;
 
   String get lastName;
 
   double get salary;
+}
 
-  bool get isFortune500Employee => company.isFortune500;
+class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
+  @override
+  final EmployeeQueryWhere where = new EmployeeQueryWhere();
+
+  @override
+  String get tableName => 'employees';
+
+  @override
+  List<String> get fields =>
+      ['id', 'first_name', 'last_name', 'salary', 'created_at', 'updated_at'];
+
+  @override
+  Employee deserialize(List row) {
+    return new Employee(
+        id: row[0].toString(),
+        firstName: row[1] as String,
+        lastName: row[2] as String,
+        salary: row[3] as double,
+        createdAt: row[4] as DateTime,
+        updatedAt: row[5] as DateTime);
+  }
+}
+
+class EmployeeQueryWhere extends QueryWhere {
+  @override
+  Map<String, SqlExpressionBuilder> get expressionBuilders {
+    return {
+      'id': id,
+      'first_name': firstName,
+      'last_name': lastName,
+      'salary': salary,
+      'created_at': createdAt,
+      'updated_at': updatedAt
+    };
+  }
+
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>();
+
+  final StringSqlExpressionBuilder firstName = new StringSqlExpressionBuilder();
+
+  final StringSqlExpressionBuilder lastName = new StringSqlExpressionBuilder();
+
+  final NumericSqlExpressionBuilder<double> salary =
+      new NumericSqlExpressionBuilder<double>();
+
+  final DateTimeSqlExpressionBuilder createdAt =
+      new DateTimeSqlExpressionBuilder('created_at');
+
+  final DateTimeSqlExpressionBuilder updatedAt =
+      new DateTimeSqlExpressionBuilder('updated_at');
 }

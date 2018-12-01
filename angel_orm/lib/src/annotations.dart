@@ -1,23 +1,9 @@
-const Orm mongoDBOrm = const Orm(OrmType.mongoDB);
-
-const Orm rethinkDBOrm = const Orm(OrmType.rethinkDB);
-
-const Orm postgreSqlOrm = const Orm(OrmType.postgreSql);
-
-const Orm mySqlOrm = const Orm(OrmType.mySql);
+const Orm orm = const Orm();
 
 class Orm {
-  final OrmType type;
   final String tableName;
 
-  const Orm(this.type, {this.tableName});
-}
-
-enum OrmType {
-  mongoDB,
-  rethinkDB,
-  mySql,
-  postgreSql,
+  const Orm({this.tableName});
 }
 
 class CanJoin {

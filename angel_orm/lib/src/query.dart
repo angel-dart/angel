@@ -1,340 +1,122 @@
-import 'package:intl/intl.dart';
-import 'package:string_scanner/string_scanner.dart';
+import 'dart:async';
+import 'builder.dart';
 
-final DateFormat dateYmd = new DateFormat('yyyy-MM-dd');
-final DateFormat dateYmdHms = new DateFormat('yyyy-MM-dd HH:mm:ss');
-
-/// Cleans an input SQL expression of common SQL injection points.
-String sanitizeExpression(String unsafe) {
-  var buf = new StringBuffer();
-  var scanner = new StringScanner(unsafe);
-  int ch;
-
-  while (!scanner.isDone) {
-    // Ignore comment starts
-    if (scanner.scan('--') || scanner.scan('/*'))
-      continue;
-
-    // Ignore all single quotes and attempted escape sequences
-    else if (scanner.scan("'") || scanner.scan('\\'))
-      continue;
-
-    // Otherwise, add the next char, unless it's a null byte.
-    else if ((ch = scanner.readChar()) != 0 && ch != null)
-      buf.writeCharCode(ch);
-  }
-
-  return buf.toString();
-}
-
-abstract class SqlExpressionBuilder<T> {
-  bool get hasValue;
-
+/// A base class for objects that compile to SQL queries, typically within an ORM.
+abstract class QueryBase<T> {
   String compile();
 
-  void isBetween(T lower, T upper);
+  T deserialize(List row);
 
-  void isNotBetween(T lower, T upper);
-
-  void isIn(Iterable<T> values);
-
-  void isNotIn(Iterable<T> values);
-}
-
-class NumericSqlExpressionBuilder<T extends num>
-    implements SqlExpressionBuilder<T> {
-  bool _hasValue = false;
-  String _op = '=';
-  String _raw;
-  T _value;
-
-  @override
-  bool get hasValue => _hasValue;
-
-  bool _change(String op, T value) {
-    _raw = null;
-    _op = op;
-    _value = value;
-    return _hasValue = true;
+  Future<List<T>> get(QueryExecutor executor) async {
+    var sql = compile();
+    return executor.query(sql).then((it) => it.map(deserialize).toList());
   }
 
-  @override
-  String compile() {
-    if (_raw != null) return _raw;
-    if (_value == null) return null;
-    return '$_op $_value';
+  Future<T> getOne(QueryExecutor executor) {
+    return get(executor).then((it) => it.isEmpty ? null : it.first);
   }
 
-  operator <(T value) => _change('<', value);
-
-  operator >(T value) => _change('>', value);
-
-  operator <=(T value) => _change('<=', value);
-
-  operator >=(T value) => _change('>=', value);
-
-  void lessThan(T value) {
-    _change('<', value);
+  Union<T> union(QueryBase<T> other) {
+    return new Union(this, other);
   }
 
-  void lessThanOrEqualTo(T value) {
-    _change('<=', value);
-  }
-
-  void greaterThan(T value) {
-    _change('>', value);
-  }
-
-  void greaterThanOrEqualTo(T value) {
-    _change('>=', value);
-  }
-
-  void equals(T value) {
-    _change('=', value);
-  }
-
-  void notEquals(T value) {
-    _change('!=', value);
-  }
-
-  @override
-  void isBetween(T lower, T upper) {
-    _raw = 'BETWEEN $lower AND $upper';
-    _hasValue = true;
-  }
-
-  @override
-  void isNotBetween(T lower, T upper) {
-    _raw = 'NOT BETWEEN $lower AND $upper';
-    _hasValue = true;
-  }
-
-  @override
-  void isIn(Iterable<T> values) {
-    _raw = 'IN (' + values.join(', ') + ')';
-    _hasValue = true;
-  }
-
-  @override
-  void isNotIn(Iterable<T> values) {
-    _raw = 'NOT IN (' + values.join(', ') + ')';
-    _hasValue = true;
+  Union<T> unionAll(QueryBase<T> other) {
+    return new Union(this, other, all: true);
   }
 }
 
-class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
-  bool _hasValue = false;
-  String _op = '=', _raw, _value;
+/// A SQL `SELECT` query builder.
+abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
+  /// The table against which to execute this query.
+  String get tableName;
 
-  @override
-  bool get hasValue => _hasValue;
+  /// The list of fields returned by this query.
+  ///
+  /// If it's `null`, then this query will perform a `SELECT *`.
+  List<String> get fields;
 
-  bool _change(String op, String value) {
-    _raw = null;
-    _op = op;
-    _value = value;
-    return _hasValue = true;
-  }
+  /// A reference to an abstract query builder.
+  ///
+  /// This is often a generated class.
+  Where get where;
 
   @override
   String compile() {
-    if (_raw != null) return _raw;
-    if (_value == null) return null;
-    var v = sanitizeExpression(_value);
-    return "$_op '$v'";
-  }
-
-  void isEmpty() => equals('');
-
-  void equals(String value) {
-    _change('=', value);
-  }
-
-  void notEquals(String value) {
-    _change('!=', value);
-  }
-
-  void like(String value) {
-    _change('LIKE', value);
-  }
-
-  @override
-  void isBetween(String lower, String upper) {
-    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
-    _raw = "BETWEEN '$l' AND '$u'";
-    _hasValue = true;
-  }
-
-  @override
-  void isNotBetween(String lower, String upper) {
-    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
-    _raw = "NOT BETWEEN '$l' AND '$u'";
-    _hasValue = true;
-  }
-
-  @override
-  void isIn(Iterable<String> values) {
-    _raw = 'IN (' +
-        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
-        ')';
-    _hasValue = true;
-  }
-
-  @override
-  void isNotIn(Iterable<String> values) {
-    _raw = 'NOT IN (' +
-        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
-        ')';
-    _hasValue = true;
+    var b = new StringBuffer('SELECT ');
+    if (fields == null)
+      b.write('*');
+    else
+      b.write(fields.join(', '));
+    b.write(' FROM $tableName');
+    var whereClause = where.compile();
+    if (whereClause.isNotEmpty) b.write(' WHERE $whereClause');
+    return b.toString();
   }
 }
 
-class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
-  bool _hasValue = false;
-  String _op = '=', _raw;
-  bool _value;
+/// Builds a SQL `WHERE` clause.
+abstract class QueryWhere {
+  final Set<QueryWhere> _and = new Set();
+  final Set<QueryWhere> _or = new Set();
 
-  @override
-  bool get hasValue => _hasValue;
+  Map<String, SqlExpressionBuilder> get expressionBuilders;
 
-  bool _change(String op, bool value) {
-    _raw = null;
-    _op = op;
-    _value = value;
-    return _hasValue = true;
+  void and(QueryWhere other) {
+    _and.add(other);
   }
 
-  @override
+  void or(QueryWhere other) {
+    _or.add(other);
+  }
+
   String compile() {
-    if (_raw != null) return _raw;
-    if (_value == null) return null;
-    var v = _value ? 'TRUE' : 'FALSE';
-    return '$_op $v';
-  }
+    var b = new StringBuffer();
+    int i = 0;
 
-  void equals(bool value) {
-    _change('=', value);
-  }
+    for (var entry in expressionBuilders.entries) {
+      var key = entry.key, builder = entry.value;
+      if (builder.hasValue) {
+        if (i++ > 0) b.write(' AND ');
+        b.write('$key ${builder.compile()}');
+      }
+    }
 
-  void notEquals(bool value) {
-    _change('!=', value);
-  }
+    for (var other in _and) {
+      var sql = other.compile();
+      if (sql.isNotEmpty) b.write(' AND $sql');
+    }
 
-  @override
-  void isBetween(bool lower, bool upper) => throw new UnsupportedError(
-      'Booleans do not support BETWEEN expressions.');
+    for (var other in _or) {
+      var sql = other.compile();
+      if (sql.isNotEmpty) b.write(' OR $sql');
+    }
 
-  @override
-  void isNotBetween(bool lower, bool upper) => isBetween(lower, upper);
-
-  @override
-  void isIn(Iterable<bool> values) {
-    _raw = 'IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
-    _hasValue = true;
-  }
-
-  @override
-  void isNotIn(Iterable<bool> values) {
-    _raw =
-        'NOT IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
-    _hasValue = true;
+    return b.toString();
   }
 }
 
-class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder<DateTime> {
-  final NumericSqlExpressionBuilder<int> year =
-          new NumericSqlExpressionBuilder<int>(),
-      month = new NumericSqlExpressionBuilder<int>(),
-      day = new NumericSqlExpressionBuilder<int>(),
-      hour = new NumericSqlExpressionBuilder<int>(),
-      minute = new NumericSqlExpressionBuilder<int>(),
-      second = new NumericSqlExpressionBuilder<int>();
-  final String columnName;
-  String _raw;
+/// Represents the `UNION` of two subqueries.
+class Union<T> extends QueryBase<T> {
+  final QueryBase<T> left, right;
+  final bool all;
 
-  DateTimeSqlExpressionBuilder(this.columnName);
+  Union(this.left, this.right, {this.all: false});
 
   @override
-  bool get hasValue =>
-      _raw?.isNotEmpty == true ||
-      year.hasValue ||
-      month.hasValue ||
-      day.hasValue ||
-      hour.hasValue ||
-      minute.hasValue ||
-      second.hasValue;
-
-  bool _change(String _op, DateTime dt, bool time) {
-    var dateString = time ? dateYmdHms.format(dt) : dateYmd.format(dt);
-    _raw = '$columnName $_op \'$dateString\'';
-    return true;
-  }
-
-  operator <(DateTime value) => _change('<', value, true);
-
-  operator <=(DateTime value) => _change('<=', value, true);
-
-  operator >(DateTime value) => _change('>', value, true);
-
-  operator >=(DateTime value) => _change('>=', value, true);
-
-  void equals(DateTime value, {bool includeTime: true}) {
-    _change('=', value, includeTime != false);
-  }
-
-  void lessThan(DateTime value, {bool includeTime: true}) {
-    _change('<', value, includeTime != false);
-  }
-
-  void lessThanOrEqualTo(DateTime value, {bool includeTime: true}) {
-    _change('<=', value, includeTime != false);
-  }
-
-  void greaterThan(DateTime value, {bool includeTime: true}) {
-    _change('>', value, includeTime != false);
-  }
-
-  void greaterThanOrEqualTo(DateTime value, {bool includeTime: true}) {
-    _change('>=', value, includeTime != false);
-  }
-
-  @override
-  void isIn(Iterable<DateTime> values) {
-    _raw = '$columnName IN (' +
-        values.map(dateYmdHms.format).map((s) => '$s').join(', ') +
-        ')';
-  }
-
-  @override
-  void isNotIn(Iterable<DateTime> values) {
-    _raw = '$columnName NOT IN (' +
-        values.map(dateYmdHms.format).map((s) => '$s').join(', ') +
-        ')';
-  }
-
-  @override
-  void isBetween(DateTime lower, DateTime upper) {
-    var l = dateYmdHms.format(lower), u = dateYmdHms.format(upper);
-    _raw = "$columnName BETWEEN '$l' and '$u'";
-  }
-
-  @override
-  void isNotBetween(DateTime lower, DateTime upper) {
-    var l = dateYmdHms.format(lower), u = dateYmdHms.format(upper);
-    _raw = "$columnName NOT BETWEEN '$l' and '$u'";
-  }
+  T deserialize(List row) => left.deserialize(row);
 
   @override
   String compile() {
-    if (_raw?.isNotEmpty == true) return _raw;
-    List<String> parts = [];
-    if (year.hasValue) parts.add('YEAR($columnName) ${year.compile()}');
-    if (month.hasValue) parts.add('MONTH($columnName) ${month.compile()}');
-    if (day.hasValue) parts.add('DAY($columnName) ${day.compile()}');
-    if (hour.hasValue) parts.add('HOUR($columnName) ${hour.compile()}');
-    if (minute.hasValue) parts.add('MINUTE($columnName) ${minute.compile()}');
-    if (second.hasValue) parts.add('SECOND($columnName) ${second.compile()}');
-
-    return parts.isEmpty ? null : parts.join(' AND ');
+    var selector = all == true ? 'UNION ALL' : 'UNION';
+    return '(${left.compile()}) $selector (${right.compile()})';
   }
+}
+
+/// An abstract interface that performs queries.
+///
+/// This class should be implemented.
+abstract class QueryExecutor {
+  const QueryExecutor();
+
+  Future<List<List>> query(String query);
 }
