@@ -4,13 +4,20 @@ import 'builder.dart';
 
 /// A base class for objects that compile to SQL queries, typically within an ORM.
 abstract class QueryBase<T> {
+  /// The list of fields returned by this query.
+  ///
+  /// If it's `null`, then this query will perform a `SELECT *`.
+  List<String> get fields;
+
   String compile({bool includeTableName: false, String preamble});
 
   T deserialize(List row);
 
   Future<List<T>> get(QueryExecutor executor) async {
     var sql = compile();
-    return executor.query(sql).then((it) => it.map(deserialize).toList());
+    return executor
+        .query(sql, fields)
+        .then((it) => it.map(deserialize).toList());
   }
 
   Future<T> getOne(QueryExecutor executor) {
@@ -44,11 +51,6 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// The table against which to execute this query.
   String get tableName;
-
-  /// The list of fields returned by this query.
-  ///
-  /// If it's `null`, then this query will perform a `SELECT *`.
-  List<String> get fields;
 
   /// A reference to an abstract query builder.
   ///
@@ -165,6 +167,17 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (_join != null) b.write(' ${_join.compile()}');
     return b.toString();
   }
+
+  Future<List<T>> delete(QueryExecutor executor) async {
+    var sql = compile(preamble: 'DELETE FROM $tableName');
+    return executor
+        .query(sql, fields)
+        .then((it) => it.map(deserialize).toList());
+  }
+
+  Future<T> deleteOne(QueryExecutor executor) {
+    return delete(executor).then((it) => it.isEmpty ? null : it.first);
+  }
 }
 
 /// Builds a SQL `WHERE` clause.
@@ -227,6 +240,9 @@ class Union<T> extends QueryBase<T> {
   Union(this.left, this.right, {this.all: false});
 
   @override
+  List<String> get fields => left.fields;
+
+  @override
   T deserialize(List row) => left.deserialize(row);
 
   @override
@@ -286,5 +302,5 @@ class JoinOn {
 abstract class QueryExecutor {
   const QueryExecutor();
 
-  Future<List<List>> query(String query);
+  Future<List<List>> query(String query, List<String> returningFields);
 }

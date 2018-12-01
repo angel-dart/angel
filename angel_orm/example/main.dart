@@ -5,13 +5,11 @@ part 'main.g.dart';
 part 'main.serializer.g.dart';
 
 main() async {
-  var query = new EmployeeQuery();
-  query.where
-    ..firstName.equals('Rich')
-    ..lastName.equals('Person')
-    ..or(new EmployeeQueryWhere()..salary.greaterThanOrEqualTo(75000));
-
-  query.join('companies', 'company_id', 'id');
+  var query = new EmployeeQuery()
+    ..where.firstName.equals('Rich')
+    ..where.lastName.equals('Person')
+    ..orWhere((w) => w.salary.greaterThanOrEqualTo(75000))
+    ..join('companies', 'company_id', 'id');
 
   var richPerson = await query.getOne(new _FakeExecutor());
   print(richPerson.toJson());
@@ -21,7 +19,7 @@ class _FakeExecutor extends QueryExecutor {
   const _FakeExecutor();
 
   @override
-  Future<List<List>> query(String query) async {
+  Future<List<List>> query(String query, returningFields) async {
     var now = new DateTime.now();
     print('_FakeExecutor received query: $query');
     return [
