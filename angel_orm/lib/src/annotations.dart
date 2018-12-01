@@ -6,12 +6,12 @@ class Orm {
   const Orm({this.tableName});
 }
 
-class CanJoin {
-  final Type type;
+class Join {
+  final Type against;
   final String foreignKey;
-  final JoinType joinType;
+  final JoinType type;
 
-  const CanJoin(this.type, this.foreignKey, {this.joinType: JoinType.full});
+  const Join(this.against, this.foreignKey, {this.type: JoinType.inner});
 }
 
 /// The various types of [Join].

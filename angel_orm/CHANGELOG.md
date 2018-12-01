@@ -1,3 +1,7 @@
+# 2.0.0-dev.3
+* Brought back old-style query builder.
+* Strong-mode updates, revised `Join`.
+
 # 2.0.0-dev.2
 * Renamed `ORM` to `Orm`.
 * `Orm` now requires a database type.

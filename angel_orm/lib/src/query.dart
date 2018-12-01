@@ -40,7 +40,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   final List<OrderBy> _orderBy = [];
   String _crossJoin, _groupBy;
   int _limit, _offset;
-  Join _join;
+  JoinBuilder _join;
 
   /// The table against which to execute this query.
   String get tableName;
@@ -84,35 +84,35 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   void join(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
     _join =
-        new Join(JoinType.inner, this, tableName, localKey, foreignKey, op: op);
+        new JoinBuilder(JoinType.inner, this, tableName, localKey, foreignKey, op: op);
   }
 
   /// Execute a `LEFT JOIN` against another table.
   void leftJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
     _join =
-        new Join(JoinType.left, this, tableName, localKey, foreignKey, op: op);
+        new JoinBuilder(JoinType.left, this, tableName, localKey, foreignKey, op: op);
   }
 
   /// Execute a `RIGHT JOIN` against another table.
   void rightJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
     _join =
-        new Join(JoinType.right, this, tableName, localKey, foreignKey, op: op);
+        new JoinBuilder(JoinType.right, this, tableName, localKey, foreignKey, op: op);
   }
 
   /// Execute a `FULL OUTER JOIN` against another table.
   void fullOuterJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
     _join =
-        new Join(JoinType.full, this, tableName, localKey, foreignKey, op: op);
+        new JoinBuilder(JoinType.full, this, tableName, localKey, foreignKey, op: op);
   }
 
   /// Execute a `SELF JOIN`.
   void selfJoin(String tableName, String localKey, String foreignKey,
       {String op: '='}) {
     _join =
-        new Join(JoinType.self, this, tableName, localKey, foreignKey, op: op);
+        new JoinBuilder(JoinType.self, this, tableName, localKey, foreignKey, op: op);
   }
 
   @override
@@ -201,12 +201,12 @@ class Union<T> extends QueryBase<T> {
 }
 
 /// Builds a SQL `JOIN` query.
-class Join {
+class JoinBuilder {
   final JoinType type;
   final Query from;
   final String to, key, value, op;
 
-  Join(this.type, this.from, this.to, this.key, this.value, {this.op: '='});
+  JoinBuilder(this.type, this.from, this.to, this.key, this.value, {this.op: '='});
 
   String compile() {
     var b = new StringBuffer();

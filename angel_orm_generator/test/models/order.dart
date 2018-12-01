@@ -10,9 +10,12 @@ part 'order.serializer.g.dart';
 @postgreSqlOrm
 @serializable
 class _Order extends Model {
-  @CanJoin(Customer, 'id')
+  @Join(Customer, CustomerFields.id)
   int customerId;
+
   int employeeId;
+
   DateTime orderDate;
+
   int shipperId;
 }
