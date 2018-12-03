@@ -8,5 +8,4 @@ part 'customer.serializer.g.dart';
 
 @orm
 @serializable
-class _Customer extends Model {
-}
+class _Customer extends Model {}

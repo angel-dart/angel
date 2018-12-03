@@ -11,7 +11,11 @@ abstract class TreeSerializer {
     return new Tree(
         id: map['id'] as String,
         rings: map['rings'] as int,
-        fruits: map['fruits'] as List<dynamic>,
+        fruits: map['fruits'] is Iterable
+            ? new List.unmodifiable(((map['fruits'] as Iterable)
+                    .where((x) => x is Map) as Iterable<Map>)
+                .map(FruitSerializer.fromMap))
+            : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -31,7 +35,7 @@ abstract class TreeSerializer {
     return {
       'id': model.id,
       'rings': model.rings,
-      'fruits': model.fruits,
+      'fruits': model.fruits?.map((m) => m.toJson())?.toList(),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };

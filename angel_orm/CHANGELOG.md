@@ -1,3 +1,6 @@
+# 2.0.0-dev.6
+* Add `delete`, `insert` and `update` methods to `Query`.
+
 # 2.0.0-dev.4
 * Add more querying methods.
 * Add preamble to `Query.compile`.

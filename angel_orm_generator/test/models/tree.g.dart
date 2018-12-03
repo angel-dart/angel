@@ -9,11 +9,7 @@ part of angel_orm_generator.test.models.tree;
 @generatedSerializable
 class Tree extends _Tree {
   Tree(
-      {this.id,
-      this.rings,
-      List<dynamic> fruits,
-      this.createdAt,
-      this.updatedAt})
+      {this.id, this.rings, List<Fruit> fruits, this.createdAt, this.updatedAt})
       : this.fruits = new List.unmodifiable(fruits ?? []);
 
   @override
@@ -23,7 +19,7 @@ class Tree extends _Tree {
   final int rings;
 
   @override
-  final List<dynamic> fruits;
+  final List<Fruit> fruits;
 
   @override
   final DateTime createdAt;
@@ -34,7 +30,7 @@ class Tree extends _Tree {
   Tree copyWith(
       {String id,
       int rings,
-      List<dynamic> fruits,
+      List<Fruit> fruits,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Tree(
@@ -49,7 +45,7 @@ class Tree extends _Tree {
     return other is _Tree &&
         other.id == id &&
         other.rings == rings &&
-        const ListEquality<dynamic>(const DefaultEquality())
+        const ListEquality<Fruit>(const DefaultEquality<Fruit>())
             .equals(other.fruits, fruits) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;

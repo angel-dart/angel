@@ -86,10 +86,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           ..annotations.add(refer('override'))
           ..type = MethodType.getter
           ..body = new Block((b) {
-            var names = ctx.buildContext.fields
-                .map((f) => literalString(f.name))
-                .toList();
-            b.addExpression(literalConstList(names).returned);
+            b.addExpression(
+                refer('${rc.pascalCase}Fields').property('allFields').returned);
           });
       }));
 
@@ -116,8 +114,16 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             var args = <String, Expression>{};
 
             for (var field in ctx.buildContext.fields) {
-              var type = convertTypeReference(field.type);
-              args[field.name] = (refer('row').index(literalNum(i))).asA(type);
+              Reference type = convertTypeReference(field.type);
+              if (isSpecialId(field)) type = refer('int');
+
+              var expr = (refer('row').index(literalNum(i++)));
+              if (isSpecialId(field))
+                expr = expr.property('toString').call([]);
+              else
+                expr = expr.asA(type);
+
+              args[field.name] = expr;
             }
 
             b.addExpression(
@@ -125,6 +131,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           });
       }));
     });
+  }
+
+  bool isSpecialId(FieldElement field) {
+    return (field.name == 'id' && autoIdAndDateFields);
   }
 
   Class buildWhereClass(OrmBuildContext ctx) {
@@ -151,7 +161,14 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         // TODO: Handle fields with relations
         Reference builderType;
 
-        if (const TypeChecker.fromRuntime(String).isExactlyType(field.type)) {
+        if (const TypeChecker.fromRuntime(int).isExactlyType(field.type) ||
+            const TypeChecker.fromRuntime(double).isExactlyType(field.type) ||
+            isSpecialId(field)) {
+          builderType = new TypeReference((b) => b
+            ..symbol = 'NumericSqlExpressionBuilder'
+            ..types.add(refer(isSpecialId(field) ? 'int' : field.type.name)));
+        } else if (const TypeChecker.fromRuntime(String)
+            .isExactlyType(field.type)) {
           builderType = refer('StringSqlExpressionBuilder');
         } else if (const TypeChecker.fromRuntime(bool)
             .isExactlyType(field.type)) {
@@ -159,12 +176,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         } else if (const TypeChecker.fromRuntime(DateTime)
             .isExactlyType(field.type)) {
           builderType = refer('DateTimeSqlExpressionBuilder');
-        } else if (const TypeChecker.fromRuntime(int)
-                .isExactlyType(field.type) ||
-            const TypeChecker.fromRuntime(double).isExactlyType(field.type)) {
-          builderType = new TypeReference((b) => b
-            ..symbol = 'NumericSqlExpressionBuilder'
-            ..types.add(refer(field.type.name)));
         } else {
           throw new UnsupportedError(
               'Cannot generate ORM code for field of type ${field.type.name}.');

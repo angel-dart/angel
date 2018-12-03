@@ -9,6 +9,9 @@ abstract class QueryBase<T> {
   /// If it's `null`, then this query will perform a `SELECT *`.
   List<String> get fields;
 
+  /// A String of all [fields], joined by a comma (`,`).
+  String get fieldSet => fields.join(', ');
+
   String compile({bool includeTableName: false, String preamble});
 
   T deserialize(List row);
@@ -42,6 +45,21 @@ class OrderBy {
   String compile() => descending ? '$key DESC' : '$key ASC';
 }
 
+String toSql(Object obj) {
+  if (obj is DateTime) {
+    return dateYmdHms.format(obj);
+  } else if (obj is bool) {
+    return obj ? 'TRUE' : 'FALSE';
+  } else if (obj == null) {
+    return 'NULL';
+  } else if (obj is String) {
+    // TODO: Proper escapes
+    return obj;
+  } else {
+    return obj.toString();
+  }
+}
+
 /// A SQL `SELECT` query builder.
 abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   final List<OrderBy> _orderBy = [];
@@ -54,8 +72,13 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// A reference to an abstract query builder.
   ///
-  /// This is often a generated class.
+  /// This is usually a generated class.
   Where get where;
+
+  /// A set of values, for an insertion or update.
+  ///
+  /// This is usually a generated class.
+  QueryValues get values;
 
   /// Makes a new [Where] clause.
   Where newWhereClause() {
@@ -168,6 +191,12 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     return b.toString();
   }
 
+  @override
+  Future<T> getOne(QueryExecutor executor) {
+    limit(1);
+    return super.getOne(executor);
+  }
+
   Future<List<T>> delete(QueryExecutor executor) async {
     var sql = compile(preamble: 'DELETE FROM $tableName');
     return executor
@@ -176,8 +205,88 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<T> deleteOne(QueryExecutor executor) {
+    limit(1);
     return delete(executor).then((it) => it.isEmpty ? null : it.first);
   }
+
+  Future<T> insert(QueryExecutor executor) {
+    var sql = new StringBuffer('INSERT INTO $tableName ($fieldSet)');
+    var valuesClause = values.compileForInsert();
+
+    if (valuesClause == null) {
+      throw new StateError('No values have been specified for update.');
+    } else {
+      sql.write(' $valuesClause');
+      return executor
+          .query(sql.toString(), fields)
+          .then((it) => it.isEmpty ? null : deserialize(it.first));
+    }
+  }
+
+  Future<List<T>> update(QueryExecutor executor) async {
+    var sql = new StringBuffer('UPDATE $tableName');
+    var valuesClause = values.compileForUpdate();
+
+    if (valuesClause == null) {
+      throw new StateError('No values have been specified for update.');
+    } else {
+      sql.write(' $valuesClause');
+      var whereClause = where.compile();
+      if (whereClause.isNotEmpty) sql.write(' WHERE $whereClause');
+      if (_limit != null) sql.write(' LIMIT $_limit');
+      return executor
+          .query(sql.toString(), fields)
+          .then((it) => it.map(deserialize).toList());
+    }
+  }
+
+  Future<T> updateOne(QueryExecutor executor) {
+    limit(1);
+    return update(executor).then((it) => it.isEmpty ? null : it.first);
+  }
+}
+
+abstract class QueryValues {
+  Map<String, dynamic> toMap();
+
+  String compileForInsert() {
+    var data = toMap();
+    if (data.isEmpty) return null;
+    var b = new StringBuffer('VALUES (');
+    int i = 0;
+
+    for (var entry in data.entries) {
+      if (i++ > 0) b.write(', ');
+      b.write(toSql(entry.value));
+    }
+
+    b.write(')');
+    return b.toString();
+  }
+
+  String compileForUpdate() {
+    var data = toMap();
+    if (data.isEmpty) return null;
+    var b = new StringBuffer('SET');
+    int i = 0;
+
+    for (var entry in data.entries) {
+      if (i++ > 0) b.write(',');
+      b.write(' ');
+      b.write(entry.key);
+      b.write('=');
+      b.write(toSql(entry.value));
+    }
+    return b.toString();
+  }
+}
+
+/// A [QueryValues] implementation that simply writes to a [Map].
+class MapQueryValues extends QueryValues {
+  final Map<String, dynamic> values = {};
+
+  @override
+  Map<String, dynamic> toMap() => values;
 }
 
 /// Builds a SQL `WHERE` clause.

@@ -13,7 +13,7 @@ class User extends _User {
       this.username,
       this.password,
       this.email,
-      List<dynamic> roles,
+      List<Role> roles,
       this.createdAt,
       this.updatedAt})
       : this.roles = new List.unmodifiable(roles ?? []);
@@ -31,7 +31,7 @@ class User extends _User {
   final String email;
 
   @override
-  final List<dynamic> roles;
+  final List<Role> roles;
 
   @override
   final DateTime createdAt;
@@ -44,7 +44,7 @@ class User extends _User {
       String username,
       String password,
       String email,
-      List<dynamic> roles,
+      List<Role> roles,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new User(
@@ -63,7 +63,7 @@ class User extends _User {
         other.username == username &&
         other.password == password &&
         other.email == email &&
-        const ListEquality<dynamic>(const DefaultEquality())
+        const ListEquality<Role>(const DefaultEquality<Role>())
             .equals(other.roles, roles) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;

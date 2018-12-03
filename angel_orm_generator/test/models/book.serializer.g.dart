@@ -10,8 +10,12 @@ abstract class BookSerializer {
   static Book fromMap(Map map) {
     return new Book(
         id: map['id'] as String,
-        author: map['author'] as dynamic,
-        partnerAuthor: map['partner_author'] as dynamic,
+        author: map['author'] != null
+            ? AuthorSerializer.fromMap(map['author'] as Map)
+            : null,
+        partnerAuthor: map['partner_author'] != null
+            ? AuthorSerializer.fromMap(map['partner_author'] as Map)
+            : null,
         authorId: map['author_id'] as int,
         name: map['name'] as String,
         createdAt: map['created_at'] != null
@@ -32,8 +36,8 @@ abstract class BookSerializer {
     }
     return {
       'id': model.id,
-      'author': model.author,
-      'partner_author': model.partnerAuthor,
+      'author': AuthorSerializer.toMap(model.author),
+      'partner_author': AuthorSerializer.toMap(model.partnerAuthor),
       'author_id': model.authorId,
       'name': model.name,
       'created_at': model.createdAt?.toIso8601String(),

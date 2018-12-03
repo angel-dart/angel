@@ -14,7 +14,7 @@ class Leg extends _Leg {
   final String id;
 
   @override
-  final dynamic foot;
+  final Foot foot;
 
   @override
   final String name;
@@ -27,7 +27,7 @@ class Leg extends _Leg {
 
   Leg copyWith(
       {String id,
-      dynamic foot,
+      Foot foot,
       String name,
       DateTime createdAt,
       DateTime updatedAt}) {

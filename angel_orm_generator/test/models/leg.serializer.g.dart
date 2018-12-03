@@ -10,7 +10,9 @@ abstract class LegSerializer {
   static Leg fromMap(Map map) {
     return new Leg(
         id: map['id'] as String,
-        foot: map['foot'] as dynamic,
+        foot: map['foot'] != null
+            ? FootSerializer.fromMap(map['foot'] as Map)
+            : null,
         name: map['name'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -30,7 +32,7 @@ abstract class LegSerializer {
     }
     return {
       'id': model.id,
-      'foot': model.foot,
+      'foot': FootSerializer.toMap(model.foot),
       'name': model.name,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()

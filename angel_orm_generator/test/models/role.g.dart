@@ -17,21 +17,22 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'name', 'createdAt', 'updatedAt'];
+    return RoleFields.allFields;
   }
 
   @override
   deserialize(List row) {
     return new Role(
-        id: (row[0] as String),
-        name: (row[0] as String),
-        createdAt: (row[0] as DateTime),
-        updatedAt: (row[0] as DateTime));
+        id: row[0].toString(),
+        name: (row[1] as String),
+        createdAt: (row[2] as DateTime),
+        updatedAt: (row[3] as DateTime));
   }
 }
 
 class RoleQueryWhere extends QueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
 
   final StringSqlExpressionBuilder name =
       new StringSqlExpressionBuilder('name');

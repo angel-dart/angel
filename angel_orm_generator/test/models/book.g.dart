@@ -21,10 +21,10 @@ class Book extends _Book {
   final String id;
 
   @override
-  final dynamic author;
+  final Author author;
 
   @override
-  final dynamic partnerAuthor;
+  final Author partnerAuthor;
 
   @override
   final int authorId;
@@ -40,8 +40,8 @@ class Book extends _Book {
 
   Book copyWith(
       {String id,
-      dynamic author,
-      dynamic partnerAuthor,
+      Author author,
+      Author partnerAuthor,
       int authorId,
       String name,
       DateTime createdAt,

@@ -10,3 +10,21 @@ builders:
         - ".angel_orm.g.part"
     applies_builders:
       ["source_gen|combining_builder", "source_gen|part_cleanup"]
+targets:
+  _standalone:
+    sources:
+      - test/models/author.dart
+      - test/models/car.dart
+      - test/models/customer.dart
+      - test/models/foot.dart
+      - test/models/fruit.dart
+      - test/models/role.dart
+  $default:
+    dependencies:
+      - :_standalone
+    sources:
+      - test/models/book.dart
+      - test/models/leg.dart
+      - test/models/order.dart
+      - test/models/tree.dart
+      - test/models/user.dart

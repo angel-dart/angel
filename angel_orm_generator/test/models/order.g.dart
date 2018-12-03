@@ -17,32 +17,25 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
 
   @override
   get fields {
-    return const [
-      'id',
-      'customerId',
-      'employeeId',
-      'orderDate',
-      'shipperId',
-      'createdAt',
-      'updatedAt'
-    ];
+    return OrderFields.allFields;
   }
 
   @override
   deserialize(List row) {
     return new Order(
-        id: (row[0] as String),
-        customerId: (row[0] as int),
-        employeeId: (row[0] as int),
-        orderDate: (row[0] as DateTime),
-        shipperId: (row[0] as int),
-        createdAt: (row[0] as DateTime),
-        updatedAt: (row[0] as DateTime));
+        id: row[0].toString(),
+        customerId: (row[1] as int),
+        employeeId: (row[2] as int),
+        orderDate: (row[3] as DateTime),
+        shipperId: (row[4] as int),
+        createdAt: (row[5] as DateTime),
+        updatedAt: (row[6] as DateTime));
   }
 }
 
 class OrderQueryWhere extends QueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
 
   final NumericSqlExpressionBuilder<int> customerId =
       new NumericSqlExpressionBuilder<int>('customer_id');

@@ -17,22 +17,23 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'legId', 'nToes', 'createdAt', 'updatedAt'];
+    return FootFields.allFields;
   }
 
   @override
   deserialize(List row) {
     return new Foot(
-        id: (row[0] as String),
-        legId: (row[0] as int),
-        nToes: (row[0] as int),
-        createdAt: (row[0] as DateTime),
-        updatedAt: (row[0] as DateTime));
+        id: row[0].toString(),
+        legId: (row[1] as int),
+        nToes: (row[2] as int),
+        createdAt: (row[3] as DateTime),
+        updatedAt: (row[4] as DateTime));
   }
 }
 
 class FootQueryWhere extends QueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
 
   final NumericSqlExpressionBuilder<int> legId =
       new NumericSqlExpressionBuilder<int>('leg_id');

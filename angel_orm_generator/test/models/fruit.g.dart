@@ -17,22 +17,23 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'treeId', 'commonName', 'createdAt', 'updatedAt'];
+    return FruitFields.allFields;
   }
 
   @override
   deserialize(List row) {
     return new Fruit(
-        id: (row[0] as String),
-        treeId: (row[0] as int),
-        commonName: (row[0] as String),
-        createdAt: (row[0] as DateTime),
-        updatedAt: (row[0] as DateTime));
+        id: row[0].toString(),
+        treeId: (row[1] as int),
+        commonName: (row[2] as String),
+        createdAt: (row[3] as DateTime),
+        updatedAt: (row[4] as DateTime));
   }
 }
 
 class FruitQueryWhere extends QueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
 
   final NumericSqlExpressionBuilder<int> treeId =
       new NumericSqlExpressionBuilder<int>('tree_id');

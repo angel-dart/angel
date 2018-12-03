@@ -2,7 +2,6 @@
 library angel_orm_generator.test.car_test;
 
 import 'package:angel_orm/angel_orm.dart';
-import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'models/car.dart';
 import 'common.dart';
@@ -44,7 +43,7 @@ main() {
   });
 
   group('queries', () {
-    PostgreSQLConnection connection;
+    PostgresExecutor connection;
 
     setUp(() async {
       connection = await connectToPostgres(['car']);
@@ -52,7 +51,7 @@ main() {
 
     group('selects', () {
       test('select all', () async {
-        var cars = await CarQuery.getAll(connection);
+        var cars = await new CarQuery().get(connection);
         expect(cars, []);
       });
 
@@ -65,6 +64,8 @@ main() {
               description: 'Vroom vroom!',
               familyFriendly: false);
         });
+
+        tearDown(() => connection.close());
 
         test('where clause is applied', () async {
           var query = new CarQuery()..where.familyFriendly.equals(true);
@@ -113,23 +114,29 @@ main() {
         });
 
         test('get one', () async {
-          var car = await CarQuery.getOne(int.parse(ferrari.id), connection);
-          expect(car.toJson(), ferrari.toJson());
+          var id = int.parse(ferrari.id);
+          var query = new CarQuery()..where.id.equals(id);
+          var car = await query.getOne(connection);
+          expect(car, ferrari);
         });
 
         test('delete one', () async {
-          var car = await CarQuery.deleteOne(int.parse(ferrari.id), connection);
+          var id = int.parse(ferrari.id);
+          var query = new CarQuery()..where.id.equals(id);
+          var car = await query.deleteOne(connection);
           expect(car.toJson(), ferrari.toJson());
 
-          var cars = await CarQuery.getAll(connection);
+          var cars = await new CarQuery().get(connection);
           expect(cars, isEmpty);
         });
 
         test('delete stream', () async {
-          var query = new CarQuery()..where.make.equals('Ferrari');
-          query.or(new CarQueryWhere()..familyFriendly.equals(true));
-          print(query.compile('DELETE FROM "cars"'));
-          var cars = await query.delete(connection);
+          var query = new CarQuery()
+            ..where.make.equals('Ferrari')
+            ..orWhere((w) => w.familyFriendly.equals(true));
+
+          print(query.compile(preamble: 'DELETE FROM "cars"'));
+          var cars = await query.get(connection);
           expect(cars, hasLength(1));
           expect(cars.first.toJson(), ferrari.toJson());
         });

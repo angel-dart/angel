@@ -1,16 +1,13 @@
 /// Tests for @belongsTo...
 library angel_orm_generator.test.book_test;
 
-import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'models/author.dart';
-import 'models/author.orm.g.dart';
 import 'models/book.dart';
-import 'models/book.orm.g.dart';
 import 'common.dart';
 
 main() {
-  PostgreSQLConnection connection;
+  PostgresExecutor connection;
   Author rowling;
   Author jameson;
   Book deathlyHallows;
@@ -24,13 +21,14 @@ main() {
 
     // And a book
     deathlyHallows = await BookQuery.insert(connection,
-        authorId: int.parse(rowling.id), name: 'Deathly Hallows', partnerAuthorId: int.parse(jameson.id));
+        authorId: int.parse(rowling.id),
+        name: 'Deathly Hallows',
+        partnerAuthorId: int.parse(jameson.id));
   });
 
   tearDown(() => connection.close());
 
-  group('selects', ()
-  {
+  group('selects', () {
     test('select all', () async {
       var query = new BookQuery();
       var books = await query.get(connection).toList();
@@ -52,8 +50,8 @@ main() {
       query.where.id.equals(int.parse(deathlyHallows.id));
       print(query.toSql());
 
-      var book = await BookQuery.getOne(
-          int.parse(deathlyHallows.id), connection);
+      var book =
+          await BookQuery.getOne(int.parse(deathlyHallows.id), connection);
       print(book.toJson());
       expect(book.id, deathlyHallows.id);
       expect(book.name, deathlyHallows.name);
@@ -85,10 +83,8 @@ main() {
     });
 
     test('union', () async {
-      var query1 = new BookQuery()
-        ..where.name.like('Deathly%');
-      var query2 = new BookQuery()
-        ..where.authorId.equals(-1);
+      var query1 = new BookQuery()..where.name.like('Deathly%');
+      var query2 = new BookQuery()..where.authorId.equals(-1);
       var query3 = new BookQuery()
         ..where.name.isIn(['Goblet of Fire', 'Order of the Phoenix']);
       query1

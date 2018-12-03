@@ -17,32 +17,25 @@ class CarQuery extends Query<Car, CarQueryWhere> {
 
   @override
   get fields {
-    return const [
-      'id',
-      'make',
-      'description',
-      'familyFriendly',
-      'recalledAt',
-      'createdAt',
-      'updatedAt'
-    ];
+    return CarFields.allFields;
   }
 
   @override
   deserialize(List row) {
     return new Car(
-        id: (row[0] as String),
-        make: (row[0] as String),
-        description: (row[0] as String),
-        familyFriendly: (row[0] as bool),
-        recalledAt: (row[0] as DateTime),
-        createdAt: (row[0] as DateTime),
-        updatedAt: (row[0] as DateTime));
+        id: row[0].toString(),
+        make: (row[1] as String),
+        description: (row[2] as String),
+        familyFriendly: (row[3] as bool),
+        recalledAt: (row[4] as DateTime),
+        createdAt: (row[5] as DateTime),
+        updatedAt: (row[6] as DateTime));
   }
 }
 
 class CarQueryWhere extends QueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
 
   final StringSqlExpressionBuilder make =
       new StringSqlExpressionBuilder('make');

@@ -17,20 +17,21 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'createdAt', 'updatedAt'];
+    return CustomerFields.allFields;
   }
 
   @override
   deserialize(List row) {
     return new Customer(
-        id: (row[0] as String),
-        createdAt: (row[0] as DateTime),
-        updatedAt: (row[0] as DateTime));
+        id: row[0].toString(),
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime));
   }
 }
 
 class CustomerQueryWhere extends QueryWhere {
-  final StringSqlExpressionBuilder id = new StringSqlExpressionBuilder('id');
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
 
   final DateTimeSqlExpressionBuilder createdAt =
       new DateTimeSqlExpressionBuilder('created_at');

@@ -40,6 +40,9 @@ abstract class _Employee extends Model {
 
 class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   @override
+  final QueryValues values = new MapQueryValues();
+
+  @override
   final EmployeeQueryWhere where = new EmployeeQueryWhere();
 
   @override
