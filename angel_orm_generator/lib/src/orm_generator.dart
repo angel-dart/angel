@@ -48,6 +48,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       // Create `FooQueryWhere` class
       lib.body.add(buildQueryClass(ctx));
       lib.body.add(buildWhereClass(ctx));
+      lib.body.add(buildValuesClass(ctx));
     });
   }
 
@@ -67,6 +68,17 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               queryWhereType,
             ]);
         });
+
+      // Add values
+      clazz.fields.add(new Field((b) {
+        var type = refer('${rc.pascalCase}QueryValues');
+        b
+          ..name = 'values'
+          ..modifier = FieldModifier.final$
+          ..annotations.add(refer('override'))
+          ..type = type
+          ..assignment = type.newInstance([]).code;
+      }));
 
       // Add tableName
       clazz.methods.add(new Method((m) {
@@ -99,6 +111,15 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           ..modifier = FieldModifier.final$
           ..type = queryWhereType
           ..assignment = queryWhereType.newInstance([]).code;
+      }));
+
+      clazz.methods.add(new Method((b) {
+        b
+          ..name = 'newWhereClause'
+          ..annotations.add(refer('override'))
+          ..returns = queryWhereType
+          ..body = new Block(
+              (b) => b.addExpression(queryWhereType.newInstance([]).returned));
       }));
 
       // Add deserialize()
@@ -191,6 +212,68 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             ]).code;
         }));
       }
+    });
+  }
+
+  Class buildValuesClass(OrmBuildContext ctx) {
+    return new Class((clazz) {
+      var rc = ctx.buildContext.modelClassNameRecase;
+      clazz
+        ..name = '${rc.pascalCase}QueryValues'
+        ..extend = refer('MapQueryValues');
+
+      // Each field generates a getter for setter
+      for (var field in ctx.buildContext.fields) {
+        var name = ctx.buildContext.resolveFieldName(field.name);
+        var type = isSpecialId(field)
+            ? refer('int')
+            : convertTypeReference(field.type);
+
+        clazz.methods.add(new Method((b) {
+          b
+            ..name = field.name
+            ..type = MethodType.getter
+            ..returns = type
+            ..body = new Block((b) => b.addExpression(
+                refer('values').index(literalString(name)).asA(type).returned));
+        }));
+
+        clazz.methods.add(new Method((b) {
+          b
+            ..name = field.name
+            ..type = MethodType.setter
+            ..returns = refer('void')
+            ..requiredParameters.add(new Parameter((b) => b
+              ..name = 'value'
+              ..type = type))
+            ..body = refer('values')
+                .index(literalString(name))
+                .assign(refer('value'))
+                .code;
+        }));
+      }
+
+      // Add an copyFrom(model)
+      clazz.methods.add(new Method((b) {
+        b
+          ..name = 'copyFrom'
+          ..returns = refer('void')
+          ..requiredParameters.add(new Parameter((b) => b
+            ..name = 'model'
+            ..type = ctx.buildContext.modelClassType))
+          ..body = new Block((b) {
+            var args = <String, Expression>{};
+
+            for (var field in ctx.buildContext.fields) {
+              if (isSpecialId(field)) continue;
+              args[ctx.buildContext.resolveFieldName(field.name)] =
+                  refer('model').property(field.name);
+            }
+
+            b.addExpression(
+                refer('values').property('addAll').call([literalMap(args)]));
+          });
+      }));
     });
   }
 }

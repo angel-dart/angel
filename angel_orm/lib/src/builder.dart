@@ -223,6 +223,10 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
     return '$_op $v';
   }
 
+  Null get isTrue => equals(true);
+
+  Null get isFalse => equals(false);
+
   void equals(bool value) {
     _change('=', value);
   }

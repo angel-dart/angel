@@ -8,6 +8,9 @@ part of angel_orm.generator.models.author;
 
 class AuthorQuery extends Query<Author, AuthorQueryWhere> {
   @override
+  final AuthorQueryValues values = new AuthorQueryValues();
+
+  @override
   final AuthorQueryWhere where = new AuthorQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
   @override
   get fields {
     return AuthorFields.allFields;
+  }
+
+  @override
+  AuthorQueryWhere newWhereClause() {
+    return new AuthorQueryWhere();
   }
 
   @override
@@ -46,6 +54,36 @@ class AuthorQueryWhere extends QueryWhere {
   @override
   get expressionBuilders {
     return [id, name, createdAt, updatedAt];
+  }
+}
+
+class AuthorQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  String get name {
+    return (values['name'] as String);
+  }
+
+  void set name(String value) => values['name'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Author model) {
+    values.addAll({
+      'name': model.name,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
   }
 }
 

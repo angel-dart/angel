@@ -8,6 +8,9 @@ part of angel_orm_generator.test.models.role;
 
 class RoleQuery extends Query<Role, RoleQueryWhere> {
   @override
+  final RoleQueryValues values = new RoleQueryValues();
+
+  @override
   final RoleQueryWhere where = new RoleQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   @override
   get fields {
     return RoleFields.allFields;
+  }
+
+  @override
+  RoleQueryWhere newWhereClause() {
+    return new RoleQueryWhere();
   }
 
   @override
@@ -46,6 +54,36 @@ class RoleQueryWhere extends QueryWhere {
   @override
   get expressionBuilders {
     return [id, name, createdAt, updatedAt];
+  }
+}
+
+class RoleQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  String get name {
+    return (values['name'] as String);
+  }
+
+  void set name(String value) => values['name'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Role model) {
+    values.addAll({
+      'name': model.name,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
   }
 }
 

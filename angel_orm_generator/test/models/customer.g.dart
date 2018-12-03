@@ -8,6 +8,9 @@ part of angel_orm_generator.test.models.customer;
 
 class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
   @override
+  final CustomerQueryValues values = new CustomerQueryValues();
+
+  @override
   final CustomerQueryWhere where = new CustomerQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
   @override
   get fields {
     return CustomerFields.allFields;
+  }
+
+  @override
+  CustomerQueryWhere newWhereClause() {
+    return new CustomerQueryWhere();
   }
 
   @override
@@ -42,6 +50,28 @@ class CustomerQueryWhere extends QueryWhere {
   @override
   get expressionBuilders {
     return [id, createdAt, updatedAt];
+  }
+}
+
+class CustomerQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Customer model) {
+    values
+        .addAll({'created_at': model.createdAt, 'updated_at': model.updatedAt});
   }
 }
 

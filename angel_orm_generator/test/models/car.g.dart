@@ -8,6 +8,9 @@ part of angel_orm.generator.models.car;
 
 class CarQuery extends Query<Car, CarQueryWhere> {
   @override
+  final CarQueryValues values = new CarQueryValues();
+
+  @override
   final CarQueryWhere where = new CarQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class CarQuery extends Query<Car, CarQueryWhere> {
   @override
   get fields {
     return CarFields.allFields;
+  }
+
+  @override
+  CarQueryWhere newWhereClause() {
+    return new CarQueryWhere();
   }
 
   @override
@@ -66,6 +74,54 @@ class CarQueryWhere extends QueryWhere {
       createdAt,
       updatedAt
     ];
+  }
+}
+
+class CarQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  String get make {
+    return (values['make'] as String);
+  }
+
+  void set make(String value) => values['make'] = value;
+  String get description {
+    return (values['description'] as String);
+  }
+
+  void set description(String value) => values['description'] = value;
+  bool get familyFriendly {
+    return (values['family_friendly'] as bool);
+  }
+
+  void set familyFriendly(bool value) => values['family_friendly'] = value;
+  DateTime get recalledAt {
+    return (values['recalled_at'] as DateTime);
+  }
+
+  void set recalledAt(DateTime value) => values['recalled_at'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Car model) {
+    values.addAll({
+      'make': model.make,
+      'description': model.description,
+      'family_friendly': model.familyFriendly,
+      'recalled_at': model.recalledAt,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
   }
 }
 

@@ -8,6 +8,9 @@ part of angel_orm_generator.test.models.foot;
 
 class FootQuery extends Query<Foot, FootQueryWhere> {
   @override
+  final FootQueryValues values = new FootQueryValues();
+
+  @override
   final FootQueryWhere where = new FootQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
   @override
   get fields {
     return FootFields.allFields;
+  }
+
+  @override
+  FootQueryWhere newWhereClause() {
+    return new FootQueryWhere();
   }
 
   @override
@@ -50,6 +58,42 @@ class FootQueryWhere extends QueryWhere {
   @override
   get expressionBuilders {
     return [id, legId, nToes, createdAt, updatedAt];
+  }
+}
+
+class FootQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  int get legId {
+    return (values['leg_id'] as int);
+  }
+
+  void set legId(int value) => values['leg_id'] = value;
+  int get nToes {
+    return (values['n_toes'] as int);
+  }
+
+  void set nToes(int value) => values['n_toes'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Foot model) {
+    values.addAll({
+      'leg_id': model.legId,
+      'n_toes': model.nToes,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
   }
 }
 

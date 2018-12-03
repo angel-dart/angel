@@ -8,6 +8,9 @@ part of angel_orm_generator.test.models.order;
 
 class OrderQuery extends Query<Order, OrderQueryWhere> {
   @override
+  final OrderQueryValues values = new OrderQueryValues();
+
+  @override
   final OrderQueryWhere where = new OrderQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
   @override
   get fields {
     return OrderFields.allFields;
+  }
+
+  @override
+  OrderQueryWhere newWhereClause() {
+    return new OrderQueryWhere();
   }
 
   @override
@@ -66,6 +74,54 @@ class OrderQueryWhere extends QueryWhere {
       createdAt,
       updatedAt
     ];
+  }
+}
+
+class OrderQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  int get customerId {
+    return (values['customer_id'] as int);
+  }
+
+  void set customerId(int value) => values['customer_id'] = value;
+  int get employeeId {
+    return (values['employee_id'] as int);
+  }
+
+  void set employeeId(int value) => values['employee_id'] = value;
+  DateTime get orderDate {
+    return (values['order_date'] as DateTime);
+  }
+
+  void set orderDate(DateTime value) => values['order_date'] = value;
+  int get shipperId {
+    return (values['shipper_id'] as int);
+  }
+
+  void set shipperId(int value) => values['shipper_id'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Order model) {
+    values.addAll({
+      'customer_id': model.customerId,
+      'employee_id': model.employeeId,
+      'order_date': model.orderDate,
+      'shipper_id': model.shipperId,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
   }
 }
 

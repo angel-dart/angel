@@ -1,3 +1,13 @@
+# 2.0.0-dev.9
+* Permanent preamble fix
+
+# 2.0.0-dev.8
+* Escapes
+
+# 2.0.0-dev.7
+* Update `toSql`
+* Add `isTrue` and `isFalse`
+
 # 2.0.0-dev.6
 * Add `delete`, `insert` and `update` methods to `Query`.
 

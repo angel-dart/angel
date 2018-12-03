@@ -8,6 +8,9 @@ part of angel_orm_generator.test.models.fruit;
 
 class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   @override
+  final FruitQueryValues values = new FruitQueryValues();
+
+  @override
   final FruitQueryWhere where = new FruitQueryWhere();
 
   @override
@@ -18,6 +21,11 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   @override
   get fields {
     return FruitFields.allFields;
+  }
+
+  @override
+  FruitQueryWhere newWhereClause() {
+    return new FruitQueryWhere();
   }
 
   @override
@@ -50,6 +58,42 @@ class FruitQueryWhere extends QueryWhere {
   @override
   get expressionBuilders {
     return [id, treeId, commonName, createdAt, updatedAt];
+  }
+}
+
+class FruitQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  int get treeId {
+    return (values['tree_id'] as int);
+  }
+
+  void set treeId(int value) => values['tree_id'] = value;
+  String get commonName {
+    return (values['common_name'] as String);
+  }
+
+  void set commonName(String value) => values['common_name'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Fruit model) {
+    values.addAll({
+      'tree_id': model.treeId,
+      'common_name': model.commonName,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
   }
 }
 

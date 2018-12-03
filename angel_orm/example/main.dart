@@ -19,7 +19,7 @@ class _FakeExecutor extends QueryExecutor {
   const _FakeExecutor();
 
   @override
-  Future<List<List>> query(String query, returningFields) async {
+  Future<List<List>> query(String query, [returningFields]) async {
     var now = new DateTime.now();
     print('_FakeExecutor received query: $query');
     return [

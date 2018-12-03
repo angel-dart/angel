@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:charcode/ascii.dart';
 import 'annotations.dart';
 import 'builder.dart';
+
+bool isAscii(int ch) => ch >= $nul && ch <= $del;
 
 /// A base class for objects that compile to SQL queries, typically within an ORM.
 abstract class QueryBase<T> {
@@ -18,9 +21,7 @@ abstract class QueryBase<T> {
 
   Future<List<T>> get(QueryExecutor executor) async {
     var sql = compile();
-    return executor
-        .query(sql, fields)
-        .then((it) => it.map(deserialize).toList());
+    return executor.query(sql).then((it) => it.map(deserialize).toList());
   }
 
   Future<T> getOne(QueryExecutor executor) {
@@ -47,14 +48,33 @@ class OrderBy {
 
 String toSql(Object obj) {
   if (obj is DateTime) {
-    return dateYmdHms.format(obj);
+    return "'${dateYmdHms.format(obj)}'";
   } else if (obj is bool) {
     return obj ? 'TRUE' : 'FALSE';
   } else if (obj == null) {
     return 'NULL';
   } else if (obj is String) {
-    // TODO: Proper escapes
-    return obj;
+    var b = new StringBuffer();
+    var it = obj.runes.iterator;
+
+    while (it.moveNext()) {
+      if (it.current == $nul)
+        continue; // Skip null byte
+      else if (isAscii(it.current)) {
+        b.writeCharCode(it.current);
+      } else if (it.currentSize == 1) {
+        b.write('\\u');
+        b.write(it.current.toRadixString(16).padLeft(4, '0'));
+      } else if (it.currentSize == 2) {
+        b.write('\\U');
+        b.write(it.current.toRadixString(16).padLeft(8, '0'));
+      } else {
+        throw new UnsupportedError(
+            'toSql() cannot encode a rune of size (${it.currentSize})');
+      }
+    }
+
+    return "'$b'";
   } else {
     return obj.toString();
   }
@@ -174,7 +194,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   @override
   String compile({bool includeTableName: false, String preamble}) {
-    var b = new StringBuffer(preamble ?? 'SELECT ');
+    var b = new StringBuffer(preamble ?? 'SELECT');
+    b.write(' ');
     var f = fields ?? ['*'];
     if (includeTableName) f = f.map((s) => '$tableName.$s').toList();
     b.write(f.join(', '));
@@ -210,21 +231,19 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<T> insert(QueryExecutor executor) {
-    var sql = new StringBuffer('INSERT INTO $tableName ($fieldSet)');
-    var valuesClause = values.compileForInsert();
+    var sql = values.compileInsert(tableName);
 
-    if (valuesClause == null) {
+    if (sql == null) {
       throw new StateError('No values have been specified for update.');
     } else {
-      sql.write(' $valuesClause');
       return executor
-          .query(sql.toString(), fields)
+          .query(sql, fields)
           .then((it) => it.isEmpty ? null : deserialize(it.first));
     }
   }
 
   Future<List<T>> update(QueryExecutor executor) async {
-    var sql = new StringBuffer('UPDATE $tableName');
+    var sql = new StringBuffer('UPDATE $tableName ');
     var valuesClause = values.compileForUpdate();
 
     if (valuesClause == null) {
@@ -249,10 +268,12 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 abstract class QueryValues {
   Map<String, dynamic> toMap();
 
-  String compileForInsert() {
+  String compileInsert(String tableName) {
     var data = toMap();
     if (data.isEmpty) return null;
-    var b = new StringBuffer('VALUES (');
+
+    var fieldSet = data.keys.join(', ');
+    var b = new StringBuffer('INSERT INTO $tableName ($fieldSet) VALUES (');
     int i = 0;
 
     for (var entry in data.entries) {
@@ -318,7 +339,12 @@ abstract class QueryWhere {
       if (tableName != null) key = '$tableName.$key';
       if (builder.hasValue) {
         if (i++ > 0) b.write(' AND ');
-        b.write('$key ${builder.compile()}');
+        if (builder is DateTimeSqlExpressionBuilder) {
+          if (tableName != null) b.write('$tableName.');
+          b.write(builder.compile());
+        } else {
+          b.write('$key ${builder.compile()}');
+        }
       }
     }
 
@@ -411,5 +437,5 @@ class JoinOn {
 abstract class QueryExecutor {
   const QueryExecutor();
 
-  Future<List<List>> query(String query, List<String> returningFields);
+  Future<List<List>> query(String query, [List<String> returningFields]);
 }

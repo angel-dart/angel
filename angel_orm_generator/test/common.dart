@@ -10,8 +10,7 @@ Future<PostgresExecutor> connectToPostgres(Iterable<String> schemas) async {
   await conn.open();
 
   for (var s in schemas)
-    await conn
-        .execute(await new File('test/models/$s.up.g.sql').readAsString());
+    await conn.execute(await new File('test/migrations/$s.sql').readAsString());
 
   return new PostgresExecutor(conn);
 }
@@ -24,9 +23,14 @@ class PostgresExecutor extends QueryExecutor {
   Future close() => connection.close();
 
   @override
-  Future<List<List>> query(String query, List<String> returningFields) {
-    var fields = returningFields.join(', ');
-    var returning = 'RETURNING ($fields)';
-    return connection.query('$query $returning');
+  Future<List<List>> query(String query, [List<String> returningFields]) {
+    if (returningFields != null) {
+      var fields = returningFields.join(', ');
+      var returning = 'RETURNING $fields';
+      query = '$query $returning';
+    }
+
+    print('Running: $query');
+    return connection.query(query);
   }
 }
