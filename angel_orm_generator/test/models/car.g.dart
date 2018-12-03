@@ -20,7 +20,15 @@ class CarQuery extends Query<Car, CarQueryWhere> {
 
   @override
   get fields {
-    return CarFields.allFields;
+    return const [
+      'id',
+      'make',
+      'description',
+      'family_friendly',
+      'recalled_at',
+      'created_at',
+      'updated_at'
+    ];
   }
 
   @override
@@ -28,9 +36,8 @@ class CarQuery extends Query<Car, CarQueryWhere> {
     return new CarQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Car(
+  static Car parseRow(List row) {
+    var model = new Car(
         id: row[0].toString(),
         make: (row[1] as String),
         description: (row[2] as String),
@@ -38,6 +45,12 @@ class CarQuery extends Query<Car, CarQueryWhere> {
         recalledAt: (row[4] as DateTime),
         createdAt: (row[5] as DateTime),
         updatedAt: (row[6] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

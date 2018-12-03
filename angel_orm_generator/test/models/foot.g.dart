@@ -20,7 +20,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
   @override
   get fields {
-    return FootFields.allFields;
+    return const ['id', 'leg_id', 'n_toes', 'created_at', 'updated_at'];
   }
 
   @override
@@ -28,14 +28,19 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
     return new FootQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Foot(
+  static Foot parseRow(List row) {
+    var model = new Foot(
         id: row[0].toString(),
         legId: (row[1] as int),
         nToes: (row[2] as int),
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

@@ -16,7 +16,6 @@ abstract class BookSerializer {
         partnerAuthor: map['partner_author'] != null
             ? AuthorSerializer.fromMap(map['partner_author'] as Map)
             : null,
-        authorId: map['author_id'] as int,
         name: map['name'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -38,7 +37,6 @@ abstract class BookSerializer {
       'id': model.id,
       'author': AuthorSerializer.toMap(model.author),
       'partner_author': AuthorSerializer.toMap(model.partnerAuthor),
-      'author_id': model.authorId,
       'name': model.name,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
@@ -51,7 +49,6 @@ abstract class BookFields {
     id,
     author,
     partnerAuthor,
-    authorId,
     name,
     createdAt,
     updatedAt
@@ -62,8 +59,6 @@ abstract class BookFields {
   static const String author = 'author';
 
   static const String partnerAuthor = 'partner_author';
-
-  static const String authorId = 'author_id';
 
   static const String name = 'name';
 

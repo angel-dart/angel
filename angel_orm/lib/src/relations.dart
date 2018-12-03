@@ -50,8 +50,7 @@ class HasOne extends Relationship {
 const HasOne hasOne = const HasOne();
 
 class BelongsTo extends Relationship {
-  const BelongsTo(
-      {String localKey: 'id', String foreignKey, String foreignTable})
+  const BelongsTo({String localKey, String foreignKey, String foreignTable})
       : super(RelationshipType.belongsTo,
             localKey: localKey,
             foreignKey: foreignKey,

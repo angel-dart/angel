@@ -20,7 +20,7 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
 
   @override
   get fields {
-    return FruitFields.allFields;
+    return const ['id', 'tree_id', 'common_name', 'created_at', 'updated_at'];
   }
 
   @override
@@ -28,14 +28,19 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
     return new FruitQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Fruit(
+  static Fruit parseRow(List row) {
+    var model = new Fruit(
         id: row[0].toString(),
         treeId: (row[1] as int),
         commonName: (row[2] as String),
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

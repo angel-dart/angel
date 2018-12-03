@@ -20,7 +20,7 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
 
   @override
   get fields {
-    return AuthorFields.allFields;
+    return const ['id', 'name', 'created_at', 'updated_at'];
   }
 
   @override
@@ -28,13 +28,18 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
     return new AuthorQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Author(
+  static Author parseRow(List row) {
+    var model = new Author(
         id: row[0].toString(),
         name: (row[1] as String),
         createdAt: (row[2] as DateTime),
         updatedAt: (row[3] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

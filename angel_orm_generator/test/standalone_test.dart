@@ -155,11 +155,14 @@ main() {
     test('insert', () async {
       var recalledAt = new DateTime.now();
       var query = new CarQuery();
+      var now = new DateTime.now();
       query.values
         ..make = 'Honda'
         ..description = 'Hello'
         ..familyFriendly = true
-        ..recalledAt = recalledAt;
+        ..recalledAt = recalledAt
+        ..createdAt = now
+        ..updatedAt = now;
       var car = await query.insert(connection);
       expect(car.id, isNotNull);
       expect(car.make, 'Honda');

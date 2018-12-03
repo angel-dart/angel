@@ -20,7 +20,7 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
 
   @override
   get fields {
-    return RoleFields.allFields;
+    return const ['id', 'name', 'created_at', 'updated_at'];
   }
 
   @override
@@ -28,13 +28,18 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
     return new RoleQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Role(
+  static Role parseRow(List row) {
+    var model = new Role(
         id: row[0].toString(),
         name: (row[1] as String),
         createdAt: (row[2] as DateTime),
         updatedAt: (row[3] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

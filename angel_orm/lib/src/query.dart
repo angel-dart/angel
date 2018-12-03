@@ -15,7 +15,8 @@ abstract class QueryBase<T> {
   /// A String of all [fields], joined by a comma (`,`).
   String get fieldSet => fields.join(', ');
 
-  String compile({bool includeTableName: false, String preamble});
+  String compile(
+      {bool includeTableName: false, String preamble, bool withFields: true});
 
   T deserialize(List row);
 
@@ -54,6 +55,8 @@ String toSql(Object obj) {
   } else if (obj == null) {
     return 'NULL';
   } else if (obj is String) {
+    var s = obj.replaceAll("'", "\\'");
+    return "'$s'";
     var b = new StringBuffer();
     var it = obj.runes.iterator;
 
@@ -82,10 +85,10 @@ String toSql(Object obj) {
 
 /// A SQL `SELECT` query builder.
 abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
+  final List<JoinBuilder> _joins = [];
   final List<OrderBy> _orderBy = [];
   String _crossJoin, _groupBy;
   int _limit, _offset;
-  JoinBuilder _join;
 
   /// The table against which to execute this query.
   String get tableName;
@@ -152,53 +155,68 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     _crossJoin = tableName;
   }
 
+  String _joinAlias() => 'a${_joins.length}';
+
   /// Execute an `INNER JOIN` against another table.
   void join(String tableName, String localKey, String foreignKey,
-      {String op: '='}) {
-    _join = new JoinBuilder(
+      {String op: '=', List<String> additionalFields: const []}) {
+    _joins.add(new JoinBuilder(
         JoinType.inner, this, tableName, localKey, foreignKey,
-        op: op);
+        op: op, alias: _joinAlias(), additionalFields: additionalFields));
   }
 
   /// Execute a `LEFT JOIN` against another table.
   void leftJoin(String tableName, String localKey, String foreignKey,
-      {String op: '='}) {
-    _join = new JoinBuilder(
+      {String op: '=', List<String> additionalFields: const []}) {
+    _joins.add(new JoinBuilder(
         JoinType.left, this, tableName, localKey, foreignKey,
-        op: op);
+        op: op, alias: _joinAlias(), additionalFields: additionalFields));
   }
 
   /// Execute a `RIGHT JOIN` against another table.
   void rightJoin(String tableName, String localKey, String foreignKey,
-      {String op: '='}) {
-    _join = new JoinBuilder(
+      {String op: '=', List<String> additionalFields: const []}) {
+    _joins.add(new JoinBuilder(
         JoinType.right, this, tableName, localKey, foreignKey,
-        op: op);
+        op: op, alias: _joinAlias(), additionalFields: additionalFields));
   }
 
   /// Execute a `FULL OUTER JOIN` against another table.
   void fullOuterJoin(String tableName, String localKey, String foreignKey,
-      {String op: '='}) {
-    _join = new JoinBuilder(
+      {String op: '=', List<String> additionalFields: const []}) {
+    _joins.add(new JoinBuilder(
         JoinType.full, this, tableName, localKey, foreignKey,
-        op: op);
+        op: op, alias: _joinAlias(), additionalFields: additionalFields));
   }
 
   /// Execute a `SELF JOIN`.
   void selfJoin(String tableName, String localKey, String foreignKey,
-      {String op: '='}) {
-    _join = new JoinBuilder(
+      {String op: '=', List<String> additionalFields: const []}) {
+    _joins.add(new JoinBuilder(
         JoinType.self, this, tableName, localKey, foreignKey,
-        op: op);
+        op: op, alias: _joinAlias(), additionalFields: additionalFields));
   }
 
   @override
-  String compile({bool includeTableName: false, String preamble}) {
+  String compile(
+      {bool includeTableName: false, String preamble, bool withFields: true}) {
+    includeTableName = includeTableName || _joins.isNotEmpty;
     var b = new StringBuffer(preamble ?? 'SELECT');
     b.write(' ');
-    var f = fields ?? ['*'];
-    if (includeTableName) f = f.map((s) => '$tableName.$s').toList();
-    b.write(f.join(', '));
+    List<String> f;
+
+    if (fields == null) {
+      f = ['*'];
+    } else {
+      f = new List<String>.from(
+          fields.map((s) => includeTableName ? '$tableName.$s' : s));
+      _joins.forEach((j) {
+        f
+          ..add(j.fieldName)
+          ..addAll(j.additionalFields.map((s) => j.nameFor(s)));
+      });
+    }
+    if (withFields) b.write(f.join(', '));
     b.write(' FROM $tableName');
     var whereClause =
         where.compile(tableName: includeTableName ? tableName : null);
@@ -208,7 +226,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (_groupBy != null) b.write(' GROUP BY $_groupBy');
     for (var item in _orderBy) b.write(' ${item.compile()}');
     if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
-    if (_join != null) b.write(' ${_join.compile()}');
+    for (var join in _joins) b.write(' ${join.compile()}');
     return b.toString();
   }
 
@@ -219,14 +237,13 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<List<T>> delete(QueryExecutor executor) async {
-    var sql = compile(preamble: 'DELETE FROM $tableName');
+    var sql = compile(preamble: 'DELETE', withFields: false);
     return executor
         .query(sql, fields)
         .then((it) => it.map(deserialize).toList());
   }
 
   Future<T> deleteOne(QueryExecutor executor) {
-    limit(1);
     return delete(executor).then((it) => it.isEmpty ? null : it.first);
   }
 
@@ -260,7 +277,6 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<T> updateOne(QueryExecutor executor) {
-    limit(1);
     return update(executor).then((it) => it.isEmpty ? null : it.first);
   }
 }
@@ -381,7 +397,8 @@ class Union<T> extends QueryBase<T> {
   T deserialize(List row) => left.deserialize(row);
 
   @override
-  String compile({bool includeTableName: false, String preamble}) {
+  String compile(
+      {bool includeTableName: false, String preamble, bool withFields: true}) {
     var selector = all == true ? 'UNION ALL' : 'UNION';
     return '(${left.compile(includeTableName: includeTableName)}) $selector (${right.compile(includeTableName: includeTableName)})';
   }
@@ -391,15 +408,28 @@ class Union<T> extends QueryBase<T> {
 class JoinBuilder {
   final JoinType type;
   final Query from;
-  final String to, key, value, op;
+  final String to, key, value, op, alias;
+  final List<String> additionalFields;
 
   JoinBuilder(this.type, this.from, this.to, this.key, this.value,
-      {this.op: '='});
+      {this.op: '=', this.alias, this.additionalFields: const []});
+
+  String get fieldName {
+    var right = '$to.$value';
+    if (alias != null) right = '$alias.$value';
+    return right;
+  }
+
+  String nameFor(String name) {
+    var right = '$to.$name';
+    if (alias != null) right = '$alias.$name';
+    return right;
+  }
 
   String compile() {
     var b = new StringBuffer();
     var left = '${from.tableName}.$key';
-    var right = '$to.$value';
+    var right = fieldName;
 
     switch (type) {
       case JoinType.inner:
@@ -419,7 +449,9 @@ class JoinBuilder {
         break;
     }
 
-    b.write(' $to ON $left$op$right');
+    b.write(' $to');
+    if (alias != null) b.write(' $alias');
+    b.write(' ON $left$op$right');
     return b.toString();
   }
 }

@@ -6,7 +6,8 @@ homepage: https://github.com/angel-dart/orm
 environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
-  angel_orm: ^2.0.0-dev
+  angel_orm:
+    path: ../angel_orm
   angel_serialize_generator: ^2.0.0
   build: ">=0.12.0 <2.0.0"
   build_config: ^0.3.0

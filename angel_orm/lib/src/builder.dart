@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:string_scanner/string_scanner.dart';
+import 'query.dart';
 
 final DateFormat dateYmd = new DateFormat('yyyy-MM-dd');
 final DateFormat dateYmdHms = new DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -148,8 +149,8 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
   String compile() {
     if (_raw != null) return _raw;
     if (_value == null) return null;
-    var v = sanitizeExpression(_value);
-    return "$_op '$v'";
+    var v = toSql(_value);
+    return "$_op $v";
   }
 
   void isEmpty() => equals('');

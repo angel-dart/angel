@@ -16,6 +16,5 @@ class _Book extends Model {
   @BelongsTo(localKey: "partner_author_id")
   Author partnerAuthor;
 
-  int authorId;
   String name;
 }

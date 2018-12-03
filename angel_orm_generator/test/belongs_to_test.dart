@@ -7,31 +7,37 @@ import 'models/book.dart';
 import 'common.dart';
 
 main() {
-  PostgresExecutor connection;
-  Author rowling;
+  PostgresExecutor executor;
+  Author jkRowling;
   Author jameson;
   Book deathlyHallows;
 
   setUp(() async {
-    connection = await connectToPostgres(['author', 'book']);
+    executor = await connectToPostgres(['author', 'book']);
 
     // Insert an author
-    rowling = await AuthorQuery.insert(connection, name: 'J.K. Rowling');
-    jameson = await AuthorQuery.insert(connection, name: 'J.K. Jameson');
+    var query = new AuthorQuery()..values.name = 'J.K. Rowling';
+    jkRowling = await query.insert(executor);
+
+    query.values.name = 'J.K. Jameson';
+    jameson = await query.insert(executor);
 
     // And a book
-    deathlyHallows = await BookQuery.insert(connection,
-        authorId: int.parse(rowling.id),
-        name: 'Deathly Hallows',
-        partnerAuthorId: int.parse(jameson.id));
+    var bookQuery = new BookQuery();
+    bookQuery.values
+      ..authorId = int.parse(jkRowling.id)
+      ..partnerAuthorId = int.parse(jameson.id)
+      ..name = 'Deathly Hallows';
+
+    deathlyHallows = await bookQuery.insert(executor);
   });
 
-  tearDown(() => connection.close());
+  tearDown(() => executor.close());
 
   group('selects', () {
     test('select all', () async {
       var query = new BookQuery();
-      var books = await query.get(connection).toList();
+      var books = await query.get(executor);
       expect(books, hasLength(1));
 
       var book = books.first;
@@ -39,36 +45,35 @@ main() {
       expect(book.id, deathlyHallows.id);
       expect(book.name, deathlyHallows.name);
 
-      var author = book.author as Author;
+      var author = book.author;
       print(author.toJson());
-      expect(author.id, rowling.id);
-      expect(author.name, rowling.name);
+      expect(author.id, jkRowling.id);
+      expect(author.name, jkRowling.name);
     });
 
     test('select one', () async {
       var query = new BookQuery();
       query.where.id.equals(int.parse(deathlyHallows.id));
-      print(query.toSql());
+      print(query.compile());
 
-      var book =
-          await BookQuery.getOne(int.parse(deathlyHallows.id), connection);
+      var book = await query.getOne(executor);
       print(book.toJson());
       expect(book.id, deathlyHallows.id);
       expect(book.name, deathlyHallows.name);
 
-      var author = book.author as Author;
+      var author = book.author;
       print(author.toJson());
-      expect(author.id, rowling.id);
-      expect(author.name, rowling.name);
+      expect(author.id, jkRowling.id);
+      expect(author.name, jkRowling.name);
     });
 
     test('where clause', () async {
       var query = new BookQuery()
         ..where.name.equals('Goblet of Fire')
-        ..or(new BookQueryWhere()..authorId.equals(int.parse(rowling.id)));
-      print(query.toSql());
+        ..orWhere((w) => w.authorId.equals(int.parse(jkRowling.id)));
+      print(query.compile());
 
-      var books = await query.get(connection).toList();
+      var books = await query.get(executor);
       expect(books, hasLength(1));
 
       var book = books.first;
@@ -76,10 +81,10 @@ main() {
       expect(book.id, deathlyHallows.id);
       expect(book.name, deathlyHallows.name);
 
-      var author = book.author as Author;
+      var author = book.author;
       print(author.toJson());
-      expect(author.id, rowling.id);
-      expect(author.name, rowling.name);
+      expect(author.id, jkRowling.id);
+      expect(author.name, jkRowling.name);
     });
 
     test('union', () async {
@@ -90,9 +95,9 @@ main() {
       query1
         ..union(query2)
         ..unionAll(query3);
-      print(query1.toSql());
+      print(query1.compile());
 
-      var books = await query1.get(connection).toList();
+      var books = await query1.get(executor);
       expect(books, hasLength(1));
 
       var book = books.first;
@@ -100,36 +105,38 @@ main() {
       expect(book.id, deathlyHallows.id);
       expect(book.name, deathlyHallows.name);
 
-      var author = book.author as Author;
+      var author = book.author;
       print(author.toJson());
-      expect(author.id, rowling.id);
-      expect(author.name, rowling.name);
+      expect(author.id, jkRowling.id);
+      expect(author.name, jkRowling.name);
     });
   });
 
   test('insert sets relationship', () {
-    expect(deathlyHallows.author, isNotNull);
-    expect((deathlyHallows.author).name, rowling.name);
+    expect(deathlyHallows.author, jkRowling);
+    //expect(deathlyHallows.author, isNotNull);
+    //expect(deathlyHallows.author.name, rowling.name);
   });
 
   test('delete stream', () async {
     var query = new BookQuery()..where.name.equals(deathlyHallows.name);
-    print(query.toSql());
-    var books = await query.delete(connection).toList();
+    print(query.compile());
+    var books = await query.delete(executor);
     expect(books, hasLength(1));
 
     var book = books.first;
     expect(book.id, deathlyHallows.id);
     expect(book.author, isNotNull);
-    expect((book.author).name, rowling.name);
+    expect((book.author).name, jkRowling.name);
   });
 
   test('update book', () async {
-    var cloned = deathlyHallows.clone()..name = 'Sorcerer\'s Stone';
-    var book = await BookQuery.updateBook(connection, cloned);
+    var cloned = deathlyHallows.copyWith(name: "Sorcerer's Stone");
+    var query = new BookQuery()..values.copyFrom(cloned);
+    var book = await query.updateOne(executor);
     print(book.toJson());
     expect(book.name, cloned.name);
     expect(book.author, isNotNull);
-    expect((book.author as Author).name, rowling.name);
+    expect(book.author.name, jkRowling.name);
   });
 }

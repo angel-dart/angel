@@ -20,7 +20,15 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
 
   @override
   get fields {
-    return OrderFields.allFields;
+    return const [
+      'id',
+      'customer_id',
+      'employee_id',
+      'order_date',
+      'shipper_id',
+      'created_at',
+      'updated_at'
+    ];
   }
 
   @override
@@ -28,9 +36,8 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
     return new OrderQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Order(
+  static Order parseRow(List row) {
+    var model = new Order(
         id: row[0].toString(),
         customerId: (row[1] as int),
         employeeId: (row[2] as int),
@@ -38,6 +45,12 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
         shipperId: (row[4] as int),
         createdAt: (row[5] as DateTime),
         updatedAt: (row[6] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

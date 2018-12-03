@@ -20,7 +20,7 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
 
   @override
   get fields {
-    return CustomerFields.allFields;
+    return const ['id', 'created_at', 'updated_at'];
   }
 
   @override
@@ -28,12 +28,17 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
     return new CustomerQueryWhere();
   }
 
-  @override
-  deserialize(List row) {
-    return new Customer(
+  static Customer parseRow(List row) {
+    var model = new Customer(
         id: row[0].toString(),
         createdAt: (row[1] as DateTime),
         updatedAt: (row[2] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
   }
 }
 

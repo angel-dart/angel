@@ -1,3 +1,12 @@
+# 2.0.0-dev.12
+* Always apply `toSql` escapes.
+
+# 2.0.0-dev.11
+* Remove `limit(1)` except on `getOne`
+
+# 2.0.0-dev.10
+* Add `withFields` to `compile()`
+
 # 2.0.0-dev.9
 * Permanent preamble fix
 
