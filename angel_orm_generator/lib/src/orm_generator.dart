@@ -195,11 +195,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
       // If there are any relations, we need some overrides.
       if (ctx.relations.isNotEmpty) {
-        clazz.methods.add(new Method((b) {
+        clazz.constructors.add(new Constructor((b) {
           b
-            ..name = 'get'
-            ..annotations.add(refer('override'))
-            ..requiredParameters.add(new Parameter((b) => b..name = 'executor'))
             ..body = new Block((b) {
               ctx.relations.forEach((fieldName, relation) {
                 //var name = ctx.buildContext.resolveFieldName(fieldName);
@@ -220,10 +217,42 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   }));
                 }
               });
+            });
+        }));
 
-              b.addExpression(refer('super')
-                  .property('get')
-                  .call([refer('executor')]).returned);
+        clazz.methods.add(new Method((b) {
+          b
+            ..name = 'insert'
+            ..annotations.add(refer('override'))
+            ..requiredParameters.add(new Parameter((b) => b..name = 'executor'))
+            ..body = new Block((b) {
+              var inTransaction = new Method((b) {
+                b
+                  ..modifier = MethodModifier.async
+                  ..body = new Block((b) {
+                    b.addExpression(refer('super')
+                        .property('insert')
+                        .call([refer('executor')])
+                        .awaited
+                        .assignVar('result'));
+
+                    // Just call get() again
+                    b.addExpression(
+                        refer('where').property('id').property('equals').call([
+                      (refer('int')
+                          .property('parse')
+                          .call([refer('result').property('id')]))
+                    ]));
+                    b.addExpression(refer('result').assign(
+                        refer('getOne').call([refer('executor')]).awaited));
+
+                    b.addExpression(refer('result').returned);
+                  });
+              });
+
+              b.addExpression(refer('executor')
+                  .property('transaction')
+                  .call([inTransaction.closure]).returned);
             });
         }));
       }

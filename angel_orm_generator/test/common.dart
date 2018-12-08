@@ -16,11 +16,11 @@ Future<PostgresExecutor> connectToPostgres(Iterable<String> schemas) async {
 }
 
 class PostgresExecutor extends QueryExecutor {
-  final PostgreSQLConnection connection;
+  PostgreSQLExecutionContext connection;
 
   PostgresExecutor(this.connection);
 
-  Future close() => connection.close();
+  Future close() => (connection as PostgreSQLConnection).close();
 
   @override
   Future<List<List>> query(String query, [List<String> returningFields]) {
@@ -32,5 +32,20 @@ class PostgresExecutor extends QueryExecutor {
 
     print('Running: $query');
     return connection.query(query);
+  }
+
+  @override
+  Future<T> transaction<T>(FutureOr<T> Function() f) async {
+    var old = connection;
+    T result;
+    try {
+      await (connection as PostgreSQLConnection).transaction((ctx) async {
+        connection = ctx;
+        result = await f();
+      });
+    } finally {
+      connection = old;
+      return result;
+    }
   }
 }

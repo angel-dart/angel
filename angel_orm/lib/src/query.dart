@@ -47,28 +47,33 @@ class OrderBy {
   String compile() => descending ? '$key DESC' : '$key ASC';
 }
 
-String toSql(Object obj) {
+String toSql(Object obj, {bool withQuotes: true}) {
   if (obj is DateTime) {
-    return "'${dateYmdHms.format(obj)}'";
+    return withQuotes ? "'${dateYmdHms.format(obj)}'" : dateYmdHms.format(obj);
   } else if (obj is bool) {
     return obj ? 'TRUE' : 'FALSE';
   } else if (obj == null) {
     return 'NULL';
   } else if (obj is String) {
-    var s = obj.replaceAll("'", "\\'");
-    return "'$s'";
     var b = new StringBuffer();
+    var escaped = false;
     var it = obj.runes.iterator;
 
     while (it.moveNext()) {
       if (it.current == $nul)
         continue; // Skip null byte
-      else if (isAscii(it.current)) {
+      else if (it.current == $single_quote) {
+        escaped = true;
+        b.write('\\x');
+        b.write(it.current.toRadixString(16).padLeft(2, '0'));
+      } else if (isAscii(it.current)) {
         b.writeCharCode(it.current);
       } else if (it.currentSize == 1) {
+        escaped = true;
         b.write('\\u');
         b.write(it.current.toRadixString(16).padLeft(4, '0'));
       } else if (it.currentSize == 2) {
+        escaped = true;
         b.write('\\U');
         b.write(it.current.toRadixString(16).padLeft(8, '0'));
       } else {
@@ -77,7 +82,12 @@ String toSql(Object obj) {
       }
     }
 
-    return "'$b'";
+    if (!withQuotes)
+      return b.toString();
+    else if (escaped)
+      return "E'$b'";
+    else
+      return "'$b'";
   } else {
     return obj.toString();
   }
@@ -102,6 +112,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   ///
   /// This is usually a generated class.
   QueryValues get values;
+
+  String adornWithTableName(String s) => '$tableName.$s';
 
   /// Makes a new [Where] clause.
   Where newWhereClause() {
@@ -218,6 +230,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     }
     if (withFields) b.write(f.join(', '));
     b.write(' FROM $tableName');
+    if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
+    for (var join in _joins) b.write(' ${join.compile()}');
     var whereClause =
         where.compile(tableName: includeTableName ? tableName : null);
     if (whereClause.isNotEmpty) b.write(' WHERE $whereClause');
@@ -225,8 +239,6 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (_offset != null) b.write(' OFFSET $_offset');
     if (_groupBy != null) b.write(' GROUP BY $_groupBy');
     for (var item in _orderBy) b.write(' ${item.compile()}');
-    if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
-    for (var join in _joins) b.write(' ${join.compile()}');
     return b.toString();
   }
 
@@ -236,11 +248,13 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     return super.getOne(executor);
   }
 
-  Future<List<T>> delete(QueryExecutor executor) async {
-    var sql = compile(preamble: 'DELETE', withFields: false);
-    return executor
-        .query(sql, fields)
-        .then((it) => it.map(deserialize).toList());
+  Future<List<T>> delete(QueryExecutor executor) {
+    return executor.transaction(() async {
+      var existing = await get(executor);
+      //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
+      var sql = compile(preamble: 'DELETE', withFields: false);
+      return executor.query(sql).then((_) => existing);
+    });
   }
 
   Future<T> deleteOne(QueryExecutor executor) {
@@ -254,7 +268,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       throw new StateError('No values have been specified for update.');
     } else {
       return executor
-          .query(sql, fields)
+          .query(sql, fields.map(adornWithTableName).toList())
           .then((it) => it.isEmpty ? null : deserialize(it.first));
     }
   }
@@ -271,7 +285,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       if (whereClause.isNotEmpty) sql.write(' WHERE $whereClause');
       if (_limit != null) sql.write(' LIMIT $_limit');
       return executor
-          .query(sql.toString(), fields)
+          .query(sql.toString(), fields.map(adornWithTableName).toList())
           .then((it) => it.map(deserialize).toList());
     }
   }
@@ -470,4 +484,6 @@ abstract class QueryExecutor {
   const QueryExecutor();
 
   Future<List<List>> query(String query, [List<String> returningFields]);
+
+  Future<T> transaction<T>(FutureOr<T> f());
 }

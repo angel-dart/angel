@@ -7,6 +7,8 @@ part of angel_orm_generator.test.models.leg;
 // **************************************************************************
 
 class LegQuery extends Query<Leg, LegQueryWhere> {
+  LegQuery() {}
+
   @override
   final LegQueryValues values = new LegQueryValues();
 
@@ -46,8 +48,13 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   }
 
   @override
-  get(executor) {
-    return super.get(executor);
+  insert(executor) {
+    return executor.transaction(() async {
+      var result = await super.insert(executor);
+      where.id.equals(int.parse(result.id));
+      result = await getOne(executor);
+      return result;
+    });
   }
 }
 

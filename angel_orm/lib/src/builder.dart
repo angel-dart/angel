@@ -1,3 +1,4 @@
+import 'package:charcode/ascii.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:string_scanner/string_scanner.dart';
 import 'query.dart';
@@ -21,11 +22,11 @@ String sanitizeExpression(String unsafe) {
       continue;
 
     // Otherwise, add the next char, unless it's a null byte.
-    else if ((ch = scanner.readChar()) != 0 && ch != null)
+    else if ((ch = scanner.readChar()) != $nul && ch != null)
       buf.writeCharCode(ch);
   }
 
-  return buf.toString();
+  return toSql(buf.toString(), withQuotes: false);
 }
 
 abstract class SqlExpressionBuilder<T> {

@@ -7,6 +7,13 @@ part of angel_orm.generator.models.book;
 // **************************************************************************
 
 class BookQuery extends Query<Book, BookQueryWhere> {
+  BookQuery() {
+    leftJoin('authors', 'author_id', 'id',
+        additionalFields: const ['name', 'created_at', 'updated_at']);
+    leftJoin('authors', 'partner_author_id', 'id',
+        additionalFields: const ['name', 'created_at', 'updated_at']);
+  }
+
   @override
   final BookQueryValues values = new BookQueryValues();
 
@@ -58,12 +65,13 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   }
 
   @override
-  get(executor) {
-    leftJoin('authors', 'author_id', 'id',
-        additionalFields: const ['name', 'created_at', 'updated_at']);
-    leftJoin('authors', 'partner_author_id', 'id',
-        additionalFields: const ['name', 'created_at', 'updated_at']);
-    return super.get(executor);
+  insert(executor) {
+    return executor.transaction(() async {
+      var result = await super.insert(executor);
+      where.id.equals(int.parse(result.id));
+      result = await getOne(executor);
+      return result;
+    });
   }
 }
 

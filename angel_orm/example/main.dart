@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_orm/src/query.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 part 'main.g.dart';
 part 'main.serializer.g.dart';
@@ -25,6 +28,11 @@ class _FakeExecutor extends QueryExecutor {
     return [
       [1, 'Rich', 'Person', 100000.0, now, now]
     ];
+  }
+
+  @override
+  Future<T> transaction<T>(FutureOr<T> Function() f) {
+    throw new UnsupportedError('Transactions are not supported.');
   }
 }
 
