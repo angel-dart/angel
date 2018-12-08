@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:test/test.dart';
 import 'models/with_enum.dart';
 
@@ -44,5 +46,16 @@ void main() {
 
   test('const', () {
     expect(identical(aWithEnum, aWithEnum2), true);
+  });
+
+  test('uint8list', () {
+    var ee = new WithEnum(
+        imageBytes:
+            new Uint8List.fromList(new List<int>.generate(1000, (i) => i)));
+    var eeMap = ee.toJson();
+    print(eeMap);
+    var ef = WithEnumSerializer.fromMap(eeMap);
+    expect(ee.copyWith(), ee);
+    expect(ef, ee);
   });
 }

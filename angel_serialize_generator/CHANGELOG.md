@@ -1,3 +1,9 @@
+# 2.2.0
+* Build to `cache`.
+* Only generate one `.g.dart` file.
+* Support for `Uint8List`.
+* Use `.cast()` for `List`s and `Map`s of *non-`Model`* types.
+
 # 2.1.2
 * Add `declare module` to generated TypeScript files.
 

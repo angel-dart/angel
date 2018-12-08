@@ -128,6 +128,13 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
               null
               : ${t.name}.values.indexOf(model.${field.name})
             ''';
+          } else if (const TypeChecker.fromRuntime(Uint8List)
+              .isAssignableFromType(t)) {
+            serializedRepresentation = '''
+            model.${field.name} == null ?
+              null
+              : base64.encode(model.${field.name})
+            ''';
           }
         }
 
@@ -235,6 +242,45 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                 map['$alias'] is int
                 ? ${t.name}.values[map['$alias'] as int]
                 : null
+              )
+            ''';
+          } else if (const TypeChecker.fromRuntime(List)
+                  .isAssignableFromType(t) &&
+              t.typeArguments.length == 1) {
+            var arg = convertTypeReference(t.typeArguments[0])
+                .accept(new DartEmitter());
+            deserializedRepresentation = '''
+                map['$alias'] is Iterable
+                  ? (map['$alias'] as Iterable).cast<$arg>().toList()
+                  : null
+                ''';
+          } else if (const TypeChecker.fromRuntime(Map)
+                  .isAssignableFromType(t) &&
+              t.typeArguments.length == 2) {
+            var key = convertTypeReference(t.typeArguments[0])
+                .accept(new DartEmitter());
+            var value = convertTypeReference(t.typeArguments[1])
+                .accept(new DartEmitter());
+            deserializedRepresentation = '''
+                map['$alias'] is Map
+                  ? (map['$alias'] as Map).cast<$key, $value>()
+                  : null
+                ''';
+          } else if (const TypeChecker.fromRuntime(Uint8List)
+              .isAssignableFromType(t)) {
+            deserializedRepresentation = '''
+            map['$alias'] is Uint8List
+              ? (map['$alias'] as Uint8List)
+              :
+              (
+                map['$alias'] is Iterable<int>
+                  ? new Uint8List.fromList((map['$alias'] as Iterable<int>).toList())
+                  :
+                  (
+                    map['$alias'] is String
+                      ? new Uint8List.fromList(base64.decode(map['$alias'] as String))
+                      : null
+                  )
               )
             ''';
           }

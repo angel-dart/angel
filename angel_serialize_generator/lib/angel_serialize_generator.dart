@@ -1,6 +1,7 @@
 library angel_serialize_generator;
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -28,10 +29,8 @@ Builder jsonModelBuilder(_) {
 }
 
 Builder serializerBuilder(_) {
-  return new PartBuilder(
-    const [const SerializerGenerator()],
-    '.serializer.g.dart',
-  );
+  return new SharedPartBuilder(
+      const [const SerializerGenerator()], 'angel_serialize_serializer');
 }
 
 Builder typescriptDefinitionBuilder(_) {
@@ -73,8 +72,9 @@ bool isModelClass(DartType t) {
 }
 
 bool isListOrMapType(DartType t) {
-  return const TypeChecker.fromRuntime(List).isAssignableFromType(t) ||
-      const TypeChecker.fromRuntime(Map).isAssignableFromType(t);
+  return (const TypeChecker.fromRuntime(List).isAssignableFromType(t) ||
+          const TypeChecker.fromRuntime(Map).isAssignableFromType(t)) &&
+      !const TypeChecker.fromRuntime(Uint8List).isAssignableFromType(t);
 }
 
 bool isEnumType(DartType t) {

@@ -1,4 +1,5 @@
 # serialize
+
 [![Pub](https://img.shields.io/pub/v/angel_serialize.svg)](https://pub.dartlang.org/packages/angel_serialize)
 [![build status](https://travis-ci.org/angel-dart/serialize.svg)](https://travis-ci.org/angel-dart/serialize)
 
@@ -6,26 +7,29 @@ Source-generated serialization for Dart objects. This package uses `package:sour
 the time you spend writing boilerplate serialization code for your models.
 `package:angel_serialize` also powers `package:angel_orm`.
 
-* [Usage](#usage)
-  * [Models](#models)
-    * [Field Aliases](#aliases)
-    * [Excluding Keys](#excluding-keys)
-    * [Required Fields](#required-fields)
-  * [Serialization](#serializaition)
-  * [Nesting](#nesting)
-  * [ID and Date Fields](#id-and-dates)
-  * [TypeScript Definition Generator](#typescript-definitions)
-  * [Constructor Parameters](#constructor-parameters)
+- [Usage](#usage)
+  - [Models](#models)
+    - [Field Aliases](#aliases)
+    - [Excluding Keys](#excluding-keys)
+    - [Required Fields](#required-fields)
+  - [Serialization](#serializaition)
+  - [Nesting](#nesting)
+  - [ID and Date Fields](#id-and-dates)
+  - [Binary Data](#binary-data)
+  - [TypeScript Definition Generator](#typescript-definitions)
+  - [Constructor Parameters](#constructor-parameters)
 
 # Usage
+
 In your `pubspec.yaml`, you need to install the following dependencies:
+
 ```yaml
 dependencies:
-  angel_model: ^1.0.0 # Only required if using Angel!!!
+  angel_model: ^1.0.0
   angel_serialize: ^2.0.0
 dev_dependencies:
   angel_serialize_generator: ^2.0.0
-  build_runner: ^0.8.0
+  build_runner: ^1.0.0
 ```
 
 With the recent updates to `package:build_runner`, you can build models in
@@ -38,6 +42,7 @@ If you want to watch for file changes and re-build when necessary, replace the `
 with a call to `watch`. They take the same parameters.
 
 # Models
+
 There are a few changes opposed to normal Model classes. You need to add a `@serializable` annotation to your model
 class to have it serialized, and a serializable model class's name should also start
 with a leading underscore.
@@ -61,13 +66,13 @@ part 'book.g.dart';
 @serializable
 abstract class _Book extends Model {
   String get author;
-  
+
   String get title;
-  
+
   String get description;
-  
+
   int get pageCount;
-  
+
   BookType get type;
 }
 
@@ -78,17 +83,18 @@ enum BookType {
 }
 ```
 
-The following files will be generated:
-  * `book.g.dart`
-  * `book.serializer.g.dart`
-  
+The following file will be generated:
+
+- `book.g.dart`
+
 Producing these classes:
-  * `Book`: Extends or implements `_Book`; may be `const`-enabled.
-  * `BookSerializer`: static functionality for serializing `Book` models.
-  * `BookFields`: The names of all fields from the `Book` model, statically-available.
-  
+
+- `Book`: Extends or implements `_Book`; may be `const`-enabled.
+- `BookSerializer`: static functionality for serializing `Book` models.
+- `BookFields`: The names of all fields from the `Book` model, statically-available.
+
 # Serialization
-  
+
 You can use the generated files as follows:
 
 ```dart
@@ -99,18 +105,18 @@ myFunction() {
     description: 'You will cry after reading this.',
     pageCount: 1225
   );
-  
+
   // Easily serialize models into Maps
   var map = BookSerializer.toMap(warAndPeace);
-  
+
   // Also deserialize from Maps
   var book = BookSerializer.fromMap(map);
   print(book.title); // 'War and Peace'
-  
+
   // For compatibility with `JSON.encode`, a `toJson` method
   // is included that forwards to `BookSerializer.toMap`:
   expect(book.toJson(), map);
-  
+
   // Generated classes act as value types, and thus can be compared.
   expect(BookSerializer.fromMap(map), equals(warAndPeace));
 }
@@ -126,12 +132,15 @@ about the serialized names of keys on your model class.
   }
 }
 ```
+
 ## Customizing Serialization
+
 Currently, these serialization methods are supported:
-  * to `Map`
-  * to JSON
-  * to TypeScript definitions
-  
+
+- to `Map`
+- to JSON
+- to TypeScript definitions
+
 You can customize these by means of `serializers`:
 
 ```dart
@@ -139,8 +148,8 @@ You can customize these by means of `serializers`:
 class _MyClass extends Model {}
 ```
 
-
 ## Aliases
+
 Whereas Dart fields conventionally are camelCased, most database columns
 tend to be snake_cased. This is not a problem, because we can define an alias
 for a field.
@@ -152,13 +161,13 @@ provide a custom name, or pass `autoSnakeCaseNames`: `false` to the builder;
 @serializable
 abstract class _Spy extends Model {
   /// Will show up as 'agency_id' in serialized JSON.
-  /// 
+  ///
   /// When deserializing JSON, instead of searching for an 'agencyId' key,
   /// it will use 'agency_id'.
-  /// 
+  ///
   /// Hooray!
   String agencyId;
-  
+
   @Alias('foo')
   String someOtherField;
 }
@@ -174,6 +183,7 @@ abstract class _OtherCasing extends Model {
 ```
 
 ## Excluding Keys
+
 In pratice, there may keys that you want to exclude from JSON.
 To accomplish this, simply annotate them with `@exclude`:
 
@@ -196,7 +206,7 @@ In this case, use `canSerialize` or `canDeserialize`:
 @serializable
 abstract class _Whisper extends Model {
   /// Will never be serialized to JSON
-  /// 
+  ///
   /// ... But it can be deserialized
   @Exclude(canDeserialize: true)
   String secret;
@@ -204,6 +214,7 @@ abstract class _Whisper extends Model {
 ```
 
 ## Required Fields
+
 It is easy to mark a field as required; just use the
 `@required` annotation from `package:meta`:
 
@@ -212,7 +223,7 @@ It is easy to mark a field as required; just use the
 abstract class _Foo extends Model {
   @required
   int myRequiredInt;
-  
+
   @Required('Custom message')
   int myOtherRequiredInt;
 }
@@ -223,10 +234,12 @@ generated constructor, and serializers will check for its
 presence, throwing a `FormatException` if it is missing.
 
 # Nesting
+
 `angel_serialize` also supports a few types of nesting of `@serializable` classes:
-* As a class member, ex. `Book myField`
-* As the type argument to a `List`, ex. `List<Book>`
-* As the second type argument to a `Map`, ex. `Map<String, Book>`
+
+- As a class member, ex. `Book myField`
+- As the type argument to a `List`, ex. `List<Book>`
+- As the second type argument to a `Map`, ex. `Map<String, Book>`
 
 In other words, the following are all legal, and will be serialized/deserialized.
 You can use either the underscored name of a child class (ex. `_Book`), or the
@@ -246,10 +259,10 @@ then you will need to generate `book.g.dart` before, `author.g.dart`,
 **in a separate build action**. This way, the analyzer can resolve the `Book` type.
 
 # ID and Dates
+
 This package will automatically generate `id`, `createdAt`, and `updatedAt` fields for you,
 in the style of an Angel `Model`. To disable this, set `autoIdAndDateFields` to `false` in the
 builder constructor.
-
 
 You can also override `autoIdAndDateFields` per model:
 
@@ -258,7 +271,13 @@ You can also override `autoIdAndDateFields` per model:
 abstract class _Skinny extends Model {}
 ```
 
+# Binary Data
+
+`package:angel_serialize` also handles `Uint8List` fields, by means of serialization to
+and from `base64` encoding.
+
 # TypeScript Definitions
+
 It is quite common to build frontends with JavaScript and/or TypeScript,
 so why not generate typings as well?
 
@@ -297,11 +316,13 @@ TypeScript definition. The rationale for this is that if a field (i.e. `password
 never be sent to the client, the client shouldn't even know the field exists.
 
 # Constructor Parameters
+
 Sometimes, you may need to have custom constructor parameters, for example, when
 using depedency injection frameworks. For these cases, `angel_serialize` can forward
 custom constructor parameters.
 
 The following:
+
 ```dart
 @serializable
 abstract class _Bookmark extends _BookmarkBase {

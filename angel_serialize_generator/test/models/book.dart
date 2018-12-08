@@ -4,7 +4,6 @@ import 'package:angel_model/angel_model.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 part 'book.g.dart';
-part 'book.serializer.g.dart';
 
 @Serializable(serializers: Serializers.all)
 abstract class _Book extends Model {

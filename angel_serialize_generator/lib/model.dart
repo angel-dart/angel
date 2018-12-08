@@ -180,7 +180,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
           var eq = generateEquality(type.typeArguments[0]);
           return 'const ListEquality<${type.typeArguments[0].name}>($eq)';
         } else
-          return 'const ListEquality<${type.typeArguments[0].name}>()';
+          return 'const ListEquality()';
       } else if (const TypeChecker.fromRuntime(Map)
           .isAssignableFromType(type)) {
         if (type.typeParameters.length == 2) {
@@ -188,7 +188,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
               veq = generateEquality(type.typeArguments[1]);
           return 'const MapEquality<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>(keys: $keq, values: $veq)';
         } else
-          return 'const MapEquality()<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>';
+          return 'const MapEquality()';
       }
 
       return nullable ? null : 'const DefaultEquality<${type.name}>()';

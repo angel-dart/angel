@@ -7,13 +7,14 @@ builders:
       - serializerBuilder
       - typescriptDefinitionBuilder
     auto_apply: root_package
-    build_to: source
+    build_to: cache
     build_extensions:
       .dart:
         - "angel_serialize.g.part"
-        - ".serializer.g.dart"
+        - "angel_serialize_serializer.g.part"
         - ".d.ts"
     applies_builders: ["source_gen|combining_builder", "source_gen|part_cleanup"]
+    runs_before: ["angel_orm_generator|angel_orm"]
 targets:
   _book:
     sources:

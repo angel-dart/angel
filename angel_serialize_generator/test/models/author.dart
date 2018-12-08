@@ -5,10 +5,7 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'book.dart';
-
 part 'author.g.dart';
-
-part 'author.serializer.g.dart';
 
 @serializable
 abstract class _Author extends Model {
