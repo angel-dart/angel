@@ -19,10 +19,6 @@ import 'readers.dart';
 bool isHasRelation(Relationship r) =>
     r.type == RelationshipType.hasOne || r.type == RelationshipType.hasMany;
 
-bool isBelongsRelation(Relationship r) =>
-    r.type == RelationshipType.belongsTo ||
-    r.type == RelationshipType.belongsToMany;
-
 final Map<String, OrmBuildContext> _cache = {};
 
 Future<OrmBuildContext> buildOrmContext(
@@ -162,8 +158,7 @@ Future<OrmBuildContext> buildOrmContext(
       if (type == RelationshipType.hasOne || type == RelationshipType.hasMany) {
         localKey ??= 'id';
         foreignKey ??= '${rc.snakeCase}_id';
-      } else if (type == RelationshipType.belongsTo ||
-          type == RelationshipType.belongsToMany) {
+      } else if (type == RelationshipType.belongsTo) {
         localKey ??= '${rcc.snakeCase}_id';
         foreignKey ??= 'id';
       }
@@ -176,7 +171,7 @@ Future<OrmBuildContext> buildOrmContext(
         cascadeOnDelete: cascadeOnDelete,
       );
 
-      if (isBelongsRelation(relation)) {
+      if (relation.type == RelationshipType.belongsTo) {
         var name = new ReCase(relation.localKey).camelCase;
         ctx.buildContext.aliases[name] = relation.localKey;
 

@@ -1,3 +1,6 @@
+# 2.0.0-dev
+* Dart 2 updates, and more.
+
 # 1.0.0-alpha+6
 * `DateTime` is now `CAST` on insertion and update operations.
 

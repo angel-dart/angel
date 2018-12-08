@@ -434,7 +434,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           builderType = refer('DateTimeSqlExpressionBuilder');
         } else if (ctx.relations.containsKey(field.name)) {
           var relation = ctx.relations[field.name];
-          if (!isBelongsRelation(relation))
+          if (relation.type != RelationshipType.belongsTo)
             continue;
           else {
             builderType = new TypeReference((b) => b
