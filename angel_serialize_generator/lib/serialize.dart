@@ -61,7 +61,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         ..requiredParameters.add(new Parameter((b) {
           b
             ..name = 'model'
-            ..type = ctx.modelClassType;
+            ..type = refer(ctx.originalClassName);
         }));
 
       var buf = new StringBuffer();
@@ -90,10 +90,9 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         String serializedRepresentation = 'model.${field.name}';
 
         String serializerToMap(ReCase rc, String value) {
-          if (rc.pascalCase == ctx.modelClassName) {
-            return '($value)?.toJson()';
-          }
-
+          // if (rc.pascalCase == ctx.modelClassName) {
+          //   return '($value)?.toJson()';
+          // }
           return '${rc.pascalCase}Serializer.toMap($value)';
         }
 
@@ -110,10 +109,13 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           var t = field.type as InterfaceType;
 
           if (isListOfModelType(t)) {
-            //var rc = new ReCase(t.typeArguments[0].name);
+            var name = t.typeArguments[0].name;
+            if (name.startsWith('_')) name = name.substring(1);
+            var rc = new ReCase(name);
+            var m = serializerToMap(rc, 'm');
             serializedRepresentation = '''
             model.${field.name}
-              ?.map((m) => m.toJson())
+              ?.map((m) => $m)
               ?.toList()''';
           } else if (isMapToModelType(t)) {
             var rc = new ReCase(t.typeArguments[1].name);

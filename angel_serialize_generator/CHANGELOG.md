@@ -1,3 +1,6 @@
+# 2.2.1
+* Explicit changes for assisting `angel_orm_generator`.
+
 # 2.2.0
 * Build to `cache`.
 * Only generate one `.g.dart` file.
