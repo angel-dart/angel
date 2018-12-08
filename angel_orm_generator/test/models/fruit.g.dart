@@ -29,6 +29,7 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   }
 
   static Fruit parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Fruit(
         id: row[0].toString(),
         treeId: (row[1] as int),

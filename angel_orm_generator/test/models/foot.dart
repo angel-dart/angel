@@ -7,7 +7,7 @@ part 'foot.g.dart';
 part 'foot.serializer.g.dart';
 
 @serializable
-@orm
+@Orm(tableName: 'feet')
 class _Foot extends Model {
   int legId, nToes;
 }

@@ -20,6 +20,7 @@ main() {
   test('sets to null if no child', () async {
     var query = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
     var leg = await query.getOne(executor);
+    print(leg.toJson());
     expect(leg.name, originalLeg.name);
     expect(leg.id, originalLeg.id);
     expect(leg.foot, isNull);

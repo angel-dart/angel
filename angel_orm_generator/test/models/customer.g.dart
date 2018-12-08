@@ -29,6 +29,7 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
   }
 
   static Customer parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Customer(
         id: row[0].toString(),
         createdAt: (row[1] as DateTime),

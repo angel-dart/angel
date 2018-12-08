@@ -29,6 +29,7 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   }
 
   static Role parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Role(
         id: row[0].toString(),
         name: (row[1] as String),

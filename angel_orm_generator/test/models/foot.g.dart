@@ -15,7 +15,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
   @override
   get tableName {
-    return 'foots';
+    return 'feet';
   }
 
   @override
@@ -29,6 +29,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
   }
 
   static Foot parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Foot(
         id: row[0].toString(),
         legId: (row[1] as int),

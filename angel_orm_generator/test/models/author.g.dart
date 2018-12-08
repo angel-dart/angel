@@ -29,6 +29,7 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
   }
 
   static Author parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Author(
         id: row[0].toString(),
         name: (row[1] as String),

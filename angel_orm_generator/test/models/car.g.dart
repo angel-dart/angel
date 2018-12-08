@@ -37,6 +37,7 @@ class CarQuery extends Query<Car, CarQueryWhere> {
   }
 
   static Car parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Car(
         id: row[0].toString(),
         make: (row[1] as String),

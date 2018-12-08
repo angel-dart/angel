@@ -43,6 +43,7 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   }
 
   static Book parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Book(
         id: row[0].toString(),
         name: (row[3] as String),

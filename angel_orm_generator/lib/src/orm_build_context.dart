@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
@@ -112,16 +113,18 @@ Future<OrmBuildContext> buildOrmContext(
               'Cannot apply relationship to field "${field.name}" - ${field.type.name} is not assignable to Model.');
         } else {
           try {
+            var modelType = firstModelAncestor(field.type) ?? field.type;
+
             foreign = await buildOrmContext(
-                field.type.element as ClassElement,
+                modelType.element as ClassElement,
                 new ConstantReader(const TypeChecker.fromRuntime(Serializable)
-                    .firstAnnotationOf(field.type.element)),
+                    .firstAnnotationOf(modelType.element)),
                 buildStep,
                 resolver,
                 autoSnakeCaseNames,
                 autoIdAndDateFields);
             var ormAnn = const TypeChecker.fromRuntime(Orm)
-                .firstAnnotationOf(field.type.element);
+                .firstAnnotationOf(modelType.element);
 
             if (ormAnn != null) {
               foreignTable =
@@ -242,4 +245,16 @@ class RelationFieldImpl extends ShimFieldImpl {
   final String originalFieldName;
   RelationFieldImpl(String name, DartType type, this.originalFieldName)
       : super(name, type);
+}
+
+InterfaceType firstModelAncestor(DartType type) {
+  if (type is InterfaceType) {
+    if (const TypeChecker.fromRuntime(Model).isExactlyType(type.superclass)) {
+      return type;
+    } else {
+      return firstModelAncestor(type.superclass);
+    }
+  } else {
+    return null;
+  }
 }

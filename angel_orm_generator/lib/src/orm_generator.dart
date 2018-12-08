@@ -153,6 +153,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               args[field.name] = expr;
             }
 
+            b.statements.add(new Code('if (row.every((x) => x == null)) return null;'));
             b.addExpression(ctx.buildContext.modelClassType
                 .newInstance([], args).assignVar('model'));
 
@@ -200,7 +201,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             ..body = new Block((b) {
               ctx.relations.forEach((fieldName, relation) {
                 //var name = ctx.buildContext.resolveFieldName(fieldName);
-                if (relation.type == RelationshipType.belongsTo) {
+                if (relation.type == RelationshipType.belongsTo ||
+                    relation.type == RelationshipType.hasOne) {
                   var foreign = ctx.relationTypes[relation];
                   var additionalFields = foreign.effectiveFields
                       .where((f) => f.name != 'id' || !isSpecialId(f))

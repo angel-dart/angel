@@ -37,6 +37,7 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
   }
 
   static Order parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Order(
         id: row[0].toString(),
         customerId: (row[1] as int),

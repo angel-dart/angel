@@ -7,7 +7,14 @@ part of angel_orm_generator.test.models.leg;
 // **************************************************************************
 
 class LegQuery extends Query<Leg, LegQueryWhere> {
-  LegQuery() {}
+  LegQuery() {
+    leftJoin('feet', 'id', 'leg_id', additionalFields: const [
+      'leg_id',
+      'n_toes',
+      'created_at',
+      'updated_at'
+    ]);
+  }
 
   @override
   final LegQueryValues values = new LegQueryValues();
@@ -31,6 +38,7 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   }
 
   static Leg parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
     var model = new Leg(
         id: row[0].toString(),
         name: (row[1] as String),
