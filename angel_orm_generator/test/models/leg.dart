@@ -5,7 +5,6 @@ import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'foot.dart';
 part 'leg.g.dart';
-part 'leg.serializer.g.dart';
 
 @serializable
 @orm

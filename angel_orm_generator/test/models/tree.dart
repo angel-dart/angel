@@ -6,7 +6,6 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 import 'fruit.dart';
 part 'tree.g.dart';
-part 'tree.serializer.g.dart';
 
 @serializable
 @orm

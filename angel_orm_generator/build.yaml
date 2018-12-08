@@ -4,7 +4,7 @@ builders:
     builder_factories:
       - ormBuilder
     auto_apply: root_package
-    build_to: source
+    build_to: cache
     build_extensions:
       .dart:
         - ".angel_orm.g.part"
