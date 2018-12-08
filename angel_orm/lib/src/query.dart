@@ -230,8 +230,13 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     }
     if (withFields) b.write(f.join(', '));
     b.write(' FROM $tableName');
-    if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
-    for (var join in _joins) b.write(' ${join.compile()}');
+
+    // No joins if it's not a select.
+    if (preamble == null) {
+      if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
+      for (var join in _joins) b.write(' ${join.compile()}');
+    }
+
     var whereClause =
         where.compile(tableName: includeTableName ? tableName : null);
     if (whereClause.isNotEmpty) b.write(' WHERE $whereClause');
@@ -249,12 +254,20 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<List<T>> delete(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var existing = await get(executor);
-      //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
-      var sql = compile(preamble: 'DELETE', withFields: false);
-      return executor.query(sql).then((_) => existing);
-    });
+    var sql = compile(preamble: 'DELETE', withFields: false);
+
+    if (_joins.isEmpty) {
+      return executor
+          .query(sql, fields.map(adornWithTableName).toList())
+          .then((it) => it.map(deserialize).toList());
+    } else {
+      return executor.transaction(() async {
+        // TODO: Can this be done with just *one* query?
+        var existing = await get(executor);
+        //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
+        return executor.query(sql).then((_) => existing);
+      });
+    }
   }
 
   Future<T> deleteOne(QueryExecutor executor) {
@@ -284,9 +297,17 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       var whereClause = where.compile();
       if (whereClause.isNotEmpty) sql.write(' WHERE $whereClause');
       if (_limit != null) sql.write(' LIMIT $_limit');
-      return executor
-          .query(sql.toString(), fields.map(adornWithTableName).toList())
-          .then((it) => it.map(deserialize).toList());
+
+      if (_joins.isEmpty) {
+        return executor
+            .query(sql.toString(), fields.map(adornWithTableName).toList())
+            .then((it) => it.map(deserialize).toList());
+      } else {
+        // TODO: Can this be done with just *one* query?
+        return executor
+            .query(sql.toString(), fields.map(adornWithTableName).toList())
+            .then((it) => get(executor));
+      }
     }
   }
 
