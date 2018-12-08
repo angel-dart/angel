@@ -47,7 +47,7 @@ abstract class GamepadButtonSerializer {
         name: map['name'] as String, radius: map['radius'] as int);
   }
 
-  static Map<String, dynamic> toMap(GamepadButton model) {
+  static Map<String, dynamic> toMap(_GamepadButton model) {
     if (model == null) {
       return null;
     }

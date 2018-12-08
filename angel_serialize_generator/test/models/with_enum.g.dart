@@ -71,7 +71,7 @@ abstract class WithEnumSerializer {
                     : null)));
   }
 
-  static Map<String, dynamic> toMap(WithEnum model) {
+  static Map<String, dynamic> toMap(_WithEnum model) {
     if (model == null) {
       return null;
     }

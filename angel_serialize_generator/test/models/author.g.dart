@@ -260,7 +260,7 @@ abstract class AuthorSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Author model) {
+  static Map<String, dynamic> toMap(_Author model) {
     if (model == null) {
       return null;
     }
@@ -276,7 +276,7 @@ abstract class AuthorSerializer {
       'id': model.id,
       'name': model.name,
       'age': model.age,
-      'books': model.books?.map((m) => m.toJson())?.toList(),
+      'books': model.books?.map((m) => BookSerializer.toMap(m))?.toList(),
       'newest_book': BookSerializer.toMap(model.newestBook),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
@@ -340,7 +340,7 @@ abstract class LibrarySerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Library model) {
+  static Map<String, dynamic> toMap(_Library model) {
     if (model == null) {
       return null;
     }
@@ -397,7 +397,7 @@ abstract class BookmarkSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Bookmark model) {
+  static Map<String, dynamic> toMap(_Bookmark model) {
     if (model == null) {
       return null;
     }

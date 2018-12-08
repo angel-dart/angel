@@ -10,5 +10,6 @@ class _Gamepad {
 
   Map<String, dynamic> dynamicMap;
 
+  // ignore: unused_field
   String _somethingPrivate;
 }

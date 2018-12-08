@@ -63,12 +63,13 @@ abstract class GamepadSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Gamepad model) {
+  static Map<String, dynamic> toMap(_Gamepad model) {
     if (model == null) {
       return null;
     }
     return {
-      'buttons': model.buttons?.map((m) => m.toJson())?.toList(),
+      'buttons':
+          model.buttons?.map((m) => GamepadButtonSerializer.toMap(m))?.toList(),
       'dynamic_map': model.dynamicMap
     };
   }
