@@ -132,7 +132,9 @@ main() {
 
   test('update book', () async {
     var cloned = deathlyHallows.copyWith(name: "Sorcerer's Stone");
-    var query = new BookQuery()..values.copyFrom(cloned);
+    var query = new BookQuery()
+      ..where.id.equals(int.parse(cloned.id))
+      ..values.copyFrom(cloned);
     var book = await query.updateOne(executor);
     print(book.toJson());
     expect(book.name, cloned.name);

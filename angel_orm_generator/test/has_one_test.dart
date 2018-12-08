@@ -3,31 +3,36 @@ library angel_orm_generator.test.has_one_test;
 
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
-import 'models/foot.orm.g.dart';
+import 'models/foot.dart';
 import 'models/leg.dart';
-import 'models/leg.orm.g.dart';
 import 'common.dart';
 
 main() {
-  QueryExecutor connection;
+  QueryExecutor executor;
   Leg originalLeg;
 
   setUp(() async {
-    connection = await connectToPostgres(['leg', 'foot']);
-    originalLeg = await LegQuery.insert(connection, name: 'Left');
+    executor = await connectToPostgres(['leg', 'foot']);
+    var query = new LegQuery()..values.name = 'Left';
+    originalLeg = await query.insert(executor);
   });
 
   test('sets to null if no child', () async {
-    var leg = await LegQuery.getOne(int.parse(originalLeg.id), connection);
+    var query = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
+    var leg = await query.getOne(executor);
     expect(leg.name, originalLeg.name);
     expect(leg.id, originalLeg.id);
     expect(leg.foot, isNull);
   });
 
   test('can fetch one foot', () async {
-    var foot = await FootQuery.insert(connection,
-        legId: int.parse(originalLeg.id), nToes: 5);
-    var leg = await LegQuery.getOne(int.parse(originalLeg.id), connection);
+    var footQuery = new FootQuery()
+      ..values.legId = int.parse(originalLeg.id)
+      ..values.nToes = 5;
+    var legQuery = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
+    var foot = await footQuery.insert(executor);
+    var leg = await legQuery.getOne(executor);
+
     expect(leg.name, originalLeg.name);
     expect(leg.id, originalLeg.id);
     expect(leg.foot, isNotNull);
@@ -36,11 +41,12 @@ main() {
   });
 
   test('only fetches one foot even if there are multiple', () async {
-    var foot = await FootQuery.insert(connection,
-        legId: int.parse(originalLeg.id), nToes: 5);
-    await FootQuery.insert(connection,
-        legId: int.parse(originalLeg.id), nToes: 24);
-    var leg = await LegQuery.getOne(int.parse(originalLeg.id), connection);
+    var footQuery = new FootQuery()
+      ..values.legId = int.parse(originalLeg.id)
+      ..values.nToes = 24;
+    var legQuery = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
+    var foot = await footQuery.insert(executor);
+    var leg = await legQuery.getOne(executor);
     expect(leg.name, originalLeg.name);
     expect(leg.id, originalLeg.id);
     expect(leg.foot, isNotNull);
@@ -49,10 +55,14 @@ main() {
   });
 
   test('sets foot on update', () async {
-    var foot = await FootQuery.insert(connection,
-        legId: int.parse(originalLeg.id), nToes: 5);
-    var leg = await LegQuery.updateLeg(
-        connection, originalLeg.clone()..name = 'Right');
+    var footQuery = new FootQuery()
+      ..values.legId = int.parse(originalLeg.id)
+      ..values.nToes = 5;
+    var legQuery = new LegQuery()
+      ..where.id.equals(int.parse(originalLeg.id))
+      ..values.copyFrom(originalLeg.copyWith(name: 'Right'));
+    var foot = await footQuery.insert(executor);
+    var leg = await legQuery.updateOne(executor);
     print(leg.toJson());
     expect(leg.name, 'Right');
     expect(leg.foot, isNotNull);
@@ -61,9 +71,12 @@ main() {
   });
 
   test('sets foot on delete', () async {
-    var foot = await FootQuery.insert(connection,
-        legId: int.parse(originalLeg.id), nToes: 5);
-    var leg = await LegQuery.deleteOne(int.parse(originalLeg.id), connection);
+    var footQuery = new FootQuery()
+      ..values.legId = int.parse(originalLeg.id)
+      ..values.nToes = 5;
+    var legQuery = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
+    var foot = await footQuery.insert(executor);
+    var leg = await legQuery.deleteOne(executor);
     print(leg.toJson());
     expect(leg.name, originalLeg.name);
     expect(leg.foot, isNotNull);
