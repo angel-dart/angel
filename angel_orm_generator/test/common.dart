@@ -30,7 +30,7 @@ class PostgresExecutor extends QueryExecutor {
       query = '$query $returning';
     }
 
-    print('Running: $query');
+    if (!Platform.environment.containsKey('STFU')) print('Running: $query');
     return connection.query(query);
   }
 

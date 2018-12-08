@@ -1,3 +1,9 @@
+# 2.0.0-dev.14
+* Remove obsolete `@belongsToMany`.
+
+# 2.0.0-dev.13
+* Push for consistency with orm_gen @ `2.0.0-dev`.
+
 # 2.0.0-dev.12
 * Always apply `toSql` escapes.
 

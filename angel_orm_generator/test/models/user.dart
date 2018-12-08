@@ -15,6 +15,8 @@ abstract class _User extends Model {
 
   @hasMany
   List<_UserRole> get userRoles;
+
+  List<_Role> get roles => userRoles.map((m) => m.role).toList();
 }
 
 @serializable
@@ -24,6 +26,8 @@ abstract class _Role extends Model {
 
   @hasMany
   List<_UserRole> get userRoles;
+
+  List<_User> get users => userRoles.map((m) => m.user).toList();
 }
 
 @Serializable(autoIdAndDateFields: false)

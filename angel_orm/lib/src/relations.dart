@@ -2,7 +2,6 @@ abstract class RelationshipType {
   static const int hasMany = 0;
   static const int hasOne = 1;
   static const int belongsTo = 2;
-  static const int belongsToMany = 3;
 }
 
 class Relationship {
@@ -58,14 +57,3 @@ class BelongsTo extends Relationship {
 }
 
 const BelongsTo belongsTo = const BelongsTo();
-
-class BelongsToMany extends Relationship {
-  const BelongsToMany(
-      {String localKey: 'id', String foreignKey, String foreignTable})
-      : super(RelationshipType.belongsToMany,
-            localKey: localKey,
-            foreignKey: foreignKey,
-            foreignTable: foreignTable);
-}
-
-const BelongsToMany belongsToMany = const BelongsToMany();
