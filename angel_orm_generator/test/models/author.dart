@@ -7,7 +7,7 @@ part 'author.g.dart';
 
 @serializable
 @orm
-class _Author extends Model {
+abstract class _Author extends Model {
   @Column(length: 255, indexType: IndexType.unique, defaultValue: 'Tobe Osakwe')
-  String name;
+  String get name;
 }

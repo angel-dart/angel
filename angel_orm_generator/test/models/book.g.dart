@@ -242,7 +242,7 @@ abstract class BookSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Book model) {
+  static Map<String, dynamic> toMap(_Book model) {
     if (model == null) {
       return null;
     }

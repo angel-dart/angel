@@ -161,7 +161,7 @@ abstract class AuthorSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Author model) {
+  static Map<String, dynamic> toMap(_Author model) {
     if (model == null) {
       return null;
     }

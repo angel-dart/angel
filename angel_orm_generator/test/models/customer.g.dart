@@ -142,7 +142,7 @@ abstract class CustomerSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Customer model) {
+  static Map<String, dynamic> toMap(_Customer model) {
     if (model == null) {
       return null;
     }

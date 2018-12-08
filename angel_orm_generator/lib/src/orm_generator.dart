@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
+import 'package:angel_serialize_generator/build_context.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart' hide LibraryBuilder;
 import 'package:source_gen/source_gen.dart';
@@ -53,8 +54,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   Class buildQueryClass(OrmBuildContext ctx) {
-    // TODO: Handle relations
-
     return new Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
       var queryWhereType = refer('${rc.pascalCase}QueryWhere');
@@ -224,52 +223,62 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               });
             });
         }));
+        if (ctx.relations.isNotEmpty) {
+          clazz.methods.add(new Method((b) {
+            b
+              ..name = 'insert'
+              ..annotations.add(refer('override'))
+              ..requiredParameters
+                  .add(new Parameter((b) => b..name = 'executor'))
+              ..body = new Block((b) {
+                var inTransaction = new Method((b) {
+                  b
+                    ..modifier = MethodModifier.async
+                    ..body = new Block((b) {
+                      b.addExpression(refer('super')
+                          .property('insert')
+                          .call([refer('executor')])
+                          .awaited
+                          .assignVar('result'));
 
-        clazz.methods.add(new Method((b) {
-          b
-            ..name = 'insert'
-            ..annotations.add(refer('override'))
-            ..requiredParameters.add(new Parameter((b) => b..name = 'executor'))
-            ..body = new Block((b) {
-              var inTransaction = new Method((b) {
-                b
-                  ..modifier = MethodModifier.async
-                  ..body = new Block((b) {
-                    b.addExpression(refer('super')
-                        .property('insert')
-                        .call([refer('executor')])
-                        .awaited
-                        .assignVar('result'));
+                      // Just call getOne() again
+                      if (ctx.effectiveFields.any((f) =>
+                          isSpecialId(f) ||
+                          (ctx.columns[f.name]?.indexType ==
+                              IndexType.primaryKey))) {
+                        b.addExpression(refer('where')
+                            .property('id')
+                            .property('equals')
+                            .call([
+                          (refer('int')
+                              .property('parse')
+                              .call([refer('result').property('id')]))
+                        ]));
 
-                    // Just call get() again
-                    b.addExpression(
-                        refer('where').property('id').property('equals').call([
-                      (refer('int')
-                          .property('parse')
-                          .call([refer('result').property('id')]))
-                    ]));
-                    b.addExpression(refer('result').assign(
-                        refer('getOne').call([refer('executor')]).awaited));
-
-                    // Fetch the results of @hasMany
-                    ctx.relations.forEach((name, relation) {
-                      if (relation.type == RelationshipType.hasMany) {
-                        // Call fetchLinked();
-                        var fetchLinked = refer('fetchLinked')
-                            .call([refer('result'), refer('executor')]).awaited;
-                        b.addExpression(refer('result').assign(fetchLinked));
+                        b.addExpression(refer('result').assign(
+                            refer('getOne').call([refer('executor')]).awaited));
                       }
+
+                      // Fetch the results of @hasMany
+                      ctx.relations.forEach((name, relation) {
+                        if (relation.type == RelationshipType.hasMany) {
+                          // Call fetchLinked();
+                          var fetchLinked = refer('fetchLinked').call(
+                              [refer('result'), refer('executor')]).awaited;
+                          b.addExpression(refer('result').assign(fetchLinked));
+                        }
+                      });
+
+                      b.addExpression(refer('result').returned);
                     });
+                });
 
-                    b.addExpression(refer('result').returned);
-                  });
+                b.addExpression(refer('executor')
+                    .property('transaction')
+                    .call([inTransaction.closure]).returned);
               });
-
-              b.addExpression(refer('executor')
-                  .property('transaction')
-                  .call([inTransaction.closure]).returned);
-            });
-        }));
+          }));
+        }
       }
 
       // Create a Future<T> fetchLinked(T model, QueryExecutor), if necessary.
@@ -304,7 +313,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   var queryInstance = queryType.newInstance([]);
 
                   // Next, we need to apply a cascade that sets the correct query value.
-                  var localField = ctx.buildContext.fields.firstWhere(
+                  var localField = ctx.effectiveFields.firstWhere(
                       (f) =>
                           ctx.buildContext.resolveFieldName(f.name) ==
                           relation.localKey, orElse: () {
@@ -312,7 +321,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                         'but it has a @HasMany() relation that expects such a field.';
                   });
 
-                  var foreignField = foreign.buildContext.fields.firstWhere(
+                  var foreignField = foreign.effectiveFields.firstWhere(
                       (f) =>
                           foreign.buildContext.resolveFieldName(f.name) ==
                           relation.foreignKey, orElse: () {
@@ -320,10 +329,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                         'but ${ctx.buildContext.clazz.name} has a @HasMany() relation that expects such a field.';
                   });
 
-                  var queryValue =
-                      (localField.name == 'id' && autoIdAndDateFields)
-                          ? 'int.parse(model.id)'
-                          : 'model.${localField.name}';
+                  var queryValue = (isSpecialId(localField))
+                      ? 'int.parse(model.id)'
+                      : 'model.${localField.name}';
                   var cascadeText =
                       '..where.${foreignField.name}.equals($queryValue)';
                   var queryText = queryInstance.accept(new DartEmitter());
@@ -358,14 +366,17 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 ..type = refer('QueryExecutor')))
               ..body = new Block((b) {
                 var inTransaction = new Method((b) {
-                  b..modifier = MethodModifier.async
-                  ..body = new Block((b) {
-                    var mapped = new CodeExpression(new Code('await Future.wait(result.map((m) => fetchLinked(m, executor)))'));
-                    b.addExpression(new CodeExpression(new Code('var result = await super.$methodName(executor)')));
-                    b.addExpression(mapped.returned);
-                  });
+                  b
+                    ..modifier = MethodModifier.async
+                    ..body = new Block((b) {
+                      var mapped = new CodeExpression(new Code(
+                          'await Future.wait(result.map((m) => fetchLinked(m, executor)))'));
+                      b.addExpression(new CodeExpression(new Code(
+                          'var result = await super.$methodName(executor)')));
+                      b.addExpression(mapped.returned);
+                    });
                 });
-                
+
                 b.addExpression(refer('executor')
                     .property('transaction')
                     .call([inTransaction.closure]).returned);
@@ -377,7 +388,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   bool isSpecialId(FieldElement field) {
-    return (field.name == 'id' && autoIdAndDateFields);
+    return field is ShimFieldImpl &&
+        field is! RelationFieldImpl &&
+        (field.name == 'id' && autoIdAndDateFields);
   }
 
   Class buildWhereClass(OrmBuildContext ctx) {
@@ -401,7 +414,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
       // Add builders for each field
       for (var field in ctx.effectiveFields) {
-        // TODO: Handle fields with relations
         var name = field.name;
         Reference builderType;
 

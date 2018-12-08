@@ -23,7 +23,7 @@ bool isBelongsRelation(Relationship r) =>
     r.type == RelationshipType.belongsTo ||
     r.type == RelationshipType.belongsToMany;
 
-final Map<Uri, OrmBuildContext> _cache = {};
+final Map<String, OrmBuildContext> _cache = {};
 
 Future<OrmBuildContext> buildOrmContext(
     ClassElement clazz,
@@ -44,9 +44,9 @@ Future<OrmBuildContext> buildOrmContext(
     clazz = clazz.supertype.element;
   }
 
-  var uri = clazz.source.uri;
-  if (_cache.containsKey(uri)) {
-    return _cache[uri];
+  var id = clazz.location.components.join('-');
+  if (_cache.containsKey(id)) {
+    return _cache[id];
   }
   var buildCtx = await buildContext(clazz, annotation, buildStep, resolver,
       autoSnakeCaseNames, autoIdAndDateFields,
@@ -58,7 +58,7 @@ Future<OrmBuildContext> buildOrmContext(
       (ormAnnotation.tableName?.isNotEmpty == true)
           ? ormAnnotation.tableName
           : pluralize(new ReCase(clazz.name).snakeCase));
-  _cache[uri] = ctx;
+  _cache[id] = ctx;
 
   // Read all fields
   for (var field in buildCtx.fields) {
@@ -95,7 +95,9 @@ Future<OrmBuildContext> buildOrmContext(
     }
 
     // Try to find a relationship
-    var ann = relationshipTypeChecker.firstAnnotationOf(field);
+    var el = field.setter == null ? field.getter : field;
+    el ??= field;
+    var ann = relationshipTypeChecker.firstAnnotationOf(el);
 
     if (ann != null) {
       var cr = new ConstantReader(ann);
@@ -108,16 +110,22 @@ Future<OrmBuildContext> buildOrmContext(
       OrmBuildContext foreign;
 
       if (foreignTable == null) {
-        if (!isModelClass(field.type) &&
-            !(field.type is InterfaceType &&
-                isListOfModelType(field.type as InterfaceType))) {
+        // if (!isModelClass(field.type) &&
+        //     !(field.type is InterfaceType &&
+        //         isListOfModelType(field.type as InterfaceType))) {
+        if (!(field.type is InterfaceType &&
+                isListOfModelType(field.type as InterfaceType)) &&
+            !isModelClass(field.type)) {
           throw new UnsupportedError(
-              'Cannot apply relationship to field "${field.name}" - ${field.type.name} is not assignable to Model.');
+              'Cannot apply relationship to field "${field.name}" - ${field.type} is not assignable to Model.');
         } else {
           try {
             var refType = field.type;
 
-            if (refType is InterfaceType && isListOfModelType(refType)) {
+            if (refType is InterfaceType &&
+                const TypeChecker.fromRuntime(List)
+                    .isAssignableFromType(refType) &&
+                refType.typeArguments.length == 1) {
               refType = (refType as InterfaceType).typeArguments[0];
             }
 
@@ -131,6 +139,7 @@ Future<OrmBuildContext> buildOrmContext(
                 resolver,
                 autoSnakeCaseNames,
                 autoIdAndDateFields);
+
             var ormAnn = const TypeChecker.fromRuntime(Orm)
                 .firstAnnotationOf(modelType.element);
 
@@ -184,7 +193,7 @@ Future<OrmBuildContext> buildOrmContext(
       ctx.relationTypes[relation] = foreign;
     } else {
       if (column?.type == null)
-        throw 'Cannot infer SQL column type for field "${field.name}" with type "${field.type.name}".';
+        throw 'Cannot infer SQL column type for field "${ctx.buildContext.originalClassName}.${field.name}" with type "${field.type.displayName}".';
       ctx.columns[field.name] = column;
 
       if (!ctx.effectiveFields.any((f) => f.name == field.name))
@@ -265,10 +274,13 @@ class RelationFieldImpl extends ShimFieldImpl {
 
 InterfaceType firstModelAncestor(DartType type) {
   if (type is InterfaceType) {
-    if (const TypeChecker.fromRuntime(Model).isExactlyType(type.superclass)) {
+    if (type.superclass != null &&
+        const TypeChecker.fromRuntime(Model).isExactlyType(type.superclass)) {
       return type;
     } else {
-      return firstModelAncestor(type.superclass);
+      return type.superclass == null
+          ? null
+          : firstModelAncestor(type.superclass);
     }
   } else {
     return null;

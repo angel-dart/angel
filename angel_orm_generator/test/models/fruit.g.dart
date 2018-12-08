@@ -182,7 +182,7 @@ abstract class FruitSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Fruit model) {
+  static Map<String, dynamic> toMap(_Fruit model) {
     if (model == null) {
       return null;
     }

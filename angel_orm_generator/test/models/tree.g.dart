@@ -222,14 +222,14 @@ abstract class TreeSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Tree model) {
+  static Map<String, dynamic> toMap(_Tree model) {
     if (model == null) {
       return null;
     }
     return {
       'id': model.id,
       'rings': model.rings,
-      'fruits': model.fruits?.map((m) => m.toJson())?.toList(),
+      'fruits': model.fruits?.map((m) => FruitSerializer.toMap(m))?.toList(),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };

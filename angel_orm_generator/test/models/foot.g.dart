@@ -181,7 +181,7 @@ abstract class FootSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Foot model) {
+  static Map<String, dynamic> toMap(_Foot model) {
     if (model == null) {
       return null;
     }

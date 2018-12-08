@@ -250,7 +250,7 @@ abstract class OrderSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Order model) {
+  static Map<String, dynamic> toMap(_Order model) {
     if (model == null) {
       return null;
     }

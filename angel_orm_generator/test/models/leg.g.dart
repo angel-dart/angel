@@ -195,7 +195,7 @@ abstract class LegSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Leg model) {
+  static Map<String, dynamic> toMap(_Leg model) {
     if (model == null) {
       return null;
     }

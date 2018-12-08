@@ -250,7 +250,7 @@ abstract class CarSerializer {
             : null);
   }
 
-  static Map<String, dynamic> toMap(Car model) {
+  static Map<String, dynamic> toMap(_Car model) {
     if (model == null) {
       return null;
     }
