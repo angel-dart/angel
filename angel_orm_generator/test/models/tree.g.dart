@@ -3,6 +3,141 @@
 part of angel_orm_generator.test.models.tree;
 
 // **************************************************************************
+// OrmGenerator
+// **************************************************************************
+
+class TreeQuery extends Query<Tree, TreeQueryWhere> {
+  TreeQuery() {}
+
+  @override
+  final TreeQueryValues values = new TreeQueryValues();
+
+  @override
+  final TreeQueryWhere where = new TreeQueryWhere();
+
+  @override
+  get tableName {
+    return 'trees';
+  }
+
+  @override
+  get fields {
+    return const ['id', 'rings', 'created_at', 'updated_at'];
+  }
+
+  @override
+  TreeQueryWhere newWhereClause() {
+    return new TreeQueryWhere();
+  }
+
+  static Tree parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
+    var model = new Tree(
+        id: row[0].toString(),
+        rings: (row[1] as int),
+        createdAt: (row[2] as DateTime),
+        updatedAt: (row[3] as DateTime));
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
+  }
+
+  @override
+  insert(executor) {
+    return executor.transaction(() async {
+      var result = await super.insert(executor);
+      where.id.equals(int.parse(result.id));
+      result = await getOne(executor);
+      result = await fetchLinked(result, executor);
+      return result;
+    });
+  }
+
+  Future<Tree> fetchLinked(Tree model, QueryExecutor executor) async {
+    return model.copyWith(
+        fruits: await (new FruitQuery()
+              ..where.treeId.equals(int.parse(model.id)))
+            .get(executor));
+  }
+
+  @override
+  get(QueryExecutor executor) {
+    return executor.transaction(() async {
+      var result = await super.get(executor);
+      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
+    });
+  }
+
+  @override
+  update(QueryExecutor executor) {
+    return executor.transaction(() async {
+      var result = await super.update(executor);
+      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
+    });
+  }
+
+  @override
+  delete(QueryExecutor executor) {
+    return executor.transaction(() async {
+      var result = await super.delete(executor);
+      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
+    });
+  }
+}
+
+class TreeQueryWhere extends QueryWhere {
+  final NumericSqlExpressionBuilder<int> id =
+      new NumericSqlExpressionBuilder<int>('id');
+
+  final NumericSqlExpressionBuilder<int> rings =
+      new NumericSqlExpressionBuilder<int>('rings');
+
+  final DateTimeSqlExpressionBuilder createdAt =
+      new DateTimeSqlExpressionBuilder('created_at');
+
+  final DateTimeSqlExpressionBuilder updatedAt =
+      new DateTimeSqlExpressionBuilder('updated_at');
+
+  @override
+  get expressionBuilders {
+    return [id, rings, createdAt, updatedAt];
+  }
+}
+
+class TreeQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  void set id(int value) => values['id'] = value;
+  int get rings {
+    return (values['rings'] as int);
+  }
+
+  void set rings(int value) => values['rings'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  void set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Tree model) {
+    values.addAll({
+      'rings': model.rings,
+      'created_at': model.createdAt,
+      'updated_at': model.updatedAt
+    });
+  }
+}
+
+// **************************************************************************
 // JsonModelGenerator
 // **************************************************************************
 

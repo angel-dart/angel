@@ -13,11 +13,6 @@ abstract class UserSerializer {
         username: map['username'] as String,
         password: map['password'] as String,
         email: map['email'] as String,
-        roles: map['roles'] is Iterable
-            ? new List.unmodifiable(((map['roles'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(RoleSerializer.fromMap))
-            : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -39,7 +34,6 @@ abstract class UserSerializer {
       'username': model.username,
       'password': model.password,
       'email': model.email,
-      'roles': model.roles?.map((m) => m.toJson())?.toList(),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -52,7 +46,6 @@ abstract class UserFields {
     username,
     password,
     email,
-    roles,
     createdAt,
     updatedAt
   ];
@@ -64,8 +57,6 @@ abstract class UserFields {
   static const String password = 'password';
 
   static const String email = 'email';
-
-  static const String roles = 'roles';
 
   static const String createdAt = 'created_at';
 

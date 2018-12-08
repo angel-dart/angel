@@ -36,6 +36,7 @@ class PostgresExecutor extends QueryExecutor {
 
   @override
   Future<T> transaction<T>(FutureOr<T> Function() f) async {
+    if (connection is! PostgreSQLConnection) return await f();
     var old = connection;
     T result;
     try {

@@ -153,11 +153,14 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               args[field.name] = expr;
             }
 
-            b.statements.add(new Code('if (row.every((x) => x == null)) return null;'));
+            b.statements
+                .add(new Code('if (row.every((x) => x == null)) return null;'));
             b.addExpression(ctx.buildContext.modelClassType
                 .newInstance([], args).assignVar('model'));
 
             ctx.relations.forEach((name, relation) {
+              if (!const [RelationshipType.hasOne, RelationshipType.belongsTo]
+                  .contains(relation.type)) return;
               var foreign = ctx.relationTypes[relation];
               var skipToList = refer('row')
                   .property('skip')
@@ -248,6 +251,16 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     b.addExpression(refer('result').assign(
                         refer('getOne').call([refer('executor')]).awaited));
 
+                    // Fetch the results of @hasMany
+                    ctx.relations.forEach((name, relation) {
+                      if (relation.type == RelationshipType.hasMany) {
+                        // Call fetchLinked();
+                        var fetchLinked = refer('fetchLinked')
+                            .call([refer('result'), refer('executor')]).awaited;
+                        b.addExpression(refer('result').assign(fetchLinked));
+                      }
+                    });
+
                     b.addExpression(refer('result').returned);
                   });
               });
@@ -257,6 +270,108 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   .call([inTransaction.closure]).returned);
             });
         }));
+      }
+
+      // Create a Future<T> fetchLinked(T model, QueryExecutor), if necessary.
+      if (ctx.relations.values.any((r) => r.type == RelationshipType.hasMany)) {
+        clazz.methods.add(new Method((b) {
+          b
+            ..name = 'fetchLinked'
+            ..modifier = MethodModifier.async
+            ..returns = new TypeReference((b) {
+              b
+                ..symbol = 'Future'
+                ..types.add(ctx.buildContext.modelClassType);
+            })
+            ..requiredParameters.addAll([
+              new Parameter((b) => b
+                ..name = 'model'
+                ..type = ctx.buildContext.modelClassType),
+              new Parameter((b) => b
+                ..name = 'executor'
+                ..type = refer('QueryExecutor')),
+            ])
+            ..body = new Block((b) {
+              var args = <String, Expression>{};
+
+              ctx.relations.forEach((name, relation) {
+                if (relation.type == RelationshipType.hasMany) {
+                  // For each hasMany, we need to create a query of
+                  // the corresponding type.
+                  var foreign = ctx.relationTypes[relation];
+                  var queryType = refer(
+                      '${foreign.buildContext.modelClassNameRecase.pascalCase}Query');
+                  var queryInstance = queryType.newInstance([]);
+
+                  // Next, we need to apply a cascade that sets the correct query value.
+                  var localField = ctx.buildContext.fields.firstWhere(
+                      (f) =>
+                          ctx.buildContext.resolveFieldName(f.name) ==
+                          relation.localKey, orElse: () {
+                    throw '${ctx.buildContext.clazz.name} has no field that maps to the name "${relation.localKey}", '
+                        'but it has a @HasMany() relation that expects such a field.';
+                  });
+
+                  var foreignField = foreign.buildContext.fields.firstWhere(
+                      (f) =>
+                          foreign.buildContext.resolveFieldName(f.name) ==
+                          relation.foreignKey, orElse: () {
+                    throw '${foreign.buildContext.clazz.name} has no field that maps to the name "${relation.foreignKey}", '
+                        'but ${ctx.buildContext.clazz.name} has a @HasMany() relation that expects such a field.';
+                  });
+
+                  var queryValue =
+                      (localField.name == 'id' && autoIdAndDateFields)
+                          ? 'int.parse(model.id)'
+                          : 'model.${localField.name}';
+                  var cascadeText =
+                      '..where.${foreignField.name}.equals($queryValue)';
+                  var queryText = queryInstance.accept(new DartEmitter());
+                  var combinedExpr =
+                      new CodeExpression(new Code('($queryText$cascadeText)'));
+
+                  // Finally, just call get and await it.
+                  var expr = combinedExpr
+                      .property('get')
+                      .call([refer('executor')]).awaited;
+                  args[name] = expr;
+                }
+              });
+
+              // Just return a copyWith
+              b.addExpression(
+                  refer('model').property('copyWith').call([], args).returned);
+            });
+        }));
+      }
+
+      // Also, if there is a @HasMany, generate overrides for query methods that
+      // execute in a transaction, and invoke fetchLinked.
+      if (ctx.relations.values.any((r) => r.type == RelationshipType.hasMany)) {
+        for (var methodName in const ['get', 'update', 'delete']) {
+          clazz.methods.add(new Method((b) {
+            b
+              ..name = methodName
+              ..annotations.add(refer('override'))
+              ..requiredParameters.add(new Parameter((b) => b
+                ..name = 'executor'
+                ..type = refer('QueryExecutor')))
+              ..body = new Block((b) {
+                var inTransaction = new Method((b) {
+                  b..modifier = MethodModifier.async
+                  ..body = new Block((b) {
+                    var mapped = new CodeExpression(new Code('await Future.wait(result.map((m) => fetchLinked(m, executor)))'));
+                    b.addExpression(new CodeExpression(new Code('var result = await super.$methodName(executor)')));
+                    b.addExpression(mapped.returned);
+                  });
+                });
+                
+                b.addExpression(refer('executor')
+                    .property('transaction')
+                    .call([inTransaction.closure]).returned);
+              });
+          }));
+        }
       }
     });
   }

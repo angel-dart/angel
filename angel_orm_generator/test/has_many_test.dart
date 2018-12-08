@@ -1,19 +1,18 @@
-import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'models/fruit.dart';
-import 'models/fruit.orm.g.dart';
 import 'models/tree.dart';
-import 'models/tree.orm.g.dart';
 import 'common.dart';
 
 main() {
-  PostgreSQLConnection connection;
+  PostgresExecutor executor;
   Tree appleTree;
   int treeId;
 
   setUp(() async {
-    connection = await connectToPostgres(['tree', 'fruit']);
-    appleTree = await TreeQuery.insert(connection, rings: 10);
+    var query = new TreeQuery()..values.rings = 10;
+
+    executor = await connectToPostgres(['tree', 'fruit']);
+    appleTree = await query.insert(executor);
     treeId = int.parse(appleTree.id);
   });
 
@@ -33,34 +32,36 @@ main() {
     }
 
     setUp(() async {
-      apple = await FruitQuery.insert(
-        connection,
-        treeId: treeId,
-        commonName: 'Apple',
-      );
+      var appleQuery = new FruitQuery()
+        ..values.treeId = treeId
+        ..values.commonName = 'Apple';
 
-      banana = await FruitQuery.insert(
-        connection,
-        treeId: treeId,
-        commonName: 'Banana',
-      );
+      var bananaQuery = new FruitQuery()
+        ..values.treeId = treeId
+        ..values.commonName = 'Banana';
+
+      apple = await appleQuery.insert(executor);
+      banana = await bananaQuery.insert(executor);
     });
 
     test('can fetch any children', () async {
-      var tree = await TreeQuery.getOne(treeId, connection);
+      var query = new TreeQuery()..where.id.equals(treeId);
+      var tree = await query.getOne(executor);
       verify(tree);
     });
 
     test('sets on update', () async {
-      var tq = new TreeQuery()..where.id.equals(treeId);
-      var tree = await tq.update(connection, rings: 24).first;
+      var tq = new TreeQuery()
+        ..where.id.equals(treeId)
+        ..values.rings = 24;
+      var tree = await tq.updateOne(executor);
       verify(tree);
       expect(tree.rings, 24);
     });
 
     test('sets on delete', () async {
       var tq = new TreeQuery()..where.id.equals(treeId);
-      var tree = await tq.delete(connection).first;
+      var tree = await tq.deleteOne(executor);
       verify(tree);
     });
   });

@@ -108,12 +108,20 @@ Future<OrmBuildContext> buildOrmContext(
       OrmBuildContext foreign;
 
       if (foreignTable == null) {
-        if (!isModelClass(field.type)) {
+        if (!isModelClass(field.type) &&
+            !(field.type is InterfaceType &&
+                isListOfModelType(field.type as InterfaceType))) {
           throw new UnsupportedError(
               'Cannot apply relationship to field "${field.name}" - ${field.type.name} is not assignable to Model.');
         } else {
           try {
-            var modelType = firstModelAncestor(field.type) ?? field.type;
+            var refType = field.type;
+
+            if (refType is InterfaceType && isListOfModelType(refType)) {
+              refType = (refType as InterfaceType).typeArguments[0];
+            }
+
+            var modelType = firstModelAncestor(refType) ?? refType;
 
             foreign = await buildOrmContext(
                 modelType.element as ClassElement,
@@ -162,8 +170,14 @@ Future<OrmBuildContext> buildOrmContext(
       if (isBelongsRelation(relation)) {
         var name = new ReCase(relation.localKey).camelCase;
         ctx.buildContext.aliases[name] = relation.localKey;
-        ctx.effectiveFields.add(new RelationFieldImpl(
-            name, field.type.element.context.typeProvider.intType, field.name));
+
+        if (!ctx.effectiveFields.any((f) => f.name == field.name)) {
+          if (field.name != 'id' || !autoIdAndDateFields) {
+            var rf = new RelationFieldImpl(name,
+                field.type.element.context.typeProvider.intType, field.name);
+            ctx.effectiveFields.add(rf);
+          }
+        }
       }
 
       ctx.relations[field.name] = relation;
@@ -172,7 +186,9 @@ Future<OrmBuildContext> buildOrmContext(
       if (column?.type == null)
         throw 'Cannot infer SQL column type for field "${field.name}" with type "${field.type.name}".';
       ctx.columns[field.name] = column;
-      ctx.effectiveFields.add(field);
+
+      if (!ctx.effectiveFields.any((f) => f.name == field.name))
+        ctx.effectiveFields.add(field);
     }
   }
 

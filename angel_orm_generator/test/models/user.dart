@@ -13,6 +13,7 @@ part 'user.serializer.g.dart';
 class _User extends Model {
   String username, password, email;
 
-  @belongsToMany
-  List<Role> roles;
+  // TODO: Belongs to many
+  //@belongsToMany
+  //List<Role> roles;
 }
