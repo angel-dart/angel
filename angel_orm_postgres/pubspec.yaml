@@ -1,0 +1,13 @@
+name: angel_orm_postgres
+version: 1.0.0-dev
+description: PostgreSQL support for Angel's ORM. Includes functionality for querying and transactions.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/orm
+environment:
+  sdk: '>=2.0.0-dev.1.2 <3.0.0'
+dependencies:
+  angel_orm: ^2.0.0-dev
+  pool: ^1.0.0
+  postgres: ^1.0.0
+dev_dependencies:
+  test: ^1.0.0
