@@ -1,3 +1,6 @@
+# 3.0.1
+* Make the callback in `Router.group` generically-typed.
+
 # 3.0.0
 * Make `Router` and `Route` single-parameter generic.
 * Remove `package:browser` dependency.

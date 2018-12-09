@@ -35,8 +35,8 @@ class Router<T> {
 
   List<T> get middleware => new List<T>.unmodifiable(_middleware);
 
-  Map<Pattern, Router> get mounted =>
-      new Map<Pattern, Router>.unmodifiable(_mounted);
+  Map<Pattern, Router<T>> get mounted =>
+      new Map<Pattern, Router<T>>.unmodifiable(_mounted);
 
   List<Route<T>> get routes {
     return _routes.fold<List<Route<T>>>([], (out, route) {
@@ -163,7 +163,7 @@ class Router<T> {
   ///
   /// Returns the created route.
   /// You can also register middleware within the router.
-  SymlinkRoute<T> group(String path, void callback(Router router),
+  SymlinkRoute<T> group(String path, void callback(Router<T> router),
       {Iterable<T> middleware: const [], String name: null}) {
     final router = new Router<T>().._middleware.addAll(middleware);
     callback(router);
