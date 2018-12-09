@@ -10,7 +10,7 @@ main() async {
   var app = new Angel();
   app.logger = new Logger('angel')..onRecord.listen(prettyLog);
 
-  var publicDir = new Directory('example/public');
+  var publicDir = new Directory('example/http2/public');
   var indexHtml =
       const LocalFileSystem().file(publicDir.uri.resolve('index.html'));
   var styleCss =

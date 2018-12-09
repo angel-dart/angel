@@ -1,3 +1,10 @@
+# 2.0.0-alpha.15
+* Remove dependency on `body_parser`.
+* `RequestContext` now exposes a `Stream<List<int>> get body` getter.
+    * Calling `RequestContext.parseBody()` parses its contents.
+    * Added `bodyAsMap`, `bodyAsList`, `bodyAsObject`, and `uploadedFiles` to `RequestContext`.
+    * Removed `Angel.keepRawRequestBuffers` and anything that had to do with buffering request bodies.
+
 # 2.0.0-alpha.14
 * Patch `HttpResponseContext._openStream` to send content-length.
 

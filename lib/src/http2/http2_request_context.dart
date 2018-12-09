@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:angel_container/src/container.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:body_parser/body_parser.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:http2/transport.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:uuid/uuid.dart';
@@ -13,8 +11,8 @@ final RegExp _comma = new RegExp(r',\s*');
 final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
 
 class Http2RequestContext extends RequestContext<ServerTransportStream> {
+  final StreamController<List<int>> _body = new StreamController();
   final Container container;
-  BytesBuilder _buf;
   List<Cookie> _cookies;
   HttpHeaders _headers;
   String _method, _override, _path;
@@ -25,27 +23,48 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
 
   Http2RequestContext._(this.container);
 
+  @override
+  Stream<List<int>> get body => _body.stream;
+
   static Future<Http2RequestContext> from(
       ServerTransportStream stream,
       Socket socket,
       Angel app,
       Map<String, MockHttpSession> sessions,
       Uuid uuid) async {
+    var c = new Completer<Http2RequestContext>();
     var req = new Http2RequestContext._(app.container.createChild())
       ..app = app
       .._socket = socket
       .._stream = stream;
 
-    var buf = req._buf = new BytesBuilder();
     var headers = req._headers = new MockHttpHeaders();
-    String scheme = 'https',
-        authority = '${socket.address.address}:${socket.port}',
-        path = '';
+    String scheme = 'https', host = socket.address.address, path = '';
+    int port = socket.port;
     var cookies = <Cookie>[];
 
-    await for (var msg in stream.incomingMessages) {
+    void finalize() {
+      req
+        .._cookies = new List.unmodifiable(cookies)
+        .._uri = new Uri(scheme: scheme, host: host, port: port, path: path);
+      if (!c.isCompleted) c.complete(req);
+    }
+
+    void parseHost(String value) {
+      var uri = Uri.tryParse(value);
+      if (uri == null || uri.scheme == 'localhost') return;
+      scheme = uri.hasScheme ? uri.scheme : scheme;
+
+      if (uri.hasAuthority) {
+        host = uri.host;
+        port = uri.hasPort ? uri.port : null;
+      }
+    }
+
+    stream.incomingMessages.listen((msg) {
       if (msg is DataStreamMessage) {
-        buf.add(msg.bytes);
+        if (!c.isCompleted) finalize();
+        req._body.add(msg.bytes);
       } else if (msg is HeadersStreamMessage) {
         for (var header in msg.headers) {
           var name = ascii.decode(header.name).toLowerCase();
@@ -64,7 +83,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
               scheme = value;
               break;
             case ':authority':
-              authority = value;
+              parseHost(value);
               break;
             case 'cookie':
               var cookieStrings = value.split(';').map((s) => s.trim());
@@ -78,18 +97,22 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
               }
               break;
             default:
-              headers.add(ascii.decode(header.name), value.split(_comma));
+              var name = ascii.decode(header.name).toLowerCase();
+
+              if (name == 'host') {
+                parseHost(value);
+              }
+
+              headers.add(name, value.split(_comma));
               break;
           }
         }
+
+        if (msg.endStream && !c.isCompleted) finalize();
       }
-
-      //if (msg.endStream) break;
-    }
-
-    req
-      .._cookies = new List.unmodifiable(cookies)
-      .._uri = Uri.parse('$scheme://$authority').replace(path: path);
+    }, onDone: () {
+      if (!c.isCompleted) finalize();
+    }, cancelOnError: true, onError: c.completeError);
 
     // Apply session
     var dartSessId =
@@ -104,7 +127,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
       () => new MockHttpSession(id: dartSessId.value),
     );
 
-    return req;
+    return c.future;
   }
 
   @override
@@ -147,17 +170,8 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
 
   @override
   Future close() {
+    _body.close();
     return super.close();
-  }
-
-  @override
-  Future<BodyParseResult> parseOnce() {
-    return parseBodyFromStream(
-      new Stream.fromIterable([_buf.takeBytes()]),
-      contentType == null ? null : new MediaType.parse(contentType.toString()),
-      uri,
-      storeOriginalBuffer: app.keepRawRequestBuffers == true,
-    );
   }
 
   @override

@@ -16,7 +16,7 @@ main() async {
   app.get('/', (req, res) => 'Hello HTTP/2!!!');
 
   app.fallback((req, res) => throw new AngelHttpException.notFound(
-      message: 'No file exists at ${req.uri.path}'));
+      message: 'No file exists at ${req.uri}'));
 
   var ctx = new SecurityContext()
     ..useCertificateChain('dev.pem')

@@ -38,7 +38,7 @@ class Http2Client extends BaseClient {
       headers.add(new Header.ascii(k, v));
     });
 
-    var stream = await connection.makeRequest(headers);
+    var stream = await connection.makeRequest(headers, endStream: body.isEmpty);
 
     if (body.isNotEmpty) {
       stream.sendData(body, endStream: true);

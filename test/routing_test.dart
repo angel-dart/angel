@@ -75,7 +75,10 @@ main() {
         middleware: [interceptor]);
     app.get('/hello', (req, res) => 'world');
     app.get('/name/:first/last/:last', (req, res) => req.params);
-    app.post('/lambda', (RequestContext req, res) => req.parseBody());
+    app.post(
+        '/lambda',
+        (RequestContext req, res) =>
+            req.parseBody().then((_) => req.bodyAsMap));
     app.mount('/todos/:id', todos);
     app
         .get('/greet/:name',
@@ -85,7 +88,7 @@ main() {
       res.redirectTo('Named routes', {'name': 'tests'});
     });
     app.get('/log', (RequestContext req, res) async {
-      print("Query: ${await req.parseQuery()}");
+      print("Query: ${req.queryParameters}");
       return "Logged";
     });
 

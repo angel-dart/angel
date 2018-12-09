@@ -114,11 +114,6 @@ class Angel extends Routable {
   /// for you.
   final Map configuration = {};
 
-  /// When set to `true` (default: `false`), the request body will be parsed
-  /// automatically; otherwise, you must call [RequestContext].parseBody() manually,
-  /// or use `lazyBody()`.
-  bool eagerParseRequestBodies = false;
-
   /// A function that renders views.
   ///
   /// Called by [ResponseContext]@`render`.
@@ -358,7 +353,6 @@ class Angel extends Routable {
   Angel(
       {Reflector reflector: const EmptyReflector(),
       this.logger,
-      this.eagerParseRequestBodies: false,
       this.allowMethodOverrides: true,
       this.serializer,
       this.viewGenerator})

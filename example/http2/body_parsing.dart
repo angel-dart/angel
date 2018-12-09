@@ -16,7 +16,7 @@ main() async {
 
   app.get('/', (req, res) => res.streamFile(indexHtml));
 
-  app.post('/', (req, res) => req.parseBody());
+  app.post('/', (req, res) => req.parseBody().then((_) => req.bodyAsMap));
 
   var ctx = new SecurityContext()
     ..useCertificateChain('dev.pem')

@@ -25,9 +25,7 @@ void main() {
   Uri serverRoot;
 
   setUp(() async {
-    app = new Angel()
-      ..keepRawRequestBuffers = true
-      ..encoders['gzip'] = gzip.encoder;
+    app = new Angel()..encoders['gzip'] = gzip.encoder;
 
     app.get('/', (req, res) async {
       res.write('Hello world');
@@ -50,13 +48,17 @@ void main() {
       await res.close();
     });
 
-    app.post('/body', (req, res) => req.parseBody());
+    app.post('/body', (req, res) => req.parseBody().then((_) => req.bodyAsMap));
 
     app.post('/upload', (req, res) async {
-      var body = await req.parseBody(), files = await req.parseUploadedFiles();
-      stdout.add(await req.parseRawRequestBuffer());
+      await req.parseBody();
+      var body = req.bodyAsMap, files = req.uploadedFiles;
       var file = files.firstWhere((f) => f.name == 'file');
-      return [file.data.length, file.mimeType, body];
+      return [
+        await file.data.map((l) => l.length).reduce((a, b) => a + b),
+        file.contentType.mimeType,
+        body
+      ];
     });
 
     app.get('/push', (req, res) async {

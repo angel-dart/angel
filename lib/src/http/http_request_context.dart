@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:angel_container/angel_container.dart';
-import 'package:body_parser/body_parser.dart';
 import 'package:http_parser/http_parser.dart';
 
 import '../core/core.dart';
@@ -39,6 +38,9 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
 
   /// The underlying [HttpRequest] instance underneath this context.
   HttpRequest get rawRequest => _io;
+
+  @override
+  Stream<List<int>> get body => _io;
 
   @override
   String get method {
@@ -120,10 +122,6 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
     ctx._path = path;
     ctx._io = request;
 
-    if (app.eagerParseRequestBodies == true) {
-      return ctx.parse().then((_) => ctx);
-    }
-
     return new Future.value(ctx);
   }
 
@@ -133,16 +131,5 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
     _io = null;
     _override = _path = null;
     return super.close();
-  }
-
-  @override
-  Future<BodyParseResult> parseOnce() {
-    return parseBodyFromStream(
-        rawRequest,
-        rawRequest.headers.contentType != null
-            ? new MediaType.parse(rawRequest.headers.contentType.toString())
-            : null,
-        rawRequest.uri,
-        storeOriginalBuffer: app.keepRawRequestBuffers == true);
   }
 }
