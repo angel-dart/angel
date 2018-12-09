@@ -7,6 +7,9 @@ environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
   combinator: ^1.0.0
+  meta: ^1.0.0
+  path: ^1.0.0
+  string_scanner: ^1.0.0
 dev_dependencies:
   build_runner: ^0.10.0
   build_web_compilers: ^0.4.0
