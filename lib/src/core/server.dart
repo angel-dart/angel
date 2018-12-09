@@ -119,10 +119,6 @@ class Angel extends Routable {
   /// or use `lazyBody()`.
   bool eagerParseRequestBodies = false;
 
-  /// When set to `true`, the original body bytes will be stored
-  /// on requests. `false` by default.
-  bool keepRawRequestBuffers = false;
-
   /// A function that renders views.
   ///
   /// Called by [ResponseContext]@`render`.
@@ -364,7 +360,6 @@ class Angel extends Routable {
       this.logger,
       this.eagerParseRequestBodies: false,
       this.allowMethodOverrides: true,
-      this.keepRawRequestBuffers: false,
       this.serializer,
       this.viewGenerator})
       : super(reflector) {

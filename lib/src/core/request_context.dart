@@ -1,12 +1,14 @@
 library angel_framework.http.request_context;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Cookie, HttpHeaders, HttpSession, InternetAddress;
 
 import 'package:angel_container/angel_container.dart';
-import 'package:body_parser/body_parser.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:http_server/http_server.dart';
 import 'package:meta/meta.dart';
+import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 
 import 'metadata.dart';
@@ -19,9 +21,12 @@ part 'injection.dart';
 /// A convenience wrapper around an incoming [RawRequest].
 abstract class RequestContext<RawRequest> {
   String _acceptHeaderCache, _extensionCache;
-  bool _acceptsAllCache;
-  BodyParseResult _body;
-  Map _provisionalQuery;
+  bool _acceptsAllCache, _hasParsedBody;
+  Map<String, dynamic> _bodyFields, _queryParameters;
+  List _bodyList;
+  Object _bodyObject;
+  List<HttpMultipartFormData> _bodyFiles;
+  MediaType _contentType;
 
   /// The underlying [RawRequest] provided by the driver.
   RawRequest get rawRequest;
@@ -60,7 +65,7 @@ abstract class RequestContext<RawRequest> {
 
   /// The content type of an incoming request.
   MediaType get contentType =>
-      new MediaType.parse(headers.contentType.toString());
+      _contentType ??= new MediaType.parse(headers.contentType.toString());
 
   /// The URL parameters extracted from the request URI.
   Map<String, dynamic> params = <String, dynamic>{};
@@ -82,6 +87,64 @@ abstract class RequestContext<RawRequest> {
 
   /// The [Uri] instance representing the path this request is responding to.
   Uri get uri;
+
+  /// The [Stream] of incoming binary data sent from the client.
+  Stream<List<int>> get body;
+
+  /// Returns `true` if [parseBody] has been called so far.
+  bool get hasParsedBody => _hasParsedBody;
+
+  /// Returns a *mutable* [Map] of the fields parsed from the request [body].
+  ///
+  /// Note that [parseBody] must be called first.
+  Map<String, dynamic> get bodyFields {
+    if (!hasParsedBody) {
+      throw new StateError('The request body has not been parsed yet.');
+    } else if (_bodyFields == null) {
+      throw new StateError('The request body, $_bodyObject, is not a Map.');
+    }
+
+    return _bodyFields;
+  }
+
+  /// Returns a *mutable* [List] parsed from the request [body].
+  ///
+  /// Note that [parseBody] must be called first.
+  List get bodyList {
+    if (!hasParsedBody) {
+      throw new StateError('The request body has not been parsed yet.');
+    } else if (_bodyList == null) {
+      throw new StateError('The request body, $_bodyObject, is not a List.');
+    }
+
+    return _bodyList;
+  }
+
+  /// Returns the parsed request body, whatever it may be (typically a [Map] or [List]).
+  ///
+  /// Note that [parseBody] must be called first.
+  Object get bodyObject {
+    if (!hasParsedBody) {
+      throw new StateError('The request body has not been parsed yet.');
+    }
+
+    return _bodyObject;
+  }
+
+  /// Returns a *mutable* map of the files parsed from the request [body].
+  ///
+  /// Note that [parseBody] must be called first.
+  List<HttpMultipartFormData> get bodyFiles {
+    if (!hasParsedBody) {
+      throw new StateError('The request body has not been parsed yet.');
+    }
+
+    return _bodyFiles;
+  }
+
+  /// Returns a *mutable* map of the fields contained in the query.
+  Map<String, dynamic> get queryParameters =>
+      _queryParameters ??= new Map<String, dynamic>.from(uri.queryParameters);
 
   /// Returns the file extension of the requested path, if any.
   ///
@@ -120,49 +183,54 @@ abstract class RequestContext<RawRequest> {
   /// Returns as `true` if the client's `Accept` header indicates that it will accept any response content type.
   bool get acceptsAll => _acceptsAllCache ??= accepts('*/*');
 
-  /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the body.
-  Future<Map> parseBody() => parse().then((b) => b.body);
-
-  /// Retrieves a list of all uploaded files if it has already been parsed, or lazy-parses it before returning the files.
-  Future<List<FileUploadInfo>> parseUploadedFiles() =>
-      parse().then((b) => b.files);
-
-  /// Retrieves the original request buffer if it has already been parsed, or lazy-parses it before returning the buffer..
-  ///
-  /// This will return an empty `List` if you have not enabled `keepRawRequestBuffers` on your [Angel] instance.
-  Future<List<int>> parseRawRequestBuffer() =>
-      parse().then((b) => b.originalBuffer);
-
-  /// Retrieves the request body if it has already been parsed, or lazy-parses it before returning the query.
-  ///
-  /// If [forceParse] is not `true`, then [uri].query will be returned, and no parsing will be performed.
-  Future<Map<String, dynamic>> parseQuery({bool forceParse: false}) {
-    if (_body == null && forceParse != true)
-      return new Future.value(
-          new Map<String, dynamic>.from(uri.queryParameters));
-    else
-      return parse().then((b) => b.query);
-  }
-
   /// Manually parses the request body, if it has not already been parsed.
-  Future<BodyParseResult> parse() {
-    if (_body != null)
-      return new Future.value(_body);
-    else
-      _provisionalQuery = null;
-    return parseOnce().then((body) => _body = body);
-  }
+  Future<void> parseBody({Encoding encoding: utf8}) async {
+    if (!_hasParsedBody) {
+      _hasParsedBody = true;
 
-  /// Override this method to one-time parse an incoming request.
-  @virtual
-  Future<BodyParseResult> parseOnce();
+      if (contentType.type == 'application' && contentType.subtype == 'json') {
+        _bodyFiles = [];
+
+        var parsed = _bodyObject =
+            await body.transform(encoding.decoder).join().then(json.decode);
+
+        if (parsed is Map) {
+          _bodyFields = new Map<String, dynamic>.from(parsed);
+        } else if (parsed is List) {
+          _bodyList = parsed;
+        }
+      } else if (contentType.type == 'multipart' &&
+          contentType.subtype == 'form-data' &&
+          contentType.parameters.containsKey('boundary')) {
+        var boundary = contentType.parameters['boundary'];
+        var transformer = new MimeMultipartTransformer(boundary);
+        var parts = body.transform(transformer).map((part) =>
+            HttpMultipartFormData.parse(part, defaultEncoding: encoding));
+        _bodyFields = {};
+        _bodyFiles = [];
+
+        await for (var part in parts) {
+          if (part.isBinary) {
+            _bodyFiles.add(part);
+          } else if (part.isText &&
+              part.contentDisposition.parameters.containsKey('name')) {
+            // If there is no name, then don't parse it.
+            var key = part.contentDisposition.parameters['name'];
+            var value = await part.join();
+            _bodyFields[key] = value;
+          }
+        }
+      } else {
+        _bodyFields = {};
+        _bodyFiles = [];
+      }
+    }
+  }
 
   /// Disposes of all resources.
   Future close() {
-    _body = null;
     _acceptsAllCache = null;
     _acceptHeaderCache = null;
-    _provisionalQuery?.clear();
     serviceParams.clear();
     params.clear();
     return new Future.value();
