@@ -1,3 +1,6 @@
+# 2.2.2
+* Split out TS def builder, to emit to source.
+
 # 2.2.1
 * Explicit changes for assisting `angel_orm_generator`.
 

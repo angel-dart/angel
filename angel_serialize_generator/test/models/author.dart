@@ -7,7 +7,7 @@ import 'package:meta/meta.dart';
 import 'book.dart';
 part 'author.g.dart';
 
-@serializable
+@Serializable(serializers: Serializers.all)
 abstract class _Author extends Model {
   @required
   String get name;
