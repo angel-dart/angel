@@ -15,7 +15,7 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel()..keepRawRequestBuffers = true;
+    app = new Angel();
     var appHttp = AngelHttp(app);
     var httpClient = new http.IOClient();
 
@@ -55,14 +55,12 @@ main() {
     });
 
     await appHttp.startServer();
-
-    server = appHttp.httpServer;
-    url = 'http://${server.address.address}:${server.port}';
+    url = appHttp.uri.toString();
   });
 
   tearDown(() async {
-    await testServer.close(force: true);
-    await server.close(force: true);
+    await testServer?.close(force: true);
+    await server?.close(force: true);
     app = null;
     url = null;
   });

@@ -1,3 +1,6 @@
+# 2.1.1
+* Update for framework@2.0.0-alpha.15
+
 # 2.1.0
 
 - Use `Uri` instead of archaic `host`, `port`, and `mapTo`. Also cleaner + safer + easier.

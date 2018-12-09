@@ -105,8 +105,10 @@ class Proxy {
 
         List<int> body;
 
-        if (req.method != 'GET' && req.app.keepRawRequestBuffers == true) {
-          body = (await req.parse()).originalBuffer;
+        if (!req.hasParsedBody) {
+          body = await req.body
+              .fold<BytesBuilder>(new BytesBuilder(), (bb, buf) => bb..add(buf))
+              .then((bb) => bb.takeBytes());
         }
 
         var rq = new http.Request(req.method, uri);
