@@ -1,3 +1,6 @@
+# 2.0.3
+* Updates for streaming parse of request bodies.
+
 # 2.0.2
 * Handle `null` return in `authenticate` + `failureRedirect`.
 

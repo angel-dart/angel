@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:io/ansi.dart';
@@ -65,23 +66,23 @@ main() {
       });
 
     await app
-        .service('users')
+        .findService('users')
         .create({'username': 'jdoe1', 'password': 'password'});
 
     auth = new AngelAuth<User>();
     auth.serializer = (u) => u.id;
     auth.deserializer =
-        (id) async => await app.service('users').read(id) as User;
+        (id) async => await app.findService('users').read(id) as User;
 
     await app.configure(auth.configureServer);
     app.fallback(auth.decodeJwt);
 
     auth.strategies['local'] =
         new LocalAuthStrategy((username, password) async {
-      var users = (await app
-          .service('users')
+      var users = await app
+          .findService('users')
           .index()
-          .then((it) => it.map<User>(User.parse).toList())) as Iterable<User>;
+          .then((it) => it.map<User>((m) => User.parse(m as Map)).toList());
       return users.firstWhere(
           (user) => user.username == username && user.password == password,
           orElse: () => null);

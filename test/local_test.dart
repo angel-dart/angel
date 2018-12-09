@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_auth/angel_auth.dart';
+import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 final AngelAuth<Map<String, String>> auth =
@@ -49,6 +51,14 @@ main() async {
       requireAuthentication<Map<String, String>>(),
     ]);
     app.get('/failure', (req, res) => "nope");
+
+    app.logger = new Logger('angel_auth')
+      ..onRecord.listen((rec) {
+        if (rec.error != null) {
+          print(rec.error);
+          print(rec.stackTrace);
+        }
+      });
 
     HttpServer server = await angelHttp.startServer('127.0.0.1', 0);
     url = "http://${server.address.host}:${server.port}";
@@ -105,7 +115,10 @@ main() async {
     auth.strategies.clear();
     auth.strategies['local'] =
         new LocalAuthStrategy(verifier, forceBasic: true, realm: 'test');
-    var response = await client.get("$url/hello", headers: headers);
+    var response = await client.get("$url/hello", headers: {
+      'accept': 'application/json',
+      'content-type': 'application/json'
+    });
     print(response.headers);
     print('Body <${response.body}>');
     expect(response.headers['www-authenticate'], equals('Basic realm="test"'));

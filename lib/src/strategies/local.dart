@@ -64,7 +64,10 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
     }
 
     if (verificationResult == null) {
-      var body = await req.parseBody();
+      var body = await req
+          .parseBody()
+          .then((_) => req.bodyAsMap)
+          .catchError((_) => <String, dynamic>{});
       if (_validateString(body[usernameField]?.toString()) &&
           _validateString(body[passwordField]?.toString())) {
         verificationResult = await verifier(

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 
 main() async {
   var app = new Angel();

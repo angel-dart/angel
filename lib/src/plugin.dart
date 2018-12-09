@@ -205,7 +205,7 @@ class AngelAuth<User> {
       var jwt = getJwt(req);
 
       if (jwt == null) {
-        var body = await req.parseBody();
+        var body = await req.parseBody().then((_) => req.bodyAsMap);
         jwt = body['token']?.toString();
       }
       if (jwt == null) {
