@@ -3,6 +3,27 @@
 part of angel_orm_generator.test.models.tree;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class TreeMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('trees', (table) {
+      table.serial('id')..primaryKey();
+      table.declare('rings', new ColumnType('smallint'));
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('trees');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

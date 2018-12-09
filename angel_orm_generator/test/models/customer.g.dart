@@ -3,6 +3,26 @@
 part of angel_orm_generator.test.models.customer;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class CustomerMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('customers', (table) {
+      table.serial('id')..primaryKey();
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('customers');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

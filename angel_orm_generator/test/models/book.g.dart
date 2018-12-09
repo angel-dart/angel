@@ -3,6 +3,29 @@
 part of angel_orm.generator.models.book;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class BookMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('books', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('name');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+      table.integer('author_id').references('authors', 'id');
+      table.integer('partner_author_id').references('authors', 'id');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('books');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

@@ -2,11 +2,13 @@ builders:
   angel_orm:
     import: "package:angel_orm_generator/angel_orm_generator.dart"
     builder_factories:
+      - migrationBuilder
       - ormBuilder
     auto_apply: root_package
     build_to: cache
     build_extensions:
       .dart:
+        - ".angel_migration.g.part"
         - ".angel_orm.g.part"
     required_inputs:
       - angel_serialize.g.part

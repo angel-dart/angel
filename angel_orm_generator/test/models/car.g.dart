@@ -3,6 +3,30 @@
 part of angel_orm.generator.models.car;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class CarMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('cars', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('make');
+      table.varChar('description');
+      table.boolean('family_friendly');
+      table.timeStamp('recalled_at');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('cars');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

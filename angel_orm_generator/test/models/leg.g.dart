@@ -3,6 +3,27 @@
 part of angel_orm_generator.test.models.leg;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class LegMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('legs', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('name');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('legs');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

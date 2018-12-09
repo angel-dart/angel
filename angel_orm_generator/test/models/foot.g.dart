@@ -3,6 +3,28 @@
 part of angel_orm_generator.test.models.foot;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class FootMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('feet', (table) {
+      table.serial('id')..primaryKey();
+      table.integer('leg_id');
+      table.integer('n_toes');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('feet');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

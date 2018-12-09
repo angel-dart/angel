@@ -1,3 +1,6 @@
+# 2.0.0-dev.1
+* Generate migration files.
+
 # 2.0.0-dev
 * Dart 2 updates, and more.
 

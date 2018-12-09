@@ -3,6 +3,62 @@
 part of angel_orm_generator.test.models.user;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class UserMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('users', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('username');
+      table.varChar('password');
+      table.varChar('email');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('users');
+  }
+}
+
+class RoleMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('roles', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('name');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('roles');
+  }
+}
+
+class UserRoleMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('user_roles', (table) {
+      table.serial('id')..primaryKey();
+      table.integer('user_id').references('users', 'id');
+      table.integer('role_id').references('roles', 'id');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('user_roles');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 

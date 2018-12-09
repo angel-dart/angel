@@ -46,12 +46,19 @@ part 'car.g.dart';
 
 @serializable
 @orm
-class _Car extends Model {
-  String make;
-  String description;
-  bool familyFriendly;
-  DateTime recalledAt;
+abstract class _Car extends Model {
+  String get make;
+
+  String get description;
+
+  bool get familyFriendly;
+
+  DateTime get recalledAt;
 }
+
+// You can disable migration generation.
+@Orm(generateMigrations: false)
+abstract class _NoMigrations extends Model {}
 ```
 
 Models can use the `@Alias()` annotation; `package:angel_orm` obeys it.

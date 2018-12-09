@@ -3,6 +3,27 @@
 part of angel_orm.generator.models.author;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class AuthorMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('authors', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('name');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('authors');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 
