@@ -1,3 +1,6 @@
+# 2.0.0-alpha.8
+* Support for WebSockets over HTTP/2 (though in practice this doesn't often happen, if ever).
+
 # 2.0.0-alpha.7
 * Replace `WebSocketSynchronizer` with `StreamChannel<WebSocketEvent>`.
 

@@ -7,10 +7,12 @@ import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
-import "package:angel_framework/http.dart";
+import 'package:angel_framework/http.dart';
+import 'package:angel_framework/http2.dart';
 import 'package:merge_map/merge_map.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'angel_websocket.dart';
 export 'angel_websocket.dart';
 
@@ -38,6 +40,12 @@ class AngelWebSocket {
   /// If this is not `true`, then all client-side service parameters will be
   /// discarded, other than `params['query']`.
   final bool allowClientParams;
+
+  /// An optional whitelist of allowed client origins, or [:null:].
+  final List<String> allowedOrigins;
+
+  /// An optional whitelist of allowed client protocols, or [:null:].
+  final List<String> allowedProtocols;
 
   /// If `true`, then clients can authenticate their WebSockets by sending a valid JWT.
   final bool allowAuth;
@@ -79,7 +87,9 @@ class AngelWebSocket {
       this.allowAuth: true,
       this.synchronizationChannel,
       this.serializer,
-      this.deserializer}) {
+      this.deserializer,
+      this.allowedOrigins,
+      this.allowedProtocols}) {
     if (serializer == null) serializer = json.encode;
     if (deserializer == null) deserializer = (params) => params;
   }
@@ -334,7 +344,14 @@ class AngelWebSocket {
   }
 
   /// Handles an incoming [WebSocketContext].
-  Future handleClient(WebSocketContext socket) async {
+  Future<void> handleClient(WebSocketContext socket) async {
+    var origin = socket.request.headers.value('origin');
+    if (allowedOrigins != null && !allowedOrigins.contains(origin)) {
+      throw new AngelHttpException.forbidden(
+          message:
+              'WebSocket connections are not allowed from the origin "$origin".');
+    }
+
     _clients.add(socket);
     await handleConnect(socket);
 
@@ -370,8 +387,66 @@ class AngelWebSocket {
       var socket = new WebSocketContext(channel, req, res);
       handleClient(socket);
       return false;
+    } else if (req is Http2RequestContext && res is Http2ResponseContext) {
+      var connection =
+          req.headers['connection']?.map((s) => s.toLowerCase().trim());
+      var upgrade = req.headers.value('upgrade')?.toLowerCase();
+      var version = req.headers.value('sec-websocket-version');
+      var key = req.headers.value('sec-websocket-key');
+      var protocol = req.headers.value('sec-websocket-protocol');
+
+      if (connection == null) {
+        throw new AngelHttpException.badRequest(
+            message: 'Missing `connection` header.');
+      } else if (!connection.contains('upgrade')) {
+        throw new AngelHttpException.badRequest(
+            message: 'Missing "upgrade" in `connection` header.');
+      } else if (upgrade != 'websocket') {
+        throw new AngelHttpException.badRequest(
+            message: 'The `upgrade` header must equal "websocket".');
+      } else if (version != '13') {
+        throw new AngelHttpException.badRequest(
+            message: 'The `sec-websocket-version` header must equal "13".');
+      } else if (key == null) {
+        throw new AngelHttpException.badRequest(
+            message: 'Missing `sec-websocket-key` header.');
+      } else if (protocol != null &&
+          allowedProtocols != null &&
+          !allowedProtocols.contains(protocol)) {
+        throw new AngelHttpException.badRequest(
+            message: 'Disallowed `sec-websocket-protocol` header "$protocol".');
+      } else {
+        var stream = res.detach();
+        var ctrl = new StreamChannelController<List<int>>();
+
+        ctrl.local.stream.listen((buf) {
+          stream.sendData(buf);
+        }, onDone: () {
+          stream.outgoingMessages.close();
+        });
+
+        if (req.hasParsedBody) {
+          ctrl.local.sink.close();
+        } else {
+          req.body.pipe(ctrl.local.sink);
+        }
+
+        var sink = utf8.encoder.startChunkedConversion(ctrl.foreign.sink);
+        sink.add("HTTP/1.1 101 Switching Protocols\r\n"
+            "Upgrade: websocket\r\n"
+            "Connection: Upgrade\r\n"
+            "Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n");
+        if (protocol != null) sink.add("Sec-WebSocket-Protocol: $protocol\r\n");
+        sink.add("\r\n");
+
+        var ws = new WebSocketChannel(ctrl.foreign);
+        var socket = new WebSocketContext(ws, req, res);
+        handleClient(socket);
+        return false;
+      }
     } else {
-      throw new ArgumentError('Not an HTTP/1.1 RequestContext: $req');
+      throw new ArgumentError(
+          'Not an HTTP/1.1 or HTTP/2 RequestContext+ResponseContext pair: $req, $res');
     }
   }
 }
