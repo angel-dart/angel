@@ -247,8 +247,8 @@ a `Validator` instance to the constructor, because it extends the
 ```dart
 main() {
     var bio = new Validator({
-        'age*': [isInteger, greaterThanOrEqualTo(0)],
-        'birthYear*': isInteger,
+        'age*': [isInt, greaterThanOrEqualTo(0)],
+        'birthYear*': isInt,
         'countryOfOrigin': isString
     });
 
@@ -277,12 +277,12 @@ main() {
 # Use with Angel
 
 `server.dart` exposes seven helper middleware:
-* `validate(validator)`: Validates and filters `req.body`, and throws an `AngelHttpException.BadRequest` if data is invalid.
+* `validate(validator)`: Validates and filters `req.bodyAsMap`, and throws an `AngelHttpException.BadRequest` if data is invalid.
 * `validateEvent(validator)`: Sets `e.data` to the result of validation on a service event.
 * `validateQuery(validator)`: Same as `validate`, but operates on `req.query`.
-* `autoParseBody(fields)`: Auto-parses numbers in `req.body`.
+* `autoParseBody(fields)`: Auto-parses numbers in `req.bodyAsMap`.
 * `autoParseQuery(fields)`: Same as `autoParseBody`, but operates on `req.query`.
-* `filterBody(only)`: Filters unwanted data out of `req.body`.
+* `filterBody(only)`: Filters unwanted data out of `req.bodyAsMap`.
 * `filterQuery(only)`: Same as `filterBody`, but operates on `req.query`.
 
 ```dart
@@ -304,7 +304,7 @@ main() async {
     var app = new Angel();
 
     app.chain(validate(echo)).post('/echo', (req, res) async {
-        res.write('You said: "${req.body["message"]}"');
+        res.write('You said: "${req.bodyAsMap["message"]}"');
     });
 
     app.service('api/todos')

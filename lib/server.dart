@@ -9,62 +9,60 @@ import 'angel_validate.dart';
 export 'src/async.dart';
 export 'angel_validate.dart';
 
-/// Auto-parses numbers in `req.body`.
+/// Auto-parses numbers in `req.bodyAsMap`.
 RequestHandler autoParseBody(List<String> fields) {
   return (RequestContext req, res) async {
-    var body = await req.parseBody();
-    body.addAll(autoParse(body, fields));
+    await req.parseBody();
+    req.bodyAsMap.addAll(autoParse(req.bodyAsMap, fields));
     return true;
   };
 }
 
-/// Auto-parses numbers in `req.query`.
+/// Auto-parses numbers in `req.queryParameters`.
 RequestHandler autoParseQuery(List<String> fields) {
   return (RequestContext req, res) async {
-    var query = new Map<String, dynamic>.from(await req.parseQuery());
-    (await req.parseQuery()).addAll(autoParse(query, fields));
+    req.queryParameters.addAll(autoParse(req.queryParameters, fields));
     return true;
   };
 }
 
-/// Filters unwanted data out of `req.body`.
+/// Filters unwanted data out of `req.bodyAsMap`.
 RequestHandler filterBody(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var body = await req.parseBody();
-    var filtered = filter(body, only);
-    body
+    await req.parseBody();
+    var filtered = filter(req.bodyAsMap, only);
+    req.bodyAsMap
       ..clear()
       ..addAll(filtered);
     return true;
   };
 }
 
-/// Filters unwanted data out of `req.query`.
+/// Filters unwanted data out of `req.queryParameters`.
 RequestHandler filterQuery(Iterable<String> only) {
   return (RequestContext req, res) async {
-    var query = await req.parseQuery();
-    var filtered = filter(query, only);
-    (await req.parseQuery())
+    var filtered = filter(req.queryParameters, only);
+    req.queryParameters
       ..clear()
       ..addAll(filtered);
     return true;
   };
 }
 
-/// Validates the data in `req.body`, and sets the body to
+/// Validates the data in `req.bodyAsMap`, and sets the body to
 /// filtered data before continuing the response.
 RequestHandler validate(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var body = await req.parseBody();
-    var result = await asyncApplyValidator(validator, body, req.app);
+    await req.parseBody();
+    var result = await asyncApplyValidator(validator, req.bodyAsMap, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
-    body
+    req.bodyAsMap
       ..clear()
       ..addAll(result.data);
 
@@ -72,20 +70,20 @@ RequestHandler validate(Validator validator,
   };
 }
 
-/// Validates the data in `req.query`, and sets the query to
+/// Validates the data in `req.queryParameters`, and sets the query to
 /// filtered data before continuing the response.
 RequestHandler validateQuery(Validator validator,
     {String errorMessage: 'Invalid data.'}) {
   return (RequestContext req, res) async {
-    var query = await req.parseQuery();
-    var result = await asyncApplyValidator(validator, query, req.app);
+    var result =
+        await asyncApplyValidator(validator, req.queryParameters, req.app);
 
     if (result.errors.isNotEmpty) {
       throw new AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
-    (await req.parseQuery())
+    req.queryParameters
       ..clear()
       ..addAll(result.data);
 

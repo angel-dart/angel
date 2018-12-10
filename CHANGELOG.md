@@ -1,3 +1,6 @@
+# 2.0.1
+* Patch for updated body parsing.
+
 # 2.0.0
 * Finish update for Angel 2.
 

@@ -26,8 +26,8 @@ main() {
 
     app.chain([validate(echoSchema)]).post('/echo',
         (RequestContext req, res) async {
-      var body = await req.parseBody();
-      res.write('Hello, ${body['message']}!');
+      await req.parseBody();
+      res.write('Hello, ${req.bodyAsMap['message']}!');
     });
 
     app.logger = new Logger('angel')..onRecord.listen(printRecord);
