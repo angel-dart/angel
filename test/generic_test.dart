@@ -1,4 +1,5 @@
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_mongo/angel_mongo.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
@@ -44,8 +45,8 @@ main() {
 
       app.use('/api', greetingService);
 
-      var server = await transport.startServer('127.0.0.1', 0);
-      url = "http://${server.address.host}:${server.port}";
+      await transport.startServer('127.0.0.1', 0);
+      url = transport.uri.toString();
     });
 
     tearDown(() async {
@@ -56,6 +57,20 @@ main() {
       client = null;
       url = null;
       greetingService = null;
+    });
+
+    test('query fields mapped to filters', () async {
+      await greetingService.create({'foo': 'bar'});
+      expect(
+        await greetingService.index({
+          'query': {'foo': 'not bar'}
+        }),
+        isEmpty,
+      );
+      expect(
+        await greetingService.index(),
+        isNotEmpty,
+      );
     });
 
     test('insert items', () async {
@@ -133,7 +148,8 @@ main() {
 
       var response = await client.get("$url/api?to=world");
       print(response.body);
-      List<Map> queried = god.deserialize(response.body, outputType: <Map>[].runtimeType);
+      List<Map> queried =
+          god.deserialize(response.body, outputType: <Map>[].runtimeType);
       expect(queried.length, equals(1));
       expect(queried[0].keys.length, equals(2));
       expect(queried[0]["id"], equals(world["id"]));
@@ -151,7 +167,7 @@ main() {
         "\$query": {
           "_id": where.id(new ObjectId.fromHexString(world["id"] as String))
         }
-      }) as List<Map<String, dynamic>>;
+      });
       print(queried);
       expect(queried.length, equals(1));
       expect(queried[0], equals(world));
