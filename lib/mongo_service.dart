@@ -112,6 +112,20 @@ class MongoService extends Service<String, Map<String, dynamic>> {
   }
 
   @override
+  Future<Map<String, dynamic>> findOne(
+      [Map<String, dynamic> params,
+      String errorMessage =
+          'No record was found matching the given query.']) async {
+    var found = await collection.findOne(_makeQuery(params));
+
+    if (found == null) {
+      throw new AngelHttpException.notFound(message: errorMessage);
+    }
+
+    return _jsonify(found, params);
+  }
+
+  @override
   Future<Map<String, dynamic>> read(String id,
       [Map<String, dynamic> params]) async {
     ObjectId _id = _makeId(id);
@@ -123,6 +137,16 @@ class MongoService extends Service<String, Map<String, dynamic>> {
     }
 
     return _jsonify(found, params);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> readMany(List<String> ids,
+      [Map<String, dynamic> params]) async {
+    var q = _makeQuery(params);
+    q = ids.fold(q, (q, id) => q.or(where.id(_makeId(id))));
+    return await (await collection.find(q))
+        .map((x) => _jsonify(x, params))
+        .toList();
   }
 
   @override

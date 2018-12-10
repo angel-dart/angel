@@ -99,6 +99,31 @@ main() {
       //expect(read['createdAt'], isNot(null));
     });
 
+    test('findOne', () async {
+      var response = await client.post("$url/api",
+          body: god.serialize(testGreeting), headers: headers);
+      expect(response.statusCode, isIn([200, 201]));
+      Map created = god.deserialize(response.body);
+
+      var id = new ObjectId.fromHexString(created['id'] as String);
+      var read = await greetingService.findOne({'query': where.id(id)});
+      expect(read['id'], equals(created['id']));
+      expect(read['to'], equals('world'));
+      //expect(read['createdAt'], isNot(null));
+    });
+
+    test('readMany', () async {
+      var response = await client.post("$url/api",
+          body: god.serialize(testGreeting), headers: headers);
+      expect(response.statusCode, isIn([200, 201]));
+      Map created = god.deserialize(response.body);
+
+      var id = new ObjectId.fromHexString(created['id'] as String);
+      var read = await greetingService.readMany([id.toHexString()]);
+      expect(read, [created]);
+      //expect(read['createdAt'], isNot(null));
+    });
+
     test('modify item', () async {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);

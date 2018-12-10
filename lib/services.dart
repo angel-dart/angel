@@ -24,11 +24,16 @@ ObjectId _makeId(id) {
   }
 }
 
-const List<String> _SENSITIVE = const ['id', '_id', 'createdAt', 'updatedAt'];
+const List<String> _sensitiveFieldNames = const [
+  'id',
+  '_id',
+  'createdAt',
+  'updatedAt'
+];
 
 Map<String, dynamic> _removeSensitive(Map<String, dynamic> data) {
   return data.keys
-      .where((k) => !_SENSITIVE.contains(k))
+      .where((k) => !_sensitiveFieldNames.contains(k))
       .fold({}, (map, key) => map..[key] = data[key]);
 }
 
