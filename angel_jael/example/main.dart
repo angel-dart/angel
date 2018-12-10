@@ -19,8 +19,8 @@ main() async {
       (req, res) =>
           res.render('index', {'title': 'Sample App', 'message': null}));
 
-  app.post('/', (RequestContext req, res) async {
-    var body = await req.parseBody();
+  app.post('/', (req, res) async {
+    var body = await req.parseBody().then((_) => req.bodyAsMap);
     print('Body: $body');
     var msg = body['message'] ?? '<unknown>';
     return await res.render('index', {
