@@ -100,8 +100,8 @@ class Angel extends Routable {
       _logger = new ConvertingLogger(value);
     } else if (value is Logger) {
       _logger = value;
-    } else {
-      throw new ArgumentError();
+    } else if (value != null) {
+      throw new ArgumentError('Unsupported logger: $value');
     }
   }
 
