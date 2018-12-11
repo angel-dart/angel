@@ -41,10 +41,10 @@ main() async {
   try {
     ctx.setAlpnProtocols(['h2'], true);
   } catch (e, st) {
-    app.logger.severe(
+    app.logger.error(
       'Cannot set ALPN protocol on server to `h2`. The server will only serve HTTP/1.x.',
-      e,
-      st,
+      error: e,
+      stackTrace: st,
     );
   }
 

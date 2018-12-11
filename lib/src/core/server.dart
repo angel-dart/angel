@@ -10,7 +10,9 @@ import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:combinator/combinator.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:logging/logging.dart';
+import 'package:logging/logging.dart' as dart;
+import 'package:lumberjack/logging.dart';
+import 'package:lumberjack/lumberjack.dart';
 import 'package:mime/mime.dart';
 import 'package:tuple/tuple.dart';
 
@@ -90,7 +92,20 @@ class Angel extends Routable {
   Angel get parent => _parent;
 
   /// Outputs diagnostics and debug messages.
-  Logger logger;
+  Logger get logger => _logger;
+
+  set logger(value) {
+    if (_logger != null) _logger.close();
+    if (value is dart.Logger) {
+      _logger = new ConvertingLogger(value);
+    } else if (value is Logger) {
+      _logger = value;
+    } else {
+      throw new ArgumentError();
+    }
+  }
+
+  Logger _logger;
 
   /// Plug-ins to be called right before server startup.
   ///
@@ -292,7 +307,7 @@ class Angel extends Routable {
     if (isProduction == true || force == true) {
       _isProduction = true;
       _flattened ??= flatten(this);
-      logger?.config('Angel is running in production mode.');
+      logger?.notice('Angel is running in production mode.');
     }
   }
 
@@ -352,11 +367,12 @@ class Angel extends Routable {
 
   Angel(
       {Reflector reflector: const EmptyReflector(),
-      this.logger,
+      logger,
       this.allowMethodOverrides: true,
       this.serializer,
       this.viewGenerator})
       : super(reflector) {
+    if (logger != null) this.logger = logger;
     bootstrapContainer();
     viewGenerator ??= noViewEngineConfigured;
     serializer ??= json.encode;

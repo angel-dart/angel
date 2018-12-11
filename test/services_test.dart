@@ -77,7 +77,7 @@ main() {
       await client.post("$url/todos",
           headers: headers as Map<String, String>, body: postData);
       postData = json.encode({'text': 'modified'});
-      
+
       var response = await client.patch("$url/todos/0",
           headers: headers as Map<String, String>, body: postData);
       expect(response.statusCode, 200);

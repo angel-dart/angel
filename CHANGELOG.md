@@ -1,3 +1,6 @@
+# 2.0.0-alpha.16
+* Use `package:lumberjack` for logging.
+
 # 2.0.0-alpha.15
 * Remove dependency on `body_parser`.
 * `RequestContext` now exposes a `Stream<List<int>> get body` getter.

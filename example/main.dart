@@ -1,7 +1,8 @@
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
-import 'package:logging/logging.dart';
+import 'package:lumberjack/lumberjack.dart';
+import 'package:lumberjack/io.dart';
 
 main() async {
   var app = new Angel(
@@ -9,13 +10,7 @@ main() async {
     reflector: MirrorsReflector(),
   );
 
-  hierarchicalLoggingEnabled = true;
-
-  app.logger.onRecord.listen((rec) {
-    print(rec);
-    if (rec.error != null) print(rec.error);
-    if (rec.stackTrace != null) print(rec.stackTrace);
-  });
+  app.logger.pipe(AnsiLogPrinter.toStdout());
 
   // Index route. Returns JSON.
   app.get('/', (req, res) => 'Welcome to Angel!');
