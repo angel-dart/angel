@@ -8,7 +8,7 @@ import 'package:logging/logging.dart';
 main() async {
   // Watch the config/ and web/ directories for changes, and hot-reload the server.
   var hot = new HotReloader(() async {
-    var app = new Angel()..lazyParseBodies = true;
+    var app = new Angel();
     await app.configure(configureServer);
     hierarchicalLoggingEnabled = true;
     app.logger = new Logger('angel');

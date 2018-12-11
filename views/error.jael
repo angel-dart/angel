@@ -1,4 +1,4 @@
-<extend src="layout.jl">
+<extend src="layout.jael">
     <block name="content">
         <div class="title">{{ message }}</div>
     </block>
