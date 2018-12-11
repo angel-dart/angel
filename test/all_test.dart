@@ -23,7 +23,7 @@ main() async {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel();
+    var app = Angel();
     await app.configure(configureServer);
 
     client = await connectTo(app);

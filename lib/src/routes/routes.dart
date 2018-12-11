@@ -17,8 +17,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     await app.configure(controllers.configureServer);
 
     // Render `views/hello.jl` when a user visits the application root.
-    app.get(
-        '/', (RequestContext req, ResponseContext res) => res.render('hello'));
+    app.get('/', (req, res) => res.render('hello'));
 
     // Mount static server at web in development.
     // The `CachingVirtualDirectory` variant of `VirtualDirectory` also sends `Cache-Control` headers.
@@ -30,7 +29,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     // * https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae
     // * https://github.com/angel-dart/static
     if (!app.isProduction) {
-      var vDir = new VirtualDirectory(
+      var vDir = VirtualDirectory(
         app,
         fileSystem,
         source: fileSystem.directory('web'),
@@ -39,7 +38,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     }
 
     // Throw a 404 if no route matched the request.
-    app.fallback((req, res) => throw new AngelHttpException.notFound());
+    app.fallback((req, res) => throw AngelHttpException.notFound());
 
     // Set our application up to handle different errors.
     //
