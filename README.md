@@ -1,5 +1,3 @@
-**Angel v1 users should stick to Dart 2.0.0-dev or lower. Dart 2 users will very soon be able to use version 2.0.0 of the entire Angel framework (try it now - `package:angel_framework@2.0.0-alpha`)!**
-
 [![The Angel Framework](https://angel-dart.github.io/assets/images/logo.png)](https://angel-dart.github.io)
 
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/angel_dart/discussion)
@@ -7,7 +5,9 @@
 [![Build status](https://travis-ci.org/angel-dart/framework.svg?branch=master)](https://travis-ci.org/angel-dart/framework)
 ![License](https://img.shields.io/github/license/angel-dart/framework.svg)
 
-**Fill out the [v1.0.0 survey](https://docs.google.com/forms/d/e/1FAIpQLSfEgBNsOoi_nYZMmg2IAGyMv1nNaa6B3kUk3QdNJU5987ucVA/viewform?usp=sf_link) now!!!**
+**A batteries-included, full-stack Web server framework for Dart.**
+
+-----
 
 [Wiki (in-depth documentation)](https://github.com/angel-dart/angel/wiki)
 
@@ -19,21 +19,19 @@
 
 [Awesome Angel :fire:](https://github.com/angel-dart/awesome-angel)
 
-**The Dart server framework that's ready for showtime.**
 
-Angel is a full-featured server-side Web application framework for the Dart programming language. It strives to be a flexible, extensible system, to be easily scalable, and to allow as much code to be shared between clients and servers as possible. Ultimately, I believe that this approach will shorten the time it takes to build a full-stack Web application, from start to finish. [Read more...](https://medium.com/the-angel-framework/announcing-angel-v1-0-0-beta-46dfb4aa8afe)
 
-Like what you see? Please lend us a star. :star:
+Like what you see? Please lend us a star! :star:
 
 ## Newest Tutorials
-* [Developing RESTful API's with Angel](https://thosakwe.com/developing-restful-apis-with-angel/)
-* [Serving Static Files](https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae)
-* Use With Angular2 ([article](https://dart.academy/using-angel-with-angular2/) | [video](https://www.youtube.com/watch?v=O8tCXj_lljY&feature=youtu.be))
+* [Dependency Injection Patterns with Angel 2](https://thosakwe.com/dependency-injection-patterns-in-angel-2/)
+* [Angel 2.0.0 is Almost Here - What it Means for You](https://thosakwe.com/new-features-coming-to-angel-in-version-2-0-0/)
+* [GraphQL is coming to Angel (and Dart)](https://thosakwe.com/graphql-is-coming-to-angel-and-dart/)
 
 ## Installation & Setup
-*Having errors with a fresh Angel installation? See [here](https://github.com/angel-dart/angel/wiki/Installation-&-Setup) for help.*
+*Having errors with a fresh Angel installation? See [here](https://angel-dart.gitbook.io/angel/the-basics/installation) for help.*
 
-Once you have [Dart](https://www.dartlang.org/) installed, bootstrapping a project is as simple as running one shell command:
+Once you have [Dart](https://www.dartlang.org/) installed, bootstrapping a project is as simple as running a few shell commands:
 
 Install the [Angel CLI](https://github.com/angel-dart/cli):
 
@@ -47,21 +45,23 @@ Bootstrap a project:
 angel init hello
 ```
 
-You can even have your server run and be *live-reloaded* on file changes:
+You can even have your server run and be *hot-reloaded* on file changes:
 
 ```bash
-dart bin/dev.dart
+dart --observe bin/dev.dart
 ```
 
-Next, check out the [detailed documentation](https://github.com/angel-dart/angel/wiki) to learn to flesh out your project.
+Next, check out the [detailed documentation](https://angel-dart.gitbook.io/angel) to learn to flesh out your project.
 
 ## Features
 With features like the following, Angel is the all-in-one framework you should choose to build your next project:
 * [Advanced, Modular Routing](https://github.com/angel-dart/route)
-* [Middleware](https://github.com/angel-dart/angel/wiki/Middleware)
-* [Dependency Injection](https://github.com/angel-dart/angel/wiki/Dependency-Injection)
+* [Middleware](https://angel-dart.gitbook.io/angel/the-basics/middleware)
+* [Dependency Injection](https://angel-dart.gitbook.io/angel/the-basics/dependency-injection)
 * [Strongly-typed ORM](https://github.com/angel-dart/orm)
 * And [much more](https://github.com/angel-dart)...
 
 ## Basic Example
-Examples and complete projects can be found in the [angel-example](https://github.com/angel-example) organization.
+Examples and complete projects can be found here:
+
+https://github.com/angel-dart/examples-v2
