@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_framework/http2.dart';
-import 'package:logging/logging.dart';
-import 'pretty_logging.dart';
+import 'package:lumberjack/lumberjack.dart';
+import 'package:lumberjack/io.dart';
 
 main() async {
   var app = new Angel()
@@ -11,7 +11,8 @@ main() async {
       'gzip': gzip.encoder,
       'deflate': zlib.encoder,
     });
-  app.logger = new Logger('angel')..onRecord.listen(prettyLog);
+  app.logger = new Logger('angel');
+  app.logger.pipe(new AnsiLogPrinter.toStdout());
 
   app.get('/', (req, res) => 'Hello HTTP/2!!!');
 

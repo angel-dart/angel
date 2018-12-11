@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
-import 'package:logging/logging.dart';
+import 'package:lumberjack/lumberjack.dart';
+import 'package:lumberjack/io.dart';
 
 main() async {
   var app = new Angel(reflector: MirrorsReflector())
-    ..logger = (new Logger('angel')..onRecord.listen(print))
+    ..logger = (new Logger('angel')..pipe(new AnsiLogPrinter.toStdout()))
     ..encoders.addAll({'gzip': gzip.encoder});
 
   app.fallback(
