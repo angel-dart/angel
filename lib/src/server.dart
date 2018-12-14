@@ -88,7 +88,7 @@ abstract class AuthorizationServer<Client, User> {
   ///
   /// Note that in cases where this is called, there is no guarantee
   /// that the user agent has not been compromised.
-  Future<AuthorizationTokenResponse> implicitGrant(
+  FutureOr<AuthorizationTokenResponse> implicitGrant(
       Client client,
       String redirectUri,
       Iterable<String> scopes,
@@ -106,7 +106,7 @@ abstract class AuthorizationServer<Client, User> {
   }
 
   /// Exchanges an authorization code for an authorization token.
-  Future<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
+  FutureOr<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
       String authCode,
       String redirectUri,
       RequestContext req,
@@ -122,7 +122,7 @@ abstract class AuthorizationServer<Client, User> {
   }
 
   /// Refresh an authorization token.
-  Future<AuthorizationTokenResponse> refreshAuthorizationToken(
+  FutureOr<AuthorizationTokenResponse> refreshAuthorizationToken(
       Client client,
       String refreshToken,
       Iterable<String> scopes,
@@ -140,7 +140,7 @@ abstract class AuthorizationServer<Client, User> {
   }
 
   /// Issue an authorization token to a user after authenticating them via [username] and [password].
-  Future<AuthorizationTokenResponse> resourceOwnerPasswordCredentialsGrant(
+  FutureOr<AuthorizationTokenResponse> resourceOwnerPasswordCredentialsGrant(
       Client client,
       String username,
       String password,
@@ -159,13 +159,26 @@ abstract class AuthorizationServer<Client, User> {
   }
 
   /// Performs a client credentials grant. Only use this in situations where the client is 100% trusted.
-  Future<AuthorizationTokenResponse> clientCredentialsGrant(
+  FutureOr<AuthorizationTokenResponse> clientCredentialsGrant(
       Client client, RequestContext req, ResponseContext res) async {
     var body = await req.parseBody().then((_) => req.bodyAsMap);
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
         'Client credentials grants are not supported.',
+        body['state']?.toString() ?? '',
+      ),
+      statusCode: 400,
+    );
+  }
+
+  FutureOr<DeviceCodeResponse> deviceCodeGrant(Client client,
+      Iterable<String> scopes, RequestContext req, ResponseContext res) async {
+    var body = await req.parseBody().then((_) => req.bodyAsMap);
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Device code grants are not supported.',
         body['state']?.toString() ?? '',
       ),
       statusCode: 400,
