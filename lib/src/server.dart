@@ -6,7 +6,7 @@ import 'response.dart';
 import 'token_type.dart';
 
 /// A request handler that performs an arbitrary authorization token grant.
-typedef Future<AuthorizationTokenResponse> ExtensionGrant(
+typedef FutureOr<AuthorizationTokenResponse> ExtensionGrant(
     RequestContext req, ResponseContext res);
 
 Future<String> _getParam(RequestContext req, String name, String state,
@@ -62,12 +62,12 @@ abstract class AuthorizationServer<Client, User> {
   FutureOr<Client> findClient(String clientId);
 
   /// Verify that a [client] is the one identified by the [clientSecret].
-  Future<bool> verifyClient(Client client, String clientSecret);
+  FutureOr<bool> verifyClient(Client client, String clientSecret);
 
   /// Prompt the currently logged-in user to grant or deny access to the [client].
   ///
   /// In many applications, this will entail showing a dialog to the user in question.
-  requestAuthorizationCode(
+  FutureOr requestAuthorizationCode(
       Client client,
       String redirectUri,
       Iterable<String> scopes,
