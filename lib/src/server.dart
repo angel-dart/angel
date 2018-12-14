@@ -11,8 +11,15 @@ typedef Future<AuthorizationTokenResponse> ExtensionGrant(
 
 Future<String> _getParam(RequestContext req, String name, String state,
     {bool body: false}) async {
-  var map = body == true ? await req.parseBody() : await req.parseQuery();
-  var value = map.containsKey(name) ? map[name]?.toString() : null;
+  Map<String, dynamic> data;
+
+  if (body == true) {
+    data = await req.parseBody().then((_) => req.bodyAsMap);
+  } else {
+    data = req.queryParameters;
+  }
+
+  var value = data.containsKey(name) ? data[name]?.toString() : null;
 
   if (value?.isNotEmpty != true) {
     throw new AuthorizationException(
@@ -30,8 +37,15 @@ Future<String> _getParam(RequestContext req, String name, String state,
 
 Future<Iterable<String>> _getScopes(RequestContext req,
     {bool body: false}) async {
-  var map = body == true ? await req.parseBody() : await req.parseQuery();
-  return map['scope']?.toString()?.split(' ') ?? [];
+  Map<String, dynamic> data;
+
+  if (body == true) {
+    data = await req.parseBody().then((_) => req.bodyAsMap);
+  } else {
+    data = req.queryParameters;
+  }
+
+  return data['scope']?.toString()?.split(' ') ?? [];
 }
 
 /// An OAuth2 authorization server, which issues access tokens to third parties.
@@ -114,7 +128,7 @@ abstract class AuthorizationServer<Client, User> {
       Iterable<String> scopes,
       RequestContext req,
       ResponseContext res) async {
-    var body = await req.parseBody();
+    var body = await req.parseBody().then((_) => req.bodyAsMap);
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
@@ -133,7 +147,7 @@ abstract class AuthorizationServer<Client, User> {
       Iterable<String> scopes,
       RequestContext req,
       ResponseContext res) async {
-    var body = await req.parseBody();
+    var body = await req.parseBody().then((_) => req.bodyAsMap);
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
@@ -147,7 +161,7 @@ abstract class AuthorizationServer<Client, User> {
   /// Performs a client credentials grant. Only use this in situations where the client is 100% trusted.
   Future<AuthorizationTokenResponse> clientCredentialsGrant(
       Client client, RequestContext req, ResponseContext res) async {
-    var body = await req.parseBody();
+    var body = await req.parseBody().then((_) => req.bodyAsMap);
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.unsupportedResponseType,
@@ -164,7 +178,7 @@ abstract class AuthorizationServer<Client, User> {
     String state = '';
 
     try {
-      var query = await req.parseQuery();
+      var query = req.queryParameters;
       state = query['state']?.toString() ?? '';
       var responseType = await _getParam(req, 'response_type', state);
 
@@ -288,7 +302,7 @@ abstract class AuthorizationServer<Client, User> {
 
     try {
       AuthorizationTokenResponse response;
-      var body = await req.parseBody();
+      var body = await req.parseBody().then((_) => req.bodyAsMap);
 
       state = body['state']?.toString() ?? '';
 

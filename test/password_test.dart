@@ -121,7 +121,7 @@ class _AuthorizationServer
         orElse: () => null);
 
     if (user == null) {
-      var body = await req.parseBody();
+      var body = await req.parseBody().then((_) => req.bodyAsMap);
       throw new AuthorizationException(
         new ErrorResponse(
           ErrorResponse.accessDenied,
