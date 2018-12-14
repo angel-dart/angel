@@ -1,5 +1,5 @@
 name: angel_framework
-version: 2.0.0-alpha.16
+version: 2.0.0-alpha.17
 description: A high-powered HTTP server with dependency injection, routing and much more.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_framework
@@ -17,7 +17,6 @@ dependencies:
   http_server: ^0.9.0
   http2: ">=0.1.7 <2.0.0"
   logging: ">=0.11.3 <1.0.0"
-  lumberjack: ^1.0.0-rc.0
   matcher: ^0.12.0
   merge_map: ^1.0.0
   meta: ^1.0.0

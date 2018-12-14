@@ -1,3 +1,7 @@
+# 2.0.0-alpha.17
+* Revert the migration to `lumberjack` for now. In the future, when it's more
+stable, there'll be a conversion, perhaps.
+
 # 2.0.0-alpha.16
 * Use `package:lumberjack` for logging.
 

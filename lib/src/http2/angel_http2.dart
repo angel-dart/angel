@@ -191,8 +191,8 @@ class _AngelHttp2ServerSocket extends Stream<SecureSocket>
       },
       onDone: _ctrl.close,
       onError: (e, st) {
-        driver.app.logger.warning('HTTP/2 incoming connection failure: ',
-            error: e, stackTrace: st as StackTrace);
+        driver.app.logger.warning(
+            'HTTP/2 incoming connection failure: ', e, st as StackTrace);
       },
     );
   }

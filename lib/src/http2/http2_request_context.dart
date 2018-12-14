@@ -31,7 +31,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
       Socket socket,
       Angel app,
       Map<String, MockHttpSession> sessions,
-      Uuid uuid) async {
+      Uuid uuid) {
     var c = new Completer<Http2RequestContext>();
     var req = new Http2RequestContext._(app.container.createChild())
       ..app = app
@@ -63,7 +63,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
 
     stream.incomingMessages.listen((msg) {
       if (msg is DataStreamMessage) {
-        if (!c.isCompleted) finalize();
+        finalize();
         req._body.add(msg.bytes);
       } else if (msg is HeadersStreamMessage) {
         for (var header in msg.headers) {
@@ -108,10 +108,10 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
           }
         }
 
-        if (msg.endStream && !c.isCompleted) finalize();
+        if (msg.endStream) finalize();
       }
     }, onDone: () {
-      if (!c.isCompleted) finalize();
+      finalize();
     }, cancelOnError: true, onError: c.completeError);
 
     // Apply session

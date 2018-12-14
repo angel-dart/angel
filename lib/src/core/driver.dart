@@ -167,8 +167,7 @@ abstract class Driver<
               var error = e.error ?? e;
               var trace =
                   new Trace.from(e.stackTrace ?? StackTrace.current).terse;
-              app.logger.error(e.message ?? e.toString(),
-                  error: error, stackTrace: trace);
+              app.logger.severe(e.message ?? e.toString(), error, trace);
             }
 
             return handleAngelHttpException(
@@ -178,7 +177,7 @@ abstract class Driver<
           var zoneSpec = new ZoneSpecification(
             print: (self, parent, zone, line) {
               if (app.logger != null)
-                app.logger.information(line);
+                app.logger.info(line);
               else
                 parent.print(zone, line);
             },
@@ -201,8 +200,7 @@ abstract class Driver<
                 }
 
                 if (app.logger != null) {
-                  app.logger.error(e.message ?? e.toString(),
-                      error: error, stackTrace: trace);
+                  app.logger.severe(e.message ?? e.toString(), error, trace);
                 }
 
                 return handleAngelHttpException(
@@ -213,8 +211,8 @@ abstract class Driver<
                 // Ideally, we won't be in a position where an absolutely fatal error occurs,
                 // but if so, we'll need to log it.
                 if (app.logger != null) {
-                  app.logger.error('Fatal error occurred when processing $uri.',
-                      error: e, stackTrace: trace);
+                  app.logger.severe(
+                      'Fatal error occurred when processing $uri.', e, trace);
                 } else {
                   stderr
                     ..writeln('Fatal error occurred when processing '
@@ -255,7 +253,7 @@ abstract class Driver<
       {bool ignoreFinalizers: false}) {
     if (req == null || res == null) {
       try {
-        app.logger?.error(null, error: e, stackTrace: st);
+        app.logger?.severe(null, e, st);
         setStatusCode(response, 500);
         writeStringToResponse(response, '500 Internal Server Error');
         closeResponse(response);
@@ -287,7 +285,7 @@ abstract class Driver<
     void _cleanup(_) {
       if (!app.isProduction && app.logger != null) {
         var sw = req.container.make<Stopwatch>();
-        app.logger.information(
+        app.logger.info(
             "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
       }
     }

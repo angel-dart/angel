@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_framework/http2.dart';
-import 'package:lumberjack/lumberjack.dart';
-import 'package:lumberjack/io.dart';
+import 'package:logging/logging.dart';
+import 'common.dart';
 
 main() async {
   var app = new Angel()
@@ -11,8 +11,7 @@ main() async {
       'gzip': gzip.encoder,
       'deflate': zlib.encoder,
     });
-  app.logger = new Logger('angel');
-  app.logger.pipe(new AnsiLogPrinter.toStdout());
+  app.logger = new Logger('angel')..onRecord.listen(dumpError);
 
   app.get('/', (req, res) => 'Hello HTTP/2!!!');
 
@@ -26,10 +25,10 @@ main() async {
   try {
     ctx.setAlpnProtocols(['h2'], true);
   } catch (e, st) {
-    app.logger.error(
+    app.logger.severe(
       'Cannot set ALPN protocol on server to `h2`. The server will only serve HTTP/1.x.',
-      error: e,
-      stackTrace: st,
+      e,
+      st,
     );
   }
 
