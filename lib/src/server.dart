@@ -10,7 +10,7 @@ typedef FutureOr<AuthorizationTokenResponse> ExtensionGrant(
     RequestContext req, ResponseContext res);
 
 Future<String> _getParam(RequestContext req, String name, String state,
-    {bool body: false}) async {
+    {bool body: false, bool throwIfEmpty: true}) async {
   Map<String, dynamic> data;
 
   if (body == true) {
@@ -21,7 +21,7 @@ Future<String> _getParam(RequestContext req, String name, String state,
 
   var value = data.containsKey(name) ? data[name]?.toString() : null;
 
-  if (value?.isNotEmpty != true) {
+  if (value?.isNotEmpty != true && throwIfEmpty) {
     throw new AuthorizationException(
       new ErrorResponse(
         ErrorResponse.invalidRequest,
@@ -172,6 +172,7 @@ abstract class AuthorizationServer<Client, User> {
     );
   }
 
+  /// Performs a device code grant.
   FutureOr<DeviceCodeResponse> deviceCodeGrant(Client client,
       Iterable<String> scopes, RequestContext req, ResponseContext res) async {
     var body = await req.parseBody().then((_) => req.bodyAsMap);
@@ -319,7 +320,7 @@ abstract class AuthorizationServer<Client, User> {
 
       state = body['state']?.toString() ?? '';
 
-      var grantType = await _getParam(req, 'grant_type', state, body: true);
+      var grantType = await _getParam(req, 'grant_type', state, body: true, throwIfEmpty: false);
 
       if (grantType != 'authorization_code') {
         var match =
@@ -398,6 +399,11 @@ abstract class AuthorizationServer<Client, User> {
         }
       } else if (extensionGrants.containsKey(grantType)) {
         response = await extensionGrants[grantType](req, res);
+      } else if (grantType == null) {
+        // This is a device code grant.
+        var scopes = await _getScopes(req, body: true);
+        var deviceCodeResponse = await deviceCodeGrant(client, scopes, req, res);
+        return deviceCodeResponse.toJson();
       }
 
       if (response != null) {
