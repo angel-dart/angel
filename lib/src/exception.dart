@@ -46,6 +46,28 @@ class ErrorResponse {
   /// The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
   static const String temporarilyUnavailable = 'temporarily_unavailable';
 
+  /// The authorization request is still pending as the end user hasn't
+  /// yet completed the user interaction steps (Section 3.3).  The
+  /// client SHOULD repeat the Access Token Request to the token
+  /// endpoint (a process known as polling).  Before each new request
+  /// the client MUST wait at least the number of seconds specified by
+  /// the "interval" parameter of the Device Authorization Response (see
+  /// Section 3.2), or 5 seconds if none was provided, and respect any
+  /// increase in the polling interval required by the "slow_down"
+  /// error.
+  static const String authorizationPending = 'authorization_pending';
+
+  /// A variant of "authorization_pending", the authorization request is
+  /// still pending and polling should continue, but the interval MUST
+  /// be increased by 5 seconds for this and all subsequent requests.
+  static const String slowDown = 'slow_down';
+
+  /// The "device_code" has expired and the device flow authorization
+  /// session has concluded.  The client MAY commence a new Device
+  /// Authorization Request but SHOULD wait for user interaction before
+  /// restarting to avoid unnecessary polling.
+  static const String expiredToken = 'expired_token';
+
   /// A short string representing the error.
   final String code;
 

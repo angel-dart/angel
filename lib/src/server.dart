@@ -173,8 +173,26 @@ abstract class AuthorizationServer<Client, User> {
   }
 
   /// Performs a device code grant.
-  FutureOr<DeviceCodeResponse> deviceCodeGrant(Client client,
+  FutureOr<DeviceCodeResponse> requestDeviceCode(Client client,
       Iterable<String> scopes, RequestContext req, ResponseContext res) async {
+    var body = await req.parseBody().then((_) => req.bodyAsMap);
+    throw new AuthorizationException(
+      new ErrorResponse(
+        ErrorResponse.unsupportedResponseType,
+        'Device code grants are not supported.',
+        body['state']?.toString() ?? '',
+      ),
+      statusCode: 400,
+    );
+  }
+
+  /// Produces an authorization token from a given device code.
+  FutureOr<AuthorizationTokenResponse> exchangeDeviceCodeForToken(
+      Client client,
+      String deviceCode,
+      String state,
+      RequestContext req,
+      ResponseContext res) async {
     var body = await req.parseBody().then((_) => req.bodyAsMap);
     throw new AuthorizationException(
       new ErrorResponse(
@@ -320,7 +338,8 @@ abstract class AuthorizationServer<Client, User> {
 
       state = body['state']?.toString() ?? '';
 
-      var grantType = await _getParam(req, 'grant_type', state, body: true, throwIfEmpty: false);
+      var grantType = await _getParam(req, 'grant_type', state,
+          body: true, throwIfEmpty: false);
 
       if (grantType != 'authorization_code') {
         var match =
@@ -402,8 +421,13 @@ abstract class AuthorizationServer<Client, User> {
       } else if (grantType == null) {
         // This is a device code grant.
         var scopes = await _getScopes(req, body: true);
-        var deviceCodeResponse = await deviceCodeGrant(client, scopes, req, res);
+        var deviceCodeResponse =
+            await requestDeviceCode(client, scopes, req, res);
         return deviceCodeResponse.toJson();
+      } else if (grantType == 'urn:ietf:params:oauth:grant-type:device_code') {
+        var deviceCode = await _getParam(req, 'device_code', state, body: true);
+        response = await exchangeDeviceCodeForToken(
+            client, deviceCode, state, req, res);
       }
 
       if (response != null) {
