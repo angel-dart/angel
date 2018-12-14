@@ -341,7 +341,9 @@ abstract class AuthorizationServer<Client, User> {
       var grantType = await _getParam(req, 'grant_type', state,
           body: true, throwIfEmpty: false);
 
-      if (grantType != 'authorization_code') {
+      if (grantType != 'authorization_code' &&
+          grantType != 'urn:ietf:params:oauth:grant-type:device_code' &&
+          grantType != null) {
         var match =
             _rgxBasic.firstMatch(req.headers.value('authorization') ?? '');
 
@@ -420,11 +422,39 @@ abstract class AuthorizationServer<Client, User> {
         response = await extensionGrants[grantType](req, res);
       } else if (grantType == null) {
         // This is a device code grant.
+        var clientId = await _getParam(req, 'client_id', state, body: true);
+        client = await findClient(clientId);
+
+        if (client == null) {
+          throw new AuthorizationException(
+            new ErrorResponse(
+              ErrorResponse.unauthorizedClient,
+              'Invalid "client_id" parameter.',
+              state,
+            ),
+            statusCode: 400,
+          );
+        }
+
         var scopes = await _getScopes(req, body: true);
         var deviceCodeResponse =
             await requestDeviceCode(client, scopes, req, res);
         return deviceCodeResponse.toJson();
       } else if (grantType == 'urn:ietf:params:oauth:grant-type:device_code') {
+        var clientId = await _getParam(req, 'client_id', state, body: true);
+        client = await findClient(clientId);
+
+        if (client == null) {
+          throw new AuthorizationException(
+            new ErrorResponse(
+              ErrorResponse.unauthorizedClient,
+              'Invalid "client_id" parameter.',
+              state,
+            ),
+            statusCode: 400,
+          );
+        }
+
         var deviceCode = await _getParam(req, 'device_code', state, body: true);
         response = await exchangeDeviceCodeForToken(
             client, deviceCode, state, req, res);
