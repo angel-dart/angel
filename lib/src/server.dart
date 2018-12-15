@@ -65,6 +65,31 @@ abstract class AuthorizationServer<Client, User> {
   /// Verify that a [client] is the one identified by the [clientSecret].
   FutureOr<bool> verifyClient(Client client, String clientSecret);
 
+  /// Retrieves the PKCE `code_verifier` parameter from a [RequestContext], or throws.
+  Future<String> getPkceCodeVerifier(RequestContext req,
+      {bool body: true, String state, Uri uri}) async {
+    var data = body
+        ? await req.parseBody().then((_) => req.bodyAsMap)
+        : req.queryParameters;
+    var codeVerifier = data['code_verifier'];
+
+    if (codeVerifier == null) {
+      throw new AuthorizationException(new ErrorResponse(
+          ErrorResponse.invalidRequest,
+          "Missing `code_verifier` parameter.",
+          state,
+          uri: uri));
+    } else if (codeVerifier is! String) {
+      throw new AuthorizationException(new ErrorResponse(
+          ErrorResponse.invalidRequest,
+          "The `code_verifier` parameter must be a string.",
+          state,
+          uri: uri));
+    } else {
+      return codeVerifier as String;
+    }
+  }
+
   /// Prompt the currently logged-in user to grant or deny access to the [client].
   ///
   /// In many applications, this will entail showing a dialog to the user in question.

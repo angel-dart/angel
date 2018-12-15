@@ -51,9 +51,9 @@ class Pkce {
 
     if (isS256) {
       foreignChallenge =
-          base64Url.encode(sha256.convert(ascii.encode(codeChallenge)).bytes);
+          base64Url.encode(sha256.convert(ascii.encode(codeVerifier)).bytes);
     } else {
-      foreignChallenge = codeChallenge;
+      foreignChallenge = codeVerifier;
     }
 
     if (foreignChallenge != codeChallenge) {
