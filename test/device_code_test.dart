@@ -83,6 +83,50 @@ main() {
           ));
     });
   });
+
+  group('get token', () {
+    test('valid device code + timing', () async {
+      var response = await client.post('/oauth2/token', body: {
+        'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
+        'client_id': 'foo',
+        'device_code': 'bar',
+      });
+
+      print(response.body);
+      expect(
+          response,
+          allOf(
+            hasStatus(200),
+            isJson({"token_type": "bearer", "access_token": "foo"}),
+          ));
+    });
+
+    // The rationale for only testing one possible error response is that
+    // they all only differ in terms of the `code` string sent down,
+    // which is chosen by the end user.
+    //
+    // The logic for throwing errors and turning them into responses
+    // has already been tested.
+    test('failure', () async {
+      var response = await client.post('/oauth2/token', body: {
+        'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
+        'client_id': 'foo',
+        'device_code': 'brute',
+      });
+
+      print(response.body);
+      expect(
+          response,
+          allOf(
+            hasStatus(400),
+            isJson({
+              "error": "slow_down",
+              "error_description":
+                  "Ho, brother! Ho, whoa, whoa, whoa now! You got too much dip on your chip!"
+            }),
+          ));
+    });
+  });
 }
 
 class _AuthorizationServer
@@ -110,13 +154,19 @@ class _AuthorizationServer
   }
 
   @override
-  Future<AuthorizationTokenResponse> implicitGrant(
+  FutureOr<AuthorizationTokenResponse> exchangeDeviceCodeForToken(
       PseudoApplication client,
-      String redirectUri,
-      Iterable<String> scopes,
+      String deviceCode,
       String state,
       RequestContext req,
-      ResponseContext res) async {
+      ResponseContext res) {
+    if (deviceCode == 'brute') {
+      throw new AuthorizationException(new ErrorResponse(
+          ErrorResponse.slowDown,
+          "Ho, brother! Ho, whoa, whoa, whoa now! You got too much dip on your chip!",
+          state));
+    }
+
     return new AuthorizationTokenResponse('foo');
   }
 }
