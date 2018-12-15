@@ -28,6 +28,9 @@ class ErrorResponse {
   /// The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.
   static const String invalidRequest = 'invalid_request';
 
+  /// The `code_verifier` given by the client does not match the expected value.
+  static const String invalidGrant = 'invalid_grant';
+
   /// The client is not authorized to request an authorization code using this method.
   static const String unauthorizedClient = 'unauthorized_client';
 

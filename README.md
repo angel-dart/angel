@@ -11,7 +11,7 @@ In your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  angel_oauth2: ^1.0.0
+  angel_oauth2: ^2.0.0
 ```
 
 # Usage
@@ -49,7 +49,7 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
 ```
 
 Next, write some logic to be executed whenever a user visits the
-authorization endpoint. In most cases, you will want to show a dialog:
+authorization endpoint. In many cases, you will want to show a dialog:
 
 ```dart
 @override
@@ -99,7 +99,7 @@ The following are available, not including authorization code grant support (men
 * `implicitGrant`
 * `resourceOwnerPasswordCredentialsGrant`
 * `clientCredentialsGrant`
-* `deviceCode`
+* `deviceCodeGrant`
 
 Read the [OAuth2 specification](https://tools.ietf.org/html/rfc6749)
 for in-depth information on each grant type.

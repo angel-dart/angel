@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'exception.dart';
+import 'pkce.dart';
 import 'response.dart';
 import 'token_type.dart';
 
