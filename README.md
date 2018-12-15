@@ -99,6 +99,7 @@ The following are available, not including authorization code grant support (men
 * `implicitGrant`
 * `resourceOwnerPasswordCredentialsGrant`
 * `clientCredentialsGrant`
+* `deviceCode`
 
 Read the [OAuth2 specification](https://tools.ietf.org/html/rfc6749)
 for in-depth information on each grant type.
