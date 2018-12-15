@@ -215,6 +215,10 @@ abstract class AuthorizationServer<Client, User> {
       state = query['state']?.toString() ?? '';
       var responseType = await _getParam(req, 'response_type', state);
 
+      req.container.registerLazySingleton<Pkce>((_) {
+        return new Pkce.fromJson(req.queryParameters, state: state);
+      });
+
       if (responseType == 'code') {
         // Ensure client ID
         // TODO: Handle confidential clients
@@ -338,6 +342,10 @@ abstract class AuthorizationServer<Client, User> {
       var body = await req.parseBody().then((_) => req.bodyAsMap);
 
       state = body['state']?.toString() ?? '';
+
+      req.container.registerLazySingleton<Pkce>((_) {
+        return new Pkce.fromJson(req.bodyAsMap, state: state);
+      });
 
       var grantType = await _getParam(req, 'grant_type', state,
           body: true, throwIfEmpty: false);

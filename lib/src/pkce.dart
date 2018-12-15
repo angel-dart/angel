@@ -64,4 +64,12 @@ class Pkce {
       );
     }
   }
+
+  /// Creates a JSON-serializable representation of this instance.
+  Map<String, dynamic> toJson() {
+    return {
+      'code_challenge': codeChallenge,
+      'code_challenge_method': codeChallengeMethod
+    };
+  }
 }
