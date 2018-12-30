@@ -16,4 +16,5 @@ dev_dependencies:
   angel_hot: ^2.0.0 # Hot-reloading support. :)
   angel_test: ^2.0.0-alpha # Utilities for testing Angel servers.
   io: ^0.3.2
+  pedantic: ^1.0.0
   test: ^1.0.0
