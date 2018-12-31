@@ -1,3 +1,6 @@
+# 2.1.0
+* Add `loadStandaloneConfiguration`.
+
 # 2.0.0
 * Use Angel 2.
 

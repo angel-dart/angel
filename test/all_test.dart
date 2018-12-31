@@ -1,6 +1,7 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_configuration/angel_configuration.dart';
 import 'package:file/local.dart';
+import 'package:io/ansi.dart';
 import 'package:test/test.dart';
 
 main() async {
@@ -12,6 +13,26 @@ main() async {
     fileSystem,
     directoryPath: './test/config',
   ));
+
+  test('standalone', () async {
+    var config = await loadStandaloneConfiguration(
+      fileSystem,
+      directoryPath: './test/config',
+      onWarning: (msg) {
+        print(yellow.wrap('STANDALONE WARNING: $msg'));
+      },
+    );
+    print('Standalone: $config');
+    expect(config, {
+      "angel": {"framework": "cool"},
+      "must_be_null": null,
+      "artist": "Timberlake",
+      "merge": {"map": true, "hello": "world"},
+      "set_via": "default",
+      "hello": "world",
+      "foo": {"version": "bar"}
+    });
+  });
 
   test('can load based on ANGEL_ENV', () async {
     expect(app.configuration['hello'], equals('world'));
