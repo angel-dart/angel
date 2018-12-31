@@ -20,7 +20,8 @@ class ModelCommand extends Command {
       ..addFlag('migration',
           abbr: 'm',
           help: 'Generate an angel_orm migration file.',
-          defaultsTo: true)
+          defaultsTo: false,
+          negatable: false)
       ..addFlag('orm', help: 'Generate angel_orm code.', negatable: false)
       ..addFlag('serializable',
           help: 'Generate angel_serialize annotations.', defaultsTo: true)

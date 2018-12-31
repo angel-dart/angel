@@ -1,3 +1,6 @@
+# 2.1.2
+* No migrations-by-default.
+
 # 2.1.1
 * Edit the way `rename` runs, leaving no corner unturned.
 

@@ -5,7 +5,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:glob/glob.dart';
 import 'package:io/ansi.dart';
 import 'package:prompts/prompts.dart' as prompts;
-import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:recase/recase.dart';
 import '../util.dart';
 import 'pub.dart';
 
@@ -28,6 +28,8 @@ class RenameCommand extends Command {
     else {
       newName = prompts.get('Rename project to');
     }
+
+    newName = new Recase(newName).snakeCase;
 
     var choice = prompts.getBool('Rename the project to `$newName`?');
 
