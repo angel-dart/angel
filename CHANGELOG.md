@@ -1,3 +1,6 @@
+# 2.1.0
+* Deprecate `angel install`.
+
 # 2.0.1
 * `deploy systemd` now has an `--install` option, where you can immediately
 spawn the service.

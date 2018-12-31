@@ -47,6 +47,12 @@ class InstallCommand extends Command {
 
   @override
   run() async {
+    print(yellow.wrap(
+        'WARNING: The `install` command is no longer considered necessary, and has been deprecated.\n'
+        'Expect it to be removed in an upcoming release.\n\n'
+        'See here: https://github.com/angel-dart/install.git\n\n'
+        'To stop seeing this, downgrade to `package:angel_cli@<=2.0.0`.'));
+
     if (argResults['wipe'] as bool) {
       if (await installRepo.exists()) await installRepo.delete(recursive: true);
     } else if (argResults['list'] as bool) {
