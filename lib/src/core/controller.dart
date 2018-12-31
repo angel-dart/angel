@@ -23,7 +23,7 @@ class Controller {
   /// A mapping of route paths to routes, produced from the [Expose] annotations on this class.
   Map<String, Route> routeMappings = {};
 
-  Controller({this.injectSingleton: true});
+  Controller({this.injectSingleton = true});
 
   @mustCallSuper
   Future configureServer(Angel app) {

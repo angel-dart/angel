@@ -23,6 +23,7 @@ dependencies:
   mime: ^0.9.3
   mock_request: ^1.0.0
   path: ^1.0.0
+  quiver_hashcode: ^2.0.0
   stack_trace: ^1.0.0
   tuple: ^1.0.0
   uuid: ^2.0.0-rc.1

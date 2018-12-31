@@ -26,7 +26,7 @@ abstract class Driver<
   /// The function used to bind this instance to a server..
   final Future<Server> Function(dynamic, int) serverGenerator;
 
-  Driver(this.app, this.serverGenerator, {this.useZone: true});
+  Driver(this.app, this.serverGenerator, {this.useZone = true});
 
   /// The path at which this server is listening for requests.
   Uri get uri;
@@ -250,7 +250,7 @@ abstract class Driver<
       ResponseContext res,
       Request request,
       Response response,
-      {bool ignoreFinalizers: false}) {
+      {bool ignoreFinalizers = false}) {
     if (req == null || res == null) {
       try {
         app.logger?.severe(null, e, st);
@@ -281,7 +281,7 @@ abstract class Driver<
   /// Sends a response.
   Future sendResponse(Request request, Response response, RequestContext req,
       ResponseContext res,
-      {bool ignoreFinalizers: false}) {
+      {bool ignoreFinalizers = false}) {
     void _cleanup(_) {
       if (!app.isProduction && app.logger != null) {
         var sw = req.container.make<Stopwatch>();
