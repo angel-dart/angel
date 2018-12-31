@@ -13,14 +13,16 @@ class PostgreSQLExecutor extends QueryExecutor {
   Future close() => (connection as PostgreSQLConnection).close();
 
   @override
-  Future<List<List>> query(String query, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     if (returningFields != null) {
       var fields = returningFields.join(', ');
       var returning = 'RETURNING $fields';
       query = '$query $returning';
     }
 
-    return connection.query(query);
+    return connection.query(query, substitutionValues: substitutionValues);
   }
 
   @override
@@ -78,10 +80,12 @@ class PostgreSQLExecutorPool extends QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     return _pool.withResource(() async {
       var executor = await _next();
-      return executor.query(query, returningFields);
+      return executor.query(query, substitutionValues, returningFields);
     });
   }
 
