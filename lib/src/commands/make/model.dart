@@ -59,8 +59,9 @@ class ModelCommand extends Command {
       modelLib.directives
           .add(new Directive.import('package:angel_model/angel_model.dart'));
 
-      var needsSerialize =
-          argResults['serializable'] as bool || argResults['orm'] as bool;
+      var needsSerialize = argResults['serializable'] as bool ||
+          argResults['orm'] as bool ||
+          argResults['migration'] as bool;
 
       if (needsSerialize) {
         modelLib.directives.add(new Directive.import(
@@ -70,7 +71,7 @@ class ModelCommand extends Command {
         deps.add(const MakerDependency('build_runner', '">=0.7.0 <0.10.0"'));
       }
 
-      if (argResults['orm'] as bool) {
+      if (argResults['orm'] as bool || argResults['migration'] as bool) {
         modelLib.directives.addAll([
           new Directive.import('package:angel_orm/angel_orm.dart'),
         ]);
@@ -92,7 +93,7 @@ class ModelCommand extends Command {
           modelClazz.annotations.add(refer('serializable'));
         }
 
-        if (argResults['orm'] as bool) {
+        if (argResults['orm'] as bool || argResults['migration'] as bool) {
           if (argResults['migration'] as bool) {
             modelClazz.annotations.add(refer('orm'));
           } else {

@@ -136,29 +136,28 @@ class InitCommand extends Command {
       Process git;
 
       if (boilerplate.ref == null) {
-        git = await Process.start("git", [
-          "clone",
-          "--depth",
-          "1",
-          boilerplate.url,
-          projectDir.absolute.path
-        ]);
+        git = await Process.start(
+          "git",
+          ["clone", "--depth", "1", boilerplate.url, projectDir.absolute.path],
+          mode: ProcessStartMode.inheritStdio,
+        );
       } else {
         // git clone --single-branch -b branch host:/dir.git
-        git = await Process.start("git", [
-          "clone",
-          "--depth",
-          "1",
-          "--single-branch",
-          "-b",
-          boilerplate.ref,
-          boilerplate.url,
-          projectDir.absolute.path
-        ]);
+        git = await Process.start(
+          "git",
+          [
+            "clone",
+            "--depth",
+            "1",
+            "--single-branch",
+            "-b",
+            boilerplate.ref,
+            boilerplate.url,
+            projectDir.absolute.path
+          ],
+          mode: ProcessStartMode.inheritStdio,
+        );
       }
-
-      stdout.addStream(git.stdout);
-      stderr.addStream(git.stderr);
 
       if (await git.exitCode != 0) {
         throw new Exception("Could not clone repo.");
@@ -208,10 +207,8 @@ Future preBuild(Directory projectDir) async {
   print('Running `pub run build_runner build`...');
 
   var build = await Process.start(resolvePub(), ['run', 'build'],
-      workingDirectory: projectDir.absolute.path);
-
-  stdout.addStream(build.stdout);
-  stderr.addStream(build.stderr);
+      workingDirectory: projectDir.absolute.path,
+      mode: ProcessStartMode.inheritStdio);
 
   var buildCode = await build.exitCode;
 
