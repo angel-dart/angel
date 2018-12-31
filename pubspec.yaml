@@ -1,5 +1,5 @@
 name: angel_configuration
-description: Automatic YAML configuration loader for Angel.
+description: Automatic YAML application configuration loader for Angel, with .env support.
 version: 2.1.0
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_configuration
