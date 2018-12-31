@@ -203,18 +203,27 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         String deserializedRepresentation =
             "map['$alias'] as ${typeToString(field.type)}";
 
+        var defaultValue = 'null';
+        var existingDefault = ctx.defaults[field.name];
+
+        if (existingDefault != null) {
+          defaultValue = dartObjectToString(existingDefault);
+          deserializedRepresentation =
+              '$deserializedRepresentation ?? $defaultValue';
+        }
+
         // Deserialize dates
         if (dateTimeTypeChecker.isAssignableFromType(field.type))
           deserializedRepresentation = "map['$alias'] != null ? "
               "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias'].toString()))"
-              " : null";
+              " : $defaultValue";
 
         // Serialize model classes via `XSerializer.toMap`
         else if (isModelClass(field.type)) {
           var rc = new ReCase(field.type.name);
           deserializedRepresentation = "map['$alias'] != null"
               " ? ${rc.pascalCase}Serializer.fromMap(map['$alias'] as Map)"
-              " : null";
+              " : $defaultValue";
         } else if (field.type is InterfaceType) {
           var t = field.type as InterfaceType;
 
@@ -224,7 +233,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                 " ? new List.unmodifiable(((map['$alias'] as Iterable)"
                 ".where((x) => x is Map)  as Iterable<Map>)"
                 ".map(${rc.pascalCase}Serializer.fromMap))"
-                " : null";
+                " : $defaultValue";
           } else if (isMapToModelType(t)) {
             var rc = new ReCase(t.typeArguments[1].name);
             deserializedRepresentation = '''
@@ -233,7 +242,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                        return out..[key] = ${rc.pascalCase}Serializer
                         .fromMap(((map['$alias'] as Map)[key]) as Map);
                     }))
-                  : null
+                  : $defaultValue
             ''';
           } else if (t.element.isEnum) {
             deserializedRepresentation = '''
@@ -243,7 +252,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
               (
                 map['$alias'] is int
                 ? ${t.name}.values[map['$alias'] as int]
-                : null
+                : $defaultValue
               )
             ''';
           } else if (const TypeChecker.fromRuntime(List)
@@ -254,7 +263,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             deserializedRepresentation = '''
                 map['$alias'] is Iterable
                   ? (map['$alias'] as Iterable).cast<$arg>().toList()
-                  : null
+                  : $defaultValue
                 ''';
           } else if (const TypeChecker.fromRuntime(Map)
                   .isAssignableFromType(t) &&
@@ -266,7 +275,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             deserializedRepresentation = '''
                 map['$alias'] is Map
                   ? (map['$alias'] as Map).cast<$key, $value>()
-                  : null
+                  : $defaultValue
                 ''';
           } else if (const TypeChecker.fromRuntime(Uint8List)
               .isAssignableFromType(t)) {
@@ -281,7 +290,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                   (
                     map['$alias'] is String
                       ? new Uint8List.fromList(base64.decode(map['$alias'] as String))
-                      : null
+                      : $defaultValue
                   )
               )
             ''';

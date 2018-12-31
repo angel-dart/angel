@@ -67,6 +67,7 @@ part 'book.g.dart';
 abstract class _Book extends Model {
   String get author;
 
+  @DefaultValue('[Untitled]')
   String get title;
 
   String get description;

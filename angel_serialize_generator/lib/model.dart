@@ -96,6 +96,12 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
               ? 'List'
               : 'Map';
           var defaultValue = typeName == 'List' ? '[]' : '{}';
+          var existingDefault = ctx.defaults[field.name];
+
+          if (existingDefault != null) {
+            defaultValue = dartObjectToString(existingDefault);
+          }
+
           constructor.initializers.add(new Code('''
               this.${field.name} =
                 new $typeName.unmodifiable(${field.name} ?? $defaultValue)'''));
@@ -108,6 +114,12 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             ..toThis = shouldBeConstant(ctx)
             ..name = field.name
             ..named = true;
+
+          var existingDefault = ctx.defaults[field.name];
+
+          if (existingDefault != null) {
+            b.defaultTo = new Code(dartObjectToString(existingDefault));
+          }
 
           if (!isListOrMapType(field.type))
             b.toThis = true;

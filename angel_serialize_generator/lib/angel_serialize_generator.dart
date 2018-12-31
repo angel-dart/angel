@@ -2,7 +2,7 @@ library angel_serialize_generator;
 
 import 'dart:async';
 import 'dart:typed_data';
-
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_model/angel_model.dart';
@@ -46,6 +46,32 @@ TypeReference convertTypeReference(DartType t) {
       b.types.addAll(t.typeArguments.map(convertTypeReference));
     }
   });
+}
+
+String dartObjectToString(DartObject v) {
+  if (v.isNull) return 'null';
+  if (v.toBoolValue() != null) return v.toBoolValue().toString();
+  if (v.toIntValue() != null) return v.toIntValue().toString();
+  if (v.toDoubleValue() != null) return v.toDoubleValue().toString();
+  if (v.toSymbolValue() != null) return '#' + v.toSymbolValue();
+  if (v.toTypeValue() != null) return v.toTypeValue().name;
+  if (v.toListValue() != null)
+    return 'const [' + v.toListValue().map(dartObjectToString).join(', ') + ']';
+  if (v.toMapValue() != null) {
+    return 'const {' +
+        v.toMapValue().entries.map((entry) {
+          var k = dartObjectToString(entry.key);
+          var v = dartObjectToString(entry.value);
+          return '$k: $v';
+        }).join(', ') +
+        '}';
+  }
+  if (v.toStringValue() != null) {
+    return literalString(v.toStringValue())
+        .accept(new DartEmitter())
+        .toString();
+  }
+  throw new ArgumentError(v.toString());
 }
 
 /// Determines if a type supports `package:angel_serialize`.

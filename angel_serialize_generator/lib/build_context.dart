@@ -67,6 +67,14 @@ Future<BuildContext> buildContext(
         );
       }
 
+      // Check for @DefaultValue()
+      var defAnn =
+          const TypeChecker.fromRuntime(DefaultValue).firstAnnotationOf(el);
+      if (defAnn != null) {
+        var rev = new ConstantReader(defAnn).revive().positionalArguments[0];
+        ctx.defaults[field.name] = rev;
+      }
+
       // Check for alias
       Alias alias;
       var aliasAnn = aliasTypeChecker.firstAnnotationOf(el);

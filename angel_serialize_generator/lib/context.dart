@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:code_builder/code_builder.dart';
@@ -14,6 +15,9 @@ class BuildContext {
 
   /// A map of field names to resolved names from `@Alias()` declarations.
   final Map<String, String> aliases = {};
+
+  /// A map of field names to their default values.
+  final Map<String, DartObject> defaults = {};
 
   /// A map of fields that have been marked as to be excluded from serialization.
   final Map<String, Exclude> excluded = {};
