@@ -1,9 +1,5 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:io/ansi.dart';
-import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:pub_semver/pub_semver.dart';
-import '../pub.dart';
 import '../../util.dart';
 
 class MakerDependency {
