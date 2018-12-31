@@ -1,3 +1,6 @@
+# 2.1.1
+* Edit the way `rename` runs, leaving no corner unturned.
+
 # 2.1.0
 * Deprecate `angel install`.
 * Rename projects using `snake_case`.

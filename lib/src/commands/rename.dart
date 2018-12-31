@@ -113,7 +113,7 @@ renameDartFiles(Directory dir, String oldName, String newName) async {
             contents = contents.replaceRange(
                 range.first as int, range.last as int, replacement);
           } else if (range.first is String) {
-            contents = contents.replaceAll(range.first as Pattern, replacement);
+            contents = contents.replaceAll(range.first as String, replacement);
           }
         });
 
@@ -128,7 +128,9 @@ class RenamingVisitor extends RecursiveAstVisitor {
   final String oldName, newName;
   final Map<List, String> replace = {};
 
-  RenamingVisitor(this.oldName, this.newName);
+  RenamingVisitor(this.oldName, this.newName) {
+    replace[['{{$oldName}}']] = newName;
+  }
 
   String updateUri(String uri) {
     if (uri == 'package:$oldName/$oldName.dart') {
@@ -137,13 +139,6 @@ class RenamingVisitor extends RecursiveAstVisitor {
       return 'package:$newName/' + uri.replaceFirst('package:$oldName/', '');
     } else
       return uri;
-  }
-
-  @override
-  visitSimpleStringLiteral(SimpleStringLiteral node) {
-    if (node.value == '{{$oldName}}') {
-      replace[[node.value]] = newName;
-    }
   }
 
   @override
