@@ -1,5 +1,6 @@
 import 'package:args/command_runner.dart';
 import 'make/controller.dart';
+import 'make/migration.dart';
 import 'make/model.dart';
 import 'make/plugin.dart';
 import 'make/service.dart';
@@ -15,6 +16,7 @@ class MakeCommand extends Command {
 
   MakeCommand() {
     addSubcommand(new ControllerCommand());
+    addSubcommand(new MigrationCommand());
     addSubcommand(new ModelCommand());
     addSubcommand(new PluginCommand());
     addSubcommand(new TestCommand());

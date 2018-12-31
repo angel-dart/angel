@@ -75,4 +75,6 @@ pubspec.lock
 /sample_project/lib/src/services/
 /sample_project/test/services/
 /sample_project/
+sample_project/
+sample-project
 .dart_tool

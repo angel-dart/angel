@@ -196,9 +196,8 @@ class InitCommand extends Command {
     var pubPath = resolvePub();
     print('Running pub at "$pubPath"...');
     var pub = await Process.start(pubPath, ["get"],
-        workingDirectory: projectDir.absolute.path);
-    stdout.addStream(pub.stdout);
-    stderr.addStream(pub.stderr);
+        workingDirectory: projectDir.absolute.path,
+        mode: ProcessStartMode.inheritStdio);
     var code = await pub.exitCode;
     print("Pub process exited with code $code");
   }

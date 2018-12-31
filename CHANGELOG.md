@@ -3,6 +3,9 @@
 * Rename projects using `snake_case`.
 * `init` now fetches from `master`.
 * Remove the `1.x` option.
+* Add `make migration` command.
+* Replace `{{oldName}}` in the `rename` command.
+* `pub get` now runs with `inheritStdio`.
 
 # 2.0.1
 * `deploy systemd` now has an `--install` option, where you can immediately

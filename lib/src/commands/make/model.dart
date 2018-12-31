@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:inflection/inflection.dart';
 import 'package:io/ansi.dart';
 import 'package:prompts/prompts.dart' as prompts;
 import 'package:recase/recase.dart';
@@ -21,7 +20,7 @@ class ModelCommand extends Command {
       ..addFlag('migration',
           abbr: 'm',
           help: 'Generate an angel_orm migration file.',
-          negatable: false)
+          defaultsTo: true)
       ..addFlag('orm', help: 'Generate angel_orm code.', negatable: false)
       ..addFlag('serializable',
           help: 'Generate angel_serialize annotations.', defaultsTo: true)
@@ -37,7 +36,6 @@ class ModelCommand extends Command {
 
   @override
   run() async {
-    var pubspec = await loadPubspec();
     String name;
     if (argResults.wasParsed('name')) name = argResults['name'] as String;
 
@@ -52,6 +50,12 @@ class ModelCommand extends Command {
     var rc = new ReCase(name);
 
     var modelLib = new Library((modelLib) {
+      if (argResults['migration'] as bool) {
+        modelLib.directives.addAll([
+          new Directive.import('package:angel_migration/angel_migration.dart'),
+        ]);
+      }
+
       modelLib.directives
           .add(new Directive.import('package:angel_model/angel_model.dart'));
 
@@ -67,14 +71,14 @@ class ModelCommand extends Command {
       }
 
       if (argResults['orm'] as bool) {
-        modelLib.directives
-            .add(new Directive.import('package:angel_orm/angel_orm.dart'));
+        modelLib.directives.addAll([
+          new Directive.import('package:angel_orm/angel_orm.dart'),
+        ]);
         deps.add(const MakerDependency('angel_orm', '^1.0.0-alpha'));
       }
 
       modelLib.body.addAll([
         new Code("part '${rc.snakeCase}.g.dart';"),
-        new Code("part '${rc.snakeCase}.serializer.g.dart';"),
       ]);
 
       modelLib.body.add(new Class((modelClazz) {
@@ -89,7 +93,12 @@ class ModelCommand extends Command {
         }
 
         if (argResults['orm'] as bool) {
-          modelClazz.annotations.add(refer('orm'));
+          if (argResults['migration'] as bool) {
+            modelClazz.annotations.add(refer('orm'));
+          } else {
+            modelClazz.annotations.add(refer('Orm')
+                .newInstance([], {'generateMigration': literalFalse}));
+          }
         }
       }));
     });
@@ -108,97 +117,14 @@ class ModelCommand extends Command {
         .wrap('$checkmark Created model file "${modelFile.absolute.path}".'));
 
     if (argResults['migration'] as bool) {
-      deps.add(const MakerDependency('angel_migration', '^1.0.0-alpha'));
-
-      var migrationLib = new Library((migrationLib) {
-        migrationLib
-          ..directives.add(new Directive.import(
-              'package:angel_migration.dart/angel_migration.dart'))
-          ..body.add(new Class((migrationClazz) {
-            migrationClazz
-              ..name = '${rc.pascalCase}Migration'
-              ..extend = refer('Migration');
-
-            var tableName = pluralize(rc.snakeCase);
-
-            // up()
-            migrationClazz.methods.add(new Method((up) {
-              up
-                ..name = 'up'
-                ..returns = refer('void')
-                ..annotations.add(refer('override'))
-                ..requiredParameters.add(new Parameter((b) => b
-                  ..name = 'schema'
-                  ..type = refer('Schema')))
-                ..body = new Block((block) {
-                  // (table) { ... }
-                  var callback = new Method((callback) {
-                    callback
-                      ..requiredParameters
-                          .add(new Parameter((b) => b..name = 'table'))
-                      ..body = new Block((block) {
-                        var table = refer('table');
-
-                        block.addExpression(
-                          (table.property('serial').call([literal('id')]))
-                              .property('primaryKey')
-                              .call([]),
-                        );
-
-                        block.addExpression(
-                          table.property('date').call([
-                            literal('created_at'),
-                          ]),
-                        );
-
-                        block.addExpression(
-                          table.property('date').call([
-                            literal('updated_at'),
-                          ]),
-                        );
-                      });
-                  });
-
-                  block.addExpression(refer('schema').property('create').call([
-                    literal(tableName),
-                    callback.closure,
-                  ]));
-                });
-            }));
-
-            // down()
-            migrationClazz.methods.add(new Method((down) {
-              down
-                ..name = 'down'
-                ..returns = refer('void')
-                ..annotations.add(refer('override'))
-                ..requiredParameters.add(new Parameter((b) => b
-                  ..name = 'schema'
-                  ..type = refer('Schema')))
-                ..body = new Block((block) {
-                  block.addExpression(
-                    refer('schema').property('drop').call([
-                      literal(tableName),
-                    ]),
-                  );
-                });
-            }));
-          }));
-      });
-
-      // Save migration file
-      var migrationDir = new Directory.fromUri(
-          Directory.current.uri.resolve(argResults['migration-dir'] as String));
-      var migrationFile =
-          new File.fromUri(migrationDir.uri.resolve('${rc.snakeCase}.dart'));
-      if (!await migrationFile.exists())
-        await migrationFile.create(recursive: true);
-
-      await migrationFile.writeAsString(new DartFormatter()
-          .format(migrationLib.accept(new DartEmitter()).toString()));
-
-      print(green.wrap(
-          '$checkmark Created migration file "${migrationFile.absolute.path}".'));
+      await runner.run([
+        'make',
+        'migration',
+        '-n',
+        name,
+        '--output-dir',
+        argResults['migration-dir'] as String,
+      ]);
     }
 
     if (deps.isNotEmpty) await depend(deps);
