@@ -1,3 +1,6 @@
+# 2.0.4
+* `successRedirect` was previously explicitly returning a `200`; remove this and allow the default `302`.
+
 # 2.0.3
 * Updates for streaming parse of request bodies.
 

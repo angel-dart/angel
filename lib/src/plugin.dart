@@ -306,7 +306,7 @@ class AngelAuth<User> {
           }
 
           if (options?.successRedirect?.isNotEmpty == true) {
-            res.redirect(options.successRedirect, code: 200);
+            res.redirect(options.successRedirect);
             return false;
           } else if (options?.canRespondWithJson != false &&
               req.accepts('application/json')) {
