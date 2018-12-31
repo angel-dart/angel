@@ -1,0 +1,20 @@
+name: sample_project
+description: An app that's going to be amazing pretty soon.
+publish_to: none # Ensure we don't accidentally publish our private code! ;)
+environment:
+  sdk: '>=2.0.0-dev <3.0.0'
+homepage: https://github.com/angel-dart/angel
+dependencies:
+  angel_auth: ^2.0.0-alpha # Supports stateless authentication via JWT
+  angel_configuration: ^2.0.0 # Loads application configuration, along with support for .env files.
+  angel_framework: ^2.0.0-alpha # The core server library.
+  angel_jael: ^2.0.0 # Server-side templating engine
+  angel_production: ^1.0.0-alpha
+  angel_static: ^2.0.0-alpha # Static file server
+  angel_validate: ^2.0.0-alpha # Allows for validation of input data
+dev_dependencies:
+  angel_hot: ^2.0.0 # Hot-reloading support. :)
+  angel_test: ^2.0.0-alpha # Utilities for testing Angel servers.
+  io: ^0.3.2
+  pedantic: ^1.0.0
+  test: ^1.0.0

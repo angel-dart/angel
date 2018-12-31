@@ -140,6 +140,13 @@ class RenamingVisitor extends RecursiveAstVisitor {
   }
 
   @override
+  visitSimpleStringLiteral(SimpleStringLiteral node) {
+    if (node.value == '{{$oldName}}') {
+      replace[[node.value]] = newName;
+    }
+  }
+
+  @override
   visitExportDirective(ExportDirective ctx) {
     var uri = ctx.uri.stringValue, updated = updateUri(uri);
     if (uri != updated) replace[[uri]] = updated;

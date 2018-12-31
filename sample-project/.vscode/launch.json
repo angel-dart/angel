@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Development Server",
+            "type": "dart",
+            "request": "launch",
+            "program": "${workspaceRoot}/bin/dev.dart",
+            "checkedMode": true
+        },
+        {
+            "name": "Production Server",
+            "type": "dart",
+            "request": "launch",
+            "program": "${workspaceRoot}/bin/prod.dart",
+            "checkedMode": true
+        }
+    ]
+}

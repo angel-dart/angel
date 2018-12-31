@@ -4,6 +4,7 @@ import "package:args/command_runner.dart";
 import 'package:io/ansi.dart';
 import 'package:path/path.dart' as p;
 import 'package:prompts/prompts.dart' as prompts;
+import 'package:recase/recase.dart';
 import '../random_string.dart' as rs;
 import '../util.dart';
 import 'key.dart';
@@ -45,6 +46,7 @@ class InitCommand extends Command {
 
     var name = p.basenameWithoutExtension(
         projectDir.absolute.uri.normalizePath().toFilePath());
+    name = ReCase(name).snakeCase;
     print('Renaming project from "angel" to "$name"...');
     await renamePubspec(projectDir, 'angel', name);
     await renameDartFiles(projectDir, 'angel', name);
@@ -123,11 +125,10 @@ class InitCommand extends Command {
         }
       }
 
-      print('Choose a project type before continuing:');
-
-      //var boilerplate = basicBoilerplate;
-      var boilerplate = prompts.choose(
-          'Choose a project type before continuing', boilerplates);
+      var boilerplate = basicBoilerplate;
+      // print('Choose a project type before continuing:');
+      // var boilerplate = prompts.choose(
+      //     'Choose a project type before continuing', boilerplates);
 
       print(
           'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
@@ -227,8 +228,7 @@ const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
 const BoilerplateInfo basicBoilerplate = const BoilerplateInfo(
     'Basic',
     'Minimal starting point for Angel 2.x - A simple server with only a few additional packages.',
-    'https://github.com/angel-dart/angel.git',
-    ref: '2.x');
+    'https://github.com/angel-dart/angel.git');
 
 const BoilerplateInfo legacyBoilerplate = const BoilerplateInfo(
   'Legacy',
@@ -239,7 +239,7 @@ const BoilerplateInfo legacyBoilerplate = const BoilerplateInfo(
 
 const List<BoilerplateInfo> boilerplates = const [
   basicBoilerplate,
-  legacyBoilerplate,
+  //legacyBoilerplate,
   //ormBoilerplate,
 ];
 

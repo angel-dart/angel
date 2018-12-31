@@ -1,5 +1,8 @@
 # 2.1.0
 * Deprecate `angel install`.
+* Rename projects using `snake_case`.
+* `init` now fetches from `master`.
+* Remove the `1.x` option.
 
 # 2.0.1
 * `deploy systemd` now has an `--install` option, where you can immediately
