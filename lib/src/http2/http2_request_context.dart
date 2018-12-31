@@ -112,6 +112,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
       }
     }, onDone: () {
       finalize();
+      req._body.close();
     }, cancelOnError: true, onError: c.completeError);
 
     // Apply session
@@ -119,7 +120,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
         cookies.firstWhere((c) => c.name == 'DARTSESSID', orElse: () => null);
 
     if (dartSessId == null) {
-      dartSessId = new Cookie('DARTSESSID', uuid.v4() as String);
+      dartSessId = new Cookie('DARTSESSID', uuid.v4());
     }
 
     req._session = sessions.putIfAbsent(

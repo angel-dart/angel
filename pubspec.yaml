@@ -1,5 +1,5 @@
 name: angel_framework
-version: 2.0.0-alpha.17
+version: 2.0.0-alpha.18
 description: A high-powered HTTP server with dependency injection, routing and much more.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_framework
@@ -15,7 +15,7 @@ dependencies:
   file: ^5.0.0
   http_parser: ^3.0.0
   http_server: ^0.9.0
-  http2: ">=0.1.7 <2.0.0"
+  http2: "^1.0.0"
   logging: ">=0.11.3 <1.0.0"
   matcher: ^0.12.0
   merge_map: ^1.0.0
@@ -25,7 +25,7 @@ dependencies:
   path: ^1.0.0
   stack_trace: ^1.0.0
   tuple: ^1.0.0
-  uuid: ^1.0.0
+  uuid: ^2.0.0-rc.1
 dev_dependencies:
   http: ^0.11.3
   io: ^0.3.0

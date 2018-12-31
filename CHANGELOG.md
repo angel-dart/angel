@@ -1,3 +1,8 @@
+# 2.0.0-alpha.18
+* Upgrade `http2` dependency.
+* Upgrade `uuid` dependency.
+* Fixed a bug that prevented body parsing from ever completing with `http2`.
+
 # 2.0.0-alpha.17
 * Revert the migration to `lumberjack` for now. In the future, when it's more
 stable, there'll be a conversion, perhaps.
