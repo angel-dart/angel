@@ -85,7 +85,7 @@ main() async {
     var response = await client.post("$url/login",
         body: json.encode(postData),
         headers: {'content-type': 'application/json'});
-    expect(response.statusCode, equals(200));
+    expect(response.statusCode, equals(302));
     expect(response.headers['location'], equals('/success'));
   });
 
