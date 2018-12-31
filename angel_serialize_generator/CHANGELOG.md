@@ -1,3 +1,6 @@
+# 2.3.0
+* Add `@DefaultValue` support.
+
 # 2.2.2
 * Split out TS def builder, to emit to source.
 
