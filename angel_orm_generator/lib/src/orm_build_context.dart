@@ -67,7 +67,8 @@ Future<OrmBuildContext> buildOrmContext(
     }
 
     if (column == null && field.name == 'id' && autoIdAndDateFields == true) {
-      // TODO: This is only for PostgreSQL!!!
+      // This is only for PostgreSQL, so implementations without a `serial` type
+      // must handle it accordingly, of course.
       column = const Column(type: ColumnType.serial);
     }
 

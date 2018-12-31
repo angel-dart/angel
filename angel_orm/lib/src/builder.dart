@@ -6,7 +6,9 @@ import 'query.dart';
 final DateFormat dateYmd = new DateFormat('yyyy-MM-dd');
 final DateFormat dateYmdHms = new DateFormat('yyyy-MM-dd HH:mm:ss');
 
-/// Cleans an input SQL expression of common SQL injection points.
+/// The ORM prefers using substitution values, which allow for prepared queries,
+/// and prevent SQL injection attacks.
+@deprecated
 String sanitizeExpression(String unsafe) {
   var buf = new StringBuffer();
   var scanner = new StringScanner(unsafe);
@@ -30,7 +32,13 @@ String sanitizeExpression(String unsafe) {
 }
 
 abstract class SqlExpressionBuilder<T> {
-  String get columnName;
+  final Query query;
+  final String columnName;
+  String _substitution;
+
+  SqlExpressionBuilder(this.query, this.columnName);
+
+  String get substitution => _substitution ??= query.reserveName(columnName);
 
   bool get hasValue;
 
@@ -46,14 +54,14 @@ abstract class SqlExpressionBuilder<T> {
 }
 
 class NumericSqlExpressionBuilder<T extends num>
-    implements SqlExpressionBuilder<T> {
-  final String columnName;
+    extends SqlExpressionBuilder<T> {
   bool _hasValue = false;
   String _op = '=';
   String _raw;
   T _value;
 
-  NumericSqlExpressionBuilder(this.columnName);
+  NumericSqlExpressionBuilder(Query query, String columnName)
+      : super(query, columnName);
 
   @override
   bool get hasValue => _hasValue;
@@ -129,20 +137,25 @@ class NumericSqlExpressionBuilder<T extends num>
   }
 }
 
-class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
-  final String columnName;
+class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
   bool _hasValue = false;
   String _op = '=', _raw, _value;
 
-  StringSqlExpressionBuilder(this.columnName);
+  StringSqlExpressionBuilder(Query query, String columnName)
+      : super(query, columnName);
 
   @override
   bool get hasValue => _hasValue;
+
+  String get lowerName => '${substitution}_lower';
+
+  String get upperName => '${substitution}_upper';
 
   bool _change(String op, String value) {
     _raw = null;
     _op = op;
     _value = value;
+    query.substitutionValues[substitution] = _value;
     return _hasValue = true;
   }
 
@@ -150,8 +163,7 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
   String compile() {
     if (_raw != null) return _raw;
     if (_value == null) return null;
-    var v = toSql(_value);
-    return "$_op $v";
+    return "$_op @$substitution";
   }
 
   void isEmpty() => equals('');
@@ -164,48 +176,67 @@ class StringSqlExpressionBuilder implements SqlExpressionBuilder<String> {
     _change('!=', value);
   }
 
-  void like(String value) {
-    _change('LIKE', value);
+  /// Builds a `LIKE` predicate.
+  ///
+  /// To prevent injections, the [pattern] is called with a name that
+  /// will be escaped by the underlying [QueryExecutor].
+  ///
+  /// Example:
+  /// ```dart
+  /// carNameBuilder.like((name) => 'Mazda %$name%');
+  /// ```
+  void like(String Function(String) pattern) {
+    _raw = 'LIKE \'' + pattern('@$substitution') + '\'';
+    query.substitutionValues[substitution] = _value;
+    _hasValue = true;
   }
 
   @override
   void isBetween(String lower, String upper) {
-    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
-    _raw = "BETWEEN '$l' AND '$u'";
+    query.substitutionValues[lowerName] = lower;
+    query.substitutionValues[upperName] = upper;
+    _raw = "BETWEEN @$lowerName AND @$upperName";
     _hasValue = true;
   }
 
   @override
   void isNotBetween(String lower, String upper) {
-    var l = sanitizeExpression(lower), u = sanitizeExpression(upper);
-    _raw = "NOT BETWEEN '$l' AND '$u'";
+    query.substitutionValues[lowerName] = lower;
+    query.substitutionValues[upperName] = upper;
+    _raw = "NOT BETWEEN @$lowerName AND @$upperName";
     _hasValue = true;
+  }
+
+  String _in(Iterable<String> values) {
+    return 'IN (' +
+        values.map((v) {
+          var name = query.reserveName('${columnName}_in_value');
+          query.substitutionValues[name] = v;
+          return '@$name';
+        }).join(', ') +
+        ')';
   }
 
   @override
   void isIn(Iterable<String> values) {
-    _raw = 'IN (' +
-        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
-        ')';
+    _raw = _in(values);
     _hasValue = true;
   }
 
   @override
   void isNotIn(Iterable<String> values) {
-    _raw = 'NOT IN (' +
-        values.map(sanitizeExpression).map((s) => "'$s'").join(', ') +
-        ')';
+    _raw = 'NOT ' + _in(values);
     _hasValue = true;
   }
 }
 
-class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
-  final String columnName;
+class BooleanSqlExpressionBuilder extends SqlExpressionBuilder<bool> {
   bool _hasValue = false;
   String _op = '=', _raw;
   bool _value;
 
-  BooleanSqlExpressionBuilder(this.columnName);
+  BooleanSqlExpressionBuilder(Query query, String columnName)
+      : super(query, columnName);
 
   @override
   bool get hasValue => _hasValue;
@@ -258,28 +289,36 @@ class BooleanSqlExpressionBuilder implements SqlExpressionBuilder<bool> {
   }
 }
 
-class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder<DateTime> {
-  final NumericSqlExpressionBuilder<int> year =
-          new NumericSqlExpressionBuilder<int>('year'),
-      month = new NumericSqlExpressionBuilder<int>('month'),
-      day = new NumericSqlExpressionBuilder<int>('day'),
-      hour = new NumericSqlExpressionBuilder<int>('hour'),
-      minute = new NumericSqlExpressionBuilder<int>('minute'),
-      second = new NumericSqlExpressionBuilder<int>('second');
-  final String columnName;
+class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
+  NumericSqlExpressionBuilder<int> _year, _month, _day, _hour, _minute, _second;
+
   String _raw;
 
-  DateTimeSqlExpressionBuilder(this.columnName);
+  DateTimeSqlExpressionBuilder(Query query, String columnName)
+      : super(query, columnName);
+
+  NumericSqlExpressionBuilder<int> get year =>
+      _year ??= new NumericSqlExpressionBuilder(query, 'year');
+  NumericSqlExpressionBuilder<int> get month =>
+      _month ??= new NumericSqlExpressionBuilder(query, 'month');
+  NumericSqlExpressionBuilder<int> get day =>
+      _day ??= new NumericSqlExpressionBuilder(query, 'day');
+  NumericSqlExpressionBuilder<int> get hour =>
+      _hour ??= new NumericSqlExpressionBuilder(query, 'hour');
+  NumericSqlExpressionBuilder<int> get minute =>
+      _minute ??= new NumericSqlExpressionBuilder(query, 'minute');
+  NumericSqlExpressionBuilder<int> get second =>
+      _second ??= new NumericSqlExpressionBuilder(query, 'second');
 
   @override
   bool get hasValue =>
       _raw?.isNotEmpty == true ||
-      year.hasValue ||
-      month.hasValue ||
-      day.hasValue ||
-      hour.hasValue ||
-      minute.hasValue ||
-      second.hasValue;
+      _year?.hasValue == true ||
+      _month?.hasValue == true ||
+      _day?.hasValue == true ||
+      _hour?.hasValue == true ||
+      _minute?.hasValue == true ||
+      _second?.hasValue == true;
 
   bool _change(String _op, DateTime dt, bool time) {
     var dateString = time ? dateYmdHms.format(dt) : dateYmd.format(dt);
@@ -345,12 +384,17 @@ class DateTimeSqlExpressionBuilder implements SqlExpressionBuilder<DateTime> {
   String compile() {
     if (_raw?.isNotEmpty == true) return _raw;
     List<String> parts = [];
-    if (year.hasValue) parts.add('YEAR($columnName) ${year.compile()}');
-    if (month.hasValue) parts.add('MONTH($columnName) ${month.compile()}');
-    if (day.hasValue) parts.add('DAY($columnName) ${day.compile()}');
-    if (hour.hasValue) parts.add('HOUR($columnName) ${hour.compile()}');
-    if (minute.hasValue) parts.add('MINUTE($columnName) ${minute.compile()}');
-    if (second.hasValue) parts.add('SECOND($columnName) ${second.compile()}');
+    if (year?.hasValue == true)
+      parts.add('YEAR($columnName) ${year.compile()}');
+    if (month?.hasValue == true)
+      parts.add('MONTH($columnName) ${month.compile()}');
+    if (day?.hasValue == true) parts.add('DAY($columnName) ${day.compile()}');
+    if (hour?.hasValue == true)
+      parts.add('HOUR($columnName) ${hour.compile()}');
+    if (minute?.hasValue == true)
+      parts.add('MINUTE($columnName) ${minute.compile()}');
+    if (second?.hasValue == true)
+      parts.add('SECOND($columnName) ${second.compile()}');
 
     return parts.isEmpty ? null : parts.join(' AND ');
   }

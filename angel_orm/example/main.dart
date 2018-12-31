@@ -22,9 +22,12 @@ class _FakeExecutor extends QueryExecutor {
   const _FakeExecutor();
 
   @override
-  Future<List<List>> query(String query, [returningFields]) async {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [returningFields]) async {
     var now = new DateTime.now();
-    print('_FakeExecutor received query: $query');
+    print(
+        '_FakeExecutor received query: $query and values: $substitutionValues');
     return [
       [1, 'Rich', 'Person', 100000.0, now, now]
     ];
@@ -50,8 +53,14 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   @override
   final QueryValues values = new MapQueryValues();
 
+  EmployeeQueryWhere _where;
+
+  EmployeeQuery() {
+    _where = new EmployeeQueryWhere(this);
+  }
+
   @override
-  final EmployeeQueryWhere where = new EmployeeQueryWhere();
+  EmployeeQueryWhere get where => _where;
 
   @override
   String get tableName => 'employees';
@@ -59,6 +68,9 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   @override
   List<String> get fields =>
       ['id', 'first_name', 'last_name', 'salary', 'created_at', 'updated_at'];
+
+  @override
+  EmployeeQueryWhere newWhereClause() => new EmployeeQueryWhere(this);
 
   @override
   Employee deserialize(List row) {
@@ -73,26 +85,28 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 }
 
 class EmployeeQueryWhere extends QueryWhere {
+  EmployeeQueryWhere(EmployeeQuery query)
+      : id = new NumericSqlExpressionBuilder(query, 'id'),
+        firstName = new StringSqlExpressionBuilder(query, 'first_name'),
+        lastName = new StringSqlExpressionBuilder(query, 'last_name'),
+        salary = new NumericSqlExpressionBuilder(query, 'salary'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+
   @override
   Iterable<SqlExpressionBuilder> get expressionBuilders {
     return [id, firstName, lastName, salary, createdAt, updatedAt];
   }
 
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final StringSqlExpressionBuilder firstName =
-      new StringSqlExpressionBuilder('first_name');
+  final StringSqlExpressionBuilder firstName;
 
-  final StringSqlExpressionBuilder lastName =
-      new StringSqlExpressionBuilder('last_name');
+  final StringSqlExpressionBuilder lastName;
 
-  final NumericSqlExpressionBuilder<double> salary =
-      new NumericSqlExpressionBuilder<double>('salary');
+  final NumericSqlExpressionBuilder<double> salary;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final DateTimeSqlExpressionBuilder createdAt;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder updatedAt;
 }

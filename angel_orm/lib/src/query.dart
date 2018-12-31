@@ -7,6 +7,8 @@ bool isAscii(int ch) => ch >= $nul && ch <= $del;
 
 /// A base class for objects that compile to SQL queries, typically within an ORM.
 abstract class QueryBase<T> {
+  final Map<String, dynamic> substitutionValues = {};
+
   /// The list of fields returned by this query.
   ///
   /// If it's `null`, then this query will perform a `SELECT *`.
@@ -22,7 +24,9 @@ abstract class QueryBase<T> {
 
   Future<List<T>> get(QueryExecutor executor) async {
     var sql = compile();
-    return executor.query(sql).then((it) => it.map(deserialize).toList());
+    return executor
+        .query(sql, substitutionValues)
+        .then((it) => it.map(deserialize).toList());
   }
 
   Future<T> getOne(QueryExecutor executor) {
@@ -47,6 +51,9 @@ class OrderBy {
   String compile() => descending ? '$key DESC' : '$key ASC';
 }
 
+/// The ORM prefers using substitution values, which allow for prepared queries,
+/// and prevent SQL injection attacks.
+@deprecated
 String toSql(Object obj, {bool withQuotes: true}) {
   if (obj is DateTime) {
     return withQuotes ? "'${dateYmdHms.format(obj)}'" : dateYmdHms.format(obj);
@@ -96,7 +103,9 @@ String toSql(Object obj, {bool withQuotes: true}) {
 /// A SQL `SELECT` query builder.
 abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   final List<JoinBuilder> _joins = [];
+  final Map<String, int> _names = {};
   final List<OrderBy> _orderBy = [];
+
   String _crossJoin, _groupBy;
   int _limit, _offset;
 
@@ -113,7 +122,16 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// This is usually a generated class.
   QueryValues get values;
 
+  /// Preprends the [tableName] to the [String], [s].
   String adornWithTableName(String s) => '$tableName.$s';
+
+  /// Returns a unique version of [name], which will not produce a collision within
+  /// the context of this [query].
+  String reserveName(String name) {
+    var n = _names[name] ??= 0;
+    _names[name]++;
+    return n == 0 ? name : '${name}$n';
+  }
 
   /// Makes a new [Where] clause.
   Where newWhereClause() {
@@ -258,14 +276,15 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
     if (_joins.isEmpty) {
       return executor
-          .query(sql, fields.map(adornWithTableName).toList())
+          .query(
+              sql, substitutionValues, fields.map(adornWithTableName).toList())
           .then((it) => it.map(deserialize).toList());
     } else {
       return executor.transaction(() async {
         // TODO: Can this be done with just *one* query?
         var existing = await get(executor);
         //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
-        return executor.query(sql).then((_) => existing);
+        return executor.query(sql, substitutionValues).then((_) => existing);
       });
     }
   }
@@ -275,20 +294,21 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<T> insert(QueryExecutor executor) {
-    var sql = values.compileInsert(tableName);
+    var sql = values.compileInsert(this, tableName);
 
     if (sql == null) {
       throw new StateError('No values have been specified for update.');
     } else {
       return executor
-          .query(sql, fields.map(adornWithTableName).toList())
+          .query(
+              sql, substitutionValues, fields.map(adornWithTableName).toList())
           .then((it) => it.isEmpty ? null : deserialize(it.first));
     }
   }
 
   Future<List<T>> update(QueryExecutor executor) async {
     var sql = new StringBuffer('UPDATE $tableName ');
-    var valuesClause = values.compileForUpdate();
+    var valuesClause = values.compileForUpdate(this);
 
     if (valuesClause == null) {
       throw new StateError('No values have been specified for update.');
@@ -300,12 +320,14 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
       if (_joins.isEmpty) {
         return executor
-            .query(sql.toString(), fields.map(adornWithTableName).toList())
+            .query(sql.toString(), substitutionValues,
+                fields.map(adornWithTableName).toList())
             .then((it) => it.map(deserialize).toList());
       } else {
         // TODO: Can this be done with just *one* query?
         return executor
-            .query(sql.toString(), fields.map(adornWithTableName).toList())
+            .query(sql.toString(), substitutionValues,
+                fields.map(adornWithTableName).toList())
             .then((it) => get(executor));
       }
     }
@@ -319,7 +341,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 abstract class QueryValues {
   Map<String, dynamic> toMap();
 
-  String compileInsert(String tableName) {
+  String compileInsert(Query query, String tableName) {
     var data = toMap();
     if (data.isEmpty) return null;
 
@@ -329,14 +351,17 @@ abstract class QueryValues {
 
     for (var entry in data.entries) {
       if (i++ > 0) b.write(', ');
-      b.write(toSql(entry.value));
+
+      var name = query.reserveName(entry.key);
+      query.substitutionValues[name] = entry.value;
+      b.write('@$name');
     }
 
     b.write(')');
     return b.toString();
   }
 
-  String compileForUpdate() {
+  String compileForUpdate(Query query) {
     var data = toMap();
     if (data.isEmpty) return null;
     var b = new StringBuffer('SET');
@@ -347,7 +372,10 @@ abstract class QueryValues {
       b.write(' ');
       b.write(entry.key);
       b.write('=');
-      b.write(toSql(entry.value));
+
+      var name = query.reserveName(entry.key);
+      query.substitutionValues[name] = entry.value;
+      b.write('@$name');
     }
     return b.toString();
   }
@@ -504,7 +532,9 @@ class JoinOn {
 abstract class QueryExecutor {
   const QueryExecutor();
 
-  Future<List<List>> query(String query, [List<String> returningFields]);
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]);
 
   Future<T> transaction<T>(FutureOr<T> f());
 }

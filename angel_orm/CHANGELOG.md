@@ -1,3 +1,8 @@
+# 2.0.0-dev.15
+* Remove `Column.defaultValue`.
+* Deprecate `toSql` and `sanitizeExpression`.
+* Refactor builders so that strings are passed through
+
 # 2.0.0-dev.14
 * Remove obsolete `@belongsToMany`.
 

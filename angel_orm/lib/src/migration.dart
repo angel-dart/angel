@@ -26,15 +26,11 @@ class Column {
   /// Specifies what kind of index this column is, if any.
   final IndexType indexType;
 
-  /// The default value of this field.
-  final defaultValue;
-
   const Column(
       {this.isNullable: true,
       this.length,
       this.type,
-      this.indexType: IndexType.none,
-      this.defaultValue});
+      this.indexType: IndexType.none});
 }
 
 class PrimaryKey extends Column {
