@@ -22,5 +22,5 @@ main() async {
   ]);
 
   var server = await hot.startServer('127.0.0.1', 3000);
-  print('Listening at http://${server.address.address}:${server.port}');
+  print('{{angel}} server listening at http://${server.address.address}:${server.port}');
 }
