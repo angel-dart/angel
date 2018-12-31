@@ -31,11 +31,14 @@ class OrderMigration extends Migration {
 // **************************************************************************
 
 class OrderQuery extends Query<Order, OrderQueryWhere> {
+  OrderQuery() {
+    _where = new OrderQueryWhere(this);
+  }
+
   @override
   final OrderQueryValues values = new OrderQueryValues();
 
-  @override
-  final OrderQueryWhere where = new OrderQueryWhere();
+  OrderQueryWhere _where;
 
   @override
   get tableName {
@@ -56,8 +59,13 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
   }
 
   @override
+  OrderQueryWhere get where {
+    return _where;
+  }
+
+  @override
   OrderQueryWhere newWhereClause() {
-    return new OrderQueryWhere();
+    return new OrderQueryWhere(this);
   }
 
   static Order parseRow(List row) {
@@ -80,26 +88,28 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
 }
 
 class OrderQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  OrderQueryWhere(OrderQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        customerId = new NumericSqlExpressionBuilder<int>(query, 'customer_id'),
+        employeeId = new NumericSqlExpressionBuilder<int>(query, 'employee_id'),
+        orderDate = new DateTimeSqlExpressionBuilder(query, 'order_date'),
+        shipperId = new NumericSqlExpressionBuilder<int>(query, 'shipper_id'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final NumericSqlExpressionBuilder<int> customerId =
-      new NumericSqlExpressionBuilder<int>('customer_id');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final NumericSqlExpressionBuilder<int> employeeId =
-      new NumericSqlExpressionBuilder<int>('employee_id');
+  final NumericSqlExpressionBuilder<int> customerId;
 
-  final DateTimeSqlExpressionBuilder orderDate =
-      new DateTimeSqlExpressionBuilder('order_date');
+  final NumericSqlExpressionBuilder<int> employeeId;
 
-  final NumericSqlExpressionBuilder<int> shipperId =
-      new NumericSqlExpressionBuilder<int>('shipper_id');
+  final DateTimeSqlExpressionBuilder orderDate;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final NumericSqlExpressionBuilder<int> shipperId;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -120,37 +130,37 @@ class OrderQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   int get customerId {
     return (values['customer_id'] as int);
   }
 
-  void set customerId(int value) => values['customer_id'] = value;
+  set customerId(int value) => values['customer_id'] = value;
   int get employeeId {
     return (values['employee_id'] as int);
   }
 
-  void set employeeId(int value) => values['employee_id'] = value;
+  set employeeId(int value) => values['employee_id'] = value;
   DateTime get orderDate {
     return (values['order_date'] as DateTime);
   }
 
-  void set orderDate(DateTime value) => values['order_date'] = value;
+  set orderDate(DateTime value) => values['order_date'] = value;
   int get shipperId {
     return (values['shipper_id'] as int);
   }
 
-  void set shipperId(int value) => values['shipper_id'] = value;
+  set shipperId(int value) => values['shipper_id'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Order model) {
     values.addAll({
       'customer_id': model.customerId,

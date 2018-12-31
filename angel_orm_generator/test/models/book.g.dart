@@ -31,6 +31,7 @@ class BookMigration extends Migration {
 
 class BookQuery extends Query<Book, BookQueryWhere> {
   BookQuery() {
+    _where = new BookQueryWhere(this);
     leftJoin('authors', 'author_id', 'id',
         additionalFields: const ['name', 'created_at', 'updated_at']);
     leftJoin('authors', 'partner_author_id', 'id',
@@ -40,8 +41,7 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   @override
   final BookQueryValues values = new BookQueryValues();
 
-  @override
-  final BookQueryWhere where = new BookQueryWhere();
+  BookQueryWhere _where;
 
   @override
   get tableName {
@@ -61,8 +61,13 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   }
 
   @override
+  BookQueryWhere get where {
+    return _where;
+  }
+
+  @override
   BookQueryWhere newWhereClause() {
-    return new BookQueryWhere();
+    return new BookQueryWhere(this);
   }
 
   static Book parseRow(List row) {
@@ -100,23 +105,26 @@ class BookQuery extends Query<Book, BookQueryWhere> {
 }
 
 class BookQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  BookQueryWhere(BookQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        authorId = new NumericSqlExpressionBuilder<int>(query, 'author_id'),
+        partnerAuthorId =
+            new NumericSqlExpressionBuilder<int>(query, 'partner_author_id'),
+        name = new StringSqlExpressionBuilder(query, 'name'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final NumericSqlExpressionBuilder<int> authorId =
-      new NumericSqlExpressionBuilder<int>('author_id');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final NumericSqlExpressionBuilder<int> partnerAuthorId =
-      new NumericSqlExpressionBuilder<int>('partner_author_id');
+  final NumericSqlExpressionBuilder<int> authorId;
 
-  final StringSqlExpressionBuilder name =
-      new StringSqlExpressionBuilder('name');
+  final NumericSqlExpressionBuilder<int> partnerAuthorId;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final StringSqlExpressionBuilder name;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -129,32 +137,32 @@ class BookQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   int get authorId {
     return (values['author_id'] as int);
   }
 
-  void set authorId(int value) => values['author_id'] = value;
+  set authorId(int value) => values['author_id'] = value;
   int get partnerAuthorId {
     return (values['partner_author_id'] as int);
   }
 
-  void set partnerAuthorId(int value) => values['partner_author_id'] = value;
+  set partnerAuthorId(int value) => values['partner_author_id'] = value;
   String get name {
     return (values['name'] as String);
   }
 
-  void set name(String value) => values['name'] = value;
+  set name(String value) => values['name'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Book model) {
     values.addAll({
       'name': model.name,

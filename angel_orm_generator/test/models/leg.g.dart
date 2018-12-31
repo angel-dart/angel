@@ -29,6 +29,7 @@ class LegMigration extends Migration {
 
 class LegQuery extends Query<Leg, LegQueryWhere> {
   LegQuery() {
+    _where = new LegQueryWhere(this);
     leftJoin('feet', 'id', 'leg_id', additionalFields: const [
       'leg_id',
       'n_toes',
@@ -40,8 +41,7 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   @override
   final LegQueryValues values = new LegQueryValues();
 
-  @override
-  final LegQueryWhere where = new LegQueryWhere();
+  LegQueryWhere _where;
 
   @override
   get tableName {
@@ -54,8 +54,13 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   }
 
   @override
+  LegQueryWhere get where {
+    return _where;
+  }
+
+  @override
   LegQueryWhere newWhereClause() {
-    return new LegQueryWhere();
+    return new LegQueryWhere(this);
   }
 
   static Leg parseRow(List row) {
@@ -88,17 +93,19 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
 }
 
 class LegQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  LegQueryWhere(LegQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        name = new StringSqlExpressionBuilder(query, 'name'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final StringSqlExpressionBuilder name =
-      new StringSqlExpressionBuilder('name');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final StringSqlExpressionBuilder name;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -111,22 +118,22 @@ class LegQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   String get name {
     return (values['name'] as String);
   }
 
-  void set name(String value) => values['name'] = value;
+  set name(String value) => values['name'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Leg model) {
     values.addAll({
       'name': model.name,

@@ -28,13 +28,14 @@ class TreeMigration extends Migration {
 // **************************************************************************
 
 class TreeQuery extends Query<Tree, TreeQueryWhere> {
-  TreeQuery() {}
+  TreeQuery() {
+    _where = new TreeQueryWhere(this);
+  }
 
   @override
   final TreeQueryValues values = new TreeQueryValues();
 
-  @override
-  final TreeQueryWhere where = new TreeQueryWhere();
+  TreeQueryWhere _where;
 
   @override
   get tableName {
@@ -47,8 +48,13 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   }
 
   @override
+  TreeQueryWhere get where {
+    return _where;
+  }
+
+  @override
   TreeQueryWhere newWhereClause() {
-    return new TreeQueryWhere();
+    return new TreeQueryWhere(this);
   }
 
   static Tree parseRow(List row) {
@@ -110,17 +116,19 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
 }
 
 class TreeQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  TreeQueryWhere(TreeQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        rings = new NumericSqlExpressionBuilder<int>(query, 'rings'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final NumericSqlExpressionBuilder<int> rings =
-      new NumericSqlExpressionBuilder<int>('rings');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final NumericSqlExpressionBuilder<int> rings;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -133,22 +141,22 @@ class TreeQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   int get rings {
     return (values['rings'] as int);
   }
 
-  void set rings(int value) => values['rings'] = value;
+  set rings(int value) => values['rings'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Tree model) {
     values.addAll({
       'rings': model.rings,

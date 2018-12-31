@@ -27,11 +27,14 @@ class CustomerMigration extends Migration {
 // **************************************************************************
 
 class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
+  CustomerQuery() {
+    _where = new CustomerQueryWhere(this);
+  }
+
   @override
   final CustomerQueryValues values = new CustomerQueryValues();
 
-  @override
-  final CustomerQueryWhere where = new CustomerQueryWhere();
+  CustomerQueryWhere _where;
 
   @override
   get tableName {
@@ -44,8 +47,13 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
   }
 
   @override
+  CustomerQueryWhere get where {
+    return _where;
+  }
+
+  @override
   CustomerQueryWhere newWhereClause() {
-    return new CustomerQueryWhere();
+    return new CustomerQueryWhere(this);
   }
 
   static Customer parseRow(List row) {
@@ -64,14 +72,16 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
 }
 
 class CustomerQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  CustomerQueryWhere(CustomerQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -84,17 +94,17 @@ class CustomerQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Customer model) {
     values
         .addAll({'created_at': model.createdAt, 'updated_at': model.updatedAt});

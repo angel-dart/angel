@@ -88,7 +88,7 @@ main() {
     });
 
     test('union', () async {
-      var query1 = new BookQuery()..where.name.like('Deathly%');
+      var query1 = new BookQuery()..where.name.like((_) => 'Deathly%');
       var query2 = new BookQuery()..where.authorId.equals(-1);
       var query3 = new BookQuery()
         ..where.name.isIn(['Goblet of Fire', 'Order of the Phoenix']);

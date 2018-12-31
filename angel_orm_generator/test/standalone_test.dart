@@ -78,7 +78,7 @@ main() {
         });
 
         test('union', () async {
-          var query1 = new CarQuery()..where.make.like('%Fer%');
+          var query1 = new CarQuery()..where.make.like((_) => '%Fer%');
           var query2 = new CarQuery()..where.familyFriendly.isTrue;
           var query3 = new CarQuery()..where.description.equals('Submarine');
           var union = query1.union(query2).unionAll(query3);
@@ -89,7 +89,7 @@ main() {
 
         test('or clause', () async {
           var query = new CarQuery()
-            ..where.make.like('Fer%')
+            ..where.make.like((_) => 'Fer%')
             ..orWhere((where) => where
               ..familyFriendly.isTrue
               ..make.equals('Honda'));

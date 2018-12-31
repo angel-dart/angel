@@ -23,15 +23,20 @@ class PostgresExecutor extends QueryExecutor {
   Future close() => (connection as PostgreSQLConnection).close();
 
   @override
-  Future<List<List>> query(String query, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     if (returningFields != null) {
       var fields = returningFields.join(', ');
       var returning = 'RETURNING $fields';
       query = '$query $returning';
     }
 
-    if (!Platform.environment.containsKey('STFU')) print('Running: $query');
-    return connection.query(query);
+    if (!Platform.environment.containsKey('STFU')) {
+      print('Running: $query');
+      if (substitutionValues.isNotEmpty) print('Values: $substitutionValues');
+    }
+    return connection.query(query, substitutionValues: substitutionValues);
   }
 
   @override

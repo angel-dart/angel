@@ -1,3 +1,6 @@
+# 2.0.0-dev.2
+* Changes to work with `package:angel_orm@2.0.0-dev.15`.
+
 # 2.0.0-dev.1
 * Generate migration files.
 

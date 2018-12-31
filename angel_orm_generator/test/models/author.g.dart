@@ -11,7 +11,7 @@ class AuthorMigration extends Migration {
   up(Schema schema) {
     schema.create('authors', (table) {
       table.serial('id')..primaryKey();
-      table.varChar('name');
+      table.varChar('name')..defaultsTo('Tobe Osakwe');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -28,11 +28,14 @@ class AuthorMigration extends Migration {
 // **************************************************************************
 
 class AuthorQuery extends Query<Author, AuthorQueryWhere> {
+  AuthorQuery() {
+    _where = new AuthorQueryWhere(this);
+  }
+
   @override
   final AuthorQueryValues values = new AuthorQueryValues();
 
-  @override
-  final AuthorQueryWhere where = new AuthorQueryWhere();
+  AuthorQueryWhere _where;
 
   @override
   get tableName {
@@ -45,8 +48,13 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
   }
 
   @override
+  AuthorQueryWhere get where {
+    return _where;
+  }
+
+  @override
   AuthorQueryWhere newWhereClause() {
-    return new AuthorQueryWhere();
+    return new AuthorQueryWhere(this);
   }
 
   static Author parseRow(List row) {
@@ -66,17 +74,19 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
 }
 
 class AuthorQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  AuthorQueryWhere(AuthorQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        name = new StringSqlExpressionBuilder(query, 'name'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final StringSqlExpressionBuilder name =
-      new StringSqlExpressionBuilder('name');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final StringSqlExpressionBuilder name;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -89,22 +99,22 @@ class AuthorQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   String get name {
     return (values['name'] as String);
   }
 
-  void set name(String value) => values['name'] = value;
+  set name(String value) => values['name'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Author model) {
     values.addAll({
       'name': model.name,
@@ -120,7 +130,7 @@ class AuthorQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Author extends _Author {
-  Author({this.id, this.name, this.createdAt, this.updatedAt});
+  Author({this.id, this.name: 'Tobe Osakwe', this.createdAt, this.updatedAt});
 
   @override
   final String id;
@@ -169,7 +179,7 @@ abstract class AuthorSerializer {
   static Author fromMap(Map map) {
     return new Author(
         id: map['id'] as String,
-        name: map['name'] as String,
+        name: map['name'] as String ?? 'Tobe Osakwe',
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)

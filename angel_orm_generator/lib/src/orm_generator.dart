@@ -105,23 +105,30 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           });
       }));
 
-      // Add where member
+      // Add _where member
       clazz.fields.add(new Field((b) {
         b
-          ..annotations.add(refer('override'))
-          ..name = 'where'
-          ..modifier = FieldModifier.final$
-          ..type = queryWhereType
-          ..assignment = queryWhereType.newInstance([]).code;
+          ..name = '_where'
+          ..type = queryWhereType;
       }));
 
+      // Add where getter
+      clazz.methods.add(new Method((b) {
+        b
+          ..name = 'where'
+          ..type = MethodType.getter
+          ..returns = queryWhereType
+          ..annotations.add(refer('override'))
+          ..body = new Block((b) => b.addExpression(refer('_where').returned));
+      }));
+      // newWhereClause()
       clazz.methods.add(new Method((b) {
         b
           ..name = 'newWhereClause'
           ..annotations.add(refer('override'))
           ..returns = queryWhereType
-          ..body = new Block(
-              (b) => b.addExpression(queryWhereType.newInstance([]).returned));
+          ..body = new Block((b) => b.addExpression(
+              queryWhereType.newInstance([refer('this')]).returned));
       }));
 
       // Add deserialize()
@@ -197,88 +204,91 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }));
 
       // If there are any relations, we need some overrides.
+      clazz.constructors.add(new Constructor((b) {
+        b
+          ..body = new Block((b) {
+            // Add a constructor that initializes _where
+            b.addExpression(
+              refer('_where')
+                  .assign(queryWhereType.newInstance([refer('this')])),
+            );
+
+            ctx.relations.forEach((fieldName, relation) {
+              //var name = ctx.buildContext.resolveFieldName(fieldName);
+              if (relation.type == RelationshipType.belongsTo ||
+                  relation.type == RelationshipType.hasOne) {
+                var foreign = ctx.relationTypes[relation];
+                var additionalFields = foreign.effectiveFields
+                    .where((f) => f.name != 'id' || !isSpecialId(f))
+                    .map((f) => literalString(
+                        foreign.buildContext.resolveFieldName(f.name)));
+                var joinArgs = [
+                  relation.foreignTable,
+                  relation.localKey,
+                  relation.foreignKey
+                ].map(literalString);
+                b.addExpression(refer('leftJoin').call(joinArgs, {
+                  'additionalFields':
+                      literalConstList(additionalFields.toList())
+                }));
+              }
+            });
+          });
+      }));
       if (ctx.relations.isNotEmpty) {
-        clazz.constructors.add(new Constructor((b) {
+        clazz.methods.add(new Method((b) {
           b
+            ..name = 'insert'
+            ..annotations.add(refer('override'))
+            ..requiredParameters.add(new Parameter((b) => b..name = 'executor'))
             ..body = new Block((b) {
-              ctx.relations.forEach((fieldName, relation) {
-                //var name = ctx.buildContext.resolveFieldName(fieldName);
-                if (relation.type == RelationshipType.belongsTo ||
-                    relation.type == RelationshipType.hasOne) {
-                  var foreign = ctx.relationTypes[relation];
-                  var additionalFields = foreign.effectiveFields
-                      .where((f) => f.name != 'id' || !isSpecialId(f))
-                      .map((f) => literalString(
-                          foreign.buildContext.resolveFieldName(f.name)));
-                  var joinArgs = [
-                    relation.foreignTable,
-                    relation.localKey,
-                    relation.foreignKey
-                  ].map(literalString);
-                  b.addExpression(refer('leftJoin').call(joinArgs, {
-                    'additionalFields':
-                        literalConstList(additionalFields.toList())
-                  }));
-                }
+              var inTransaction = new Method((b) {
+                b
+                  ..modifier = MethodModifier.async
+                  ..body = new Block((b) {
+                    b.addExpression(refer('super')
+                        .property('insert')
+                        .call([refer('executor')])
+                        .awaited
+                        .assignVar('result'));
+
+                    // Just call getOne() again
+                    if (ctx.effectiveFields.any((f) =>
+                        isSpecialId(f) ||
+                        (ctx.columns[f.name]?.indexType ==
+                            IndexType.primaryKey))) {
+                      b.addExpression(refer('where')
+                          .property('id')
+                          .property('equals')
+                          .call([
+                        (refer('int')
+                            .property('parse')
+                            .call([refer('result').property('id')]))
+                      ]));
+
+                      b.addExpression(refer('result').assign(
+                          refer('getOne').call([refer('executor')]).awaited));
+                    }
+
+                    // Fetch the results of @hasMany
+                    ctx.relations.forEach((name, relation) {
+                      if (relation.type == RelationshipType.hasMany) {
+                        // Call fetchLinked();
+                        var fetchLinked = refer('fetchLinked')
+                            .call([refer('result'), refer('executor')]).awaited;
+                        b.addExpression(refer('result').assign(fetchLinked));
+                      }
+                    });
+
+                    b.addExpression(refer('result').returned);
+                  });
               });
+
+              b.addExpression(refer('executor')
+                  .property('transaction')
+                  .call([inTransaction.closure]).returned);
             });
         }));
-        if (ctx.relations.isNotEmpty) {
-          clazz.methods.add(new Method((b) {
-            b
-              ..name = 'insert'
-              ..annotations.add(refer('override'))
-              ..requiredParameters
-                  .add(new Parameter((b) => b..name = 'executor'))
-              ..body = new Block((b) {
-                var inTransaction = new Method((b) {
-                  b
-                    ..modifier = MethodModifier.async
-                    ..body = new Block((b) {
-                      b.addExpression(refer('super')
-                          .property('insert')
-                          .call([refer('executor')])
-                          .awaited
-                          .assignVar('result'));
-
-                      // Just call getOne() again
-                      if (ctx.effectiveFields.any((f) =>
-                          isSpecialId(f) ||
-                          (ctx.columns[f.name]?.indexType ==
-                              IndexType.primaryKey))) {
-                        b.addExpression(refer('where')
-                            .property('id')
-                            .property('equals')
-                            .call([
-                          (refer('int')
-                              .property('parse')
-                              .call([refer('result').property('id')]))
-                        ]));
-
-                        b.addExpression(refer('result').assign(
-                            refer('getOne').call([refer('executor')]).awaited));
-                      }
-
-                      // Fetch the results of @hasMany
-                      ctx.relations.forEach((name, relation) {
-                        if (relation.type == RelationshipType.hasMany) {
-                          // Call fetchLinked();
-                          var fetchLinked = refer('fetchLinked').call(
-                              [refer('result'), refer('executor')]).awaited;
-                          b.addExpression(refer('result').assign(fetchLinked));
-                        }
-                      });
-
-                      b.addExpression(refer('result').returned);
-                    });
-                });
-
-                b.addExpression(refer('executor')
-                    .property('transaction')
-                    .call([inTransaction.closure]).returned);
-              });
-          }));
-        }
       }
 
       // Create a Future<T> fetchLinked(T model, QueryExecutor), if necessary.
@@ -412,6 +422,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           });
       }));
 
+      var initializers = <Code>[];
+
       // Add builders for each field
       for (var field in ctx.effectiveFields) {
         var name = field.name;
@@ -451,12 +463,27 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           b
             ..name = name
             ..modifier = FieldModifier.final$
-            ..type = builderType
-            ..assignment = builderType.newInstance([
-              literalString(ctx.buildContext.resolveFieldName(field.name))
-            ]).code;
+            ..type = builderType;
+
+          initializers.add(
+            refer(field.name)
+                .assign(builderType.newInstance([
+                  refer('query'),
+                  literalString(ctx.buildContext.resolveFieldName(field.name))
+                ]))
+                .code,
+          );
         }));
       }
+
+      // Now, just add a constructor that initializes each builder.
+      clazz.constructors.add(new Constructor((b) {
+        b
+          ..requiredParameters.add(new Parameter((b) => b
+            ..name = 'query'
+            ..type = refer('${rc.pascalCase}Query')))
+          ..initializers.addAll(initializers);
+      }));
     });
   }
 
@@ -487,7 +514,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           b
             ..name = field.name
             ..type = MethodType.setter
-            ..returns = refer('void')
             ..requiredParameters.add(new Parameter((b) => b
               ..name = 'value'
               ..type = type))

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:angel_orm/angel_orm.dart';
+import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
@@ -168,9 +169,14 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
               var field = table.property(methodName).call(positional, named);
               var cascade = <Expression>[];
 
-              if (col.defaultValue != null) {
-                cascade
-                    .add(refer('defaultsTo').call([literal(col.defaultValue)]));
+              var defaultValue = ctx.buildContext.defaults[name];
+
+              if (defaultValue != null) {
+                cascade.add(refer('defaultsTo').call([
+                  new CodeExpression(
+                    new Code(dartObjectToString(defaultValue)),
+                  ),
+                ]));
               }
 
               if (col.indexType == IndexType.primaryKey ||

@@ -86,7 +86,6 @@ Future<OrmBuildContext> buildOrmContext(
         isNullable: column.isNullable,
         length: column.length,
         indexType: column.indexType,
-        defaultValue: column.defaultValue,
         type: inferColumnType(field.type),
       );
     }
@@ -233,7 +232,6 @@ Column reviveColumn(ConstantReader cr) {
   return new Column(
     isNullable: cr.peek('isNullable')?.boolValue,
     length: cr.peek('length')?.intValue,
-    defaultValue: cr.peek('defaultValue')?.literalValue,
     type: columnType,
     indexType: indexType,
   );

@@ -31,11 +31,14 @@ class CarMigration extends Migration {
 // **************************************************************************
 
 class CarQuery extends Query<Car, CarQueryWhere> {
+  CarQuery() {
+    _where = new CarQueryWhere(this);
+  }
+
   @override
   final CarQueryValues values = new CarQueryValues();
 
-  @override
-  final CarQueryWhere where = new CarQueryWhere();
+  CarQueryWhere _where;
 
   @override
   get tableName {
@@ -56,8 +59,13 @@ class CarQuery extends Query<Car, CarQueryWhere> {
   }
 
   @override
+  CarQueryWhere get where {
+    return _where;
+  }
+
+  @override
   CarQueryWhere newWhereClause() {
-    return new CarQueryWhere();
+    return new CarQueryWhere(this);
   }
 
   static Car parseRow(List row) {
@@ -80,26 +88,29 @@ class CarQuery extends Query<Car, CarQueryWhere> {
 }
 
 class CarQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  CarQueryWhere(CarQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        make = new StringSqlExpressionBuilder(query, 'make'),
+        description = new StringSqlExpressionBuilder(query, 'description'),
+        familyFriendly =
+            new BooleanSqlExpressionBuilder(query, 'family_friendly'),
+        recalledAt = new DateTimeSqlExpressionBuilder(query, 'recalled_at'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final StringSqlExpressionBuilder make =
-      new StringSqlExpressionBuilder('make');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final StringSqlExpressionBuilder description =
-      new StringSqlExpressionBuilder('description');
+  final StringSqlExpressionBuilder make;
 
-  final BooleanSqlExpressionBuilder familyFriendly =
-      new BooleanSqlExpressionBuilder('family_friendly');
+  final StringSqlExpressionBuilder description;
 
-  final DateTimeSqlExpressionBuilder recalledAt =
-      new DateTimeSqlExpressionBuilder('recalled_at');
+  final BooleanSqlExpressionBuilder familyFriendly;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final DateTimeSqlExpressionBuilder recalledAt;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -120,37 +131,37 @@ class CarQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   String get make {
     return (values['make'] as String);
   }
 
-  void set make(String value) => values['make'] = value;
+  set make(String value) => values['make'] = value;
   String get description {
     return (values['description'] as String);
   }
 
-  void set description(String value) => values['description'] = value;
+  set description(String value) => values['description'] = value;
   bool get familyFriendly {
     return (values['family_friendly'] as bool);
   }
 
-  void set familyFriendly(bool value) => values['family_friendly'] = value;
+  set familyFriendly(bool value) => values['family_friendly'] = value;
   DateTime get recalledAt {
     return (values['recalled_at'] as DateTime);
   }
 
-  void set recalledAt(DateTime value) => values['recalled_at'] = value;
+  set recalledAt(DateTime value) => values['recalled_at'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Car model) {
     values.addAll({
       'make': model.make,

@@ -29,11 +29,14 @@ class FruitMigration extends Migration {
 // **************************************************************************
 
 class FruitQuery extends Query<Fruit, FruitQueryWhere> {
+  FruitQuery() {
+    _where = new FruitQueryWhere(this);
+  }
+
   @override
   final FruitQueryValues values = new FruitQueryValues();
 
-  @override
-  final FruitQueryWhere where = new FruitQueryWhere();
+  FruitQueryWhere _where;
 
   @override
   get tableName {
@@ -46,8 +49,13 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   }
 
   @override
+  FruitQueryWhere get where {
+    return _where;
+  }
+
+  @override
   FruitQueryWhere newWhereClause() {
-    return new FruitQueryWhere();
+    return new FruitQueryWhere(this);
   }
 
   static Fruit parseRow(List row) {
@@ -68,20 +76,22 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
 }
 
 class FruitQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  FruitQueryWhere(FruitQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        treeId = new NumericSqlExpressionBuilder<int>(query, 'tree_id'),
+        commonName = new StringSqlExpressionBuilder(query, 'common_name'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final NumericSqlExpressionBuilder<int> treeId =
-      new NumericSqlExpressionBuilder<int>('tree_id');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final StringSqlExpressionBuilder commonName =
-      new StringSqlExpressionBuilder('common_name');
+  final NumericSqlExpressionBuilder<int> treeId;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final StringSqlExpressionBuilder commonName;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -94,27 +104,27 @@ class FruitQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   int get treeId {
     return (values['tree_id'] as int);
   }
 
-  void set treeId(int value) => values['tree_id'] = value;
+  set treeId(int value) => values['tree_id'] = value;
   String get commonName {
     return (values['common_name'] as String);
   }
 
-  void set commonName(String value) => values['common_name'] = value;
+  set commonName(String value) => values['common_name'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Fruit model) {
     values.addAll({
       'tree_id': model.treeId,

@@ -29,11 +29,14 @@ class FootMigration extends Migration {
 // **************************************************************************
 
 class FootQuery extends Query<Foot, FootQueryWhere> {
+  FootQuery() {
+    _where = new FootQueryWhere(this);
+  }
+
   @override
   final FootQueryValues values = new FootQueryValues();
 
-  @override
-  final FootQueryWhere where = new FootQueryWhere();
+  FootQueryWhere _where;
 
   @override
   get tableName {
@@ -46,8 +49,13 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
   }
 
   @override
+  FootQueryWhere get where {
+    return _where;
+  }
+
+  @override
   FootQueryWhere newWhereClause() {
-    return new FootQueryWhere();
+    return new FootQueryWhere(this);
   }
 
   static Foot parseRow(List row) {
@@ -68,20 +76,22 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 }
 
 class FootQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  FootQueryWhere(FootQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        legId = new NumericSqlExpressionBuilder<int>(query, 'leg_id'),
+        nToes = new NumericSqlExpressionBuilder<int>(query, 'n_toes'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final NumericSqlExpressionBuilder<int> legId =
-      new NumericSqlExpressionBuilder<int>('leg_id');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final NumericSqlExpressionBuilder<int> nToes =
-      new NumericSqlExpressionBuilder<int>('n_toes');
+  final NumericSqlExpressionBuilder<int> legId;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final NumericSqlExpressionBuilder<int> nToes;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -94,27 +104,27 @@ class FootQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   int get legId {
     return (values['leg_id'] as int);
   }
 
-  void set legId(int value) => values['leg_id'] = value;
+  set legId(int value) => values['leg_id'] = value;
   int get nToes {
     return (values['n_toes'] as int);
   }
 
-  void set nToes(int value) => values['n_toes'] = value;
+  set nToes(int value) => values['n_toes'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Foot model) {
     values.addAll({
       'leg_id': model.legId,

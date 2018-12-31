@@ -451,7 +451,11 @@ class Union<T> extends QueryBase<T> {
   final QueryBase<T> left, right;
   final bool all;
 
-  Union(this.left, this.right, {this.all: false});
+  Union(this.left, this.right, {this.all: false}) {
+    substitutionValues
+      ..addAll(left.substitutionValues)
+      ..addAll(right.substitutionValues);
+  }
 
   @override
   List<String> get fields => left.fields;

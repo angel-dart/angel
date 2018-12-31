@@ -63,13 +63,14 @@ class UserRoleMigration extends Migration {
 // **************************************************************************
 
 class UserQuery extends Query<User, UserQueryWhere> {
-  UserQuery() {}
+  UserQuery() {
+    _where = new UserQueryWhere(this);
+  }
 
   @override
   final UserQueryValues values = new UserQueryValues();
 
-  @override
-  final UserQueryWhere where = new UserQueryWhere();
+  UserQueryWhere _where;
 
   @override
   get tableName {
@@ -89,8 +90,13 @@ class UserQuery extends Query<User, UserQueryWhere> {
   }
 
   @override
+  UserQueryWhere get where {
+    return _where;
+  }
+
+  @override
   UserQueryWhere newWhereClause() {
-    return new UserQueryWhere();
+    return new UserQueryWhere(this);
   }
 
   static User parseRow(List row) {
@@ -154,23 +160,25 @@ class UserQuery extends Query<User, UserQueryWhere> {
 }
 
 class UserQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  UserQueryWhere(UserQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        username = new StringSqlExpressionBuilder(query, 'username'),
+        password = new StringSqlExpressionBuilder(query, 'password'),
+        email = new StringSqlExpressionBuilder(query, 'email'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final StringSqlExpressionBuilder username =
-      new StringSqlExpressionBuilder('username');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final StringSqlExpressionBuilder password =
-      new StringSqlExpressionBuilder('password');
+  final StringSqlExpressionBuilder username;
 
-  final StringSqlExpressionBuilder email =
-      new StringSqlExpressionBuilder('email');
+  final StringSqlExpressionBuilder password;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final StringSqlExpressionBuilder email;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -183,32 +191,32 @@ class UserQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   String get username {
     return (values['username'] as String);
   }
 
-  void set username(String value) => values['username'] = value;
+  set username(String value) => values['username'] = value;
   String get password {
     return (values['password'] as String);
   }
 
-  void set password(String value) => values['password'] = value;
+  set password(String value) => values['password'] = value;
   String get email {
     return (values['email'] as String);
   }
 
-  void set email(String value) => values['email'] = value;
+  set email(String value) => values['email'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(User model) {
     values.addAll({
       'username': model.username,
@@ -221,13 +229,14 @@ class UserQueryValues extends MapQueryValues {
 }
 
 class RoleQuery extends Query<Role, RoleQueryWhere> {
-  RoleQuery() {}
+  RoleQuery() {
+    _where = new RoleQueryWhere(this);
+  }
 
   @override
   final RoleQueryValues values = new RoleQueryValues();
 
-  @override
-  final RoleQueryWhere where = new RoleQueryWhere();
+  RoleQueryWhere _where;
 
   @override
   get tableName {
@@ -240,8 +249,13 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   }
 
   @override
+  RoleQueryWhere get where {
+    return _where;
+  }
+
+  @override
   RoleQueryWhere newWhereClause() {
-    return new RoleQueryWhere();
+    return new RoleQueryWhere(this);
   }
 
   static Role parseRow(List row) {
@@ -303,17 +317,19 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
 }
 
 class RoleQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  RoleQueryWhere(RoleQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        name = new StringSqlExpressionBuilder(query, 'name'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
-  final StringSqlExpressionBuilder name =
-      new StringSqlExpressionBuilder('name');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final DateTimeSqlExpressionBuilder createdAt =
-      new DateTimeSqlExpressionBuilder('created_at');
+  final StringSqlExpressionBuilder name;
 
-  final DateTimeSqlExpressionBuilder updatedAt =
-      new DateTimeSqlExpressionBuilder('updated_at');
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   @override
   get expressionBuilders {
@@ -326,22 +342,22 @@ class RoleQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   String get name {
     return (values['name'] as String);
   }
 
-  void set name(String value) => values['name'] = value;
+  set name(String value) => values['name'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
 
-  void set createdAt(DateTime value) => values['created_at'] = value;
+  set createdAt(DateTime value) => values['created_at'] = value;
   DateTime get updatedAt {
     return (values['updated_at'] as DateTime);
   }
 
-  void set updatedAt(DateTime value) => values['updated_at'] = value;
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Role model) {
     values.addAll({
       'name': model.name,
@@ -353,6 +369,7 @@ class RoleQueryValues extends MapQueryValues {
 
 class UserRoleQuery extends Query<UserRole, UserRoleQueryWhere> {
   UserRoleQuery() {
+    _where = new UserRoleQueryWhere(this);
     leftJoin('users', 'user_id', 'id', additionalFields: const [
       'username',
       'password',
@@ -367,8 +384,7 @@ class UserRoleQuery extends Query<UserRole, UserRoleQueryWhere> {
   @override
   final UserRoleQueryValues values = new UserRoleQueryValues();
 
-  @override
-  final UserRoleQueryWhere where = new UserRoleQueryWhere();
+  UserRoleQueryWhere _where;
 
   @override
   get tableName {
@@ -381,8 +397,13 @@ class UserRoleQuery extends Query<UserRole, UserRoleQueryWhere> {
   }
 
   @override
+  UserRoleQueryWhere get where {
+    return _where;
+  }
+
+  @override
   UserRoleQueryWhere newWhereClause() {
-    return new UserRoleQueryWhere();
+    return new UserRoleQueryWhere(this);
   }
 
   static UserRole parseRow(List row) {
@@ -412,14 +433,16 @@ class UserRoleQuery extends Query<UserRole, UserRoleQueryWhere> {
 }
 
 class UserRoleQueryWhere extends QueryWhere {
-  final NumericSqlExpressionBuilder<int> id =
-      new NumericSqlExpressionBuilder<int>('id');
+  UserRoleQueryWhere(UserRoleQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        userId = new NumericSqlExpressionBuilder<int>(query, 'user_id'),
+        roleId = new NumericSqlExpressionBuilder<int>(query, 'role_id');
 
-  final NumericSqlExpressionBuilder<int> userId =
-      new NumericSqlExpressionBuilder<int>('user_id');
+  final NumericSqlExpressionBuilder<int> id;
 
-  final NumericSqlExpressionBuilder<int> roleId =
-      new NumericSqlExpressionBuilder<int>('role_id');
+  final NumericSqlExpressionBuilder<int> userId;
+
+  final NumericSqlExpressionBuilder<int> roleId;
 
   @override
   get expressionBuilders {
@@ -432,17 +455,17 @@ class UserRoleQueryValues extends MapQueryValues {
     return (values['id'] as int);
   }
 
-  void set id(int value) => values['id'] = value;
+  set id(int value) => values['id'] = value;
   int get userId {
     return (values['user_id'] as int);
   }
 
-  void set userId(int value) => values['user_id'] = value;
+  set userId(int value) => values['user_id'] = value;
   int get roleId {
     return (values['role_id'] as int);
   }
 
-  void set roleId(int value) => values['role_id'] = value;
+  set roleId(int value) => values['role_id'] = value;
   void copyFrom(UserRole model) {
     values.addAll({'id': model.id});
     if (model.user != null) {
