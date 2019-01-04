@@ -1,3 +1,6 @@
+# 2.1.0
+* Added `ExternalAuthOptions`.
+
 # 2.0.4
 * `successRedirect` was previously explicitly returning a `200`; remove this and allow the default `302`.
 
