@@ -8,6 +8,7 @@ environment:
 dependencies:
   angel_framework: ^2.0.0-alpha
   charcode: ^1.0.0
+  collection: ^1.0.0
   crypto: ^2.0.0
   http_parser: ^3.0.0
   meta: ^1.0.0
