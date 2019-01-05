@@ -24,7 +24,7 @@ class AngelAuthOptions<User> {
   AngelAuthOptions(
       {this.callback,
       this.tokenCallback,
-      this.canRespondWithJson: true,
+      this.canRespondWithJson = true,
       this.successRedirect,
       String this.failureRedirect});
 }

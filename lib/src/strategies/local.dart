@@ -23,13 +23,13 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
   String realm;
 
   LocalAuthStrategy(this.verifier,
-      {String this.usernameField: 'username',
-      String this.passwordField: 'password',
-      String this.invalidMessage:
+      {String this.usernameField = 'username',
+      String this.passwordField = 'password',
+      String this.invalidMessage =
           'Please provide a valid username and password.',
-      bool this.allowBasic: true,
-      bool this.forceBasic: false,
-      String this.realm: 'Authentication is required.'}) {}
+      bool this.allowBasic = true,
+      bool this.forceBasic = false,
+      String this.realm = 'Authentication is required.'}) {}
 
   @override
   Future<User> authenticate(RequestContext req, ResponseContext res,
@@ -54,8 +54,8 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
         if (verificationResult == false || verificationResult == null) {
           res
             ..statusCode = 401
-            ..headers['www-authenticate'] = 'Basic realm="$realm"'
-            ..close();
+            ..headers['www-authenticate'] = 'Basic realm="$realm"';
+          await res.close();
           return null;
         }
 

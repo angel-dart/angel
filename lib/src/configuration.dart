@@ -1,4 +1,5 @@
 import 'package:charcode/ascii.dart';
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:quiver_hashcode/hashcode.dart';
 
@@ -13,7 +14,11 @@ class ExternalAuthOptions {
   /// The user's redirect URI.
   final Uri redirectUri;
 
-  ExternalAuthOptions._(this.clientId, this.clientSecret, this.redirectUri) {
+  /// The scopes to be passed to the external server.
+  final Set<String> scopes;
+
+  ExternalAuthOptions._(
+      this.clientId, this.clientSecret, this.redirectUri, this.scopes) {
     if (clientId == null) {
       throw new ArgumentError.notNull('clientId');
     } else if (clientSecret == null) {
@@ -24,12 +29,14 @@ class ExternalAuthOptions {
   factory ExternalAuthOptions(
       {@required String clientId,
       @required String clientSecret,
-      @required redirectUri}) {
+      @required redirectUri,
+      Iterable<String> scopes = const []}) {
     if (redirectUri is String) {
       return new ExternalAuthOptions._(
-          clientId, clientSecret, Uri.parse(redirectUri));
+          clientId, clientSecret, Uri.parse(redirectUri), scopes.toSet());
     } else if (redirectUri is Uri) {
-      return new ExternalAuthOptions._(clientId, clientSecret, redirectUri);
+      return new ExternalAuthOptions._(
+          clientId, clientSecret, redirectUri, scopes.toSet());
     } else {
       throw new ArgumentError.value(
           redirectUri, 'redirectUri', 'must be a String or Uri');
@@ -47,26 +54,34 @@ class ExternalAuthOptions {
       clientId: map['client_id'] as String,
       clientSecret: map['client_secret'] as String,
       redirectUri: map['redirect_uri'],
+      scopes: map['scopes'] is Iterable
+          ? ((map['scopes'] as Iterable).map((x) => x.toString()))
+          : <String>[],
     );
   }
 
   @override
-  int get hashCode => hash3(clientId, clientSecret, redirectUri);
+  int get hashCode => hash4(clientId, clientSecret, redirectUri, scopes);
 
   @override
   bool operator ==(other) =>
       other is ExternalAuthOptions &&
       other.clientId == clientId &&
       other.clientSecret == other.clientSecret &&
-      other.redirectUri == other.redirectUri;
+      other.redirectUri == other.redirectUri &&
+      const SetEquality<String>().equals(other.scopes, scopes);
 
   /// Creates a copy of this object, with the specified changes.
   ExternalAuthOptions copyWith(
-      {String clientId, String clientSecret, redirectUri}) {
+      {String clientId,
+      String clientSecret,
+      redirectUri,
+      Iterable<String> scopes}) {
     return new ExternalAuthOptions(
       clientId: clientId ?? this.clientId,
       clientSecret: clientSecret ?? this.clientSecret,
       redirectUri: redirectUri ?? this.redirectUri,
+      scopes: (scopes ??= []).followedBy(this.scopes),
     );
   }
 
@@ -79,11 +94,12 @@ class ExternalAuthOptions {
   ///
   /// If [obscureSecret] is `true` (default), then the [clientSecret] will
   /// be replaced by the string `<redacted>`.
-  Map<String, String> toJson({bool obscureSecret = true}) {
+  Map<String, dynamic> toJson({bool obscureSecret = true}) {
     return {
       'client_id': clientId,
       'client_secret': obscureSecret ? '<redacted>' : clientSecret,
       'redirect_uri': redirectUri.toString(),
+      'scopes': scopes.toList(),
     };
   }
 
@@ -110,6 +126,7 @@ class ExternalAuthOptions {
     b.write('clientId=$clientId');
     b.write(', clientSecret=$secret');
     b.write(', redirectUri=$redirectUri');
+    b.write(', scopes=${scopes.toList()}');
     b.write(')');
     return b.toString();
   }

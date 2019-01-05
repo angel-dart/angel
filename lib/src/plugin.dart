@@ -63,8 +63,8 @@ class AngelAuth<User> {
   Hmac get hmac => _hs256;
 
   String _randomString(
-      {int length: 32,
-      String validChars:
+      {int length = 32,
+      String validChars =
           "ABCDEFHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"}) {
     var chars = <int>[];
     while (chars.length < length) chars.add(_random.nextInt(validChars.length));
@@ -77,13 +77,13 @@ class AngelAuth<User> {
       this.serializer,
       this.deserializer,
       num jwtLifeSpan,
-      this.allowCookie: true,
-      this.allowTokenInQuery: true,
-      this.enforceIp: true,
+      this.allowCookie = true,
+      this.allowTokenInQuery = true,
+      this.enforceIp = true,
       this.cookieDomain,
-      this.cookiePath: '/',
-      this.secureCookies: true,
-      this.reviveTokenEndpoint: "/auth/token"})
+      this.cookiePath = '/',
+      this.secureCookies = true,
+      this.reviveTokenEndpoint = "/auth/token"})
       : super() {
     _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
     _jwtLifeSpan = jwtLifeSpan?.toInt() ?? -1;

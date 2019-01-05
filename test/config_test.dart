@@ -23,11 +23,13 @@ void main() {
           clientId: 'hey',
           clientSecret: 'hello',
           redirectUri: 'https://yes.no',
+          scopes: ['a', 'b'],
         ),
         new ExternalAuthOptions(
           clientId: 'hey',
           clientSecret: 'hello',
           redirectUri: 'https://yes.no',
+          scopes: ['a', 'b'],
         ),
       );
     });
@@ -113,21 +115,21 @@ void main() {
     test('produces correct string', () {
       expect(
         options.toString(obscureSecret: false),
-        'ExternalAuthOptions(clientId=foo, clientSecret=bar, redirectUri=http://example.com)',
+        'ExternalAuthOptions(clientId=foo, clientSecret=bar, redirectUri=http://example.com, scopes=[])',
       );
     });
 
     test('obscures secret', () {
       expect(
         options.toString(),
-        'ExternalAuthOptions(clientId=foo, clientSecret=***, redirectUri=http://example.com)',
+        'ExternalAuthOptions(clientId=foo, clientSecret=***, redirectUri=http://example.com, scopes=[])',
       );
     });
 
     test('asteriskCount', () {
       expect(
         options.toString(asteriskCount: 7),
-        'ExternalAuthOptions(clientId=foo, clientSecret=*******, redirectUri=http://example.com)',
+        'ExternalAuthOptions(clientId=foo, clientSecret=*******, redirectUri=http://example.com, scopes=[])',
       );
     });
   });
@@ -140,6 +142,7 @@ void main() {
           'client_id': 'foo',
           'client_secret': '<redacted>',
           'redirect_uri': 'http://example.com',
+          'scopes': [],
         },
       );
     });
@@ -151,6 +154,7 @@ void main() {
           'client_id': 'foo',
           'client_secret': 'bar',
           'redirect_uri': 'http://example.com',
+          'scopes': [],
         },
       );
     });

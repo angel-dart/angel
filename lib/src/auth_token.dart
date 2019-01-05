@@ -36,10 +36,10 @@ class AuthToken {
 
   AuthToken(
       {this.ipAddress,
-      this.lifeSpan: -1,
+      this.lifeSpan = -1,
       this.userId,
       DateTime issuedAt,
-      Map payload: const {}}) {
+      Map payload = const {}}) {
     this.issuedAt = issuedAt ?? new DateTime.now();
     this.payload.addAll(
         payload?.keys?.fold({}, (out, k) => out..[k.toString()] = payload[k]) ??
