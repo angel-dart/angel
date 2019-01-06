@@ -85,11 +85,13 @@ class TestClient extends client.BaseAngelClient {
       // Attempt to send as Basic auth
       var encoded = base64Url.encode(utf8.encode(request.url.userInfo));
       rq.headers.add('authorization', 'Basic $encoded');
-    } else if (rq.headers.value('authorization')?.startsWith('Basic ') == true) {
+    } else if (rq.headers.value('authorization')?.startsWith('Basic ') ==
+        true) {
       var encoded = rq.headers.value('authorization').substring(6);
       var decoded = utf8.decode(base64Url.decode(encoded));
       var oldRq = rq;
-      var newRq = new MockHttpRequest(rq.method, rq.uri.replace(userInfo: decoded));
+      var newRq =
+          new MockHttpRequest(rq.method, rq.uri.replace(userInfo: decoded));
       oldRq.headers.forEach(newRq.headers.add);
       rq = newRq;
     }
