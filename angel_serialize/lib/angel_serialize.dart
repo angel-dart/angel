@@ -11,11 +11,38 @@ class Exclude {
 
 const Exclude exclude = const Exclude();
 
-/// Marks a field as having a default value.
+@deprecated
+
+/// Prefer [SerializableField] instead.
 class DefaultValue {
   final value;
 
   const DefaultValue(this.value);
+}
+
+/// Attaches options to a field.
+class SerializableField {
+  /// An alternative name for this field.
+  final String alias;
+
+  /// A default for this field.
+  final defaultValue;
+
+  /// A custom serializer for this field.
+  final Symbol serializer;
+
+  /// A custom serializer for this field.
+  final Symbol deserializer;
+
+  /// A list of constant members to affix to the generated class.
+  final List includeAnnotations;
+
+  SerializableField(
+      {this.alias,
+      this.defaultValue,
+      this.serializer,
+      this.deserializer,
+      this.includeAnnotations: const []});
 }
 
 /// Marks a class as eligible for serialization.
@@ -62,7 +89,9 @@ abstract class Serializers {
   static const int typescript = 2;
 }
 
-/// Specifies an alias for a field within its JSON representation.
+@deprecated
+
+/// Prefer [SerializableField] instead.
 class Alias {
   final String name;
 
