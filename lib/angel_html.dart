@@ -7,8 +7,7 @@ import 'package:html_builder/html_builder.dart';
 /// You can provide a custom [renderer]. The default renders minified HTML5 pages.
 ///
 /// Set [enforceAcceptHeader] to `true` to throw a `406 Not Acceptable` if the client doesn't accept HTML responses.
-RequestMiddleware renderHtml(
-    {StringRenderer renderer, bool enforceAcceptHeader}) {
+RequestHandler renderHtml({StringRenderer renderer, bool enforceAcceptHeader}) {
   renderer ??= new StringRenderer(pretty: false, html5: true);
 
   return (RequestContext req, ResponseContext res) {
@@ -21,11 +20,11 @@ RequestMiddleware renderHtml(
         if (enforceAcceptHeader == true && !req.accepts('text/html'))
           throw new AngelHttpException.notAcceptable();
 
-        var content = renderer.render(data);
+        var content = renderer.render(data as Node);
         res
           ..headers['content-type'] = 'text/html'
-          ..write(content)
-          ..end();
+          ..write(content);
+        res.close();
         return '';
       }
     };

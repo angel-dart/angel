@@ -12,9 +12,9 @@ main() {
   setUp(() async {
     app = new Angel();
 
-    app.before.add(renderHtml());
+    app.fallback(renderHtml());
 
-    app.get('/html', () {
+    app.get('/html', (req, res) {
       return html(c: [
         head(c: [
           title(c: [text('ok')])
@@ -22,14 +22,21 @@ main() {
       ]);
     });
 
-    app
-        .chain(renderHtml(
-            enforceAcceptHeader: true,
-            renderer: new StringRenderer(doctype: null, pretty: false)))
-        .get('/strict', () {
-      return div(c: [text('strict')]);
-    });
-
+    app.get(
+      '/strict',
+      chain([
+        renderHtml(
+          enforceAcceptHeader: true,
+          renderer: new StringRenderer(
+            doctype: null,
+            pretty: false,
+          ),
+        ),
+        (req, res) {
+          return div(c: [text('strict')]);
+        },
+      ]),
+    );
     client = await connectTo(app);
   });
 
@@ -41,8 +48,10 @@ main() {
 
     expect(
         response,
-        allOf(hasContentType('text/html'),
-            hasBody('<!DOCTYPE html><html><head><title>ok</title></head></html>')));
+        allOf(
+            hasContentType('text/html'),
+            hasBody(
+                '<!DOCTYPE html><html><head><title>ok</title></head></html>')));
   });
 
   group('enforce accept header', () {
@@ -62,8 +71,7 @@ main() {
     test('throws if incorrect or no accept', () async {
       var response = await client.get('/strict');
       print('Response: ${response.body}');
-      expect(response,
-          isAngelHttpException(statusCode: 406, message: '406 Not Acceptable'));
+      expect(response, hasStatus(406));
 
       response = await client
           .get('/strict', headers: {'accept': 'application/json,text/xml'});

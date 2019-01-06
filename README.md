@@ -46,10 +46,10 @@ The `renderHtml` function does all the magic for you.
 ```dart
 configureServer(Angel app) async {
   // Wire it up!
-  app.before.add(renderHtml());
+  app.fallback(renderHtml());
   
   // You can pass a custom StringRenderer if you need more control over the output.
-  app.before.add(renderHtml(renderer: new StringRenderer(html5: false)));
+  app.fallback(renderHtml(renderer: new StringRenderer(html5: false)));
   
   app.get('/greet/:name', (RequestContext req) {
     return html(lang: 'en', c: [
@@ -76,7 +76,7 @@ client doesn't accept `*/*` or `text/html`.
 ```dart
 configureServer(Angel app) async {
   // Wire it up!
-  app.before.add(renderHtml(enforceAcceptHeader: true));
+  app.fallback(renderHtml(enforceAcceptHeader: true));
   
   // ...
 }
