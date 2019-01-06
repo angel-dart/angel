@@ -1,3 +1,6 @@
+# 2.0.0
+Update to work with `client@2`.
+
 # 2.0.0-alpha.4
 # 2.0.0-alpha.3
 * Update `http` dependency.

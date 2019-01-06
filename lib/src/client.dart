@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:angel_client/base_angel_client.dart' as client;
 import 'package:angel_client/io.dart' as client;
@@ -68,59 +67,25 @@ class TestClient extends client.BaseAngelClient {
 
   /// Opens a WebSockets connection to the server. This will automatically bind the server
   /// over HTTP, if it is not already listening. Unfortunately, WebSockets cannot be mocked (yet!).
-  Future<client.WebSockets> websocket({String path, Duration timeout}) async {
-    HttpServer http = _http.httpServer;
-    if (http == null) http = await _http.startServer();
-    var url = 'ws://${http.address.address}:${http.port}';
-    var cleanPath = (path ?? '/ws')?.replaceAll(_straySlashes, '');
-    if (cleanPath?.isNotEmpty == true) url += '/$cleanPath';
-    var ws = new _MockWebSockets(this, url);
+  Future<client.WebSockets> websocket(
+      {String path: '/ws', Duration timeout}) async {
+    if (_http.server == null) await _http.startServer();
+    var url = _http.uri.replace(scheme: 'ws', path: path);
+    var ws = new _MockWebSockets(this, url.toString());
     await ws.connect(timeout: timeout);
     return ws;
   }
 
-  Future<http.Response> sendUnstreamed(
-          String method, url, Map<String, String> headers,
-          [body, Encoding encoding]) =>
-      send(method, url, headers, body, encoding).then(http.Response.fromStream);
-
-  Future<StreamedResponse> send(String method, url, Map<String, String> headers,
-      [body, Encoding encoding]) async {
-    var rq = new MockHttpRequest(
-        method, url is Uri ? url : Uri.parse(url.toString()));
-    headers?.forEach(rq.headers.add);
+  Future<StreamedResponse> send(http.BaseRequest request) async {
+    var rq = new MockHttpRequest(request.method, request.url);
+    request.headers.forEach(rq.headers.add);
 
     if (authToken?.isNotEmpty == true)
-      rq.headers.set('authorization', 'Bearer $authToken');
+      rq.headers.add('authorization', 'Bearer $authToken');
 
     rq..cookies.addAll(cookies)..session.addAll(session);
 
-    if (body is Stream<List<int>>) {
-      await rq.addStream(body);
-    } else if (body is List<int>) {
-      rq.add(body);
-    } else if (body is Map) {
-      if (rq.headers.contentType == null ||
-          rq.headers.contentType.mimeType == 'application/json') {
-        rq
-          ..headers.contentType = new ContentType('application', 'json')
-          ..write(json.encode(body.keys.fold<Map<String, dynamic>>(
-              {}, (out, k) => out..[k.toString()] = body[k])));
-      } else if (rq.headers.contentType?.mimeType ==
-          'application/x-www-form-urlencoded') {
-        rq.write(body.keys.fold<List<String>>(
-            [],
-            (out, k) => out
-              ..add('$k=' + Uri.encodeComponent(body[k].toString()))).join());
-      } else {
-        throw new UnsupportedError(
-            'Map bodies can only be sent for requests with the content type application/json or application/x-www-form-urlencoded.');
-      }
-    } else if (body != null) {
-      rq.write(body);
-    }
-
-    await rq.close();
+    await request.finalize().pipe(rq);
 
     await _http.handleRequest(rq);
 
@@ -152,24 +117,6 @@ class TestClient extends client.BaseAngelClient {
                 rq.headers.persistentConnection == true,
         reasonPhrase: rs.reasonPhrase);
   }
-
-  Future<http.Response> delete(url, {Map<String, String> headers}) =>
-      sendUnstreamed('DELETE', url, headers);
-
-  Future<http.Response> get(url, {Map<String, String> headers}) =>
-      sendUnstreamed('GET', url, headers);
-
-  Future<http.Response> head(url, {Map<String, String> headers}) =>
-      sendUnstreamed('HEAD', url, headers);
-
-  Future<http.Response> patch(url, {body, Map<String, String> headers}) =>
-      sendUnstreamed('PATCH', url, headers, body);
-
-  Future<http.Response> post(url, {body, Map<String, String> headers}) =>
-      sendUnstreamed('POST', url, headers, body);
-
-  Future<http.Response> put(url, {body, Map<String, String> headers}) =>
-      sendUnstreamed('PUT', url, headers, body);
 
   @override
   String basePath;
@@ -205,11 +152,10 @@ class _MockService<Id, Data> extends client.BaseAngelService<Id, Data> {
   @override
   Future<StreamedResponse> send(http.BaseRequest request) {
     if (app.authToken != null && app.authToken.isNotEmpty) {
-      request.headers['Authorization'] = 'Bearer ${app.authToken}';
+      request.headers['authorization'] ??= 'Bearer ${app.authToken}';
     }
 
-    return _app.send(
-        request.method, request.url, request.headers, request.finalize());
+    return _app.send(request);
   }
 }
 
@@ -225,7 +171,7 @@ class _MockWebSockets extends client.WebSockets {
     if (app.authToken?.isNotEmpty == true)
       headers['authorization'] = 'Bearer ${app.authToken}';
 
-    var socket = await WebSocket.connect(basePath, headers: headers);
+    var socket = await WebSocket.connect(baseUrl.toString(), headers: headers);
     return new IOWebSocketChannel(socket);
   }
 }

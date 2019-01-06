@@ -28,7 +28,7 @@ main() {
                 'billie': {'jean': 'hee-hee', 'is_my_lover': false}
               })
       ..post('/hello', (req, res) async {
-        var body = await req.parseBody();
+        var body = await req.parseBody().then((_) => req.bodyAsMap);
         return {'bar': body['foo']};
       })
       ..get('/gzip', (req, res) async {
