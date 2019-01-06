@@ -1,3 +1,6 @@
+# 2.0.1
+* Change `BaseAngelClient` constructor to accept `dynamic` instead of `String` for `baseUrl.
+
 # 2.0.0
 * Deprecate `basePath` in favor of `baseUrl`.
 * `Angel` now extends `http.Client`.

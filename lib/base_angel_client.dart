@@ -57,7 +57,7 @@ abstract class BaseAngelClient extends Angel {
   @override
   Stream<AngelAuthResult> get onAuthenticated => _onAuthenticated.stream;
 
-  BaseAngelClient(this.client, String basePath) : super(basePath);
+  BaseAngelClient(this.client, baseUrl) : super(baseUrl);
 
   @override
   Future<AngelAuthResult> authenticate(
