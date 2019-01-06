@@ -17,7 +17,7 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 class WebSockets extends BaseWebSocketClient {
   final List<BrowserWebSocketsService> _services = [];
 
-  WebSockets(String path) : super(new http.BrowserClient(), path);
+  WebSockets(path) : super(new http.BrowserClient(), path);
 
   @override
   Future close() {
@@ -30,7 +30,7 @@ class WebSockets extends BaseWebSocketClient {
 
   @override
   Stream<String> authenticateViaPopup(String url,
-      {String eventName: 'token', String errorMessage}) {
+      {String eventName = 'token', String errorMessage}) {
     var ctrl = new StreamController<String>();
     var wnd = window.open(url, 'angel_client_auth_popup');
 
@@ -64,9 +64,15 @@ class WebSockets extends BaseWebSocketClient {
 
   @override
   Future<WebSocketChannel> getConnectedWebSocket() {
-    var socket = new WebSocket(authToken?.isNotEmpty == true
-        ? '$basePath?token=$authToken'
-        : basePath);
+    var url = websocketUri;
+
+    if (authToken?.isNotEmpty == true) {
+      url = url.replace(
+          queryParameters: new Map<String, String>.from(url.queryParameters)
+            ..['token'] = authToken);
+    }
+
+    var socket = new WebSocket(url.toString());
     var completer = new Completer<WebSocketChannel>();
 
     socket

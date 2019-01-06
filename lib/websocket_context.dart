@@ -49,7 +49,7 @@ class WebSocketContext {
   }
 
   /// Sends an error event.
-  void sendError(AngelHttpException error) => send(EVENT_ERROR, error.toJson());
+  void sendError(AngelHttpException error) => send(errorEvent, error.toJson());
 }
 
 class _WebSocketEventTable {

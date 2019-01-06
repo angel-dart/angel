@@ -61,7 +61,7 @@ main() {
 
   group('controller.io', () {
     test('search', () async {
-      client.send('search', new ws.WebSocketAction());
+      client.sendAction(new ws.WebSocketAction(eventName: 'search'));
       var search = await client.on['searched'].first;
       print('Searched: ${search.data}');
       expect(new Game.fromJson(search.data as Map), equals(johnVsBob));

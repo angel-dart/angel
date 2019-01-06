@@ -14,6 +14,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'angel_websocket.dart';
+import 'constants.dart';
 export 'angel_websocket.dart';
 
 part 'websocket_context.dart';
@@ -82,9 +83,9 @@ class AngelWebSocket {
   Function deserializer;
 
   AngelWebSocket(this.app,
-      {this.sendErrors: false,
-      this.allowClientParams: false,
-      this.allowAuth: true,
+      {this.sendErrors = false,
+      this.allowClientParams = false,
+      this.allowAuth = true,
       this.synchronizationChannel,
       this.serializer,
       this.deserializer,
@@ -115,8 +116,8 @@ class AngelWebSocket {
   }
 
   /// Slates an event to be dispatched.
-  Future batchEvent(WebSocketEvent event,
-      {filter(WebSocketContext socket), bool notify: true}) async {
+  Future<void> batchEvent(WebSocketEvent event,
+      {filter(WebSocketContext socket), bool notify = true}) async {
     // Default implementation will just immediately fire events
     _clients.forEach((client) async {
       dynamic result = true;
@@ -172,29 +173,29 @@ class AngelWebSocket {
     ]);
 
     try {
-      if (actionName == ACTION_INDEX) {
+      if (actionName == indexAction) {
         socket.send(
-            "${split[0]}::" + EVENT_INDEXED, await service.index(params));
+            "${split[0]}::" + indexedEvent, await service.index(params));
         return null;
-      } else if (actionName == ACTION_READ) {
-        socket.send("${split[0]}::" + EVENT_READ,
-            await service.read(action.id, params));
+      } else if (actionName == readAction) {
+        socket.send(
+            "${split[0]}::" + readEvent, await service.read(action.id, params));
         return null;
-      } else if (actionName == ACTION_CREATE) {
+      } else if (actionName == createAction) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + EVENT_CREATED,
+            eventName: "${split[0]}::" + createdEvent,
             data: await service.create(action.data, params));
-      } else if (actionName == ACTION_MODIFY) {
+      } else if (actionName == modifyAction) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + EVENT_MODIFIED,
+            eventName: "${split[0]}::" + modifiedEvent,
             data: await service.modify(action.id, action.data, params));
-      } else if (actionName == ACTION_UPDATE) {
+      } else if (actionName == updateAction) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + EVENT_UPDATED,
+            eventName: "${split[0]}::" + updatedEvent,
             data: await service.update(action.id, action.data, params));
-      } else if (actionName == ACTION_REMOVE) {
+      } else if (actionName == removeAction) {
         return new WebSocketEvent(
-            eventName: "${split[0]}::" + EVENT_REMOVED,
+            eventName: "${split[0]}::" + removedEvent,
             data: await service.remove(action.id, params));
       } else {
         socket.sendError(new AngelHttpException.methodNotAllowed(
@@ -209,7 +210,7 @@ class AngelWebSocket {
   /// Authenticates a [WebSocketContext].
   Future handleAuth(WebSocketAction action, WebSocketContext socket) async {
     if (allowAuth != false &&
-        action.eventName == ACTION_AUTHENTICATE &&
+        action.eventName == authenticateAction &&
         action.params['query'] is Map &&
         action.params['query']['jwt'] is String) {
       try {
@@ -222,7 +223,7 @@ class AngelWebSocket {
         socket.request
           ..container.registerSingleton<AuthToken>(token)
           ..container.registerSingleton(user, as: user.runtimeType as Type);
-        socket.send(EVENT_AUTHENTICATED,
+        socket.send(authenticatedEvent,
             {'token': token.serialize(auth.hmac), 'data': user});
       } catch (e, st) {
         catchError(e, st, socket);
@@ -272,14 +273,14 @@ class AngelWebSocket {
             .add(fromJson["data"] as Map);
       }
 
-      if (action.eventName == ACTION_AUTHENTICATE)
+      if (action.eventName == authenticateAction)
         await handleAuth(action, socket);
 
       if (action.eventName.contains("::")) {
         var split = action.eventName.split("::");
 
         if (split.length >= 2) {
-          if (ACTIONS.contains(split[1])) {
+          if (actions.contains(split[1])) {
             var event = await handleAction(action, socket);
             if (event is Future) event = await event;
           }

@@ -8,6 +8,7 @@ import 'package:http/src/base_client.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'angel_websocket.dart';
+import 'constants.dart';
 
 final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 
@@ -66,9 +67,28 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   /// The amount of time to wait between reconnect attempts. Default: 10 seconds.
   Duration get reconnectInterval => _reconnectInterval;
 
-  BaseWebSocketClient(http.BaseClient client, String basePath,
-      {this.reconnectOnClose: true, Duration reconnectInterval})
-      : super(client, basePath) {
+  Uri _wsUri;
+
+  /// The [Uri] to which a websocket should point.
+  Uri get websocketUri => _wsUri ??= _toWsUri(baseUrl);
+
+  static Uri _toWsUri(Uri u) {
+    if (u.hasScheme) {
+      if (u.scheme == 'http') {
+        return u.replace(scheme: 'ws');
+      } else if (u.scheme == 'https') {
+        return u.replace(scheme: 'wss');
+      } else {
+        return u;
+      }
+    } else {
+      return _toWsUri(u.replace(scheme: Uri.base.scheme));
+    }
+  }
+
+  BaseWebSocketClient(http.BaseClient client, baseUrl,
+      {this.reconnectOnClose = true, Duration reconnectInterval})
+      : super(client, baseUrl) {
     _reconnectInterval = reconnectInterval ?? new Duration(seconds: 10);
   }
 
@@ -159,11 +179,11 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
                 on._getStream(event.eventName).add(event);
               }
 
-              if (event.eventName == EVENT_ERROR) {
+              if (event.eventName == errorEvent) {
                 var error =
                     new AngelHttpException.fromMap((event.data ?? {}) as Map);
                 _onError.add(error);
-              } else if (event.eventName == EVENT_AUTHENTICATED) {
+              } else if (event.eventName == authenticatedEvent) {
                 var authResult = new AngelAuthResult.fromMap(event.data as Map);
                 _onAuthenticated.add(authResult);
               } else if (event.eventName?.isNotEmpty == true) {
@@ -203,10 +223,6 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   /// Serializes data to JSON.
   serialize(x) => json.encode(x);
 
-  /// Alternative form of [send]ing an action.
-  void send(String eventName, WebSocketAction action) =>
-      sendAction(action..eventName = eventName);
-
   /// Sends the given [action] on the [socket].
   void sendAction(WebSocketAction action) {
     if (_socket == null)
@@ -217,11 +233,12 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   /// Attempts to authenticate a WebSocket, using a valid JWT.
   void authenticateViaJwt(String jwt) {
-    send(
-        ACTION_AUTHENTICATE,
-        new WebSocketAction(params: {
-          'query': {'jwt': jwt}
-        }));
+    sendAction(new WebSocketAction(
+      eventName: authenticateAction,
+      params: {
+        'query': {'jwt': jwt}
+      },
+    ));
   }
 }
 
@@ -306,7 +323,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
 
         _onAllEvents.add(event);
 
-        if (event.eventName == EVENT_INDEXED) {
+        if (event.eventName == indexedEvent) {
           var d = event.data;
           var transformed = new WebSocketEvent(
               eventName: event.eventName,
@@ -318,19 +335,19 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
         var transformed = transformEvent(event).data;
 
         switch (event.eventName) {
-          case EVENT_READ:
+          case readEvent:
             _onRead.add(transformed);
             break;
-          case EVENT_CREATED:
+          case createdEvent:
             _onCreated.add(transformed);
             break;
-          case EVENT_MODIFIED:
+          case modifiedEvent:
             _onModified.add(transformed);
             break;
-          case EVENT_UPDATED:
+          case updatedEvent:
             _onUpdated.add(transformed);
             break;
-          case EVENT_REMOVED:
+          case removedEvent:
             _onRemoved.add(transformed);
             break;
         }
@@ -346,14 +363,14 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   @override
   Future<List<Data>> index([Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_INDEX}', params: params ?? {}));
+        eventName: '$path::$indexAction', params: params ?? {}));
     return null;
   }
 
   @override
   Future<Data> read(id, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_READ}',
+        eventName: '$path::$readAction',
         id: id.toString(),
         params: params ?? {}));
     return null;
@@ -362,16 +379,14 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   @override
   Future<Data> create(data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_CREATE}',
-        data: data,
-        params: params ?? {}));
+        eventName: '$path::$createAction', data: data, params: params ?? {}));
     return null;
   }
 
   @override
   Future<Data> modify(id, data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_MODIFY}',
+        eventName: '$path::$modifyAction',
         id: id.toString(),
         data: data,
         params: params ?? {}));
@@ -381,7 +396,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   @override
   Future<Data> update(id, data, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_UPDATE}',
+        eventName: '$path::$updateAction',
         id: id.toString(),
         data: data,
         params: params ?? {}));
@@ -391,7 +406,7 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   @override
   Future<Data> remove(id, [Map<String, dynamic> params]) async {
     app.sendAction(new WebSocketAction(
-        eventName: '$path::${ACTION_REMOVE}',
+        eventName: '$path::$removeAction',
         id: id.toString(),
         params: params ?? {}));
     return null;

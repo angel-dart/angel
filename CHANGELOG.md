@@ -1,3 +1,6 @@
+# 2.0.0
+* Update to work with `client@2.0.0`.
+
 # 2.0.0-alpha.8
 * Support for WebSockets over HTTP/2 (though in practice this doesn't often happen, if ever).
 

@@ -11,12 +11,7 @@ main(List<String> args) async {
   var http = new AngelHttp(app);
   var ws = new AngelWebSocket(app, sendErrors: !app.isProduction);
   var fs = const LocalFileSystem();
-  app.logger = new Logger('angel_auth')
-    ..onRecord.listen((rec) {
-      print(rec);
-      if (rec.error != null) print(rec.error);
-      if (rec.stackTrace != null) print(rec.stackTrace);
-    });
+  app.logger = new Logger('angel_websocket');
 
   // This is a plug-in. It hooks all your services,
   // to automatically broadcast events.
