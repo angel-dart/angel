@@ -3,123 +3,85 @@ library angel_auth_oauth2;
 import 'dart:async';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_validate/angel_validate.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 
-final Validator OAUTH2_OPTIONS_SCHEMA = new Validator({
-  'key*': isString,
-  'secret*': isString,
-  'authorizationEndpoint*': anyOf(isString, const TypeMatcher<Uri>()),
-  'tokenEndpoint*': anyOf(isString, const TypeMatcher<Uri>()),
-  'callback*': isString,
-  'scopes': const TypeMatcher<Iterable<String>>()
-}, defaultValues: {
-  'scopes': <String>[]
-}, customErrorMessages: {
-  'scopes': "'scopes' must be an Iterable of strings. You provided: {{value}}"
-});
-
-/// Holds credentials and also specifies the means of authenticating users against a remote server.
-class AngelAuthOAuth2Options {
-  /// Your application's client key or client ID, registered with the remote server.
-  final String key;
-
-  /// Your application's client secret, registered with the remote server.
-  final String secret;
-
-  /// The remote endpoint that prompts external users for authentication credentials.
-  final String authorizationEndpoint;
-
-  /// The remote endpoint that exchanges auth codes for access tokens.
-  final String tokenEndpoint;
-
-  /// The callback URL that the OAuth2 server should redirect authenticated users to.
-  final String callback;
-
-  /// Used to split application scopes. Defaults to `' '`.
-  final String delimiter;
-  final Iterable<String> scopes;
-
-  final Map<String, String> Function(MediaType, String) getParameters;
-
-  const AngelAuthOAuth2Options(
-      {this.key,
-      this.secret,
-      this.authorizationEndpoint,
-      this.tokenEndpoint,
-      this.callback,
-      this.delimiter: ' ',
-      this.scopes: const [],
-      this.getParameters});
-
-  factory AngelAuthOAuth2Options.fromJson(Map json) =>
-      new AngelAuthOAuth2Options(
-          key: json['key'] as String,
-          secret: json['secret'] as String,
-          authorizationEndpoint: json['authorizationEndpoint'] as String,
-          tokenEndpoint: json['tokenEndpoint'] as String,
-          callback: json['callback'] as String,
-          scopes: (json['scopes'] as Iterable)?.cast<String>()?.toList() ??
-              <String>[]);
-
-  Map<String, dynamic> toJson() {
-    return {
-      'key': key,
-      'secret': secret,
-      'authorizationEndpoint': authorizationEndpoint,
-      'tokenEndpoint': tokenEndpoint,
-      'callback': callback,
-      'scopes': scopes.toList()
-    };
-  }
-}
-
+/// An Angel [AuthStrategy] that signs users in via a third-party service that speaks OAuth 2.0.
 class OAuth2Strategy<User> implements AuthStrategy<User> {
-  final FutureOr<User> Function(oauth2.Client) verifier;
+  /// A callback that uses the third-party service to authenticate a [User].
+  ///
+  /// As always, return `null` if authentication fails.
+  final FutureOr<User> Function(oauth2.Client, RequestContext, ResponseContext)
+      verifier;
 
-  AngelAuthOAuth2Options _options;
+  /// A callback that is triggered when an OAuth2 error occurs (i.e. the user declines to login);
+  final FutureOr<dynamic> Function(
+      oauth2.AuthorizationException, RequestContext, ResponseContext) onError;
 
-  /// [options] can be either a `Map` or an instance of [AngelAuthOAuth2Options].
-  OAuth2Strategy(options, this.verifier) {
-    if (options is AngelAuthOAuth2Options)
-      _options = options;
-    else if (options is Map)
-      _options = new AngelAuthOAuth2Options.fromJson(
-          OAUTH2_OPTIONS_SCHEMA.enforce(options));
-    else
-      throw new ArgumentError('Invalid OAuth2 options: $options');
-  }
+  /// The options defining how to connect to the third-party.
+  final ExternalAuthOptions options;
 
-  oauth2.AuthorizationCodeGrant createGrant() =>
-      new oauth2.AuthorizationCodeGrant(
-          _options.key,
-          Uri.parse(_options.authorizationEndpoint),
-          Uri.parse(_options.tokenEndpoint),
-          secret: _options.secret,
-          delimiter: _options.delimiter ?? ' ',
-          getParameters: _options.getParameters);
+  /// The URL to query to receive an authentication code.
+  final Uri authorizationEndpoint;
+
+  /// The URL to query to exchange an authentication code for a token.
+  final Uri tokenEndpoint;
+
+  /// An optional callback used to parse the response from a server who does not follow the OAuth 2.0 spec.
+  final Map<String, dynamic> Function(MediaType, String) getParameters;
+
+  /// An optional delimiter used to send requests to server who does not follow the OAuth 2.0 spec.
+  final String delimiter;
+
+  Uri _redirect;
+
+  OAuth2Strategy(this.options, this.authorizationEndpoint, this.tokenEndpoint,
+      this.verifier, this.onError,
+      {this.getParameters, this.delimiter = ' '});
+
+  oauth2.AuthorizationCodeGrant _createGrant() =>
+      new oauth2.AuthorizationCodeGrant(options.clientId, authorizationEndpoint,
+          tokenEndpoint,
+          secret: options.clientSecret,
+          delimiter: delimiter,
+          getParameters: getParameters);
 
   @override
   FutureOr<User> authenticate(RequestContext req, ResponseContext res,
       [AngelAuthOptions<User> options]) async {
-    if (options != null) return authenticateCallback(req, res, options);
+    if (options != null) {
+      var result = await authenticateCallback(req, res, options);
+      if (result is User)
+        return result;
+      else
+        return null;
+    }
 
-    var grant = createGrant();
-    res.redirect(grant
-        .getAuthorizationUrl(Uri.parse(_options.callback),
-            scopes: _options.scopes)
-        .toString());
+    if (_redirect == null) {
+      var grant = _createGrant();
+      _redirect = grant.getAuthorizationUrl(
+        this.options.redirectUri,
+        scopes: this.options.scopes,
+      );
+    }
+
+    res.redirect(_redirect);
     return null;
   }
 
-  Future<User> authenticateCallback(RequestContext req, ResponseContext res,
+  /// The endpoint that is invoked by the third-party after successful authentication.
+  Future<dynamic> authenticateCallback(RequestContext req, ResponseContext res,
       [AngelAuthOptions options]) async {
-    var grant = createGrant();
-    await grant.getAuthorizationUrl(Uri.parse(_options.callback),
-        scopes: _options.scopes);
-    var client =
-        await grant.handleAuthorizationResponse(req.uri.queryParameters);
-    return await verifier(client);
+    var grant = _createGrant();
+    grant.getAuthorizationUrl(this.options.redirectUri,
+        scopes: this.options.scopes);
+
+    try {
+      var client =
+          await grant.handleAuthorizationResponse(req.uri.queryParameters);
+      return await verifier(client, req, res);
+    } on oauth2.AuthorizationException catch (e) {
+      return await onError(e, req, res);
+    }
   }
 }

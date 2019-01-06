@@ -10,42 +10,41 @@ First, create an options object:
 ```dart
 configureServer(Angel app) async {
   // Load from a Map, i.e. app config:
-  var opts = new AngelOAuth2Options.fromJson(map);
+  var opts = ExternalAuthOptions.fromMap(app.configuration['auth0'] as Map);
   
   // Create in-place:
-  var opts = const AngelAuthOAuth2Options(
-      callback: '<callback-url>',
-      key: '<client-id>',
-      secret: '<client-secret>',
-      authorizationEndpoint: '<authorization-endpoint>',
-      tokenEndpoint: '<access-token-endpoint>');
+  var opts = ExternalAuthOptions(
+      clientId: '<client-id>',
+      clientSecret: '<client-secret>',
+      redirectUri: Uri.parse('<callback>'));
 }
 ```
 
 After getting authenticated against the remote server, we need to be able to identify
-users within our own application. Use an `OAuth2Verifier` to associate remote users
-with local users.
+users within our own application.
 
 ```dart
+typedef FutureOr<User> OAuth2Verifier(oauth2.Client, RequestContext, ResponseContext);
+
 /// You might use a pure function to create a verifier that queries a
 /// given service.
-OAuth2Verifier oauth2verifier(Service userService) {
-  return (oauth2.Client client) async {
+OAuth2Verifier oauth2verifier(Service<User> userService) {
+  return (client) async {
      var response = await client.get('https://api.github.com/user');
-     var ghUser = JSON.decode(response.body);
-     var id = ghUser['id'];
- 
-     Iterable<Map> matchingUsers = await userService.index({
-       'query': {'githubId': id}
-     });
- 
-     if (matchingUsers.isNotEmpty) {
-       // Return the corresponding user, if it exists
-       return User.parse(matchingUsers.firstWhere((u) => u['githubId'] == id));
-     } else {
-       // Otherwise,create a user
-       return await userService.create({'githubId': id}).then(User.parse);
-     }
+      var ghUser = json.decode(response.body);
+      var id = ghUser['id'] as int;
+
+      var matchingUsers = await mappedUserService.index({
+        'query': {'github_id': id}
+      });
+
+      if (matchingUsers.isNotEmpty) {
+        // Return the corresponding user, if it exists.
+        return matchingUsers.first;
+      } else {
+        // Otherwise,create a user
+        return await mappedUserService.create(User(githubId: id));
+      }
    };
 }
 ```
@@ -56,9 +55,18 @@ Consider using the name of the remote authentication provider (ex. `facebook`).
 
 ```dart
 configureServer(Angel app) {
-  // ...
-  var oauthStrategy =
-    new OAuth2Strategy('github', OAUTH2_CONFIG, oauth2Verifier(app.service('users')));
+  auth.strategies['github'] = OAuth2Strategy(
+    options,
+    authorizationEndpoint,
+    tokenEndpoint,
+    yourVerifier,
+
+    // This function is called when an error occurs, or the user REJECTS the request.
+    (e, req, res) async {
+      res.write('Ooops: $e');
+      await res.close();
+    },
+  );
 }
 ```
 
@@ -74,7 +82,7 @@ a popup window. In this case, use `confirmPopupAuthentication`, which is bundled
 ```dart
 configureServer(Angel app) async {
   // ...
-  var auth = new AngelAuth();
+  var auth = AngelAuth<User>();
   auth.strategies['github'] = oauth2Strategy;
   
   // Redirect
@@ -83,7 +91,7 @@ configureServer(Angel app) async {
   // Callback
   app.get('/auth/github/callback', auth.authenticate(
     'github',
-    new AngelAuthOptions(callback: confirmPopupAuthentication())
+    AngelAuthOptions(callback: confirmPopupAuthentication())
   ));
   
   // Connect the plug-in!!!
@@ -94,14 +102,11 @@ configureServer(Angel app) async {
 ## Custom Scope Delimiter
 This package should work out-of-the-box for most OAuth2 providers, such as Github or Dropbox.
 However, if your OAuth2 scopes are separated by a delimiter other than the default (`' '`),
-you can add it in the `AngelOAuth2Options` constructor:
+you can add it in the `OAuth2Strategy` constructor:
 
 ```dart
 configureServer(Angel app) async {
-  var opts = const AngelOAuth2Options(
-    // ...
-    delimiter: ','
-  );
+  OAuth2Strategy(..., delimiter: ' ');
 }
 ```
 
@@ -113,7 +118,7 @@ You can add a `getParameters` callback to parse the contents of any arbitrary
 response:
 
 ```dart
-var opts = const AngelOAuth2Options(
+OAuth2Strategy(
     // ...
     getParameters: (contentType, body) {
       if (contentType.type == 'application') {
@@ -122,7 +127,7 @@ var opts = const AngelOAuth2Options(
         else if (contentType.subtype == 'json') return JSON.decode(body);
       }
 
-      throw new FormatException('Invalid content-type $contentType; expected application/x-www-form-urlencoded or application/json.');
+      throw FormatException('Invalid content-type $contentType; expected application/x-www-form-urlencoded or application/json.');
     }
 );
 ```
