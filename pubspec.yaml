@@ -1,6 +1,6 @@
 name: angel_client
 version: 2.0.0
-description: Client library for the Angel framework.
+description: Support for querying Angel servers in the browser, Flutter, and command-line.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_client
 environment:
