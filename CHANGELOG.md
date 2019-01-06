@@ -1,5 +1,9 @@
+# 2.0.1
+* Update badge.
+* Handle userInfo + basic auth.
+
 # 2.0.0
-Update to work with `client@2`.
+* Update to work with `client@2`.
 
 # 2.0.0-alpha.4
 # 2.0.0-alpha.3

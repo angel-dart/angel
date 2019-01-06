@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_client/base_angel_client.dart' as client;
 import 'package:angel_client/io.dart' as client;
@@ -79,6 +80,19 @@ class TestClient extends client.BaseAngelClient {
   Future<StreamedResponse> send(http.BaseRequest request) async {
     var rq = new MockHttpRequest(request.method, request.url);
     request.headers.forEach(rq.headers.add);
+
+    if (request.url.userInfo.isNotEmpty) {
+      // Attempt to send as Basic auth
+      var encoded = base64Url.encode(utf8.encode(request.url.userInfo));
+      rq.headers.add('authorization', 'Basic $encoded');
+    } else if (rq.headers.value('authorization')?.startsWith('Basic ') == true) {
+      var encoded = rq.headers.value('authorization').substring(6);
+      var decoded = utf8.decode(base64Url.decode(encoded));
+      var oldRq = rq;
+      var newRq = new MockHttpRequest(rq.method, rq.uri.replace(userInfo: decoded));
+      oldRq.headers.forEach(newRq.headers.add);
+      rq = newRq;
+    }
 
     if (authToken?.isNotEmpty == true)
       rq.headers.add('authorization', 'Bearer $authToken');

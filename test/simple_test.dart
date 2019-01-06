@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_test/angel_test.dart';
@@ -12,6 +13,7 @@ main() {
   setUp(() async {
     app = new Angel()
       ..get('/hello', (req, res) => 'Hello')
+      ..get('/user_info', (req, res) => {'u': req.uri.userInfo})
       ..get(
           '/error',
           (req, res) => throw new AngelHttpException.forbidden(message: 'Test')
@@ -81,6 +83,26 @@ main() {
           res,
           isAngelHttpException(
               statusCode: 403, message: 'Test', errors: ['foo', 'bar']));
+    });
+
+    test('userInfo from Uri', () async {
+      var url = new Uri(userInfo: 'foo:bar', path: '/user_info');
+      print('URL: $url');
+      var res = await client.get(url);
+      print(res.body);
+      var m = json.decode(res.body) as Map;
+      expect(m, {'u': 'foo:bar'});
+    });
+
+    test('userInfo from Basic auth header', () async {
+      var url = new Uri(path: '/user_info');
+      print('URL: $url');
+      var res = await client.get(url, headers: {
+        'authorization': 'Basic ' + (base64Url.encode(utf8.encode('foo:bar')))
+      });
+      print(res.body);
+      var m = json.decode(res.body) as Map;
+      expect(m, {'u': 'foo:bar'});
     });
 
     test('hasBody', () async {
