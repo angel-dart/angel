@@ -15,42 +15,31 @@ export 'angel_client.dart';
 class Rest extends BaseAngelClient {
   Rest(String basePath) : super(new http.BrowserClient(), basePath);
 
-  @override
   Future<AngelAuthResult> authenticate(
       {String type,
       credentials,
-      String authEndpoint: '/auth',
-      String reviveEndpoint: '/auth/token'}) async {
-    if (type == null) {
+      String authEndpoint = '/auth',
+      @deprecated String reviveEndpoint = '/auth/token'}) async {
+    if (type == null || type == 'token') {
       if (!window.localStorage.containsKey('token')) {
         throw new Exception(
             'Cannot revive token from localStorage - there is none.');
       }
 
-      try {
-        final result = await super.authenticate(
-            type: null,
-            credentials: {'token': json.decode(window.localStorage['token'])},
-            reviveEndpoint: reviveEndpoint);
-        window.localStorage['token'] = json.encode(authToken = result.token);
-        window.localStorage['user'] = json.encode(result.data);
-        return result;
-      } catch (e, st) {
-        throw new AngelHttpException(e,
-            message: 'Failed to revive auth token.', stackTrace: st);
-      }
-    } else {
-      final result = await super.authenticate(
-          type: type, credentials: credentials, authEndpoint: authEndpoint);
-      window.localStorage['token'] = json.encode(authToken = result.token);
-      window.localStorage['user'] = json.encode(result.data);
-      return result;
+      var token = json.decode(window.localStorage['token']);
+      credentials ??= {'token': token};
     }
+
+    final result = await super.authenticate(
+        type: type, credentials: credentials, authEndpoint: authEndpoint);
+    window.localStorage['token'] = json.encode(authToken = result.token);
+    window.localStorage['user'] = json.encode(result.data);
+    return result;
   }
 
   @override
   Stream<String> authenticateViaPopup(String url,
-      {String eventName: 'token', String errorMessage}) {
+      {String eventName = 'token', String errorMessage}) {
     var ctrl = new StreamController<String>();
     var wnd = window.open(url, 'angel_client_auth_popup');
 

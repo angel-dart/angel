@@ -33,7 +33,7 @@ main() {
       expect(app.client.spec.method, 'POST');
       expect(app.client.spec.headers['content-type'],
           startsWith('application/json'));
-      expect(app.client.spec.path, '/api/todos/');
+      expect(app.client.spec.path, '/api/todos');
       expect(await read(app.client.spec.request.finalize()), '{}');
     });
 
@@ -63,10 +63,6 @@ main() {
   });
 
   group('authentication', () {
-    test('no type, no token throws', () async {
-      expect(app.authenticate, throwsArgumentError);
-    });
-
     test('no type defaults to token', () async {
       await app.authenticate(credentials: '<jwt>');
       expect(app.client.spec.path, '/auth/token');
@@ -75,11 +71,6 @@ main() {
     test('sets type', () async {
       await app.authenticate(type: 'local');
       expect(app.client.spec.path, '/auth/local');
-    });
-
-    test('token sends headers', () async {
-      await app.authenticate(credentials: '<jwt>');
-      expect(app.client.spec.headers['authorization'], 'Bearer <jwt>');
     });
 
     test('credentials send right body', () async {

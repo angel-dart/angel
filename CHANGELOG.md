@@ -1,3 +1,8 @@
+# 2.0.0
+* Deprecate `basePath` in favor of `baseUrl`.
+* `Angel` now extends `http.Client`.
+* Deprecate `auth_types`.
+
 # 2.0.0-alpha.2
 * Make Service `index` always return `List<Data>`.
 * Add `Service.map`.

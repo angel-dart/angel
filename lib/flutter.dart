@@ -11,8 +11,9 @@ class Rest extends BaseAngelClient {
   Rest(String basePath) : super(new http.Client() as http.BaseClient, basePath);
 
   @override
-  Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
+  Stream<String> authenticateViaPopup(String url,
+      {String eventName = 'token'}) {
     throw new UnimplementedError(
-        'Opening popup windows is not supported in the `dart:io` client.');
+        'Opening popup windows is not supported in the `flutter` client.');
   }
 }

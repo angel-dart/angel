@@ -1,5 +1,4 @@
-const String local = 'local';
-
-/// Use [local] instead.
 @deprecated
-const String LOCAL = local;
+library auth_types;
+
+const String local = 'local', token = 'token';

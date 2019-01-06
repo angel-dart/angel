@@ -4,6 +4,7 @@ library angel_client.cli;
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:json_god/json_god.dart' as god;
+import 'package:path/path.dart' as p;
 import 'angel_client.dart';
 import 'base_angel_client.dart';
 export 'angel_client.dart';
@@ -17,14 +18,15 @@ class Rest extends BaseAngelClient {
   @override
   Service<Id, Data> service<Id, Data>(String path,
       {Type type, AngelDeserializer deserializer}) {
-    String uri = path.replaceAll(straySlashes, "");
-    var s = new RestService<Id, Data>(client, this, "$basePath/$uri", type);
+    var url = baseUrl.replace(path: p.join(baseUrl.path, path));
+    var s = new RestService<Id, Data>(client, this, url, type);
     _services.add(s);
     return s;
   }
 
   @override
-  Stream<String> authenticateViaPopup(String url, {String eventName: 'token'}) {
+  Stream<String> authenticateViaPopup(String url,
+      {String eventName = 'token'}) {
     throw new UnimplementedError(
         'Opening popup windows is not supported in the `dart:io` client.');
   }
@@ -41,8 +43,7 @@ class Rest extends BaseAngelClient {
 class RestService<Id, Data> extends BaseAngelService<Id, Data> {
   final Type type;
 
-  RestService(
-      http.BaseClient client, BaseAngelClient app, String url, this.type)
+  RestService(http.BaseClient client, BaseAngelClient app, url, this.type)
       : super(client, app, url);
 
   @override

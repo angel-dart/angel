@@ -7,25 +7,17 @@ import 'package:http/src/base_request.dart' as http;
 import 'package:http/src/request.dart' as http;
 import 'package:http/src/response.dart' as http;
 import 'package:http/src/streamed_response.dart' as http;
+import 'package:path/path.dart' as p;
 import 'angel_client.dart';
 
-final RegExp straySlashes = new RegExp(r"(^/)|(/+$)");
 const Map<String, String> _readHeaders = const {'Accept': 'application/json'};
 const Map<String, String> _writeHeaders = const {
   'Accept': 'application/json',
   'Content-Type': 'application/json'
 };
 
-_buildQuery(Map<String, dynamic> params) {
-  if (params == null || params.isEmpty || params['query'] is! Map) return "";
-
-  List<String> query = [];
-
-  params['query'].forEach((k, v) {
-    query.add('$k=${Uri.encodeQueryComponent(v.toString())}');
-  });
-
-  return '?' + query.join('&');
+Map<String, String> _buildQuery(Map<String, dynamic> params) {
+  return params?.map((k, v) => new MapEntry(k, v.toString()));
 }
 
 bool _invalid(http.Response response) =>
@@ -36,7 +28,7 @@ bool _invalid(http.Response response) =>
 AngelHttpException failure(http.Response response,
     {error, String message, StackTrace stack}) {
   try {
-    final v = json.decode(response.body);
+    var v = json.decode(response.body);
 
     if (v is Map && (v['is_error'] == true) || v['isError'] == true) {
       return new AngelHttpException.fromMap(v as Map);
@@ -71,89 +63,48 @@ abstract class BaseAngelClient extends Angel {
   Future<AngelAuthResult> authenticate(
       {String type,
       credentials,
-      String authEndpoint: '/auth',
-      String reviveEndpoint: '/auth/token'}) async {
-    if (type == null) {
-      final url = '$basePath$reviveEndpoint';
-      String token;
+      String authEndpoint = '/auth',
+      @deprecated String reviveEndpoint = '/auth/token'}) async {
+    type ??= 'token';
 
-      if (credentials is String)
-        token = credentials;
-      else if (credentials is Map && credentials.containsKey('token'))
-        token = credentials['token'].toString();
+    var segments = baseUrl.pathSegments
+        .followedBy(p.split(authEndpoint))
+        .followedBy([type]);
+    var url = baseUrl.replace(path: p.joinAll(segments));
+    http.Response response;
 
-      if (token == null) {
-        throw new ArgumentError(
-            'If `type` is not set, a JWT is expected as the `credentials` argument.');
-      }
-
-      final response = await client.post(url, headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token'
-      });
-
-      if (_invalid(response)) {
-        throw failure(response);
-      }
-
-      try {
-        final v = json.decode(response.body);
-
-        if (v is! Map ||
-            !(v as Map).containsKey('data') ||
-            !(v as Map).containsKey('token')) {
-          throw new AngelHttpException.notAuthenticated(
-              message:
-                  "Auth endpoint '$url' did not return a proper response.");
-        }
-
-        var r = new AngelAuthResult.fromMap(v as Map);
-        _onAuthenticated.add(r);
-        return r;
-      } on AngelHttpException {
-        rethrow;
-      } catch (e, st) {
-        throw failure(response, error: e, stack: st);
-      }
+    if (credentials != null) {
+      response = await post(url,
+          body: json.encode(credentials), headers: _writeHeaders);
     } else {
-      final url = '$basePath$authEndpoint/$type';
-      http.Response response;
+      response = await post(url, headers: _writeHeaders);
+    }
 
-      if (credentials != null) {
-        response = await client.post(url,
-            body: json.encode(credentials), headers: _writeHeaders);
-      } else {
-        response = await client.post(url, headers: _writeHeaders);
+    if (_invalid(response)) {
+      throw failure(response);
+    }
+
+    try {
+      var v = json.decode(response.body);
+
+      if (v is! Map ||
+          !(v as Map).containsKey('data') ||
+          !(v as Map).containsKey('token')) {
+        throw new AngelHttpException.notAuthenticated(
+            message: "Auth endpoint '$url' did not return a proper response.");
       }
 
-      if (_invalid(response)) {
-        throw failure(response);
-      }
-
-      try {
-        final v = json.decode(response.body);
-
-        if (v is! Map ||
-            !(v as Map).containsKey('data') ||
-            !(v as Map).containsKey('token')) {
-          throw new AngelHttpException.notAuthenticated(
-              message:
-                  "Auth endpoint '$url' did not return a proper response.");
-        }
-
-        var r = new AngelAuthResult.fromMap(v as Map);
-        _onAuthenticated.add(r);
-        return r;
-      } on AngelHttpException {
-        rethrow;
-      } catch (e, st) {
-        throw failure(response, error: e, stack: st);
-      }
+      var r = new AngelAuthResult.fromMap(v as Map);
+      _onAuthenticated.add(r);
+      return r;
+    } on AngelHttpException {
+      rethrow;
+    } catch (e, st) {
+      throw failure(response, error: e, stack: st);
     }
   }
 
-  Future close() async {
+  Future<void> close() async {
     client.close();
     _onAuthenticated.close();
     Future.wait(_services.map((s) => s.close())).then((_) {
@@ -161,8 +112,15 @@ abstract class BaseAngelClient extends Angel {
     });
   }
 
-  Future logout() async {
+  Future<void> logout() async {
     authToken = null;
+  }
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    if (authToken?.isNotEmpty == true)
+      request.headers['authorization'] ??= 'Bearer $authToken';
+    return client.send(request);
   }
 
   /// Sends a non-streaming [Request] and returns a non-streaming [Response].
@@ -174,80 +132,77 @@ abstract class BaseAngelClient extends Angel {
 
     if (headers != null) request.headers.addAll(headers);
 
-    if (authToken?.isNotEmpty == true)
-      request.headers['Authorization'] = 'Bearer $authToken';
-
     if (encoding != null) request.encoding = encoding;
     if (body != null) {
       if (body is String) {
         request.body = body;
-      } else if (body is List) {
-        request.bodyBytes = new List.from(body);
-      } else if (body is Map) {
-        request.bodyFields = new Map.from(body);
+      } else if (body is List<int>) {
+        request.bodyBytes = new List<int>.from(body);
+      } else if (body is Map<String, String>) {
+        request.bodyFields = new Map<String, String>.from(body);
       } else {
-        throw new ArgumentError('Invalid request body "$body".');
+        throw new ArgumentError.value(body, 'body',
+            'must be a String, List<int>, or Map<String, String>.');
       }
     }
 
-    return http.Response.fromStream(await client.send(request));
+    return http.Response.fromStream(await send(request));
   }
 
   @override
   Service<Id, Data> service<Id, Data>(String path,
       {Type type, AngelDeserializer<Data> deserializer}) {
-    String uri = path.toString().replaceAll(straySlashes, "");
-    var s = new BaseAngelService<Id, Data>(client, this, '$basePath/$uri',
+    var url = baseUrl.replace(path: p.join(baseUrl.path, path));
+    var s = new BaseAngelService<Id, Data>(client, this, url,
         deserializer: deserializer);
     _services.add(s);
     return s;
   }
 
-  String _join(url) {
-    final head = basePath.replaceAll(new RegExp(r'/+$'), '');
-    final tail = url.replaceAll(straySlashes, '');
-    return '$head/$tail';
+  Uri _join(url) {
+    var u = url is Uri ? url : Uri.parse(url.toString());
+    if (u.hasScheme || u.hasAuthority) return u;
+    return baseUrl.replace(path: p.join(baseUrl.path, u.path));
   }
 
   @override
-  Future<http.Response> delete(String url,
-      {Map<String, String> headers}) async {
+  Future<http.Response> delete(url, {Map<String, String> headers}) async {
     return sendUnstreamed('DELETE', _join(url), headers);
   }
 
   @override
-  Future<http.Response> get(String url, {Map<String, String> headers}) async {
+  Future<http.Response> get(url, {Map<String, String> headers}) async {
     return sendUnstreamed('GET', _join(url), headers);
   }
 
   @override
-  Future<http.Response> head(String url, {Map<String, String> headers}) async {
+  Future<http.Response> head(url, {Map<String, String> headers}) async {
     return sendUnstreamed('HEAD', _join(url), headers);
   }
 
   @override
-  Future<http.Response> patch(String url,
-      {body, Map<String, String> headers}) async {
-    return sendUnstreamed('PATCH', _join(url), headers, body);
+  Future<http.Response> patch(url,
+      {body, Map<String, String> headers, Encoding encoding}) async {
+    return sendUnstreamed('PATCH', _join(url), headers, body, encoding);
   }
 
   @override
-  Future<http.Response> post(String url,
-      {body, Map<String, String> headers}) async {
-    return sendUnstreamed('POST', _join(url), headers, body);
+  Future<http.Response> post(url,
+      {body, Map<String, String> headers, Encoding encoding}) async {
+    return sendUnstreamed('POST', _join(url), headers, body, encoding);
   }
 
   @override
-  Future<http.Response> put(String url,
-      {body, Map<String, String> headers}) async {
-    return sendUnstreamed('PUT', _join(url), headers, body);
+  Future<http.Response> put(url,
+      {body, Map<String, String> headers, Encoding encoding}) async {
+    return sendUnstreamed('PUT', _join(url), headers, body, encoding);
   }
 }
 
 class BaseAngelService<Id, Data> extends Service<Id, Data> {
   @override
   final BaseAngelClient app;
-  final String basePath;
+  final Uri baseUrl;
   final http.BaseClient client;
   final AngelDeserializer<Data> deserializer;
 
@@ -286,7 +241,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
     _onRemoved.close();
   }
 
-  BaseAngelService(this.client, this.app, this.basePath, {this.deserializer});
+  BaseAngelService(this.client, this.app, baseUrl, {this.deserializer})
+      : this.baseUrl = baseUrl is Uri ? baseUrl : Uri.parse(baseUrl.toString());
+
+  /// Use [baseUrl] instead.
+  @deprecated
+  String get basePath => baseUrl.toString();
 
   Data deserialize(x) {
     return deserializer != null ? deserializer(x) : x as Data;
@@ -306,8 +266,8 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future<List<Data>> index([Map<String, dynamic> params]) async {
-    final response = await app.sendUnstreamed(
-        'GET', '$basePath${_buildQuery(params)}', _readHeaders);
+    var url = baseUrl.replace(queryParameters: _buildQuery(params));
+    var response = await app.sendUnstreamed('GET', url, _readHeaders);
 
     try {
       if (_invalid(response)) {
@@ -317,7 +277,7 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
           throw failure(response);
       }
 
-      final v = json.decode(response.body) as List;
+      var v = json.decode(response.body) as List;
       var r = v.map(deserialize).toList();
       _onIndexed.add(r);
       return r;
@@ -333,8 +293,11 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future<Data> read(id, [Map<String, dynamic> params]) async {
-    final response = await app.sendUnstreamed(
-        'GET', '$basePath/$id${_buildQuery(params)}', _readHeaders);
+    var url = baseUrl.replace(
+        path: p.join(baseUrl.path, id.toString()),
+        queryParameters: _buildQuery(params));
+
+    var response = await app.sendUnstreamed('GET', url, _readHeaders);
 
     try {
       if (_invalid(response)) {
@@ -359,8 +322,9 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future<Data> create(data, [Map<String, dynamic> params]) async {
-    final response = await app.sendUnstreamed('POST',
-        '$basePath/${_buildQuery(params)}', _writeHeaders, makeBody(data));
+    var url = baseUrl.replace(queryParameters: _buildQuery(params));
+    var response =
+        await app.sendUnstreamed('POST', url, _writeHeaders, makeBody(data));
 
     try {
       if (_invalid(response)) {
@@ -385,8 +349,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future<Data> modify(id, data, [Map<String, dynamic> params]) async {
-    final response = await app.sendUnstreamed('PATCH',
-        '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
+    var url = baseUrl.replace(
+        path: p.join(baseUrl.path, id.toString()),
+        queryParameters: _buildQuery(params));
+
+    var response =
+        await app.sendUnstreamed('PATCH', url, _writeHeaders, makeBody(data));
 
     try {
       if (_invalid(response)) {
@@ -411,8 +379,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future<Data> update(id, data, [Map<String, dynamic> params]) async {
-    final response = await app.sendUnstreamed('POST',
-        '$basePath/$id${_buildQuery(params)}', _writeHeaders, makeBody(data));
+    var url = baseUrl.replace(
+        path: p.join(baseUrl.path, id.toString()),
+        queryParameters: _buildQuery(params));
+
+    var response =
+        await app.sendUnstreamed('POST', url, _writeHeaders, makeBody(data));
 
     try {
       if (_invalid(response)) {
@@ -437,8 +409,11 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future<Data> remove(id, [Map<String, dynamic> params]) async {
-    final response = await app.sendUnstreamed(
-        'DELETE', '$basePath/$id${_buildQuery(params)}', _readHeaders);
+    var url = baseUrl.replace(
+        path: p.join(baseUrl.path, id.toString()),
+        queryParameters: _buildQuery(params));
+
+    var response = await app.sendUnstreamed('DELETE', url, _readHeaders);
 
     try {
       if (_invalid(response)) {

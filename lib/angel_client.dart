@@ -4,11 +4,12 @@ library angel_client;
 import 'dart:async';
 import 'package:collection/collection.dart';
 import 'dart:convert';
-import 'package:http/src/response.dart' as http;
+import 'package:http/http.dart' as http;
 export 'package:angel_http_exception/angel_http_exception.dart';
+import 'package:meta/meta.dart';
 
 /// A function that configures an [Angel] client in some way.
-typedef Future AngelConfigurer(Angel app);
+typedef FutureOr<void> AngelConfigurer(Angel app);
 
 /// A function that deserializes data received from the server.
 ///
@@ -17,61 +18,110 @@ typedef Future AngelConfigurer(Angel app);
 typedef T AngelDeserializer<T>(x);
 
 /// Represents an Angel server that we are querying.
-abstract class Angel {
+abstract class Angel extends http.BaseClient {
+  /// A mutable member. When this is set, it holds a JSON Web Token
+  /// that is automatically attached to every request sent.
+  ///
+  /// This is designed with `package:angel_auth` in mind.
   String authToken;
-  String basePath;
 
-  Angel(String this.basePath);
+  /// The root URL at which the target server.
+  final Uri baseUrl;
+
+  Angel(baseUrl)
+      : this.baseUrl = baseUrl is Uri ? baseUrl : Uri.parse(baseUrl.toString());
+
+  /// Prefer to use [baseUrl] instead.
+  @deprecated
+  String get basePath => baseUrl.toString();
 
   /// Fired whenever a WebSocket is successfully authenticated.
   Stream<AngelAuthResult> get onAuthenticated;
 
+  /// Authenticates against the server.
+  ///
+  /// This is designed with `package:angel_auth` in mind.
+  ///
+  /// The [type] is appended to the [authEndpoint], ex. `local` becomes `/auth/local`.
+  ///
+  /// The given [credentials] are sent to server as-is; the request body is sent as JSON.
   Future<AngelAuthResult> authenticate(
-      {String type,
+      {@required String type,
       credentials,
-      String authEndpoint: '/auth',
-      String reviveEndpoint: '/auth/token'});
+      String authEndpoint = '/auth',
+      @deprecated String reviveEndpoint = '/auth/token'});
+
+  /// Shorthand for authenticating via a JWT string.
+  Future<AngelAuthResult> reviveJwt(String token,
+      {String authEndpoint = '/auth'}) {
+    return authenticate(
+        type: 'token',
+        credentials: {'token': token},
+        authEndpoint: authEndpoint);
+  }
 
   /// Opens the [url] in a new window, and  returns a [Stream] that will fire a JWT on successful authentication.
-  Stream<String> authenticateViaPopup(String url, {String eventName: 'token'});
+  Stream<String> authenticateViaPopup(String url, {String eventName = 'token'});
 
-  Future close();
+  /// Disposes of any outstanding resources.
+  Future<void> close();
 
   /// Applies an [AngelConfigurer] to this instance.
-  Future configure(AngelConfigurer configurer) async {
+  Future<void> configure(AngelConfigurer configurer) async {
     await configurer(this);
   }
 
   /// Logs the current user out of the application.
-  Future logout();
+  FutureOr<void> logout();
 
+  /// Creates a [Service] instance that queries a given path on the server.
+  ///
+  /// This expects that there is an Angel `Service` mounted on the server.
+  ///
+  /// In other words, all endpoints will return [Data], except for the root of
+  /// [path], which returns a [List<Data>].
+  ///
+  /// You can pass a custom [deserializer], which is typically necessary in cases where
+  /// `dart:mirrors` does not exist.
   Service<Id, Data> service<Id, Data>(String path,
-      {Type type, AngelDeserializer<Data> deserializer});
+      {@deprecated Type type, AngelDeserializer<Data> deserializer});
 
-  Future<http.Response> delete(String url, {Map<String, String> headers});
+  @override
+  Future<http.Response> delete(url, {Map<String, String> headers});
 
-  Future<http.Response> get(String url, {Map<String, String> headers});
+  @override
+  Future<http.Response> get(url, {Map<String, String> headers});
 
-  Future<http.Response> head(String url, {Map<String, String> headers});
+  @override
+  Future<http.Response> head(url, {Map<String, String> headers});
 
-  Future<http.Response> patch(String url, {body, Map<String, String> headers});
+  @override
+  Future<http.Response> patch(url,
+      {body, Map<String, String> headers, Encoding encoding});
 
-  Future<http.Response> post(String url, {body, Map<String, String> headers});
+  @override
+  Future<http.Response> post(url,
+      {body, Map<String, String> headers, Encoding encoding});
 
-  Future<http.Response> put(String url, {body, Map<String, String> headers});
+  @override
+  Future<http.Response> put(url,
+      {body, Map<String, String> headers, Encoding encoding});
 }
 
 /// Represents the result of authentication with an Angel server.
 class AngelAuthResult {
   String _token;
   final Map<String, dynamic> data = {};
+
+  /// The JSON Web token that was sent with this response.
   String get token => _token;
 
-  AngelAuthResult({String token, Map<String, dynamic> data: const {}}) {
+  AngelAuthResult({String token, Map<String, dynamic> data = const {}}) {
     _token = token;
     this.data.addAll(data ?? {});
   }
 
+  /// Attempts to deserialize a response from a [Map].
   factory AngelAuthResult.fromMap(Map data) {
     final result = new AngelAuthResult();
 
@@ -81,12 +131,22 @@ class AngelAuthResult {
     if (data is Map)
       result.data.addAll((data['data'] as Map<String, dynamic>) ?? {});
 
+    if (result.token == null) {
+      throw new FormatException(
+          'The required "token" field was not present in the given data.');
+    } else if (data['data'] is! Map) {
+      throw new FormatException(
+          'The required "data" field in the given data was not a map; instead, it was ${data['data']}.');
+    }
+
     return result;
   }
 
+  /// Attempts to deserialize a response from a [String].
   factory AngelAuthResult.fromJson(String s) =>
       new AngelAuthResult.fromMap(json.decode(s) as Map);
 
+  /// Converts this instance into a JSON-friendly representation.
   Map<String, dynamic> toJson() {
     return {'token': token, 'data': data};
   }
@@ -225,7 +285,7 @@ class ServiceList<Id, Data> extends DelegatingList<Data> {
 
   final List<StreamSubscription> _subs = [];
 
-  ServiceList(this.service, {this.idField, Equality<Data> equality})
+  ServiceList(this.service, {this.idField = 'id', Equality<Data> equality})
       : super([]) {
     _equality = equality;
     _equality ??= new EqualityBy<Data, Id>((map) {

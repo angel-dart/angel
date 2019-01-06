@@ -15,7 +15,7 @@ class MockAngel extends BaseAngelClient {
   MockAngel() : super(null, 'http://localhost:3000');
 
   @override
-  authenticateViaPopup(String url, {String eventName: 'token'}) {
+  authenticateViaPopup(String url, {String eventName = 'token'}) {
     throw new UnsupportedError('Nope');
   }
 }
