@@ -4,9 +4,9 @@ part 'goat.g.dart';
 
 @Serializable(autoIdAndDateFields: false)
 abstract class _Goat {
-  @DefaultValue(34)
+  @SerializableField(defaultValue: 34)
   int get integer;
 
-  @DefaultValue([34, 35])
+  @SerializableField(defaultValue: [34, 35])
   List<int> get list;
 }

@@ -12,6 +12,7 @@ the time you spend writing boilerplate serialization code for your models.
     - [Field Aliases](#aliases)
     - [Excluding Keys](#excluding-keys)
     - [Required Fields](#required-fields)
+    - [Adding Annotations to Generated Classes](#adding-annotations-to-generated-classes)
   - [Serialization](#serializaition)
   - [Nesting](#nesting)
   - [ID and Date Fields](#id-and-dates)
@@ -67,7 +68,7 @@ part 'book.g.dart';
 abstract class _Book extends Model {
   String get author;
 
-  @DefaultValue('[Untitled]')
+  @SerializableField(defaultValue: '[Untitled]')
   String get title;
 
   String get description;
@@ -155,7 +156,7 @@ Whereas Dart fields conventionally are camelCased, most database columns
 tend to be snake_cased. This is not a problem, because we can define an alias
 for a field.
 
-By default `angel_serialize` will transform keys into snake case. Use `Alias` to
+By default `angel_serialize` will transform keys into snake case. Use `alias` to
 provide a custom name, or pass `autoSnakeCaseNames`: `false` to the builder;
 
 ```dart
@@ -169,7 +170,7 @@ abstract class _Spy extends Model {
   /// Hooray!
   String agencyId;
 
-  @Alias('foo')
+  @SerializableField(alias: 'foo')
   String someOtherField;
 }
 ```
@@ -192,7 +193,7 @@ To accomplish this, simply annotate them with `@exclude`:
 @serializable
 abstract class _Whisper extends Model {
   /// Will never be serialized to JSON
-  @exclude
+  @SerializableField(exclude: true)
   String secret;
 }
 ```
@@ -209,23 +210,22 @@ abstract class _Whisper extends Model {
   /// Will never be serialized to JSON
   ///
   /// ... But it can be deserialized
-  @Exclude(canDeserialize: true)
+  @SerializableField(exclude: true, canDeserialize: true)
   String secret;
 }
 ```
 
 ## Required Fields
 
-It is easy to mark a field as required; just use the
-`@required` annotation from `package:meta`:
+It is easy to mark a field as required:
 
 ```dart
 @serializable
 abstract class _Foo extends Model {
-  @required
+  @SerializableField(isNullable: false)
   int myRequiredInt;
 
-  @Required('Custom message')
+  @SerializableField(isNullable: false, errorMessage: 'Custom message')
   int myOtherRequiredInt;
 }
 ```
@@ -233,6 +233,19 @@ abstract class _Foo extends Model {
 The given field will be marked as `@required` in the
 generated constructor, and serializers will check for its
 presence, throwing a `FormatException` if it is missing.
+
+## Adding Annotations to Generated Classes
+There are times when you need the generated class to have annotations affixed to it:
+
+```dart
+@Serializable(
+  includeAnnotations: [
+    Deprecated('blah blah blah'),
+    pragma('something...'),
+  ]
+)
+abstract class _Foo extends Model {}
+```
 
 # Nesting
 
@@ -327,7 +340,7 @@ The following:
 ```dart
 @serializable
 abstract class _Bookmark extends _BookmarkBase {
-  @exclude
+  @SerializableField(exclude: true)
   final Book book;
 
   int get page;

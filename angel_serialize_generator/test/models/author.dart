@@ -21,10 +21,10 @@ abstract class _Author extends Model {
 
   Book get newestBook;
 
-  @exclude
+  @SerializableField(exclude: true)
   String get secret;
 
-  @Exclude(canDeserialize: true)
+  @SerializableField(exclude: true, canDeserialize: true)
   String get obscured;
 }
 
@@ -35,7 +35,8 @@ abstract class _Library extends Model {
 
 @Serializable(serializers: Serializers.all)
 abstract class _Bookmark extends Model {
-  @exclude
+  
+  @SerializableField(exclude: true)
   final Book book;
 
   List<int> get history;

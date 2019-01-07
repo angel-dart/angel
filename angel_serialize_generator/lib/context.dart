@@ -19,7 +19,11 @@ class BuildContext {
   /// A map of field names to their default values.
   final Map<String, DartObject> defaults = {};
 
+  /// A map of fields to their related information.
+  final Map<String, SerializableField> fieldInfo = {};
+
   /// A map of fields that have been marked as to be excluded from serialization.
+  // ignore: deprecated_member_use
   final Map<String, Exclude> excluded = {};
 
   /// A map of "synthetic" fields, i.e. `id` and `created_at` injected automatically.
@@ -38,6 +42,9 @@ class BuildContext {
 
   final ClassElement clazz;
 
+  /// Any annotations to include in the generated class.
+  final List<DartObject> includeAnnotations;
+
   /// The name of the field that identifies data of this model type.
   String primaryKeyName = 'id';
 
@@ -45,7 +52,8 @@ class BuildContext {
       {this.originalClassName,
       this.sourceFilename,
       this.autoSnakeCaseNames,
-      this.autoIdAndDateFields});
+      this.autoIdAndDateFields,
+      this.includeAnnotations: const <DartObject>[]});
 
   /// The name of the generated class.
   String get modelClassName => originalClassName.startsWith('_')

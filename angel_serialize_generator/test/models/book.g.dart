@@ -7,6 +7,8 @@ part of angel_serialize.test.models.book;
 // **************************************************************************
 
 @generatedSerializable
+@pragma('hello')
+@SerializableField(alias: 'omg')
 class Book extends _Book {
   Book(
       {this.id,

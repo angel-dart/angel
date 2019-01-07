@@ -1,6 +1,7 @@
 export 'package:quiver_hashcode/hashcode.dart' show hashObjects;
 
 /// Excludes a field from being excluded.
+@deprecated
 class Exclude {
   final bool canSerialize;
 
@@ -9,6 +10,8 @@ class Exclude {
   const Exclude({this.canDeserialize: false, this.canSerialize: false});
 }
 
+@deprecated
+// ignore: deprecated_member_use
 const Exclude exclude = const Exclude();
 
 @deprecated
@@ -34,15 +37,31 @@ class SerializableField {
   /// A custom serializer for this field.
   final Symbol deserializer;
 
-  /// A list of constant members to affix to the generated class.
-  final List includeAnnotations;
+  /// An error message to be printed when the provided value is invalid.
+  final String errorMessage;
 
-  SerializableField(
+  /// Whether this field can be set to `null`.
+  final bool isNullable;
+
+  /// Whether to exclude this field from serialization. Defaults to `false`.
+  final bool exclude;
+
+  /// Whether this field can be serialized, if [exclude] is `true`. Defaults to `false`.
+  final bool canDeserialize;
+
+  /// Whether this field can be serialized, if [exclude] is `true`. Defaults to `false`.
+  final bool canSerialize;
+
+  const SerializableField(
       {this.alias,
       this.defaultValue,
       this.serializer,
       this.deserializer,
-      this.includeAnnotations: const []});
+      this.errorMessage,
+      this.isNullable: true,
+      this.exclude: false,
+      this.canDeserialize: false,
+      this.canSerialize: false});
 }
 
 /// Marks a class as eligible for serialization.
@@ -50,7 +69,8 @@ class Serializable {
   const Serializable(
       {this.serializers: const [Serializers.map, Serializers.json],
       this.autoSnakeCaseNames: true,
-      this.autoIdAndDateFields: true});
+      this.autoIdAndDateFields: true,
+      this.includeAnnotations: const []});
 
   /// A list of enabled serialization modes.
   ///
@@ -62,6 +82,9 @@ class Serializable {
 
   /// Overrides the setting in `JsonModelGenerator`.
   final bool autoIdAndDateFields;
+
+  /// A list of constant members to affix to the generated class.
+  final List includeAnnotations;
 }
 
 const Serializable serializable = const Serializable();

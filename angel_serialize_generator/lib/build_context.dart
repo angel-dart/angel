@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/dart/element/element.dart';
@@ -10,11 +11,16 @@ import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'context.dart';
 
+// ignore: deprecated_member_use
 const TypeChecker aliasTypeChecker = const TypeChecker.fromRuntime(Alias);
 
 const TypeChecker dateTimeTypeChecker = const TypeChecker.fromRuntime(DateTime);
 
+// ignore: deprecated_member_use
 const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
+
+const TypeChecker serializableFieldTypeChecker =
+    const TypeChecker.fromRuntime(SerializableField);
 
 const TypeChecker serializableTypeChecker =
     const TypeChecker.fromRuntime(Serializable);
@@ -37,11 +43,16 @@ Future<BuildContext> buildContext(
   autoSnakeCaseNames =
       annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
 
-  var ctx = new BuildContext(annotation, clazz,
-      originalClassName: clazz.name,
-      sourceFilename: p.basename(buildStep.inputId.path),
-      autoIdAndDateFields: autoIdAndDateFields,
-      autoSnakeCaseNames: autoSnakeCaseNames);
+  var ctx = new BuildContext(
+    annotation,
+    clazz,
+    originalClassName: clazz.name,
+    sourceFilename: p.basename(buildStep.inputId.path),
+    autoIdAndDateFields: autoIdAndDateFields,
+    autoSnakeCaseNames: autoSnakeCaseNames,
+    includeAnnotations:
+        annotation.peek('includeAnnotations')?.listValue ?? <DartObject>[],
+  );
   var lib = await resolver.libraryFor(buildStep.inputId);
   List<String> fieldNames = [];
 
@@ -55,49 +66,100 @@ Future<BuildContext> buildContext(
         (field.setter != null || field.getter.isAbstract)) {
       var el = field.setter == null ? field.getter : field;
       fieldNames.add(field.name);
-      // Skip if annotated with @exclude
-      var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(el);
 
-      if (excludeAnnotation != null) {
-        var cr = new ConstantReader(excludeAnnotation);
+      // Check for @SerializableField
+      var fieldAnn = serializableFieldTypeChecker.firstAnnotationOf(el);
 
-        ctx.excluded[field.name] = new Exclude(
-          canSerialize: cr.read('canSerialize').boolValue,
-          canDeserialize: cr.read('canDeserialize').boolValue,
+      if (fieldAnn != null) {
+        var cr = ConstantReader(fieldAnn);
+        var sField = SerializableField(
+          alias: cr.peek('alias')?.stringValue,
+          defaultValue: cr.peek('defaultValue')?.objectValue,
+          serializer: cr.peek('serializer')?.symbolValue,
+          deserializer: cr.peek('deserializer')?.symbolValue,
+          errorMessage: cr.peek('errorMessage')?.stringValue,
+          isNullable: cr.peek('isNullable')?.boolValue ?? true,
+          canDeserialize: cr.peek('canDeserialize')?.boolValue ?? false,
+          canSerialize: cr.peek('canSerialize')?.boolValue ?? false,
+          exclude: cr.peek('exclude')?.boolValue ?? false,
         );
-      }
 
-      // Check for @DefaultValue()
-      var defAnn =
-          const TypeChecker.fromRuntime(DefaultValue).firstAnnotationOf(el);
-      if (defAnn != null) {
-        var rev = new ConstantReader(defAnn).revive().positionalArguments[0];
-        ctx.defaults[field.name] = rev;
-      }
+        ctx.fieldInfo[field.name] = sField;
 
-      // Check for alias
-      Alias alias;
-      var aliasAnn = aliasTypeChecker.firstAnnotationOf(el);
+        if (sField.defaultValue != null) {
+          ctx.defaults[field.name] = sField.defaultValue as DartObject;
+        }
 
-      if (aliasAnn != null) {
-        alias = new Alias(aliasAnn.getField('name').toStringValue());
-      }
+        if (sField.alias != null) {
+          ctx.aliases[field.name] = sField.alias;
+        } else if (autoSnakeCaseNames != false) {
+          ctx.aliases[field.name] = new ReCase(field.name).snakeCase;
+        }
 
-      if (alias?.name?.isNotEmpty == true) {
-        ctx.aliases[field.name] = alias.name;
-      } else if (autoSnakeCaseNames != false) {
-        ctx.aliases[field.name] = new ReCase(field.name).snakeCase;
-      }
+        if (sField.isNullable == false) {
+          var reason = sField.errorMessage ??
+              "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";
+          ctx.requiredFields[field.name] = reason;
+        }
 
-      // Check for @required
-      var required =
-          const TypeChecker.fromRuntime(Required).firstAnnotationOf(el);
+        if (sField.exclude) {
+          // ignore: deprecated_member_use
+          ctx.excluded[field.name] = new Exclude(
+            canSerialize: sField.canSerialize,
+            canDeserialize: sField.canDeserialize,
+          );
+        }
 
-      if (required != null) {
-        var cr = new ConstantReader(required);
-        var reason = cr.peek('reason')?.stringValue ??
-            "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";
-        ctx.requiredFields[field.name] = reason;
+        // Apply
+      } else {
+        // Skip if annotated with @exclude
+        var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(el);
+
+        if (excludeAnnotation != null) {
+          var cr = new ConstantReader(excludeAnnotation);
+
+          // ignore: deprecated_member_use
+          ctx.excluded[field.name] = new Exclude(
+            canSerialize: cr.read('canSerialize').boolValue,
+            canDeserialize: cr.read('canDeserialize').boolValue,
+          );
+        }
+
+        // Check for @DefaultValue()
+        var defAnn =
+            // ignore: deprecated_member_use
+            const TypeChecker.fromRuntime(DefaultValue).firstAnnotationOf(el);
+        if (defAnn != null) {
+          var rev = new ConstantReader(defAnn).revive().positionalArguments[0];
+          ctx.defaults[field.name] = rev;
+        }
+
+        // Check for alias
+        // ignore: deprecated_member_use
+        Alias alias;
+        var aliasAnn = aliasTypeChecker.firstAnnotationOf(el);
+
+        if (aliasAnn != null) {
+          // ignore: deprecated_member_use
+          alias = new Alias(aliasAnn.getField('name').toStringValue());
+        }
+
+        if (alias?.name?.isNotEmpty == true) {
+          ctx.aliases[field.name] = alias.name;
+        } else if (autoSnakeCaseNames != false) {
+          ctx.aliases[field.name] = new ReCase(field.name).snakeCase;
+        }
+
+        // Check for @required
+        var required =
+            const TypeChecker.fromRuntime(Required).firstAnnotationOf(el);
+
+        if (required != null) {
+          var cr = new ConstantReader(required);
+          var reason = cr.peek('reason')?.stringValue ??
+              "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";
+          ctx.requiredFields[field.name] = reason;
+        }
       }
 
       ctx.fields.add(field);

@@ -48,6 +48,30 @@ TypeReference convertTypeReference(DartType t) {
   });
 }
 
+Expression convertObject(DartObject o) {
+  if (o.isNull) return literalNull;
+  if (o.toBoolValue() != null) return literalBool(o.toBoolValue());
+  if (o.toIntValue() != null) return literalNum(o.toIntValue());
+  if (o.toDoubleValue() != null) return literalNum(o.toDoubleValue());
+  if (o.toSymbolValue() != null)
+    return CodeExpression(Code('#' + o.toSymbolValue()));
+  if (o.toStringValue() != null) return literalString(o.toStringValue());
+  if (o.toTypeValue() != null) return convertTypeReference(o.toTypeValue());
+  if (o.toListValue() != null)
+    return literalList(o.toListValue().map(convertObject));
+  if (o.toMapValue() != null) {
+    return literalMap(o
+        .toMapValue()
+        .map((k, v) => MapEntry(convertObject(k), convertObject(v))));
+  }
+
+  var rev = ConstantReader(o).revive();
+  Expression target = convertTypeReference(o.type);
+  target = rev.accessor.isEmpty ? target : target.property(rev.accessor);
+  return target.call(rev.positionalArguments.map(convertObject),
+      rev.namedArguments.map((k, v) => MapEntry(k, convertObject(v))));
+}
+
 String dartObjectToString(DartObject v) {
   if (v.isNull) return 'null';
   if (v.toBoolValue() != null) return v.toBoolValue().toString();
