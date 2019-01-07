@@ -30,6 +30,13 @@ class TreeMigration extends Migration {
 class TreeQuery extends Query<Tree, TreeQueryWhere> {
   TreeQuery() {
     _where = new TreeQueryWhere(this);
+    leftJoin('(' + new FruitQuery().compile() + ')', 'id', 'tree_id',
+        additionalFields: const [
+          'tree_id',
+          'common_name',
+          'created_at',
+          'updated_at'
+        ]);
   }
 
   @override
@@ -64,6 +71,12 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
         rings: (row[1] as int),
         createdAt: (row[2] as DateTime),
         updatedAt: (row[3] as DateTime));
+    if (row.length > 4) {
+      model = model.copyWith(
+          fruits: [FruitQuery.parseRow(row.skip(4).toList())]
+              .where((x) => x != null)
+              .toList());
+    }
     return model;
   }
 
@@ -73,44 +86,59 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   }
 
   @override
-  insert(executor) {
-    return executor.transaction(() async {
-      var result = await super.insert(executor);
-      where.id.equals(int.parse(result.id));
-      result = await getOne(executor);
-      result = await fetchLinked(result, executor);
-      return result;
-    });
-  }
-
-  Future<Tree> fetchLinked(Tree model, QueryExecutor executor) async {
-    return model.copyWith(
-        fruits: await (new FruitQuery()
-              ..where.treeId.equals(int.parse(model.id)))
-            .get(executor));
-  }
-
-  @override
   get(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.get(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
+    return super.get(executor).then((result) {
+      return result.fold<List<Tree>>([], (out, model) {
+        var idx = out.indexWhere((m) => m.id == model.id);
+
+        if (idx == -1) {
+          return out..add(model);
+        } else {
+          var l = out[idx];
+          return out
+            ..[idx] = l.copyWith(
+                fruits: List<Fruit>.from(l.fruits ?? [])
+                  ..addAll(model.fruits ?? []));
+        }
+      });
     });
   }
 
   @override
   update(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.update(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
+    return super.update(executor).then((result) {
+      return result.fold<List<Tree>>([], (out, model) {
+        var idx = out.indexWhere((m) => m.id == model.id);
+
+        if (idx == -1) {
+          return out..add(model);
+        } else {
+          var l = out[idx];
+          return out
+            ..[idx] = l.copyWith(
+                fruits: List<Fruit>.from(l.fruits ?? [])
+                  ..addAll(model.fruits ?? []));
+        }
+      });
     });
   }
 
   @override
   delete(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.delete(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
+    return super.delete(executor).then((result) {
+      return result.fold<List<Tree>>([], (out, model) {
+        var idx = out.indexWhere((m) => m.id == model.id);
+
+        if (idx == -1) {
+          return out..add(model);
+        } else {
+          var l = out[idx];
+          return out
+            ..[idx] = l.copyWith(
+                fruits: List<Fruit>.from(l.fruits ?? [])
+                  ..addAll(model.fruits ?? []));
+        }
+      });
     });
   }
 }

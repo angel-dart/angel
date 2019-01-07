@@ -14,10 +14,18 @@ abstract class _User extends Model {
   String get password;
   String get email;
 
-  @hasMany
-  List<_UserRole> get userRoles;
+  @manyToMany
+  List<_Role> get roles;
+}
 
-  List<_Role> get roles => userRoles.map((m) => m.role).toList();
+@serializable
+@orm
+abstract class _RoleUser extends Model {
+  @belongsTo
+  _Role get role;
+
+  @belongsTo
+  _User get user;
 }
 
 @serializable
@@ -25,20 +33,6 @@ abstract class _User extends Model {
 abstract class _Role extends Model {
   String name;
 
-  @hasMany
-  List<_UserRole> get userRoles;
-
-  List<_User> get users => userRoles.map((m) => m.user).toList();
-}
-
-@Serializable(autoIdAndDateFields: false)
-@orm
-abstract class _UserRole {
-  int get id;
-
-  @belongsTo
-  _User get user;
-
-  @belongsTo
-  _Role get role;
+  @manyToMany
+  List<_User> get users;
 }

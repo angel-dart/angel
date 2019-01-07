@@ -8,7 +8,7 @@ import 'models/leg.dart';
 import 'common.dart';
 
 main() {
-  QueryExecutor executor;
+  PostgresExecutor executor;
   Leg originalLeg;
 
   setUp(() async {

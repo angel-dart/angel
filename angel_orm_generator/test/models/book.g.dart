@@ -92,16 +92,6 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   deserialize(List row) {
     return parseRow(row);
   }
-
-  @override
-  insert(executor) {
-    return executor.transaction(() async {
-      var result = await super.insert(executor);
-      where.id.equals(int.parse(result.id));
-      result = await getOne(executor);
-      return result;
-    });
-  }
 }
 
 class BookQueryWhere extends QueryWhere {

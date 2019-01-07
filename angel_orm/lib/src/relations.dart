@@ -2,6 +2,7 @@ abstract class RelationshipType {
   static const int hasMany = 0;
   static const int hasOne = 1;
   static const int belongsTo = 2;
+  static const int manyToMany = 3;
 }
 
 class Relationship {
@@ -57,3 +58,18 @@ class BelongsTo extends Relationship {
 }
 
 const BelongsTo belongsTo = const BelongsTo();
+
+class ManyToMany extends Relationship {
+  const ManyToMany(
+      {String localKey: 'id',
+      String foreignKey,
+      String foreignTable,
+      bool cascadeOnDelete: false})
+      : super(RelationshipType.manyToMany,
+            localKey: localKey,
+            foreignKey: foreignKey,
+            foreignTable: foreignTable,
+            cascadeOnDelete: cascadeOnDelete == true);
+}
+
+const ManyToMany manyToMany = const ManyToMany();

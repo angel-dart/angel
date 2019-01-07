@@ -27,18 +27,23 @@ main() {
     thosakwe = await thosakweQuery.insert(executor);
 
     // Allow thosakwe to publish...
-    var thosakwePubQuery = new UserRoleQuery();
+    var thosakwePubQuery = new RoleUserQuery();
     thosakwePubQuery.values
       ..userId = int.parse(thosakwe.id)
       ..roleId = int.parse(canPub.id);
     await thosakwePubQuery.insert(executor);
 
     // Allow thosakwe to subscribe...
-    var thosakweSubQuery = new UserRoleQuery();
+    var thosakweSubQuery = new RoleUserQuery();
     thosakweSubQuery.values
       ..userId = int.parse(thosakwe.id)
       ..roleId = int.parse(canSub.id);
     await thosakweSubQuery.insert(executor);
+
+    print('\n');
+    print('==================================================');
+    print('              GOOD STUFF BEGINS HERE              ');
+    print('==================================================\n\n');
   });
 
   Future<User> fetchThosakwe() async {

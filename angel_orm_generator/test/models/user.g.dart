@@ -25,6 +25,24 @@ class UserMigration extends Migration {
   }
 }
 
+class RoleUserMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('role_users', (table) {
+      table.serial('id')..primaryKey();
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+      table.integer('role_id').references('roles', 'id');
+      table.integer('user_id').references('users', 'id');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('role_users');
+  }
+}
+
 class RoleMigration extends Migration {
   @override
   up(Schema schema) {
@@ -39,22 +57,6 @@ class RoleMigration extends Migration {
   @override
   down(Schema schema) {
     schema.drop('roles');
-  }
-}
-
-class UserRoleMigration extends Migration {
-  @override
-  up(Schema schema) {
-    schema.create('user_roles', (table) {
-      table.serial('id')..primaryKey();
-      table.integer('user_id').references('users', 'id');
-      table.integer('role_id').references('roles', 'id');
-    });
-  }
-
-  @override
-  down(Schema schema) {
-    schema.drop('user_roles');
   }
 }
 
@@ -114,48 +116,6 @@ class UserQuery extends Query<User, UserQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
-  }
-
-  @override
-  insert(executor) {
-    return executor.transaction(() async {
-      var result = await super.insert(executor);
-      where.id.equals(int.parse(result.id));
-      result = await getOne(executor);
-      result = await fetchLinked(result, executor);
-      return result;
-    });
-  }
-
-  Future<User> fetchLinked(User model, QueryExecutor executor) async {
-    return model.copyWith(
-        userRoles: await (new UserRoleQuery()
-              ..where.userId.equals(int.parse(model.id)))
-            .get(executor));
-  }
-
-  @override
-  get(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.get(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
-    });
-  }
-
-  @override
-  update(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.update(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
-    });
-  }
-
-  @override
-  delete(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.delete(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
-    });
   }
 }
 
@@ -228,6 +188,128 @@ class UserQueryValues extends MapQueryValues {
   }
 }
 
+class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
+  RoleUserQuery() {
+    _where = new RoleUserQueryWhere(this);
+    leftJoin('roles', 'role_id', 'id',
+        additionalFields: const ['name', 'created_at', 'updated_at']);
+    leftJoin('users', 'user_id', 'id', additionalFields: const [
+      'username',
+      'password',
+      'email',
+      'created_at',
+      'updated_at'
+    ]);
+  }
+
+  @override
+  final RoleUserQueryValues values = new RoleUserQueryValues();
+
+  RoleUserQueryWhere _where;
+
+  @override
+  get tableName {
+    return 'role_users';
+  }
+
+  @override
+  get fields {
+    return const ['id', 'role_id', 'user_id', 'created_at', 'updated_at'];
+  }
+
+  @override
+  RoleUserQueryWhere get where {
+    return _where;
+  }
+
+  @override
+  RoleUserQueryWhere newWhereClause() {
+    return new RoleUserQueryWhere(this);
+  }
+
+  static RoleUser parseRow(List row) {
+    if (row.every((x) => x == null)) return null;
+    var model = new RoleUser(
+        id: row[0].toString(),
+        createdAt: (row[3] as DateTime),
+        updatedAt: (row[4] as DateTime));
+    if (row.length > 5) {
+      model = model.copyWith(role: RoleQuery.parseRow(row.skip(5).toList()));
+    }
+    if (row.length > 9) {
+      model = model.copyWith(user: UserQuery.parseRow(row.skip(9).toList()));
+    }
+    return model;
+  }
+
+  @override
+  deserialize(List row) {
+    return parseRow(row);
+  }
+}
+
+class RoleUserQueryWhere extends QueryWhere {
+  RoleUserQueryWhere(RoleUserQuery query)
+      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
+        roleId = new NumericSqlExpressionBuilder<int>(query, 'role_id'),
+        userId = new NumericSqlExpressionBuilder<int>(query, 'user_id'),
+        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+
+  final NumericSqlExpressionBuilder<int> id;
+
+  final NumericSqlExpressionBuilder<int> roleId;
+
+  final NumericSqlExpressionBuilder<int> userId;
+
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
+
+  @override
+  get expressionBuilders {
+    return [id, roleId, userId, createdAt, updatedAt];
+  }
+}
+
+class RoleUserQueryValues extends MapQueryValues {
+  int get id {
+    return (values['id'] as int);
+  }
+
+  set id(int value) => values['id'] = value;
+  int get roleId {
+    return (values['role_id'] as int);
+  }
+
+  set roleId(int value) => values['role_id'] = value;
+  int get userId {
+    return (values['user_id'] as int);
+  }
+
+  set userId(int value) => values['user_id'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(RoleUser model) {
+    values
+        .addAll({'created_at': model.createdAt, 'updated_at': model.updatedAt});
+    if (model.role != null) {
+      values['role_id'] = int.parse(model.role.id);
+    }
+    if (model.user != null) {
+      values['user_id'] = int.parse(model.user.id);
+    }
+  }
+}
+
 class RoleQuery extends Query<Role, RoleQueryWhere> {
   RoleQuery() {
     _where = new RoleQueryWhere(this);
@@ -271,48 +353,6 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
-  }
-
-  @override
-  insert(executor) {
-    return executor.transaction(() async {
-      var result = await super.insert(executor);
-      where.id.equals(int.parse(result.id));
-      result = await getOne(executor);
-      result = await fetchLinked(result, executor);
-      return result;
-    });
-  }
-
-  Future<Role> fetchLinked(Role model, QueryExecutor executor) async {
-    return model.copyWith(
-        userRoles: await (new UserRoleQuery()
-              ..where.roleId.equals(int.parse(model.id)))
-            .get(executor));
-  }
-
-  @override
-  get(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.get(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
-    });
-  }
-
-  @override
-  update(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.update(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
-    });
-  }
-
-  @override
-  delete(QueryExecutor executor) {
-    return executor.transaction(() async {
-      var result = await super.delete(executor);
-      return await Future.wait(result.map((m) => fetchLinked(m, executor)));
-    });
   }
 }
 
@@ -367,116 +407,6 @@ class RoleQueryValues extends MapQueryValues {
   }
 }
 
-class UserRoleQuery extends Query<UserRole, UserRoleQueryWhere> {
-  UserRoleQuery() {
-    _where = new UserRoleQueryWhere(this);
-    leftJoin('users', 'user_id', 'id', additionalFields: const [
-      'username',
-      'password',
-      'email',
-      'created_at',
-      'updated_at'
-    ]);
-    leftJoin('roles', 'role_id', 'id',
-        additionalFields: const ['name', 'created_at', 'updated_at']);
-  }
-
-  @override
-  final UserRoleQueryValues values = new UserRoleQueryValues();
-
-  UserRoleQueryWhere _where;
-
-  @override
-  get tableName {
-    return 'user_roles';
-  }
-
-  @override
-  get fields {
-    return const ['id', 'user_id', 'role_id'];
-  }
-
-  @override
-  UserRoleQueryWhere get where {
-    return _where;
-  }
-
-  @override
-  UserRoleQueryWhere newWhereClause() {
-    return new UserRoleQueryWhere(this);
-  }
-
-  static UserRole parseRow(List row) {
-    if (row.every((x) => x == null)) return null;
-    var model = new UserRole(id: (row[0] as int));
-    if (row.length > 3) {
-      model = model.copyWith(user: UserQuery.parseRow(row.skip(3).toList()));
-    }
-    if (row.length > 9) {
-      model = model.copyWith(role: RoleQuery.parseRow(row.skip(9).toList()));
-    }
-    return model;
-  }
-
-  @override
-  deserialize(List row) {
-    return parseRow(row);
-  }
-
-  @override
-  insert(executor) {
-    return executor.transaction(() async {
-      var result = await super.insert(executor);
-      return result;
-    });
-  }
-}
-
-class UserRoleQueryWhere extends QueryWhere {
-  UserRoleQueryWhere(UserRoleQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        userId = new NumericSqlExpressionBuilder<int>(query, 'user_id'),
-        roleId = new NumericSqlExpressionBuilder<int>(query, 'role_id');
-
-  final NumericSqlExpressionBuilder<int> id;
-
-  final NumericSqlExpressionBuilder<int> userId;
-
-  final NumericSqlExpressionBuilder<int> roleId;
-
-  @override
-  get expressionBuilders {
-    return [id, userId, roleId];
-  }
-}
-
-class UserRoleQueryValues extends MapQueryValues {
-  int get id {
-    return (values['id'] as int);
-  }
-
-  set id(int value) => values['id'] = value;
-  int get userId {
-    return (values['user_id'] as int);
-  }
-
-  set userId(int value) => values['user_id'] = value;
-  int get roleId {
-    return (values['role_id'] as int);
-  }
-
-  set roleId(int value) => values['role_id'] = value;
-  void copyFrom(UserRole model) {
-    values.addAll({'id': model.id});
-    if (model.user != null) {
-      values['user_id'] = int.parse(model.user.id);
-    }
-    if (model.role != null) {
-      values['role_id'] = int.parse(model.role.id);
-    }
-  }
-}
-
 // **************************************************************************
 // JsonModelGenerator
 // **************************************************************************
@@ -488,10 +418,10 @@ class User extends _User {
       this.username,
       this.password,
       this.email,
-      List<_UserRole> userRoles,
+      List<_Role> roles,
       this.createdAt,
       this.updatedAt})
-      : this.userRoles = new List.unmodifiable(userRoles ?? []);
+      : this.roles = new List.unmodifiable(roles ?? []);
 
   @override
   final String id;
@@ -506,7 +436,7 @@ class User extends _User {
   final String email;
 
   @override
-  final List<_UserRole> userRoles;
+  final List<_Role> roles;
 
   @override
   final DateTime createdAt;
@@ -519,7 +449,7 @@ class User extends _User {
       String username,
       String password,
       String email,
-      List<_UserRole> userRoles,
+      List<_Role> roles,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new User(
@@ -527,7 +457,7 @@ class User extends _User {
         username: username ?? this.username,
         password: password ?? this.password,
         email: email ?? this.email,
-        userRoles: userRoles ?? this.userRoles,
+        roles: roles ?? this.roles,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
@@ -538,8 +468,8 @@ class User extends _User {
         other.username == username &&
         other.password == password &&
         other.email == email &&
-        const ListEquality<_UserRole>(const DefaultEquality<_UserRole>())
-            .equals(other.userRoles, userRoles) &&
+        const ListEquality<_Role>(const DefaultEquality<_Role>())
+            .equals(other.roles, roles) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
@@ -547,7 +477,7 @@ class User extends _User {
   @override
   int get hashCode {
     return hashObjects(
-        [id, username, password, email, userRoles, createdAt, updatedAt]);
+        [id, username, password, email, roles, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
@@ -556,14 +486,61 @@ class User extends _User {
 }
 
 @generatedSerializable
+class RoleUser extends _RoleUser {
+  RoleUser({this.id, this.role, this.user, this.createdAt, this.updatedAt});
+
+  @override
+  final String id;
+
+  @override
+  final _Role role;
+
+  @override
+  final _User user;
+
+  @override
+  final DateTime createdAt;
+
+  @override
+  final DateTime updatedAt;
+
+  RoleUser copyWith(
+      {String id,
+      _Role role,
+      _User user,
+      DateTime createdAt,
+      DateTime updatedAt}) {
+    return new RoleUser(
+        id: id ?? this.id,
+        role: role ?? this.role,
+        user: user ?? this.user,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt);
+  }
+
+  bool operator ==(other) {
+    return other is _RoleUser &&
+        other.id == id &&
+        other.role == role &&
+        other.user == user &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects([id, role, user, createdAt, updatedAt]);
+  }
+
+  Map<String, dynamic> toJson() {
+    return RoleUserSerializer.toMap(this);
+  }
+}
+
+@generatedSerializable
 class Role extends _Role {
-  Role(
-      {this.id,
-      this.name,
-      List<_UserRole> userRoles,
-      this.createdAt,
-      this.updatedAt})
-      : this.userRoles = new List.unmodifiable(userRoles ?? []);
+  Role({this.id, this.name, List<_User> users, this.createdAt, this.updatedAt})
+      : this.users = new List.unmodifiable(users ?? []);
 
   @override
   final String id;
@@ -572,7 +549,7 @@ class Role extends _Role {
   final String name;
 
   @override
-  final List<_UserRole> userRoles;
+  final List<_User> users;
 
   @override
   final DateTime createdAt;
@@ -583,13 +560,13 @@ class Role extends _Role {
   Role copyWith(
       {String id,
       String name,
-      List<_UserRole> userRoles,
+      List<_User> users,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Role(
         id: id ?? this.id,
         name: name ?? this.name,
-        userRoles: userRoles ?? this.userRoles,
+        users: users ?? this.users,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
@@ -598,54 +575,19 @@ class Role extends _Role {
     return other is _Role &&
         other.id == id &&
         other.name == name &&
-        const ListEquality<_UserRole>(const DefaultEquality<_UserRole>())
-            .equals(other.userRoles, userRoles) &&
+        const ListEquality<_User>(const DefaultEquality<_User>())
+            .equals(other.users, users) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
 
   @override
   int get hashCode {
-    return hashObjects([id, name, userRoles, createdAt, updatedAt]);
+    return hashObjects([id, name, users, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
     return RoleSerializer.toMap(this);
-  }
-}
-
-@generatedSerializable
-class UserRole implements _UserRole {
-  const UserRole({this.id, this.user, this.role});
-
-  @override
-  final int id;
-
-  @override
-  final _User user;
-
-  @override
-  final _Role role;
-
-  UserRole copyWith({int id, _User user, _Role role}) {
-    return new UserRole(
-        id: id ?? this.id, user: user ?? this.user, role: role ?? this.role);
-  }
-
-  bool operator ==(other) {
-    return other is _UserRole &&
-        other.id == id &&
-        other.user == user &&
-        other.role == role;
-  }
-
-  @override
-  int get hashCode {
-    return hashObjects([id, user, role]);
-  }
-
-  Map<String, dynamic> toJson() {
-    return UserRoleSerializer.toMap(this);
   }
 }
 
@@ -660,10 +602,10 @@ abstract class UserSerializer {
         username: map['username'] as String,
         password: map['password'] as String,
         email: map['email'] as String,
-        userRoles: map['user_roles'] is Iterable
-            ? new List.unmodifiable(((map['user_roles'] as Iterable)
+        roles: map['roles'] is Iterable
+            ? new List.unmodifiable(((map['roles'] as Iterable)
                     .where((x) => x is Map) as Iterable<Map>)
-                .map(UserRoleSerializer.fromMap))
+                .map(RoleSerializer.fromMap))
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -686,8 +628,7 @@ abstract class UserSerializer {
       'username': model.username,
       'password': model.password,
       'email': model.email,
-      'user_roles':
-          model.userRoles?.map((m) => UserRoleSerializer.toMap(m))?.toList(),
+      'roles': model.roles?.map((m) => RoleSerializer.toMap(m))?.toList(),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -700,7 +641,7 @@ abstract class UserFields {
     username,
     password,
     email,
-    userRoles,
+    roles,
     createdAt,
     updatedAt
   ];
@@ -713,7 +654,63 @@ abstract class UserFields {
 
   static const String email = 'email';
 
-  static const String userRoles = 'user_roles';
+  static const String roles = 'roles';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
+}
+
+abstract class RoleUserSerializer {
+  static RoleUser fromMap(Map map) {
+    return new RoleUser(
+        id: map['id'] as String,
+        role: map['role'] != null
+            ? RoleSerializer.fromMap(map['role'] as Map)
+            : null,
+        user: map['user'] != null
+            ? UserSerializer.fromMap(map['user'] as Map)
+            : null,
+        createdAt: map['created_at'] != null
+            ? (map['created_at'] is DateTime
+                ? (map['created_at'] as DateTime)
+                : DateTime.parse(map['created_at'].toString()))
+            : null,
+        updatedAt: map['updated_at'] != null
+            ? (map['updated_at'] is DateTime
+                ? (map['updated_at'] as DateTime)
+                : DateTime.parse(map['updated_at'].toString()))
+            : null);
+  }
+
+  static Map<String, dynamic> toMap(_RoleUser model) {
+    if (model == null) {
+      return null;
+    }
+    return {
+      'id': model.id,
+      'role': RoleSerializer.toMap(model.role),
+      'user': UserSerializer.toMap(model.user),
+      'created_at': model.createdAt?.toIso8601String(),
+      'updated_at': model.updatedAt?.toIso8601String()
+    };
+  }
+}
+
+abstract class RoleUserFields {
+  static const List<String> allFields = const <String>[
+    id,
+    role,
+    user,
+    createdAt,
+    updatedAt
+  ];
+
+  static const String id = 'id';
+
+  static const String role = 'role';
+
+  static const String user = 'user';
 
   static const String createdAt = 'created_at';
 
@@ -725,10 +722,10 @@ abstract class RoleSerializer {
     return new Role(
         id: map['id'] as String,
         name: map['name'] as String,
-        userRoles: map['user_roles'] is Iterable
-            ? new List.unmodifiable(((map['user_roles'] as Iterable)
+        users: map['users'] is Iterable
+            ? new List.unmodifiable(((map['users'] as Iterable)
                     .where((x) => x is Map) as Iterable<Map>)
-                .map(UserRoleSerializer.fromMap))
+                .map(UserSerializer.fromMap))
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -749,8 +746,7 @@ abstract class RoleSerializer {
     return {
       'id': model.id,
       'name': model.name,
-      'user_roles':
-          model.userRoles?.map((m) => UserRoleSerializer.toMap(m))?.toList(),
+      'users': model.users?.map((m) => UserSerializer.toMap(m))?.toList(),
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -761,7 +757,7 @@ abstract class RoleFields {
   static const List<String> allFields = const <String>[
     id,
     name,
-    userRoles,
+    users,
     createdAt,
     updatedAt
   ];
@@ -770,43 +766,9 @@ abstract class RoleFields {
 
   static const String name = 'name';
 
-  static const String userRoles = 'user_roles';
+  static const String users = 'users';
 
   static const String createdAt = 'created_at';
 
   static const String updatedAt = 'updated_at';
-}
-
-abstract class UserRoleSerializer {
-  static UserRole fromMap(Map map) {
-    return new UserRole(
-        id: map['id'] as int,
-        user: map['user'] != null
-            ? UserSerializer.fromMap(map['user'] as Map)
-            : null,
-        role: map['role'] != null
-            ? RoleSerializer.fromMap(map['role'] as Map)
-            : null);
-  }
-
-  static Map<String, dynamic> toMap(_UserRole model) {
-    if (model == null) {
-      return null;
-    }
-    return {
-      'id': model.id,
-      'user': UserSerializer.toMap(model.user),
-      'role': RoleSerializer.toMap(model.role)
-    };
-  }
-}
-
-abstract class UserRoleFields {
-  static const List<String> allFields = const <String>[id, user, role];
-
-  static const String id = 'id';
-
-  static const String user = 'user';
-
-  static const String role = 'role';
 }

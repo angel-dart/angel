@@ -229,7 +229,10 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   @override
   String compile(
-      {bool includeTableName: false, String preamble, bool withFields: true}) {
+      {bool includeTableName: false,
+      String preamble,
+      bool withFields: true,
+      String fromQuery}) {
     includeTableName = includeTableName || _joins.isNotEmpty;
     var b = new StringBuffer(preamble ?? 'SELECT');
     b.write(' ');
@@ -247,7 +250,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       });
     }
     if (withFields) b.write(f.join(', '));
-    b.write(' FROM $tableName');
+    fromQuery ??= tableName;
+    b.write(' FROM $fromQuery');
 
     // No joins if it's not a select.
     if (preamble == null) {
@@ -267,7 +271,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   @override
   Future<T> getOne(QueryExecutor executor) {
-    limit(1);
+    //limit(1);
     return super.getOne(executor);
   }
 
@@ -294,42 +298,40 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<T> insert(QueryExecutor executor) {
-    var sql = values.compileInsert(this, tableName);
+    var insertion = values.compileInsert(this, tableName);
 
-    if (sql == null) {
+    if (insertion == null) {
       throw new StateError('No values have been specified for update.');
     } else {
+      // TODO: How to do this in a non-Postgres DB?
+      var returning = fields.map(adornWithTableName).join(', ');
+      var sql = compile();
+      sql = 'WITH $tableName as ($insertion RETURNING $returning) ' + sql;
       return executor
-          .query(
-              sql, substitutionValues, fields.map(adornWithTableName).toList())
+          .query(sql, substitutionValues)
           .then((it) => it.isEmpty ? null : deserialize(it.first));
     }
   }
 
   Future<List<T>> update(QueryExecutor executor) async {
-    var sql = new StringBuffer('UPDATE $tableName ');
+    var updateSql = new StringBuffer('UPDATE $tableName ');
     var valuesClause = values.compileForUpdate(this);
 
     if (valuesClause == null) {
       throw new StateError('No values have been specified for update.');
     } else {
-      sql.write(' $valuesClause');
+      updateSql.write(' $valuesClause');
       var whereClause = where.compile();
-      if (whereClause.isNotEmpty) sql.write(' WHERE $whereClause');
-      if (_limit != null) sql.write(' LIMIT $_limit');
+      if (whereClause.isNotEmpty) updateSql.write(' WHERE $whereClause');
+      if (_limit != null) updateSql.write(' LIMIT $_limit');
 
-      if (_joins.isEmpty) {
-        return executor
-            .query(sql.toString(), substitutionValues,
-                fields.map(adornWithTableName).toList())
-            .then((it) => it.map(deserialize).toList());
-      } else {
-        // TODO: Can this be done with just *one* query?
-        return executor
-            .query(sql.toString(), substitutionValues,
-                fields.map(adornWithTableName).toList())
-            .then((it) => get(executor));
-      }
+      var returning = fields.map(adornWithTableName).join(', ');
+      var sql = compile();
+      sql = 'WITH $tableName as ($updateSql RETURNING $returning) ' + sql;
+
+      return executor
+          .query(sql, substitutionValues)
+          .then((it) => it.map(deserialize).toList());
     }
   }
 
