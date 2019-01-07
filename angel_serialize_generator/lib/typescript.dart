@@ -79,15 +79,26 @@ class TypeScriptDefinitionBuilder implements Builder {
         var targetPath = type.element.source.uri.toString();
 
         if (!p.equals(sourcePath, targetPath)) {
-          //var relative = p.relative(targetPath, from: sourcePath);
-          var relative = (p.dirname(targetPath) == p.dirname(sourcePath))
-              ? p.basename(targetPath)
-              : p.relative(targetPath, from: sourcePath);
-          var parent = p.dirname(relative);
-          var filename =
-              p.setExtension(p.basenameWithoutExtension(relative), '.d.ts');
-          relative = p.joinAll(p.split(parent).toList()..add(filename));
-          var ref = '/// <reference path="$relative" />';
+          var relative = p.relative(targetPath, from: sourcePath);
+          String ref;
+
+          if (type.element.source.uri.scheme == 'asset') {
+            var id = AssetId.resolve(type.element.source.uri.toString());
+            if (id.package != buildStep.inputId.package) {
+              ref = '/// <reference types="${id.package}" />';
+            }
+          }
+
+          if (ref == null) {
+            // var relative = (p.dirname(targetPath) == p.dirname(sourcePath))
+            //     ? p.basename(targetPath)
+            //     : p.relative(targetPath, from: sourcePath);
+            var parent = p.dirname(relative);
+            var filename =
+                p.setExtension(p.basenameWithoutExtension(relative), '.d.ts');
+            relative = p.joinAll(p.split(parent).toList()..add(filename));
+            ref = '/// <reference path="$relative" />';
+          }
           if (!refs.contains(ref)) refs.add(ref);
         }
 

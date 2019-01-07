@@ -9,12 +9,13 @@ part 'author.g.dart';
 
 @Serializable(serializers: Serializers.all)
 abstract class _Author extends Model {
-  @required
+  @SerializableField(isNullable: false)
   String get name;
 
   String get customMethod => 'hey!';
 
-  @Required('Custom message for missing `age`')
+  @SerializableField(
+      isNullable: false, errorMessage: 'Custom message for missing `age`')
   int get age;
 
   List<Book> get books;
@@ -35,13 +36,12 @@ abstract class _Library extends Model {
 
 @Serializable(serializers: Serializers.all)
 abstract class _Bookmark extends Model {
-  
   @SerializableField(exclude: true)
   final Book book;
 
   List<int> get history;
 
-  @required
+  @SerializableField(isNullable: false)
   int get page;
 
   String get comment;

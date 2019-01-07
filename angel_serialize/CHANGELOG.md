@@ -1,3 +1,6 @@
+# 2.2.0
+* Add `@SerializableField`.
+
 # 2.1.0
 * Export `hashObjects`.
 

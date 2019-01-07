@@ -1,4 +1,4 @@
-/// <reference path="./book.d.ts" />
+/// <reference path="../book.d.ts" />
 // GENERATED CODE - DO NOT MODIFY BY HAND
 declare module 'angel_serialize_generator' {
   interface Author {

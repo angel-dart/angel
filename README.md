@@ -13,6 +13,7 @@ the time you spend writing boilerplate serialization code for your models.
     - [Excluding Keys](#excluding-keys)
     - [Required Fields](#required-fields)
     - [Adding Annotations to Generated Classes](#adding-annotations-to-generated-classes)
+    - [Custom Serializers](#custom-serializers)
   - [Serialization](#serializaition)
   - [Nesting](#nesting)
   - [ID and Date Fields](#id-and-dates)
@@ -245,6 +246,24 @@ There are times when you need the generated class to have annotations affixed to
   ]
 )
 abstract class _Foo extends Model {}
+```
+
+## Custom Serializers
+`package:angel_serialize` does not cover every known Dart data type; you can add support for your own.
+Provide `serializer` and `deserializer` arguments to `@SerializableField()` as you see fit.
+
+They are typically used together. Note that the argument to `serializer` will always be
+`dynamic`.
+
+```dart
+DateTime _dateFromString(s) => s is String ? HttpDate.parse(s) : null;
+String _dateToString(v) => v == null ? null : HttpDate.format(v);
+
+@Serializable(autoIdAndDateFields: false)
+abstract class _HttpRequest {
+  @SerializableField(serializer: #_dateToString, deserializer: #_dateFromString)
+  DateTime date;
+}
 ```
 
 # Nesting

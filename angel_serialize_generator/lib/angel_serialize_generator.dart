@@ -1,6 +1,7 @@
 library angel_serialize_generator;
 
 import 'dart:async';
+import 'dart:mirrors';
 import 'dart:typed_data';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';

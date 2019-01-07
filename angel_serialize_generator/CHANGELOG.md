@@ -1,3 +1,9 @@
+# 2.4.0
+* Introduce `@SerializableField`, and say goodbye to annotation hell.
+* Support custom (de)serializers.
+* Allow passing of annotations to the generated class.
+* Fixted TypeScript `ref` generator.
+
 # 2.3.0
 * Add `@DefaultValue` support.
 

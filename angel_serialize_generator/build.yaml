@@ -27,6 +27,7 @@ targets:
   _book:
     sources:
       - "test/models/book.dart"
+      - "test/models/has_map.dart"
       - "test/models/goat.dart"
       - "test/models/game_pad_button.dart"
       - "test/models/with_enum.dart"

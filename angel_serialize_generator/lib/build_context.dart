@@ -28,6 +28,8 @@ const TypeChecker serializableTypeChecker =
 const TypeChecker generatedSerializableTypeChecker =
     const TypeChecker.fromRuntime(GeneratedSerializable);
 
+final Map<String, BuildContext> _cache = {};
+
 /// Create a [BuildContext].
 Future<BuildContext> buildContext(
     ClassElement clazz,
@@ -37,6 +39,11 @@ Future<BuildContext> buildContext(
     bool autoSnakeCaseNames,
     bool autoIdAndDateFields,
     {bool heedExclude: true}) async {
+  var id = clazz.location.components.join('-');
+  if (_cache.containsKey(id)) {
+    return _cache[id];
+  }
+
   // Check for autoIdAndDateFields, autoSnakeCaseNames
   autoIdAndDateFields =
       annotation.peek('autoIdAndDateFields')?.boolValue ?? autoIdAndDateFields;
@@ -155,6 +162,8 @@ Future<BuildContext> buildContext(
             const TypeChecker.fromRuntime(Required).firstAnnotationOf(el);
 
         if (required != null) {
+          log.warning(
+              'Using @required on fields (like ${clazz.name}.${field.name}) is now deprecated; use @SerializableField(isNullable: false) instead.');
           var cr = new ConstantReader(required);
           var reason = cr.peek('reason')?.stringValue ??
               "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";

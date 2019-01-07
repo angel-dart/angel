@@ -96,8 +96,13 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           return '${rc.pascalCase}Serializer.toMap($value)';
         }
 
+        if (ctx.fieldInfo[field.name]?.serializer != null) {
+          var name = MirrorSystem.getName(ctx.fieldInfo[field.name].serializer);
+          serializedRepresentation = '$name(model.${field.name})';
+        }
+
         // Serialize dates
-        if (dateTimeTypeChecker.isAssignableFromType(field.type))
+        else if (dateTimeTypeChecker.isAssignableFromType(field.type))
           serializedRepresentation = 'model.${field.name}?.toIso8601String()';
 
         // Serialize model classes via `XSerializer.toMap`
@@ -212,8 +217,11 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
               '$deserializedRepresentation ?? $defaultValue';
         }
 
-        // Deserialize dates
-        if (dateTimeTypeChecker.isAssignableFromType(field.type))
+        if (ctx.fieldInfo[field.name]?.deserializer != null) {
+          var name =
+              MirrorSystem.getName(ctx.fieldInfo[field.name].deserializer);
+          deserializedRepresentation = "$name(map['$alias'])";
+        } else if (dateTimeTypeChecker.isAssignableFromType(field.type))
           deserializedRepresentation = "map['$alias'] != null ? "
               "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias'].toString()))"
               " : $defaultValue";
