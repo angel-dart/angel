@@ -3,6 +3,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/dart/element/element.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';
@@ -37,7 +38,6 @@ Future<BuildContext> buildContext(
     BuildStep buildStep,
     Resolver resolver,
     bool autoSnakeCaseNames,
-    bool autoIdAndDateFields,
     {bool heedExclude: true}) async {
   var id = clazz.location.components.join('-');
   if (_cache.containsKey(id)) {
@@ -45,8 +45,6 @@ Future<BuildContext> buildContext(
   }
 
   // Check for autoIdAndDateFields, autoSnakeCaseNames
-  autoIdAndDateFields =
-      annotation.peek('autoIdAndDateFields')?.boolValue ?? autoIdAndDateFields;
   autoSnakeCaseNames =
       annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
 
@@ -55,7 +53,6 @@ Future<BuildContext> buildContext(
     clazz,
     originalClassName: clazz.name,
     sourceFilename: p.basename(buildStep.inputId.path),
-    autoIdAndDateFields: autoIdAndDateFields,
     autoSnakeCaseNames: autoSnakeCaseNames,
     includeAnnotations:
         annotation.peek('includeAnnotations')?.listValue ?? <DartObject>[],
@@ -79,7 +76,7 @@ Future<BuildContext> buildContext(
 
       if (fieldAnn != null) {
         var cr = ConstantReader(fieldAnn);
-        var sField = SerializableField(
+        var sField = SerializableFieldMirror(
           alias: cr.peek('alias')?.stringValue,
           defaultValue: cr.peek('defaultValue')?.objectValue,
           serializer: cr.peek('serializer')?.symbolValue,
@@ -89,12 +86,13 @@ Future<BuildContext> buildContext(
           canDeserialize: cr.peek('canDeserialize')?.boolValue ?? false,
           canSerialize: cr.peek('canSerialize')?.boolValue ?? false,
           exclude: cr.peek('exclude')?.boolValue ?? false,
+          serializesTo: cr.peek('serializesTo')?.typeValue,
         );
 
         ctx.fieldInfo[field.name] = sField;
 
         if (sField.defaultValue != null) {
-          ctx.defaults[field.name] = sField.defaultValue as DartObject;
+          ctx.defaults[field.name] = sField.defaultValue;
         }
 
         if (sField.alias != null) {
@@ -175,7 +173,7 @@ Future<BuildContext> buildContext(
     }
   }
 
-  if (autoIdAndDateFields != false) {
+  if (const TypeChecker.fromRuntime(Model).isAssignableFromType(clazz.type)) {
     if (!fieldNames.contains('id')) {
       var idField =
           new ShimFieldImpl('id', lib.context.typeProvider.stringType);

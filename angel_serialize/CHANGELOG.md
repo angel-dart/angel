@@ -1,3 +1,6 @@
+# 2.2.1
+* Add `serializesTo`.
+
 # 2.2.0
 * Add `@SerializableField`.
 

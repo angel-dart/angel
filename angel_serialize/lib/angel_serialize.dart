@@ -52,6 +52,14 @@ class SerializableField {
   /// Whether this field can be serialized, if [exclude] is `true`. Defaults to `false`.
   final bool canSerialize;
 
+  /// May be used with [serializer] and [deserializer].
+  ///
+  /// Specifies the [Type] that this field serializes to.
+  ///
+  /// Ex. If you have a field that serializes to a JSON string,
+  /// specify `serializesTo: String`.
+  final Type serializesTo;
+
   const SerializableField(
       {this.alias,
       this.defaultValue,
@@ -61,7 +69,8 @@ class SerializableField {
       this.isNullable: true,
       this.exclude: false,
       this.canDeserialize: false,
-      this.canSerialize: false});
+      this.canSerialize: false,
+      this.serializesTo});
 }
 
 /// Marks a class as eligible for serialization.
@@ -69,7 +78,7 @@ class Serializable {
   const Serializable(
       {this.serializers: const [Serializers.map, Serializers.json],
       this.autoSnakeCaseNames: true,
-      this.autoIdAndDateFields: true,
+      @deprecated this.autoIdAndDateFields: true,
       this.includeAnnotations: const []});
 
   /// A list of enabled serialization modes.
@@ -81,6 +90,7 @@ class Serializable {
   final bool autoSnakeCaseNames;
 
   /// Overrides the setting in `JsonModelGenerator`.
+  @deprecated
   final bool autoIdAndDateFields;
 
   /// A list of constant members to affix to the generated class.

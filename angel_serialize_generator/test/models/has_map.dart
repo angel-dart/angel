@@ -8,9 +8,12 @@ Map _fromString(v) => json.decode(v.toString()) as Map;
 
 String _toString(Map v) => json.encode(v);
 
-@Serializable(autoIdAndDateFields: false)
+@serializable
 abstract class _HasMap {
   @SerializableField(
-      serializer: #_toString, deserializer: #_fromString, isNullable: false)
+      serializer: #_toString,
+      deserializer: #_fromString,
+      isNullable: false,
+      serializesTo: String)
   Map get value;
 }

@@ -12,7 +12,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       throw 'Only classes can be annotated with a @Serializable() annotation.';
 
     var ctx = await buildContext(element as ClassElement, annotation, buildStep,
-        await buildStep.resolver, true, autoSnakeCaseNames != false);
+        await buildStep.resolver, autoSnakeCaseNames != false);
 
     var serializers = annotation.peek('serializers')?.listValue ?? [];
 
@@ -80,6 +80,8 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
 
       // Add named parameters
       for (var field in ctx.fields) {
+        var type = ctx.resolveSerializedFieldType(field.name);
+
         // Skip excluded fields
         if (ctx.excluded[field.name]?.canSerialize == false) continue;
 
@@ -102,19 +104,17 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         }
 
         // Serialize dates
-        else if (dateTimeTypeChecker.isAssignableFromType(field.type))
+        else if (dateTimeTypeChecker.isAssignableFromType(type))
           serializedRepresentation = 'model.${field.name}?.toIso8601String()';
 
         // Serialize model classes via `XSerializer.toMap`
-        else if (isModelClass(field.type)) {
-          var rc = new ReCase(field.type.name);
+        else if (isModelClass(type)) {
+          var rc = new ReCase(type.name);
           serializedRepresentation =
               '${serializerToMap(rc, 'model.${field.name}')}';
-        } else if (field.type is InterfaceType) {
-          var t = field.type as InterfaceType;
-
-          if (isListOfModelType(t)) {
-            var name = t.typeArguments[0].name;
+        } else if (type is InterfaceType) {
+          if (isListOfModelType(type)) {
+            var name = type.typeArguments[0].name;
             if (name.startsWith('_')) name = name.substring(1);
             var rc = new ReCase(name);
             var m = serializerToMap(rc, 'm');
@@ -122,21 +122,21 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             model.${field.name}
               ?.map((m) => $m)
               ?.toList()''';
-          } else if (isMapToModelType(t)) {
-            var rc = new ReCase(t.typeArguments[1].name);
+          } else if (isMapToModelType(type)) {
+            var rc = new ReCase(type.typeArguments[1].name);
             serializedRepresentation =
                 '''model.${field.name}.keys?.fold({}, (map, key) {
               return map..[key] =
               ${serializerToMap(rc, 'model.${field.name}[key]')};
             })''';
-          } else if (t.element.isEnum) {
+          } else if (type.element.isEnum) {
             serializedRepresentation = '''
             model.${field.name} == null ?
               null
-              : ${t.name}.values.indexOf(model.${field.name})
+              : ${type.name}.values.indexOf(model.${field.name})
             ''';
           } else if (const TypeChecker.fromRuntime(Uint8List)
-              .isAssignableFromType(t)) {
+              .isAssignableFromType(type)) {
             serializedRepresentation = '''
             model.${field.name} == null ?
               null
@@ -199,6 +199,8 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
       }
 
       for (var field in ctx.fields) {
+        var type = ctx.resolveSerializedFieldType(field.name);
+
         if (ctx.excluded[field.name]?.canDeserialize == false) continue;
 
         var alias = ctx.resolveFieldName(field.name);
@@ -206,7 +208,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
         if (i++ > 0) buf.write(', ');
 
         String deserializedRepresentation =
-            "map['$alias'] as ${typeToString(field.type)}";
+            "map['$alias'] as ${typeToString(type)}";
 
         var defaultValue = 'null';
         var existingDefault = ctx.defaults[field.name];
@@ -221,29 +223,27 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
           var name =
               MirrorSystem.getName(ctx.fieldInfo[field.name].deserializer);
           deserializedRepresentation = "$name(map['$alias'])";
-        } else if (dateTimeTypeChecker.isAssignableFromType(field.type))
+        } else if (dateTimeTypeChecker.isAssignableFromType(type))
           deserializedRepresentation = "map['$alias'] != null ? "
               "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias'].toString()))"
               " : $defaultValue";
 
         // Serialize model classes via `XSerializer.toMap`
-        else if (isModelClass(field.type)) {
-          var rc = new ReCase(field.type.name);
+        else if (isModelClass(type)) {
+          var rc = new ReCase(type.name);
           deserializedRepresentation = "map['$alias'] != null"
               " ? ${rc.pascalCase}Serializer.fromMap(map['$alias'] as Map)"
               " : $defaultValue";
-        } else if (field.type is InterfaceType) {
-          var t = field.type as InterfaceType;
-
-          if (isListOfModelType(t)) {
-            var rc = new ReCase(t.typeArguments[0].name);
+        } else if (type is InterfaceType) {
+          if (isListOfModelType(type)) {
+            var rc = new ReCase(type.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
                 " ? new List.unmodifiable(((map['$alias'] as Iterable)"
                 ".where((x) => x is Map)  as Iterable<Map>)"
                 ".map(${rc.pascalCase}Serializer.fromMap))"
                 " : $defaultValue";
-          } else if (isMapToModelType(t)) {
-            var rc = new ReCase(t.typeArguments[1].name);
+          } else if (isMapToModelType(type)) {
+            var rc = new ReCase(type.typeArguments[1].name);
             deserializedRepresentation = '''
                 map['$alias'] is Map
                   ? new Map.unmodifiable((map['$alias'] as Map).keys.fold({}, (out, key) {
@@ -252,21 +252,21 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                     }))
                   : $defaultValue
             ''';
-          } else if (t.element.isEnum) {
+          } else if (type.element.isEnum) {
             deserializedRepresentation = '''
-            map['$alias'] is ${t.name}
-              ? (map['$alias'] as ${t.name})
+            map['$alias'] is ${type.name}
+              ? (map['$alias'] as ${type.name})
               :
               (
                 map['$alias'] is int
-                ? ${t.name}.values[map['$alias'] as int]
+                ? ${type.name}.values[map['$alias'] as int]
                 : $defaultValue
               )
             ''';
           } else if (const TypeChecker.fromRuntime(List)
-                  .isAssignableFromType(t) &&
-              t.typeArguments.length == 1) {
-            var arg = convertTypeReference(t.typeArguments[0])
+                  .isAssignableFromType(type) &&
+              type.typeArguments.length == 1) {
+            var arg = convertTypeReference(type.typeArguments[0])
                 .accept(new DartEmitter());
             deserializedRepresentation = '''
                 map['$alias'] is Iterable
@@ -274,11 +274,11 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                   : $defaultValue
                 ''';
           } else if (const TypeChecker.fromRuntime(Map)
-                  .isAssignableFromType(t) &&
-              t.typeArguments.length == 2) {
-            var key = convertTypeReference(t.typeArguments[0])
+                  .isAssignableFromType(type) &&
+              type.typeArguments.length == 2) {
+            var key = convertTypeReference(type.typeArguments[0])
                 .accept(new DartEmitter());
-            var value = convertTypeReference(t.typeArguments[1])
+            var value = convertTypeReference(type.typeArguments[1])
                 .accept(new DartEmitter());
             deserializedRepresentation = '''
                 map['$alias'] is Map
@@ -286,7 +286,7 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
                   : $defaultValue
                 ''';
           } else if (const TypeChecker.fromRuntime(Uint8List)
-              .isAssignableFromType(t)) {
+              .isAssignableFromType(type)) {
             deserializedRepresentation = '''
             map['$alias'] is Uint8List
               ? (map['$alias'] as Uint8List)

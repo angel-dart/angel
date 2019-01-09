@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 import 'game_pad_button.dart';
 part 'game_pad.g.dart';
 
-@Serializable(autoIdAndDateFields: false)
+@serializable
 class _Gamepad {
   List<GamepadButton> buttons;
 

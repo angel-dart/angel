@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:recase/recase.dart';
@@ -20,7 +21,7 @@ class BuildContext {
   final Map<String, DartObject> defaults = {};
 
   /// A map of fields to their related information.
-  final Map<String, SerializableField> fieldInfo = {};
+  final Map<String, SerializableFieldMirror> fieldInfo = {};
 
   /// A map of fields that have been marked as to be excluded from serialization.
   // ignore: deprecated_member_use
@@ -78,4 +79,31 @@ class BuildContext {
   /// Get the aliased name (if one is defined) for a field.
   String resolveFieldName(String name) =>
       aliases.containsKey(name) ? aliases[name] : name;
+
+  /// Finds the type that the field [name] should serialize to.
+  DartType resolveSerializedFieldType(String name) {
+    return fieldInfo[name]?.serializesTo ??
+        fields.firstWhere((f) => f.name == name).type;
+  }
+}
+
+class SerializableFieldMirror {
+  final String alias;
+  final DartObject defaultValue;
+  final Symbol serializer, deserializer;
+  final String errorMessage;
+  final bool isNullable, canDeserialize, canSerialize, exclude;
+  final DartType serializesTo;
+
+  SerializableFieldMirror(
+      {this.alias,
+      this.defaultValue,
+      this.serializer,
+      this.deserializer,
+      this.errorMessage,
+      this.isNullable,
+      this.canDeserialize,
+      this.canSerialize,
+      this.exclude,
+      this.serializesTo});
 }

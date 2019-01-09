@@ -255,13 +255,20 @@ Provide `serializer` and `deserializer` arguments to `@SerializableField()` as y
 They are typically used together. Note that the argument to `serializer` will always be
 `dynamic`.
 
+In such a case, you might want to also provide a `serializesTo` argument.
+This lets the generator, as well as the ORM, apply the correct (de)serialization rules
+and validations.
+
 ```dart
 DateTime _dateFromString(s) => s is String ? HttpDate.parse(s) : null;
 String _dateToString(v) => v == null ? null : HttpDate.format(v);
 
-@Serializable(autoIdAndDateFields: false)
+@serializable
 abstract class _HttpRequest {
-  @SerializableField(serializer: #_dateToString, deserializer: #_dateFromString)
+  @SerializableField(
+    serializer: #_dateToString,
+    deserializer: #_dateFromString,
+    serializesTo: String)
   DateTime date;
 }
 ```
@@ -294,15 +301,8 @@ then you will need to generate `book.g.dart` before, `author.g.dart`,
 # ID and Dates
 
 This package will automatically generate `id`, `createdAt`, and `updatedAt` fields for you,
-in the style of an Angel `Model`. To disable this, set `autoIdAndDateFields` to `false` in the
-builder constructor.
-
-You can also override `autoIdAndDateFields` per model:
-
-```dart
-@Serializable(autoIdAndDateFields: false)
-abstract class _Skinny extends Model {}
-```
+in the style of an Angel `Model`. This will automatically be generated, **only** for classes
+extending `Model`.
 
 # Binary Data
 

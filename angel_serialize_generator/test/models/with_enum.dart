@@ -4,7 +4,7 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 part 'with_enum.g.dart';
 
-@Serializable(autoIdAndDateFields: false)
+@serializable
 abstract class _WithEnum {
   WithEnumType get type;
 

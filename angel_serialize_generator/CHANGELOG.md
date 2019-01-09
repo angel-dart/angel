@@ -1,3 +1,8 @@
+# 2.4.1
+* Support `serializesTo`.
+* Don't emit `@required` if there is a default value.
+* Deprecate `autoIdAndDateFields`.
+
 # 2.4.0
 * Introduce `@SerializableField`, and say goodbye to annotation hell.
 * Support custom (de)serializers.

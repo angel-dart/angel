@@ -109,7 +109,6 @@ class TypeScriptDefinitionBuilder implements Builder {
           buildStep,
           buildStep.resolver,
           autoSnakeCaseNames,
-          true,
         );
         typeScriptType = ctx.modelClassNameRecase.pascalCase;
       }
@@ -152,7 +151,6 @@ class TypeScriptDefinitionBuilder implements Builder {
           element.annotation,
           buildStep,
           await buildStep.resolver,
-          true,
           autoSnakeCaseNames != false));
     }
 
@@ -184,8 +182,8 @@ class TypeScriptDefinitionBuilder implements Builder {
         if (ctx.excluded[field.name]?.canSerialize == false) continue;
 
         var alias = ctx.resolveFieldName(field.name);
-        var typeScriptType = await compileToTypeScriptType(
-            ctx, field.name, field.type, refs, ext, buildStep);
+        var typeScriptType = await compileToTypeScriptType(ctx, field.name,
+            ctx.resolveSerializedFieldType(field.name), refs, ext, buildStep);
 
         // foo: string;
         if (!ctx.requiredFields.containsKey(field.name)) alias += '?';
