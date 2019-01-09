@@ -1,3 +1,7 @@
+# 2.1.3
+* Fix generation of ORM models.
+* A `--project-name` to `init` command.
+
 # 2.1.2
 * No migrations-by-default.
 

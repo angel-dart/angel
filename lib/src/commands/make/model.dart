@@ -98,8 +98,8 @@ class ModelCommand extends Command {
           if (argResults['migration'] as bool) {
             modelClazz.annotations.add(refer('orm'));
           } else {
-            modelClazz.annotations.add(refer('Orm')
-                .newInstance([], {'generateMigration': literalFalse}));
+            modelClazz.annotations.add(
+                refer('Orm').call([], {'generateMigration': literalFalse}));
           }
         }
       }));

@@ -22,7 +22,10 @@ class InitCommand extends Command {
       "Initializes a new Angel project in the current directory.";
 
   InitCommand() {
-    argParser..addFlag('pub-get', defaultsTo: true);
+    argParser
+      ..addFlag('pub-get', defaultsTo: true)
+      ..addOption('project-name',
+          abbr: 'n', help: 'The name for this project.');
   }
 
   @override
@@ -44,8 +47,11 @@ class InitCommand extends Command {
         new File.fromUri(projectDir.uri.resolve('config/production.yaml')),
         secret);
 
-    var name = p.basenameWithoutExtension(
-        projectDir.absolute.uri.normalizePath().toFilePath());
+    var name = argResults.wasParsed('project-name')
+        ? argResults['project-name'] as String
+        : p.basenameWithoutExtension(
+            projectDir.absolute.uri.normalizePath().toFilePath());
+
     name = ReCase(name).snakeCase;
     print('Renaming project from "angel" to "$name"...');
     await renamePubspec(projectDir, 'angel', name);

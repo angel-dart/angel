@@ -29,7 +29,7 @@ class RenameCommand extends Command {
       newName = prompts.get('Rename project to');
     }
 
-    newName = new Recase(newName).snakeCase;
+    newName = new ReCase(newName).snakeCase;
 
     var choice = prompts.getBool('Rename the project to `$newName`?');
 
