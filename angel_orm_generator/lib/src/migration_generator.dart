@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:build/build.dart';
@@ -11,8 +12,7 @@ import 'orm_build_context.dart';
 Builder migrationBuilder(BuilderOptions options) {
   return new SharedPartBuilder([
     new MigrationGenerator(
-        autoSnakeCaseNames: options.config['auto_snake_case_names'] != false,
-        autoIdAndDateFields: options.config['auto_id_and_date_fields'] != false)
+        autoSnakeCaseNames: options.config['auto_snake_case_names'] != false)
   ], 'angel_migration');
 }
 
@@ -25,11 +25,7 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
   /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
 
-  /// If `true` (default), then the schema will automatically add id, created_at and updated_at fields.
-  final bool autoIdAndDateFields;
-
-  const MigrationGenerator(
-      {this.autoSnakeCaseNames: true, this.autoIdAndDateFields: true});
+  const MigrationGenerator({this.autoSnakeCaseNames: true});
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -45,13 +41,8 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
     }
 
     var resolver = await buildStep.resolver;
-    var ctx = await buildOrmContext(
-        element as ClassElement,
-        annotation,
-        buildStep,
-        resolver,
-        autoSnakeCaseNames != false,
-        autoIdAndDateFields != false);
+    var ctx = await buildOrmContext(element as ClassElement, annotation,
+        buildStep, resolver, autoSnakeCaseNames != false);
     var lib = generateMigrationLibrary(
         ctx, element as ClassElement, resolver, buildStep);
     if (lib == null) return null;
@@ -73,6 +64,8 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
 
   Method buildUpMigration(OrmBuildContext ctx, LibraryBuilder lib) {
     return new Method((meth) {
+      var autoIdAndDateFields = const TypeChecker.fromRuntime(Model)
+          .isAssignableFromType(ctx.buildContext.clazz.type);
       meth
         ..name = 'up'
         ..annotations.add(refer('override'))

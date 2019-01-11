@@ -111,6 +111,10 @@ class ColumnType {
   static const ColumnType varBinaryMax = const ColumnType('varbinary(max)');
   static const ColumnType image = const ColumnType('image');
 
+  // JSON.
+  static const ColumnType json = const ColumnType('json');
+  static const ColumnType jsonb = const ColumnType('jsonb');
+
   // Misc.
   static const ColumnType sqlVariant = const ColumnType('sql_variant');
   static const ColumnType uniqueIdentifier =

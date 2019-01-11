@@ -399,3 +399,39 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
     return parts.isEmpty ? null : parts.join(' AND ');
   }
 }
+
+class MapSqlExpressionBuilder<K, V, Key extends SqlExpressionBuilder<K>,
+    Value extends SqlExpressionBuilder<V>> extends SqlExpressionBuilder {
+  final Key key;
+  final Value value;
+  bool _hasValue = false;
+  String _raw;
+
+  MapSqlExpressionBuilder(Query query, String columnName, this.key, this.value)
+      : super(query, columnName);
+
+  UnsupportedError _unsupported() =>
+      UnsupportedError('JSON/JSONB does not support this operation.');
+
+  @override
+  String compile() {
+    var parts = <String>[_raw, key.compile(), value.compile()];
+    parts.removeWhere((s) => s == null);
+    return parts.isEmpty ? null : parts.join(' && ');
+  }
+
+  @override
+  bool get hasValue => key.hasValue || value.hasValue || _hasValue;
+
+  @override
+  void isBetween(lower, upper) => throw _unsupported();
+
+  @override
+  void isIn(Iterable values) => throw _unsupported();
+
+  @override
+  void isNotBetween(lower, upper) => throw _unsupported();
+
+  @override
+  void isNotIn(Iterable values) => throw _unsupported();
+}

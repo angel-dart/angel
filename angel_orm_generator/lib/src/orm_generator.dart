@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:angel_serialize_generator/build_context.dart';
@@ -12,8 +14,7 @@ import 'orm_build_context.dart';
 Builder ormBuilder(BuilderOptions options) {
   return new SharedPartBuilder([
     new OrmGenerator(
-        autoSnakeCaseNames: options.config['auto_snake_case_names'] != false,
-        autoIdAndDateFields: options.config['auto_id_and_date_fields'] != false)
+        autoSnakeCaseNames: options.config['auto_snake_case_names'] != false)
   ], 'angel_orm');
 }
 
@@ -26,16 +27,15 @@ TypeReference futureOf(String type) {
 /// Builder that generates `.orm.g.dart`, with an abstract `FooOrm` class.
 class OrmGenerator extends GeneratorForAnnotation<Orm> {
   final bool autoSnakeCaseNames;
-  final bool autoIdAndDateFields;
 
-  OrmGenerator({this.autoSnakeCaseNames, this.autoIdAndDateFields});
+  OrmGenerator({this.autoSnakeCaseNames});
 
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
     if (element is ClassElement) {
       var ctx = await buildOrmContext(element, annotation, buildStep,
-          buildStep.resolver, autoSnakeCaseNames, autoIdAndDateFields);
+          buildStep.resolver, autoSnakeCaseNames);
       var lib = buildOrmLibrary(buildStep.inputId, ctx);
       return lib.accept(new DartEmitter()).toString();
     } else {
@@ -146,10 +146,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
             for (var field in ctx.effectiveFields) {
               Reference type = convertTypeReference(field.type);
-              if (isSpecialId(field)) type = refer('int');
+              if (isSpecialId(ctx, field)) type = refer('int');
 
               var expr = (refer('row').index(literalNum(i++)));
-              if (isSpecialId(field))
+              if (isSpecialId(ctx, field))
                 expr = expr.property('toString').call([]);
               else if (field is RelationFieldImpl)
                 continue;
@@ -229,7 +229,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   relation.type == RelationshipType.hasMany) {
                 var foreign = ctx.relationTypes[relation];
                 var additionalFields = foreign.effectiveFields
-                    .where((f) => f.name != 'id' || !isSpecialId(f))
+                    .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
                     .map((f) => literalString(
                         foreign.buildContext.resolveFieldName(f.name)));
                 var joinArgs = [relation.localKey, relation.foreignKey]
@@ -284,7 +284,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
                     // Just call getOne() again
                     if (ctx.effectiveFields.any((f) =>
-                        isSpecialId(f) ||
+                        isSpecialId(ctx, f) ||
                         (ctx.columns[f.name]?.indexType ==
                             IndexType.primaryKey))) {
                       b.addExpression(refer('where')
@@ -370,7 +370,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                         'but ${ctx.buildContext.clazz.name} has a @HasMany() relation that expects such a field.';
                   });
 
-                  var queryValue = (isSpecialId(localField))
+                  var queryValue = (isSpecialId(ctx, localField))
                       ? 'int.parse(model.id)'
                       : 'model.${localField.name}';
                   var cascadeText =
@@ -445,10 +445,12 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
     });
   }
 
-  bool isSpecialId(FieldElement field) {
+  bool isSpecialId(OrmBuildContext ctx, FieldElement field) {
     return field is ShimFieldImpl &&
         field is! RelationFieldImpl &&
-        (field.name == 'id' && autoIdAndDateFields);
+        (field.name == 'id' &&
+            const TypeChecker.fromRuntime(Model)
+                .isAssignableFromType(ctx.buildContext.clazz.type));
   }
 
   Class buildWhereClass(OrmBuildContext ctx) {
@@ -475,23 +477,31 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       // Add builders for each field
       for (var field in ctx.effectiveFields) {
         var name = field.name;
+        DartType type;
         Reference builderType;
 
-        if (const TypeChecker.fromRuntime(int).isExactlyType(field.type) ||
-            const TypeChecker.fromRuntime(double).isExactlyType(field.type) ||
-            isSpecialId(field)) {
+        try {
+          type = ctx.buildContext.resolveSerializedFieldType(field.name);
+        } on StateError {
+          type = field.type;
+        }
+
+        if (const TypeChecker.fromRuntime(int).isExactlyType(type) ||
+            const TypeChecker.fromRuntime(double).isExactlyType(type) ||
+            isSpecialId(ctx, field)) {
           builderType = new TypeReference((b) => b
             ..symbol = 'NumericSqlExpressionBuilder'
-            ..types.add(refer(isSpecialId(field) ? 'int' : field.type.name)));
-        } else if (const TypeChecker.fromRuntime(String)
-            .isExactlyType(field.type)) {
+            ..types.add(refer(isSpecialId(ctx, field) ? 'int' : type.name)));
+        } else if (const TypeChecker.fromRuntime(String).isExactlyType(type)) {
           builderType = refer('StringSqlExpressionBuilder');
-        } else if (const TypeChecker.fromRuntime(bool)
-            .isExactlyType(field.type)) {
+        } else if (const TypeChecker.fromRuntime(bool).isExactlyType(type)) {
           builderType = refer('BooleanSqlExpressionBuilder');
         } else if (const TypeChecker.fromRuntime(DateTime)
-            .isExactlyType(field.type)) {
+            .isExactlyType(type)) {
           builderType = refer('DateTimeSqlExpressionBuilder');
+        } else if (const TypeChecker.fromRuntime(Map)
+            .isAssignableFromType(type)) {
+          builderType = refer('MapSqlExpressionBuilder');
         } else if (ctx.relations.containsKey(field.name)) {
           var relation = ctx.relations[field.name];
           if (relation.type != RelationshipType.belongsTo)
@@ -545,7 +555,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       // Each field generates a getter for setter
       for (var field in ctx.effectiveFields) {
         var name = ctx.buildContext.resolveFieldName(field.name);
-        var type = isSpecialId(field)
+        var type = isSpecialId(ctx, field)
             ? refer('int')
             : convertTypeReference(field.type);
 
@@ -584,7 +594,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             var args = <String, Expression>{};
 
             for (var field in ctx.effectiveFields) {
-              if (isSpecialId(field) || field is RelationFieldImpl) continue;
+              if (isSpecialId(ctx, field) || field is RelationFieldImpl)
+                continue;
               args[ctx.buildContext.resolveFieldName(field.name)] =
                   refer('model').property(field.name);
             }

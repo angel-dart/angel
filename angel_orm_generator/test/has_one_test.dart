@@ -1,7 +1,6 @@
 /// Tests for @hasOne...
 library angel_orm_generator.test.has_one_test;
 
-import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/foot.dart';
 import 'models/leg.dart';

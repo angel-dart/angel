@@ -26,12 +26,14 @@ targets:
       - test/models/customer.dart
       - test/models/foot.dart
       - test/models/fruit.dart
+      - test/models/has_map.dart
       - test/models/role.dart
   $default:
     dependencies:
       - :_standalone
     sources:
       - test/models/book.dart
+      # - test/models/has_car.dart
       - test/models/leg.dart
       - test/models/order.dart
       - test/models/tree.dart

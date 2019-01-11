@@ -10,6 +10,6 @@ part 'author.g.dart';
 @orm
 abstract class _Author extends Model {
   @Column(length: 255, indexType: IndexType.unique)
-  @DefaultValue('Tobe Osakwe')
+  @SerializableField(defaultValue: 'Tobe Osakwe')
   String get name;
 }

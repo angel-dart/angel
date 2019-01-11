@@ -27,7 +27,6 @@ Future<OrmBuildContext> buildOrmContext(
     BuildStep buildStep,
     Resolver resolver,
     bool autoSnakeCaseNames,
-    bool autoIdAndDateFields,
     {bool heedExclude: true}) async {
   // Check for @generatedSerializable
   // ignore: unused_local_variable
@@ -44,8 +43,8 @@ Future<OrmBuildContext> buildOrmContext(
   if (_cache.containsKey(id)) {
     return _cache[id];
   }
-  var buildCtx = await buildContext(clazz, annotation, buildStep, resolver,
-      autoSnakeCaseNames, autoIdAndDateFields,
+  var buildCtx = await buildContext(
+      clazz, annotation, buildStep, resolver, autoSnakeCaseNames,
       heedExclude: heedExclude);
   var ormAnnotation = reviveORMAnnotation(annotation);
   var ctx = new OrmBuildContext(
@@ -66,7 +65,10 @@ Future<OrmBuildContext> buildOrmContext(
       column = reviveColumn(new ConstantReader(columnAnnotation));
     }
 
-    if (column == null && field.name == 'id' && autoIdAndDateFields == true) {
+    if (column == null &&
+        field.name == 'id' &&
+        const TypeChecker.fromRuntime(Model)
+            .isAssignableFromType(buildCtx.clazz.type)) {
       // This is only for PostgreSQL, so implementations without a `serial` type
       // must handle it accordingly, of course.
       column = const Column(type: ColumnType.serial);
@@ -76,7 +78,7 @@ Future<OrmBuildContext> buildOrmContext(
       // Guess what kind of column this is...
       column = new Column(
         type: inferColumnType(
-          field.type,
+          buildCtx.resolveSerializedFieldType(field.name),
         ),
       );
     }
@@ -133,8 +135,7 @@ Future<OrmBuildContext> buildOrmContext(
                     .firstAnnotationOf(modelType.element)),
                 buildStep,
                 resolver,
-                autoSnakeCaseNames,
-                autoIdAndDateFields);
+                autoSnakeCaseNames);
 
             var ormAnn = const TypeChecker.fromRuntime(Orm)
                 .firstAnnotationOf(modelType.element);
@@ -176,7 +177,9 @@ Future<OrmBuildContext> buildOrmContext(
         ctx.buildContext.aliases[name] = relation.localKey;
 
         if (!ctx.effectiveFields.any((f) => f.name == field.name)) {
-          if (field.name != 'id' || !autoIdAndDateFields) {
+          if (field.name != 'id' ||
+              !const TypeChecker.fromRuntime(Model)
+                  .isAssignableFromType(ctx.buildContext.clazz.type)) {
             var rf = new RelationFieldImpl(name,
                 field.type.element.context.typeProvider.intType, field.name);
             ctx.effectiveFields.add(rf);
@@ -212,6 +215,8 @@ ColumnType inferColumnType(DartType type) {
     return ColumnType.boolean;
   if (const TypeChecker.fromRuntime(DateTime).isAssignableFromType(type))
     return ColumnType.timeStamp;
+  if (const TypeChecker.fromRuntime(Map).isAssignableFromType(type))
+    return ColumnType.jsonb;
   return null;
 }
 

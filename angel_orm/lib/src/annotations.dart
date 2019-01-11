@@ -14,6 +14,7 @@ class Orm {
   const Orm({this.tableName, this.generateMigrations: true});
 }
 
+@deprecated
 class Join {
   final Type against;
   final String foreignKey;
