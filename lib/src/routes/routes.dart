@@ -2,9 +2,11 @@
 library angel.src.routes;
 
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:file/file.dart';
 import 'controllers/controllers.dart' as controllers;
+import '../models/greeting.dart';
 
 /// Put your app routes here!
 ///
@@ -18,6 +20,32 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
 
     // Render `views/hello.jl` when a user visits the application root.
     app.get('/', (req, res) => res.render('hello'));
+
+    app.get('/greetings', (req, res) {
+      var executor = req.container.make<QueryExecutor>();
+      var query = GreetingQuery();
+      return query.get(executor);
+    });
+
+    app.post('/greetings', (req, res) async {
+      await req.parseBody();
+
+      if (!req.bodyAsMap.containsKey('message')) {
+        throw AngelHttpException.badRequest(message: 'Missing "message".');
+      } else {
+        var executor = req.container.make<QueryExecutor>();
+        var message = req.bodyAsMap['message'].toString();
+        var query = GreetingQuery()..values.message = message;
+        return await query.insert(executor);
+      }
+    });
+
+    app.get('/greetings/:message', (req, res) {
+      var message = req.params['message'] as String;
+      var executor = req.container.make<QueryExecutor>();
+      var query = GreetingQuery()..where.message.equals(message);
+      return query.get(executor);
+    });
 
     // Mount static server at web in development.
     // The `CachingVirtualDirectory` variant of `VirtualDirectory` also sends `Cache-Control` headers.

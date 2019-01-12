@@ -9,12 +9,29 @@ dependencies:
   angel_configuration: ^2.0.0 # Loads application configuration, along with support for .env files.
   angel_framework: ^2.0.0-alpha # The core server library.
   angel_jael: ^2.0.0 # Server-side templating engine
+  angel_migration: ^2.0.0-alpha # Migration runtime support
+  angel_orm: ^2.0.0-dev # Migration runtime support
+  angel_orm_postgres: ^1.0.0-dev # PostgreSQL support for Angel ORM
+  angel_serialize: ^2.0.0 # Serialization runtime support
   angel_production: ^1.0.0-alpha
   angel_static: ^2.0.0-alpha # Static file server
   angel_validate: ^2.0.0-alpha # Allows for validation of input data
 dev_dependencies:
   angel_hot: ^2.0.0 # Hot-reloading support. :)
+  angel_migration_runner: ^2.0.0-alpha # Runs migrations
+  angel_orm_generator: ^2.0.0-dev # Generates ORM libraries
+  angel_serialize_generator: ^2.0.0 # Generates model serialization code
   angel_test: ^2.0.0-alpha # Utilities for testing Angel servers.
+  build_runner: ^1.0.0 # Runs builds
   io: ^0.3.2
   pedantic: ^1.0.0
   test: ^1.0.0
+dependency_overrides:
+  angel_orm:
+    git:
+      url: https://github.com/angel-dart/orm.git
+      path: angel_orm
+  angel_orm_generator:
+    git:
+      url: https://github.com/angel-dart/orm.git
+      path: angel_orm_generator
