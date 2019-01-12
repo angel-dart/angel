@@ -1,3 +1,6 @@
+# 2.1.4+1
+* Patch `part of 'path'` renames.
+
 # 2.1.4
 * The `migration` argument to `model` just emits an annotation now.
 * Add the ORM boilerplate.

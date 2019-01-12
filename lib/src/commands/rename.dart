@@ -167,11 +167,13 @@ class RenamingVisitor extends RecursiveAstVisitor {
 
   @override
   visitPartOfDirective(PartOfDirective ctx) {
-    var name = ctx.libraryName.name;
+    if (ctx.libraryName != null) {
+      var name = ctx.libraryName.name;
 
-    if (name.startsWith(oldName)) {
-      replace[[ctx.offset, ctx.end]] =
-          'part of ' + name.replaceFirst(oldName, newName) + ';';
+      if (name.startsWith(oldName)) {
+        replace[[ctx.offset, ctx.end]] =
+            'part of ' + name.replaceFirst(oldName, newName) + ';';
+      }
     }
   }
 }
