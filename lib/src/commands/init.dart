@@ -131,10 +131,10 @@ class InitCommand extends Command {
         }
       }
 
-      var boilerplate = basicBoilerplate;
-      // print('Choose a project type before continuing:');
-      // var boilerplate = prompts.choose(
-      //     'Choose a project type before continuing', boilerplates);
+      // var boilerplate = basicBoilerplate;
+      print('Choose a project type before continuing:');
+      var boilerplate = prompts.choose(
+          'Choose a project type before continuing', boilerplates);
 
       print(
           'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
@@ -224,7 +224,8 @@ Future preBuild(Directory projectDir) async {
 const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
   'ORM',
   "A starting point for applications that use Angel's ORM.",
-  'https://github.com/angel-dart/boilerplate_orm.git',
+  'https://github.com/angel-dart/angel.git',
+  ref: 'orm',
 );
 
 const BoilerplateInfo basicBoilerplate = const BoilerplateInfo(
@@ -242,7 +243,7 @@ const BoilerplateInfo legacyBoilerplate = const BoilerplateInfo(
 const List<BoilerplateInfo> boilerplates = const [
   basicBoilerplate,
   //legacyBoilerplate,
-  //ormBoilerplate,
+  ormBoilerplate,
 ];
 
 class BoilerplateInfo {

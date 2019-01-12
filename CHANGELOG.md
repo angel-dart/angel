@@ -1,3 +1,7 @@
+# 2.1.4
+* The `migration` argument to `model` just emits an annotation now.
+* Add the ORM boilerplate.
+
 # 2.1.3
 * Fix generation of ORM models.
 * A `--project-name` to `init` command.

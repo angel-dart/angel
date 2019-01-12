@@ -19,8 +19,8 @@ class ModelCommand extends Command {
     argParser
       ..addFlag('migration',
           abbr: 'm',
-          help: 'Generate an angel_orm migration file.',
-          defaultsTo: false,
+          help: 'Generate migrations when running `build_runner`.',
+          defaultsTo: true,
           negatable: false)
       ..addFlag('orm', help: 'Generate angel_orm code.', negatable: false)
       ..addFlag('serializable',
@@ -29,10 +29,7 @@ class ModelCommand extends Command {
           abbr: 'n', help: 'Specifies a name for the model class.')
       ..addOption('output-dir',
           help: 'Specifies a directory to create the model class in.',
-          defaultsTo: 'lib/src/models')
-      ..addOption('migration-dir',
-          help: 'Specifies a directory to create the migration class in.',
-          defaultsTo: 'tool/migrations');
+          defaultsTo: 'lib/src/models');
   }
 
   @override
@@ -117,17 +114,6 @@ class ModelCommand extends Command {
 
     print(green
         .wrap('$checkmark Created model file "${modelFile.absolute.path}".'));
-
-    if (argResults['migration'] as bool) {
-      await runner.run([
-        'make',
-        'migration',
-        '-n',
-        name,
-        '--output-dir',
-        argResults['migration-dir'] as String,
-      ]);
-    }
 
     if (deps.isNotEmpty) await depend(deps);
   }
