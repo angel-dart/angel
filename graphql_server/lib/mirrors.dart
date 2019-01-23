@@ -315,12 +315,12 @@ bool _autoNames(ClassMirror clazz) {
 String _getDeprecationReason(List<InstanceMirror> metadata) {
   for (var obj in metadata) {
     if (obj.reflectee is Deprecated) {
-      var expires = (obj.reflectee as Deprecated).expires;
+      var expires = (obj.reflectee as Deprecated).message;
 
-      if (expires == deprecated.expires) {
+      if (expires == deprecated.message) {
         return 'Expires after $expires';
       } else {
-        return deprecated.expires;
+        return deprecated.message;
       }
     } else if (obj.reflectee is GraphQLDocumentation) {
       return (obj.reflectee as GraphQLDocumentation).deprecationReason;

@@ -27,7 +27,7 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
     };
 
     executeMap(Map map) async {
-      var body = await req.parseBody();
+      var body = await req.parseBody().then((_) => req.bodyAsMap);
       var text = body['query'] as String;
       var operationName = body['operation_name'] as String;
       var variables = body['variables'];
@@ -50,11 +50,11 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
     try {
       if (req.method == 'GET') {
         if (await validateQuery(graphQlPostBody)(req, res) as bool) {
-          return await executeMap(await req.parseQuery());
+          return await executeMap(req.queryParameters);
         }
       } else if (req.method == 'POST') {
         if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
-          var text = utf8.decode(await req.parseRawRequestBuffer());
+          var text = await req.body.transform(utf8.decoder).join();
           return {
             'data': await graphQL.parseAndExecute(
               text,
@@ -64,7 +64,7 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
           };
         } else if (req.headers.contentType?.mimeType == 'application/json') {
           if (await validate(graphQlPostBody)(req, res) as bool) {
-            return await executeMap(await req.parseBody());
+            return await executeMap(req.bodyAsMap);
           }
         } else {
           throw new AngelHttpException.badRequest();

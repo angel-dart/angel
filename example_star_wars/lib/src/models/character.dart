@@ -1,9 +1,7 @@
-import 'package:angel_serialize/angel_serialize.dart';
-
+import 'package:angel_model/angel_model.dart';
 import 'episode.dart';
 
-@serializable
-abstract class Character {
+abstract class _Character extends Model {
   String get id;
 
   String get name;
