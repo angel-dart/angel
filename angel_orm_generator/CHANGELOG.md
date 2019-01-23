@@ -1,3 +1,6 @@
+# 2.0.0-dev.3
+* Add JSON/JSONB support for Maps.
+
 # 2.0.0-dev.2
 * Changes to work with `package:angel_orm@2.0.0-dev.15`.
 

@@ -153,7 +153,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 expr = expr.property('toString').call([]);
               else if (field is RelationFieldImpl)
                 continue;
-              else
+              else if (ctx.columns[field.name]?.type == ColumnType.json) {
+                expr = refer('json')
+                    .property('decode')
+                    .call([expr.asA(refer('String'))]).asA(type);
+              } else
                 expr = expr.asA(type);
 
               args[field.name] = expr;
