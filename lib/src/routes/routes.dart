@@ -75,7 +75,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
 
     var oldErrorHandler = app.errorHandler;
     app.errorHandler = (e, req, res) async {
-      if (!req.accepts('text/html'))
+      if (!req.accepts('text/html', strict: true))
         return await oldErrorHandler(e, req, res);
       else {
         if (e.statusCode == 404) {
