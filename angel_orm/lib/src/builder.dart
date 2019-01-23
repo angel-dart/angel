@@ -34,11 +34,15 @@ String sanitizeExpression(String unsafe) {
 abstract class SqlExpressionBuilder<T> {
   final Query query;
   final String columnName;
+  bool _isProperty = false;
   String _substitution;
 
   SqlExpressionBuilder(this.query, this.columnName);
 
-  String get substitution => _substitution ??= query.reserveName(columnName);
+  String get substitution {
+    var c = _isProperty ? 'prop' : columnName;
+    return _substitution ??= query.reserveName(c);
+  }
 
   bool get hasValue;
 
@@ -400,28 +404,71 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
   }
 }
 
-class MapSqlExpressionBuilder<K, V, Key extends SqlExpressionBuilder<K>,
-    Value extends SqlExpressionBuilder<V>> extends SqlExpressionBuilder {
-  final Key key;
-  final Value value;
+class MapSqlExpressionBuilder extends SqlExpressionBuilder {
   bool _hasValue = false;
+  Map _value;
+  String _op;
   String _raw;
 
-  MapSqlExpressionBuilder(Query query, String columnName, this.key, this.value)
+  MapSqlExpressionBuilder(Query query, String columnName)
       : super(query, columnName);
+
+  MapSqlExpressionBuilderProperty operator [](String name) {
+    return MapSqlExpressionBuilderProperty(this, name);
+  }
+
+  bool get hasRaw => _raw != null;
+
+  @override
+  bool get hasValue => _hasValue;
 
   UnsupportedError _unsupported() =>
       UnsupportedError('JSON/JSONB does not support this operation.');
 
-  @override
-  String compile() {
-    var parts = <String>[_raw, key.compile(), value.compile()];
-    parts.removeWhere((s) => s == null);
-    return parts.isEmpty ? null : parts.join(' && ');
+  void _append(SqlExpressionBuilder b) {
+    var c = b.compile();
+    if (c != null) {
+      _hasValue = true;
+      _raw ??= '';
+
+      if (b is! DateTimeSqlExpressionBuilder) {
+        _raw += '${b.columnName} ';
+      }
+
+      _raw += c;
+    }
+  }
+
+  bool _change(String op, Map value) {
+    _raw = null;
+    _op = op;
+    _value = value;
+    query.substitutionValues[substitution] = _value;
+    return _hasValue = true;
   }
 
   @override
-  bool get hasValue => key.hasValue || value.hasValue || _hasValue;
+  String compile() {
+    if (_raw != null) return _raw;
+    if (_value == null) return null;
+    return "::jsonb $_op @$substitution::jsonb";
+  }
+
+  void contains(Map value) {
+    _change('@>', value);
+  }
+
+  void containsKey(String key) {
+    this[key].isNotNull();
+  }
+
+  void containsPair(key, value) {
+    contains({key: value});
+  }
+
+  void equals(Map value) {
+    _change('=', value);
+  }
 
   @override
   void isBetween(lower, upper) => throw _unsupported();
@@ -434,4 +481,73 @@ class MapSqlExpressionBuilder<K, V, Key extends SqlExpressionBuilder<K>,
 
   @override
   void isNotIn(Iterable values) => throw _unsupported();
+}
+
+class MapSqlExpressionBuilderProperty {
+  final MapSqlExpressionBuilder builder;
+  final String name;
+
+  MapSqlExpressionBuilderProperty(this.builder, this.name);
+
+  void isNotNull() {
+    builder
+      .._hasValue = true
+      .._raw ??= ''
+      .._raw += "${builder.columnName}->>'$name' IS NOT NULL";
+  }
+
+  void isNull() {
+    builder
+      .._hasValue = true
+      .._raw ??= ''
+      .._raw += "${builder.columnName}->>'$name' IS NULL";
+  }
+
+  void asString(void Function(StringSqlExpressionBuilder) f) {
+    var b = StringSqlExpressionBuilder(
+        builder.query, "${builder.columnName}->>'$name'")
+      .._isProperty = true;
+    f(b);
+    builder._append(b);
+  }
+
+  void asBool(void Function(BooleanSqlExpressionBuilder) f) {
+    var b = BooleanSqlExpressionBuilder(
+        builder.query, "${builder.columnName}->>'$name'")
+      .._isProperty = true;
+    f(b);
+    builder._append(b);
+  }
+
+  void asDateTime(void Function(DateTimeSqlExpressionBuilder) f) {
+    var b = DateTimeSqlExpressionBuilder(
+        builder.query, "${builder.columnName}->>'$name'")
+      .._isProperty = true;
+    f(b);
+    builder._append(b);
+  }
+
+  void asDouble(void Function(NumericSqlExpressionBuilder<double>) f) {
+    var b = NumericSqlExpressionBuilder<double>(
+        builder.query, "${builder.columnName}->>'$name'")
+      .._isProperty = true;
+    f(b);
+    builder._append(b);
+  }
+
+  void asInt(void Function(NumericSqlExpressionBuilder<int>) f) {
+    var b = NumericSqlExpressionBuilder<int>(
+        builder.query, "${builder.columnName}->>'$name'")
+      .._isProperty = true;
+    f(b);
+    builder._append(b);
+  }
+
+  void asMap(void Function(MapSqlExpressionBuilder) f) {
+    var b = MapSqlExpressionBuilder(
+        builder.query, "${builder.columnName}->>'$name'")
+      .._isProperty = true;
+    f(b);
+    builder._append(b);
+  }
 }

@@ -1,3 +1,6 @@
+# 2.0.0-dev.16
+* Add `MapSqlExpressionBuilder` for JSON/JSONB support.
+
 # 2.0.0-dev.15
 * Remove `Column.defaultValue`.
 * Deprecate `toSql` and `sanitizeExpression`.

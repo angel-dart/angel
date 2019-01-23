@@ -420,7 +420,8 @@ abstract class QueryWhere {
       if (tableName != null) key = '$tableName.$key';
       if (builder.hasValue) {
         if (i++ > 0) b.write(' AND ');
-        if (builder is DateTimeSqlExpressionBuilder) {
+        if (builder is DateTimeSqlExpressionBuilder ||
+            (builder is MapSqlExpressionBuilder && builder.hasRaw)) {
           if (tableName != null) b.write('$tableName.');
           b.write(builder.compile());
         } else {
