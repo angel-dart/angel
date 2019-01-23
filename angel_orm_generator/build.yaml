@@ -33,7 +33,7 @@ targets:
       - :_standalone
     sources:
       - test/models/book.dart
-      # - test/models/has_car.dart
+      - test/models/has_car.dart
       - test/models/leg.dart
       - test/models/order.dart
       - test/models/tree.dart

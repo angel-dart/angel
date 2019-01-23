@@ -217,6 +217,7 @@ ColumnType inferColumnType(DartType type) {
     return ColumnType.timeStamp;
   if (const TypeChecker.fromRuntime(Map).isAssignableFromType(type))
     return ColumnType.jsonb;
+  if (type is InterfaceType && type.element.isEnum) return ColumnType.int;
   return null;
 }
 

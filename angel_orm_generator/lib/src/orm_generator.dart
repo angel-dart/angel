@@ -145,6 +145,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             var args = <String, Expression>{};
 
             for (var field in ctx.effectiveFields) {
+              var fType = field.type;
               Reference type = convertTypeReference(field.type);
               if (isSpecialId(ctx, field)) type = refer('int');
 
@@ -157,6 +158,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 expr = refer('json')
                     .property('decode')
                     .call([expr.asA(refer('String'))]).asA(type);
+              } else if (fType is InterfaceType && fType.element.isEnum) {
+                expr = type.property('values').index(expr.asA(refer('int')));
               } else
                 expr = expr.asA(type);
 
@@ -481,6 +484,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       // Add builders for each field
       for (var field in ctx.effectiveFields) {
         var name = field.name;
+        var args = <Expression>[];
         DartType type;
         Reference builderType;
 
@@ -496,6 +500,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           builderType = new TypeReference((b) => b
             ..symbol = 'NumericSqlExpressionBuilder'
             ..types.add(refer(isSpecialId(ctx, field) ? 'int' : type.name)));
+        } else if (type is InterfaceType && type.element.isEnum) {
+          builderType = new TypeReference((b) => b
+            ..symbol = 'EnumSqlExpressionBuilder'
+            ..types.add(convertTypeReference(type)));
+          args.add(CodeExpression(Code('(v) => v.index')));
         } else if (const TypeChecker.fromRuntime(String).isExactlyType(type)) {
           builderType = refer('StringSqlExpressionBuilder');
         } else if (const TypeChecker.fromRuntime(bool).isExactlyType(type)) {
@@ -532,7 +541,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 .assign(builderType.newInstance([
                   refer('query'),
                   literalString(ctx.buildContext.resolveFieldName(field.name))
-                ]))
+                ].followedBy(args)))
                 .code,
           );
         }));
@@ -558,31 +567,45 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
       // Each field generates a getter for setter
       for (var field in ctx.effectiveFields) {
+        var fType = field.type;
         var name = ctx.buildContext.resolveFieldName(field.name);
         var type = isSpecialId(ctx, field)
             ? refer('int')
             : convertTypeReference(field.type);
 
         clazz.methods.add(new Method((b) {
+          var value = refer('values').index(literalString(name));
+
+          if (fType is InterfaceType && fType.element.isEnum) {
+            var asInt = value.asA(refer('int'));
+            var t = convertTypeReference(fType);
+            value = t.property('values').index(asInt);
+          } else {
+            value = value.asA(type);
+          }
+
           b
             ..name = field.name
             ..type = MethodType.getter
             ..returns = type
-            ..body = new Block((b) => b.addExpression(
-                refer('values').index(literalString(name)).asA(type).returned));
+            ..body = new Block((b) => b.addExpression(value.returned));
         }));
 
         clazz.methods.add(new Method((b) {
+          Expression value = refer('value');
+
+          if (fType is InterfaceType && fType.element.isEnum) {
+            value = value.property('index');
+          }
+
           b
             ..name = field.name
             ..type = MethodType.setter
             ..requiredParameters.add(new Parameter((b) => b
               ..name = 'value'
               ..type = type))
-            ..body = refer('values')
-                .index(literalString(name))
-                .assign(refer('value'))
-                .code;
+            ..body =
+                refer('values').index(literalString(name)).assign(value).code;
         }));
       }
 

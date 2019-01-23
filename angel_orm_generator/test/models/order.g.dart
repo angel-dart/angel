@@ -11,12 +11,12 @@ class OrderMigration extends Migration {
   up(Schema schema) {
     schema.create('orders', (table) {
       table.serial('id')..primaryKey();
-      table.integer('customer_id');
       table.integer('employee_id');
       table.timeStamp('order_date');
       table.integer('shipper_id');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
+      table.integer('customer_id').references('customers', 'id');
     });
   }
 
@@ -33,6 +33,8 @@ class OrderMigration extends Migration {
 class OrderQuery extends Query<Order, OrderQueryWhere> {
   OrderQuery() {
     _where = new OrderQueryWhere(this);
+    leftJoin('customers', 'customer_id', 'id',
+        additionalFields: const ['created_at', 'updated_at']);
   }
 
   @override
@@ -72,12 +74,15 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = new Order(
         id: row[0].toString(),
-        customerId: (row[1] as int),
         employeeId: (row[2] as int),
         orderDate: (row[3] as DateTime),
         shipperId: (row[4] as int),
         createdAt: (row[5] as DateTime),
         updatedAt: (row[6] as DateTime));
+    if (row.length > 7) {
+      model = model.copyWith(
+          customer: CustomerQuery.parseRow(row.skip(7).toList()));
+    }
     return model;
   }
 
@@ -163,13 +168,15 @@ class OrderQueryValues extends MapQueryValues {
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Order model) {
     values.addAll({
-      'customer_id': model.customerId,
       'employee_id': model.employeeId,
       'order_date': model.orderDate,
       'shipper_id': model.shipperId,
       'created_at': model.createdAt,
       'updated_at': model.updatedAt
     });
+    if (model.customer != null) {
+      values['customer_id'] = int.parse(model.customer.id);
+    }
   }
 }
 
@@ -181,7 +188,7 @@ class OrderQueryValues extends MapQueryValues {
 class Order extends _Order {
   Order(
       {this.id,
-      this.customerId,
+      this.customer,
       this.employeeId,
       this.orderDate,
       this.shipperId,
@@ -192,7 +199,7 @@ class Order extends _Order {
   final String id;
 
   @override
-  final int customerId;
+  final Customer customer;
 
   @override
   final int employeeId;
@@ -211,7 +218,7 @@ class Order extends _Order {
 
   Order copyWith(
       {String id,
-      int customerId,
+      Customer customer,
       int employeeId,
       DateTime orderDate,
       int shipperId,
@@ -219,7 +226,7 @@ class Order extends _Order {
       DateTime updatedAt}) {
     return new Order(
         id: id ?? this.id,
-        customerId: customerId ?? this.customerId,
+        customer: customer ?? this.customer,
         employeeId: employeeId ?? this.employeeId,
         orderDate: orderDate ?? this.orderDate,
         shipperId: shipperId ?? this.shipperId,
@@ -230,7 +237,7 @@ class Order extends _Order {
   bool operator ==(other) {
     return other is _Order &&
         other.id == id &&
-        other.customerId == customerId &&
+        other.customer == customer &&
         other.employeeId == employeeId &&
         other.orderDate == orderDate &&
         other.shipperId == shipperId &&
@@ -240,15 +247,8 @@ class Order extends _Order {
 
   @override
   int get hashCode {
-    return hashObjects([
-      id,
-      customerId,
-      employeeId,
-      orderDate,
-      shipperId,
-      createdAt,
-      updatedAt
-    ]);
+    return hashObjects(
+        [id, customer, employeeId, orderDate, shipperId, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
@@ -264,7 +264,9 @@ abstract class OrderSerializer {
   static Order fromMap(Map map) {
     return new Order(
         id: map['id'] as String,
-        customerId: map['customer_id'] as int,
+        customer: map['customer'] != null
+            ? CustomerSerializer.fromMap(map['customer'] as Map)
+            : null,
         employeeId: map['employee_id'] as int,
         orderDate: map['order_date'] != null
             ? (map['order_date'] is DateTime
@@ -290,7 +292,7 @@ abstract class OrderSerializer {
     }
     return {
       'id': model.id,
-      'customer_id': model.customerId,
+      'customer': CustomerSerializer.toMap(model.customer),
       'employee_id': model.employeeId,
       'order_date': model.orderDate?.toIso8601String(),
       'shipper_id': model.shipperId,
@@ -303,7 +305,7 @@ abstract class OrderSerializer {
 abstract class OrderFields {
   static const List<String> allFields = const <String>[
     id,
-    customerId,
+    customer,
     employeeId,
     orderDate,
     shipperId,
@@ -313,7 +315,7 @@ abstract class OrderFields {
 
   static const String id = 'id';
 
-  static const String customerId = 'customer_id';
+  static const String customer = 'customer';
 
   static const String employeeId = 'employee_id';
 

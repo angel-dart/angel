@@ -9,13 +9,13 @@ part 'order.g.dart';
 
 @orm
 @serializable
-class _Order extends Model {
-  @Join(Customer, CustomerFields.id)
-  int customerId;
+abstract class _Order extends Model {
+  @belongsTo
+  Customer get customer;
 
-  int employeeId;
+  int get employeeId;
 
-  DateTime orderDate;
+  DateTime get orderDate;
 
-  int shipperId;
+  int get shipperId;
 }
