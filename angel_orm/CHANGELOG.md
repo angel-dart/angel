@@ -1,3 +1,6 @@
+# 2.0.0-dev.17
+* Add `EnumSqlExpressionBuilder`.
+
 # 2.0.0-dev.16
 * Add `MapSqlExpressionBuilder` for JSON/JSONB support.
 

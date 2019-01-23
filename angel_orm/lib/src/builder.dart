@@ -141,6 +141,73 @@ class NumericSqlExpressionBuilder<T extends num>
   }
 }
 
+class EnumSqlExpressionBuilder<T> extends SqlExpressionBuilder<T> {
+  final int Function(T) _getValue;
+  bool _hasValue = false;
+  String _op = '=';
+  String _raw;
+  int _value;
+
+  EnumSqlExpressionBuilder(Query query, String columnName, this._getValue)
+      : super(query, columnName);
+
+  @override
+  bool get hasValue => _hasValue;
+
+  bool _change(String op, T value) {
+    _raw = null;
+    _op = op;
+    _value = _getValue(value);
+    return _hasValue = true;
+  }
+
+  UnsupportedError _unsupported() =>
+      UnsupportedError('Enums do not support this operation.');
+
+  @override
+  String compile() {
+    if (_raw != null) return _raw;
+    if (_value == null) return null;
+    return '$_op $_value';
+  }
+  
+  void isNull() {
+    _hasValue = true;
+    _raw = 'IS NOT NULL';
+  }
+
+  void isNotNull() {
+    _hasValue = true;
+    _raw = 'IS NOT NULL';
+  }
+
+  void equals(T value) {
+    _change('=', value);
+  }
+
+  void notEquals(T value) {
+    _change('!=', value);
+  }
+
+  @override
+  void isBetween(T lower, T upper) => throw _unsupported();
+
+  @override
+  void isNotBetween(T lower, T upper) => throw _unsupported();
+
+  @override
+  void isIn(Iterable<T> values) {
+    _raw = 'IN (' + values.map(_getValue).join(', ') + ')';
+    _hasValue = true;
+  }
+
+  @override
+  void isNotIn(Iterable<T> values) {
+    _raw = 'NOT IN (' + values.map(_getValue).join(', ') + ')';
+    _hasValue = true;
+  }
+}
+
 class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
   bool _hasValue = false;
   String _op = '=', _raw, _value;
