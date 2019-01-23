@@ -5,3 +5,5 @@ before_script:
   - psql -c "CREATE USER angel_orm WITH PASSWORD 'angel_orm';" -U postgres
 services:
   - postgresql
+addons:
+  postgresql: "9.4"

@@ -62,7 +62,7 @@ abstract class _Car extends Model {
 abstract class _NoMigrations extends Model {}
 ```
 
-Models can use the `@Alias()` annotation; `package:angel_orm` obeys it.
+Models can use the `@SerializableField()` annotation; `package:angel_orm` obeys it.
 
 After building, you'll have access to a `Query` class with strongly-typed methods that
 allow to run asynchronous queries without a headache.
@@ -159,7 +159,7 @@ abstract class _Author extends Model {
   @HasMany(localKey: 'id', foreignKey: 'author_id', cascadeOnDelete: true)
   List<Book> books;
   
-  @Alias('writing_utensil')
+  @SerializableField(alias: 'writing_utensil')
   @hasOne
   Pen pen;
 }
