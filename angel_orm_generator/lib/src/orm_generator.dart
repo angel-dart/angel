@@ -515,6 +515,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         } else if (const TypeChecker.fromRuntime(Map)
             .isAssignableFromType(type)) {
           builderType = refer('MapSqlExpressionBuilder');
+        } else if (const TypeChecker.fromRuntime(List)
+            .isAssignableFromType(type)) {
+          builderType = refer('ListSqlExpressionBuilder');
         } else if (ctx.relations.containsKey(field.name)) {
           var relation = ctx.relations[field.name];
           if (relation.type != RelationshipType.belongsTo)
@@ -565,6 +568,30 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         ..name = '${rc.pascalCase}QueryValues'
         ..extend = refer('MapQueryValues');
 
+      // Override casts so that we can cast Lists
+      clazz.methods.add(Method((b) {
+        b
+          ..name = 'casts'
+          ..annotations.add(refer('override'))
+          ..type = MethodType.getter
+          ..body = Block((b) {
+            var args = <String, Expression>{};
+
+            for (var field in ctx.effectiveFields) {
+              var fType = field.type;
+              var name = ctx.buildContext.resolveFieldName(field.name);
+              var type = ctx.columns[field.name]?.type?.name;
+              if (type == null) continue;
+              if (const TypeChecker.fromRuntime(List)
+                  .isAssignableFromType(fType)) {
+                args[name] = literalString(type);
+              }
+            }
+
+            b.addExpression(literalMap(args).returned);
+          });
+      }));
+
       // Each field generates a getter for setter
       for (var field in ctx.effectiveFields) {
         var fType = field.type;
@@ -580,6 +607,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             var asInt = value.asA(refer('int'));
             var t = convertTypeReference(fType);
             value = t.property('values').index(asInt);
+          } else if (const TypeChecker.fromRuntime(List)
+              .isAssignableFromType(fType)) {
+            value = refer('json')
+                .property('decode')
+                .call([value.asA(refer('String'))]).asA(refer('List'));
           } else {
             value = value.asA(type);
           }
@@ -596,6 +628,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
           if (fType is InterfaceType && fType.element.isEnum) {
             value = value.property('index');
+          } else if (const TypeChecker.fromRuntime(List)
+              .isAssignableFromType(fType)) {
+            value = refer('json').property('encode').call([value]);
           }
 
           b
@@ -618,17 +653,12 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             ..name = 'model'
             ..type = ctx.buildContext.modelClassType))
           ..body = new Block((b) {
-            var args = <String, Expression>{};
-
             for (var field in ctx.effectiveFields) {
               if (isSpecialId(ctx, field) || field is RelationFieldImpl)
                 continue;
-              args[ctx.buildContext.resolveFieldName(field.name)] =
-                  refer('model').property(field.name);
+              b.addExpression(refer(field.name)
+                  .assign(refer('model').property(field.name)));
             }
-
-            b.addExpression(
-                refer('values').property('addAll').call([literalMap(args)]));
 
             for (var field in ctx.effectiveFields) {
               if (field is RelationFieldImpl) {

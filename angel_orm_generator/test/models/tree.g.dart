@@ -165,6 +165,11 @@ class TreeQueryWhere extends QueryWhere {
 }
 
 class TreeQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -186,11 +191,9 @@ class TreeQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Tree model) {
-    values.addAll({
-      'rings': model.rings,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    rings = model.rings;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

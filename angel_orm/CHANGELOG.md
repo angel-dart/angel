@@ -1,3 +1,6 @@
+# 2.0.0-dev.18
+* Add `ListSqlExpressionBuilder` (still in development).
+
 # 2.0.0-dev.17
 * Add `EnumSqlExpressionBuilder`.
 

@@ -131,6 +131,11 @@ class OrderQueryWhere extends QueryWhere {
 }
 
 class OrderQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -167,13 +172,11 @@ class OrderQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Order model) {
-    values.addAll({
-      'employee_id': model.employeeId,
-      'order_date': model.orderDate,
-      'shipper_id': model.shipperId,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    employeeId = model.employeeId;
+    orderDate = model.orderDate;
+    shipperId = model.shipperId;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
     if (model.customer != null) {
       values['customer_id'] = int.parse(model.customer.id);
     }

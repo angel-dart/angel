@@ -96,6 +96,11 @@ class HasCarQueryWhere extends QueryWhere {
 }
 
 class HasCarQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -117,11 +122,9 @@ class HasCarQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(HasCar model) {
-    values.addAll({
-      'type': model.type,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    type = model.type;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

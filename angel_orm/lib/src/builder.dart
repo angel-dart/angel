@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:charcode/ascii.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:string_scanner/string_scanner.dart';
@@ -47,14 +49,6 @@ abstract class SqlExpressionBuilder<T> {
   bool get hasValue;
 
   String compile();
-
-  void isBetween(T lower, T upper);
-
-  void isNotBetween(T lower, T upper);
-
-  void isIn(Iterable<T> values);
-
-  void isNotIn(Iterable<T> values);
 }
 
 class NumericSqlExpressionBuilder<T extends num>
@@ -116,25 +110,21 @@ class NumericSqlExpressionBuilder<T extends num>
     _change('!=', value);
   }
 
-  @override
   void isBetween(T lower, T upper) {
     _raw = 'BETWEEN $lower AND $upper';
     _hasValue = true;
   }
 
-  @override
   void isNotBetween(T lower, T upper) {
     _raw = 'NOT BETWEEN $lower AND $upper';
     _hasValue = true;
   }
 
-  @override
   void isIn(Iterable<T> values) {
     _raw = 'IN (' + values.join(', ') + ')';
     _hasValue = true;
   }
 
-  @override
   void isNotIn(Iterable<T> values) {
     _raw = 'NOT IN (' + values.join(', ') + ')';
     _hasValue = true;
@@ -170,7 +160,7 @@ class EnumSqlExpressionBuilder<T> extends SqlExpressionBuilder<T> {
     if (_value == null) return null;
     return '$_op $_value';
   }
-  
+
   void isNull() {
     _hasValue = true;
     _raw = 'IS NOT NULL';
@@ -189,19 +179,15 @@ class EnumSqlExpressionBuilder<T> extends SqlExpressionBuilder<T> {
     _change('!=', value);
   }
 
-  @override
   void isBetween(T lower, T upper) => throw _unsupported();
 
-  @override
   void isNotBetween(T lower, T upper) => throw _unsupported();
 
-  @override
   void isIn(Iterable<T> values) {
     _raw = 'IN (' + values.map(_getValue).join(', ') + ')';
     _hasValue = true;
   }
 
-  @override
   void isNotIn(Iterable<T> values) {
     _raw = 'NOT IN (' + values.map(_getValue).join(', ') + ')';
     _hasValue = true;
@@ -262,7 +248,6 @@ class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
     _hasValue = true;
   }
 
-  @override
   void isBetween(String lower, String upper) {
     query.substitutionValues[lowerName] = lower;
     query.substitutionValues[upperName] = upper;
@@ -270,7 +255,6 @@ class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
     _hasValue = true;
   }
 
-  @override
   void isNotBetween(String lower, String upper) {
     query.substitutionValues[lowerName] = lower;
     query.substitutionValues[upperName] = upper;
@@ -288,13 +272,11 @@ class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
         ')';
   }
 
-  @override
   void isIn(Iterable<String> values) {
     _raw = _in(values);
     _hasValue = true;
   }
 
-  @override
   void isNotIn(Iterable<String> values) {
     _raw = 'NOT ' + _in(values);
     _hasValue = true;
@@ -337,26 +319,6 @@ class BooleanSqlExpressionBuilder extends SqlExpressionBuilder<bool> {
 
   void notEquals(bool value) {
     _change('!=', value);
-  }
-
-  @override
-  void isBetween(bool lower, bool upper) => throw new UnsupportedError(
-      'Booleans do not support BETWEEN expressions.');
-
-  @override
-  void isNotBetween(bool lower, bool upper) => isBetween(lower, upper);
-
-  @override
-  void isIn(Iterable<bool> values) {
-    _raw = 'IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
-    _hasValue = true;
-  }
-
-  @override
-  void isNotIn(Iterable<bool> values) {
-    _raw =
-        'NOT IN (' + values.map((b) => b ? 'TRUE' : 'FALSE').join(', ') + ')';
-    _hasValue = true;
   }
 }
 
@@ -425,27 +387,23 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
     _change('>=', value, includeTime != false);
   }
 
-  @override
   void isIn(Iterable<DateTime> values) {
     _raw = '$columnName IN (' +
         values.map(dateYmdHms.format).map((s) => '$s').join(', ') +
         ')';
   }
 
-  @override
   void isNotIn(Iterable<DateTime> values) {
     _raw = '$columnName NOT IN (' +
         values.map(dateYmdHms.format).map((s) => '$s').join(', ') +
         ')';
   }
 
-  @override
   void isBetween(DateTime lower, DateTime upper) {
     var l = dateYmdHms.format(lower), u = dateYmdHms.format(upper);
     _raw = "$columnName BETWEEN '$l' and '$u'";
   }
 
-  @override
   void isNotBetween(DateTime lower, DateTime upper) {
     var l = dateYmdHms.format(lower), u = dateYmdHms.format(upper);
     _raw = "$columnName NOT BETWEEN '$l' and '$u'";
@@ -471,58 +429,87 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
   }
 }
 
-class MapSqlExpressionBuilder extends SqlExpressionBuilder {
+abstract class JsonSqlExpressionBuilder<T, K> extends SqlExpressionBuilder<T> {
+  final List<JsonSqlExpressionBuilderProperty> _properties = [];
   bool _hasValue = false;
-  Map _value;
+  T _value;
   String _op;
   String _raw;
 
-  MapSqlExpressionBuilder(Query query, String columnName)
+  JsonSqlExpressionBuilder(Query query, String columnName)
       : super(query, columnName);
 
-  MapSqlExpressionBuilderProperty operator [](String name) {
-    return MapSqlExpressionBuilderProperty(this, name);
+  JsonSqlExpressionBuilderProperty operator [](K name) {
+    var p = _property(name);
+    _properties.add(p);
+    return p;
   }
 
-  bool get hasRaw => _raw != null;
+  JsonSqlExpressionBuilderProperty _property(K name);
+
+  bool get hasRaw => _raw != null || _properties.any((p) => p.hasValue);
 
   @override
-  bool get hasValue => _hasValue;
+  bool get hasValue => _hasValue || _properties.any((p) => p.hasValue);
 
-  UnsupportedError _unsupported() =>
-      UnsupportedError('JSON/JSONB does not support this operation.');
+  _encodeValue(T v) => v;
 
-  void _append(SqlExpressionBuilder b) {
-    var c = b.compile();
-    if (c != null) {
-      _hasValue = true;
-      _raw ??= '';
-
-      if (b is! DateTimeSqlExpressionBuilder) {
-        _raw += '${b.columnName} ';
-      }
-
-      _raw += c;
-    }
-  }
-
-  bool _change(String op, Map value) {
+  bool _change(String op, T value) {
     _raw = null;
     _op = op;
     _value = value;
-    query.substitutionValues[substitution] = _value;
+    query.substitutionValues[substitution] = _encodeValue(_value);
     return _hasValue = true;
   }
 
   @override
   String compile() {
+    var s = _compile();
+    if (!_properties.any((p) => p.hasValue)) return s;
+    s ??= '';
+
+    for (var p in _properties) {
+      if (p.hasValue) {
+        var c = p.compile();
+
+        if (c != null) {
+          _hasValue = true;
+          s ??= '';
+
+          if (p.typed is! DateTimeSqlExpressionBuilder) {
+            s += '${p.typed.columnName} ';
+          }
+
+          s += c;
+        }
+      }
+    }
+
+    return s;
+  }
+
+  String _compile() {
     if (_raw != null) return _raw;
     if (_value == null) return null;
     return "::jsonb $_op @$substitution::jsonb";
   }
 
-  void contains(Map value) {
+  void contains(T value) {
     _change('@>', value);
+  }
+
+  void equals(T value) {
+    _change('=', value);
+  }
+}
+
+class MapSqlExpressionBuilder extends JsonSqlExpressionBuilder<Map, String> {
+  MapSqlExpressionBuilder(Query query, String columnName)
+      : super(query, columnName);
+
+  @override
+  JsonSqlExpressionBuilderProperty _property(String name) {
+    return JsonSqlExpressionBuilderProperty(this, name, false);
   }
 
   void containsKey(String key) {
@@ -532,89 +519,96 @@ class MapSqlExpressionBuilder extends SqlExpressionBuilder {
   void containsPair(key, value) {
     contains({key: value});
   }
-
-  void equals(Map value) {
-    _change('=', value);
-  }
-
-  @override
-  void isBetween(lower, upper) => throw _unsupported();
-
-  @override
-  void isIn(Iterable values) => throw _unsupported();
-
-  @override
-  void isNotBetween(lower, upper) => throw _unsupported();
-
-  @override
-  void isNotIn(Iterable values) => throw _unsupported();
 }
 
-class MapSqlExpressionBuilderProperty {
-  final MapSqlExpressionBuilder builder;
-  final String name;
+class ListSqlExpressionBuilder extends JsonSqlExpressionBuilder<List, int> {
+  ListSqlExpressionBuilder(Query query, String columnName)
+      : super(query, columnName);
 
-  MapSqlExpressionBuilderProperty(this.builder, this.name);
+  @override
+  _encodeValue(List v) => json.encode(v);
+
+  @override
+  JsonSqlExpressionBuilderProperty _property(int name) {
+    return JsonSqlExpressionBuilderProperty(this, name.toString(), true);
+  }
+}
+
+class JsonSqlExpressionBuilderProperty {
+  final JsonSqlExpressionBuilder builder;
+  final String name;
+  final bool isInt;
+  SqlExpressionBuilder _typed;
+
+  JsonSqlExpressionBuilderProperty(this.builder, this.name, this.isInt);
+
+  SqlExpressionBuilder get typed => _typed;
+
+  bool get hasValue => _typed?.hasValue == true;
+
+  String compile() => _typed?.compile();
+
+  T _set<T extends SqlExpressionBuilder>(T Function() value) {
+    if (_typed is T) {
+      return _typed as T;
+    } else if (_typed != null) {
+      throw StateError(
+          '$nameString is already typed as $_typed, and cannot be changed.');
+    } else {
+      _typed = value().._isProperty = true;
+      return _typed as T;
+    }
+  }
+
+  String get nameString {
+    if (isInt) {
+      return '(${builder.columnName}->>$name)::jsonb';
+    } else {
+      return "(${builder.columnName}->>'$name')::jsonb";
+    }
+  }
 
   void isNotNull() {
     builder
       .._hasValue = true
       .._raw ??= ''
-      .._raw += "${builder.columnName}->>'$name' IS NOT NULL";
+      .._raw += "$nameString IS NOT NULL";
   }
 
   void isNull() {
     builder
       .._hasValue = true
       .._raw ??= ''
-      .._raw += "${builder.columnName}->>'$name' IS NULL";
+      .._raw += "$nameString IS NULL";
   }
 
-  void asString(void Function(StringSqlExpressionBuilder) f) {
-    var b = StringSqlExpressionBuilder(
-        builder.query, "${builder.columnName}->>'$name'")
-      .._isProperty = true;
-    f(b);
-    builder._append(b);
+  StringSqlExpressionBuilder get asString {
+    return _set(() => StringSqlExpressionBuilder(builder.query, nameString));
   }
 
-  void asBool(void Function(BooleanSqlExpressionBuilder) f) {
-    var b = BooleanSqlExpressionBuilder(
-        builder.query, "${builder.columnName}->>'$name'")
-      .._isProperty = true;
-    f(b);
-    builder._append(b);
+  BooleanSqlExpressionBuilder get asBool {
+    return _set(() => BooleanSqlExpressionBuilder(builder.query, nameString));
   }
 
-  void asDateTime(void Function(DateTimeSqlExpressionBuilder) f) {
-    var b = DateTimeSqlExpressionBuilder(
-        builder.query, "${builder.columnName}->>'$name'")
-      .._isProperty = true;
-    f(b);
-    builder._append(b);
+  DateTimeSqlExpressionBuilder get asDateTime {
+    return _set(() => DateTimeSqlExpressionBuilder(builder.query, nameString));
   }
 
-  void asDouble(void Function(NumericSqlExpressionBuilder<double>) f) {
-    var b = NumericSqlExpressionBuilder<double>(
-        builder.query, "${builder.columnName}->>'$name'")
-      .._isProperty = true;
-    f(b);
-    builder._append(b);
+  NumericSqlExpressionBuilder<double> get asDouble {
+    return _set(
+        () => NumericSqlExpressionBuilder<double>(builder.query, nameString));
   }
 
-  void asInt(void Function(NumericSqlExpressionBuilder<int>) f) {
-    var b = NumericSqlExpressionBuilder<int>(
-        builder.query, "${builder.columnName}->>'$name'")
-      .._isProperty = true;
-    f(b);
-    builder._append(b);
+  NumericSqlExpressionBuilder<int> get asInt {
+    return _set(
+        () => NumericSqlExpressionBuilder<int>(builder.query, nameString));
   }
 
-  void asMap(void Function(MapSqlExpressionBuilder) f) {
-    var b = MapSqlExpressionBuilder(
-        builder.query, "${builder.columnName}->>'$name'")
-      .._isProperty = true;
-    f(b);
-    builder._append(b);
+  MapSqlExpressionBuilder get asMap {
+    return _set(() => MapSqlExpressionBuilder(builder.query, nameString));
+  }
+
+  ListSqlExpressionBuilder get asList {
+    return _set(() => ListSqlExpressionBuilder(builder.query, nameString));
   }
 }

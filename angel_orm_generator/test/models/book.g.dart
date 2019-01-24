@@ -123,6 +123,11 @@ class BookQueryWhere extends QueryWhere {
 }
 
 class BookQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -154,11 +159,9 @@ class BookQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Book model) {
-    values.addAll({
-      'name': model.name,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    name = model.name;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
     if (model.author != null) {
       values['author_id'] = int.parse(model.author.id);
     }

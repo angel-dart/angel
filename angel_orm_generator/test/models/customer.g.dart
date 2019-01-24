@@ -90,6 +90,11 @@ class CustomerQueryWhere extends QueryWhere {
 }
 
 class CustomerQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -106,8 +111,8 @@ class CustomerQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Customer model) {
-    values
-        .addAll({'created_at': model.createdAt, 'updated_at': model.updatedAt});
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

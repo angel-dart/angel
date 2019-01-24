@@ -100,6 +100,11 @@ class FruitQueryWhere extends QueryWhere {
 }
 
 class FruitQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -126,12 +131,10 @@ class FruitQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Fruit model) {
-    values.addAll({
-      'tree_id': model.treeId,
-      'common_name': model.commonName,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    treeId = model.treeId;
+    commonName = model.commonName;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

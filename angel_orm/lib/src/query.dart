@@ -341,7 +341,18 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 }
 
 abstract class QueryValues {
+  Map<String, String> get casts => {};
+
   Map<String, dynamic> toMap();
+
+  String applyCast(String name, String sub) {
+    if (casts.containsKey(name)) {
+      var type = casts[name];
+      return 'CAST ($sub as $type)';
+    } else {
+      return sub;
+    }
+  }
 
   String compileInsert(Query query, String tableName) {
     var data = toMap();
@@ -355,8 +366,9 @@ abstract class QueryValues {
       if (i++ > 0) b.write(', ');
 
       var name = query.reserveName(entry.key);
+      var s = applyCast(entry.key, '@$name');
       query.substitutionValues[name] = entry.value;
-      b.write('@$name');
+      b.write(s);
     }
 
     b.write(')');
@@ -376,8 +388,9 @@ abstract class QueryValues {
       b.write('=');
 
       var name = query.reserveName(entry.key);
+      var s = applyCast(entry.key, '@$name');
       query.substitutionValues[name] = entry.value;
-      b.write('@$name');
+      b.write(s);
     }
     return b.toString();
   }
@@ -421,7 +434,7 @@ abstract class QueryWhere {
       if (builder.hasValue) {
         if (i++ > 0) b.write(' AND ');
         if (builder is DateTimeSqlExpressionBuilder ||
-            (builder is MapSqlExpressionBuilder && builder.hasRaw)) {
+            (builder is JsonSqlExpressionBuilder && builder.hasRaw)) {
           if (tableName != null) b.write('$tableName.');
           b.write(builder.compile());
         } else {

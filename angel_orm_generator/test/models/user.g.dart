@@ -147,6 +147,11 @@ class UserQueryWhere extends QueryWhere {
 }
 
 class UserQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -178,13 +183,11 @@ class UserQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(User model) {
-    values.addAll({
-      'username': model.username,
-      'password': model.password,
-      'email': model.email,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    username = model.username;
+    password = model.password;
+    email = model.email;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 
@@ -273,6 +276,11 @@ class RoleUserQueryWhere extends QueryWhere {
 }
 
 class RoleUserQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -299,8 +307,8 @@ class RoleUserQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(RoleUser model) {
-    values
-        .addAll({'created_at': model.createdAt, 'updated_at': model.updatedAt});
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
     if (model.role != null) {
       values['role_id'] = int.parse(model.role.id);
     }
@@ -378,6 +386,11 @@ class RoleQueryWhere extends QueryWhere {
 }
 
 class RoleQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -399,11 +412,9 @@ class RoleQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Role model) {
-    values.addAll({
-      'name': model.name,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    name = model.name;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

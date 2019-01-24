@@ -100,6 +100,11 @@ class FootQueryWhere extends QueryWhere {
 }
 
 class FootQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -126,12 +131,10 @@ class FootQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Foot model) {
-    values.addAll({
-      'leg_id': model.legId,
-      'n_toes': model.nToes,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    legId = model.legId;
+    nToes = model.nToes;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

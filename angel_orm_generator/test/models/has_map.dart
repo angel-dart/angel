@@ -10,4 +10,6 @@ part 'has_map.g.dart';
 @serializable
 abstract class _HasMap {
   Map get value;
+
+  List get list;
 }

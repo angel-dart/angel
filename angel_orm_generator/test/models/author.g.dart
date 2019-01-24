@@ -95,6 +95,11 @@ class AuthorQueryWhere extends QueryWhere {
 }
 
 class AuthorQueryValues extends MapQueryValues {
+  @override
+  get casts {
+    return {};
+  }
+
   int get id {
     return (values['id'] as int);
   }
@@ -116,11 +121,9 @@ class AuthorQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Author model) {
-    values.addAll({
-      'name': model.name,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    name = model.name;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 

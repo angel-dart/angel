@@ -35,6 +35,7 @@ class PostgresExecutor extends QueryExecutor {
     if (!Platform.environment.containsKey('STFU')) {
       print('Running: $query');
       if (substitutionValues.isNotEmpty) print('Values: $substitutionValues');
+      print(substitutionValues.map((k, v) => MapEntry(k, v.runtimeType)));
     }
     return connection.query(query, substitutionValues: substitutionValues);
   }
