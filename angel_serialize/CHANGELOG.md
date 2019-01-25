@@ -1,3 +1,6 @@
+# 2.2.2+1
+* Export commonly-used packages, for the sake of convenience.
+
 # 2.2.2
 * Add `HasAlias`, `DefaultsTo`, `nullable` idioms.
 * `isNullable` defaults to `false` now.

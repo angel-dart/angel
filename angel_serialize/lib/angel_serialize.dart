@@ -1,3 +1,6 @@
+export 'package:angel_model/angel_model.dart';
+export 'package:collection/collection.dart';
+export 'package:meta/meta.dart' show required, Required;
 export 'package:quiver_hashcode/hashcode.dart' show hashObjects;
 
 /// Excludes a field from being excluded.
