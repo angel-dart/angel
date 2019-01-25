@@ -81,18 +81,22 @@ renamePubspec(Directory dir, String oldName, String newName) async {
 }
 
 renameDartFiles(Directory dir, String oldName, String newName) async {
+  if (!await dir.exists()) return;
+
   // Try to replace MongoDB URL
   var configGlob = new Glob('config/**/*.yaml');
 
-  await for (var yamlFile in configGlob.list(root: dir.absolute.path)) {
-    if (yamlFile is File) {
-      print(
-          'Replacing occurrences of "$oldName" with "$newName" in file "${yamlFile.absolute.path}"...');
-      var contents = await yamlFile.readAsString();
-      contents = contents.replaceAll(oldName, newName);
-      await yamlFile.writeAsString(contents);
+  try {
+    await for (var yamlFile in configGlob.list(root: dir.absolute.path)) {
+      if (yamlFile is File) {
+        print(
+            'Replacing occurrences of "$oldName" with "$newName" in file "${yamlFile.absolute.path}"...');
+        var contents = await yamlFile.readAsString();
+        contents = contents.replaceAll(oldName, newName);
+        await yamlFile.writeAsString(contents);
+      }
     }
-  }
+  } catch (_) {}
 
   var entry = new File.fromUri(dir.uri.resolve('lib/$oldName.dart'));
 

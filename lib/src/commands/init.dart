@@ -240,10 +240,24 @@ const BoilerplateInfo legacyBoilerplate = const BoilerplateInfo(
   ref: '1.1.x',
 );
 
+const BoilerplateInfo sharedBoilerplate = const BoilerplateInfo(
+    'Shared',
+    'Holds common models and files shared across multiple Dart projects.',
+    'https://github.com/angel-dart/boilerplate_shared.git');
+
+const BoilerplateInfo sharedOrmBoilerplate = const BoilerplateInfo(
+  'Shared (ORM)',
+  'Holds common models and files shared across multiple Dart projects.',
+  'https://github.com/angel-dart/boilerplate_shared.git',
+  ref: 'orm',
+);
+
 const List<BoilerplateInfo> boilerplates = const [
   basicBoilerplate,
   //legacyBoilerplate,
   ormBoilerplate,
+  sharedBoilerplate,
+  sharedOrmBoilerplate,
 ];
 
 class BoilerplateInfo {

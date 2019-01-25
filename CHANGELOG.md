@@ -1,3 +1,7 @@
+# 2.1.5
+* Add `shared` boilerplates.
+* Remove uncecessary `angel_model` imports.
+
 # 2.1.4+1
 * Patch `part of 'path'` renames.
 
