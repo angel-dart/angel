@@ -32,12 +32,8 @@ const TypeChecker generatedSerializableTypeChecker =
 final Map<String, BuildContext> _cache = {};
 
 /// Create a [BuildContext].
-Future<BuildContext> buildContext(
-    ClassElement clazz,
-    ConstantReader annotation,
-    BuildStep buildStep,
-    Resolver resolver,
-    bool autoSnakeCaseNames,
+Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
+    BuildStep buildStep, Resolver resolver, bool autoSnakeCaseNames,
     {bool heedExclude: true}) async {
   var id = clazz.location.components.join('-');
   if (_cache.containsKey(id)) {

@@ -1,3 +1,7 @@
+# 2.2.2
+* Add `HasAlias`, `DefaultsTo`, `nullable` idioms.
+* `isNullable` defaults to `false` now.
+
 # 2.2.1
 * Add `serializesTo`.
 

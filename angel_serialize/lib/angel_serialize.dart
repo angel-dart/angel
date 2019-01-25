@@ -1,26 +1,23 @@
 export 'package:quiver_hashcode/hashcode.dart' show hashObjects;
 
 /// Excludes a field from being excluded.
-@deprecated
-class Exclude {
-  final bool canSerialize;
-
-  final bool canDeserialize;
-
-  const Exclude({this.canDeserialize: false, this.canSerialize: false});
+class Exclude extends SerializableField {
+  const Exclude({bool canDeserialize: false, bool canSerialize: false})
+      : super(canDeserialize: canDeserialize, canSerialize: canSerialize);
 }
 
-@deprecated
-// ignore: deprecated_member_use
+const SerializableField nullable = const SerializableField(isNullable: true);
+
 const Exclude exclude = const Exclude();
 
-@deprecated
+/// Shorthand for [SerializableField].
+class DefaultsTo extends SerializableField {
+  const DefaultsTo(value) : super(defaultValue: value);
+}
 
-/// Prefer [SerializableField] instead.
-class DefaultValue {
-  final value;
-
-  const DefaultValue(this.value);
+/// Shorthand for [SerializableField].
+class HasAlias extends SerializableField {
+  const HasAlias(String name) : super(alias: name);
 }
 
 /// Attaches options to a field.
@@ -66,7 +63,7 @@ class SerializableField {
       this.serializer,
       this.deserializer,
       this.errorMessage,
-      this.isNullable: true,
+      this.isNullable: false,
       this.exclude: false,
       this.canDeserialize: false,
       this.canSerialize: false,
@@ -120,6 +117,13 @@ abstract class Serializers {
 
   /// Generate a TypeScript definition file (`.d.ts`) for use on the client-side.
   static const int typescript = 2;
+}
+
+@deprecated
+class DefaultValue {
+  final value;
+
+  const DefaultValue(this.value);
 }
 
 @deprecated
