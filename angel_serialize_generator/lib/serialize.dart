@@ -239,7 +239,8 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
             var rc = new ReCase(type.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
                 " ? new List.unmodifiable(((map['$alias'] as Iterable)"
-                ".where((x) => x is Map)  as Iterable<Map>)"
+                ".where((x) => x is Map))"
+                ".cast<Map>()"
                 ".map(${rc.pascalCase}Serializer.fromMap))"
                 " : $defaultValue";
           } else if (isMapToModelType(type)) {

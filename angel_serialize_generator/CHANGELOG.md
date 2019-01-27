@@ -1,3 +1,6 @@
+# 2.4.1+1
+* Change `as Iterable<Map>` to `.cast<Map>`.
+
 # 2.4.1
 * Support `serializesTo`.
 * Don't emit `@required` if there is a default value.
