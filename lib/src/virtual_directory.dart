@@ -146,13 +146,11 @@ class VirtualDirectory {
       final index =
           fileSystem.file(directory.absolute.uri.resolve(indexFileName));
       if (await index.exists()) {
-        if (req.method == 'HEAD') return false;
         return await serveFile(index, stat, req, res);
       }
     }
 
     if (allowDirectoryListing == true) {
-      if (req.method == 'HEAD') return false;
       res.contentType = new MediaType('text', 'html');
       res
         ..write('<!DOCTYPE html>')
@@ -225,10 +223,7 @@ class VirtualDirectory {
   /// Writes the contents of a file to a response.
   Future<bool> serveFile(
       File file, FileStat stat, RequestContext req, ResponseContext res) async {
-    if (req.method == 'HEAD') {
-      res.headers['accept-ranges'] = 'bytes';
-      return false;
-    }
+    res.headers['accept-ranges'] = 'bytes';
 
     if (callback != null) {
       return await req.app.executeHandler(

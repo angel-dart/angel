@@ -1,3 +1,6 @@
+# 2.1.2
+* Patch support for range+streaming in Caching server.
+
 # 2.1.1
 * URI-encode paths in directory listing. This produces correct URL's, always.
 

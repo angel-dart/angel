@@ -4,14 +4,17 @@ import 'package:angel_static/angel_static.dart';
 import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
-main() async {
+main(List<String> args) async {
   var app = new Angel();
   var http = new AngelHttp(app);
   var fs = const LocalFileSystem();
-  var vDir = new CachingVirtualDirectory(app, fs,
-      allowDirectoryListing: true,
-      source: fs.currentDirectory,
-      maxAge: const Duration(days: 24).inSeconds);
+  var vDir = new CachingVirtualDirectory(
+    app,
+    fs,
+    allowDirectoryListing: true,
+    source: args.isEmpty ? fs.currentDirectory : fs.directory(args[0]),
+    maxAge: const Duration(days: 24).inSeconds,
+  );
 
   app.mimeTypeResolver
     ..addExtension('', 'text/plain')
@@ -31,5 +34,6 @@ main() async {
   app.fallback(vDir.handleRequest);
 
   var server = await http.startServer('127.0.0.1', 3000);
+  print('Serving from ${vDir.source.path}');
   print('Listening at http://${server.address.address}:${server.port}');
 }

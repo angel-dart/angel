@@ -1,15 +1,8 @@
 import 'dart:async';
 import 'dart:io' show HttpDate;
 import 'package:angel_framework/angel_framework.dart';
-import 'package:convert/convert.dart';
-import 'package:crypto/crypto.dart';
 import 'package:file/file.dart';
 import 'virtual_directory.dart';
-
-/// Generates an MD5 ETag from the given buffer.
-String md5Etag(List<int> buf) {
-  return hex.encode(md5.convert(buf).bytes);
-}
 
 /// Returns a string representation of the given [CacheAccessLevel].
 String accessLevelToString(CacheAccessLevel accessLevel) {
@@ -114,8 +107,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
             return new Future.value(false);
           } else if (ifRange) {
-            // Return 200, just send the whole thing.
-            return res.streamFile(file).then((_) => false);
+            return super.serveFile(file, stat, req, res);
           }
         } catch (_) {
           throw new AngelHttpException.badRequest(
@@ -154,28 +146,18 @@ class CachingVirtualDirectory extends VirtualDirectory {
               return new Future.value(false);
             }
           } else {
-            if (!hasBeenModified) {
-              // Continue serving like a regular range...
-              return super.serveFile(file, stat, req, res);
-            } else {
-              // Otherwise, send the whole thing.
-              return res.streamFile(file).then((_) => false);
-            }
+            return super.serveFile(file, stat, req, res);
           }
         }
       }
 
-      return file.readAsBytes().then((buf) {
+      return file.lastModified().then((stamp) {
         if (useEtags) {
-          res.headers['ETag'] = _etags[file.absolute.path] = md5Etag(buf);
+          res.headers['ETag'] = _etags[file.absolute.path] = stamp.millisecondsSinceEpoch.toString();
         }
-        //res.statusCode = 200;
-        res.headers
-          ..['content-type'] = res.app.mimeTypeResolver.lookup(file.path) ??
-              'application/octet-stream';
+        
         setCachedHeaders(stat.modified, req, res);
-        res.add(buf);
-        return false;
+        return res.streamFile(file).then((_) => false);
       });
     }
   }
