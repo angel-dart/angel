@@ -185,6 +185,10 @@ abstract class RequestContext<RawRequest> {
 
   /// Manually parses the request body, if it has not already been parsed.
   Future<void> parseBody({Encoding encoding: utf8}) async {
+    if (contentType == null) {
+      throw FormatException('Missing "content-type" header.');
+    }
+
     if (!_hasParsedBody) {
       _hasParsedBody = true;
 

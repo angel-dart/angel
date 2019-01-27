@@ -76,7 +76,7 @@ abstract class ResponseContext<RawResponse>
   /// This response's status code.
   int get statusCode => _statusCode;
 
-  void set statusCode(int value) {
+  set statusCode(int value) {
     if (!isOpen)
       throw closed();
     else
@@ -104,6 +104,23 @@ abstract class ResponseContext<RawResponse>
   /// open indefinitely.
   FutureOr<RawResponse> detach();
 
+  /// Gets or sets the content length to send back to a client.
+  ///
+  /// Returns `null` if the header is invalidly formatted.
+  int get contentLength {
+    return int.tryParse(headers['content-length']);
+  }
+
+  /// Gets or sets the content length to send back to a client.
+  ///
+  /// If [value] is `null`, then the header will be removed.
+  set contentLength(int value) {
+    if (value == null)
+      headers.remove('content-length');
+    else
+      headers['content-length'] = value.toString();
+  }
+
   /// Gets or sets the content type to send back to a client.
   MediaType get contentType {
     try {
@@ -114,7 +131,7 @@ abstract class ResponseContext<RawResponse>
   }
 
   /// Gets or sets the content type to send back to a client.
-  void set contentType(MediaType value) {
+  set contentType(MediaType value) {
     headers['content-type'] = value.toString();
   }
 
@@ -289,13 +306,18 @@ abstract class ResponseContext<RawResponse>
   }
 
   /// Streams a file to this response.
-  Future streamFile(File file) {
+  ///
+  /// `HEAD` responses will not actually write data.
+  Future streamFile(File file) async {
     if (!isOpen) throw closed();
     var mimeType = app.mimeTypeResolver.lookup(file.path);
+    contentLength = await file.length();
     contentType = mimeType == null
         ? new MediaType('application', 'octet-stream')
         : MediaType.parse(mimeType);
-    return file.openRead().pipe(this);
+
+    if (correspondingRequest.method != 'HEAD')
+      return file.openRead().pipe(this);
   }
 
   /// Configure the response to write to an intermediate response buffer, rather than to the stream directly.

@@ -1,3 +1,8 @@
+# 2.0.0-alpha.19
+* `parseBody` checks for null content type, and throws a `400` if none was given.
+* Add `ResponseContext.contentLength`.
+* Update `streamFile` to set content length, and also to work on `HEAD` requests.
+
 # 2.0.0-alpha.18
 * Upgrade `http2` dependency.
 * Upgrade `uuid` dependency.
