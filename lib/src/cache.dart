@@ -153,9 +153,10 @@ class CachingVirtualDirectory extends VirtualDirectory {
 
       return file.lastModified().then((stamp) {
         if (useEtags) {
-          res.headers['ETag'] = _etags[file.absolute.path] = stamp.millisecondsSinceEpoch.toString();
+          res.headers['ETag'] = _etags[file.absolute.path] =
+              stamp.millisecondsSinceEpoch.toString();
         }
-        
+
         setCachedHeaders(stat.modified, req, res);
         return res.streamFile(file).then((_) => false);
       });
