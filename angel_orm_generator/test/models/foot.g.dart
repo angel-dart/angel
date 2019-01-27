@@ -12,7 +12,7 @@ class FootMigration extends Migration {
     schema.create('feet', (table) {
       table.serial('id')..primaryKey();
       table.integer('leg_id');
-      table.integer('n_toes');
+      table.declare('n_toes', new ColumnType('decimal'));
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -29,7 +29,9 @@ class FootMigration extends Migration {
 // **************************************************************************
 
 class FootQuery extends Query<Foot, FootQueryWhere> {
-  FootQuery() {
+  FootQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new FootQueryWhere(this);
   }
 
@@ -37,6 +39,11 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
   final FootQueryValues values = new FootQueryValues();
 
   FootQueryWhere _where;
+
+  @override
+  get casts {
+    return {'n_toes': 'text'};
+  }
 
   @override
   get tableName {
@@ -63,7 +70,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
     var model = new Foot(
         id: row[0].toString(),
         legId: (row[1] as int),
-        nToes: (row[2] as int),
+        nToes: double.parse(row[2].toString()),
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
     return model;
@@ -79,7 +86,7 @@ class FootQueryWhere extends QueryWhere {
   FootQueryWhere(FootQuery query)
       : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
         legId = new NumericSqlExpressionBuilder<int>(query, 'leg_id'),
-        nToes = new NumericSqlExpressionBuilder<int>(query, 'n_toes'),
+        nToes = new NumericSqlExpressionBuilder<double>(query, 'n_toes'),
         createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
         updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
 
@@ -87,7 +94,7 @@ class FootQueryWhere extends QueryWhere {
 
   final NumericSqlExpressionBuilder<int> legId;
 
-  final NumericSqlExpressionBuilder<int> nToes;
+  final NumericSqlExpressionBuilder<double> nToes;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
@@ -102,7 +109,7 @@ class FootQueryWhere extends QueryWhere {
 class FootQueryValues extends MapQueryValues {
   @override
   get casts {
-    return {};
+    return {'n_toes': 'decimal'};
   }
 
   int get id {
@@ -115,11 +122,11 @@ class FootQueryValues extends MapQueryValues {
   }
 
   set legId(int value) => values['leg_id'] = value;
-  int get nToes {
-    return (values['n_toes'] as int);
+  double get nToes {
+    return double.parse((values['n_toes'] as String));
   }
 
-  set nToes(int value) => values['n_toes'] = value;
+  set nToes(double value) => values['n_toes'] = value.toString();
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
@@ -153,7 +160,7 @@ class Foot extends _Foot {
   final int legId;
 
   @override
-  final int nToes;
+  final double nToes;
 
   @override
   final DateTime createdAt;
@@ -164,7 +171,7 @@ class Foot extends _Foot {
   Foot copyWith(
       {String id,
       int legId,
-      int nToes,
+      double nToes,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Foot(
@@ -203,7 +210,7 @@ abstract class FootSerializer {
     return new Foot(
         id: map['id'] as String,
         legId: map['leg_id'] as int,
-        nToes: map['n_toes'] as int,
+        nToes: map['n_toes'] as double,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)

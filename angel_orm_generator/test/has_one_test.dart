@@ -28,7 +28,7 @@ main() {
   test('can fetch one foot', () async {
     var footQuery = new FootQuery()
       ..values.legId = int.parse(originalLeg.id)
-      ..values.nToes = 5;
+      ..values.nToes = 5.64;
     var legQuery = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
     var foot = await footQuery.insert(executor);
     var leg = await legQuery.getOne(executor);
@@ -57,7 +57,7 @@ main() {
   test('sets foot on update', () async {
     var footQuery = new FootQuery()
       ..values.legId = int.parse(originalLeg.id)
-      ..values.nToes = 5;
+      ..values.nToes = 5.64;
     var legQuery = new LegQuery()
       ..where.id.equals(int.parse(originalLeg.id))
       ..values.copyFrom(originalLeg.copyWith(name: 'Right'));
@@ -73,7 +73,7 @@ main() {
   test('sets foot on delete', () async {
     var footQuery = new FootQuery()
       ..values.legId = int.parse(originalLeg.id)
-      ..values.nToes = 5;
+      ..values.nToes = 5.64;
     var legQuery = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
     var foot = await footQuery.insert(executor);
     var leg = await legQuery.deleteOne(executor);

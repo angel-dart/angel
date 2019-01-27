@@ -28,7 +28,9 @@ class LegMigration extends Migration {
 // **************************************************************************
 
 class LegQuery extends Query<Leg, LegQueryWhere> {
-  LegQuery() {
+  LegQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new LegQueryWhere(this);
     leftJoin('feet', 'id', 'leg_id', additionalFields: const [
       'leg_id',
@@ -42,6 +44,11 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   final LegQueryValues values = new LegQueryValues();
 
   LegQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

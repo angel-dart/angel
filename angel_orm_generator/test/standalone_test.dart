@@ -82,7 +82,7 @@ main() {
           var query2 = new CarQuery()..where.familyFriendly.isTrue;
           var query3 = new CarQuery()..where.description.equals('Submarine');
           var union = query1.union(query2).unionAll(query3);
-          print(union.compile());
+          print(union.compile(Set()));
           var cars = await union.get(connection);
           expect(cars, hasLength(1));
         });
@@ -93,14 +93,14 @@ main() {
             ..orWhere((where) => where
               ..familyFriendly.isTrue
               ..make.equals('Honda'));
-          print(query.compile());
+          print(query.compile(Set()));
           var cars = await query.get(connection);
           expect(cars, hasLength(1));
         });
 
         test('limit obeyed', () async {
           var query = new CarQuery()..limit(0);
-          print(query.compile());
+          print(query.compile(Set()));
           var cars = await query.get(connection);
           expect(cars, isEmpty);
         });
@@ -126,7 +126,7 @@ main() {
           var query = new CarQuery()
             ..where.make.equals('Ferrari東')
             ..orWhere((w) => w.familyFriendly.isTrue);
-          print(query.compile(preamble: 'DELETE FROM "cars"'));
+          print(query.compile(Set(), preamble: 'DELETE FROM "cars"'));
 
           var cars = await query.delete(connection);
           expect(cars, hasLength(1));

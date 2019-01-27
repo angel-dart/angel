@@ -29,7 +29,9 @@ class FruitMigration extends Migration {
 // **************************************************************************
 
 class FruitQuery extends Query<Fruit, FruitQueryWhere> {
-  FruitQuery() {
+  FruitQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new FruitQueryWhere(this);
   }
 
@@ -37,6 +39,11 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   final FruitQueryValues values = new FruitQueryValues();
 
   FruitQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

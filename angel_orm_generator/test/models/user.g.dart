@@ -65,7 +65,9 @@ class RoleMigration extends Migration {
 // **************************************************************************
 
 class UserQuery extends Query<User, UserQueryWhere> {
-  UserQuery() {
+  UserQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new UserQueryWhere(this);
   }
 
@@ -73,6 +75,11 @@ class UserQuery extends Query<User, UserQueryWhere> {
   final UserQueryValues values = new UserQueryValues();
 
   UserQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {
@@ -192,7 +199,9 @@ class UserQueryValues extends MapQueryValues {
 }
 
 class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
-  RoleUserQuery() {
+  RoleUserQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new RoleUserQueryWhere(this);
     leftJoin('roles', 'role_id', 'id',
         additionalFields: const ['name', 'created_at', 'updated_at']);
@@ -209,6 +218,11 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
   final RoleUserQueryValues values = new RoleUserQueryValues();
 
   RoleUserQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {
@@ -319,7 +333,9 @@ class RoleUserQueryValues extends MapQueryValues {
 }
 
 class RoleQuery extends Query<Role, RoleQueryWhere> {
-  RoleQuery() {
+  RoleQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new RoleQueryWhere(this);
   }
 
@@ -327,6 +343,11 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   final RoleQueryValues values = new RoleQueryValues();
 
   RoleQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

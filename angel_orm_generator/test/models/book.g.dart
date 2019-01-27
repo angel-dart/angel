@@ -30,7 +30,9 @@ class BookMigration extends Migration {
 // **************************************************************************
 
 class BookQuery extends Query<Book, BookQueryWhere> {
-  BookQuery() {
+  BookQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new BookQueryWhere(this);
     leftJoin('authors', 'author_id', 'id',
         additionalFields: const ['name', 'created_at', 'updated_at']);
@@ -42,6 +44,11 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   final BookQueryValues values = new BookQueryValues();
 
   BookQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

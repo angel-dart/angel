@@ -27,7 +27,9 @@ class CustomerMigration extends Migration {
 // **************************************************************************
 
 class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
-  CustomerQuery() {
+  CustomerQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new CustomerQueryWhere(this);
   }
 
@@ -35,6 +37,11 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
   final CustomerQueryValues values = new CustomerQueryValues();
 
   CustomerQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

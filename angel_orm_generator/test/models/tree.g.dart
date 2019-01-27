@@ -28,9 +28,11 @@ class TreeMigration extends Migration {
 // **************************************************************************
 
 class TreeQuery extends Query<Tree, TreeQueryWhere> {
-  TreeQuery() {
+  TreeQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new TreeQueryWhere(this);
-    leftJoin('(' + new FruitQuery().compile() + ')', 'id', 'tree_id',
+    leftJoin(new FruitQuery(trampoline: trampoline), 'id', 'tree_id',
         additionalFields: const [
           'tree_id',
           'common_name',
@@ -43,6 +45,11 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   final TreeQueryValues values = new TreeQueryValues();
 
   TreeQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

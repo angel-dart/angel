@@ -28,7 +28,9 @@ class AuthorMigration extends Migration {
 // **************************************************************************
 
 class AuthorQuery extends Query<Author, AuthorQueryWhere> {
-  AuthorQuery() {
+  AuthorQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new AuthorQueryWhere(this);
   }
 
@@ -36,6 +38,11 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
   final AuthorQueryValues values = new AuthorQueryValues();
 
   AuthorQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

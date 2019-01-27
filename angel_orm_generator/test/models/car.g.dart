@@ -31,7 +31,9 @@ class CarMigration extends Migration {
 // **************************************************************************
 
 class CarQuery extends Query<Car, CarQueryWhere> {
-  CarQuery() {
+  CarQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new CarQueryWhere(this);
   }
 
@@ -39,6 +41,11 @@ class CarQuery extends Query<Car, CarQueryWhere> {
   final CarQueryValues values = new CarQueryValues();
 
   CarQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

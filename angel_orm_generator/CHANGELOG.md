@@ -1,3 +1,7 @@
+# 2.0.0-dev.5
+* Implement cast-based `double` support.
+* Finish `ListSqlExpressionBuilder`.
+
 # 2.0.0-dev.4
 * List generation support.
 

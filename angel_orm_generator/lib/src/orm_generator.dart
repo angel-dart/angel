@@ -11,6 +11,14 @@ import 'package:source_gen/source_gen.dart';
 
 import 'orm_build_context.dart';
 
+var floatTypes = [
+  ColumnType.decimal,
+  ColumnType.float,
+  ColumnType.numeric,
+  ColumnType.real,
+  const ColumnType('double precision'),
+];
+
 Builder ormBuilder(BuilderOptions options) {
   return new SharedPartBuilder([
     new OrmGenerator(
@@ -67,6 +75,28 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               queryWhereType,
             ]);
         });
+
+      // Override casts so that we can cast doubles
+      clazz.methods.add(Method((b) {
+        b
+          ..name = 'casts'
+          ..annotations.add(refer('override'))
+          ..type = MethodType.getter
+          ..body = Block((b) {
+            var args = <String, Expression>{};
+
+            for (var field in ctx.effectiveFields) {
+              var name = ctx.buildContext.resolveFieldName(field.name);
+              var type = ctx.columns[field.name]?.type;
+              if (type == null) continue;
+              if (floatTypes.contains(type)) {
+                args[name] = literalString('text');
+              }
+            }
+
+            b.addExpression(literalMap(args).returned);
+          });
+      }));
 
       // Add values
       clazz.fields.add(new Field((b) {
@@ -158,6 +188,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 expr = refer('json')
                     .property('decode')
                     .call([expr.asA(refer('String'))]).asA(type);
+              } else if (floatTypes.contains(ctx.columns[field.name]?.type)) {
+                expr = refer('double')
+                    .property('parse')
+                    .call([expr.property('toString').call([])]);
               } else if (fType is InterfaceType && fType.element.isEnum) {
                 expr = type.property('values').index(expr.asA(refer('int')));
               } else
@@ -222,7 +256,18 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       // If there are any relations, we need some overrides.
       clazz.constructors.add(new Constructor((b) {
         b
+          ..optionalParameters.add(Parameter((b) => b
+            ..named = true
+            ..name = 'trampoline'
+            ..type = TypeReference((b) => b
+              ..symbol = 'Set'
+              ..types.add(refer('String')))))
           ..body = new Block((b) {
+            b.statements.addAll([
+              Code('trampoline ??= Set();'),
+              Code('trampoline.add(tableName);'),
+            ]);
+
             // Add a constructor that initializes _where
             b.addExpression(
               refer('_where')
@@ -248,16 +293,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   var foreignQueryType =
                       foreign.buildContext.modelClassNameRecase.pascalCase +
                           'Query';
-                  var compiledSubquery = refer(foreignQueryType)
-                      .newInstance([])
-                      .property('compile')
-                      .call([]);
-
                   joinArgs.insert(
                       0,
-                      literalString('(')
-                          .operatorAdd(compiledSubquery)
-                          .operatorAdd(literalString(')')));
+                      refer(foreignQueryType).newInstance(
+                          [], {'trampoline': refer('trampoline')}));
                 } else {
                   joinArgs.insert(0, literalString(foreign.tableName));
                 }
@@ -580,11 +619,13 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             for (var field in ctx.effectiveFields) {
               var fType = field.type;
               var name = ctx.buildContext.resolveFieldName(field.name);
-              var type = ctx.columns[field.name]?.type?.name;
+              var type = ctx.columns[field.name]?.type;
               if (type == null) continue;
               if (const TypeChecker.fromRuntime(List)
                   .isAssignableFromType(fType)) {
-                args[name] = literalString(type);
+                args[name] = literalString(type.name);
+              } else if (floatTypes.contains(type)) {
+                args[name] = literalString(type.name);
               }
             }
 
@@ -612,6 +653,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             value = refer('json')
                 .property('decode')
                 .call([value.asA(refer('String'))]).asA(refer('List'));
+          } else if (floatTypes.contains(ctx.columns[field.name]?.type)) {
+            value = refer('double')
+                .property('parse')
+                .call([value.asA(refer('String'))]);
           } else {
             value = value.asA(type);
           }
@@ -631,6 +676,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           } else if (const TypeChecker.fromRuntime(List)
               .isAssignableFromType(fType)) {
             value = refer('json').property('encode').call([value]);
+          } else if (floatTypes.contains(ctx.columns[field.name]?.type)) {
+            value = value.property('toString').call([]);
           }
 
           b

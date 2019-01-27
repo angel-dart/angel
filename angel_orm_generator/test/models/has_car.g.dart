@@ -28,7 +28,9 @@ class HasCarMigration extends Migration {
 // **************************************************************************
 
 class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
-  HasCarQuery() {
+  HasCarQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new HasCarQueryWhere(this);
   }
 
@@ -36,6 +38,11 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
   final HasCarQueryValues values = new HasCarQueryValues();
 
   HasCarQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

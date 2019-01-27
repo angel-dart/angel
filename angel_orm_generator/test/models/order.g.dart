@@ -31,7 +31,9 @@ class OrderMigration extends Migration {
 // **************************************************************************
 
 class OrderQuery extends Query<Order, OrderQueryWhere> {
-  OrderQuery() {
+  OrderQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
     _where = new OrderQueryWhere(this);
     leftJoin('customers', 'customer_id', 'id',
         additionalFields: const ['created_at', 'updated_at']);
@@ -41,6 +43,11 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
   final OrderQueryValues values = new OrderQueryValues();
 
   OrderQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {

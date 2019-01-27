@@ -54,7 +54,7 @@ main() {
     test('select one', () async {
       var query = new BookQuery();
       query.where.id.equals(int.parse(deathlyHallows.id));
-      print(query.compile());
+      print(query.compile(Set()));
 
       var book = await query.getOne(executor);
       print(book.toJson());
@@ -71,7 +71,7 @@ main() {
       var query = new BookQuery()
         ..where.name.equals('Goblet of Fire')
         ..orWhere((w) => w.authorId.equals(int.parse(jkRowling.id)));
-      print(query.compile());
+      print(query.compile(Set()));
 
       var books = await query.get(executor);
       expect(books, hasLength(1));
@@ -95,7 +95,7 @@ main() {
       query1
         ..union(query2)
         ..unionAll(query3);
-      print(query1.compile());
+      print(query1.compile(Set()));
 
       var books = await query1.get(executor);
       expect(books, hasLength(1));
@@ -120,7 +120,7 @@ main() {
 
   test('delete stream', () async {
     var query = new BookQuery()..where.name.equals(deathlyHallows.name);
-    print(query.compile());
+    print(query.compile(Set()));
     var books = await query.delete(executor);
     expect(books, hasLength(1));
 

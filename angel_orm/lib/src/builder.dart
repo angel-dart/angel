@@ -36,6 +36,7 @@ String sanitizeExpression(String unsafe) {
 abstract class SqlExpressionBuilder<T> {
   final Query query;
   final String columnName;
+  String _cast;
   bool _isProperty = false;
   String _substitution;
 
@@ -75,7 +76,10 @@ class NumericSqlExpressionBuilder<T extends num>
   String compile() {
     if (_raw != null) return _raw;
     if (_value == null) return null;
-    return '$_op $_value';
+    var v = _value.toString();
+    if (T == double) v = 'CAST ("$v" as decimal)';
+    if (_cast != null) v = 'CAST ($v AS $_cast)';
+    return '$_op $v';
   }
 
   operator <(T value) => _change('<', value);
@@ -306,6 +310,7 @@ class BooleanSqlExpressionBuilder extends SqlExpressionBuilder<bool> {
     if (_raw != null) return _raw;
     if (_value == null) return null;
     var v = _value ? 'TRUE' : 'FALSE';
+    if (_cast != null) v = 'CAST ($v AS $_cast)';
     return '$_op $v';
   }
 
@@ -555,17 +560,16 @@ class JsonSqlExpressionBuilderProperty {
       throw StateError(
           '$nameString is already typed as $_typed, and cannot be changed.');
     } else {
-      _typed = value().._isProperty = true;
+      _typed = value()
+        .._cast = 'text'
+        .._isProperty = true;
       return _typed as T;
     }
   }
 
   String get nameString {
-    if (isInt) {
-      return '(${builder.columnName}->>$name)::jsonb';
-    } else {
-      return "(${builder.columnName}->>'$name')::jsonb";
-    }
+    var n = isInt ? name : "'$name'";
+    return '${builder.columnName}::jsonb->>$n';
   }
 
   void isNotNull() {

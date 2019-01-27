@@ -1,4 +1,4 @@
-CREATE TEMPORARY TABLE "user_roles" (
+CREATE TEMPORARY TABLE "role_users" (
   "id" serial PRIMARY KEY,
   "user_id" int NOT NULL,
   "role_id" int NOT NULL,
