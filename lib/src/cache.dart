@@ -158,7 +158,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
         }
 
         setCachedHeaders(stat.modified, req, res);
-        return res.streamFile(file).then((_) => false);
+        return super.serveFile(file, stat, req, res);
       });
     }
   }

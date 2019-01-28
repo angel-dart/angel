@@ -240,7 +240,7 @@ class VirtualDirectory {
     res.contentType = new MediaType.parse(type);
     if (useBuffer == true) res.useBuffer();
 
-    if (req.headers.value('range')?.startsWith('bytes ') != true) {
+    if (req.headers.value('range')?.startsWith('bytes=') != true) {
       await res.streamFile(file);
     } else {
       var header = new RangeHeader.parse(req.headers.value('range'));

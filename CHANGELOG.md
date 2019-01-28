@@ -1,3 +1,6 @@
+# 2.1.2+1
+* Fix a typo that prevented `Range` requests from working.
+
 # 2.1.2
 * Patch support for range+streaming in Caching server.
 
