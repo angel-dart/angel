@@ -1,10 +1,3 @@
-# jinja
-Angel support for the Jinja2 templating engine, ported from Python to Dart.
-
-[![Pub](https://img.shields.io/pub/v/angel_jinja.svg)](https://pub.dartlang.org/packages/angel_jinja)
-
-# Example
-```dart
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
@@ -42,4 +35,3 @@ main() async {
   await http.startServer('127.0.0.1', 3000);
   print('Listening at ${http.uri}');
 }
-```
