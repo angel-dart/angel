@@ -1,3 +1,7 @@
+# 2.1.0
+* Fixed handling of `if` in non-strict mode.
+* 
+
 # 2.0.1
 * Fixed bug where the `textarea` name check would never return `true`.
 

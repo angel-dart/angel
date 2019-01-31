@@ -211,11 +211,13 @@ class Renderer {
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     var attribute = element.attributes.singleWhere((a) => a.name == 'if');
 
-    var v = attribute.value.compute(scope) as bool;
+    var vv = attribute.value.compute(scope);
 
     if (scope.resolve('!strict!')?.value == false) {
-      v = v == true;
+      vv = vv == true;
     }
+
+    var v = vv as bool;
 
     if (!v) return;
 
