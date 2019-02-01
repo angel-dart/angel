@@ -1,7 +1,6 @@
 # paginate
-[![version 1.0.0+3](https://img.shields.io/badge/pub-v1.0.0+3-brightgreen.svg)](https://pub.dartlang.org/packages/angel_paginate)
+[![Pub](https://img.shields.io/pub/v/angel_paginate.svg)](https://pub.dartlang.org/packages/angel_paginate)
 [![build status](https://travis-ci.org/angel-dart/paginate.svg)](https://travis-ci.org/angel-dart/paginate)
-![coverage: 100%](https://img.shields.io/badge/coverage-100%25-green.svg)
 
 Platform-agnostic pagination library, with custom support for the
 [Angel framework](https://github.com/angel-dart/angel).
@@ -11,7 +10,7 @@ In your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  angel_paginate: ^1.0.0
+  angel_paginate: ^2.0.0
 ```
 
 # Usage
@@ -59,37 +58,3 @@ The entire Paginator API is documented, so check out the DartDocs.
 Paginators by default cache paginations, to improve performance as you shift through pages.
 This can be especially helpful in a client-side application where your UX involves a fast
 response time, i.e. a search page.
-
-## Use With Angel
-Naturally, a library named `angel_paginate` has special provisions for the
-[Angel framework](https://github.com/angel-dart/angel).
-
-In `package:angel_paginate/server.dart`, a function called `paginate` generates
-pagination service hooks for you. If the result of a hooked service event is an `Iterable`,
-it will be paginated. This is convenient because it works with any data store, whether it
-be MongoDB, RethinkDB, an in-memory store, or something else entirely.
-
-```dart
-configureServer(Angel app) {
-  var service = app.service('api/foo') as HookedService;
-  service.afterIndexed.listen(paginate(itemsPerPage: 10));
-}
-```
-
-See `test/server_test.dart` for examples of usage with Angel.
-
-The pagination hook also allows you to provide a `page` and/or `$limit` in the query.
-If the user provides a `page` in the query, it will return a pagination of the given page.
-
-Ex. `http://mysite.com/api/todos?page=4`
-
-A `$limit` can be used to override the `itemsPerPage` set in the `paginate` hook. If you
-would like to set a maximum on the number of items per page, you can set `maxItemsPerPage`
-in the `paginate` call.
-
-Ex. `http://mysite.com/api/todos?$limit=25`
-
-You can use these pagination functions to provide powerful search experiences on your websites.
-
-**NOTE**: If the paginated data is empty, expect `start_index` and `end_index`
-to both be `-1`.

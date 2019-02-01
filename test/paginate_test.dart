@@ -2,8 +2,7 @@ import 'package:angel_paginate/angel_paginate.dart';
 import 'package:test/test.dart';
 
 // Count-down from 100, then 101 at the end...
-final List<int> DATA = new List<int>.generate(100, (i) => 100 - i)
-  ..add(101);
+final List<int> DATA = new List<int>.generate(100, (i) => 100 - i)..add(101);
 
 main() {
   group('cache', () {
@@ -68,8 +67,7 @@ main() {
   });
 
   test('third page', () {
-    var paginator = new Paginator<int>(DATA)
-      ..goToPage(3);
+    var paginator = new Paginator<int>(DATA)..goToPage(3);
     expect(paginator.pageNumber, 3);
     var r = paginator.current;
     print(r.toJson());
@@ -108,7 +106,7 @@ main() {
     do {
       print('  * Page #${paginator.pageNumber}: ${paginator.current.data}');
       paginator.next();
-    } while(paginator.canGoForward);
+    } while (paginator.canGoForward);
   });
 
   test('empty collection', () {
