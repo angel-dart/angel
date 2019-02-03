@@ -94,6 +94,7 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
 
   @override
   Future close() async {
+    on._close();
     await _socket.sink.close(status.goingAway);
     _onData.close();
     _onAllEvents.close();
@@ -433,5 +434,9 @@ class WebSocketExtraneousEventHandler {
       _events[index] = new StreamController<WebSocketEvent>();
 
     return _events[index].stream;
+  }
+
+  void _close() {
+    _events.values.forEach((s) => s.close());
   }
 }
