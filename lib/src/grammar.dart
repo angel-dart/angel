@@ -7,13 +7,11 @@ class RouteGrammar {
       match<String>(new RegExp(notSlashRgx)).value((r) => r.span.text);
 
   static final Parser<Match> regExp =
-      // TODO: Enable trailing here
-      // match<Match>(new RegExp(r'\(([^)]+)\)([^/]+)?'))
-      match<Match>(new RegExp(r'\(([^)]+)\)'))
+      match<Match>(new RegExp(r'\(([^\n)]+)\)([^/]+)?'))
           .value((r) => r.scanner.lastMatch);
 
   static final Parser<Match> parameterName = match<Match>(
-          new RegExp('$notSlashRgx?' r':([A-Za-z0-9_]+)' '$notSlashRgx?'))
+          new RegExp('$notSlashRgx?' r':([A-Za-z0-9_]+)' r'([^(/\n])?'))
       .value((r) => r.scanner.lastMatch);
 
   static final Parser<ParameterSegment> parameterSegment = chain([
@@ -23,20 +21,22 @@ class RouteGrammar {
   ]).map((r) {
     var match = r.value[0] as Match;
     var rgxMatch = r.value[2] as Match;
+
+    var pre = match[1] ?? '';
+    var post = match[3] ?? '';
     RegExp rgx;
 
     if (rgxMatch != null) {
-      rgx = RegExp(rgxMatch[1]);
-      var pre = match[1] ?? '';
-      var post = rgxMatch[2] ?? '';
-      post += match[3] ?? '';
-      if (pre.isNotEmpty || post.isNotEmpty) {
-        if (rgx != null) {
-          var pattern = pre + rgx.pattern + post;
-          rgx = RegExp(pattern);
-        } else {
-          rgx = RegExp('$pre$notSlashRgx$post');
-        }
+      rgx = RegExp('(${rgxMatch[1]})');
+      post = (rgxMatch[2] ?? '') + post;
+    }
+
+    if (pre.isNotEmpty || post.isNotEmpty) {
+      if (rgx != null) {
+        var pattern = pre + rgx.pattern + post;
+        rgx = RegExp(pattern);
+      } else {
+        rgx = RegExp('$pre$notSlashRgx$post');
       }
     }
 

@@ -9,12 +9,11 @@ main() {
 
   router.get('/wild*', () {});
 
-  // TODO: Enable trailing after custom RegExp
-  // router.get('/ordinal/int:n([0-9]+)st', () {});
+  router.get('/ordinal/int:n([0-9]+)st', () {});
 
   print(router.resolveAbsolute('/whois/~thosakwe').first.allParams);
   print(router.resolveAbsolute('/wild_thornberrys').first.route.path);
-  // print(router.resolveAbsolute('/ordinal/1st').first.allParams);
+  print(router.resolveAbsolute('/ordinal/1st').first.allParams);
 
   router.get('/users', () {});
 

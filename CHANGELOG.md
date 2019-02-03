@@ -1,3 +1,6 @@
+# 3.0.3
+* Support trailing text after parameters with custom Regexes.
+
 # 3.0.2
 * Support leading and trailing text for both `:parameters` and `*`
 
