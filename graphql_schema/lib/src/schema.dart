@@ -129,7 +129,7 @@ class GraphExceptionErrorLocation {
   }
 }
 
-typedef GraphQLType _GraphDocumentationTypeProvider();
+typedef GraphQLType GraphDocumentationTypeProvider();
 
 /// A metadata annotation used to provide documentation to `package:graphql_server`.
 class GraphQLDocumentation {
@@ -141,8 +141,19 @@ class GraphQLDocumentation {
 
   /// A constant callback that returns an explicit type for the annotated field, rather than having it be assumed
   /// via `dart:mirrors`.
-  final _GraphDocumentationTypeProvider type;
+  final GraphDocumentationTypeProvider type;
+
+  /// The name of an explicit type for the annotated field, rather than having it be assumed.
+  final Symbol typeName;
 
   const GraphQLDocumentation(
-      {this.description, this.deprecationReason, GraphQLType this.type()});
+      {this.description, this.deprecationReason, this.type, this.typeName});
+}
+
+/// The canonical instance.
+const GraphQLClass graphQLClass = const GraphQLClass._();
+
+/// Signifies that a class should statically generate a [GraphQLSchema].
+class GraphQLClass {
+  const GraphQLClass._();
 }
