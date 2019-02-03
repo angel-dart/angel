@@ -18,12 +18,17 @@ class WebSocketContext {
   StreamController<WebSocketAction> _onAction =
       new StreamController<WebSocketAction>();
 
+  StreamController<void> _onAuthenticated = StreamController();
+
   StreamController<Null> _onClose = new StreamController<Null>();
 
   StreamController _onData = new StreamController();
 
   /// Fired on any [WebSocketAction];
   Stream<WebSocketAction> get onAction => _onAction.stream;
+
+  /// Fired when the user authenticates.
+  Stream<void> get onAuthenticated => _onAuthenticated.stream;
 
   /// Fired once the underlying [WebSocket] closes.
   Stream<Null> get onClose => _onClose.stream;
@@ -37,6 +42,7 @@ class WebSocketContext {
   Future close() async {
     await channel.sink.close();
     _onAction.close();
+    _onAuthenticated.close();
     _onData.close();
     _onClose.add(null);
     _onClose.close();

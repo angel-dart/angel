@@ -223,6 +223,7 @@ class AngelWebSocket {
         socket.request
           ..container.registerSingleton<AuthToken>(token)
           ..container.registerSingleton(user, as: user.runtimeType as Type);
+        socket._onAuthenticated.add(null);
         socket.send(authenticatedEvent,
             {'token': token.serialize(auth.hmac), 'data': user});
       } catch (e, st) {
