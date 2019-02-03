@@ -18,7 +18,11 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 class WebSockets extends BaseWebSocketClient {
   final List<IoWebSocketsService> _services = [];
 
-  WebSockets(String path) : super(new http.IOClient(), path);
+  WebSockets(baseUrl,
+      {bool reconnectOnClose = true, Duration reconnectInterval})
+      : super(new http.IOClient(), baseUrl,
+            reconnectOnClose: reconnectOnClose,
+            reconnectInterval: reconnectInterval);
 
   @override
   Stream<String> authenticateViaPopup(String url,

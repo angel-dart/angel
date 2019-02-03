@@ -17,7 +17,11 @@ final RegExp _straySlashes = new RegExp(r"(^/)|(/+$)");
 class WebSockets extends BaseWebSocketClient {
   final List<BrowserWebSocketsService> _services = [];
 
-  WebSockets(path) : super(new http.BrowserClient(), path);
+  WebSockets(baseUrl,
+      {bool reconnectOnClose = true, Duration reconnectInterval})
+      : super(new http.BrowserClient(), baseUrl,
+            reconnectOnClose: reconnectOnClose,
+            reconnectInterval: reconnectInterval);
 
   @override
   Future close() {

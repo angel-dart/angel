@@ -1,3 +1,6 @@
+# 2.0.1
+* Add `reconnectOnClose` and `reconnectinterval` parameters in top-level `WebSockets` constructors.
+
 # 2.0.0
 * Update to work with `client@2.0.0`.
 
