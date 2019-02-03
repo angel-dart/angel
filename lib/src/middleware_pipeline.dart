@@ -21,3 +21,18 @@ class MiddlewarePipeline<T> {
   MiddlewarePipeline(Iterable<RoutingResult<T>> routingResults)
       : this.routingResults = routingResults.toList();
 }
+
+/// Iterates through a [MiddlewarePipeline].
+class MiddlewarePipelineIterator<T> extends Iterator<RoutingResult<T>> {
+  final MiddlewarePipeline<T> pipeline;
+  final Iterator<RoutingResult<T>> _inner;
+
+  MiddlewarePipelineIterator(this.pipeline)
+      : _inner = pipeline.routingResults.iterator;
+
+  @override
+  RoutingResult<T> get current => _inner.current;
+
+  @override
+  bool moveNext() => _inner.moveNext();
+}

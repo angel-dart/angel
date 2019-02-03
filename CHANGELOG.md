@@ -1,3 +1,6 @@
+# 3.0.5
+* Add `MiddlewarePipelineIterator`.
+
 # 3.0.4
 * Add `RouteResult` class, which allows segments (i.e. wildcard) to
 modify the `tail`.
