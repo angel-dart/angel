@@ -8,15 +8,14 @@ class Route<T> {
   final Map<String, Map<String, dynamic>> _cache = {};
   final RouteDefinition _routeDefinition;
   String name;
-  Parser<Map<String, dynamic>> _parser;
+  Parser<RouteResult> _parser;
 
   Route(this.path, {@required this.method, @required this.handlers})
       : _routeDefinition = RouteGrammar.routeDefinition
             .parse(new SpanScanner(path.replaceAll(_straySlashes, '')))
             .value {
     if (_routeDefinition?.segments?.isNotEmpty != true)
-      _parser =
-          match<Map<String, dynamic>>('').value((r) => <String, dynamic>{});
+      _parser = match('').map((r) => RouteResult({}));
   }
 
   factory Route.join(Route<T> a, Route<T> b) {
@@ -26,8 +25,7 @@ class Route<T> {
         method: b.method, handlers: b.handlers);
   }
 
-  Parser<Map<String, dynamic>> get parser =>
-      _parser ??= _routeDefinition.compile();
+  Parser<RouteResult> get parser => _parser ??= _routeDefinition.compile();
 
   @override
   String toString() {
@@ -55,5 +53,25 @@ class Route<T> {
     }
 
     return b.toString();
+  }
+}
+
+/// The result of matching an individual route.
+class RouteResult {
+  /// The parsed route parameters.
+  final Map<String, dynamic> params;
+
+  /// Optional. An explicit "tail" value to set.
+  String get tail => _tail;
+
+  String _tail;
+
+  RouteResult(this.params, {String tail}) : _tail = tail;
+
+  void _setTail(String v) => _tail ??= v;
+
+  /// Adds parameters.
+  void addAll(Map<String, dynamic> map) {
+    params.addAll(map);
   }
 }

@@ -95,8 +95,8 @@ class RouteDefinition {
 
   RouteDefinition(this.segments);
 
-  Parser<Map<String, dynamic>> compile() {
-    Parser<Map<String, dynamic>> out;
+  Parser<RouteResult> compile() {
+    Parser<RouteResult> out;
 
     for (int i = 0; i < segments.length; i++) {
       var s = segments[i];
@@ -105,7 +105,7 @@ class RouteDefinition {
         out = s.compile(isLast);
       else
         out = s.compileNext(
-            out.then(match('/')).index(0).cast<Map<String, dynamic>>(), isLast);
+            out.then(match('/')).index(0).cast<RouteResult>(), isLast);
     }
 
     return out;
@@ -113,10 +113,9 @@ class RouteDefinition {
 }
 
 abstract class RouteSegment {
-  Parser<Map<String, dynamic>> compile(bool isLast);
+  Parser<RouteResult> compile(bool isLast);
 
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast);
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast);
 }
 
 class SlashSegment implements RouteSegment {
@@ -125,14 +124,13 @@ class SlashSegment implements RouteSegment {
   const SlashSegment();
 
   @override
-  Parser<Map<String, dynamic>> compile(bool isLast) {
-    return match(rgx).map((_) => {});
+  Parser<RouteResult> compile(bool isLast) {
+    return match(rgx).map((_) => RouteResult({}));
   }
 
   @override
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast) {
-    return p.then(compile(isLast)).index(0).cast<Map<String, dynamic>>();
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast) {
+    return p.then(compile(isLast)).index(0).cast<RouteResult>();
   }
 
   @override
@@ -150,14 +148,13 @@ class ConstantSegment extends RouteSegment {
   }
 
   @override
-  Parser<Map<String, dynamic>> compile(bool isLast) {
-    return match<Map<String, dynamic>>(text).value((r) => <String, dynamic>{});
+  Parser<RouteResult> compile(bool isLast) {
+    return match(text).map((r) => RouteResult({}));
   }
 
   @override
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast) {
-    return p.then(compile(isLast)).index(0).cast<Map<String, dynamic>>();
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast) {
+    return p.then(compile(isLast)).index(0).cast<RouteResult>();
   }
 }
 
@@ -176,22 +173,27 @@ class WildcardSegment extends RouteSegment {
     return r'[^/]*';
   }
 
-  Parser<Map<String, dynamic>> _compile(bool isLast) {
-    var rgx = RegExp('$pre${_symbol(isLast)}$post');
-    return match(rgx);
+  RegExp _compile(bool isLast) {
+    return RegExp('$pre(${_symbol(isLast)})$post');
     // if (isLast) return match(new RegExp(r'.*'));
     // return match(new RegExp(r'[^/]*'));
   }
 
   @override
-  Parser<Map<String, dynamic>> compile(bool isLast) {
-    return _compile(isLast).map((r) => {});
+  Parser<RouteResult> compile(bool isLast) {
+    return match(_compile(isLast))
+        .map((r) => RouteResult({}, tail: r.scanner.lastMatch[1]));
   }
 
   @override
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast) {
-    return p.then(_compile(isLast)).index(0).cast<Map<String, dynamic>>();
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast) {
+    return p.then(compile(isLast)).map((r) {
+      var items = r.value.cast<RouteResult>();
+      var a = items[0], b = items[1];
+      return a
+        ..addAll(b?.params ?? {})
+        .._setTail(b?.tail);
+    });
   }
 }
 
@@ -206,16 +208,15 @@ class OptionalSegment extends ParameterSegment {
   }
 
   @override
-  Parser<Map<String, dynamic>> compile(bool isLast) {
+  Parser<RouteResult> compile(bool isLast) {
     return super.compile(isLast).opt();
   }
 
   @override
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast) {
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast) {
     return p.then(_compile().opt()).map((r) {
-      if (r.value[1] == null) return r.value[0] as Map<String, dynamic>;
-      return (r.value[0] as Map<String, dynamic>)
+      if (r.value[1] == null) return r.value[0] as RouteResult;
+      return (r.value[0] as RouteResult)
         ..addAll({name: Uri.decodeComponent(r.value[1] as String)});
     });
   }
@@ -240,16 +241,15 @@ class ParameterSegment extends RouteSegment {
   }
 
   @override
-  Parser<Map<String, dynamic>> compile(bool isLast) {
+  Parser<RouteResult> compile(bool isLast) {
     return _compile()
-        .map<Map<String, dynamic>>((r) => {name: Uri.decodeComponent(r.value)});
+        .map((r) => RouteResult({name: Uri.decodeComponent(r.value)}));
   }
 
   @override
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast) {
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast) {
     return p.then(_compile()).map((r) {
-      return (r.value[0] as Map<String, dynamic>)
+      return (r.value[0] as RouteResult)
         ..addAll({name: Uri.decodeComponent(r.value[1] as String)});
     });
   }
@@ -273,16 +273,15 @@ class ParsedParameterSegment extends RouteSegment {
   }
 
   @override
-  Parser<Map<String, dynamic>> compile(bool isLast) {
-    return parameter._compile().map(
-        (r) => {parameter.name: getValue(Uri.decodeComponent(r.span.text))});
+  Parser<RouteResult> compile(bool isLast) {
+    return parameter._compile().map((r) => RouteResult(
+        {parameter.name: getValue(Uri.decodeComponent(r.span.text))}));
   }
 
   @override
-  Parser<Map<String, dynamic>> compileNext(
-      Parser<Map<String, dynamic>> p, bool isLast) {
+  Parser<RouteResult> compileNext(Parser<RouteResult> p, bool isLast) {
     return p.then(parameter._compile()).map((r) {
-      return (r.value[0] as Map<String, dynamic>)
+      return (r.value[0] as RouteResult)
         ..addAll({
           parameter.name: getValue(Uri.decodeComponent(r.value[1] as String))
         });

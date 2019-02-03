@@ -292,9 +292,10 @@ class Router<T> {
           if (parseResult.successful && scanner.isDone) {
             var result = new RoutingResult<T>(
                 parseResult: parseResult,
-                params: parseResult.value,
+                params: parseResult.value.params,
                 shallowRoute: route,
-                shallowRouter: this);
+                shallowRouter: this,
+                tail: (parseResult.value.tail ?? '') + scanner.rest);
             out.add(result);
             success = true;
           }

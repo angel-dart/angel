@@ -1,3 +1,8 @@
+# 3.0.4
+* Add `RouteResult` class, which allows segments (i.e. wildcard) to
+modify the `tail`.
+* Add more wildcard tests.
+
 # 3.0.3
 * Support trailing text after parameters with custom Regexes.
 

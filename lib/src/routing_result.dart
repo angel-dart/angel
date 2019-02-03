@@ -3,7 +3,7 @@ part of angel_route.src.router;
 /// Represents a complex result of navigating to a path.
 class RoutingResult<T> {
   /// The parse result that matched the given sub-path.
-  final ParseResult<Map<String, dynamic>> parseResult;
+  final ParseResult<RouteResult> parseResult;
 
   /// A nested instance, if a sub-path was matched.
   final Iterable<RoutingResult<T>> nested;
@@ -85,7 +85,7 @@ class RoutingResult<T> {
       this.nested,
       this.shallowRoute,
       this.shallowRouter,
-      this.tail}) {
+      @required this.tail}) {
     this.params.addAll(params ?? {});
   }
 }
