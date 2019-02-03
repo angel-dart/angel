@@ -153,6 +153,3 @@ GraphQLFieldResolver randomHeroResolver(
     return allHeroes.isEmpty ? null : allHeroes[rnd.nextInt(allHeroes.length)];
   };
 }
-
-Service mountService<T extends Model>(Angel app, String path) =>
-    app.use(path, new TypedService(new MapService())) as Service;

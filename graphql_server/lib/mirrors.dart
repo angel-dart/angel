@@ -1,3 +1,8 @@
+/// `dart:mirrors` functionality for this package will soon be removed;
+/// use `package:graphql_generator` to generate schemas instead.
+@deprecated
+library graphql_server.mirrors;
+
 import 'dart:mirrors';
 
 import 'package:angel_serialize/angel_serialize.dart';
@@ -8,6 +13,7 @@ import 'package:recase/recase.dart';
 ///
 /// This function is aware of the annotations from `package:angel_serialize`, and works seamlessly
 /// with them.
+@deprecated
 GraphQLType convertDartType(Type type, [List<Type> typeArguments]) {
   if (_cache[type] != null) {
     return _cache[type];
@@ -17,6 +23,7 @@ GraphQLType convertDartType(Type type, [List<Type> typeArguments]) {
 }
 
 /// Shorthand for [convertDartType], for when you know the result will be an object type.
+@deprecated
 GraphQLObjectType convertDartClass(Type type, [List<Type> typeArguments]) {
   return convertDartType(type, typeArguments) as GraphQLObjectType;
 }
@@ -69,6 +76,7 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
   return objectTypeFromClassMirror(clazz);
 }
 
+@deprecated
 GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   if (_cache[mirror.reflectedType] != null) {
     return _cache[mirror.reflectedType] as GraphQLObjectType;
@@ -193,6 +201,7 @@ GraphQLObjectType objectTypeFromClassMirror(ClassMirror mirror) {
   return result as GraphQLObjectType;
 }
 
+@deprecated
 GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
   var values = <GraphQLEnumValue>[];
 
@@ -217,6 +226,7 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
   );
 }
 
+@deprecated
 GraphQLObjectField fieldFromGetter(
     Symbol name, MethodMirror mirror, Exclude exclude, ClassMirror clazz) {
   var type = _getProvidedType(mirror.metadata);
