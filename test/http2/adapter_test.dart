@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart' hide Header;
 import 'package:angel_framework/http2.dart';
 import 'package:http/src/multipart_file.dart' as http;
@@ -8,6 +9,7 @@ import 'package:http/src/multipart_request.dart' as http;
 import 'package:http/http.dart' as http;
 import 'package:http2/transport.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'http2_client.dart';
 
@@ -25,7 +27,16 @@ void main() {
   Uri serverRoot;
 
   setUp(() async {
-    app = new Angel()..encoders['gzip'] = gzip.encoder;
+    app = new Angel(reflector: MirrorsReflector())
+      ..encoders['gzip'] = gzip.encoder;
+    hierarchicalLoggingEnabled = true;
+    app.logger = Logger.detached('angel.http2')
+      ..onRecord.listen((rec) {
+        print(rec);
+        if (rec.error == null) return;
+        print(rec.error);
+        if (rec.stackTrace != null) print(rec.stackTrace);
+      });
 
     app.get('/', (req, res) async {
       res.write('Hello world');
@@ -77,6 +88,13 @@ void main() {
       await res.close();
     });
 
+    app.get('/param/:name', (req, res) => req.params);
+
+    app.get('/query', (req, res) {
+      print('incoming URI: ${req.uri}');
+      return req.queryParameters;
+    });
+
     var ctx = new SecurityContext()
       ..useCertificateChain('dev.pem')
       ..usePrivateKey('dev.key', password: 'dartdart')
@@ -119,6 +137,19 @@ void main() {
       var decoded = gzip.decode(response.bodyBytes);
       expect(utf8.decode(decoded), jfk);
     });
+  });
+
+  test('query uri decoded', () async {
+    var uri =
+        serverRoot.replace(path: '/query', queryParameters: {'foo!': 'bar?'});
+    var response = await client.get(uri);
+    print('Sent $uri');
+    expect(response.body, json.encode({'foo!': 'bar?'}));
+  });
+
+  test('params uri decoded', () async {
+    var response = await client.get(serverRoot.replace(path: '/param/foo!'));
+    expect(response.body, json.encode({'name': 'foo!'}));
   });
 
   test('method parsed', () async {

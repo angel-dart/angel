@@ -97,7 +97,7 @@ abstract class Driver<
           var path = req.path;
           if (path == '/') path = '';
 
-          Tuple4<List, Map<String, dynamic>, ParseResult<Map<String, dynamic>>,
+          Tuple4<List, Map<String, dynamic>, ParseResult<RouteResult>,
               MiddlewarePipeline> resolveTuple() {
             Router r = app.optimizedRouter;
             var resolved =
@@ -121,12 +121,17 @@ abstract class Driver<
 
           req.container
             ..registerSingleton<MiddlewarePipeline>(tuple.item4)
-            ..registerSingleton<ParseResult<Map<String, dynamic>>>(tuple.item3)
+            ..registerSingleton<ParseResult<RouteResult>>(tuple.item3)
             ..registerSingleton<ParseResult>(tuple.item3);
 
           if (!app.isProduction && app.logger != null) {
             req.container
                 .registerSingleton<Stopwatch>(new Stopwatch()..start());
+          }
+
+          if (tuple.item1.isEmpty) {
+            print(req.uri);
+            print('${req.path} => ${tuple.item1}');
           }
 
           var pipeline = tuple.item1;

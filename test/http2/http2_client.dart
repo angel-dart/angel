@@ -21,7 +21,10 @@ class Http2Client extends BaseClient {
     var headers = <Header>[
       new Header.ascii(':authority', request.url.authority),
       new Header.ascii(':method', request.method),
-      new Header.ascii(':path', request.url.path),
+      new Header.ascii(
+          ':path',
+          request.url.path +
+              (request.url.hasQuery ? ('?' + request.url.query) : '')),
       new Header.ascii(':scheme', request.url.scheme),
     ];
 

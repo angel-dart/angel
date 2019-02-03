@@ -3,7 +3,13 @@ library angel_framework.http.request_context;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io'
-    show Cookie, HeaderValue, HttpHeaders, HttpSession, InternetAddress;
+    show
+        BytesBuilder,
+        Cookie,
+        HeaderValue,
+        HttpHeaders,
+        HttpSession,
+        InternetAddress;
 
 import 'package:angel_container/angel_container.dart';
 import 'package:http_parser/http_parser.dart';
@@ -279,4 +285,19 @@ class UploadedFile {
   /// [:HttpMultipartFormData:]. This field is used to determine how to decode
   /// the data. Returns [:null:] if not present.
   HeaderValue get contentTransferEncoding => formData.contentTransferEncoding;
+
+  /// Reads the contents of the file into a single linear buffer.
+  ///
+  /// Note that this leads to holding the whole file in memory, which might
+  /// not be ideal for large files.w
+  Future<List<int>> readAsBytes() {
+    return data
+        .fold<BytesBuilder>(BytesBuilder(), (bb, out) => bb..add(out))
+        .then((bb) => bb.takeBytes());
+  }
+
+  /// Reads the contents of the file as [String], using the given [encoding].
+  Future<String> readAsString({Encoding encoding: utf8}) {
+    return data.transform(encoding.decoder).join();
+  }
 }

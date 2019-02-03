@@ -1,3 +1,8 @@
+# 2.0.0-alpha.21
+* Update for `angel_route@3.0.4` compatibility.
+* Add `readAsBytes` and `readAsString` to `UploadedFile`.
+* URI-decode path components in HTTP2.
+
 # 2.0.0-alpha.20
 * Inject the `MiddlewarePipeline` into requests.
 

@@ -38,7 +38,7 @@ class Angel extends Routable {
   final List<Angel> _children = [];
   final Map<
       String,
-      Tuple4<List, Map<String, dynamic>, ParseResult<Map<String, dynamic>>,
+      Tuple4<List, Map<String, dynamic>, ParseResult<RouteResult>,
           MiddlewarePipeline>> handlerCache = new HashMap();
 
   Router _flattened;

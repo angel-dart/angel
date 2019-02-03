@@ -39,26 +39,30 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
       .._stream = stream;
 
     var headers = req._headers = new MockHttpHeaders();
-    String scheme = 'https', host = socket.address.address, path = '';
-    int port = socket.port;
+    // String scheme = 'https', host = socket.address.address, path = '';
+    var uri =
+        Uri(scheme: 'https', host: socket.address.address, port: socket.port);
     var cookies = <Cookie>[];
 
     void finalize() {
       req
         .._cookies = new List.unmodifiable(cookies)
-        .._uri = new Uri(scheme: scheme, host: host, port: port, path: path);
+        .._uri = uri;
       if (!c.isCompleted) c.complete(req);
     }
 
     void parseHost(String value) {
-      var uri = Uri.tryParse(value);
-      if (uri == null || uri.scheme == 'localhost') return;
-      scheme = uri.hasScheme ? uri.scheme : scheme;
+      var inUri = Uri.tryParse(value);
+      if (inUri == null) return;
+      // if (uri == null || uri.scheme == 'localhost') return;
 
-      if (uri.hasAuthority) {
-        host = uri.host;
-        port = uri.hasPort ? uri.port : null;
+      if (inUri.hasScheme) uri = uri.replace(scheme: inUri.scheme);
+
+      if (inUri.hasAuthority) {
+        uri = uri.replace(host: inUri.host, userInfo: inUri.userInfo);
       }
+
+      if (inUri.hasPort) uri = uri.replace(port: inUri.port);
     }
 
     stream.incomingMessages.listen((msg) {
@@ -68,19 +72,22 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
       } else if (msg is HeadersStreamMessage) {
         for (var header in msg.headers) {
           var name = ascii.decode(header.name).toLowerCase();
-          var value = ascii.decode(header.value);
+          var value = Uri.decodeComponent(ascii.decode(header.value));
 
           switch (name) {
             case ':method':
               req._method = value;
               break;
             case ':path':
-              path = value.replaceAll(_straySlashes, '');
+              var inUri = Uri.parse(value);
+              uri = uri.replace(path: inUri.path);
+              if (inUri.hasQuery) uri = uri.replace(query: inUri.query);
+              var path = uri.path.replaceAll(_straySlashes, '');
               req._path = path;
               if (path.isEmpty) req._path = '/';
               break;
             case ':scheme':
-              scheme = value;
+              uri = uri.replace(scheme: value);
               break;
             case ':authority':
               parseHost(value);
