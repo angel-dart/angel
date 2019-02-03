@@ -11,7 +11,7 @@
 
 [Wiki (in-depth documentation)](https://github.com/angel-dart/angel/wiki)
 
-[API Documentation](http://www.dartdocs.org/documentation/angel_common/latest)
+[API Documentation](http://www.dartdocs.org/documentation/angel_framework/latest)
 
 [Roadmap](https://github.com/angel-dart/roadmap/blob/master/ROADMAP.md)
 
