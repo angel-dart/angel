@@ -1,3 +1,6 @@
+# 2.0.0-alpha.20
+* Inject the `MiddlewarePipeline` into requests.
+
 # 2.0.0-alpha.19
 * `parseBody` checks for null content type, and throws a `400` if none was given.
 * Add `ResponseContext.contentLength`.
