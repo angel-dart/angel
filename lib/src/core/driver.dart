@@ -99,10 +99,10 @@ abstract class Driver<
 
           Tuple4<List, Map<String, dynamic>, ParseResult<RouteResult>,
               MiddlewarePipeline> resolveTuple() {
-            Router r = app.optimizedRouter;
+            var r = app.optimizedRouter;
             var resolved =
                 r.resolveAbsolute(path, method: req.method, strip: false);
-            var pipeline = new MiddlewarePipeline(resolved);
+            var pipeline = new MiddlewarePipeline<RequestHandler>(resolved);
             return new Tuple4(
               pipeline.handlers,
               resolved.fold<Map<String, dynamic>>(
@@ -116,11 +116,16 @@ abstract class Driver<
           var tuple = app.isProduction
               ? app.handlerCache.putIfAbsent(cacheKey, resolveTuple)
               : resolveTuple();
+          var line = tuple.item4 as MiddlewarePipeline<RequestHandler>;
+          var it = MiddlewarePipelineIterator<RequestHandler>(line);
 
           req.params.addAll(tuple.item2);
 
           req.container
             ..registerSingleton<MiddlewarePipeline>(tuple.item4)
+            ..registerSingleton<MiddlewarePipeline<RequestHandler>>(line)
+            ..registerSingleton<MiddlewarePipelineIterator>(it)
+            ..registerSingleton<MiddlewarePipelineIterator<RequestHandler>>(it)
             ..registerSingleton<ParseResult<RouteResult>>(tuple.item3)
             ..registerSingleton<ParseResult>(tuple.item3);
 
@@ -129,24 +134,8 @@ abstract class Driver<
                 .registerSingleton<Stopwatch>(new Stopwatch()..start());
           }
 
-          if (tuple.item1.isEmpty) {
-            print(req.uri);
-            print('${req.path} => ${tuple.item1}');
-          }
-
-          var pipeline = tuple.item1;
-          var it = pipeline.iterator;
-
-          var runPipeline = pipeline.isEmpty
-              ? null
-              : Future.doWhile(() => !it.moveNext()
-                  ? new Future.value(false)
-                  : app.executeHandler(it.current, req, res));
-
-          return runPipeline == null
-              ? sendResponse(request, response, req, res)
-              : runPipeline
-                  .then((_) => sendResponse(request, response, req, res));
+          return runPipeline(it, req, res, app)
+              .then((_) => sendResponse(request, response, req, res));
         }
 
         if (useZone == false) {
@@ -354,5 +343,22 @@ abstract class Driver<
       writeToResponse(response, outputBuffer);
       return closeResponse(response).then(_cleanup);
     });
+  }
+
+  /// Runs a [MiddlewarePipeline].
+  static Future<void> runPipeline<RequestContextType extends RequestContext,
+          ResponseContextType extends ResponseContext>(
+      MiddlewarePipelineIterator<RequestHandler> it,
+      RequestContextType req,
+      ResponseContextType res,
+      Angel app) async {
+    while (it.moveNext()) {
+      var current = it.current.handlers.iterator;
+
+      while (current.moveNext()) {
+        var result = await app.executeHandler(current.current, req, res);
+        if (result != true) break;
+      }
+    }
   }
 }

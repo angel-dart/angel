@@ -41,7 +41,7 @@ class Angel extends Routable {
       Tuple4<List, Map<String, dynamic>, ParseResult<RouteResult>,
           MiddlewarePipeline>> handlerCache = new HashMap();
 
-  Router _flattened;
+  Router<RequestHandler> _flattened;
   bool _isProduction;
   Angel _parent;
 
@@ -62,7 +62,7 @@ class Angel extends Routable {
   Map<dynamic, InjectionRequest> get preContained => _preContained;
 
   /// Returns the [flatten]ed version of this router in production.
-  Router get optimizedRouter => _flattened ?? this;
+  Router<RequestHandler> get optimizedRouter => _flattened ?? this;
 
   /// Determines whether to allow HTTP request method overrides.
   bool allowMethodOverrides = true;
