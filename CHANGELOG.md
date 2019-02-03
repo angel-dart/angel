@@ -1,3 +1,6 @@
+# 3.0.2
+* Support leading and trailing text for both `:parameters` and `*`
+
 # 3.0.1
 * Make the callback in `Router.group` generically-typed.
 

@@ -1,23 +1,46 @@
 part of angel_route.src.router;
 
 class RouteGrammar {
-  static final RegExp rgx = new RegExp(r'\((.+)\)');
+  static const String notSlashRgx = r'([^/]+)';
+  //static final RegExp rgx = new RegExp(r'\((.+)\)');
   static final Parser<String> notSlash =
-      match<String>(new RegExp(r'[^/]+')).value((r) => r.span.text);
+      match<String>(new RegExp(notSlashRgx)).value((r) => r.span.text);
 
-  static final Parser<RegExp> regExp = match<RegExp>(new RegExp(r'\((.+)\)'))
-      .value((r) => new RegExp(r.scanner.lastMatch[1]));
+  static final Parser<Match> regExp =
+      // TODO: Enable trailing here
+      // match<Match>(new RegExp(r'\(([^)]+)\)([^/]+)?'))
+      match<Match>(new RegExp(r'\(([^)]+)\)'))
+          .value((r) => r.scanner.lastMatch);
 
-  static final Parser<String> parameterName =
-      match<String>(new RegExp(r':([A-Za-z0-9_]+)'))
-          .value((r) => r.span.text.substring(1));
+  static final Parser<Match> parameterName = match<Match>(
+          new RegExp('$notSlashRgx?' r':([A-Za-z0-9_]+)' '$notSlashRgx?'))
+      .value((r) => r.scanner.lastMatch);
 
   static final Parser<ParameterSegment> parameterSegment = chain([
     parameterName,
     match<bool>('?').value((r) => true).opt(),
     regExp.opt(),
   ]).map((r) {
-    var s = new ParameterSegment(r.value[0] as String, r.value[2] as RegExp);
+    var match = r.value[0] as Match;
+    var rgxMatch = r.value[2] as Match;
+    RegExp rgx;
+
+    if (rgxMatch != null) {
+      rgx = RegExp(rgxMatch[1]);
+      var pre = match[1] ?? '';
+      var post = rgxMatch[2] ?? '';
+      post += match[3] ?? '';
+      if (pre.isNotEmpty || post.isNotEmpty) {
+        if (rgx != null) {
+          var pattern = pre + rgx.pattern + post;
+          rgx = RegExp(pattern);
+        } else {
+          rgx = RegExp('$pre$notSlashRgx$post');
+        }
+      }
+    }
+
+    var s = new ParameterSegment(match[2], rgx);
     return r.value[1] == true ? new OptionalSegment(s) : s;
   });
 
@@ -32,22 +55,39 @@ class RouteGrammar {
   });
 
   static final Parser<WildcardSegment> wildcardSegment =
-      match<WildcardSegment>('*').value((r) => new WildcardSegment());
+      match<WildcardSegment>(RegExp('$notSlashRgx?' r'\*' '$notSlashRgx?'))
+          .value((r) {
+    var m = r.scanner.lastMatch;
+    var pre = m[1] ?? '';
+    var post = m[2] ?? '';
+    return new WildcardSegment(pre, post);
+  });
 
   static final Parser<ConstantSegment> constantSegment =
       notSlash.map<ConstantSegment>((r) => new ConstantSegment(r.value));
 
-  static final Parser<RouteSegment> routeSegment = any<RouteSegment>([
+  static final Parser<SlashSegment> slashSegment =
+      match(SlashSegment.rgx).map((_) => SlashSegment());
+
+  static final Parser<RouteSegment> routeSegment = any([
+    //slashSegment,
     parsedParameterSegment,
     parameterSegment,
     wildcardSegment,
     constantSegment
   ]);
 
+  // static final Parser<RouteDefinition> routeDefinition = routeSegment
+  //     .star()
+  //     .map<RouteDefinition>((r) => new RouteDefinition(r.value ?? []))
+  //     .surroundedBy(match(RegExp(r'/*')).opt());
+
+  static final Parser slashes = match(RegExp(r'/*'));
+
   static final Parser<RouteDefinition> routeDefinition = routeSegment
-      .separatedBy(match('/'))
+      .separatedBy(slashes)
       .map<RouteDefinition>((r) => new RouteDefinition(r.value ?? []))
-      .surroundedBy(match('/').star().opt());
+      .surroundedBy(slashes.opt());
 }
 
 class RouteDefinition {
@@ -79,6 +119,26 @@ abstract class RouteSegment {
       Parser<Map<String, dynamic>> p, bool isLast);
 }
 
+class SlashSegment implements RouteSegment {
+  static final RegExp rgx = RegExp(r'/+');
+
+  const SlashSegment();
+
+  @override
+  Parser<Map<String, dynamic>> compile(bool isLast) {
+    return match(rgx).map((_) => {});
+  }
+
+  @override
+  Parser<Map<String, dynamic>> compileNext(
+      Parser<Map<String, dynamic>> p, bool isLast) {
+    return p.then(compile(isLast)).index(0).cast<Map<String, dynamic>>();
+  }
+
+  @override
+  String toString() => 'Slash';
+}
+
 class ConstantSegment extends RouteSegment {
   final String text;
 
@@ -102,14 +162,25 @@ class ConstantSegment extends RouteSegment {
 }
 
 class WildcardSegment extends RouteSegment {
+  final String pre, post;
+
+  WildcardSegment(this.pre, this.post);
+
   @override
   String toString() {
     return 'Wildcard segment';
   }
 
+  String _symbol(bool isLast) {
+    if (isLast) return r'.*';
+    return r'[^/]*';
+  }
+
   Parser<Map<String, dynamic>> _compile(bool isLast) {
-    if (isLast) return match(new RegExp(r'.*'));
-    return match(new RegExp(r'[^/]*'));
+    var rgx = RegExp('$pre${_symbol(isLast)}$post');
+    return match(rgx);
+    // if (isLast) return match(new RegExp(r'.*'));
+    // return match(new RegExp(r'[^/]*'));
   }
 
   @override
@@ -164,14 +235,14 @@ class ParameterSegment extends RouteSegment {
 
   Parser<String> _compile() {
     return regExp != null
-        ? match<String>(regExp).value((r) => r.span.text)
+        ? match<String>(regExp).value((r) => r.scanner.lastMatch[1])
         : RouteGrammar.notSlash;
   }
 
   @override
   Parser<Map<String, dynamic>> compile(bool isLast) {
-    return _compile().map<Map<String, dynamic>>(
-        (r) => {name: Uri.decodeComponent(r.span.text)});
+    return _compile()
+        .map<Map<String, dynamic>>((r) => {name: Uri.decodeComponent(r.value)});
   }
 
   @override
