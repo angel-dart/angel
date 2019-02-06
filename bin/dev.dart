@@ -12,9 +12,8 @@ main() async {
     var app = new Angel(reflector: MirrorsReflector());
     await app.configure(configureServer);
     hierarchicalLoggingEnabled = true;
-    app.logger = new Logger('angel');
-    var sub = app.logger.onRecord.listen(prettyLog);
-    app.shutdownHooks.add((_) => sub.cancel());
+    app.logger = new Logger.detached('{{angel}}')..onRecord.listen(prettyLog);
+    app.shutdownHooks.add((_) => app.logger.clearListeners());
     return app;
   }, [
     new Directory('config'),
