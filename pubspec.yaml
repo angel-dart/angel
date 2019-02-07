@@ -1,5 +1,5 @@
 author: Tobe O <thosakwe@gmail.com>
-description: Angel CORS middleware.
+description: Angel CORS middleware. Port of expressjs/cors to the Angel framework.
 environment:
   sdk: ">=2.0.0 <3.0.0"
 homepage: https://github.com/angel-dart/cors.git

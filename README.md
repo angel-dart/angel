@@ -5,9 +5,4 @@
 Angel CORS middleware.
 Port of [the original Express CORS middleware](https://github.com/expressjs/cors).
 
-```dart
-main() {
-    var app = new Angel();
-    app.fallback(cors());
-}
-```
+For complete example usage, see the [example file](example/example.dart).
