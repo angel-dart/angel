@@ -1,82 +1,100 @@
 /// Angel CORS middleware.
 library angel_cors;
 
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'src/cors_options.dart';
 export 'src/cors_options.dart';
 
 /// Determines if a request origin is CORS-able.
-typedef bool CorsFilter(String origin);
+typedef bool _CorsFilter(String origin);
 
-bool _isOriginAllowed(String origin, allowedOrigin) {
+bool _isOriginAllowed(String origin, [allowedOrigin]) {
   allowedOrigin ??= [];
-  if (allowedOrigin is List) {
+  if (allowedOrigin is Iterable) {
     return allowedOrigin.any((x) => _isOriginAllowed(origin, x));
   } else if (allowedOrigin is String) {
     return origin == allowedOrigin;
   } else if (allowedOrigin is RegExp) {
     return origin != null && allowedOrigin.hasMatch(origin);
-  } else if (origin != null && allowedOrigin is CorsFilter) {
+  } else if (origin != null && allowedOrigin is _CorsFilter) {
     return allowedOrigin(origin);
   } else {
     return allowedOrigin != false;
   }
 }
 
+/// On-the-fly configures the [cors] handler. Use this when the context of the surrounding request
+/// is necessary to decide how to handle an incoming request.
+Future<bool> Function(RequestContext, ResponseContext) dynamicCors(
+    FutureOr<CorsOptions> Function(RequestContext, ResponseContext) f) {
+  return (req, res) async {
+    var opts = await f(req, res);
+    var handler = cors(opts);
+    return await handler(req, res);
+  };
+}
+
 /// Applies the given [CorsOptions].
-RequestMiddleware cors([CorsOptions options]) {
-  final opts = options ?? new CorsOptions();
+Future<bool> Function(RequestContext, ResponseContext) cors(
+    [CorsOptions options]) {
+  options ??= CorsOptions();
 
-  return (RequestContext req, ResponseContext res) async {
-    // Access-Control-Allow-Credentials
-    if (opts.credentials == true) {
-      res.headers['Access-Control-Allow-Credentials'] = 'true';
+  return (req, res) async {
+    // access-control-allow-credentials
+    if (options.credentials == true) {
+      res.headers['access-control-allow-credentials'] = 'true';
     }
 
-    // Access-Control-Allow-Headers
-    if (req.method == 'OPTIONS' && opts.allowedHeaders.isNotEmpty) {
-      res.headers['Access-Control-Allow-Headers'] =
-          opts.allowedHeaders.join(',');
-    } else if (req.headers['Access-Control-Request-Headers'] != null) {
-      res.headers['Access-Control-Allow-Headers'] =
-          req.headers.value('Access-Control-Request-Headers');
+    // access-control-allow-headers
+    if (req.method == 'OPTIONS' && options.allowedHeaders.isNotEmpty) {
+      res.headers['access-control-allow-headers'] =
+          options.allowedHeaders.join(',');
+    } else if (req.headers['access-control-request-headers'] != null) {
+      res.headers['access-control-allow-headers'] =
+          req.headers.value('access-control-request-headers');
     }
 
-    // Access-Control-Expose-Headers
-    if (opts.exposedHeaders.isNotEmpty) {
-      res.headers['Access-Control-Expose-Headers'] =
-          opts.exposedHeaders.join(',');
+    // access-control-expose-headers
+    if (options.exposedHeaders.isNotEmpty) {
+      res.headers['access-control-expose-headers'] =
+          options.exposedHeaders.join(',');
     }
 
-    // Access-Control-Allow-Methods
-    if (req.method == 'OPTIONS' && opts.methods.isNotEmpty) {
-      res.headers['Access-Control-Allow-Methods'] = opts.methods.join(',');
+    // access-control-allow-methods
+    if (req.method == 'OPTIONS' && options.methods.isNotEmpty) {
+      res.headers['access-control-allow-methods'] = options.methods.join(',');
     }
 
-    // Access-Control-Max-Age
-    if (req.method == 'OPTIONS' && opts.maxAge != null) {
-      res.headers['Access-Control-Max-Age'] = opts.maxAge.toString();
+    // access-control-max-age
+    if (req.method == 'OPTIONS' && options.maxAge != null) {
+      res.headers['access-control-max-age'] = options.maxAge.toString();
     }
 
-    // Access-Control-Allow-Origin
-    if (opts.origin == false || opts.origin == '*') {
-      res.headers['Access-Control-Allow-Origin'] = '*';
-    } else if (opts.origin is String) {
+    // access-control-allow-origin
+    if (options.origin == false || options.origin == '*') {
+      res.headers['access-control-allow-origin'] = '*';
+    } else if (options.origin is String) {
       res
-        ..headers['Access-Control-Allow-Origin'] = opts.origin
-        ..headers['Vary'] = 'Origin';
+        ..headers['access-control-allow-origin'] = options.origin as String
+        ..headers['vary'] = 'origin';
     } else {
       bool isAllowed =
-          _isOriginAllowed(req.headers.value('Origin'), opts.origin);
+          _isOriginAllowed(req.headers.value('origin'), options.origin);
 
-      res.headers['Access-Control-Allow-Origin'] =
-          isAllowed ? req.headers.value('Origin') : false.toString();
+      res.headers['access-control-allow-origin'] =
+          isAllowed ? req.headers.value('origin') : false.toString();
 
       if (isAllowed) {
-        res.headers['Vary'] = 'Origin';
+        res.headers['vary'] = 'origin';
       }
     }
 
-    return req.method != 'OPTIONS' || opts.preflightContinue;
+    if (req.method != 'OPTIONS') return true;
+    res.statusCode = options.successStatus ?? 204;
+    res.contentLength = 0;
+    await res.close();
+    return options.preflightContinue;
   };
 }
