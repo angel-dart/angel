@@ -30,7 +30,8 @@ targets:
       - test/models/role.dart
   $default:
     dependencies:
-      - angel_orm:_standalone
+      - angel_serialize_generator
+      - :_standalone
     sources:
       - test/models/book.dart
       - test/models/has_car.dart
