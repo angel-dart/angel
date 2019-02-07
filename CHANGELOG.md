@@ -1,3 +1,6 @@
+# 2.0.4
+* Forcibly close app loggers on shutdown.
+
 # 2.0.3
 * Fixed up manual restart.
 * Remove stutter on hotkey press.
