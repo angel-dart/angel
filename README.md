@@ -1,7 +1,6 @@
 # cors
-
-![1.0.0+1](https://img.shields.io/badge/version-1.0.0+1-brightgreen.svg)
-![build status](https://travis-ci.org/angel-dart/cors.svg)
+[![Pub](https://img.shields.io/pub/v/angel_cors.svg)](https://pub.dartlang.org/packages/angel_cors)
+[![build status](https://travis-ci.org/angel-dart/cors.svg)](https://travis-ci.org/angel-dart/cors)
 
 Angel CORS middleware.
 Port of [the original Express CORS middleware](https://github.com/expressjs/cors).
@@ -9,6 +8,6 @@ Port of [the original Express CORS middleware](https://github.com/expressjs/cors
 ```dart
 main() {
     var app = new Angel();
-    app.before.add(cors());
+    app.fallback(cors());
 }
 ```
