@@ -317,8 +317,10 @@ class HotReloader {
             }
           }
 
-          await Future.forEach(
-              _server.app.shutdownHooks, _server.app.configure);
+          // await Future.forEach(
+          //     _server.app.shutdownHooks, _server.app.configure);
+          await _server.app.close();
+          _server.app.logger?.clearListeners();
         } catch (_) {
           // Fail silently...
         }
