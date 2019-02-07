@@ -13,7 +13,6 @@ main() async {
     await app.configure(configureServer);
     hierarchicalLoggingEnabled = true;
     app.logger = new Logger.detached('{{angel}}')..onRecord.listen(prettyLog);
-    app.shutdownHooks.add((_) => app.logger.clearListeners());
     return app;
   }, [
     new Directory('config'),
