@@ -281,7 +281,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   relation.type == RelationshipType.hasMany) {
                 var foreign = ctx.relationTypes[relation];
                 var additionalFields = foreign.effectiveFields
-                    .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
+                    // .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
                     .map((f) => literalString(
                         foreign.buildContext.resolveFieldName(f.name)));
                 var joinArgs = [relation.localKey, relation.foreignKey]

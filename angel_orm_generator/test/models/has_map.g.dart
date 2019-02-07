@@ -10,8 +10,8 @@ class HasMapMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('has_maps', (table) {
-      table.declare('value', new ColumnType('jsonb'));
-      table.declare('list', new ColumnType('jsonb'));
+      table.declare('value', ColumnType('jsonb'));
+      table.declare('list', ColumnType('jsonb'));
     });
   }
 
@@ -29,11 +29,11 @@ class HasMapQuery extends Query<HasMap, HasMapQueryWhere> {
   HasMapQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new HasMapQueryWhere(this);
+    _where = HasMapQueryWhere(this);
   }
 
   @override
-  final HasMapQueryValues values = new HasMapQueryValues();
+  final HasMapQueryValues values = HasMapQueryValues();
 
   HasMapQueryWhere _where;
 
@@ -59,12 +59,12 @@ class HasMapQuery extends Query<HasMap, HasMapQueryWhere> {
 
   @override
   HasMapQueryWhere newWhereClause() {
-    return new HasMapQueryWhere(this);
+    return HasMapQueryWhere(this);
   }
 
   static HasMap parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new HasMap(
+    var model = HasMap(
         value: (row[0] as Map<dynamic, dynamic>),
         list: (row[1] as List<dynamic>));
     return model;
@@ -78,8 +78,8 @@ class HasMapQuery extends Query<HasMap, HasMapQueryWhere> {
 
 class HasMapQueryWhere extends QueryWhere {
   HasMapQueryWhere(HasMapQuery query)
-      : value = new MapSqlExpressionBuilder(query, 'value'),
-        list = new ListSqlExpressionBuilder(query, 'list');
+      : value = MapSqlExpressionBuilder(query, 'value'),
+        list = ListSqlExpressionBuilder(query, 'list');
 
   final MapSqlExpressionBuilder value;
 
@@ -174,7 +174,7 @@ abstract class HasMapSerializer {
 }
 
 abstract class HasMapFields {
-  static const List<String> allFields = const <String>[value, list];
+  static const List<String> allFields = <String>[value, list];
 
   static const String value = 'value';
 

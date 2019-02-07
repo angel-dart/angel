@@ -34,11 +34,11 @@ class CarQuery extends Query<Car, CarQueryWhere> {
   CarQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new CarQueryWhere(this);
+    _where = CarQueryWhere(this);
   }
 
   @override
-  final CarQueryValues values = new CarQueryValues();
+  final CarQueryValues values = CarQueryValues();
 
   CarQueryWhere _where;
 
@@ -72,12 +72,12 @@ class CarQuery extends Query<Car, CarQueryWhere> {
 
   @override
   CarQueryWhere newWhereClause() {
-    return new CarQueryWhere(this);
+    return CarQueryWhere(this);
   }
 
   static Car parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Car(
+    var model = Car(
         id: row[0].toString(),
         make: (row[1] as String),
         description: (row[2] as String),
@@ -96,14 +96,13 @@ class CarQuery extends Query<Car, CarQueryWhere> {
 
 class CarQueryWhere extends QueryWhere {
   CarQueryWhere(CarQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        make = new StringSqlExpressionBuilder(query, 'make'),
-        description = new StringSqlExpressionBuilder(query, 'description'),
-        familyFriendly =
-            new BooleanSqlExpressionBuilder(query, 'family_friendly'),
-        recalledAt = new DateTimeSqlExpressionBuilder(query, 'recalled_at'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        make = StringSqlExpressionBuilder(query, 'make'),
+        description = StringSqlExpressionBuilder(query, 'description'),
+        familyFriendly = BooleanSqlExpressionBuilder(query, 'family_friendly'),
+        recalledAt = DateTimeSqlExpressionBuilder(query, 'recalled_at'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -312,7 +311,7 @@ abstract class CarSerializer {
 }
 
 abstract class CarFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     make,
     description,

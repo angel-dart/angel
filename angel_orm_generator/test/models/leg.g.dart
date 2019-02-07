@@ -3,27 +3,6 @@
 part of angel_orm_generator.test.models.leg;
 
 // **************************************************************************
-// MigrationGenerator
-// **************************************************************************
-
-class LegMigration extends Migration {
-  @override
-  up(Schema schema) {
-    schema.create('legs', (table) {
-      table.serial('id')..primaryKey();
-      table.varChar('name');
-      table.timeStamp('created_at');
-      table.timeStamp('updated_at');
-    });
-  }
-
-  @override
-  down(Schema schema) {
-    schema.drop('legs');
-  }
-}
-
-// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 
@@ -31,17 +10,11 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   LegQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new LegQueryWhere(this);
-    leftJoin('feet', 'id', 'leg_id', additionalFields: const [
-      'leg_id',
-      'n_toes',
-      'created_at',
-      'updated_at'
-    ]);
+    _where = LegQueryWhere(this);
   }
 
   @override
-  final LegQueryValues values = new LegQueryValues();
+  final LegQueryValues values = LegQueryValues();
 
   LegQueryWhere _where;
 
@@ -57,7 +30,7 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'name', 'created_at', 'updated_at'];
+    return const ['id'];
   }
 
   @override
@@ -67,19 +40,12 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
 
   @override
   LegQueryWhere newWhereClause() {
-    return new LegQueryWhere(this);
+    return LegQueryWhere(this);
   }
 
   static Leg parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Leg(
-        id: row[0].toString(),
-        name: (row[1] as String),
-        createdAt: (row[2] as DateTime),
-        updatedAt: (row[3] as DateTime));
-    if (row.length > 4) {
-      model = model.copyWith(foot: FootQuery.parseRow(row.skip(4).toList()));
-    }
+    var model = Leg(id: row[0].toString());
     return model;
   }
 
@@ -91,22 +57,13 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
 
 class LegQueryWhere extends QueryWhere {
   LegQueryWhere(LegQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        name = new StringSqlExpressionBuilder(query, 'name'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id');
 
   final NumericSqlExpressionBuilder<int> id;
 
-  final StringSqlExpressionBuilder name;
-
-  final DateTimeSqlExpressionBuilder createdAt;
-
-  final DateTimeSqlExpressionBuilder updatedAt;
-
   @override
   get expressionBuilders {
-    return [id, name, createdAt, updatedAt];
+    return [id];
   }
 }
 
@@ -121,26 +78,7 @@ class LegQueryValues extends MapQueryValues {
   }
 
   set id(int value) => values['id'] = value;
-  String get name {
-    return (values['name'] as String);
-  }
-
-  set name(String value) => values['name'] = value;
-  DateTime get createdAt {
-    return (values['created_at'] as DateTime);
-  }
-
-  set createdAt(DateTime value) => values['created_at'] = value;
-  DateTime get updatedAt {
-    return (values['updated_at'] as DateTime);
-  }
-
-  set updatedAt(DateTime value) => values['updated_at'] = value;
-  void copyFrom(Leg model) {
-    name = model.name;
-    createdAt = model.createdAt;
-    updatedAt = model.updatedAt;
-  }
+  void copyFrom(Leg model) {}
 }
 
 // **************************************************************************
@@ -155,7 +93,7 @@ class Leg extends _Leg {
   final String id;
 
   @override
-  final Foot foot;
+  final dynamic foot;
 
   @override
   final String name;
@@ -168,7 +106,7 @@ class Leg extends _Leg {
 
   Leg copyWith(
       {String id,
-      Foot foot,
+      dynamic foot,
       String name,
       DateTime createdAt,
       DateTime updatedAt}) {
@@ -207,9 +145,7 @@ abstract class LegSerializer {
   static Leg fromMap(Map map) {
     return new Leg(
         id: map['id'] as String,
-        foot: map['foot'] != null
-            ? FootSerializer.fromMap(map['foot'] as Map)
-            : null,
+        foot: map['foot'] as dynamic,
         name: map['name'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -229,7 +165,7 @@ abstract class LegSerializer {
     }
     return {
       'id': model.id,
-      'foot': FootSerializer.toMap(model.foot),
+      'foot': model.foot,
       'name': model.name,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
@@ -238,7 +174,7 @@ abstract class LegSerializer {
 }
 
 abstract class LegFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     foot,
     name,

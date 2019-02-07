@@ -30,11 +30,11 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
   CustomerQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new CustomerQueryWhere(this);
+    _where = CustomerQueryWhere(this);
   }
 
   @override
-  final CustomerQueryValues values = new CustomerQueryValues();
+  final CustomerQueryValues values = CustomerQueryValues();
 
   CustomerQueryWhere _where;
 
@@ -60,12 +60,12 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
 
   @override
   CustomerQueryWhere newWhereClause() {
-    return new CustomerQueryWhere(this);
+    return CustomerQueryWhere(this);
   }
 
   static Customer parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Customer(
+    var model = Customer(
         id: row[0].toString(),
         createdAt: (row[1] as DateTime),
         updatedAt: (row[2] as DateTime));
@@ -80,9 +80,9 @@ class CustomerQuery extends Query<Customer, CustomerQueryWhere> {
 
 class CustomerQueryWhere extends QueryWhere {
   CustomerQueryWhere(CustomerQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -197,11 +197,7 @@ abstract class CustomerSerializer {
 }
 
 abstract class CustomerFields {
-  static const List<String> allFields = const <String>[
-    id,
-    createdAt,
-    updatedAt
-  ];
+  static const List<String> allFields = <String>[id, createdAt, updatedAt];
 
   static const String id = 'id';
 

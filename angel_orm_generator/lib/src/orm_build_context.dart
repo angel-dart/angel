@@ -177,13 +177,14 @@ Future<OrmBuildContext> buildOrmContext(
         ctx.buildContext.aliases[name] = relation.localKey;
 
         if (!ctx.effectiveFields.any((f) => f.name == field.name)) {
-          if (field.name != 'id' ||
-              !const TypeChecker.fromRuntime(Model)
-                  .isAssignableFromType(ctx.buildContext.clazz.type)) {
-            var rf = new RelationFieldImpl(name,
-                field.type.element.context.typeProvider.intType, field.name);
-            ctx.effectiveFields.add(rf);
-          }
+          // TODO: Consequences of allowing ID to be a relation? (should be none)
+          // if (field.name != 'id' ||
+          //     !const TypeChecker.fromRuntime(Model)
+          //         .isAssignableFromType(ctx.buildContext.clazz.type)) {
+          var rf = new RelationFieldImpl(name,
+              field.type.element.context.typeProvider.intType, field.name);
+          ctx.effectiveFields.add(rf);
+          // }
         }
       }
 

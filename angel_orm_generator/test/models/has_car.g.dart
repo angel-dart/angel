@@ -31,11 +31,11 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
   HasCarQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new HasCarQueryWhere(this);
+    _where = HasCarQueryWhere(this);
   }
 
   @override
-  final HasCarQueryValues values = new HasCarQueryValues();
+  final HasCarQueryValues values = HasCarQueryValues();
 
   HasCarQueryWhere _where;
 
@@ -61,12 +61,12 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
 
   @override
   HasCarQueryWhere newWhereClause() {
-    return new HasCarQueryWhere(this);
+    return HasCarQueryWhere(this);
   }
 
   static HasCar parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new HasCar(
+    var model = HasCar(
         id: row[0].toString(),
         type: CarType.values[(row[1] as int)],
         createdAt: (row[2] as DateTime),
@@ -82,11 +82,10 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
 
 class HasCarQueryWhere extends QueryWhere {
   HasCarQueryWhere(HasCarQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        type = new EnumSqlExpressionBuilder<CarType>(
-            query, 'type', (v) => v.index),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        type = EnumSqlExpressionBuilder<CarType>(query, 'type', (v) => v.index),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -227,7 +226,7 @@ abstract class HasCarSerializer {
 }
 
 abstract class HasCarFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     type,
     createdAt,

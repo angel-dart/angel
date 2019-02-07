@@ -30,7 +30,7 @@ targets:
       - test/models/role.dart
   $default:
     dependencies:
-      - :_standalone
+      - angel_orm:_standalone
     sources:
       - test/models/book.dart
       - test/models/has_car.dart

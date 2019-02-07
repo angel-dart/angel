@@ -3,27 +3,6 @@
 part of angel_orm_generator.test.models.tree;
 
 // **************************************************************************
-// MigrationGenerator
-// **************************************************************************
-
-class TreeMigration extends Migration {
-  @override
-  up(Schema schema) {
-    schema.create('trees', (table) {
-      table.serial('id')..primaryKey();
-      table.declare('rings', new ColumnType('smallint'));
-      table.timeStamp('created_at');
-      table.timeStamp('updated_at');
-    });
-  }
-
-  @override
-  down(Schema schema) {
-    schema.drop('trees');
-  }
-}
-
-// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 
@@ -31,18 +10,11 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   TreeQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new TreeQueryWhere(this);
-    leftJoin(new FruitQuery(trampoline: trampoline), 'id', 'tree_id',
-        additionalFields: const [
-          'tree_id',
-          'common_name',
-          'created_at',
-          'updated_at'
-        ]);
+    _where = TreeQueryWhere(this);
   }
 
   @override
-  final TreeQueryValues values = new TreeQueryValues();
+  final TreeQueryValues values = TreeQueryValues();
 
   TreeQueryWhere _where;
 
@@ -58,7 +30,7 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'rings', 'created_at', 'updated_at'];
+    return const ['id', 'rings'];
   }
 
   @override
@@ -68,22 +40,12 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
 
   @override
   TreeQueryWhere newWhereClause() {
-    return new TreeQueryWhere(this);
+    return TreeQueryWhere(this);
   }
 
   static Tree parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Tree(
-        id: row[0].toString(),
-        rings: (row[1] as int),
-        createdAt: (row[2] as DateTime),
-        updatedAt: (row[3] as DateTime));
-    if (row.length > 4) {
-      model = model.copyWith(
-          fruits: [FruitQuery.parseRow(row.skip(4).toList())]
-              .where((x) => x != null)
-              .toList());
-    }
+    var model = Tree(id: row[0].toString(), rings: (row[1] as int));
     return model;
   }
 
@@ -91,83 +53,20 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   deserialize(List row) {
     return parseRow(row);
   }
-
-  @override
-  get(QueryExecutor executor) {
-    return super.get(executor).then((result) {
-      return result.fold<List<Tree>>([], (out, model) {
-        var idx = out.indexWhere((m) => m.id == model.id);
-
-        if (idx == -1) {
-          return out..add(model);
-        } else {
-          var l = out[idx];
-          return out
-            ..[idx] = l.copyWith(
-                fruits: List<Fruit>.from(l.fruits ?? [])
-                  ..addAll(model.fruits ?? []));
-        }
-      });
-    });
-  }
-
-  @override
-  update(QueryExecutor executor) {
-    return super.update(executor).then((result) {
-      return result.fold<List<Tree>>([], (out, model) {
-        var idx = out.indexWhere((m) => m.id == model.id);
-
-        if (idx == -1) {
-          return out..add(model);
-        } else {
-          var l = out[idx];
-          return out
-            ..[idx] = l.copyWith(
-                fruits: List<Fruit>.from(l.fruits ?? [])
-                  ..addAll(model.fruits ?? []));
-        }
-      });
-    });
-  }
-
-  @override
-  delete(QueryExecutor executor) {
-    return super.delete(executor).then((result) {
-      return result.fold<List<Tree>>([], (out, model) {
-        var idx = out.indexWhere((m) => m.id == model.id);
-
-        if (idx == -1) {
-          return out..add(model);
-        } else {
-          var l = out[idx];
-          return out
-            ..[idx] = l.copyWith(
-                fruits: List<Fruit>.from(l.fruits ?? [])
-                  ..addAll(model.fruits ?? []));
-        }
-      });
-    });
-  }
 }
 
 class TreeQueryWhere extends QueryWhere {
   TreeQueryWhere(TreeQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        rings = new NumericSqlExpressionBuilder<int>(query, 'rings'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        rings = NumericSqlExpressionBuilder<int>(query, 'rings');
 
   final NumericSqlExpressionBuilder<int> id;
 
   final NumericSqlExpressionBuilder<int> rings;
 
-  final DateTimeSqlExpressionBuilder createdAt;
-
-  final DateTimeSqlExpressionBuilder updatedAt;
-
   @override
   get expressionBuilders {
-    return [id, rings, createdAt, updatedAt];
+    return [id, rings];
   }
 }
 
@@ -187,20 +86,8 @@ class TreeQueryValues extends MapQueryValues {
   }
 
   set rings(int value) => values['rings'] = value;
-  DateTime get createdAt {
-    return (values['created_at'] as DateTime);
-  }
-
-  set createdAt(DateTime value) => values['created_at'] = value;
-  DateTime get updatedAt {
-    return (values['updated_at'] as DateTime);
-  }
-
-  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Tree model) {
     rings = model.rings;
-    createdAt = model.createdAt;
-    updatedAt = model.updatedAt;
   }
 }
 
@@ -211,7 +98,11 @@ class TreeQueryValues extends MapQueryValues {
 @generatedSerializable
 class Tree extends _Tree {
   Tree(
-      {this.id, this.rings, List<Fruit> fruits, this.createdAt, this.updatedAt})
+      {this.id,
+      this.rings,
+      List<dynamic> fruits,
+      this.createdAt,
+      this.updatedAt})
       : this.fruits = new List.unmodifiable(fruits ?? []);
 
   @override
@@ -221,7 +112,7 @@ class Tree extends _Tree {
   final int rings;
 
   @override
-  final List<Fruit> fruits;
+  final List<dynamic> fruits;
 
   @override
   final DateTime createdAt;
@@ -232,7 +123,7 @@ class Tree extends _Tree {
   Tree copyWith(
       {String id,
       int rings,
-      List<Fruit> fruits,
+      List<dynamic> fruits,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Tree(
@@ -247,7 +138,7 @@ class Tree extends _Tree {
     return other is _Tree &&
         other.id == id &&
         other.rings == rings &&
-        const ListEquality<Fruit>(const DefaultEquality<Fruit>())
+        const ListEquality<dynamic>(const DefaultEquality())
             .equals(other.fruits, fruits) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -273,9 +164,7 @@ abstract class TreeSerializer {
         id: map['id'] as String,
         rings: map['rings'] as int,
         fruits: map['fruits'] is Iterable
-            ? new List.unmodifiable(((map['fruits'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(FruitSerializer.fromMap))
+            ? (map['fruits'] as Iterable).cast<dynamic>().toList()
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -296,7 +185,7 @@ abstract class TreeSerializer {
     return {
       'id': model.id,
       'rings': model.rings,
-      'fruits': model.fruits?.map((m) => FruitSerializer.toMap(m))?.toList(),
+      'fruits': model.fruits,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -304,7 +193,7 @@ abstract class TreeSerializer {
 }
 
 abstract class TreeFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     rings,
     fruits,

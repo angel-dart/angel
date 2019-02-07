@@ -12,7 +12,7 @@ class FootMigration extends Migration {
     schema.create('feet', (table) {
       table.serial('id')..primaryKey();
       table.integer('leg_id');
-      table.declare('n_toes', new ColumnType('decimal'));
+      table.declare('n_toes', ColumnType('decimal'));
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -32,11 +32,11 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
   FootQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new FootQueryWhere(this);
+    _where = FootQueryWhere(this);
   }
 
   @override
-  final FootQueryValues values = new FootQueryValues();
+  final FootQueryValues values = FootQueryValues();
 
   FootQueryWhere _where;
 
@@ -62,12 +62,12 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
   @override
   FootQueryWhere newWhereClause() {
-    return new FootQueryWhere(this);
+    return FootQueryWhere(this);
   }
 
   static Foot parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Foot(
+    var model = Foot(
         id: row[0].toString(),
         legId: (row[1] as int),
         nToes: double.parse(row[2].toString()),
@@ -84,11 +84,11 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
 class FootQueryWhere extends QueryWhere {
   FootQueryWhere(FootQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        legId = new NumericSqlExpressionBuilder<int>(query, 'leg_id'),
-        nToes = new NumericSqlExpressionBuilder<double>(query, 'n_toes'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        legId = NumericSqlExpressionBuilder<int>(query, 'leg_id'),
+        nToes = NumericSqlExpressionBuilder<double>(query, 'n_toes'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -238,7 +238,7 @@ abstract class FootSerializer {
 }
 
 abstract class FootFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     legId,
     nToes,

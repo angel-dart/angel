@@ -31,11 +31,11 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
   AuthorQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new AuthorQueryWhere(this);
+    _where = AuthorQueryWhere(this);
   }
 
   @override
-  final AuthorQueryValues values = new AuthorQueryValues();
+  final AuthorQueryValues values = AuthorQueryValues();
 
   AuthorQueryWhere _where;
 
@@ -61,12 +61,12 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
 
   @override
   AuthorQueryWhere newWhereClause() {
-    return new AuthorQueryWhere(this);
+    return AuthorQueryWhere(this);
   }
 
   static Author parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Author(
+    var model = Author(
         id: row[0].toString(),
         name: (row[1] as String),
         createdAt: (row[2] as DateTime),
@@ -82,10 +82,10 @@ class AuthorQuery extends Query<Author, AuthorQueryWhere> {
 
 class AuthorQueryWhere extends QueryWhere {
   AuthorQueryWhere(AuthorQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        name = new StringSqlExpressionBuilder(query, 'name'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        name = StringSqlExpressionBuilder(query, 'name'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -140,7 +140,11 @@ class AuthorQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Author extends _Author {
-  Author({this.id, this.name: 'Tobe Osakwe', this.createdAt, this.updatedAt});
+  Author(
+      {this.id,
+      @required this.name = 'Tobe Osakwe',
+      this.createdAt,
+      this.updatedAt});
 
   @override
   final String id;
@@ -187,6 +191,10 @@ class Author extends _Author {
 
 abstract class AuthorSerializer {
   static Author fromMap(Map map) {
+    if (map['name'] == null) {
+      throw new FormatException("Missing required field 'name' on Author.");
+    }
+
     return new Author(
         id: map['id'] as String,
         name: map['name'] as String ?? 'Tobe Osakwe',
@@ -206,6 +214,10 @@ abstract class AuthorSerializer {
     if (model == null) {
       return null;
     }
+    if (model.name == null) {
+      throw new FormatException("Missing required field 'name' on Author.");
+    }
+
     return {
       'id': model.id,
       'name': model.name,
@@ -216,7 +228,7 @@ abstract class AuthorSerializer {
 }
 
 abstract class AuthorFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     name,
     createdAt,

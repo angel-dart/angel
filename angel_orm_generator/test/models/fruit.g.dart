@@ -32,11 +32,11 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   FruitQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new FruitQueryWhere(this);
+    _where = FruitQueryWhere(this);
   }
 
   @override
-  final FruitQueryValues values = new FruitQueryValues();
+  final FruitQueryValues values = FruitQueryValues();
 
   FruitQueryWhere _where;
 
@@ -62,12 +62,12 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
 
   @override
   FruitQueryWhere newWhereClause() {
-    return new FruitQueryWhere(this);
+    return FruitQueryWhere(this);
   }
 
   static Fruit parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Fruit(
+    var model = Fruit(
         id: row[0].toString(),
         treeId: (row[1] as int),
         commonName: (row[2] as String),
@@ -84,11 +84,11 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
 
 class FruitQueryWhere extends QueryWhere {
   FruitQueryWhere(FruitQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        treeId = new NumericSqlExpressionBuilder<int>(query, 'tree_id'),
-        commonName = new StringSqlExpressionBuilder(query, 'common_name'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        treeId = NumericSqlExpressionBuilder<int>(query, 'tree_id'),
+        commonName = StringSqlExpressionBuilder(query, 'common_name'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -239,7 +239,7 @@ abstract class FruitSerializer {
 }
 
 abstract class FruitFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     treeId,
     commonName,

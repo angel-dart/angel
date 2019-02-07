@@ -68,11 +68,11 @@ class UserQuery extends Query<User, UserQueryWhere> {
   UserQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new UserQueryWhere(this);
+    _where = UserQueryWhere(this);
   }
 
   @override
-  final UserQueryValues values = new UserQueryValues();
+  final UserQueryValues values = UserQueryValues();
 
   UserQueryWhere _where;
 
@@ -105,12 +105,12 @@ class UserQuery extends Query<User, UserQueryWhere> {
 
   @override
   UserQueryWhere newWhereClause() {
-    return new UserQueryWhere(this);
+    return UserQueryWhere(this);
   }
 
   static User parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new User(
+    var model = User(
         id: row[0].toString(),
         username: (row[1] as String),
         password: (row[2] as String),
@@ -128,12 +128,12 @@ class UserQuery extends Query<User, UserQueryWhere> {
 
 class UserQueryWhere extends QueryWhere {
   UserQueryWhere(UserQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        username = new StringSqlExpressionBuilder(query, 'username'),
-        password = new StringSqlExpressionBuilder(query, 'password'),
-        email = new StringSqlExpressionBuilder(query, 'email'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        username = StringSqlExpressionBuilder(query, 'username'),
+        password = StringSqlExpressionBuilder(query, 'password'),
+        email = StringSqlExpressionBuilder(query, 'email'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -202,10 +202,11 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
   RoleUserQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new RoleUserQueryWhere(this);
+    _where = RoleUserQueryWhere(this);
     leftJoin('roles', 'role_id', 'id',
-        additionalFields: const ['name', 'created_at', 'updated_at']);
+        additionalFields: const ['id', 'name', 'created_at', 'updated_at']);
     leftJoin('users', 'user_id', 'id', additionalFields: const [
+      'id',
       'username',
       'password',
       'email',
@@ -215,7 +216,7 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
   }
 
   @override
-  final RoleUserQueryValues values = new RoleUserQueryValues();
+  final RoleUserQueryValues values = RoleUserQueryValues();
 
   RoleUserQueryWhere _where;
 
@@ -241,12 +242,12 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
 
   @override
   RoleUserQueryWhere newWhereClause() {
-    return new RoleUserQueryWhere(this);
+    return RoleUserQueryWhere(this);
   }
 
   static RoleUser parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new RoleUser(
+    var model = RoleUser(
         id: row[0].toString(),
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
@@ -267,11 +268,11 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
 
 class RoleUserQueryWhere extends QueryWhere {
   RoleUserQueryWhere(RoleUserQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        roleId = new NumericSqlExpressionBuilder<int>(query, 'role_id'),
-        userId = new NumericSqlExpressionBuilder<int>(query, 'user_id'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        roleId = NumericSqlExpressionBuilder<int>(query, 'role_id'),
+        userId = NumericSqlExpressionBuilder<int>(query, 'user_id'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -336,11 +337,11 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   RoleQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = new RoleQueryWhere(this);
+    _where = RoleQueryWhere(this);
   }
 
   @override
-  final RoleQueryValues values = new RoleQueryValues();
+  final RoleQueryValues values = RoleQueryValues();
 
   RoleQueryWhere _where;
 
@@ -366,12 +367,12 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
 
   @override
   RoleQueryWhere newWhereClause() {
-    return new RoleQueryWhere(this);
+    return RoleQueryWhere(this);
   }
 
   static Role parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Role(
+    var model = Role(
         id: row[0].toString(),
         name: (row[1] as String),
         createdAt: (row[2] as DateTime),
@@ -387,10 +388,10 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
 
 class RoleQueryWhere extends QueryWhere {
   RoleQueryWhere(RoleQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        name = new StringSqlExpressionBuilder(query, 'name'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        name = StringSqlExpressionBuilder(query, 'name'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -635,9 +636,10 @@ abstract class UserSerializer {
         password: map['password'] as String,
         email: map['email'] as String,
         roles: map['roles'] is Iterable
-            ? new List.unmodifiable(((map['roles'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(RoleSerializer.fromMap))
+            ? new List.unmodifiable(
+                ((map['roles'] as Iterable).where((x) => x is Map))
+                    .cast<Map>()
+                    .map(RoleSerializer.fromMap))
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -668,7 +670,7 @@ abstract class UserSerializer {
 }
 
 abstract class UserFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     username,
     password,
@@ -730,7 +732,7 @@ abstract class RoleUserSerializer {
 }
 
 abstract class RoleUserFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     role,
     user,
@@ -755,9 +757,10 @@ abstract class RoleSerializer {
         id: map['id'] as String,
         name: map['name'] as String,
         users: map['users'] is Iterable
-            ? new List.unmodifiable(((map['users'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(UserSerializer.fromMap))
+            ? new List.unmodifiable(
+                ((map['users'] as Iterable).where((x) => x is Map))
+                    .cast<Map>()
+                    .map(UserSerializer.fromMap))
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -786,7 +789,7 @@ abstract class RoleSerializer {
 }
 
 abstract class RoleFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     name,
     users,

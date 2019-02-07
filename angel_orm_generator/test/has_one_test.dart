@@ -17,6 +17,7 @@ main() {
   });
 
   test('sets to null if no child', () async {
+    print(LegQuery().compile(Set()));
     var query = new LegQuery()..where.id.equals(int.parse(originalLeg.id));
     var leg = await query.getOne(executor);
     print(leg.toJson());
