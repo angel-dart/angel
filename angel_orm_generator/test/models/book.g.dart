@@ -3,6 +3,29 @@
 part of angel_orm.generator.models.book;
 
 // **************************************************************************
+// MigrationGenerator
+// **************************************************************************
+
+class BookMigration extends Migration {
+  @override
+  up(Schema schema) {
+    schema.create('books', (table) {
+      table.serial('id')..primaryKey();
+      table.varChar('name');
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+      table.integer('author_id').references('authors', 'id');
+      table.integer('partner_author_id').references('authors', 'id');
+    });
+  }
+
+  @override
+  down(Schema schema) {
+    schema.drop('books');
+  }
+}
+
+// **************************************************************************
 // OrmGenerator
 // **************************************************************************
 
@@ -11,6 +34,10 @@ class BookQuery extends Query<Book, BookQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = BookQueryWhere(this);
+    leftJoin('authors', 'author_id', 'id',
+        additionalFields: const ['id', 'name', 'created_at', 'updated_at']);
+    leftJoin('authors', 'partner_author_id', 'id',
+        additionalFields: const ['id', 'name', 'created_at', 'updated_at']);
   }
 
   @override
@@ -30,7 +57,14 @@ class BookQuery extends Query<Book, BookQueryWhere> {
 
   @override
   get fields {
-    return const ['id'];
+    return const [
+      'id',
+      'author_id',
+      'partner_author_id',
+      'name',
+      'created_at',
+      'updated_at'
+    ];
   }
 
   @override
@@ -45,7 +79,19 @@ class BookQuery extends Query<Book, BookQueryWhere> {
 
   static Book parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = Book(id: row[0].toString());
+    var model = Book(
+        id: row[0].toString(),
+        name: (row[3] as String),
+        createdAt: (row[4] as DateTime),
+        updatedAt: (row[5] as DateTime));
+    if (row.length > 6) {
+      model =
+          model.copyWith(author: AuthorQuery.parseRow(row.skip(6).toList()));
+    }
+    if (row.length > 10) {
+      model = model.copyWith(
+          partnerAuthor: AuthorQuery.parseRow(row.skip(10).toList()));
+    }
     return model;
   }
 
@@ -57,13 +103,29 @@ class BookQuery extends Query<Book, BookQueryWhere> {
 
 class BookQueryWhere extends QueryWhere {
   BookQueryWhere(BookQuery query)
-      : id = NumericSqlExpressionBuilder<int>(query, 'id');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        authorId = NumericSqlExpressionBuilder<int>(query, 'author_id'),
+        partnerAuthorId =
+            NumericSqlExpressionBuilder<int>(query, 'partner_author_id'),
+        name = StringSqlExpressionBuilder(query, 'name'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
+  final NumericSqlExpressionBuilder<int> authorId;
+
+  final NumericSqlExpressionBuilder<int> partnerAuthorId;
+
+  final StringSqlExpressionBuilder name;
+
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
+
   @override
   get expressionBuilders {
-    return [id];
+    return [id, authorId, partnerAuthorId, name, createdAt, updatedAt];
   }
 }
 
@@ -78,7 +140,42 @@ class BookQueryValues extends MapQueryValues {
   }
 
   set id(int value) => values['id'] = value;
-  void copyFrom(Book model) {}
+  int get authorId {
+    return (values['author_id'] as int);
+  }
+
+  set authorId(int value) => values['author_id'] = value;
+  int get partnerAuthorId {
+    return (values['partner_author_id'] as int);
+  }
+
+  set partnerAuthorId(int value) => values['partner_author_id'] = value;
+  String get name {
+    return (values['name'] as String);
+  }
+
+  set name(String value) => values['name'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  set updatedAt(DateTime value) => values['updated_at'] = value;
+  void copyFrom(Book model) {
+    name = model.name;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
+    if (model.author != null) {
+      values['author_id'] = int.parse(model.author.id);
+    }
+    if (model.partnerAuthor != null) {
+      values['partner_author_id'] = int.parse(model.partnerAuthor.id);
+    }
+  }
 }
 
 // **************************************************************************
@@ -99,10 +196,10 @@ class Book extends _Book {
   final String id;
 
   @override
-  final dynamic author;
+  final Author author;
 
   @override
-  final dynamic partnerAuthor;
+  final Author partnerAuthor;
 
   @override
   final String name;
@@ -115,8 +212,8 @@ class Book extends _Book {
 
   Book copyWith(
       {String id,
-      dynamic author,
-      dynamic partnerAuthor,
+      Author author,
+      Author partnerAuthor,
       String name,
       DateTime createdAt,
       DateTime updatedAt}) {
@@ -157,8 +254,12 @@ abstract class BookSerializer {
   static Book fromMap(Map map) {
     return new Book(
         id: map['id'] as String,
-        author: map['author'] as dynamic,
-        partnerAuthor: map['partner_author'] as dynamic,
+        author: map['author'] != null
+            ? AuthorSerializer.fromMap(map['author'] as Map)
+            : null,
+        partnerAuthor: map['partner_author'] != null
+            ? AuthorSerializer.fromMap(map['partner_author'] as Map)
+            : null,
         name: map['name'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -178,8 +279,8 @@ abstract class BookSerializer {
     }
     return {
       'id': model.id,
-      'author': model.author,
-      'partner_author': model.partnerAuthor,
+      'author': AuthorSerializer.toMap(model.author),
+      'partner_author': AuthorSerializer.toMap(model.partnerAuthor),
       'name': model.name,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()

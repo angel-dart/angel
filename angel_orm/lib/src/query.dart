@@ -280,7 +280,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
         return ss;
       }));
       _joins.forEach((j) {
-        var additional = j.additionalFields.map((s) => j.nameFor(s)).toList();
+        var additional = j.additionalFields.map(j.nameFor).toList();
         // if (!additional.contains(j.fieldName))
         //   additional.insert(0, j.fieldName);
         f.addAll(additional);

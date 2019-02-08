@@ -1,3 +1,6 @@
+# 2.0.0-dev.6
+* Fix bug where an extra field would be inserted into joins and botch the result.
+
 # 2.0.0-dev.5
 * Implement cast-based `double` support.
 * Finish `ListSqlExpressionBuilder`.
