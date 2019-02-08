@@ -1,3 +1,6 @@
+# 1.0.0-dev.2
+* Add optional logging.
+
 # 1.0.0-dev.1
 * Changes to work with `package:angel_orm@2.0.0-dev.15`.
 
