@@ -7,10 +7,13 @@ import 'package:sqljocky5/connection/connection.dart';
 import 'package:sqljocky5/sqljocky.dart';
 
 class MySqlExecutor extends QueryExecutor {
+  /// An optional [Logger] to write to.
+  final Logger logger;
+
   final MySqlConnection _connection;
   Transaction _transaction;
 
-  MySqlExecutor(this._connection);
+  MySqlExecutor(this._connection, {this.logger});
 
   @override
   Future<List<List>> query(
