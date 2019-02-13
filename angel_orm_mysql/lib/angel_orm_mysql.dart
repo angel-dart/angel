@@ -24,6 +24,9 @@ class MySqlExecutor extends QueryExecutor {
       query = query.replaceAll('@$name', '?');
     }
 
+    logger?.fine('Query: $query');
+    logger?.fine('Values: $substitutionValues');
+
     if (returningFields?.isNotEmpty != true) {
       return _connection
           .prepared(query, substitutionValues.values)
@@ -36,9 +39,10 @@ class MySqlExecutor extends QueryExecutor {
           var writeResults =
               await _transaction.prepared(query, substitutionValues.values);
           var fieldSet = returningFields.map((s) => '`$s`').join(',');
-          var readResults = await _transaction.prepared(
-              'select $fieldSet from $tableName where id = ?;',
-              [writeResults.insertId]);
+          var fetchSql = 'select $fieldSet from $tableName where id = ?;';
+          logger?.fine(fetchSql);
+          var readResults =
+              await _transaction.prepared(fetchSql, [writeResults.insertId]);
           var mapped = readResults.map((r) => r.toList()).toList();
           await _transaction.commit();
           return mapped;

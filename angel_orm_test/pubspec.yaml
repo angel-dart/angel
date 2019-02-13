@@ -1,0 +1,6 @@
+name: angel_orm_test
+publish_to: none
+dependencies:
+  angel_orm:
+    path: ../angel_orm
+  test: ^1.0.0
