@@ -4,14 +4,21 @@ import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
 import 'package:postgres/postgres.dart';
 
+/// Use the renamed [PostgreSqlExecutor] instead.
+@deprecated
+class PostgreSQLExecutor extends PostgreSqlExecutor {
+  PostgreSQLExecutor(PostgreSQLExecutionContext connection, {Logger logger})
+      : super(connection, logger: logger);
+}
+
 /// A [QueryExecutor] that queries a PostgreSQL database.
-class PostgreSQLExecutor extends QueryExecutor {
+class PostgreSqlExecutor extends QueryExecutor {
   PostgreSQLExecutionContext _connection;
 
   /// An optional [Logger] to print information to.
   final Logger logger;
 
-  PostgreSQLExecutor(this._connection, {this.logger});
+  PostgreSqlExecutor(this._connection, {this.logger});
 
   /// The underlying connection.
   PostgreSQLExecutionContext get connection => _connection;
@@ -53,8 +60,17 @@ class PostgreSQLExecutor extends QueryExecutor {
   }
 }
 
+/// Use the renamed [PostgreSqlExecutorPool] instead.
+@deprecated
+class PostgreSQLExecutorPool extends PostgreSqlExecutorPool {
+  PostgreSQLExecutorPool(
+      int size, PostgreSQLConnection Function() connectionFactory,
+      {Logger logger})
+      : super(size, connectionFactory, logger: logger);
+}
+
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
-class PostgreSQLExecutorPool extends QueryExecutor {
+class PostgreSqlExecutorPool extends QueryExecutor {
   /// The maximum amount of concurrent connections.
   final int size;
 
@@ -66,11 +82,11 @@ class PostgreSQLExecutorPool extends QueryExecutor {
   /// An optional [Logger] to print information to.
   final Logger logger;
 
-  final List<PostgreSQLExecutor> _connections = [];
+  final List<PostgreSqlExecutor> _connections = [];
   int _index = 0;
   final Pool _pool, _connMutex = new Pool(1);
 
-  PostgreSQLExecutorPool(this.size, this.connectionFactory, {this.logger})
+  PostgreSqlExecutorPool(this.size, this.connectionFactory, {this.logger})
       : _pool = new Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
@@ -89,12 +105,12 @@ class PostgreSQLExecutorPool extends QueryExecutor {
         var conn = connectionFactory();
         return conn
             .open()
-            .then((_) => new PostgreSQLExecutor(conn, logger: logger));
+            .then((_) => new PostgreSqlExecutor(conn, logger: logger));
       })));
     }
   }
 
-  Future<PostgreSQLExecutor> _next() {
+  Future<PostgreSqlExecutor> _next() {
     return _connMutex.withResource(() async {
       await _open();
       if (_index >= size) _index = 0;
