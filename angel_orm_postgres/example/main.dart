@@ -7,6 +7,6 @@ main() async {
     return new PostgreSQLConnection('localhost', 5432, 'angel_orm_test');
   });
 
-  var rows = await executor.query('SELECT * FROM users', {});
+  var rows = await executor.query('users', 'SELECT * FROM users', {});
   print(rows);
 }

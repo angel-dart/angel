@@ -24,7 +24,7 @@ class PostgresExecutor extends QueryExecutor {
 
   @override
   Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
+      String tableName, String query, Map<String, dynamic> substitutionValues,
       [List<String> returningFields]) {
     if (returningFields != null) {
       var fields = returningFields.join(', ');

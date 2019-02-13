@@ -13,6 +13,9 @@ abstract class QueryBase<T> {
   /// Values to insert into a prepared statement.
   final Map<String, dynamic> substitutionValues = {};
 
+  /// The table against which to execute this query.
+  String get tableName;
+
   /// The list of fields returned by this query.
   ///
   /// If it's `null`, then this query will perform a `SELECT *`.
@@ -32,7 +35,7 @@ abstract class QueryBase<T> {
   Future<List<T>> get(QueryExecutor executor) async {
     var sql = compile(Set());
     return executor
-        .query(sql, substitutionValues)
+        .query(tableName, sql, substitutionValues)
         .then((it) => it.map(deserialize).toList());
   }
 
@@ -115,9 +118,6 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   String _crossJoin, _groupBy;
   int _limit, _offset;
-
-  /// The table against which to execute this query.
-  String get tableName;
 
   /// A reference to an abstract query builder.
   ///
@@ -320,15 +320,17 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
     if (_joins.isEmpty) {
       return executor
-          .query(
-              sql, substitutionValues, fields.map(adornWithTableName).toList())
+          .query(tableName, sql, substitutionValues,
+              fields.map(adornWithTableName).toList())
           .then((it) => it.map(deserialize).toList());
     } else {
       return executor.transaction(() async {
         // TODO: Can this be done with just *one* query?
         var existing = await get(executor);
         //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
-        return executor.query(sql, substitutionValues).then((_) => existing);
+        return executor
+            .query(tableName, sql, substitutionValues)
+            .then((_) => existing);
       });
     }
   }
@@ -348,7 +350,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       var sql = compile(Set());
       sql = 'WITH $tableName as ($insertion RETURNING $returning) ' + sql;
       return executor
-          .query(sql, substitutionValues)
+          .query(tableName, sql, substitutionValues)
           .then((it) => it.isEmpty ? null : deserialize(it.first));
     }
   }
@@ -370,7 +372,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       sql = 'WITH $tableName as ($updateSql RETURNING $returning) ' + sql;
 
       return executor
-          .query(sql, substitutionValues)
+          .query(tableName, sql, substitutionValues)
           .then((it) => it.map(deserialize).toList());
     }
   }
@@ -504,10 +506,17 @@ abstract class QueryWhere {
 
 /// Represents the `UNION` of two subqueries.
 class Union<T> extends QueryBase<T> {
+  /// The subject(s) of this binary operation.
   final QueryBase<T> left, right;
+
+  /// Whether this is a `UNION ALL` operation.
   final bool all;
 
-  Union(this.left, this.right, {this.all: false}) {
+  @override
+  final String tableName;
+
+  Union(this.left, this.right, {this.all: false, String tableName})
+      : this.tableName = tableName ?? left.tableName {
     substitutionValues
       ..addAll(left.substitutionValues)
       ..addAll(right.substitutionValues);
@@ -598,9 +607,11 @@ class JoinOn {
 abstract class QueryExecutor {
   const QueryExecutor();
 
+  /// Executes a single query.
   Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
+      String tableName, String query, Map<String, dynamic> substitutionValues,
       [List<String> returningFields]);
 
+  /// Begins a database transaction.
   Future<T> transaction<T>(FutureOr<T> f());
 }

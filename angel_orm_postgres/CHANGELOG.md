@@ -1,3 +1,6 @@
+# 1.0.0-dev.3
+* Support for `tableName`.
+
 # 1.0.0-dev.2
 * Add optional logging.
 

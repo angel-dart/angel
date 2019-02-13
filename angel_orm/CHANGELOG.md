@@ -1,3 +1,6 @@
+# 2.0.0-dev.21
+* Add tableName to query
+
 # 2.0.0-dev.20
 * Join updates.
 

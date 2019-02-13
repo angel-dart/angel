@@ -21,7 +21,7 @@ class PostgreSQLExecutor extends QueryExecutor {
 
   @override
   Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
+      String tableName, String query, Map<String, dynamic> substitutionValues,
       [List<String> returningFields]) {
     if (returningFields != null) {
       var fields = returningFields.join(', ');
@@ -104,11 +104,12 @@ class PostgreSQLExecutorPool extends QueryExecutor {
 
   @override
   Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
+      String tableName, String query, Map<String, dynamic> substitutionValues,
       [List<String> returningFields]) {
     return _pool.withResource(() async {
       var executor = await _next();
-      return executor.query(query, substitutionValues, returningFields);
+      return executor.query(
+          tableName, query, substitutionValues, returningFields);
     });
   }
 

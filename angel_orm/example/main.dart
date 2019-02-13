@@ -23,7 +23,7 @@ class _FakeExecutor extends QueryExecutor {
 
   @override
   Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
+      String tableName, String query, Map<String, dynamic> substitutionValues,
       [returningFields]) async {
     var now = new DateTime.now();
     print(
