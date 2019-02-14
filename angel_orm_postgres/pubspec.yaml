@@ -11,4 +11,6 @@ dependencies:
   pool: ^1.0.0
   postgres: ^1.0.0
 dev_dependencies:
+  angel_orm_test:
+    path: ../angel_orm_test
   test: ^1.0.0

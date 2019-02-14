@@ -1,8 +1,12 @@
 name: angel_orm_test
 publish_to: none
+description: Common tests for Angel ORM backends.s
+environment:
+  sdk: ">=2.0.0 <3.0.0"
 dependencies:
   angel_migration: ^2.0.0-alpha
   angel_model: ^1.0.0
+  angel_orm: ^2.0.0-dev
   test: ^1.0.0
 dev_dependencies:
   angel_orm_generator:
