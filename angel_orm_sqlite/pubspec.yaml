@@ -1,0 +1,3 @@
+name: angel_orm_sqlite
+dependencies:
+        angel_orm: ^2.0.0-dev
