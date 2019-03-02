@@ -104,7 +104,7 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
     return Uri.splitQueryString(body);
   }
 
-  Future<Map<String, String>> _createAccessToken(
+  Future<Map<String, String>> getAccessToken(
       String token, String verifier) async {
     var request = await _prepRequest("oauth/access_token",
         method: "POST", data: {"verifier": verifier}, accessToken: token);
@@ -112,7 +112,7 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
     return _parseUrlEncoded(request);
   }
 
-  Future<Map<String, String>> createRequestToken() async {
+  Future<Map<String, String>> getRequestToken() async {
     var request = await _prepRequest("oauth/request_token",
         method: "POST",
         data: {"oauth_callback": options.redirectUri.toString()});
@@ -128,7 +128,7 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
     if (options != null) {
       return await authenticateCallback(req, res, options);
     } else {
-      var result = await createRequestToken();
+      var result = await getRequestToken();
       var token = result['oauth_token'];
       var url = baseUrl.replace(
           path: p.join(baseUrl.path, 'oauth/authenticate'),
@@ -144,7 +144,7 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
     print('Query: ${req.queryParameters}');
     var token = req.queryParameters['oauth_token'] as String;
     var verifier = req.queryParameters['oauth_verifier'] as String;
-    var loginData = await _createAccessToken(token, verifier);
+    var loginData = await getAccessToken(token, verifier);
     var twitter = Twitter(this.options.clientId, this.options.clientSecret,
         loginData['oauth_token'], loginData['oauth_token_secret']);
     return await this.verifier(twitter, req, res);
