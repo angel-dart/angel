@@ -1,3 +1,6 @@
+# 2.0.0-alpha.23
+* `ResponseContext.render` sets `charset` to `utf8` in `contentType`.
+
 # 2.0.0-alpha.22
 * Update pipeline handling mechanism, and inject a `MiddlewarePipelineIterator`.
     * This allows routes to know where in the resolution process they exist, at runtime.

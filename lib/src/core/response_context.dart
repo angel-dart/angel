@@ -184,7 +184,7 @@ abstract class ResponseContext<RawResponse>
   /// Renders a view to the response stream, and closes the response.
   Future render(String view, [Map<String, dynamic> data]) {
     if (!isOpen) throw closed();
-    contentType = new MediaType('text', 'html');
+    contentType = new MediaType('text', 'html', {'charset': 'utf-8'});
     return Future<String>.sync(() => app.viewGenerator(
         view,
         new Map<String, dynamic>.from(renderParams)
