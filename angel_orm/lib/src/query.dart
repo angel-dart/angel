@@ -397,7 +397,9 @@ abstract class QueryValues {
   }
 
   String compileInsert(Query query, String tableName) {
-    var data = toMap();
+    var data = Map<String, dynamic>.from(toMap());
+    var keys = data.keys.toList();
+    keys.where((k) => !query.fields.contains(k)).forEach(data.remove);
     if (data.isEmpty) return null;
 
     var fieldSet = data.keys.join(', ');
