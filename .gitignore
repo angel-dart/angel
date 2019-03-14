@@ -22,6 +22,6 @@ doc/api/
 
 *.o
 #*.dylib
-*.a
+#*.a
 *.lib
 *.obj
