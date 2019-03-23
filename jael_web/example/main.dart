@@ -2,10 +2,10 @@ import 'package:jael_web/jael_web.dart';
 import 'package:jael_web/elements.dart';
 part 'main.g.dart';
 
-@Dsx(template: '''
+@Jael(template: '''
 <div>
   <h1>Hello, Jael!</h1>
-  <i>Current time: {now}</i>
+  <i>Current time: {{now}}</i>
 </div>
 ''')
 class Hello extends Component with _HelloJaelTemplate {
