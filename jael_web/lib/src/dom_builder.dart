@@ -1,9 +1,14 @@
 abstract class DomBuilder<T> {
-  DomBuilderElement<T> open(String tagName);
+  DomBuilderElement<T> append(
+      String tagName, void Function(DomBuilderElement<T>) f);
 
-  void emitText(String value);
+  void text(String value);
 }
 
-abstract class DomBuilderElement<T> implements DomBuilder<T> {
+abstract class DomBuilderElement<T> extends DomBuilder<T> {
+  void attr(String name, [String value]);
+
+  void attrs(Map<String, String> map);
+
   T close();
 }
