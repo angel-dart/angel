@@ -9,6 +9,8 @@ import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
 import 'util.dart';
 
+var _upper = RegExp(r'^[A-Z]');
+
 Builder jaelComponentBuilder(_) {
   return SharedPartBuilder([JaelComponentGenerator()], 'jael_web_cmp');
 }
@@ -124,11 +126,17 @@ class JaelComponentGenerator extends GeneratorForAnnotation<Jael> {
             : CodeExpression(Code(attr.value.span.text));
       }
 
-      return refer('h').call([
-        literalString(child.tagName.name),
-        literalMap(attrs),
-        literalList(child.children.map(compileElementChild)),
-      ]);
+      var tagName = child.tagName.name;
+      if (!_upper.hasMatch(tagName)) {
+        return refer('h').call([
+          literalString(tagName),
+          literalMap(attrs),
+          literalList(child.children.map(compileElementChild)),
+        ]);
+      } else {
+        // TODO: How to pass children?
+        return refer(tagName).newInstance([], attrs);
+      }
       // return refer(child.tagName.name).newInstance([]);
     } else {
       throw 'Unsupported: $child';

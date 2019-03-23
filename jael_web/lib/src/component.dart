@@ -1,6 +1,6 @@
 import 'dom_node.dart';
 
-abstract class Component<State> {
+abstract class Component<State> extends DomNode {
   State state;
 
   DomNode render();

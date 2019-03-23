@@ -14,7 +14,7 @@ class _AppState {
   }
 }
 
-@Dsx(template: '<div>Tick count: {state.ticks}</div>')
+@Jael(template: '<div>Tick count: {{state.ticks}}</div>')
 class StatefulApp extends Component<_AppState> with _StatefulAppJaelTemplate {
   Timer _timer;
 
