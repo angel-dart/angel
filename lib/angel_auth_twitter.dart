@@ -1,21 +1,15 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:convert';
 import 'package:angel_auth/angel_auth.dart';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
-import 'package:meta/meta.dart';
+import 'package:oauth/oauth.dart' as oauth;
 import 'package:path/path.dart' as p;
-import 'package:random_string/random_string.dart' as rs;
 import 'package:twitter/twitter.dart';
 
+/// Authenticates users by connecting to Twitter's API.
 class TwitterStrategy<User> extends AuthStrategy<User> {
   /// The options defining how to connect to the third-party.
   final ExternalAuthOptions options;
-
-  /// The underlying [BaseClient] used to query Twitter.
-  final http.BaseClient httpClient;
 
   /// A callback that uses Twitter to authenticate a [User].
   ///
@@ -26,74 +20,21 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
   /// The root of Twitter's API. Defaults to `'https://api.twitter.com'`.
   final Uri baseUrl;
 
+  oauth.Client _client;
+
+  /// The underlying [oauth.Client] used to query Twitter.
+  oauth.Client get client => _client;
+
   TwitterStrategy(this.options, this.verifier,
       {http.BaseClient client, Uri baseUrl})
-      : this.baseUrl = baseUrl ?? Uri.parse('https://api.twitter.com'),
-        this.httpClient = client ?? http.Client() as http.BaseClient;
-
-  String _createSignature(
-      String method, String uriString, Map<String, String> params,
-      {@required String tokenSecret}) {
-    // Not only do we need to sort the parameters, but we need to URI-encode them as well.
-    var encoded = new SplayTreeMap();
-    for (String key in params.keys) {
-      encoded[Uri.encodeComponent(key)] = Uri.encodeComponent(params[key]);
-    }
-
-    String collectedParams =
-        encoded.keys.map((key) => "$key=${encoded[key]}").join("&");
-
-    String baseString =
-        "$method&${Uri.encodeComponent(uriString)}&${Uri.encodeComponent(collectedParams)}";
-
-    String signingKey =
-        "${Uri.encodeComponent(options.clientSecret)}&$tokenSecret";
-
-    // After you create a base string and signing key, we need to hash this via HMAC-SHA1
-    var hmac = new Hmac(sha1, signingKey.codeUnits);
-
-    // The returned signature should be the resulting hash, Base64-encoded
-    return base64.encode(hmac.convert(baseString.codeUnits).bytes);
+      : this.baseUrl = baseUrl ?? Uri.parse('https://api.twitter.com') {
+    var tokens = oauth.Tokens(
+        consumerId: options.clientId, consumerKey: options.clientSecret);
+    _client = oauth.Client(tokens, client: client);
   }
 
-  Future<http.Request> _prepRequest(String path,
-      {String method = "GET",
-      Map<String, String> data = const {},
-      String accessToken,
-      String tokenSecret = ''}) async {
-    var headers = new Map<String, String>.from(data);
-    headers["oauth_version"] = "1.0";
-    headers["oauth_consumer_key"] = options.clientId;
-
-    // The implementation of _randomString doesn't matter - just generate a 32-char
-    // alphanumeric string.
-    headers["oauth_nonce"] = rs.randomAlphaNumeric(32);
-    headers["oauth_signature_method"] = "HMAC-SHA1";
-    headers["oauth_timestamp"] =
-        (new DateTime.now().millisecondsSinceEpoch / 1000).round().toString();
-
-    if (accessToken != null) {
-      headers["oauth_token"] = accessToken;
-    }
-
-    var request = http.Request(method, baseUrl.replace(path: path));
-
-    headers['oauth_signature'] = _createSignature(
-        method, request.url.toString(), headers,
-        tokenSecret: tokenSecret);
-
-    var oauthString = headers.keys
-        .map((name) => '$name="${Uri.encodeComponent(headers[name])}"')
-        .join(", ");
-
-    return request
-      ..headers.addAll(headers)
-      ..headers['authorization'] = "OAuth $oauthString";
-  }
-
-  Future<Map<String, String>> _parseUrlEncoded(http.BaseRequest rq) async {
-    var response = await httpClient.send(rq);
-    var rs = await http.Response.fromStream(response);
+  /// Handle a response from Twitter.
+  Future<Map<String, String>> handleUrlEncodedResponse(http.Response rs) async {
     var body = rs.body;
 
     if (rs.statusCode != 200) {
@@ -104,22 +45,25 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
     return Uri.splitQueryString(body);
   }
 
-  Future<Map<String, String>> getAccessToken(
-      String token, String verifier) async {
-    var request = await _prepRequest("oauth/access_token",
-        method: "POST", data: {"verifier": verifier}, accessToken: token);
-    request.bodyFields = {'oauth_verifier': verifier};
-    return _parseUrlEncoded(request);
+  /// Get an access token.
+  Future<Map<String, String>> getAccessToken(String token, String verifier) {
+    return _client.post(
+        baseUrl.replace(path: p.join(baseUrl.path, 'oauth/access_token')),
+        body: {
+          'oauth_token': token,
+          'oauth_verifier': verifier
+        }).then(handleUrlEncodedResponse);
+    // var request = await createRequest("oauth/access_token",
+    //     method: "POST", data: {"verifier": verifier}, accessToken: token);
   }
 
-  Future<Map<String, String>> getRequestToken() async {
-    var request = await _prepRequest("oauth/request_token",
-        method: "POST",
-        data: {"oauth_callback": options.redirectUri.toString()});
-
-    // _mapifyRequest is a function that sends a request and parses its URL-encoded
-    // response into a Map. This detail is not important.
-    return await _parseUrlEncoded(request);
+  /// Get a request token.
+  Future<Map<String, String>> getRequestToken() {
+    return _client.post(
+        baseUrl.replace(path: p.join(baseUrl.path, 'oauth/request_token')),
+        body: {
+          "oauth_callback": options.redirectUri.toString()
+        }).then(handleUrlEncodedResponse);
   }
 
   @override
