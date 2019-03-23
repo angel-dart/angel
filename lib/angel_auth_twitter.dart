@@ -75,7 +75,7 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
       var result = await getRequestToken();
       var token = result['oauth_token'];
       var url = baseUrl.replace(
-          path: p.join(baseUrl.path, 'oauth/authenticate'),
+          path: p.join(baseUrl.path, 'oauth/authorize'),
           queryParameters: {'oauth_token': token});
       res.redirect(url);
       return null;
@@ -85,7 +85,6 @@ class TwitterStrategy<User> extends AuthStrategy<User> {
   Future<User> authenticateCallback(
       RequestContext req, ResponseContext res, AngelAuthOptions options) async {
     // TODO: Handle errors
-    print('Query: ${req.queryParameters}');
     var token = req.queryParameters['oauth_token'] as String;
     var verifier = req.queryParameters['oauth_verifier'] as String;
     var loginData = await getAccessToken(token, verifier);
