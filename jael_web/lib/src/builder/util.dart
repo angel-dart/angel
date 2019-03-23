@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
@@ -15,6 +16,25 @@ TypeReference convertTypeReference(DartType t) {
     if (t is InterfaceType) {
       b.types.addAll(t.typeArguments.map(convertTypeReference));
     }
+  });
+}
+
+bool isRequiredParameter(ParameterElement e) {
+  return e.isNotOptional;
+}
+
+bool isOptionalParameter(ParameterElement e) {
+  return e.isOptional;
+}
+
+Parameter convertParameter(ParameterElement e) {
+  return Parameter((b) {
+    b
+      ..name = e.name
+      ..type = convertTypeReference(e.type)
+      ..named = e.isNamed
+      ..defaultTo =
+          e.defaultValueCode == null ? null : Code(e.defaultValueCode);
   });
 }
 
@@ -183,8 +203,8 @@ class BuildSystemFile extends File {
       throw _unsupported();
 
   @override
-  Directory get parent =>
-      BuildSystemDirectory(fileSystem, reader, package, fileSystem.path.dirname(path));
+  Directory get parent => BuildSystemDirectory(
+      fileSystem, reader, package, fileSystem.path.dirname(path));
 
   @override
   Future<List<int>> readAsBytes() {

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
@@ -72,6 +71,21 @@ class JaelComponentGenerator extends GeneratorForAnnotation<Jael> {
               ..name = field.name
               ..type = MethodType.getter
               ..returns = convertTypeReference(field.type);
+          }));
+        }
+
+        // ... And methods too.
+        for (var method in element.methods) {
+          b.methods.add(Method((b) {
+            b
+              ..name = method.name
+              ..returns = convertTypeReference(method.returnType)
+              ..requiredParameters.addAll(method.parameters
+                  .where(isRequiredParameter)
+                  .map(convertParameter))
+              ..optionalParameters.addAll(method.parameters
+                  .where(isOptionalParameter)
+                  .map(convertParameter));
           }));
         }
 
