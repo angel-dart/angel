@@ -1,3 +1,6 @@
+# 1.0.3
+* `enumTypeFromStrings` now returns `GraphQLEnumType<String>`.
+
 # 1.0.2
 * Added `GraphQLClass()`.
 * Added `typeName`.

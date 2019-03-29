@@ -1,5 +1,5 @@
 name: graphql_schema
-version: 1.0.2+1
+version: 1.0.3
 description: An implementation of GraphQL's type system in Dart. Basis of graphql_server.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/graphql
