@@ -5,7 +5,7 @@ import 'package:source_span/source_span.dart';
 import 'selection_set.dart';
 import 'type_condition.dart';
 
-class FragmentDefinitionContext extends DefinitionContext {
+class FragmentDefinitionContext extends ExecutableDefinitionContext {
   final Token FRAGMENT, NAME, ON;
   final TypeConditionContext typeCondition;
   final List<DirectiveContext> directives = [];

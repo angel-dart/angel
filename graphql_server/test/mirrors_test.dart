@@ -43,6 +43,7 @@ void main() {
   });
 }
 
+@graphQLClass
 enum RomanceLanguage {
   SPANISH,
   FRANCE,

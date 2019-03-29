@@ -61,7 +61,9 @@ class Parser {
     if (selectionSet != null)
       return new OperationDefinitionContext(null, null, null, selectionSet);
     else {
-      if (next(TokenType.MUTATION) || next(TokenType.QUERY)) {
+      if (next(TokenType.MUTATION) ||
+          next(TokenType.QUERY) ||
+          next(TokenType.SUBSCRIPTION)) {
         var TYPE = current;
         Token NAME = next(TokenType.NAME) ? current : null;
         var variables = parseVariableDefinitions();

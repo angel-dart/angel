@@ -29,6 +29,7 @@ final Map<Pattern, TokenType> _patterns = {
   ')': TokenType.RPAREN,
   'fragment': TokenType.FRAGMENT,
   'mutation': TokenType.MUTATION,
+  'subscription': TokenType.SUBSCRIPTION,
   'on': TokenType.ON,
   'query': TokenType.QUERY,
   'null': TokenType.NULL,

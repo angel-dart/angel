@@ -6,7 +6,7 @@ import 'directive.dart';
 import 'selection_set.dart';
 import 'variable_definitions.dart';
 
-class OperationDefinitionContext extends DefinitionContext {
+class OperationDefinitionContext extends ExecutableDefinitionContext {
   final Token TYPE, NAME;
   final VariableDefinitionsContext variableDefinitions;
   final List<DirectiveContext> directives = [];
@@ -14,13 +14,18 @@ class OperationDefinitionContext extends DefinitionContext {
 
   bool get isMutation => TYPE?.text == 'mutation';
 
+  bool get isSubscription => TYPE?.text == 'subscription';
+
   bool get isQuery => TYPE?.text == 'query' || TYPE == null;
 
   String get name => NAME?.text;
 
   OperationDefinitionContext(
       this.TYPE, this.NAME, this.variableDefinitions, this.selectionSet) {
-    assert(TYPE == null || TYPE.text == 'query' || TYPE.text == 'mutation');
+    assert(TYPE == null ||
+        TYPE.text == 'query' ||
+        TYPE.text == 'mutation' ||
+        TYPE.text == 'subscription');
   }
 
   @override

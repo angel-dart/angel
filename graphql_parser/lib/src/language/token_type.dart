@@ -15,6 +15,7 @@ enum TokenType {
 
   FRAGMENT,
   MUTATION,
+  SUBSCRIPTION,
   ON,
   QUERY,
 
