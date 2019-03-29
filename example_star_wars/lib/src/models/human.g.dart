@@ -14,7 +14,7 @@ class Human extends _Human {
       List<dynamic> appearsIn,
       List<Character> friends,
       this.totalCredits,
-      List<Starship> starships,
+      List<dynamic> starships,
       this.createdAt,
       this.updatedAt})
       : this.appearsIn = new List.unmodifiable(appearsIn ?? []),
@@ -37,7 +37,7 @@ class Human extends _Human {
   final int totalCredits;
 
   @override
-  final List<Starship> starships;
+  final List<dynamic> starships;
 
   @override
   final DateTime createdAt;
@@ -51,7 +51,7 @@ class Human extends _Human {
       List<dynamic> appearsIn,
       List<Character> friends,
       int totalCredits,
-      List<Starship> starships,
+      List<dynamic> starships,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Human(
@@ -74,7 +74,7 @@ class Human extends _Human {
         const ListEquality<Character>(const DefaultEquality<Character>())
             .equals(other.friends, friends) &&
         other.totalCredits == totalCredits &&
-        const ListEquality<Starship>(const DefaultEquality<Starship>())
+        const ListEquality<dynamic>(const DefaultEquality())
             .equals(other.starships, starships) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -116,9 +116,7 @@ abstract class HumanSerializer {
             : null,
         totalCredits: map['total_credits'] as int,
         starships: map['starships'] is Iterable
-            ? new List.unmodifiable(((map['starships'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(StarshipSerializer.fromMap))
+            ? (map['starships'] as Iterable).cast<dynamic>().toList()
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -142,8 +140,7 @@ abstract class HumanSerializer {
       'appears_in': model.appearsIn,
       'friends': model.friends,
       'total_credits': model.totalCredits,
-      'starships':
-          model.starships?.map((m) => StarshipSerializer.toMap(m))?.toList(),
+      'starships': model.starships,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -151,7 +148,7 @@ abstract class HumanSerializer {
 }
 
 abstract class HumanFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     name,
     appearsIn,

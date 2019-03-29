@@ -87,9 +87,7 @@ abstract class DroidSerializer {
             ? (map['appears_in'] as Iterable).cast<dynamic>().toList()
             : null,
         friends: map['friends'] is Iterable
-            ? new List.unmodifiable(((map['friends'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(CharacterSerializer.fromMap))
+            ? (map['friends'] as Iterable).cast<Character>().toList()
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -111,8 +109,7 @@ abstract class DroidSerializer {
       'id': model.id,
       'name': model.name,
       'appears_in': model.appearsIn,
-      'friends':
-          model.friends?.map((m) => CharacterSerializer.toMap(m))?.toList(),
+      'friends': model.friends,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -120,7 +117,7 @@ abstract class DroidSerializer {
 }
 
 abstract class DroidFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     name,
     appearsIn,

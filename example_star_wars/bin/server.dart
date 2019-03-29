@@ -10,12 +10,12 @@ import 'package:star_wars/star_wars.dart' as star_wars;
 main() async {
   Future<Angel> createServer() async {
     var app = new Angel();
-    app.logger = new Logger('star_wars')..onRecord.listen(star_wars.prettyLog);
+    hierarchicalLoggingEnabled = true;
+    app.logger = new Logger.detached('star_wars')
+      ..onRecord.listen(star_wars.prettyLog);
     await app.configure(star_wars.configureServer);
     return app;
   }
-
-  hierarchicalLoggingEnabled = true;
 
   var hot = new HotReloader(createServer, [new Directory('lib')]);
 

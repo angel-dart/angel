@@ -95,7 +95,7 @@ abstract class StarshipSerializer {
 }
 
 abstract class StarshipFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     name,
     length,
