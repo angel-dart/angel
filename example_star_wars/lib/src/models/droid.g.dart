@@ -11,7 +11,7 @@ class Droid extends _Droid {
   Droid(
       {this.id,
       this.name,
-      List<dynamic> appearsIn,
+      List<Episode> appearsIn,
       List<Character> friends,
       this.createdAt,
       this.updatedAt})
@@ -25,7 +25,7 @@ class Droid extends _Droid {
   final String name;
 
   @override
-  final List<dynamic> appearsIn;
+  final List<Episode> appearsIn;
 
   @override
   final List<Character> friends;
@@ -39,7 +39,7 @@ class Droid extends _Droid {
   Droid copyWith(
       {String id,
       String name,
-      List<dynamic> appearsIn,
+      List<Episode> appearsIn,
       List<Character> friends,
       DateTime createdAt,
       DateTime updatedAt}) {
@@ -56,7 +56,7 @@ class Droid extends _Droid {
     return other is _Droid &&
         other.id == id &&
         other.name == name &&
-        const ListEquality<dynamic>(const DefaultEquality())
+        const ListEquality<Episode>(const DefaultEquality<Episode>())
             .equals(other.appearsIn, appearsIn) &&
         const ListEquality<Character>(const DefaultEquality<Character>())
             .equals(other.friends, friends) &&
@@ -84,7 +84,7 @@ abstract class DroidSerializer {
         id: map['id'] as String,
         name: map['name'] as String,
         appearsIn: map['appears_in'] is Iterable
-            ? (map['appears_in'] as Iterable).cast<dynamic>().toList()
+            ? (map['appears_in'] as Iterable).cast<Episode>().toList()
             : null,
         friends: map['friends'] is Iterable
             ? (map['friends'] as Iterable).cast<Character>().toList()
@@ -138,3 +138,27 @@ abstract class DroidFields {
 
   static const String updatedAt = 'updated_at';
 }
+
+// **************************************************************************
+// _GraphQLGenerator
+// **************************************************************************
+
+/// Auto-generated from [Droid].
+final GraphQLObjectType droidGraphQLType = objectType('Droid',
+    isInterface: false,
+    description: 'Beep! Boop!',
+    interfaces: [
+      characterGraphQLType
+    ],
+    fields: [
+      field('id', graphQLString),
+      field('name', graphQLString),
+      field('appears_in', listOf(episodeGraphQLType),
+          description: 'The list of episodes this droid appears in.'),
+      field('friends', listOf(characterGraphQLType),
+          description:
+              'Doc comments automatically become GraphQL descriptions.'),
+      field('created_at', graphQLDate),
+      field('updated_at', graphQLDate),
+      field('idAsInt', graphQLInt)
+    ]);

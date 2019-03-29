@@ -1,12 +1,12 @@
-import 'package:angel_model/angel_model.dart';
+import 'package:graphql_schema/graphql_schema.dart';
 import 'episode.dart';
+part 'character.g.dart';
 
+@graphQLClass
 abstract class Character {
   String get id;
 
   String get name;
 
-  List<Episode> get appearsIn;
-
-  List<Character> get friends;
+  // List<Episode> get appearsIn;
 }

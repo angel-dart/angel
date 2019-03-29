@@ -2,30 +2,24 @@ import 'dart:async';
 import 'dart:math';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_graphql/angel_graphql.dart';
-import 'package:angel_typed_service/angel_typed_service.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:graphql_server/graphql_server.dart';
-import 'package:graphql_server/mirrors.dart';
-
 import 'src/models/models.dart';
 
 Future configureServer(Angel app) async {
   // Create standard Angel services. Note that these will also *automatically* be
   // exposed via a REST API as well.
-  var droidService = mountService<Droid>(app, '/api/droids');
-  var humansService = mountService<Human>(app, '/api/humans');
-  var starshipService = mountService<Starship>(app, '/api/starships');
+  var droidService = app.use('/api/droids', MapService());
+  var humansService = app.use('/api/humans', MapService());
+  var starshipService = app.use('/api/starships', MapService());
   var rnd = Random();
 
   // Create the GraphQL schema.
-  // This code uses dart:mirrors to easily create GraphQL types from Dart PODO's.
-  var droidType = convertDartClass(Droid);
-  var episodeType = convertDartType(Episode);
-  var humanType = convertDartClass(Human);
-  var starshipType = convertDartType(Starship);
+  // `package:graphql_generator` has generated schemas for some of our
+  // classes.
 
   // A Hero can be either a Droid or Human; create a union type that represents this.
-  var heroType = GraphQLUnionType('Hero', [droidType, humanType]);
+  var heroType = GraphQLUnionType('Hero', [droidGraphQLType, humanGraphQLType]);
 
   // Create the query type.
   //
@@ -37,19 +31,19 @@ Future configureServer(Angel app) async {
     fields: [
       field(
         'droids',
-        listOf(droidType.nonNullable()),
+        listOf(droidGraphQLType.nonNullable()),
         description: 'All droids in the known galaxy.',
         resolve: resolveViaServiceIndex(droidService),
       ),
       field(
         'humans',
-        listOf(humanType.nonNullable()),
+        listOf(humanGraphQLType.nonNullable()),
         description: 'All humans in the known galaxy.',
         resolve: resolveViaServiceIndex(humansService),
       ),
       field(
         'starships',
-        listOf(starshipType.nonNullable()),
+        listOf(starshipGraphQLType.nonNullable()),
         description: 'All starships in the known galaxy.',
         resolve: resolveViaServiceIndex(starshipService),
       ),
@@ -59,7 +53,7 @@ Future configureServer(Angel app) async {
         description:
             'Finds a random hero within the known galaxy, whether a Droid or Human.',
         inputs: [
-          GraphQLFieldInput('ep', episodeType),
+          GraphQLFieldInput('ep', episodeGraphQLType),
         ],
         resolve: randomHeroResolver(droidService, humansService, rnd),
       ),
@@ -68,7 +62,7 @@ Future configureServer(Angel app) async {
 
   // Convert our object types to input objects, so that they can be passed to
   // mutations.
-  var humanChangesType = humanType.toInputObject('HumanChanges');
+  var humanChangesType = humanGraphQLType.toInputObject('HumanChanges');
 
   // Create the mutation type.
   var mutationType = objectType(
@@ -77,7 +71,7 @@ Future configureServer(Angel app) async {
       // We'll use the `modify_human` mutation to modify a human in the database.
       field(
         'modify_human',
-        humanType.nonNullable(),
+        humanGraphQLType.nonNullable(),
         description: 'Modifies a human in the database.',
         inputs: [
           GraphQLFieldInput('id', graphQLId.nonNullable()),
@@ -134,10 +128,6 @@ Future configureServer(Angel app) async {
     'friends': [leia, hanSolo, lando],
   });
 }
-
-Service<String, dynamic> mountService<T extends Model>(
-        Angel app, String path) =>
-    app.use(path, TypedService<String, T>(MapService()));
 
 GraphQLFieldResolver randomHeroResolver(
     Service droidService, Service humansService, Random rnd) {

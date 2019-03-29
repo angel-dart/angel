@@ -4,10 +4,10 @@ import 'package:collection/collection.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'character.dart';
 import 'episode.dart';
-import 'starship.dart';
 part 'human.g.dart';
 
 @serializable
+@graphQLClass
 abstract class _Human extends Model implements Character {
   // @GraphQLDocumentation(description: "This human's name, of course.")
   // String name;
@@ -25,8 +25,6 @@ abstract class _Human extends Model implements Character {
   List<Character> get friends;
 
   int get totalCredits;
-
-  List<Starship> get starships;
 
   // Human(
   //     {this.name,

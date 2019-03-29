@@ -113,3 +113,18 @@ abstract class StarshipFields {
 
   static const String updatedAt = 'updated_at';
 }
+
+// **************************************************************************
+// _GraphQLGenerator
+// **************************************************************************
+
+/// Auto-generated from [Starship].
+final GraphQLObjectType starshipGraphQLType =
+    objectType('Starship', isInterface: false, interfaces: [], fields: [
+  field('id', graphQLString),
+  field('name', graphQLString),
+  field('length', graphQLInt),
+  field('created_at', graphQLDate),
+  field('updated_at', graphQLDate),
+  field('idAsInt', graphQLInt)
+]);

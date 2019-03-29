@@ -11,15 +11,13 @@ class Human extends _Human {
   Human(
       {this.id,
       this.name,
-      List<dynamic> appearsIn,
+      List<Episode> appearsIn,
       List<Character> friends,
       this.totalCredits,
-      List<dynamic> starships,
       this.createdAt,
       this.updatedAt})
       : this.appearsIn = new List.unmodifiable(appearsIn ?? []),
-        this.friends = new List.unmodifiable(friends ?? []),
-        this.starships = new List.unmodifiable(starships ?? []);
+        this.friends = new List.unmodifiable(friends ?? []);
 
   @override
   final String id;
@@ -28,16 +26,13 @@ class Human extends _Human {
   final String name;
 
   @override
-  final List<dynamic> appearsIn;
+  final List<Episode> appearsIn;
 
   @override
   final List<Character> friends;
 
   @override
   final int totalCredits;
-
-  @override
-  final List<dynamic> starships;
 
   @override
   final DateTime createdAt;
@@ -48,10 +43,9 @@ class Human extends _Human {
   Human copyWith(
       {String id,
       String name,
-      List<dynamic> appearsIn,
+      List<Episode> appearsIn,
       List<Character> friends,
       int totalCredits,
-      List<dynamic> starships,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Human(
@@ -60,7 +54,6 @@ class Human extends _Human {
         appearsIn: appearsIn ?? this.appearsIn,
         friends: friends ?? this.friends,
         totalCredits: totalCredits ?? this.totalCredits,
-        starships: starships ?? this.starships,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
@@ -69,29 +62,19 @@ class Human extends _Human {
     return other is _Human &&
         other.id == id &&
         other.name == name &&
-        const ListEquality<dynamic>(const DefaultEquality())
+        const ListEquality<Episode>(const DefaultEquality<Episode>())
             .equals(other.appearsIn, appearsIn) &&
         const ListEquality<Character>(const DefaultEquality<Character>())
             .equals(other.friends, friends) &&
         other.totalCredits == totalCredits &&
-        const ListEquality<dynamic>(const DefaultEquality())
-            .equals(other.starships, starships) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
 
   @override
   int get hashCode {
-    return hashObjects([
-      id,
-      name,
-      appearsIn,
-      friends,
-      totalCredits,
-      starships,
-      createdAt,
-      updatedAt
-    ]);
+    return hashObjects(
+        [id, name, appearsIn, friends, totalCredits, createdAt, updatedAt]);
   }
 
   Map<String, dynamic> toJson() {
@@ -109,15 +92,12 @@ abstract class HumanSerializer {
         id: map['id'] as String,
         name: map['name'] as String,
         appearsIn: map['appears_in'] is Iterable
-            ? (map['appears_in'] as Iterable).cast<dynamic>().toList()
+            ? (map['appears_in'] as Iterable).cast<Episode>().toList()
             : null,
         friends: map['friends'] is Iterable
             ? (map['friends'] as Iterable).cast<Character>().toList()
             : null,
         totalCredits: map['total_credits'] as int,
-        starships: map['starships'] is Iterable
-            ? (map['starships'] as Iterable).cast<dynamic>().toList()
-            : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -140,7 +120,6 @@ abstract class HumanSerializer {
       'appears_in': model.appearsIn,
       'friends': model.friends,
       'total_credits': model.totalCredits,
-      'starships': model.starships,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -154,7 +133,6 @@ abstract class HumanFields {
     appearsIn,
     friends,
     totalCredits,
-    starships,
     createdAt,
     updatedAt
   ];
@@ -169,9 +147,26 @@ abstract class HumanFields {
 
   static const String totalCredits = 'total_credits';
 
-  static const String starships = 'starships';
-
   static const String createdAt = 'created_at';
 
   static const String updatedAt = 'updated_at';
 }
+
+// **************************************************************************
+// _GraphQLGenerator
+// **************************************************************************
+
+/// Auto-generated from [Human].
+final GraphQLObjectType humanGraphQLType =
+    objectType('Human', isInterface: false, interfaces: [
+  characterGraphQLType
+], fields: [
+  field('id', graphQLString),
+  field('name', graphQLString),
+  field('appears_in', listOf(episodeGraphQLType)),
+  field('friends', listOf(characterGraphQLType)),
+  field('total_credits', graphQLInt),
+  field('created_at', graphQLDate),
+  field('updated_at', graphQLDate),
+  field('idAsInt', graphQLInt)
+]);
