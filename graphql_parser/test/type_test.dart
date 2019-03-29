@@ -39,7 +39,7 @@ main() {
         var parser = parse(x.toString())..parseType();
         return parser.errors.isNotEmpty;
       }, 'fails to parse type');
-      
+
       expect('[foo', throwsSyntaxError);
       expect('[', throwsSyntaxError);
     });

@@ -25,7 +25,7 @@ main() {
       var parser = parse(x.toString())..parseDirective();
       return parser.errors.isNotEmpty;
     }, 'fails to parse directive');
-    
+
     expect('@', isSyntaxError);
     expect('@foo:', isSyntaxError);
     expect('@foo (', isSyntaxError);

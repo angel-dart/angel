@@ -1,4 +1,5 @@
 part of graphql_schema.src.schema;
+
 /// Represents the result of asserting an input [value] against a [GraphQLType].
 
 class ValidationResult<Value> {

@@ -23,7 +23,8 @@ GraphQLObjectField<T, Serialized> field<T, Serialized>(
     String name, GraphQLType<T, Serialized> type,
     {Iterable<GraphQLFieldInput<T, Serialized>> inputs: const [],
     GraphQLFieldResolver<T, Serialized> resolve,
-    String deprecationReason, String description}) {
+    String deprecationReason,
+    String description}) {
   return new GraphQLObjectField<T, Serialized>(name, type,
       arguments: inputs,
       resolve: resolve,

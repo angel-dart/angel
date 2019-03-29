@@ -96,7 +96,8 @@ main() {
     var u = new GraphQLUnionType('Monster', [pokemonType, digimonType]);
 
     expect(u.serialize({'size': 10.0}), {'size': 10.0});
-    expect(u.serialize({'name': 'Charmander', 'type': 'FIRE'}), {'name': 'Charmander', 'type': 'FIRE'});
+    expect(u.serialize({'name': 'Charmander', 'type': 'FIRE'}),
+        {'name': 'Charmander', 'type': 'FIRE'});
   });
 
   test('nested object', () {
