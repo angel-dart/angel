@@ -1,3 +1,6 @@
+# 1.1.2
+* Parse the `subscription` keyword.
+
 # 1.1.1
 * Pubspec updates for Dart 2.
 
