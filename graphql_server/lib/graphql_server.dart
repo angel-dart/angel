@@ -69,7 +69,7 @@ class GraphQL {
     }
   }
 
-  Future<Map<String, dynamic>> parseAndExecute(String text,
+  Future parseAndExecute(String text,
       {String operationName,
       sourceUrl,
       Map<String, dynamic> variableValues: const {},
@@ -97,8 +97,7 @@ class GraphQL {
     );
   }
 
-  Future<Map<String, dynamic>> executeRequest(
-      GraphQLSchema schema, DocumentContext document,
+  Future executeRequest(GraphQLSchema schema, DocumentContext document,
       {String operationName,
       Map<String, dynamic> variableValues: const <String, dynamic>{},
       initialValue,
@@ -109,7 +108,10 @@ class GraphQL {
     if (operation.isQuery)
       return await executeQuery(document, operation, schema,
           coercedVariableValues, initialValue, globalVariables);
-    else {
+    else if (operation.isSubscription) {
+      return await subscribe(document, operation, schema, coercedVariableValues,
+          globalVariables, initialValue);
+    } else {
       return executeMutation(document, operation, schema, coercedVariableValues,
           initialValue, globalVariables);
     }
@@ -206,6 +208,102 @@ class GraphQL {
     var selectionSet = mutation.selectionSet;
     return await executeSelectionSet(document, selectionSet, mutationType,
         initialValue, variableValues, globalVariables);
+  }
+
+  Future<Stream<Map<String, dynamic>>> subscribe(
+      DocumentContext document,
+      OperationDefinitionContext subscription,
+      GraphQLSchema schema,
+      Map<String, dynamic> variableValues,
+      Map<String, dynamic> globalVariables,
+      initialValue) async {
+    var sourceStream = await createSourceEventStream(
+        document, subscription, schema, variableValues, initialValue);
+    return mapSourceToResponseEvent(sourceStream, subscription, schema,
+        document, initialValue, variableValues, globalVariables);
+  }
+
+  Future<Stream> createSourceEventStream(
+      DocumentContext document,
+      OperationDefinitionContext subscription,
+      GraphQLSchema schema,
+      Map<String, dynamic> variableValues,
+      initialValue) {
+    var selectionSet = subscription.selectionSet;
+    var subscriptionType = schema.subscriptionType;
+    if (subscriptionType == null)
+      throw GraphQLException.fromSourceSpan(
+          'The schema does not define a subscription type.', subscription.span);
+    var groupedFieldSet =
+        collectFields(document, subscriptionType, selectionSet, variableValues);
+    if (groupedFieldSet.length != 1)
+      throw GraphQLException.fromSourceSpan(
+          'The grouped field set from this query must have exactly one entry.',
+          selectionSet.span);
+    var fields = groupedFieldSet.entries.first.value;
+    // TODO: This value is unaffected if an alias is used. (is this true?)
+    var fieldName = fields.first.field.fieldName.name;
+    var field = fields.first;
+    var argumentValues =
+        coerceArgumentValues(subscriptionType, field, variableValues);
+    return resolveFieldEventStream(
+        subscriptionType, initialValue, fieldName, argumentValues);
+  }
+
+  Stream<Map<String, dynamic>> mapSourceToResponseEvent(
+    Stream sourceStream,
+    OperationDefinitionContext subscription,
+    GraphQLSchema schema,
+    DocumentContext document,
+    initialValue,
+    Map<String, dynamic> variableValues,
+    Map<String, dynamic> globalVariables,
+  ) async* {
+    await for (var event in sourceStream) {
+      yield await executeSubscriptionEvent(document, subscription, schema,
+          initialValue, variableValues, globalVariables, event);
+    }
+  }
+
+  Future<Map<String, dynamic>> executeSubscriptionEvent(
+      DocumentContext document,
+      OperationDefinitionContext subscription,
+      GraphQLSchema schema,
+      initialValue,
+      Map<String, dynamic> variableValues,
+      Map<String, dynamic> globalVariables,
+      event) async {
+    var selectionSet = subscription.selectionSet;
+    var subscriptionType = schema.subscriptionType;
+    if (subscriptionType == null)
+      throw GraphQLException.fromSourceSpan(
+          'The schema does not define a subscription type.', subscription.span);
+
+    try {
+      var data = await executeSelectionSet(document, selectionSet,
+          subscriptionType, initialValue, variableValues, globalVariables);
+      return {'data': data, 'errors': []};
+    } on GraphQLException catch (e) {
+      return {
+        'data': null,
+        'errors': [e.errors.map((e) => e.toJson()).toList()]
+      };
+    }
+  }
+
+  Future<Stream> resolveFieldEventStream(GraphQLObjectType subscriptionType,
+      rootValue, String fieldName, Map<String, dynamic> argumentValues) async {
+    var field = subscriptionType.fields.firstWhere((f) => f.name == fieldName,
+        orElse: () {
+      throw GraphQLException.fromMessage(
+          'No subscription field named "$fieldName" is defined.');
+    });
+    var resolver = field.resolve;
+    var result = await resolver(rootValue, argumentValues);
+    if (result is Stream)
+      return result;
+    else
+      return Stream.fromIterable([result]);
   }
 
   Future<Map<String, dynamic>> executeSelectionSet(
