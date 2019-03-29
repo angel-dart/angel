@@ -1,23 +1,24 @@
 import 'dart:async';
 import 'dart:mirrors';
+import 'package:angel_framework/angel_framework.dart';
+import 'package:json_god/json_god.dart' as god;
 
-import 'service.dart';
-
-class TypedService<T> extends Service {
-  final Service inner;
+/// An Angel service that uses reflection to (de)serialize Dart objects.
+class TypedService<Id, T> extends Service<Id, dynamic> {
+  /// The inner service.
+  final Service<Id, Map> inner;
 
   TypedService(this.inner) : super() {
     if (!reflectType(T).isAssignableTo(reflectType(Model)))
-      throw new Exception(
+      throw Exception(
           "If you specify a type for TypedService, it must extend Model.");
   }
 
-  deserialize(x) {
+  /// Attempts to deserialize [x] into an instance of [T].
+  T deserialize(x) {
     // print('DESERIALIZE: $x (${x.runtimeType})');
-    if (x is Type || x is T)
+    if (x is T)
       return x;
-    else if (x is Iterable)
-      return x.map(deserialize).toList();
     else if (x is Map) {
       Map data = x.keys.fold({}, (map, key) {
         var value = x[key];
@@ -33,7 +34,7 @@ class TypedService<T> extends Service {
         }
       });
 
-      Model result = god.deserializeDatum(data, outputType: T);
+      var result = god.deserializeDatum(data, outputType: T);
 
       if (data['createdAt'] is DateTime) {
         result.createdAt = data['createdAt'] as DateTime;
@@ -48,42 +49,42 @@ class TypedService<T> extends Service {
       }
 
       // print('x: $x\nresult: $result');
-      return result;
+      return result as T;
     } else
-      return x;
+      throw ArgumentError('Cannot convert $x to $T');
   }
 
-  serialize(x) {
-    // TODO: Custom serializer, i.e. json_god?
-//    if (x is Model)
-//      return json.encodeObject(x);
-//    else
-    if (x is Map)
+  /// Serializes [x] into a [Map].
+  Map serialize(x) {
+    if (x is Model)
+      return god.serializeObject(x) as Map;
+    else if (x is Map)
       return x;
-    else if (x is Iterable)
-      return x.map(serialize).toList();
     else
-      throw new ArgumentError('Cannot serialize ${x.runtimeType}');
+      throw ArgumentError('Cannot serialize ${x.runtimeType}');
   }
 
   @override
-  Future index([Map params]) => inner.index(params).then(deserialize);
+  Future<List<T>> index([Map<String, dynamic> params]) =>
+      inner.index(params).then((it) => it.map(deserialize).toList());
 
   @override
-  Future create(data, [Map params]) =>
+  Future<T> create(data, [Map<String, dynamic> params]) =>
       inner.create(serialize(data), params).then(deserialize);
 
   @override
-  Future read(id, [Map params]) => inner.read(id, params).then(deserialize);
+  Future<T> read(Id id, [Map<String, dynamic> params]) =>
+      inner.read(id, params).then(deserialize);
 
   @override
-  Future modify(id, data, [Map params]) =>
+  Future<T> modify(Id id, data, [Map<String, dynamic> params]) =>
       inner.modify(id, serialize(data), params).then(deserialize);
 
   @override
-  Future update(id, data, [Map params]) =>
+  Future<T> update(Id id, data, [Map<String, dynamic> params]) =>
       inner.update(id, serialize(data), params).then(deserialize);
 
   @override
-  Future remove(id, [Map params]) => inner.remove(id, params).then(deserialize);
+  Future<T> remove(Id id, [Map<String, dynamic> params]) =>
+      inner.remove(id, params).then(deserialize);
 }
