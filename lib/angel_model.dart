@@ -12,5 +12,5 @@ class Model {
   Model({this.id, this.createdAt, this.updatedAt});
 
   /// Returns the [id], parsed as an [int].
-  int get idAsInt => int.parse(id);
+  int get idAsInt => int.tryParse(id);
 }
