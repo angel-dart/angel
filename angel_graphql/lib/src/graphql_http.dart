@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
@@ -19,12 +20,29 @@ final Validator graphQlPostBody = new Validator({
 ///
 /// Follows the guidelines listed here:
 /// https://graphql.org/learn/serving-over-http/
-RequestHandler graphQLHttp(GraphQL graphQL) {
+RequestHandler graphQLHttp(GraphQL graphQL,
+    {Function(RequestContext, ResponseContext, Stream<Map<String, dynamic>>)
+        onSubscription}) {
   return (req, res) async {
     var globalVariables = <String, dynamic>{
       '__requestctx': req,
       '__responsectx': res,
     };
+
+    sendGraphQLResponse(result) async {
+      if (result is Stream<Map<String, dynamic>>) {
+        if (onSubscription == null) {
+          throw StateError(
+              'The GraphQL backend returned a Stream, but no `onSubscription` callback was provided.');
+        } else {
+          return await onSubscription(req, res, result);
+        }
+      }
+
+      return {
+        'data': result,
+      };
+    }
 
     executeMap(Map map) async {
       var body = await req.parseBody().then((_) => req.bodyAsMap);
@@ -36,15 +54,13 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
         variables = json.decode(variables as String);
       }
 
-      return {
-        'data': await graphQL.parseAndExecute(
-          text,
-          sourceUrl: 'input',
-          operationName: operationName,
-          variableValues: foldToStringDynamic(variables as Map),
-          globalVariables: globalVariables,
-        ),
-      };
+      return await sendGraphQLResponse(await graphQL.parseAndExecute(
+        text,
+        sourceUrl: 'input',
+        operationName: operationName,
+        variableValues: foldToStringDynamic(variables as Map),
+        globalVariables: globalVariables,
+      ));
     }
 
     try {
@@ -55,13 +71,11 @@ RequestHandler graphQLHttp(GraphQL graphQL) {
       } else if (req.method == 'POST') {
         if (req.headers.contentType?.mimeType == graphQlContentType.mimeType) {
           var text = await req.body.transform(utf8.decoder).join();
-          return {
-            'data': await graphQL.parseAndExecute(
-              text,
-              sourceUrl: 'input',
-              globalVariables: globalVariables,
-            ),
-          };
+          return sendGraphQLResponse(await graphQL.parseAndExecute(
+            text,
+            sourceUrl: 'input',
+            globalVariables: globalVariables,
+          ));
         } else if (req.headers.contentType?.mimeType == 'application/json') {
           if (await validate(graphQlPostBody)(req, res) as bool) {
             return await executeMap(req.bodyAsMap);
