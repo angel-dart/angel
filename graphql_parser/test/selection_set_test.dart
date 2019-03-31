@@ -73,6 +73,11 @@ class _IsSelectionSet extends Matcher {
   bool matches(item, Map matchState) {
     var set =
         item is SelectionSetContext ? item : parseSelectionSet(item.toString());
+    print('Item: $set has ${set.selections.length} selection(s):');
+    for (var s in set.selections) {
+      print('  * $s (${s.span.text})');
+    }
+
     if (set == null) return false;
     if (set.selections.length != selections.length) return false;
 

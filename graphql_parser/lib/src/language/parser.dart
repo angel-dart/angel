@@ -27,6 +27,7 @@ class Parser {
 
   bool nextName(String name) {
     var tok = peek();
+
     if (tok?.type == TokenType.NAME && tok.span.text == name) {
       return next(TokenType.NAME);
     }
