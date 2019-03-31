@@ -16,8 +16,9 @@ class Parser {
 
   Token get current => _current;
 
-  bool next(TokenType type) {
-    if (peek()?.type == type) {
+  bool next(TokenType type, {Iterable<String> exclude}) {
+    var tok = peek();
+    if (tok?.type == type && exclude?.contains(tok.span.text) != true) {
       _current = tokens[++_index];
       return true;
     }
@@ -27,7 +28,6 @@ class Parser {
 
   bool nextName(String name) {
     var tok = peek();
-
     if (tok?.type == TokenType.NAME && tok.span.text == name) {
       return next(TokenType.NAME);
     }
@@ -140,7 +140,7 @@ class Parser {
   FragmentSpreadContext parseFragmentSpread() {
     if (next(TokenType.ELLIPSIS)) {
       var ELLIPSIS = current;
-      if (next(TokenType.NAME)) {
+      if (next(TokenType.NAME, exclude: ['on'])) {
         var NAME = current;
         return new FragmentSpreadContext(ELLIPSIS, NAME)
           ..directives.addAll(parseDirectives());
