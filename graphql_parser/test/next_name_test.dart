@@ -13,6 +13,12 @@ void main() {
   test('can parse formerly-reserved words', () {
     var def = parse(githubSrc).parseOperationDefinition();
     expect(def.isQuery, isTrue);
-    print(def.variableDefinitions);
+    expect(def.variableDefinitions.variableDefinitions, hasLength(3));
+
+    var searchField = def.selectionSet.selections[0].field;
+    expect(searchField.fieldName.name, 'search');
+
+    var argNames = searchField.arguments.map((a) => a.name).toList();
+    expect(argNames, ['type', 'query', 'first']);
   });
 }
