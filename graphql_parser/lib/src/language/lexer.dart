@@ -6,7 +6,7 @@ import 'token_type.dart';
 
 final RegExp _comment = new RegExp(r'#[^\n]*');
 final RegExp _whitespace = new RegExp('[ \t\n\r]+');
-final RegExp _boolean = new RegExp(r'true|false');
+// final RegExp _boolean = new RegExp(r'true|false');
 final RegExp _number = new RegExp(r'-?[0-9]+(\.[0-9]+)?(E|e(\+|-)?[0-9]+)?');
 final RegExp _string = new RegExp(
     r'"((\\(["\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^"\\]))*"');
@@ -27,13 +27,13 @@ final Map<Pattern, TokenType> _patterns = {
   ']': TokenType.RBRACKET,
   '(': TokenType.LPAREN,
   ')': TokenType.RPAREN,
-  'fragment': TokenType.FRAGMENT,
-  'mutation': TokenType.MUTATION,
-  'subscription': TokenType.SUBSCRIPTION,
-  'on': TokenType.ON,
-  'query': TokenType.QUERY,
-  'null': TokenType.NULL,
-  _boolean: TokenType.BOOLEAN,
+  // 'fragment': TokenType.FRAGMENT,
+  // 'mutation': TokenType.MUTATION,
+  // 'subscription': TokenType.SUBSCRIPTION,
+  // 'on': TokenType.ON,
+  // 'query': TokenType.QUERY,
+  // 'null': TokenType.NULL,
+  // _boolean: TokenType.BOOLEAN,
   _number: TokenType.NUMBER,
   _string: TokenType.STRING,
   _blockString: TokenType.BLOCK_STRING,

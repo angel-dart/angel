@@ -13,17 +13,18 @@ enum TokenType {
   LPAREN,
   RPAREN,
 
-  FRAGMENT,
-  MUTATION,
-  SUBSCRIPTION,
-  ON,
-  QUERY,
+  // Note: these are *not* reserved names.
+  // FRAGMENT,
+  // MUTATION,
+  // SUBSCRIPTION,
+  // ON,
+  // QUERY,
+  // NULL
+  // BOOLEAN,
 
-  BOOLEAN,
   NUMBER,
   STRING,
   BLOCK_STRING,
 
   NAME,
-  NULL
 }

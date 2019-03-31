@@ -1,3 +1,7 @@
+# 1.1.3
+* Add `Parser.nextName`, and remove all formerly-reserved words from the lexer.
+Resolves [#19](https://github.com/angel-dart/graphql/issues/19).
+
 # 1.1.2
 * Parse the `subscription` keyword.
 

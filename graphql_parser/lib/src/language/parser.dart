@@ -25,6 +25,15 @@ class Parser {
     return false;
   }
 
+  bool nextName(String name) {
+    var tok = peek();
+    if (tok?.type == TokenType.NAME && tok.span.text == name) {
+      return next(TokenType.NAME);
+    }
+
+    return false;
+  }
+
   Token peek() {
     if (_index < tokens.length - 1) {
       return tokens[_index + 1];
@@ -61,9 +70,9 @@ class Parser {
     if (selectionSet != null)
       return new OperationDefinitionContext(null, null, null, selectionSet);
     else {
-      if (next(TokenType.MUTATION) ||
-          next(TokenType.QUERY) ||
-          next(TokenType.SUBSCRIPTION)) {
+      if (nextName('mutation') ||
+          nextName('query') ||
+          nextName('subscription')) {
         var TYPE = current;
         Token NAME = next(TokenType.NAME) ? current : null;
         var variables = parseVariableDefinitions();
@@ -85,11 +94,11 @@ class Parser {
   }
 
   FragmentDefinitionContext parseFragmentDefinition() {
-    if (next(TokenType.FRAGMENT)) {
+    if (nextName('fragment')) {
       var FRAGMENT = current;
       if (next(TokenType.NAME)) {
         var NAME = current;
-        if (next(TokenType.ON)) {
+        if (nextName('on')) {
           var ON = current;
           var typeCondition = parseTypeCondition();
           if (typeCondition != null) {
@@ -145,7 +154,7 @@ class Parser {
   InlineFragmentContext parseInlineFragment() {
     if (next(TokenType.ELLIPSIS)) {
       var ELLIPSIS = current;
-      if (next(TokenType.ON)) {
+      if (nextName('on')) {
         var ON = current;
         var typeCondition = parseTypeCondition();
         if (typeCondition != null) {
@@ -508,13 +517,15 @@ class Parser {
       next(TokenType.NUMBER) ? new NumberValueContext(current) : null;
 
   BooleanValueContext parseBooleanValue() =>
-      next(TokenType.BOOLEAN) ? new BooleanValueContext(current) : null;
+      (nextName('true') || nextName('false'))
+          ? new BooleanValueContext(current)
+          : null;
 
   EnumValueContext parseEnumValue() =>
       next(TokenType.NAME) ? new EnumValueContext(current) : null;
 
   NullValueContext parseNullValue() =>
-      next(TokenType.NULL) ? new NullValueContext(current) : null;
+      nextName('null') ? new NullValueContext(current) : null;
 
   ListValueContext parseListValue() {
     if (next(TokenType.LBRACKET)) {
