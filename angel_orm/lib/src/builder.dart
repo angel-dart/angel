@@ -372,23 +372,23 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
 
   operator >=(DateTime value) => _change('>=', value, true);
 
-  void equals(DateTime value, {bool includeTime: true}) {
+  void equals(DateTime value, {bool includeTime = true}) {
     _change('=', value, includeTime != false);
   }
 
-  void lessThan(DateTime value, {bool includeTime: true}) {
+  void lessThan(DateTime value, {bool includeTime = true}) {
     _change('<', value, includeTime != false);
   }
 
-  void lessThanOrEqualTo(DateTime value, {bool includeTime: true}) {
+  void lessThanOrEqualTo(DateTime value, {bool includeTime = true}) {
     _change('<=', value, includeTime != false);
   }
 
-  void greaterThan(DateTime value, {bool includeTime: true}) {
+  void greaterThan(DateTime value, {bool includeTime = true}) {
     _change('>', value, includeTime != false);
   }
 
-  void greaterThanOrEqualTo(DateTime value, {bool includeTime: true}) {
+  void greaterThanOrEqualTo(DateTime value, {bool includeTime = true}) {
     _change('>=', value, includeTime != false);
   }
 

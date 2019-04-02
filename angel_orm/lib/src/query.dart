@@ -28,7 +28,7 @@ abstract class QueryBase<T> {
       }).join(', ');
 
   String compile(Set<String> trampoline,
-      {bool includeTableName: false, String preamble, bool withFields: true});
+      {bool includeTableName = false, String preamble, bool withFields = true});
 
   T deserialize(List row);
 
@@ -56,7 +56,7 @@ class OrderBy {
   final String key;
   final bool descending;
 
-  const OrderBy(this.key, {this.descending: false});
+  const OrderBy(this.key, {this.descending = false});
 
   String compile() => descending ? '$key DESC' : '$key ASC';
 }
@@ -64,7 +64,7 @@ class OrderBy {
 /// The ORM prefers using substitution values, which allow for prepared queries,
 /// and prevent SQL injection attacks.
 @deprecated
-String toSql(Object obj, {bool withQuotes: true}) {
+String toSql(Object obj, {bool withQuotes = true}) {
   if (obj is DateTime) {
     return withQuotes ? "'${dateYmdHms.format(obj)}'" : dateYmdHms.format(obj);
   } else if (obj is bool) {
@@ -147,7 +147,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   /// Determines whether this query can be compiled.
-  /// 
+  ///
   /// Used to prevent ambiguities in joins.
   bool canCompile(Set<String> trampoline) => true;
 
@@ -188,7 +188,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   /// Sorts the results by a key.
-  void orderBy(String key, {bool descending: false}) {
+  void orderBy(String key, {bool descending = false}) {
     _orderBy.add(new OrderBy(key, descending: descending));
   }
 
@@ -250,8 +250,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// Execute an `INNER JOIN` against another table.
   void join(tableName, String localKey, String foreignKey,
-      {String op: '=',
-      List<String> additionalFields: const [],
+      {String op = '=',
+      List<String> additionalFields = const [],
       Set<String> trampoline}) {
     _makeJoin(tableName, trampoline, JoinType.inner, localKey, foreignKey, op,
         additionalFields);
@@ -259,8 +259,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// Execute a `LEFT JOIN` against another table.
   void leftJoin(tableName, String localKey, String foreignKey,
-      {String op: '=',
-      List<String> additionalFields: const [],
+      {String op = '=',
+      List<String> additionalFields = const [],
       Set<String> trampoline}) {
     _makeJoin(tableName, trampoline, JoinType.left, localKey, foreignKey, op,
         additionalFields);
@@ -268,8 +268,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// Execute a `RIGHT JOIN` against another table.
   void rightJoin(tableName, String localKey, String foreignKey,
-      {String op: '=',
-      List<String> additionalFields: const [],
+      {String op = '=',
+      List<String> additionalFields = const [],
       Set<String> trampoline}) {
     _makeJoin(tableName, trampoline, JoinType.right, localKey, foreignKey, op,
         additionalFields);
@@ -277,8 +277,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// Execute a `FULL OUTER JOIN` against another table.
   void fullOuterJoin(tableName, String localKey, String foreignKey,
-      {String op: '=',
-      List<String> additionalFields: const [],
+      {String op = '=',
+      List<String> additionalFields = const [],
       Set<String> trampoline}) {
     _makeJoin(tableName, trampoline, JoinType.full, localKey, foreignKey, op,
         additionalFields);
@@ -286,8 +286,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// Execute a `SELF JOIN`.
   void selfJoin(tableName, String localKey, String foreignKey,
-      {String op: '=',
-      List<String> additionalFields: const [],
+      {String op = '=',
+      List<String> additionalFields = const [],
       Set<String> trampoline}) {
     _makeJoin(tableName, trampoline, JoinType.self, localKey, foreignKey, op,
         additionalFields);
@@ -295,9 +295,9 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   @override
   String compile(Set<String> trampoline,
-      {bool includeTableName: false,
+      {bool includeTableName = false,
       String preamble,
-      bool withFields: true,
+      bool withFields = true,
       String fromQuery}) {
     // One table MAY appear multiple times in a query.
     if (!canCompile(trampoline)) {
@@ -556,7 +556,7 @@ class Union<T> extends QueryBase<T> {
   @override
   final String tableName;
 
-  Union(this.left, this.right, {this.all: false, String tableName})
+  Union(this.left, this.right, {this.all = false, String tableName})
       : this.tableName = tableName ?? left.tableName {
     substitutionValues
       ..addAll(left.substitutionValues)
@@ -571,7 +571,9 @@ class Union<T> extends QueryBase<T> {
 
   @override
   String compile(Set<String> trampoline,
-      {bool includeTableName: false, String preamble, bool withFields: true}) {
+      {bool includeTableName = false,
+      String preamble,
+      bool withFields = true}) {
     var selector = all == true ? 'UNION ALL' : 'UNION';
     var t1 = Set<String>.from(trampoline);
     var t2 = Set<String>.from(trampoline);
@@ -587,7 +589,7 @@ class JoinBuilder {
   final List<String> additionalFields;
 
   JoinBuilder(this.type, this.from, this.to, this.key, this.value,
-      {this.op: '=', this.alias, this.additionalFields: const []}) {
+      {this.op = '=', this.alias, this.additionalFields = const []}) {
     assert(to != null,
         'computation of this join threw an error, and returned null.');
   }

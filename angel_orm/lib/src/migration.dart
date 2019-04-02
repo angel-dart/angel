@@ -27,10 +27,10 @@ class Column {
   final IndexType indexType;
 
   const Column(
-      {this.isNullable: true,
+      {this.isNullable = true,
       this.length,
       this.type,
-      this.indexType: IndexType.none});
+      this.indexType = IndexType.none});
 }
 
 class PrimaryKey extends Column {

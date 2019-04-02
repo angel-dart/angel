@@ -11,7 +11,7 @@ class Orm {
   /// Defaults to [:true:].
   final bool generateMigrations;
 
-  const Orm({this.tableName, this.generateMigrations: true});
+  const Orm({this.tableName, this.generateMigrations = true});
 }
 
 @deprecated
@@ -20,8 +20,8 @@ class Join {
   final String foreignKey;
   final JoinType type;
 
-  const Join(this.against, this.foreignKey, {this.type: JoinType.inner});
+  const Join(this.against, this.foreignKey, {this.type = JoinType.inner});
 }
 
-/// The various types of [Join].
+/// The various types of join.
 enum JoinType { inner, left, right, full, self }

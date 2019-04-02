@@ -21,10 +21,10 @@ class Relationship {
 
 class HasMany extends Relationship {
   const HasMany(
-      {String localKey: 'id',
+      {String localKey = 'id',
       String foreignKey,
       String foreignTable,
-      bool cascadeOnDelete: false})
+      bool cascadeOnDelete = false})
       : super(RelationshipType.hasMany,
             localKey: localKey,
             foreignKey: foreignKey,
@@ -36,10 +36,10 @@ const HasMany hasMany = const HasMany();
 
 class HasOne extends Relationship {
   const HasOne(
-      {String localKey: 'id',
+      {String localKey = 'id',
       String foreignKey,
       String foreignTable,
-      bool cascadeOnDelete: false})
+      bool cascadeOnDelete = false})
       : super(RelationshipType.hasOne,
             localKey: localKey,
             foreignKey: foreignKey,
@@ -63,11 +63,12 @@ class ManyToMany extends Relationship {
   final Type through;
 
   const ManyToMany(this.through,
-      {String localKey: 'id',
+      {String localKey = 'id',
       String foreignKey,
       String foreignTable,
-      bool cascadeOnDelete: false})
-      : super(RelationshipType.hasMany, // Many-to-Many is actually just a hasMany
+      bool cascadeOnDelete = false})
+      : super(
+            RelationshipType.hasMany, // Many-to-Many is actually just a hasMany
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
