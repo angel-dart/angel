@@ -58,7 +58,7 @@ class PostgresMigrationRunner implements MigrationRunner {
 
     if (toRun.isNotEmpty) {
       var r = await connection.query('SELECT MAX(batch) from migrations;');
-      int curBatch = r[0][0] ?? 0;
+      int curBatch = (r[0][0] ?? 0) as int;
       int batch = curBatch + 1;
 
       for (var k in toRun) {
@@ -81,7 +81,7 @@ class PostgresMigrationRunner implements MigrationRunner {
     await _init();
 
     var r = await connection.query('SELECT MAX(batch) from migrations;');
-    int curBatch = r[0][0] ?? 0;
+    int curBatch = (r[0][0] ?? 0) as int;
     r = await connection
         .query('SELECT path from migrations WHERE batch = $curBatch;');
     Iterable<String> existing = r.expand((x) => x).cast<String>();
