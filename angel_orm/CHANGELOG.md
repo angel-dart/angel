@@ -1,3 +1,6 @@
+# 2.0.0-dev.23
+* Add `@ManyToMany` annotation, which builds many-to-many relations.
+
 # 2.0.0-dev.22
 * `compileInsert` will explicitly never emit a key not belonging to the
 associated query.
