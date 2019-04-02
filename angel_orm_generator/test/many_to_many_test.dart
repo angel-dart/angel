@@ -1,44 +1,85 @@
 library angel_orm_generator.test;
 
 import 'dart:async';
-import 'package:angel_orm/angel_orm.dart';
+import 'dart:io';
 import 'package:test/test.dart';
 import 'models/user.dart';
 import 'common.dart';
 
 main() {
-  QueryExecutor executor;
+  PostgresExecutor executor;
   Role canPub, canSub;
   User thosakwe;
+
+  Future<void> dumpQuery(String query) async {
+    if (Platform.environment.containsKey('STFU')) return;
+    print('\n');
+    print('==================================================');
+    print('                  DUMPING QUERY');
+    print(query);
+    var rows = await executor.connection.query(query);
+    print('\n${rows.length} row(s):');
+    rows.forEach((r) => print('  * $r'));
+    print('==================================================\n\n');
+  }
 
   setUp(() async {
     executor = await connectToPostgres(['user', 'role', 'user_role']);
 
-    var canPubQuery = new RoleQuery()..values.name = 'can_pub';
-    var canSubQuery = new RoleQuery()..values.name = 'can_sub';
-    canPub = await canPubQuery.insert(executor);
-    canSub = await canSubQuery.insert(executor);
+//     await dumpQuery("""
+// WITH roles as
+//   (INSERT INTO roles (name)
+//     VALUES ('pyt')
+//     RETURNING roles.id, roles.name, roles.created_at, roles.updated_at)
+// SELECT
+//   roles.id, roles.name, roles.created_at, roles.updated_at
+// FROM roles
+// LEFT JOIN
+//   (SELECT
+//     role_users.role_id, role_users.user_id,
+//     a0.id, a0.username, a0.password, a0.email, a0.created_at, a0.updated_at
+//     FROM role_users
+//     LEFT JOIN
+//       users a0 ON role_users.user_id=a0.id)
+//   a1 ON roles.id=a1.role_id
+//     """);
 
-    var thosakweQuery = new UserQuery();
+    var canPubQuery = RoleQuery()..values.name = 'can_pub';
+    var canSubQuery = RoleQuery()..values.name = 'can_sub';
+    canPub = await canPubQuery.insert(executor);
+    print('=== CANPUB: ${canPub?.toJson()}');
+    // await dumpQuery(canPubQuery.compile(Set()));
+    canSub = await canSubQuery.insert(executor);
+    print('=== CANSUB: ${canSub?.toJson()}');
+
+    var thosakweQuery = UserQuery();
     thosakweQuery.values
       ..username = 'thosakwe'
       ..password = 'Hahahahayoureallythoughtiwasstupidenoughtotypethishere'
       ..email = 'thosakwe AT gmail.com';
     thosakwe = await thosakweQuery.insert(executor);
+    print('=== THOSAKWE: ${thosakwe?.toJson()}');
 
     // Allow thosakwe to publish...
-    var thosakwePubQuery = new RoleUserQuery();
+    var thosakwePubQuery = RoleUserQuery();
     thosakwePubQuery.values
       ..userId = int.parse(thosakwe.id)
       ..roleId = int.parse(canPub.id);
     await thosakwePubQuery.insert(executor);
 
     // Allow thosakwe to subscribe...
-    var thosakweSubQuery = new RoleUserQuery();
+    var thosakweSubQuery = RoleUserQuery();
     thosakweSubQuery.values
       ..userId = int.parse(thosakwe.id)
       ..roleId = int.parse(canSub.id);
     await thosakweSubQuery.insert(executor);
+
+    // Print all users...
+    // await dumpQuery('select * from users;');
+    // await dumpQuery('select * from roles;');
+    // await dumpQuery('select * from role_users;');
+    var query = RoleQuery()..where.id.equals(canPub.idAsInt);
+    await dumpQuery(query.compile(Set()));
 
     print('\n');
     print('==================================================');
@@ -47,7 +88,7 @@ main() {
   });
 
   Future<User> fetchThosakwe() async {
-    var query = new UserQuery()..where.id.equals(int.parse(thosakwe.id));
+    var query = UserQuery()..where.id.equals(int.parse(thosakwe.id));
     return await query.getOne(executor);
   }
 
@@ -60,9 +101,9 @@ main() {
 
   test('fetch users for role', () async {
     for (var role in [canPub, canSub]) {
-      var query = new RoleQuery()..where.id.equals(int.parse(role.id));
+      var query = RoleQuery()..where.id.equals(role.idAsInt);
       var r = await query.getOne(executor);
-      expect(r.users, [thosakwe]);
+      expect(r.users.toList(), [thosakwe]);
     }
   });
 }

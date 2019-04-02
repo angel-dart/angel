@@ -36,7 +36,8 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
     trampoline.add(tableName);
     _where = OrderQueryWhere(this);
     leftJoin('customers', 'customer_id', 'id',
-        additionalFields: const ['id', 'created_at', 'updated_at']);
+        additionalFields: const ['id', 'created_at', 'updated_at'],
+        trampoline: trampoline);
   }
 
   @override

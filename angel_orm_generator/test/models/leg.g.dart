@@ -32,13 +32,15 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = LegQueryWhere(this);
-    leftJoin('feet', 'id', 'leg_id', additionalFields: const [
-      'id',
-      'leg_id',
-      'n_toes',
-      'created_at',
-      'updated_at'
-    ]);
+    leftJoin('feet', 'id', 'leg_id',
+        additionalFields: const [
+          'id',
+          'leg_id',
+          'n_toes',
+          'created_at',
+          'updated_at'
+        ],
+        trampoline: trampoline);
   }
 
   @override

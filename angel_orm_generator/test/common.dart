@@ -25,7 +25,7 @@ class PostgresExecutor extends QueryExecutor {
   @override
   Future<List<List>> query(
       String tableName, String query, Map<String, dynamic> substitutionValues,
-      [List<String> returningFields]) {
+      [List<String> returningFields]) async {
     if (returningFields != null) {
       var fields = returningFields.join(', ');
       var returning = 'RETURNING $fields';
@@ -37,7 +37,16 @@ class PostgresExecutor extends QueryExecutor {
       if (substitutionValues.isNotEmpty) print('Values: $substitutionValues');
       print(substitutionValues.map((k, v) => MapEntry(k, v.runtimeType)));
     }
-    return connection.query(query, substitutionValues: substitutionValues);
+
+    var rows =
+        await connection.query(query, substitutionValues: substitutionValues);
+
+    if (!Platform.environment.containsKey('STFU')) {
+      print('Got ${rows.length} row(s):');
+      rows.forEach(print);
+    }
+
+    return rows;
   }
 
   @override

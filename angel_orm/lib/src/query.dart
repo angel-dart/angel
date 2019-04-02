@@ -146,6 +146,11 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
         'This instance does not support creating new WHERE clauses.');
   }
 
+  /// Determines whether this query can be compiled.
+  /// 
+  /// Used to prevent ambiguities in joins.
+  bool canCompile(Set<String> trampoline) => true;
+
   /// Shorthand for calling [where].or with a new [Where] clause.
   void andWhere(void Function(Where) f) {
     var w = newWhereClause();
@@ -192,17 +197,55 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     _crossJoin = tableName;
   }
 
-  String _joinAlias() => 'a${_joins.length}';
+  String _joinAlias(Set<String> trampoline) {
+    int i = _joins.length;
+
+    while (true) {
+      var a = 'a$i';
+      if (trampoline.add(a)) {
+        return a;
+      } else
+        i++;
+    }
+  }
 
   String _compileJoin(tableName, Set<String> trampoline) {
-    if (tableName is String) return tableName;
-    if (tableName is Query) {
+    if (tableName is String)
+      return tableName;
+    else if (tableName is Query) {
       var c = tableName.compile(trampoline);
       if (c == null) return c;
       return '($c)';
+    } else {
+      throw ArgumentError.value(
+          tableName, 'tableName', 'must be a String or Query');
     }
-    throw ArgumentError.value(
-        tableName, 'tableName', 'must be a String or Query');
+  }
+
+  void _makeJoin(
+      tableName,
+      Set<String> trampoline,
+      JoinType type,
+      String localKey,
+      String foreignKey,
+      String op,
+      List<String> additionalFields) {
+    trampoline ??= Set();
+
+    // Pivot tables guard against ambiguous fields by excluding tables
+    // that have already been queried in this scope.
+    if (trampoline.contains(tableName) && trampoline.contains(this.tableName)) {
+      // ex. if we have {roles, role_users}, then don't join "roles" again.
+      return;
+    }
+
+    var to = _compileJoin(tableName, trampoline);
+    if (to != null) {
+      _joins.add(new JoinBuilder(type, this, to, localKey, foreignKey,
+          op: op,
+          alias: _joinAlias(trampoline),
+          additionalFields: additionalFields));
+    }
   }
 
   /// Execute an `INNER JOIN` against another table.
@@ -210,9 +253,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       {String op: '=',
       List<String> additionalFields: const [],
       Set<String> trampoline}) {
-    _joins.add(new JoinBuilder(JoinType.inner, this,
-        _compileJoin(tableName, trampoline ?? Set()), localKey, foreignKey,
-        op: op, alias: _joinAlias(), additionalFields: additionalFields));
+    _makeJoin(tableName, trampoline, JoinType.inner, localKey, foreignKey, op,
+        additionalFields);
   }
 
   /// Execute a `LEFT JOIN` against another table.
@@ -220,9 +262,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       {String op: '=',
       List<String> additionalFields: const [],
       Set<String> trampoline}) {
-    _joins.add(new JoinBuilder(JoinType.left, this,
-        _compileJoin(tableName, trampoline ?? Set()), localKey, foreignKey,
-        op: op, alias: _joinAlias(), additionalFields: additionalFields));
+    _makeJoin(tableName, trampoline, JoinType.left, localKey, foreignKey, op,
+        additionalFields);
   }
 
   /// Execute a `RIGHT JOIN` against another table.
@@ -230,9 +271,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       {String op: '=',
       List<String> additionalFields: const [],
       Set<String> trampoline}) {
-    _joins.add(new JoinBuilder(JoinType.right, this,
-        _compileJoin(tableName, trampoline ?? Set()), localKey, foreignKey,
-        op: op, alias: _joinAlias(), additionalFields: additionalFields));
+    _makeJoin(tableName, trampoline, JoinType.right, localKey, foreignKey, op,
+        additionalFields);
   }
 
   /// Execute a `FULL OUTER JOIN` against another table.
@@ -240,9 +280,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       {String op: '=',
       List<String> additionalFields: const [],
       Set<String> trampoline}) {
-    _joins.add(new JoinBuilder(JoinType.full, this,
-        _compileJoin(tableName, trampoline ?? Set()), localKey, foreignKey,
-        op: op, alias: _joinAlias(), additionalFields: additionalFields));
+    _makeJoin(tableName, trampoline, JoinType.full, localKey, foreignKey, op,
+        additionalFields);
   }
 
   /// Execute a `SELF JOIN`.
@@ -250,9 +289,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       {String op: '=',
       List<String> additionalFields: const [],
       Set<String> trampoline}) {
-    _joins.add(new JoinBuilder(JoinType.self, this,
-        _compileJoin(tableName, trampoline ?? Set()), localKey, foreignKey,
-        op: op, alias: _joinAlias(), additionalFields: additionalFields));
+    _makeJoin(tableName, trampoline, JoinType.self, localKey, foreignKey, op,
+        additionalFields);
   }
 
   @override
@@ -261,7 +299,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       String preamble,
       bool withFields: true,
       String fromQuery}) {
-    if (!trampoline.add(tableName)) {
+    // One table MAY appear multiple times in a query.
+    if (!canCompile(trampoline)) {
       return null;
     }
 
@@ -294,7 +333,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (preamble == null) {
       if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
       for (var join in _joins) {
-        var c = join.compile();
+        var c = join.compile(trampoline);
         if (c != null) b.write(' $c');
       }
     }
@@ -565,7 +604,7 @@ class JoinBuilder {
     return right;
   }
 
-  String compile() {
+  String compile(Set<String> trampoline) {
     if (to == null) return null;
     var b = new StringBuffer();
     var left = '${from.tableName}.$key';

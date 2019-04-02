@@ -39,7 +39,8 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
           'common_name',
           'created_at',
           'updated_at'
-        ]);
+        ],
+        trampoline: trampoline);
   }
 
   @override

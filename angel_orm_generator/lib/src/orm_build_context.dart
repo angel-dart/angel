@@ -105,7 +105,8 @@ Future<OrmBuildContext> buildOrmContext(
       var foreignKey = cr.peek('foreignKey')?.stringValue;
       var foreignTable = cr.peek('foreignTable')?.stringValue;
       var cascadeOnDelete = cr.peek('cascadeOnDelete')?.boolValue == true;
-      OrmBuildContext foreign;
+      var through = cr.peek('through')?.typeValue;
+      OrmBuildContext foreign, throughContext;
 
       if (foreignTable == null) {
         // if (!isModelClass(field.type) &&
@@ -137,6 +138,17 @@ Future<OrmBuildContext> buildOrmContext(
                 resolver,
                 autoSnakeCaseNames);
 
+            // Resolve throughType as well
+            if (through != null && through is InterfaceType) {
+              throughContext = await buildOrmContext(
+                  through.element,
+                  new ConstantReader(const TypeChecker.fromRuntime(Serializable)
+                      .firstAnnotationOf(modelType.element)),
+                  buildStep,
+                  resolver,
+                  autoSnakeCaseNames);
+            }
+
             var ormAnn = const TypeChecker.fromRuntime(Orm)
                 .firstAnnotationOf(modelType.element);
 
@@ -164,12 +176,15 @@ Future<OrmBuildContext> buildOrmContext(
         foreignKey ??= 'id';
       }
 
-      var relation = new Relationship(
+      var relation = new RelationshipReader(
         type,
         localKey: localKey,
         foreignKey: foreignKey,
         foreignTable: foreignTable,
         cascadeOnDelete: cascadeOnDelete,
+        through: through,
+        foreign: foreign,
+        throughContext: throughContext,
       );
 
       if (relation.type == RelationshipType.belongsTo) {
@@ -189,7 +204,6 @@ Future<OrmBuildContext> buildOrmContext(
       }
 
       ctx.relations[field.name] = relation;
-      ctx.relationTypes[relation] = foreign;
     } else {
       if (column?.type == null)
         throw 'Cannot infer SQL column type for field "${ctx.buildContext.originalClassName}.${field.name}" with type "${field.type.displayName}".';
@@ -256,8 +270,7 @@ class OrmBuildContext {
 
   final Map<String, Column> columns = {};
   final List<FieldElement> effectiveFields = [];
-  final Map<String, Relationship> relations = {};
-  final Map<Relationship, OrmBuildContext> relationTypes = {};
+  final Map<String, RelationshipReader> relations = {};
 
   OrmBuildContext(this.buildContext, this.ormAnnotation, this.tableName);
 }

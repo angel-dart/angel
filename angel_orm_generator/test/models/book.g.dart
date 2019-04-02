@@ -35,9 +35,11 @@ class BookQuery extends Query<Book, BookQueryWhere> {
     trampoline.add(tableName);
     _where = BookQueryWhere(this);
     leftJoin('authors', 'author_id', 'id',
-        additionalFields: const ['id', 'name', 'created_at', 'updated_at']);
+        additionalFields: const ['id', 'name', 'created_at', 'updated_at'],
+        trampoline: trampoline);
     leftJoin('authors', 'partner_author_id', 'id',
-        additionalFields: const ['id', 'name', 'created_at', 'updated_at']);
+        additionalFields: const ['id', 'name', 'created_at', 'updated_at'],
+        trampoline: trampoline);
   }
 
   @override

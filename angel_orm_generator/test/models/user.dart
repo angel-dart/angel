@@ -14,13 +14,13 @@ abstract class _User extends Model {
   String get password;
   String get email;
 
-  @manyToMany
+  @ManyToMany(_RoleUser)
   List<_Role> get roles;
 }
 
 @serializable
 @orm
-abstract class _RoleUser extends Model {
+abstract class _RoleUser {
   @belongsTo
   _Role get role;
 
@@ -33,6 +33,6 @@ abstract class _RoleUser extends Model {
 abstract class _Role extends Model {
   String name;
 
-  @manyToMany
+  @ManyToMany(_RoleUser)
   List<_User> get users;
 }

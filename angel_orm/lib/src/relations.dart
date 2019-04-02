@@ -60,16 +60,16 @@ class BelongsTo extends Relationship {
 const BelongsTo belongsTo = const BelongsTo();
 
 class ManyToMany extends Relationship {
-  const ManyToMany(
+  final Type through;
+
+  const ManyToMany(this.through,
       {String localKey: 'id',
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete: false})
-      : super(RelationshipType.manyToMany,
+      : super(RelationshipType.hasMany, // Many-to-Many is actually just a hasMany
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
             cascadeOnDelete: cascadeOnDelete == true);
 }
-
-const ManyToMany manyToMany = const ManyToMany();

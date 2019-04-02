@@ -211,7 +211,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 RelationshipType.belongsTo,
                 RelationshipType.hasMany
               ].contains(relation.type)) return;
-              var foreign = ctx.relationTypes[relation];
+              var foreign = relation.foreign;
               var skipToList = refer('row')
                   .property('skip')
                   .call([literalNum(i)])
@@ -234,7 +234,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               var blockStr = block.accept(new DartEmitter());
               var ifStr = 'if (row.length > $i) { $blockStr }';
               b.statements.add(new Code(ifStr));
-              i += ctx.relationTypes[relation].effectiveFields.length;
+              i += relation.foreign.effectiveFields.length;
             });
 
             b.addExpression(refer('model').returned);
@@ -279,11 +279,14 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               if (relation.type == RelationshipType.belongsTo ||
                   relation.type == RelationshipType.hasOne ||
                   relation.type == RelationshipType.hasMany) {
-                var foreign = ctx.relationTypes[relation];
-                var additionalFields = foreign.effectiveFields
+                var foreign = relation.throughContext ?? relation.foreign;
+
+                // If this is a many-to-many, add the fields from the other object.
+                var additionalFields = relation.foreign.effectiveFields
                     // .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
-                    .map((f) => literalString(
-                        foreign.buildContext.resolveFieldName(f.name)));
+                    .map((f) => literalString(relation.foreign.buildContext
+                        .resolveFieldName(f.name)));
+
                 var joinArgs = [relation.localKey, relation.foreignKey]
                     .map(literalString)
                     .toList();
@@ -303,12 +306,42 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
                 b.addExpression(refer('leftJoin').call(joinArgs, {
                   'additionalFields':
-                      literalConstList(additionalFields.toList())
+                      literalConstList(additionalFields.toList()),
+                  'trampoline': refer('trampoline'),
                 }));
               }
             });
           });
       }));
+
+      // If we have any many-to-many relations, we need to prevent
+      // fetching this table within their joins.
+      var manyToMany = ctx.relations.entries.where((e) => e.value.isManyToMany);
+
+      if (manyToMany.isNotEmpty) {
+        var outExprs = manyToMany.map<Expression>((e) {
+          var foreignTableName = e.value.throughContext.tableName;
+          return CodeExpression(Code('''
+          (!(
+            trampoline.contains('${ctx.tableName}')
+            && trampoline.contains('$foreignTableName')
+          ))
+          '''));
+        });
+        var out = outExprs.reduce((a, b) => a.and(b));
+
+        clazz.methods.add(new Method((b) {
+          b
+            ..name = 'canCompile'
+            ..annotations.add(refer('override'))
+            ..requiredParameters
+                .add(new Parameter((b) => b..name = 'trampoline'))
+            ..returns = refer('bool')
+            ..body = Block((b) {
+              b.addExpression(out.returned);
+            });
+        }));
+      }
 
       // TODO: Ultimately remove the insert override
       if (false && ctx.relations.isNotEmpty) {
@@ -391,10 +424,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               var args = <String, Expression>{};
 
               ctx.relations.forEach((name, relation) {
-                if (false && relation.type == RelationshipType.hasMany) {
+                // TODO: Should this be entirely removed?
+                if (relation.type == RelationshipType.hasMany) {
                   // For each hasMany, we need to create a query of
                   // the corresponding type.
-                  var foreign = ctx.relationTypes[relation];
+                  var foreign = relation.foreign;
                   var queryType = refer(
                       '${foreign.buildContext.modelClassNameRecase.pascalCase}Query');
                   var queryInstance = queryType.newInstance([]);
