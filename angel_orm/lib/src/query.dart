@@ -344,7 +344,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (_limit != null) b.write(' LIMIT $_limit');
     if (_offset != null) b.write(' OFFSET $_offset');
     if (_groupBy != null) b.write(' GROUP BY $_groupBy');
-    for (var item in _orderBy) b.write(' ${item.compile()}');
+    for (var item in _orderBy) b.write(' ORDER BY ${item.compile()}');
     return b.toString();
   }
 

@@ -110,6 +110,12 @@ main() {
       expect(author.id, jkRowling.id);
       expect(author.name, jkRowling.name);
     });
+
+    test('order by', () async {
+      var query = AuthorQuery()..orderBy(AuthorFields.name, descending: true);
+      var authors = await query.get(executor);
+      expect(authors, [jkRowling, jameson]);
+    });
   });
 
   test('insert sets relationship', () {
