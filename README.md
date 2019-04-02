@@ -175,19 +175,11 @@ Relationships use joins when possible, but in the case of `@HasMany()`, two quer
 
 ## Many to Many Relations
 A many-to-many relationship can now be modeled like so.
-`UserRole` in this case is a pivot table joining `User` and `Role`.
+`RoleUser` in this case is a pivot table joining `User` and `Role`.
 
 Note that in this case, the models must reference the private classes (`_User`, etc.), because the canonical versions (`User`, etc.) are not-yet-generated:
 
 ```dart
-library angel_orm_generator.test.models.user;
-
-import 'package:angel_model/angel_model.dart';
-import 'package:angel_orm/angel_orm.dart';
-import 'package:angel_serialize/angel_serialize.dart';
-import 'package:collection/collection.dart';
-part 'user.g.dart';
-
 @serializable
 @orm
 abstract class _User extends Model {
@@ -195,10 +187,18 @@ abstract class _User extends Model {
   String get password;
   String get email;
 
-  @hasMany
-  List<_UserRole> get userRoles;
+  @ManyToMany(_RoleUser)
+  List<_Role> get roles;
+}
 
-  List<_Role> get roles => userRoles.map((m) => m.role).toList();
+@serializable
+@orm
+abstract class _RoleUser {
+  @belongsTo
+  _Role get role;
+
+  @belongsTo
+  _User get user;
 }
 
 @serializable
@@ -206,34 +206,18 @@ abstract class _User extends Model {
 abstract class _Role extends Model {
   String name;
 
-  @hasMany
-  List<_UserRole> get userRoles;
-
-  List<_User> get users => userRoles.map((m) => m.user).toList();
-}
-
-@Serializable(autoIdAndDateFields: false)
-@orm
-abstract class _UserRole {
-  int get id;
-
-  @belongsTo
-  _User get user;
-
-  @belongsTo
-  _Role get role;
+  @ManyToMany(_RoleUser)
+  List<_User> get users;
 }
 ```
 
 TLDR: 
 1. Make a pivot table, C, between two tables, table A and B
-2. C should `@belongsTo` both A and B.
-3. Both A and B should `@hasMany` C.
-4. For convenience, write a simple getter, like the above `User.roles`.
+2. C should `@belongsTo` both A and B. C *should not* extend `Model`.
+3. A should have a field: `@ManyToMany(_C) List<_B> get b;`
+4. B should have a field: `@ManyToMany(_C) List<_A> get a;`
 
 Test: https://raw.githubusercontent.com/angel-dart/orm/master/angel_orm_generator/test/many_to_many_test.dart
-
-There are 2 tests there, but they are more or less a proof-of-concept. All the logic for the other relations have their own unit tests.
 
 # Columns
 Use a `@Column()` annotation to change how a given field is handled within the ORM.
