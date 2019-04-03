@@ -21,7 +21,7 @@ class Relationship {
 
 class HasMany extends Relationship {
   const HasMany(
-      {String localKey = 'id',
+      {String localKey,
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete = false})
@@ -36,7 +36,7 @@ const HasMany hasMany = const HasMany();
 
 class HasOne extends Relationship {
   const HasOne(
-      {String localKey = 'id',
+      {String localKey,
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete = false})
@@ -63,7 +63,7 @@ class ManyToMany extends Relationship {
   final Type through;
 
   const ManyToMany(this.through,
-      {String localKey = 'id',
+      {String localKey,
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete = false})

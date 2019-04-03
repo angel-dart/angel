@@ -144,11 +144,11 @@ class OrderQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   int get customerId {
     return (values['customer_id'] as int);
   }
@@ -186,7 +186,7 @@ class OrderQueryValues extends MapQueryValues {
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
     if (model.customer != null) {
-      values['customer_id'] = int.parse(model.customer.id);
+      values['customer_id'] = model.customer.id;
     }
   }
 }

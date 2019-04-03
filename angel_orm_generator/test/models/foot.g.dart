@@ -112,11 +112,11 @@ class FootQueryValues extends MapQueryValues {
     return {'n_toes': 'decimal'};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   int get legId {
     return (values['leg_id'] as int);
   }

@@ -28,6 +28,7 @@ targets:
       - test/models/fruit.dart
       - test/models/has_map.dart
       - test/models/role.dart
+      - test/models/unorthodox.dart
   $default:
     dependencies:
       - angel_serialize_generator

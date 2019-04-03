@@ -112,11 +112,11 @@ class FruitQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   int get treeId {
     return (values['tree_id'] as int);
   }

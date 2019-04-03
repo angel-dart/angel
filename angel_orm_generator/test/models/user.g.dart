@@ -228,11 +228,11 @@ class UserQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   String get username {
     return (values['username'] as String);
   }
@@ -368,10 +368,10 @@ class RoleUserQueryValues extends MapQueryValues {
   set userId(int value) => values['user_id'] = value;
   void copyFrom(RoleUser model) {
     if (model.role != null) {
-      values['role_id'] = int.parse(model.role.id);
+      values['role_id'] = model.role.id;
     }
     if (model.user != null) {
-      values['user_id'] = int.parse(model.user.id);
+      values['user_id'] = model.user.id;
     }
   }
 }
@@ -535,11 +535,11 @@ class RoleQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   String get name {
     return (values['name'] as String);
   }

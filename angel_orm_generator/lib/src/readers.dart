@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:source_gen/source_gen.dart';
@@ -43,4 +44,23 @@ class RelationshipReader {
 
   bool get isManyToMany =>
       type == RelationshipType.hasMany && throughContext != null;
+
+  FieldElement findLocalField(OrmBuildContext ctx) {
+    return ctx.effectiveFields.firstWhere(
+        (f) => ctx.buildContext.resolveFieldName(f.name) == localKey,
+        orElse: () {
+      throw '${ctx.buildContext.clazz.name} has no field that maps to the name "$localKey", '
+          'but it has a @HasMany() relation that expects such a field.';
+    });
+  }
+
+  FieldElement findForeignField(OrmBuildContext ctx) {
+    var foreign = throughContext ?? this.foreign;
+    return foreign.effectiveFields.firstWhere(
+        (f) => foreign.buildContext.resolveFieldName(f.name) == foreignKey,
+        orElse: () {
+      throw '${foreign.buildContext.clazz.name} has no field that maps to the name "$foreignKey", '
+          'but ${ctx.buildContext.clazz.name} has a @HasMany() relation that expects such a field.';
+    });
+  }
 }

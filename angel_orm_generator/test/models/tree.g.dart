@@ -11,7 +11,7 @@ class TreeMigration extends Migration {
   up(Schema schema) {
     schema.create('trees', (table) {
       table.serial('id')..primaryKey();
-      table.declare('rings', ColumnType('smallint'));
+      table.integer('rings');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -179,11 +179,11 @@ class TreeQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   int get rings {
     return (values['rings'] as int);
   }

@@ -19,6 +19,39 @@ import 'readers.dart';
 bool isHasRelation(Relationship r) =>
     r.type == RelationshipType.hasOne || r.type == RelationshipType.hasMany;
 
+bool isSpecialId(OrmBuildContext ctx, FieldElement field) {
+  return field is ShimFieldImpl &&
+      field is! RelationFieldImpl &&
+      (field.name == 'id' &&
+          const TypeChecker.fromRuntime(Model)
+              .isAssignableFromType(ctx.buildContext.clazz.type));
+}
+
+FieldElement findPrimaryFieldInList(
+    OrmBuildContext ctx, Iterable<FieldElement> fields) {
+  for (var field_ in fields) {
+    var field = field_ is RelationFieldImpl ? field_.originalField : field_;
+    var element = field.getter ?? field;
+    // print(
+    //     'Searching in ${ctx.buildContext.originalClassName}=>${field?.name} (${field.runtimeType})');
+    // Check for column annotation...
+    var columnAnnotation = columnTypeChecker.firstAnnotationOf(element);
+
+    if (columnAnnotation != null) {
+      var column = reviveColumn(new ConstantReader(columnAnnotation));
+      // print(
+      //     '  * Found column on ${field.name} with indexType = ${column.indexType}');
+      if (column.indexType == IndexType.primaryKey) return field;
+    }
+  }
+
+  var specialId =
+      fields.firstWhere((f) => isSpecialId(ctx, f), orElse: () => null);
+  // print(
+  //     'Special ID on ${ctx.buildContext.originalClassName} => ${specialId?.name}');
+  return specialId;
+}
+
 final Map<String, OrmBuildContext> _cache = {};
 
 Future<OrmBuildContext> buildOrmContext(
@@ -59,19 +92,18 @@ Future<OrmBuildContext> buildOrmContext(
   for (var field in buildCtx.fields) {
     // Check for column annotation...
     Column column;
-    var columnAnnotation = columnTypeChecker.firstAnnotationOf(field);
+    var element = field.getter ?? field;
+    var columnAnnotation = columnTypeChecker.firstAnnotationOf(element);
 
     if (columnAnnotation != null) {
       column = reviveColumn(new ConstantReader(columnAnnotation));
     }
 
-    if (column == null &&
-        field.name == 'id' &&
-        const TypeChecker.fromRuntime(Model)
-            .isAssignableFromType(buildCtx.clazz.type)) {
+    if (column == null && isSpecialId(ctx, field)) {
       // This is only for PostgreSQL, so implementations without a `serial` type
       // must handle it accordingly, of course.
-      column = const Column(type: ColumnType.serial);
+      column = const Column(
+          type: ColumnType.serial, indexType: IndexType.primaryKey);
     }
 
     if (column == null) {
@@ -168,12 +200,30 @@ Future<OrmBuildContext> buildOrmContext(
 
       // Fill in missing keys
       var rcc = new ReCase(field.name);
+
+      String keyName(OrmBuildContext ctx, String missing) {
+        var _keyName =
+            findPrimaryFieldInList(ctx, ctx.buildContext.fields)?.name;
+        // print(
+        //     'Keyname for ${buildCtx.originalClassName}.${field.name} maybe = $_keyName??');
+        if (_keyName == null) {
+          throw '${ctx.buildContext.originalClassName} has no defined primary key, '
+              'so the relation on field ${buildCtx.originalClassName}.${field.name} must define a $missing.';
+        } else {
+          return _keyName;
+        }
+      }
+
       if (type == RelationshipType.hasOne || type == RelationshipType.hasMany) {
-        localKey ??= 'id';
-        foreignKey ??= '${rc.snakeCase}_id';
+        localKey ??=
+            ctx.buildContext.resolveFieldName(keyName(ctx, 'local key'));
+        // print(
+        //     'Local key on ${buildCtx.originalClassName}.${field.name} defaulted to $localKey');
+        foreignKey ??= '${rc.snakeCase}_$localKey';
       } else if (type == RelationshipType.belongsTo) {
-        localKey ??= '${rcc.snakeCase}_id';
-        foreignKey ??= 'id';
+        foreignKey ??=
+            ctx.buildContext.resolveFieldName(keyName(foreign, 'foreign key'));
+        localKey ??= '${rcc.snakeCase}_$foreignKey';
       }
 
       var relation = new RelationshipReader(
@@ -187,19 +237,21 @@ Future<OrmBuildContext> buildOrmContext(
         throughContext: throughContext,
       );
 
+      // print('Relation on ${buildCtx.originalClassName}.${field.name} => '
+      //     'foreignKey=$foreignKey, localKey=$localKey');
+
       if (relation.type == RelationshipType.belongsTo) {
         var name = new ReCase(relation.localKey).camelCase;
         ctx.buildContext.aliases[name] = relation.localKey;
 
         if (!ctx.effectiveFields.any((f) => f.name == field.name)) {
-          // TODO: Consequences of allowing ID to be a relation? (should be none)
-          // if (field.name != 'id' ||
-          //     !const TypeChecker.fromRuntime(Model)
-          //         .isAssignableFromType(ctx.buildContext.clazz.type)) {
-          var rf = new RelationFieldImpl(name,
-              field.type.element.context.typeProvider.intType, field.name);
+          var foreignField = relation.findForeignField(ctx);
+          var foreign = relation.throughContext ?? relation.foreign;
+          var type = foreignField.type;
+          if (isSpecialId(foreign, foreignField))
+            type = field.type.element.context.typeProvider.intType;
+          var rf = new RelationFieldImpl(name, relation, type, field);
           ctx.effectiveFields.add(rf);
-          // }
         }
       }
 
@@ -239,17 +291,16 @@ ColumnType inferColumnType(DartType type) {
 }
 
 Column reviveColumn(ConstantReader cr) {
-  var args = cr.revive().namedArguments;
-  IndexType indexType = IndexType.none;
   ColumnType columnType;
 
-  if (args.containsKey('index')) {
-    indexType =
-        IndexType.values[args['indexType'].getField('index').toIntValue()];
-  }
+  var columnObj =
+      cr.peek('type')?.objectValue?.getField('name')?.toStringValue();
+  var indexType = IndexType.values[
+      cr.peek('indexType')?.objectValue?.getField('index')?.toIntValue() ??
+          IndexType.none.index];
 
-  if (args.containsKey('type')) {
-    columnType = new _ColumnType(args['type'].getField('name').toStringValue());
+  if (columnObj != null) {
+    columnType = new _ColumnType(columnObj);
   }
 
   return new Column(
@@ -283,9 +334,15 @@ class _ColumnType implements ColumnType {
 }
 
 class RelationFieldImpl extends ShimFieldImpl {
-  final String originalFieldName;
-  RelationFieldImpl(String name, DartType type, this.originalFieldName)
+  final FieldElement originalField;
+  final RelationshipReader relationship;
+  RelationFieldImpl(
+      String name, this.relationship, DartType type, this.originalField)
       : super(name, type);
+
+  String get originalFieldName => originalField.name;
+
+  PropertyAccessorElement get getter => originalField.getter;
 }
 
 InterfaceType firstModelAncestor(DartType type) {

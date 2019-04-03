@@ -11,7 +11,9 @@ class AuthorMigration extends Migration {
   up(Schema schema) {
     schema.create('authors', (table) {
       table.serial('id')..primaryKey();
-      table.varChar('name')..defaultsTo('Tobe Osakwe');
+      table.varChar('name', length: 255)
+        ..defaultsTo('Tobe Osakwe')
+        ..unique();
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -107,11 +109,11 @@ class AuthorQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   String get name {
     return (values['name'] as String);
   }

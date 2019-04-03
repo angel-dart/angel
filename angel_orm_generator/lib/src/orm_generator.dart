@@ -8,7 +8,6 @@ import 'package:angel_serialize_generator/build_context.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart' hide LibraryBuilder;
 import 'package:source_gen/source_gen.dart';
-
 import 'orm_build_context.dart';
 
 var floatTypes = [
@@ -434,21 +433,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   var queryInstance = queryType.newInstance([]);
 
                   // Next, we need to apply a cascade that sets the correct query value.
-                  var localField = ctx.effectiveFields.firstWhere(
-                      (f) =>
-                          ctx.buildContext.resolveFieldName(f.name) ==
-                          relation.localKey, orElse: () {
-                    throw '${ctx.buildContext.clazz.name} has no field that maps to the name "${relation.localKey}", '
-                        'but it has a @HasMany() relation that expects such a field.';
-                  });
-
-                  var foreignField = foreign.effectiveFields.firstWhere(
-                      (f) =>
-                          foreign.buildContext.resolveFieldName(f.name) ==
-                          relation.foreignKey, orElse: () {
-                    throw '${foreign.buildContext.clazz.name} has no field that maps to the name "${relation.foreignKey}", '
-                        'but ${ctx.buildContext.clazz.name} has a @HasMany() relation that expects such a field.';
-                  });
+                  var localField = relation.findLocalField(ctx);
+                  var foreignField = relation.findForeignField(ctx);
 
                   var queryValue = (isSpecialId(ctx, localField))
                       ? 'int.parse(model.id)'
@@ -505,10 +491,17 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
             var merged = merge.join(', ');
 
+            var keyName =
+                findPrimaryFieldInList(ctx, ctx.buildContext.fields)?.name;
+            if (keyName == null) {
+              throw '${ctx.buildContext.originalClassName} has no defined primary key.\n'
+                  '@HasMany and @ManyToMany relations require a primary key to be defined on the model.';
+            }
+
             b.body = new Code('''
                     return super.$methodName(executor).then((result) {
                       return result.fold<List<$type>>([], (out, model) {
-                        var idx = out.indexWhere((m) => m.id == model.id);
+                        var idx = out.indexWhere((m) => m.$keyName == model.$keyName);
 
                         if (idx == -1) {
                           return out..add(model);
@@ -523,14 +516,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         }
       }
     });
-  }
-
-  bool isSpecialId(OrmBuildContext ctx, FieldElement field) {
-    return field is ShimFieldImpl &&
-        field is! RelationFieldImpl &&
-        (field.name == 'id' &&
-            const TypeChecker.fromRuntime(Model)
-                .isAssignableFromType(ctx.buildContext.clazz.type));
   }
 
   Class buildWhereClass(OrmBuildContext ctx) {
@@ -667,13 +652,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           });
       }));
 
-      // Each field generates a getter for setter
+      // Each field generates a getter and setter
       for (var field in ctx.effectiveFields) {
         var fType = field.type;
         var name = ctx.buildContext.resolveFieldName(field.name);
-        var type = isSpecialId(ctx, field)
-            ? refer('int')
-            : convertTypeReference(field.type);
+        var type = convertTypeReference(field.type);
 
         clazz.methods.add(new Method((b) {
           var value = refer('values').index(literalString(name));
@@ -748,9 +731,15 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 // Add only if present
                 var target = refer('values').index(literalString(
                     ctx.buildContext.resolveFieldName(field.name)));
-                var parsedId = (refer('int')
-                    .property('parse')
-                    .call([prop.property('id')]));
+                var foreign = field.relationship.throughContext ??
+                    field.relationship.foreign;
+                var foreignField = field.relationship.findForeignField(ctx);
+                var parsedId = prop.property(foreignField.name);
+
+                if (isSpecialId(foreign, field)) {
+                  parsedId = (refer('int').property('parse').call([parsedId]));
+                }
+
                 var cond = prop.notEqualTo(literalNull);
                 var condStr = cond.accept(new DartEmitter());
                 var blkStr =

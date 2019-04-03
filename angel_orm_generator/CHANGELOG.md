@@ -1,3 +1,9 @@
+# 2.0.0-dev.7
+* Handle `@ManyToMany`.
+* Handle cases where the class is not a `Model`.
+    * Stop assuming things have `id`, etc.
+* Resolve a bug where the `indexType` of `@Column` annotations. would not be found.
+
 # 2.0.0-dev.6
 * Fix bug where an extra field would be inserted into joins and botch the result.
 * Narrow analyzer dependency.

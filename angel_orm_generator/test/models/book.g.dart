@@ -137,11 +137,11 @@ class BookQueryValues extends MapQueryValues {
     return {};
   }
 
-  int get id {
-    return (values['id'] as int);
+  String get id {
+    return (values['id'] as String);
   }
 
-  set id(int value) => values['id'] = value;
+  set id(String value) => values['id'] = value;
   int get authorId {
     return (values['author_id'] as int);
   }
@@ -172,10 +172,10 @@ class BookQueryValues extends MapQueryValues {
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
     if (model.author != null) {
-      values['author_id'] = int.parse(model.author.id);
+      values['author_id'] = model.author.id;
     }
     if (model.partnerAuthor != null) {
-      values['partner_author_id'] = int.parse(model.partnerAuthor.id);
+      values['partner_author_id'] = model.partnerAuthor.id;
     }
   }
 }
