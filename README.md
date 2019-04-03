@@ -34,7 +34,7 @@ However, it also includes a `build.yaml` that builds ORM files automatically, so
 have to do any configuration at all.
 
 # Models
-Your model, courtesy of `package:angel_serialize`:
+The ORM works best when used with `package:angel_serialize`:
 
 ```dart
 library angel_orm.test.models.car;
@@ -67,17 +67,14 @@ Models can use the `@SerializableField()` annotation; `package:angel_orm` obeys 
 After building, you'll have access to a `Query` class with strongly-typed methods that
 allow to run asynchronous queries without a headache.
 
-**IMPORTANT:** The ORM *assumes* that you are using `package:angel_serialize`, and will only generate code
-designed for such a workflow. Save yourself a headache and build models with `angel_serialize`:
-
-https://github.com/angel-dart/serialize
-
-Remember that if you don't need automatic id-and-date fields, you can do the following:
+Remember that if you don't need automatic id-and-date fields, you can
+simply just not extend `Model`:
 
 ```dart
 @Serializable(autoIdAndDateFields: false)
 abstract class _ThisIsNotAnAngelModel {
-
+  @primaryKey
+  String get username;
 }
 ```
 
