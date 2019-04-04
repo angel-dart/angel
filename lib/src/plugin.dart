@@ -369,7 +369,7 @@ class AngelAuth<User> {
 
       if (allowCookie == true) {
         res.cookies.removeWhere((cookie) => cookie.name == "token");
-        _addProtectedCookie(res, 'token', '');
+        _addProtectedCookie(res, 'token', '""');
       }
 
       if (options != null &&
