@@ -18,14 +18,16 @@ abstract class _Author extends Model {
       isNullable: false, errorMessage: 'Custom message for missing `age`')
   int get age;
 
+  @nullable
   List<Book> get books;
 
+  @nullable
   Book get newestBook;
 
-  @SerializableField(exclude: true)
+  @SerializableField(exclude: true, isNullable: true)
   String get secret;
 
-  @SerializableField(exclude: true, canDeserialize: true)
+  @SerializableField(exclude: true, canDeserialize: true, isNullable: true)
   String get obscured;
 }
 

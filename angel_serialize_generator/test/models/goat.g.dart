@@ -8,7 +8,7 @@ part of 'goat.dart';
 
 @generatedSerializable
 class Goat implements _Goat {
-  const Goat({this.integer: 34, List<int> this.list: const [34, 35]});
+  const Goat({this.integer = 34, List<int> this.list = const [34, 35]});
 
   @override
   final int integer;
@@ -43,6 +43,14 @@ class Goat implements _Goat {
 
 abstract class GoatSerializer {
   static Goat fromMap(Map map) {
+    if (map['integer'] == null) {
+      throw new FormatException("Missing required field 'integer' on Goat.");
+    }
+
+    if (map['list'] == null) {
+      throw new FormatException("Missing required field 'list' on Goat.");
+    }
+
     return new Goat(
         integer: map['integer'] as int ?? 34,
         list: map['list'] is Iterable
@@ -54,12 +62,20 @@ abstract class GoatSerializer {
     if (model == null) {
       return null;
     }
+    if (model.integer == null) {
+      throw new FormatException("Missing required field 'integer' on Goat.");
+    }
+
+    if (model.list == null) {
+      throw new FormatException("Missing required field 'list' on Goat.");
+    }
+
     return {'integer': model.integer, 'list': model.list};
   }
 }
 
 abstract class GoatFields {
-  static const List<String> allFields = const <String>[integer, list];
+  static const List<String> allFields = <String>[integer, list];
 
   static const String integer = 'integer';
 

@@ -70,21 +70,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
       // Check for @SerializableField
       var fieldAnn = serializableFieldTypeChecker.firstAnnotationOf(el);
 
-      if (fieldAnn != null) {
-        var cr = ConstantReader(fieldAnn);
-        var sField = SerializableFieldMirror(
-          alias: cr.peek('alias')?.stringValue,
-          defaultValue: cr.peek('defaultValue')?.objectValue,
-          serializer: cr.peek('serializer')?.symbolValue,
-          deserializer: cr.peek('deserializer')?.symbolValue,
-          errorMessage: cr.peek('errorMessage')?.stringValue,
-          isNullable: cr.peek('isNullable')?.boolValue ?? true,
-          canDeserialize: cr.peek('canDeserialize')?.boolValue ?? false,
-          canSerialize: cr.peek('canSerialize')?.boolValue ?? false,
-          exclude: cr.peek('exclude')?.boolValue ?? false,
-          serializesTo: cr.peek('serializesTo')?.typeValue,
-        );
-
+      void handleSerializableField(SerializableFieldMirror sField) {
         ctx.fieldInfo[field.name] = sField;
 
         if (sField.defaultValue != null) {
@@ -110,14 +96,35 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
             canDeserialize: sField.canDeserialize,
           );
         }
+      }
+
+      if (fieldAnn != null) {
+        var cr = ConstantReader(fieldAnn);
+        var excluded = cr.peek('exclude')?.boolValue ?? false;
+        var sField = SerializableFieldMirror(
+          alias: cr.peek('alias')?.stringValue,
+          defaultValue: cr.peek('defaultValue')?.objectValue,
+          serializer: cr.peek('serializer')?.symbolValue,
+          deserializer: cr.peek('deserializer')?.symbolValue,
+          errorMessage: cr.peek('errorMessage')?.stringValue,
+          isNullable: cr.peek('isNullable')?.boolValue ?? !excluded,
+          canDeserialize: cr.peek('canDeserialize')?.boolValue ?? false,
+          canSerialize: cr.peek('canSerialize')?.boolValue ?? false,
+          exclude: excluded,
+          serializesTo: cr.peek('serializesTo')?.typeValue,
+        );
+
+        handleSerializableField(sField);
 
         // Apply
       } else {
+        var foundNone = true;
         // Skip if annotated with @exclude
         var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(el);
 
         if (excludeAnnotation != null) {
           var cr = new ConstantReader(excludeAnnotation);
+          foundNone = false;
 
           // ignore: deprecated_member_use
           ctx.excluded[field.name] = new Exclude(
@@ -133,6 +140,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
         if (defAnn != null) {
           var rev = new ConstantReader(defAnn).revive().positionalArguments[0];
           ctx.defaults[field.name] = rev;
+          foundNone = false;
         }
 
         // Check for alias
@@ -143,6 +151,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
         if (aliasAnn != null) {
           // ignore: deprecated_member_use
           alias = new Alias(aliasAnn.getField('name').toStringValue());
+          foundNone = false;
         }
 
         if (alias?.name?.isNotEmpty == true) {
@@ -162,6 +171,24 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
           var reason = cr.peek('reason')?.stringValue ??
               "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";
           ctx.requiredFields[field.name] = reason;
+          foundNone = false;
+        }
+
+        if (foundNone) {
+          var f = SerializableField();
+          var sField = SerializableFieldMirror(
+            alias: f.alias,
+            defaultValue: null,
+            serializer: f.serializer,
+            deserializer: f.deserializer,
+            errorMessage: f.errorMessage,
+            isNullable: f.isNullable,
+            canDeserialize: f.canDeserialize,
+            canSerialize: f.canSerialize,
+            exclude: f.exclude,
+            serializesTo: null,
+          );
+          handleSerializableField(sField);
         }
       }
 

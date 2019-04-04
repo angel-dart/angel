@@ -17,6 +17,6 @@ abstract class _Book extends Model {
   int pageCount;
   List<double> notModels;
 
-  @SerializableField(alias: 'camelCase')
+  @SerializableField(alias: 'camelCase', isNullable: true)
   String camelCaseString;
 }

@@ -74,6 +74,7 @@ Expression convertObject(DartObject o) {
 }
 
 String dartObjectToString(DartObject v) {
+  var type = v.type;
   if (v.isNull) return 'null';
   if (v.toBoolValue() != null) return v.toBoolValue().toString();
   if (v.toIntValue() != null) return v.toIntValue().toString();
@@ -96,6 +97,18 @@ String dartObjectToString(DartObject v) {
         .accept(new DartEmitter())
         .toString();
   }
+  if (type is InterfaceType && type.element.isEnum) {
+    // Find the index of the enum, then find the member.
+    for (var field in type.element.fields) {
+      if (field.isEnumConstant && field.isStatic) {
+        var value = type.element.getField(field.name).constantValue;
+        if (value == v) {
+          return '${type.name}.${field.name}';
+        }
+      }
+    }
+  }
+
   throw new ArgumentError(v.toString());
 }
 

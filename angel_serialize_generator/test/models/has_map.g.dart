@@ -60,7 +60,7 @@ abstract class HasMapSerializer {
 }
 
 abstract class HasMapFields {
-  static const List<String> allFields = const <String>[value];
+  static const List<String> allFields = <String>[value];
 
   static const String value = 'value';
 }

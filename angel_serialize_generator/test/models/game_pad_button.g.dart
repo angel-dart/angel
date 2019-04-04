@@ -8,7 +8,7 @@ part of 'game_pad_button.dart';
 
 @generatedSerializable
 class GamepadButton implements _GamepadButton {
-  const GamepadButton({this.name, this.radius});
+  const GamepadButton({@required this.name, @required this.radius});
 
   @override
   final String name;
@@ -43,6 +43,16 @@ class GamepadButton implements _GamepadButton {
 
 abstract class GamepadButtonSerializer {
   static GamepadButton fromMap(Map map) {
+    if (map['name'] == null) {
+      throw new FormatException(
+          "Missing required field 'name' on GamepadButton.");
+    }
+
+    if (map['radius'] == null) {
+      throw new FormatException(
+          "Missing required field 'radius' on GamepadButton.");
+    }
+
     return new GamepadButton(
         name: map['name'] as String, radius: map['radius'] as int);
   }
@@ -51,12 +61,22 @@ abstract class GamepadButtonSerializer {
     if (model == null) {
       return null;
     }
+    if (model.name == null) {
+      throw new FormatException(
+          "Missing required field 'name' on GamepadButton.");
+    }
+
+    if (model.radius == null) {
+      throw new FormatException(
+          "Missing required field 'radius' on GamepadButton.");
+    }
+
     return {'name': model.name, 'radius': model.radius};
   }
 }
 
 abstract class GamepadButtonFields {
-  static const List<String> allFields = const <String>[name, radius];
+  static const List<String> allFields = <String>[name, radius];
 
   static const String name = 'name';
 

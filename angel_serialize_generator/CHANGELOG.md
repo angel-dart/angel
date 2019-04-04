@@ -1,3 +1,8 @@
+# 2.4.2
+* Fix bug where enums didn't support default values.
+* Stop emitting `@required` on items with default values.
+* Create default `@SerializableField` for fields without them.
+
 # 2.4.1+1
 * Change `as Iterable<Map>` to `.cast<Map>`.
 

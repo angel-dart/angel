@@ -129,7 +129,8 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             b.type = convertTypeReference(field.type);
           }
 
-          if (ctx.requiredFields.containsKey(field.name)) {
+          if (ctx.requiredFields.containsKey(field.name) &&
+              b.defaultTo == null) {
             b.annotations.add(new CodeExpression(new Code('required')));
           }
         }));

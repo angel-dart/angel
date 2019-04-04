@@ -12,7 +12,7 @@ class Author extends _Author {
       {this.id,
       @required this.name,
       @required this.age,
-      List<Book> books,
+      List<dynamic> books,
       this.newestBook,
       this.secret,
       this.obscured,
@@ -30,10 +30,10 @@ class Author extends _Author {
   final int age;
 
   @override
-  final List<Book> books;
+  final List<dynamic> books;
 
   @override
-  final Book newestBook;
+  final dynamic newestBook;
 
   @override
   final String secret;
@@ -51,8 +51,8 @@ class Author extends _Author {
       {String id,
       String name,
       int age,
-      List<Book> books,
-      Book newestBook,
+      List<dynamic> books,
+      dynamic newestBook,
       String secret,
       String obscured,
       DateTime createdAt,
@@ -74,7 +74,7 @@ class Author extends _Author {
         other.id == id &&
         other.name == name &&
         other.age == age &&
-        const ListEquality<Book>(const DefaultEquality<Book>())
+        const ListEquality<dynamic>(const DefaultEquality())
             .equals(other.books, books) &&
         other.newestBook == newestBook &&
         other.secret == secret &&
@@ -106,14 +106,17 @@ class Author extends _Author {
 @generatedSerializable
 class Library extends _Library {
   Library(
-      {this.id, Map<String, Book> collection, this.createdAt, this.updatedAt})
+      {this.id,
+      @required Map<String, dynamic> collection,
+      this.createdAt,
+      this.updatedAt})
       : this.collection = new Map.unmodifiable(collection ?? {});
 
   @override
   final String id;
 
   @override
-  final Map<String, Book> collection;
+  final Map<String, dynamic> collection;
 
   @override
   final DateTime createdAt;
@@ -123,7 +126,7 @@ class Library extends _Library {
 
   Library copyWith(
       {String id,
-      Map<String, Book> collection,
+      Map<String, dynamic> collection,
       DateTime createdAt,
       DateTime updatedAt}) {
     return new Library(
@@ -136,9 +139,9 @@ class Library extends _Library {
   bool operator ==(other) {
     return other is _Library &&
         other.id == id &&
-        const MapEquality<String, Book>(
+        const MapEquality<String, dynamic>(
                 keys: const DefaultEquality<String>(),
-                values: const DefaultEquality<Book>())
+                values: const DefaultEquality())
             .equals(other.collection, collection) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -156,11 +159,11 @@ class Library extends _Library {
 
 @generatedSerializable
 class Bookmark extends _Bookmark {
-  Bookmark(Book book,
+  Bookmark(dynamic book,
       {this.id,
-      List<int> history,
+      @required List<int> history,
       @required this.page,
-      this.comment,
+      @required this.comment,
       this.createdAt,
       this.updatedAt})
       : this.history = new List.unmodifiable(history ?? []),
@@ -184,7 +187,7 @@ class Bookmark extends _Bookmark {
   @override
   final DateTime updatedAt;
 
-  Bookmark copyWith(Book book,
+  Bookmark copyWith(dynamic book,
       {String id,
       List<int> history,
       int page,
@@ -240,13 +243,9 @@ abstract class AuthorSerializer {
         name: map['name'] as String,
         age: map['age'] as int,
         books: map['books'] is Iterable
-            ? new List.unmodifiable(((map['books'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(BookSerializer.fromMap))
+            ? (map['books'] as Iterable).cast<dynamic>().toList()
             : null,
-        newestBook: map['newest_book'] != null
-            ? BookSerializer.fromMap(map['newest_book'] as Map)
-            : null,
+        newestBook: map['newest_book'] as dynamic,
         obscured: map['obscured'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -276,8 +275,8 @@ abstract class AuthorSerializer {
       'id': model.id,
       'name': model.name,
       'age': model.age,
-      'books': model.books?.map((m) => BookSerializer.toMap(m))?.toList(),
-      'newest_book': BookSerializer.toMap(model.newestBook),
+      'books': model.books,
+      'newest_book': model.newestBook,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -285,7 +284,7 @@ abstract class AuthorSerializer {
 }
 
 abstract class AuthorFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     name,
     age,
@@ -318,15 +317,15 @@ abstract class AuthorFields {
 
 abstract class LibrarySerializer {
   static Library fromMap(Map map) {
+    if (map['collection'] == null) {
+      throw new FormatException(
+          "Missing required field 'collection' on Library.");
+    }
+
     return new Library(
         id: map['id'] as String,
         collection: map['collection'] is Map
-            ? new Map.unmodifiable(
-                (map['collection'] as Map).keys.fold({}, (out, key) {
-                return out
-                  ..[key] = BookSerializer.fromMap(
-                      ((map['collection'] as Map)[key]) as Map);
-              }))
+            ? (map['collection'] as Map).cast<String, dynamic>()
             : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -344,11 +343,14 @@ abstract class LibrarySerializer {
     if (model == null) {
       return null;
     }
+    if (model.collection == null) {
+      throw new FormatException(
+          "Missing required field 'collection' on Library.");
+    }
+
     return {
       'id': model.id,
-      'collection': model.collection.keys?.fold({}, (map, key) {
-        return map..[key] = BookSerializer.toMap(model.collection[key]);
-      }),
+      'collection': model.collection,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
@@ -356,7 +358,7 @@ abstract class LibrarySerializer {
 }
 
 abstract class LibraryFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     collection,
     createdAt,
@@ -373,9 +375,19 @@ abstract class LibraryFields {
 }
 
 abstract class BookmarkSerializer {
-  static Bookmark fromMap(Map map, Book book) {
+  static Bookmark fromMap(Map map, dynamic book) {
+    if (map['history'] == null) {
+      throw new FormatException(
+          "Missing required field 'history' on Bookmark.");
+    }
+
     if (map['page'] == null) {
       throw new FormatException("Missing required field 'page' on Bookmark.");
+    }
+
+    if (map['comment'] == null) {
+      throw new FormatException(
+          "Missing required field 'comment' on Bookmark.");
     }
 
     return new Bookmark(book,
@@ -401,8 +413,18 @@ abstract class BookmarkSerializer {
     if (model == null) {
       return null;
     }
+    if (model.history == null) {
+      throw new FormatException(
+          "Missing required field 'history' on Bookmark.");
+    }
+
     if (model.page == null) {
       throw new FormatException("Missing required field 'page' on Bookmark.");
+    }
+
+    if (model.comment == null) {
+      throw new FormatException(
+          "Missing required field 'comment' on Bookmark.");
     }
 
     return {
@@ -417,7 +439,7 @@ abstract class BookmarkSerializer {
 }
 
 abstract class BookmarkFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     history,
     page,

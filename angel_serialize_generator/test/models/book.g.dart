@@ -12,11 +12,11 @@ part of angel_serialize.test.models.book;
 class Book extends _Book {
   Book(
       {this.id,
-      this.author,
-      this.title,
-      this.description,
-      this.pageCount,
-      List<double> notModels,
+      @required this.author,
+      @required this.title,
+      @required this.description,
+      @required this.pageCount,
+      @required List<double> notModels,
       this.camelCaseString,
       this.createdAt,
       this.updatedAt})
@@ -111,6 +111,27 @@ class Book extends _Book {
 
 abstract class BookSerializer {
   static Book fromMap(Map map) {
+    if (map['author'] == null) {
+      throw new FormatException("Missing required field 'author' on Book.");
+    }
+
+    if (map['title'] == null) {
+      throw new FormatException("Missing required field 'title' on Book.");
+    }
+
+    if (map['description'] == null) {
+      throw new FormatException(
+          "Missing required field 'description' on Book.");
+    }
+
+    if (map['page_count'] == null) {
+      throw new FormatException("Missing required field 'page_count' on Book.");
+    }
+
+    if (map['not_models'] == null) {
+      throw new FormatException("Missing required field 'not_models' on Book.");
+    }
+
     return new Book(
         id: map['id'] as String,
         author: map['author'] as String,
@@ -137,6 +158,27 @@ abstract class BookSerializer {
     if (model == null) {
       return null;
     }
+    if (model.author == null) {
+      throw new FormatException("Missing required field 'author' on Book.");
+    }
+
+    if (model.title == null) {
+      throw new FormatException("Missing required field 'title' on Book.");
+    }
+
+    if (model.description == null) {
+      throw new FormatException(
+          "Missing required field 'description' on Book.");
+    }
+
+    if (model.pageCount == null) {
+      throw new FormatException("Missing required field 'page_count' on Book.");
+    }
+
+    if (model.notModels == null) {
+      throw new FormatException("Missing required field 'not_models' on Book.");
+    }
+
     return {
       'id': model.id,
       'author': model.author,
@@ -152,7 +194,7 @@ abstract class BookSerializer {
 }
 
 abstract class BookFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     author,
     title,

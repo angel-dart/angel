@@ -8,18 +8,19 @@ part of 'game_pad.dart';
 
 @generatedSerializable
 class Gamepad extends _Gamepad {
-  Gamepad({List<GamepadButton> buttons, Map<String, dynamic> dynamicMap})
+  Gamepad(
+      {@required List<dynamic> buttons,
+      @required Map<String, dynamic> dynamicMap})
       : this.buttons = new List.unmodifiable(buttons ?? []),
         this.dynamicMap = new Map.unmodifiable(dynamicMap ?? {});
 
   @override
-  final List<GamepadButton> buttons;
+  final List<dynamic> buttons;
 
   @override
   final Map<String, dynamic> dynamicMap;
 
-  Gamepad copyWith(
-      {List<GamepadButton> buttons, Map<String, dynamic> dynamicMap}) {
+  Gamepad copyWith({List<dynamic> buttons, Map<String, dynamic> dynamicMap}) {
     return new Gamepad(
         buttons: buttons ?? this.buttons,
         dynamicMap: dynamicMap ?? this.dynamicMap);
@@ -27,8 +28,7 @@ class Gamepad extends _Gamepad {
 
   bool operator ==(other) {
     return other is _Gamepad &&
-        const ListEquality<GamepadButton>(
-                const DefaultEquality<GamepadButton>())
+        const ListEquality<dynamic>(const DefaultEquality())
             .equals(other.buttons, buttons) &&
         const MapEquality<String, dynamic>(
                 keys: const DefaultEquality<String>(),
@@ -52,11 +52,18 @@ class Gamepad extends _Gamepad {
 
 abstract class GamepadSerializer {
   static Gamepad fromMap(Map map) {
+    if (map['buttons'] == null) {
+      throw new FormatException("Missing required field 'buttons' on Gamepad.");
+    }
+
+    if (map['dynamic_map'] == null) {
+      throw new FormatException(
+          "Missing required field 'dynamic_map' on Gamepad.");
+    }
+
     return new Gamepad(
         buttons: map['buttons'] is Iterable
-            ? new List.unmodifiable(((map['buttons'] as Iterable)
-                    .where((x) => x is Map) as Iterable<Map>)
-                .map(GamepadButtonSerializer.fromMap))
+            ? (map['buttons'] as Iterable).cast<dynamic>().toList()
             : null,
         dynamicMap: map['dynamic_map'] is Map
             ? (map['dynamic_map'] as Map).cast<String, dynamic>()
@@ -67,16 +74,21 @@ abstract class GamepadSerializer {
     if (model == null) {
       return null;
     }
-    return {
-      'buttons':
-          model.buttons?.map((m) => GamepadButtonSerializer.toMap(m))?.toList(),
-      'dynamic_map': model.dynamicMap
-    };
+    if (model.buttons == null) {
+      throw new FormatException("Missing required field 'buttons' on Gamepad.");
+    }
+
+    if (model.dynamicMap == null) {
+      throw new FormatException(
+          "Missing required field 'dynamic_map' on Gamepad.");
+    }
+
+    return {'buttons': model.buttons, 'dynamic_map': model.dynamicMap};
   }
 }
 
 abstract class GamepadFields {
-  static const List<String> allFields = const <String>[buttons, dynamicMap];
+  static const List<String> allFields = <String>[buttons, dynamicMap];
 
   static const String buttons = 'buttons';
 

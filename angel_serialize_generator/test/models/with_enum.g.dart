@@ -8,7 +8,8 @@ part of 'with_enum.dart';
 
 @generatedSerializable
 class WithEnum implements _WithEnum {
-  const WithEnum({this.type, List<int> this.finalList, this.imageBytes});
+  const WithEnum(
+      {this.type = WithEnumType.b, List<int> this.finalList, this.imageBytes});
 
   @override
   final WithEnumType type;
@@ -51,12 +52,16 @@ class WithEnum implements _WithEnum {
 
 abstract class WithEnumSerializer {
   static WithEnum fromMap(Map map) {
+    if (map['type'] == null) {
+      throw new FormatException("Missing required field 'type' on WithEnum.");
+    }
+
     return new WithEnum(
         type: map['type'] is WithEnumType
             ? (map['type'] as WithEnumType)
             : (map['type'] is int
                 ? WithEnumType.values[map['type'] as int]
-                : null),
+                : WithEnumType.b),
         finalList: map['final_list'] is Iterable
             ? (map['final_list'] as Iterable).cast<int>().toList()
             : null,
@@ -75,6 +80,10 @@ abstract class WithEnumSerializer {
     if (model == null) {
       return null;
     }
+    if (model.type == null) {
+      throw new FormatException("Missing required field 'type' on WithEnum.");
+    }
+
     return {
       'type':
           model.type == null ? null : WithEnumType.values.indexOf(model.type),
@@ -86,11 +95,7 @@ abstract class WithEnumSerializer {
 }
 
 abstract class WithEnumFields {
-  static const List<String> allFields = const <String>[
-    type,
-    finalList,
-    imageBytes
-  ];
+  static const List<String> allFields = <String>[type, finalList, imageBytes];
 
   static const String type = 'type';
 

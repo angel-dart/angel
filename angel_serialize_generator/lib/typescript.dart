@@ -128,8 +128,15 @@ class TypeScriptDefinitionBuilder implements Builder {
       return;
     }
 
-    var elements =
-        lib.annotatedWith(const TypeChecker.fromRuntime(Serializable));
+    var elements = <AnnotatedElement>[];
+
+    try {
+      elements = lib
+          .annotatedWith(const TypeChecker.fromRuntime(Serializable))
+          .toList();
+    } catch (_) {
+      // Ignore error in source_gen/build_runner that has no explanation
+    }
 
     for (var element in elements) {
       if (element.element.kind != ElementKind.CLASS)
