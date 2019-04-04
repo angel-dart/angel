@@ -6,6 +6,9 @@ Source-generated PostgreSQL ORM for use with the
 [Angel framework](https://angel-dart.github.io).
 Now you can combine the power and flexibility of Angel with a strongly-typed ORM.
 
+Documentation for migrations can be found here:
+https://angel-dart.gitbook.io/angel/v/2.x/orm/migrations
+
 * [Usage](#usage)
 * [Model Definitions](#models)
 * [MVC Example](#example)
