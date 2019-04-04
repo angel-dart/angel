@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_migration/angel_migration.dart';
+import 'package:charcode/ascii.dart';
 
 abstract class PostgresGenerator {
   static String columnType(MigrationColumn column) {
@@ -15,6 +16,27 @@ abstract class PostgresGenerator {
     var buf = new StringBuffer(columnType(column));
 
     if (column.isNullable == false) buf.write(' NOT NULL');
+    if (column.defaultValue != null) {
+      String s;
+      var value = column.defaultValue;
+      if (value is RawSql)
+        s = value.value;
+      else if (value is String) {
+        var b = StringBuffer();
+        for (var ch in value.codeUnits) {
+          if (ch == $single_quote) {
+            b.write("\\'");
+          } else {
+            b.writeCharCode(ch);
+          }
+        }
+        s = b.toString();
+      } else {
+        s = value.toString();
+      }
+
+      buf.write(' DEFAULT $s');
+    }
 
     if (column.indexType == IndexType.unique)
       buf.write(' UNIQUE');

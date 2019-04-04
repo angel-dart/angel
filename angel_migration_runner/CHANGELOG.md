@@ -1,3 +1,6 @@
+# 2.0.0-alpha.5
+* Support default values for columns.
+
 # 2.0.0-alpha.4
 * Include the names of migration classes when running.
 
