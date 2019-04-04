@@ -12,7 +12,6 @@ class MigrationColumn extends Column {
   @override
   IndexType get indexType => _index;
 
-  @override
   get defaultValue => _defaultValue;
 
   List<MigrationColumnReference> get externalReferences =>

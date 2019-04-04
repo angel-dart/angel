@@ -1,3 +1,16 @@
+/// A raw SQL statement that specifies a date/time default to the
+/// current time.
+const RawSql currentTimestamp = const RawSql('CURRENT_TIMESTAMP');
+
+/// Can passed to a [MigrationColumn] to default to a raw SQL expression.
+class RawSql {
+  /// The raw SQL text.
+  final String value;
+
+  const RawSql(this.value);
+}
+
+/// Canonical instance of [ORM]. Implies all defaults.
 const Orm orm = const Orm();
 
 class Orm {

@@ -1,6 +1,7 @@
 # 2.0.0-dev.24
 * Fix a bug that caused syntax errors on `ORDER BY`.
 * Add `pattern` to `like` on string builder. `sanitize` is optional.
+* Add `RawSql`.
 
 # 2.0.0-dev.23
 * Add `@ManyToMany` annotation, which builds many-to-many relations.
