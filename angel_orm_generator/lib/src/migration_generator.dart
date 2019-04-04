@@ -237,8 +237,18 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
         ..annotations.add(refer('override'))
         ..requiredParameters.add(_schemaParam)
         ..body = new Block((b) {
-          b.addExpression(
-              _schema.property('drop').call([literalString(ctx.tableName)]));
+          var named = <String, Expression>{};
+
+          if (ctx.relations.values.any((r) =>
+              r.type == RelationshipType.hasOne ||
+              r.type == RelationshipType.hasMany ||
+              r.isManyToMany)) {
+            named['cascade'] = literalTrue;
+          }
+
+          b.addExpression(_schema
+              .property('drop')
+              .call([literalString(ctx.tableName)], named));
         });
     });
   }
