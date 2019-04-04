@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
@@ -164,12 +165,28 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
 
               var defaultValue = ctx.buildContext.defaults[name];
 
-              if (defaultValue != null) {
-                cascade.add(refer('defaultsTo').call([
-                  new CodeExpression(
+              if (defaultValue != null && !defaultValue.isNull) {
+                var type = defaultValue.type;
+                Expression defaultExpr;
+
+                if (const TypeChecker.fromRuntime(RawSql)
+                    .isAssignableFromType(defaultValue.type)) {
+                  var value =
+                      ConstantReader(defaultValue).read('value').stringValue;
+                  defaultExpr =
+                      refer('RawSql').constInstance([literalString(value)]);
+                } else if (type is InterfaceType && type.element.isEnum) {
+                  // Default to enum index.
+                  var index =
+                      ConstantReader(defaultValue).read('index').intValue;
+                  defaultExpr = literalNum(index);
+                } else {
+                  defaultExpr = new CodeExpression(
                     new Code(dartObjectToString(defaultValue)),
-                  ),
-                ]));
+                  );
+                }
+
+                cascade.add(refer('defaultsTo').call([defaultExpr]));
               }
 
               if (col.indexType == IndexType.primaryKey ||
