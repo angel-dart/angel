@@ -35,8 +35,8 @@ dev_dependencies:
   collection: ^1.0.0
   postgres: ^1.0.0
   test: ^1.0.0
-dependency_overrides:
-  angel_orm:
-    path: ../angel_orm
-  angel_serialize_generator:
-    path: ../../serialize/angel_serialize_generator
+# dependency_overrides:
+#   angel_orm:
+#     path: ../angel_orm
+#   angel_serialize_generator:
+#     path: ../../serialize/angel_serialize_generator
