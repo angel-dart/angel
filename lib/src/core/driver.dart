@@ -113,7 +113,7 @@ abstract class Driver<
           }
 
           var cacheKey = req.method + path;
-          var tuple = app.isProduction
+          var tuple = app.environment.isProduction
               ? app.handlerCache.putIfAbsent(cacheKey, resolveTuple)
               : resolveTuple();
           var line = tuple.item4 as MiddlewarePipeline<RequestHandler>;
@@ -129,7 +129,7 @@ abstract class Driver<
             ..registerSingleton<ParseResult<RouteResult>>(tuple.item3)
             ..registerSingleton<ParseResult>(tuple.item3);
 
-          if (!app.isProduction && app.logger != null) {
+          if (!app.environment.isProduction && app.logger != null) {
             req.container
                 .registerSingleton<Stopwatch>(new Stopwatch()..start());
           }
@@ -279,7 +279,7 @@ abstract class Driver<
       ResponseContext res,
       {bool ignoreFinalizers = false}) {
     void _cleanup(_) {
-      if (!app.isProduction && app.logger != null) {
+      if (!app.environment.isProduction && app.logger != null) {
         var sw = req.container.make<Stopwatch>();
         app.logger.info(
             "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");

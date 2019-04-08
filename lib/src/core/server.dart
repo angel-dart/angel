@@ -72,7 +72,8 @@ class Angel extends Routable {
   /// A set of [Controller] objects that have been loaded into the application.
   Map<Pattern, Controller> get controllers => _controllers;
 
-  /// Now *deprecated*, in favor of [AngelEnv] and [angelEnv].
+  /// Now *deprecated*, in favor of [AngelEnv] and [angelEnv]. Use `app.environment.isProduction`
+  /// instead.
   ///
   /// Indicates whether the application is running in a production environment.
   ///
@@ -82,7 +83,12 @@ class Angel extends Routable {
   /// This value is memoized the first time you call it, so do not change environment
   /// configuration at runtime!
   @deprecated
-  bool get isProduction => angelEnv.isProduction;
+  bool get isProduction => environment.isProduction;
+
+  /// The [AngelEnvironment] in which the application is running.
+  ///
+  /// By default, it is automatically inferred.
+  final AngelEnvironment environment;
 
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
@@ -213,14 +219,14 @@ class Angel extends Routable {
       String header: 'Dumping route tree:',
       String tab: '  ',
       bool showMatchers: false}) {
-    if (isProduction) {
+    if (environment.isProduction) {
       _flattened ??= flatten(this);
 
       _flattened.dumpTree(
           callback: callback,
           header: header?.isNotEmpty == true
               ? header
-              : (isProduction
+              : (environment.isProduction
                   ? 'Dumping flattened route tree:'
                   : 'Dumping route tree:'),
           tab: tab ?? '  ');
@@ -229,7 +235,7 @@ class Angel extends Routable {
           callback: callback,
           header: header?.isNotEmpty == true
               ? header
-              : (isProduction
+              : (environment.isProduction
                   ? 'Dumping flattened route tree:'
                   : 'Dumping route tree:'),
           tab: tab ?? '  ');
@@ -287,7 +293,7 @@ class Angel extends Routable {
   ///
   /// You may [force] the optimization to run, if you are not running in production.
   void optimizeForProduction({bool force: false}) {
-    if (isProduction == true || force == true) {
+    if (environment.isProduction || force == true) {
       _flattened ??= flatten(this);
       logger?.info('Angel is running in production mode.');
     }
@@ -349,6 +355,7 @@ class Angel extends Routable {
 
   Angel(
       {Reflector reflector: const EmptyReflector(),
+      this.environment: angelEnv,
       this.logger,
       this.allowMethodOverrides: true,
       this.serializer,
