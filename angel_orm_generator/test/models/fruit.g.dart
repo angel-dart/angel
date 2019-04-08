@@ -152,11 +152,7 @@ class FruitQueryValues extends MapQueryValues {
 @generatedSerializable
 class Fruit extends _Fruit {
   Fruit(
-      {this.id,
-      @required this.treeId,
-      @required this.commonName,
-      this.createdAt,
-      this.updatedAt});
+      {this.id, this.treeId, this.commonName, this.createdAt, this.updatedAt});
 
   @override
   final String id;
@@ -212,15 +208,6 @@ class Fruit extends _Fruit {
 
 abstract class FruitSerializer {
   static Fruit fromMap(Map map) {
-    if (map['tree_id'] == null) {
-      throw new FormatException("Missing required field 'tree_id' on Fruit.");
-    }
-
-    if (map['common_name'] == null) {
-      throw new FormatException(
-          "Missing required field 'common_name' on Fruit.");
-    }
-
     return new Fruit(
         id: map['id'] as String,
         treeId: map['tree_id'] as int,
@@ -241,15 +228,6 @@ abstract class FruitSerializer {
     if (model == null) {
       return null;
     }
-    if (model.treeId == null) {
-      throw new FormatException("Missing required field 'tree_id' on Fruit.");
-    }
-
-    if (model.commonName == null) {
-      throw new FormatException(
-          "Missing required field 'common_name' on Fruit.");
-    }
-
     return {
       'id': model.id,
       'tree_id': model.treeId,

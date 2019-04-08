@@ -152,12 +152,7 @@ class LegQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Leg extends _Leg {
-  Leg(
-      {this.id,
-      @required this.foot,
-      @required this.name,
-      this.createdAt,
-      this.updatedAt});
+  Leg({this.id, this.foot, this.name, this.createdAt, this.updatedAt});
 
   @override
   final String id;
@@ -213,14 +208,6 @@ class Leg extends _Leg {
 
 abstract class LegSerializer {
   static Leg fromMap(Map map) {
-    if (map['foot'] == null) {
-      throw new FormatException("Missing required field 'foot' on Leg.");
-    }
-
-    if (map['name'] == null) {
-      throw new FormatException("Missing required field 'name' on Leg.");
-    }
-
     return new Leg(
         id: map['id'] as String,
         foot: map['foot'] != null
@@ -243,14 +230,6 @@ abstract class LegSerializer {
     if (model == null) {
       return null;
     }
-    if (model.foot == null) {
-      throw new FormatException("Missing required field 'foot' on Leg.");
-    }
-
-    if (model.name == null) {
-      throw new FormatException("Missing required field 'name' on Leg.");
-    }
-
     return {
       'id': model.id,
       'foot': FootSerializer.toMap(model.foot),

@@ -570,10 +570,10 @@ class RoleQueryValues extends MapQueryValues {
 class User extends _User {
   User(
       {this.id,
-      @required this.username,
-      @required this.password,
-      @required this.email,
-      @required List<_Role> roles,
+      this.username,
+      this.password,
+      this.email,
+      List<_Role> roles,
       this.createdAt,
       this.updatedAt})
       : this.roles = new List.unmodifiable(roles ?? []);
@@ -642,7 +642,7 @@ class User extends _User {
 
 @generatedSerializable
 class RoleUser implements _RoleUser {
-  const RoleUser({@required this.role, @required this.user});
+  const RoleUser({this.role, this.user});
 
   @override
   final _Role role;
@@ -670,12 +670,7 @@ class RoleUser implements _RoleUser {
 
 @generatedSerializable
 class Role extends _Role {
-  Role(
-      {this.id,
-      @required this.name,
-      @required List<_User> users,
-      this.createdAt,
-      this.updatedAt})
+  Role({this.id, this.name, List<_User> users, this.createdAt, this.updatedAt})
       : this.users = new List.unmodifiable(users ?? []);
 
   @override
@@ -733,22 +728,6 @@ class Role extends _Role {
 
 abstract class UserSerializer {
   static User fromMap(Map map) {
-    if (map['username'] == null) {
-      throw new FormatException("Missing required field 'username' on User.");
-    }
-
-    if (map['password'] == null) {
-      throw new FormatException("Missing required field 'password' on User.");
-    }
-
-    if (map['email'] == null) {
-      throw new FormatException("Missing required field 'email' on User.");
-    }
-
-    if (map['roles'] == null) {
-      throw new FormatException("Missing required field 'roles' on User.");
-    }
-
     return new User(
         id: map['id'] as String,
         username: map['username'] as String,
@@ -776,22 +755,6 @@ abstract class UserSerializer {
     if (model == null) {
       return null;
     }
-    if (model.username == null) {
-      throw new FormatException("Missing required field 'username' on User.");
-    }
-
-    if (model.password == null) {
-      throw new FormatException("Missing required field 'password' on User.");
-    }
-
-    if (model.email == null) {
-      throw new FormatException("Missing required field 'email' on User.");
-    }
-
-    if (model.roles == null) {
-      throw new FormatException("Missing required field 'roles' on User.");
-    }
-
     return {
       'id': model.id,
       'username': model.username,
@@ -832,14 +795,6 @@ abstract class UserFields {
 
 abstract class RoleUserSerializer {
   static RoleUser fromMap(Map map) {
-    if (map['role'] == null) {
-      throw new FormatException("Missing required field 'role' on RoleUser.");
-    }
-
-    if (map['user'] == null) {
-      throw new FormatException("Missing required field 'user' on RoleUser.");
-    }
-
     return new RoleUser(
         role: map['role'] != null
             ? RoleSerializer.fromMap(map['role'] as Map)
@@ -853,14 +808,6 @@ abstract class RoleUserSerializer {
     if (model == null) {
       return null;
     }
-    if (model.role == null) {
-      throw new FormatException("Missing required field 'role' on RoleUser.");
-    }
-
-    if (model.user == null) {
-      throw new FormatException("Missing required field 'user' on RoleUser.");
-    }
-
     return {
       'role': RoleSerializer.toMap(model.role),
       'user': UserSerializer.toMap(model.user)
@@ -878,14 +825,6 @@ abstract class RoleUserFields {
 
 abstract class RoleSerializer {
   static Role fromMap(Map map) {
-    if (map['name'] == null) {
-      throw new FormatException("Missing required field 'name' on Role.");
-    }
-
-    if (map['users'] == null) {
-      throw new FormatException("Missing required field 'users' on Role.");
-    }
-
     return new Role(
         id: map['id'] as String,
         name: map['name'] as String,
@@ -911,14 +850,6 @@ abstract class RoleSerializer {
     if (model == null) {
       return null;
     }
-    if (model.name == null) {
-      throw new FormatException("Missing required field 'name' on Role.");
-    }
-
-    if (model.users == null) {
-      throw new FormatException("Missing required field 'users' on Role.");
-    }
-
     return {
       'id': model.id,
       'name': model.name,

@@ -199,10 +199,10 @@ class OrderQueryValues extends MapQueryValues {
 class Order extends _Order {
   Order(
       {this.id,
-      @required this.customer,
-      @required this.employeeId,
-      @required this.orderDate,
-      @required this.shipperId,
+      this.customer,
+      this.employeeId,
+      this.orderDate,
+      this.shipperId,
       this.createdAt,
       this.updatedAt});
 
@@ -273,25 +273,6 @@ class Order extends _Order {
 
 abstract class OrderSerializer {
   static Order fromMap(Map map) {
-    if (map['customer'] == null) {
-      throw new FormatException("Missing required field 'customer' on Order.");
-    }
-
-    if (map['employee_id'] == null) {
-      throw new FormatException(
-          "Missing required field 'employee_id' on Order.");
-    }
-
-    if (map['order_date'] == null) {
-      throw new FormatException(
-          "Missing required field 'order_date' on Order.");
-    }
-
-    if (map['shipper_id'] == null) {
-      throw new FormatException(
-          "Missing required field 'shipper_id' on Order.");
-    }
-
     return new Order(
         id: map['id'] as String,
         customer: map['customer'] != null
@@ -320,25 +301,6 @@ abstract class OrderSerializer {
     if (model == null) {
       return null;
     }
-    if (model.customer == null) {
-      throw new FormatException("Missing required field 'customer' on Order.");
-    }
-
-    if (model.employeeId == null) {
-      throw new FormatException(
-          "Missing required field 'employee_id' on Order.");
-    }
-
-    if (model.orderDate == null) {
-      throw new FormatException(
-          "Missing required field 'order_date' on Order.");
-    }
-
-    if (model.shipperId == null) {
-      throw new FormatException(
-          "Missing required field 'shipper_id' on Order.");
-    }
-
     return {
       'id': model.id,
       'customer': CustomerSerializer.toMap(model.customer),

@@ -189,10 +189,6 @@ class Author extends _Author {
 
 abstract class AuthorSerializer {
   static Author fromMap(Map map) {
-    if (map['name'] == null) {
-      throw new FormatException("Missing required field 'name' on Author.");
-    }
-
     return new Author(
         id: map['id'] as String,
         name: map['name'] as String ?? 'Tobe Osakwe',
@@ -212,10 +208,6 @@ abstract class AuthorSerializer {
     if (model == null) {
       return null;
     }
-    if (model.name == null) {
-      throw new FormatException("Missing required field 'name' on Author.");
-    }
-
     return {
       'id': model.id,
       'name': model.name,

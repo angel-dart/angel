@@ -188,9 +188,9 @@ class BookQueryValues extends MapQueryValues {
 class Book extends _Book {
   Book(
       {this.id,
-      @required this.author,
-      @required this.partnerAuthor,
-      @required this.name,
+      this.author,
+      this.partnerAuthor,
+      this.name,
       this.createdAt,
       this.updatedAt});
 
@@ -254,19 +254,6 @@ class Book extends _Book {
 
 abstract class BookSerializer {
   static Book fromMap(Map map) {
-    if (map['author'] == null) {
-      throw new FormatException("Missing required field 'author' on Book.");
-    }
-
-    if (map['partner_author'] == null) {
-      throw new FormatException(
-          "Missing required field 'partner_author' on Book.");
-    }
-
-    if (map['name'] == null) {
-      throw new FormatException("Missing required field 'name' on Book.");
-    }
-
     return new Book(
         id: map['id'] as String,
         author: map['author'] != null
@@ -292,19 +279,6 @@ abstract class BookSerializer {
     if (model == null) {
       return null;
     }
-    if (model.author == null) {
-      throw new FormatException("Missing required field 'author' on Book.");
-    }
-
-    if (model.partnerAuthor == null) {
-      throw new FormatException(
-          "Missing required field 'partner_author' on Book.");
-    }
-
-    if (model.name == null) {
-      throw new FormatException("Missing required field 'name' on Book.");
-    }
-
     return {
       'id': model.id,
       'author': AuthorSerializer.toMap(model.author),
