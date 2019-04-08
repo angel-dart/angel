@@ -189,7 +189,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     .call([expr.asA(refer('String'))]).asA(type);
               } else if (floatTypes.contains(ctx.columns[field.name]?.type)) {
                 expr = refer('double')
-                    .property('parse')
+                    .property('tryParse')
                     .call([expr.property('toString').call([])]);
               } else if (fType is InterfaceType && fType.element.isEnum) {
                 expr = type.property('values').index(expr.asA(refer('int')));
@@ -370,7 +370,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                           .property('equals')
                           .call([
                         (refer('int')
-                            .property('parse')
+                            .property('tryParse')
                             .call([refer('result').property('id')]))
                       ]));
 
@@ -672,7 +672,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 .call([value.asA(refer('String'))]).asA(refer('List'));
           } else if (floatTypes.contains(ctx.columns[field.name]?.type)) {
             value = refer('double')
-                .property('parse')
+                .property('tryParse')
                 .call([value.asA(refer('String'))]);
           } else {
             value = value.asA(type);
@@ -737,7 +737,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var parsedId = prop.property(foreignField.name);
 
                 if (isSpecialId(foreign, field)) {
-                  parsedId = (refer('int').property('parse').call([parsedId]));
+                  parsedId = (refer('int').property('tryParse').call([parsedId]));
                 }
 
                 var cond = prop.notEqualTo(literalNull);

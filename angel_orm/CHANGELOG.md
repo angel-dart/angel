@@ -1,3 +1,6 @@
+# 2.0.0
+* Add `isNull`, `isNotNull` getters to builders.
+
 # 2.0.0-dev.24
 * Fix a bug that caused syntax errors on `ORDER BY`.
 * Add `pattern` to `like` on string builder. `sanitize` is optional.

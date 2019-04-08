@@ -1,3 +1,6 @@
+# 2.0.0-dev.8
+* `parse` -> `tryParse` where used.
+
 # 2.0.0-dev.7
 * Handle `@ManyToMany`.
 * Handle cases where the class is not a `Model`.

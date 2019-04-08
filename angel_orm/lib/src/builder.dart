@@ -90,6 +90,16 @@ class NumericSqlExpressionBuilder<T extends num>
 
   operator >=(T value) => _change('>=', value);
 
+  void get isNull {
+    _raw = 'IS NULL';
+    _hasValue = true;
+  }
+
+  void get isNotNull {
+    _raw = 'IS NOT NULL';
+    _hasValue = true;
+  }
+
   void lessThan(T value) {
     _change('<', value);
   }
@@ -165,14 +175,14 @@ class EnumSqlExpressionBuilder<T> extends SqlExpressionBuilder<T> {
     return '$_op $_value';
   }
 
-  void isNull() {
+  void get isNull {
+    _raw = 'IS NULL';
     _hasValue = true;
-    _raw = 'IS NOT NULL';
   }
 
-  void isNotNull() {
-    _hasValue = true;
+  void get isNotNull {
     _raw = 'IS NOT NULL';
+    _hasValue = true;
   }
 
   void equals(T value) {
@@ -272,6 +282,16 @@ class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
     _hasValue = true;
   }
 
+  void get isNull {
+    _raw = 'IS NULL';
+    _hasValue = true;
+  }
+
+  void get isNotNull {
+    _raw = 'IS NOT NULL';
+    _hasValue = true;
+  }
+
   String _in(Iterable<String> values) {
     return 'IN (' +
         values.map((v) {
@@ -320,9 +340,19 @@ class BooleanSqlExpressionBuilder extends SqlExpressionBuilder<bool> {
     return '$_op $v';
   }
 
-  Null get isTrue => equals(true);
+  void get isTrue => equals(true);
 
-  Null get isFalse => equals(false);
+  void get isFalse => equals(false);
+
+  void get isNull {
+    _raw = 'IS NULL';
+    _hasValue = true;
+  }
+
+  void get isNotNull {
+    _raw = 'IS NOT NULL';
+    _hasValue = true;
+  }
 
   void equals(bool value) {
     _change('=', value);
@@ -420,6 +450,14 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
     _raw = "$columnName NOT BETWEEN '$l' and '$u'";
   }
 
+  void get isNull {
+    _raw = '$columnName IS NULL';
+  }
+
+  void get isNotNull {
+    _raw = '$columnName IS NOT NULL';
+  }
+
   @override
   String compile() {
     if (_raw?.isNotEmpty == true) return _raw;
@@ -473,6 +511,16 @@ abstract class JsonSqlExpressionBuilder<T, K> extends SqlExpressionBuilder<T> {
     return _hasValue = true;
   }
 
+  void get isNull {
+    _raw = 'IS NULL';
+    _hasValue = true;
+  }
+
+  void get isNotNull {
+    _raw = 'IS NOT NULL';
+    _hasValue = true;
+  }
+
   @override
   String compile() {
     var s = _compile();
@@ -524,7 +572,7 @@ class MapSqlExpressionBuilder extends JsonSqlExpressionBuilder<Map, String> {
   }
 
   void containsKey(String key) {
-    this[key].isNotNull();
+    this[key].isNotNull;
   }
 
   void containsPair(key, value) {
@@ -578,14 +626,14 @@ class JsonSqlExpressionBuilderProperty {
     return '${builder.columnName}::jsonb->>$n';
   }
 
-  void isNotNull() {
+  void get isNotNull {
     builder
       .._hasValue = true
       .._raw ??= ''
       .._raw += "$nameString IS NOT NULL";
   }
 
-  void isNull() {
+  void get isNull {
     builder
       .._hasValue = true
       .._raw ??= ''
