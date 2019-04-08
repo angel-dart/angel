@@ -2,8 +2,6 @@
 export POSTGRES_USERNAME="angel_orm"
 export POSTGRES_PASSWORD="angel_orm" 
 
-
-
 function angel_orm_test () {
     cd $1;
     pub get;
