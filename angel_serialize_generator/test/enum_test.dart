@@ -17,10 +17,10 @@ void main() {
     expect(w[WithEnumFields.type], null);
   });
 
-  test('enum deserializes to null from null', () {
+  test('enum deserializes to default value from null', () {
     var map = {WithEnumFields.type: null};
     var w = WithEnumSerializer.fromMap(map);
-    expect(w.type, isNull);
+    expect(w.type, WithEnumType.b);
   });
 
   test('enum deserializes from int', () {

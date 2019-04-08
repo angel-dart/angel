@@ -1,6 +1,5 @@
 builders:
   angel_serialize:
-    # target: "angel_serialize_generator"
     import: "package:angel_serialize_generator/angel_serialize_generator.dart"
     builder_factories:
       - jsonModelBuilder
@@ -9,12 +8,11 @@ builders:
     build_to: cache
     build_extensions:
       .dart:
-        - "angel_serialize.g.part"
-        - "angel_serialize_serializer.g.part"
+        - ".angel_serialize.g.part"
+        - ".angel_serialize_serializer.g.part"
     applies_builders: ["source_gen|combining_builder", "source_gen|part_cleanup"]
     runs_before: ["angel_orm_generator|angel_orm"]
   typescript:
-    # target: "angel_serialize_generator"
     import: "package:angel_serialize_generator/angel_serialize_generator.dart"
     builder_factories:
       - typescriptDefinitionBuilder
@@ -23,23 +21,17 @@ builders:
     build_extensions:
       .dart:
         - ".d.ts"
-targets:
-  _book:
-    sources:
-      - "test/models/book.dart"
-      - "test/models/has_map.dart"
-      - "test/models/goat.dart"
-      - "test/models/game_pad_button.dart"
-      - "test/models/with_enum.dart"
-  _typescript_definition:
-    sources:
-        - "test/*.dart"
-  $default:
-    dependencies:
-      - ":_book"
-    sources:
-      - "bin/**"
-      - "lib/**"
-      - "web/**"
-      - "test/models/author.dart"
-      - "test/models/game_pad.dart"
+# targets:
+#   _book:
+#     sources:
+#       - "test/models/book.dart"
+#       - "test/models/has_map.dart"
+#       - "test/models/goat.dart"
+#       - "test/models/game_pad_button.dart"
+#       - "test/models/with_enum.dart"
+#   $default:
+#     dependencies:
+#       - "angel_serialize_generator:_book"
+#     sources:
+#       - "test/models/author.dart"
+#       - "test/models/game_pad.dart"

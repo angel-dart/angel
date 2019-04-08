@@ -9,7 +9,12 @@ class Exclude extends SerializableField {
       : super(canDeserialize: canDeserialize, canSerialize: canSerialize);
 }
 
+/// No longer necessary, as this is the default.
+@deprecated
 const SerializableField nullable = const SerializableField(isNullable: true);
+
+/// Marks a field as not accepting `null` values.
+const SerializableField notNull = const SerializableField(isNullable: false);
 
 const Exclude exclude = const Exclude();
 
@@ -66,7 +71,7 @@ class SerializableField {
       this.serializer,
       this.deserializer,
       this.errorMessage,
-      this.isNullable: false,
+      this.isNullable: true,
       this.exclude: false,
       this.canDeserialize: false,
       this.canSerialize: false,

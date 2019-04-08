@@ -1,5 +1,4 @@
 import 'package:test/test.dart';
-import 'models/author.dart';
 import 'models/book.dart';
 
 const String deathlyHallowsIsbn = '0-545-01022-5';

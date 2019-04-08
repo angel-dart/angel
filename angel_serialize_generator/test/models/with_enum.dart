@@ -9,10 +9,8 @@ abstract class _WithEnum {
   @DefaultsTo(WithEnumType.b)
   WithEnumType get type;
 
-  @nullable
   List<int> get finalList;
 
-  @nullable
   Uint8List get imageBytes;
 }
 

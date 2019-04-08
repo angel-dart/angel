@@ -52,10 +52,6 @@ class WithEnum implements _WithEnum {
 
 abstract class WithEnumSerializer {
   static WithEnum fromMap(Map map) {
-    if (map['type'] == null) {
-      throw new FormatException("Missing required field 'type' on WithEnum.");
-    }
-
     return new WithEnum(
         type: map['type'] is WithEnumType
             ? (map['type'] as WithEnumType)
@@ -80,10 +76,6 @@ abstract class WithEnumSerializer {
     if (model == null) {
       return null;
     }
-    if (model.type == null) {
-      throw new FormatException("Missing required field 'type' on WithEnum.");
-    }
-
     return {
       'type':
           model.type == null ? null : WithEnumType.values.indexOf(model.type),

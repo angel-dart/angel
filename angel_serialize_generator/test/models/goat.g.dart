@@ -43,14 +43,6 @@ class Goat implements _Goat {
 
 abstract class GoatSerializer {
   static Goat fromMap(Map map) {
-    if (map['integer'] == null) {
-      throw new FormatException("Missing required field 'integer' on Goat.");
-    }
-
-    if (map['list'] == null) {
-      throw new FormatException("Missing required field 'list' on Goat.");
-    }
-
     return new Goat(
         integer: map['integer'] as int ?? 34,
         list: map['list'] is Iterable
@@ -62,14 +54,6 @@ abstract class GoatSerializer {
     if (model == null) {
       return null;
     }
-    if (model.integer == null) {
-      throw new FormatException("Missing required field 'integer' on Goat.");
-    }
-
-    if (model.list == null) {
-      throw new FormatException("Missing required field 'list' on Goat.");
-    }
-
     return {'integer': model.integer, 'list': model.list};
   }
 }
