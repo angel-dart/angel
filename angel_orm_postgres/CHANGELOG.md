@@ -1,3 +1,6 @@
+# 1.0.0-dev.4
+* Port tests to use `angel_orm_test`.
+
 # 1.0.0-dev.3
 * Support for `tableName`.
 
