@@ -191,10 +191,10 @@ class CarQueryValues extends MapQueryValues {
 class Car extends _Car {
   Car(
       {this.id,
-      this.make,
-      this.description,
-      this.familyFriendly,
-      this.recalledAt,
+      @required this.make,
+      @required this.description,
+      @required this.familyFriendly,
+      @required this.recalledAt,
       this.createdAt,
       this.updatedAt});
 
@@ -272,6 +272,23 @@ class Car extends _Car {
 
 abstract class CarSerializer {
   static Car fromMap(Map map) {
+    if (map['make'] == null) {
+      throw new FormatException("Missing required field 'make' on Car.");
+    }
+
+    if (map['description'] == null) {
+      throw new FormatException("Missing required field 'description' on Car.");
+    }
+
+    if (map['family_friendly'] == null) {
+      throw new FormatException(
+          "Missing required field 'family_friendly' on Car.");
+    }
+
+    if (map['recalled_at'] == null) {
+      throw new FormatException("Missing required field 'recalled_at' on Car.");
+    }
+
     return new Car(
         id: map['id'] as String,
         make: map['make'] as String,
@@ -298,6 +315,23 @@ abstract class CarSerializer {
     if (model == null) {
       return null;
     }
+    if (model.make == null) {
+      throw new FormatException("Missing required field 'make' on Car.");
+    }
+
+    if (model.description == null) {
+      throw new FormatException("Missing required field 'description' on Car.");
+    }
+
+    if (model.familyFriendly == null) {
+      throw new FormatException(
+          "Missing required field 'family_friendly' on Car.");
+    }
+
+    if (model.recalledAt == null) {
+      throw new FormatException("Missing required field 'recalled_at' on Car.");
+    }
+
     return {
       'id': model.id,
       'make': model.make,

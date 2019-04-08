@@ -11,7 +11,7 @@ class HasCarMigration extends Migration {
   up(Schema schema) {
     schema.create('has_cars', (table) {
       table.serial('id')..primaryKey();
-      table.integer('type');
+      table.integer('type')..defaultsTo(0);
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -140,7 +140,7 @@ class HasCarQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class HasCar extends _HasCar {
-  HasCar({this.id, @required this.type, this.createdAt, this.updatedAt});
+  HasCar({this.id, this.type = CarType.sedan, this.createdAt, this.updatedAt});
 
   @override
   final String id;
@@ -195,7 +195,9 @@ abstract class HasCarSerializer {
         id: map['id'] as String,
         type: map['type'] is CarType
             ? (map['type'] as CarType)
-            : (map['type'] is int ? CarType.values[map['type'] as int] : null),
+            : (map['type'] is int
+                ? CarType.values[map['type'] as int]
+                : CarType.sedan),
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)

@@ -119,7 +119,9 @@ class HasMapQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class HasMap implements _HasMap {
-  const HasMap({Map<dynamic, dynamic> this.value, List<dynamic> this.list});
+  const HasMap(
+      {@required Map<dynamic, dynamic> this.value,
+      @required List<dynamic> this.list});
 
   @override
   final Map<dynamic, dynamic> value;
@@ -156,6 +158,14 @@ class HasMap implements _HasMap {
 
 abstract class HasMapSerializer {
   static HasMap fromMap(Map map) {
+    if (map['value'] == null) {
+      throw new FormatException("Missing required field 'value' on HasMap.");
+    }
+
+    if (map['list'] == null) {
+      throw new FormatException("Missing required field 'list' on HasMap.");
+    }
+
     return new HasMap(
         value: map['value'] is Map
             ? (map['value'] as Map).cast<dynamic, dynamic>()
@@ -169,6 +179,14 @@ abstract class HasMapSerializer {
     if (model == null) {
       return null;
     }
+    if (model.value == null) {
+      throw new FormatException("Missing required field 'value' on HasMap.");
+    }
+
+    if (model.list == null) {
+      throw new FormatException("Missing required field 'list' on HasMap.");
+    }
+
     return {'value': model.value, 'list': model.list};
   }
 }

@@ -151,7 +151,12 @@ class FootQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Foot extends _Foot {
-  Foot({this.id, this.legId, this.nToes, this.createdAt, this.updatedAt});
+  Foot(
+      {this.id,
+      @required this.legId,
+      @required this.nToes,
+      this.createdAt,
+      this.updatedAt});
 
   @override
   final String id;
@@ -207,6 +212,14 @@ class Foot extends _Foot {
 
 abstract class FootSerializer {
   static Foot fromMap(Map map) {
+    if (map['leg_id'] == null) {
+      throw new FormatException("Missing required field 'leg_id' on Foot.");
+    }
+
+    if (map['n_toes'] == null) {
+      throw new FormatException("Missing required field 'n_toes' on Foot.");
+    }
+
     return new Foot(
         id: map['id'] as String,
         legId: map['leg_id'] as int,
@@ -227,6 +240,14 @@ abstract class FootSerializer {
     if (model == null) {
       return null;
     }
+    if (model.legId == null) {
+      throw new FormatException("Missing required field 'leg_id' on Foot.");
+    }
+
+    if (model.nToes == null) {
+      throw new FormatException("Missing required field 'n_toes' on Foot.");
+    }
+
     return {
       'id': model.id,
       'leg_id': model.legId,

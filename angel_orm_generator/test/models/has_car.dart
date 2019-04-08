@@ -20,6 +20,6 @@ abstract class _HasCar extends Model {
   //     serializesTo: Map, serializer: #_carToMap, deserializer: #_carFromMap)
   // Car get car;
 
-  @SerializableField(isNullable: false)
+  @SerializableField(isNullable: false, defaultValue: CarType.sedan)
   CarType get type;
 }

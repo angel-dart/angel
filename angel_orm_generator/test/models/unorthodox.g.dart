@@ -30,7 +30,7 @@ class WeirdJoinMigration extends Migration {
 
   @override
   down(Schema schema) {
-    schema.drop('weird_joins');
+    schema.drop('weird_joins', cascade: true);
   }
 }
 
@@ -75,7 +75,7 @@ class FooMigration extends Migration {
 
   @override
   down(Schema schema) {
-    schema.drop('foos');
+    schema.drop('foos', cascade: true);
   }
 }
 
@@ -821,7 +821,7 @@ class FooPivotQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Unorthodox implements _Unorthodox {
-  const Unorthodox({this.name});
+  const Unorthodox({@required this.name});
 
   @override
   final String name;
@@ -847,11 +847,11 @@ class Unorthodox implements _Unorthodox {
 @generatedSerializable
 class WeirdJoin implements _WeirdJoin {
   const WeirdJoin(
-      {this.id,
-      this.unorthodox,
-      this.song,
-      List<_Numba> this.numbas,
-      List<_Foo> this.foos});
+      {@required this.id,
+      @required this.unorthodox,
+      @required this.song,
+      @required List<_Numba> this.numbas,
+      @required List<_Foo> this.foos});
 
   @override
   final int id;
@@ -905,7 +905,12 @@ class WeirdJoin implements _WeirdJoin {
 
 @generatedSerializable
 class Song extends _Song {
-  Song({this.id, this.weirdJoinId, this.title, this.createdAt, this.updatedAt});
+  Song(
+      {this.id,
+      @required this.weirdJoinId,
+      @required this.title,
+      this.createdAt,
+      this.updatedAt});
 
   @override
   final String id;
@@ -957,7 +962,7 @@ class Song extends _Song {
 
 @generatedSerializable
 class Numba extends _Numba {
-  Numba({this.i, this.parent});
+  Numba({@required this.i, @required this.parent});
 
   @override
   final int i;
@@ -985,7 +990,7 @@ class Numba extends _Numba {
 
 @generatedSerializable
 class Foo implements _Foo {
-  const Foo({this.bar, List<_WeirdJoin> this.weirdJoins});
+  const Foo({@required this.bar, @required List<_WeirdJoin> this.weirdJoins});
 
   @override
   final String bar;
@@ -1017,7 +1022,7 @@ class Foo implements _Foo {
 
 @generatedSerializable
 class FooPivot implements _FooPivot {
-  const FooPivot({this.weirdJoin, this.foo});
+  const FooPivot({@required this.weirdJoin, @required this.foo});
 
   @override
   final _WeirdJoin weirdJoin;
@@ -1052,6 +1057,10 @@ class FooPivot implements _FooPivot {
 
 abstract class UnorthodoxSerializer {
   static Unorthodox fromMap(Map map) {
+    if (map['name'] == null) {
+      throw new FormatException("Missing required field 'name' on Unorthodox.");
+    }
+
     return new Unorthodox(name: map['name'] as String);
   }
 
@@ -1059,6 +1068,10 @@ abstract class UnorthodoxSerializer {
     if (model == null) {
       return null;
     }
+    if (model.name == null) {
+      throw new FormatException("Missing required field 'name' on Unorthodox.");
+    }
+
     return {'name': model.name};
   }
 }
@@ -1071,6 +1084,28 @@ abstract class UnorthodoxFields {
 
 abstract class WeirdJoinSerializer {
   static WeirdJoin fromMap(Map map) {
+    if (map['id'] == null) {
+      throw new FormatException("Missing required field 'id' on WeirdJoin.");
+    }
+
+    if (map['unorthodox'] == null) {
+      throw new FormatException(
+          "Missing required field 'unorthodox' on WeirdJoin.");
+    }
+
+    if (map['song'] == null) {
+      throw new FormatException("Missing required field 'song' on WeirdJoin.");
+    }
+
+    if (map['numbas'] == null) {
+      throw new FormatException(
+          "Missing required field 'numbas' on WeirdJoin.");
+    }
+
+    if (map['foos'] == null) {
+      throw new FormatException("Missing required field 'foos' on WeirdJoin.");
+    }
+
     return new WeirdJoin(
         id: map['id'] as int,
         unorthodox: map['unorthodox'] != null
@@ -1097,6 +1132,28 @@ abstract class WeirdJoinSerializer {
     if (model == null) {
       return null;
     }
+    if (model.id == null) {
+      throw new FormatException("Missing required field 'id' on WeirdJoin.");
+    }
+
+    if (model.unorthodox == null) {
+      throw new FormatException(
+          "Missing required field 'unorthodox' on WeirdJoin.");
+    }
+
+    if (model.song == null) {
+      throw new FormatException("Missing required field 'song' on WeirdJoin.");
+    }
+
+    if (model.numbas == null) {
+      throw new FormatException(
+          "Missing required field 'numbas' on WeirdJoin.");
+    }
+
+    if (model.foos == null) {
+      throw new FormatException("Missing required field 'foos' on WeirdJoin.");
+    }
+
     return {
       'id': model.id,
       'unorthodox': UnorthodoxSerializer.toMap(model.unorthodox),
@@ -1129,6 +1186,15 @@ abstract class WeirdJoinFields {
 
 abstract class SongSerializer {
   static Song fromMap(Map map) {
+    if (map['weird_join_id'] == null) {
+      throw new FormatException(
+          "Missing required field 'weird_join_id' on Song.");
+    }
+
+    if (map['title'] == null) {
+      throw new FormatException("Missing required field 'title' on Song.");
+    }
+
     return new Song(
         id: map['id'] as String,
         weirdJoinId: map['weird_join_id'] as int,
@@ -1149,6 +1215,15 @@ abstract class SongSerializer {
     if (model == null) {
       return null;
     }
+    if (model.weirdJoinId == null) {
+      throw new FormatException(
+          "Missing required field 'weird_join_id' on Song.");
+    }
+
+    if (model.title == null) {
+      throw new FormatException("Missing required field 'title' on Song.");
+    }
+
     return {
       'id': model.id,
       'weird_join_id': model.weirdJoinId,
@@ -1181,6 +1256,14 @@ abstract class SongFields {
 
 abstract class NumbaSerializer {
   static Numba fromMap(Map map) {
+    if (map['i'] == null) {
+      throw new FormatException("Missing required field 'i' on Numba.");
+    }
+
+    if (map['parent'] == null) {
+      throw new FormatException("Missing required field 'parent' on Numba.");
+    }
+
     return new Numba(i: map['i'] as int, parent: map['parent'] as int);
   }
 
@@ -1188,6 +1271,14 @@ abstract class NumbaSerializer {
     if (model == null) {
       return null;
     }
+    if (model.i == null) {
+      throw new FormatException("Missing required field 'i' on Numba.");
+    }
+
+    if (model.parent == null) {
+      throw new FormatException("Missing required field 'parent' on Numba.");
+    }
+
     return {'i': model.i, 'parent': model.parent};
   }
 }
@@ -1202,6 +1293,14 @@ abstract class NumbaFields {
 
 abstract class FooSerializer {
   static Foo fromMap(Map map) {
+    if (map['bar'] == null) {
+      throw new FormatException("Missing required field 'bar' on Foo.");
+    }
+
+    if (map['weird_joins'] == null) {
+      throw new FormatException("Missing required field 'weird_joins' on Foo.");
+    }
+
     return new Foo(
         bar: map['bar'] as String,
         weirdJoins: map['weird_joins'] is Iterable
@@ -1216,6 +1315,14 @@ abstract class FooSerializer {
     if (model == null) {
       return null;
     }
+    if (model.bar == null) {
+      throw new FormatException("Missing required field 'bar' on Foo.");
+    }
+
+    if (model.weirdJoins == null) {
+      throw new FormatException("Missing required field 'weird_joins' on Foo.");
+    }
+
     return {
       'bar': model.bar,
       'weird_joins':
@@ -1234,6 +1341,15 @@ abstract class FooFields {
 
 abstract class FooPivotSerializer {
   static FooPivot fromMap(Map map) {
+    if (map['weird_join'] == null) {
+      throw new FormatException(
+          "Missing required field 'weird_join' on FooPivot.");
+    }
+
+    if (map['foo'] == null) {
+      throw new FormatException("Missing required field 'foo' on FooPivot.");
+    }
+
     return new FooPivot(
         weirdJoin: map['weird_join'] != null
             ? WeirdJoinSerializer.fromMap(map['weird_join'] as Map)
@@ -1247,6 +1363,15 @@ abstract class FooPivotSerializer {
     if (model == null) {
       return null;
     }
+    if (model.weirdJoin == null) {
+      throw new FormatException(
+          "Missing required field 'weird_join' on FooPivot.");
+    }
+
+    if (model.foo == null) {
+      throw new FormatException("Missing required field 'foo' on FooPivot.");
+    }
+
     return {
       'weird_join': WeirdJoinSerializer.toMap(model.weirdJoin),
       'foo': FooSerializer.toMap(model.foo)

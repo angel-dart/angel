@@ -38,3 +38,5 @@ dev_dependencies:
 dependency_overrides:
   angel_orm:
     path: ../angel_orm
+  angel_serialize_generator:
+    path: ../../serialize/angel_serialize_generator

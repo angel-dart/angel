@@ -19,7 +19,7 @@ class TreeMigration extends Migration {
 
   @override
   down(Schema schema) {
-    schema.drop('trees');
+    schema.drop('trees', cascade: true);
   }
 }
 
@@ -213,7 +213,11 @@ class TreeQueryValues extends MapQueryValues {
 @generatedSerializable
 class Tree extends _Tree {
   Tree(
-      {this.id, this.rings, List<Fruit> fruits, this.createdAt, this.updatedAt})
+      {this.id,
+      @required this.rings,
+      @required List<Fruit> fruits,
+      this.createdAt,
+      this.updatedAt})
       : this.fruits = new List.unmodifiable(fruits ?? []);
 
   @override
@@ -271,6 +275,14 @@ class Tree extends _Tree {
 
 abstract class TreeSerializer {
   static Tree fromMap(Map map) {
+    if (map['rings'] == null) {
+      throw new FormatException("Missing required field 'rings' on Tree.");
+    }
+
+    if (map['fruits'] == null) {
+      throw new FormatException("Missing required field 'fruits' on Tree.");
+    }
+
     return new Tree(
         id: map['id'] as String,
         rings: map['rings'] as int,
@@ -296,6 +308,14 @@ abstract class TreeSerializer {
     if (model == null) {
       return null;
     }
+    if (model.rings == null) {
+      throw new FormatException("Missing required field 'rings' on Tree.");
+    }
+
+    if (model.fruits == null) {
+      throw new FormatException("Missing required field 'fruits' on Tree.");
+    }
+
     return {
       'id': model.id,
       'rings': model.rings,

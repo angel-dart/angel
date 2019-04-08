@@ -142,11 +142,7 @@ class AuthorQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Author extends _Author {
-  Author(
-      {this.id,
-      @required this.name = 'Tobe Osakwe',
-      this.createdAt,
-      this.updatedAt});
+  Author({this.id, this.name = 'Tobe Osakwe', this.createdAt, this.updatedAt});
 
   @override
   final String id;
