@@ -144,6 +144,7 @@ class CarController extends Controller {
 * `@HasOne()` (one-to-one)
 * `@HasMany()` (one-to-many)
 * `@BelongsTo()` (one-to-one)
+* `@ManyToMany()` (many-to-many, using a "pivot" table)
 
 The annotations can be abbreviated with the default options (ex. `@hasOne`), or supplied
 with custom parameters (ex. `@HasOne(foreignKey: 'foreign_id')`).
