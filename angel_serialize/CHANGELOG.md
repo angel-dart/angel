@@ -1,3 +1,8 @@
+# 2.2.3
+* `isNullable` defaults to `true`, and will not change.
+* Deprecate `@nullable`.
+* Add `@notNull`.
+
 # 2.2.2+1
 * Export commonly-used packages, for the sake of convenience.
 
