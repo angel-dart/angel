@@ -1,20 +1,25 @@
+import 'dart:async';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/fruit.dart';
 import 'models/tree.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+hasManyTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
   Tree appleTree;
   int treeId;
+  close ??= (_) => null;
 
   setUp(() async {
     var query = new TreeQuery()..values.rings = 10;
 
-    executor = await connectToPostgres(['tree', 'fruit']);
+    executor = await createExecutor();
     appleTree = await query.insert(executor);
     treeId = int.parse(appleTree.id);
   });
+
+  tearDown(() => close(executor));
 
   test('list is empty if there is nothing', () {
     expect(appleTree.rings, 10);

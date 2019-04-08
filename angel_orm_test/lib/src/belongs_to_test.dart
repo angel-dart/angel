@@ -1,19 +1,19 @@
-/// Tests for @belongsTo...
-library angel_orm_generator.test.book_test;
-
+import 'dart:async';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/author.dart';
 import 'models/book.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
   Author jkRowling;
   Author jameson;
   Book deathlyHallows;
+  close ??= (_) => null;
 
   setUp(() async {
-    executor = await connectToPostgres(['author', 'book']);
+    executor = await createExecutor();
 
     // Insert an author
     var query = new AuthorQuery()..values.name = 'J.K. Rowling';
@@ -32,7 +32,7 @@ main() {
     deathlyHallows = await bookQuery.insert(executor);
   });
 
-  tearDown(() => executor.close());
+  tearDown(() => close(executor));
 
   group('selects', () {
     test('select all', () async {

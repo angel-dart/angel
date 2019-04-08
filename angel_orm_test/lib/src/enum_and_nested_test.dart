@@ -1,12 +1,15 @@
+import 'dart:async';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/has_car.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+enumAndNestedTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
+  close ??= (_) => null;
 
   setUp(() async {
-    executor = await connectToPostgres(['has_car']);
+    executor = await createExecutor();
   });
 
   test('insert', () async {

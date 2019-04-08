@@ -12,4 +12,5 @@ dependencies:
 dev_dependencies:
   angel_orm_generator:
     path: ../angel_orm_generator
+  angel_framework: ^2.0.0-alpha
   build_runner: ^1.0.0

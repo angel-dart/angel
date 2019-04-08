@@ -1,20 +1,22 @@
-/// Tests for @hasOne...
-library angel_orm_generator.test.has_one_test;
-
+import 'dart:async';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/foot.dart';
 import 'models/leg.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+hasOneTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
   Leg originalLeg;
+  close ??= (_) => null;
 
   setUp(() async {
-    executor = await connectToPostgres(['leg', 'foot']);
+    executor = await createExecutor();
     var query = new LegQuery()..values.name = 'Left';
     originalLeg = await query.insert(executor);
   });
+
+  tearDown(() => close(executor));
 
   test('sets to null if no child', () async {
     print(LegQuery().compile(Set()));

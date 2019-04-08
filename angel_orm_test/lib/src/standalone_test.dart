@@ -1,14 +1,13 @@
-/// Test for queries without relationships.
-library angel_orm_generator.test.car_test;
-
+import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/car.dart';
-import 'common.dart';
 
 final DateTime y2k = new DateTime.utc(2000, 1, 1);
 
-main() {
+standaloneTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  close ??= (_) => null;
   test('to where', () {
     var query = new CarQuery();
     query.where
@@ -35,15 +34,17 @@ main() {
   });
 
   group('queries', () {
-    PostgresExecutor connection;
+    QueryExecutor executor;
 
     setUp(() async {
-      connection = await connectToPostgres(['car']);
+      executor = await createExecutor();
     });
+
+    tearDown(() => close(executor));
 
     group('selects', () {
       test('select all', () async {
-        var cars = await new CarQuery().get(connection);
+        var cars = await new CarQuery().get(executor);
         expect(cars, []);
       });
 
@@ -56,18 +57,16 @@ main() {
             ..make = 'Ferrari東'
             ..description = 'Vroom vroom!'
             ..familyFriendly = false;
-          ferrari = await query.insert(connection);
+          ferrari = await query.insert(executor);
         });
-
-        tearDown(() => connection.close());
 
         test('where clause is applied', () async {
           var query = new CarQuery()..where.familyFriendly.isTrue;
-          var cars = await query.get(connection);
+          var cars = await query.get(executor);
           expect(cars, isEmpty);
 
           var sportsCars = new CarQuery()..where.familyFriendly.isFalse;
-          cars = await sportsCars.get(connection);
+          cars = await sportsCars.get(executor);
           print(cars.map((c) => c.toJson()));
 
           var car = cars.first;
@@ -83,7 +82,7 @@ main() {
           var query3 = new CarQuery()..where.description.equals('Submarine');
           var union = query1.union(query2).unionAll(query3);
           print(union.compile(Set()));
-          var cars = await union.get(connection);
+          var cars = await union.get(executor);
           expect(cars, hasLength(1));
         });
 
@@ -94,31 +93,31 @@ main() {
               ..familyFriendly.isTrue
               ..make.equals('Honda'));
           print(query.compile(Set()));
-          var cars = await query.get(connection);
+          var cars = await query.get(executor);
           expect(cars, hasLength(1));
         });
 
         test('limit obeyed', () async {
           var query = new CarQuery()..limit(0);
           print(query.compile(Set()));
-          var cars = await query.get(connection);
+          var cars = await query.get(executor);
           expect(cars, isEmpty);
         });
 
         test('get one', () async {
           var id = int.parse(ferrari.id);
           var query = new CarQuery()..where.id.equals(id);
-          var car = await query.getOne(connection);
+          var car = await query.getOne(executor);
           expect(car, ferrari);
         });
 
         test('delete one', () async {
           var id = int.parse(ferrari.id);
           var query = new CarQuery()..where.id.equals(id);
-          var car = await query.deleteOne(connection);
+          var car = await query.deleteOne(executor);
           expect(car.toJson(), ferrari.toJson());
 
-          var cars = await new CarQuery().get(connection);
+          var cars = await new CarQuery().get(executor);
           expect(cars, isEmpty);
         });
 
@@ -128,7 +127,7 @@ main() {
             ..orWhere((w) => w.familyFriendly.isTrue);
           print(query.compile(Set(), preamble: 'DELETE FROM "cars"'));
 
-          var cars = await query.delete(connection);
+          var cars = await query.delete(executor);
           expect(cars, hasLength(1));
           expect(cars.first.toJson(), ferrari.toJson());
         });
@@ -137,7 +136,7 @@ main() {
           var query = new CarQuery()
             ..where.id.equals(int.parse(ferrari.id))
             ..values.make = 'Hyundai';
-          var cars = await query.update(connection);
+          var cars = await query.update(executor);
           expect(cars, hasLength(1));
           expect(cars.first.make, 'Hyundai');
         });
@@ -145,7 +144,7 @@ main() {
         test('update car', () async {
           var cloned = ferrari.copyWith(make: 'Angel');
           var query = new CarQuery()..values.copyFrom(cloned);
-          var car = await query.updateOne(connection);
+          var car = await query.updateOne(executor);
           print(car.toJson());
           expect(car.toJson(), cloned.toJson());
         });
@@ -163,7 +162,7 @@ main() {
         ..recalledAt = recalledAt
         ..createdAt = now
         ..updatedAt = now;
-      var car = await query.insert(connection);
+      var car = await query.insert(executor);
       expect(car.id, isNotNull);
       expect(car.make, 'Honda');
       expect(car.description, 'Hello');
@@ -180,7 +179,7 @@ main() {
           familyFriendly: true,
           recalledAt: recalledAt);
       var query = new CarQuery()..values.copyFrom(beetle);
-      var car = await query.insert(connection);
+      var car = await query.insert(executor);
       print(car.toJson());
       expect(car.make, beetle.make);
       expect(car.description, beetle.description);

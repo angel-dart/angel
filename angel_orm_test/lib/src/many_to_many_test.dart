@@ -1,15 +1,15 @@
-library angel_orm_generator.test;
-
 import 'dart:async';
 import 'dart:io';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/user.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
   Role canPub, canSub;
   User thosakwe;
+  close ??= (_) => null;
 
   Future<void> dumpQuery(String query) async {
     if (Platform.environment.containsKey('STFU')) return;
@@ -17,14 +17,14 @@ main() {
     print('==================================================');
     print('                  DUMPING QUERY');
     print(query);
-    var rows = await executor.connection.query(query);
+    var rows = await executor.query(null, query, {});
     print('\n${rows.length} row(s):');
     rows.forEach((r) => print('  * $r'));
     print('==================================================\n\n');
   }
 
   setUp(() async {
-    executor = await connectToPostgres(['user', 'role', 'user_role']);
+    executor = await createExecutor();
 
 //     await dumpQuery("""
 // WITH roles as
@@ -86,6 +86,8 @@ main() {
     print('              GOOD STUFF BEGINS HERE              ');
     print('==================================================\n\n');
   });
+
+  tearDown(() => close(executor));
 
   Future<User> fetchThosakwe() async {
     var query = UserQuery()..where.id.equals(int.parse(thosakwe.id));

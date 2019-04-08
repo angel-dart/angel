@@ -1,13 +1,18 @@
+import 'dart:async';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/has_map.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+hasMapTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
+  close ??= (_) => null;
 
   setUp(() async {
-    executor = await connectToPostgres(['has_map']);
+    executor = await createExecutor();
   });
+
+  tearDown(() => close(executor));
 
   test('insert', () async {
     var query = HasMapQuery();

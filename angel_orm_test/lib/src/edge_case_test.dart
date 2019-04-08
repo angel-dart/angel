@@ -1,14 +1,18 @@
+import 'dart:async';
+import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/unorthodox.dart';
-import 'common.dart';
 
-main() {
-  PostgresExecutor executor;
+edgeCaseTests(FutureOr<QueryExecutor> Function() createExecutor,
+    {FutureOr<void> Function(QueryExecutor) close}) {
+  QueryExecutor executor;
+  close ??= (_) => null;
 
   setUp(() async {
-    executor =
-        await connectToPostgres(['unorthodox', 'weird_join', 'song', 'numba']);
+    executor = await createExecutor();
   });
+
+  tearDown(() => close(executor));
 
   test('can create object with no id', () async {
     var query = UnorthodoxQuery()..values.name = 'Hey';
