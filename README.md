@@ -34,8 +34,9 @@ dev_dependencies:
   build_runner: ^1.0.0
 ```
 
-With the recent updates to `package:build_runner`, you can build models in
-`lib/src/models/**.dart` automatically by running `pub run build_runner build`.
+With the recent updates to `package:build_runner`, you can build models automatically,
+anywhere in your project structure,
+by running `pub run build_runner build`.
 
 To tweak this:
 https://pub.dartlang.org/packages/build_config
