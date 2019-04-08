@@ -14,5 +14,7 @@ dev_dependencies:
   angel_migration: ^2.0.0-alpha
   angel_orm_generator:
     path: ../angel_orm_generator
+  angel_orm_test:
+    path: ../angel_orm_test
   build_runner: ^1.0.0
   test: ^1.0.0

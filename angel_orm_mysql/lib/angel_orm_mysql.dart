@@ -15,6 +15,8 @@ class MySqlExecutor extends QueryExecutor {
 
   MySqlExecutor(this._connection, {this.logger});
 
+  Future<void> close() => _connection.close();
+
   @override
   Future<List<List>> query(
       String tableName, String query, Map<String, dynamic> substitutionValues,
