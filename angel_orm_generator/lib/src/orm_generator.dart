@@ -737,7 +737,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var parsedId = prop.property(foreignField.name);
 
                 if (isSpecialId(foreign, field)) {
-                  parsedId = (refer('int').property('tryParse').call([parsedId]));
+                  parsedId =
+                      (refer('int').property('tryParse').call([parsedId]));
                 }
 
                 var cond = prop.notEqualTo(literalNull);

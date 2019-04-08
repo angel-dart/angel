@@ -70,7 +70,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
     var model = Foot(
         id: row[0].toString(),
         legId: (row[1] as int),
-        nToes: double.parse(row[2].toString()),
+        nToes: double.tryParse(row[2].toString()),
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
     return model;
@@ -123,7 +123,7 @@ class FootQueryValues extends MapQueryValues {
 
   set legId(int value) => values['leg_id'] = value;
   double get nToes {
-    return double.parse((values['n_toes'] as String));
+    return double.tryParse((values['n_toes'] as String));
   }
 
   set nToes(double value) => values['n_toes'] = value.toString();
@@ -196,6 +196,11 @@ class Foot extends _Foot {
     return hashObjects([id, legId, nToes, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Foot(id=$id, legId=$legId, nToes=$nToes, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return FootSerializer.toMap(this);
   }
@@ -205,7 +210,29 @@ class Foot extends _Foot {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class FootSerializer {
+const FootSerializer footSerializer = const FootSerializer();
+
+class FootEncoder extends Converter<Foot, Map> {
+  const FootEncoder();
+
+  @override
+  Map convert(Foot model) => FootSerializer.toMap(model);
+}
+
+class FootDecoder extends Converter<Map, Foot> {
+  const FootDecoder();
+
+  @override
+  Foot convert(Map map) => FootSerializer.fromMap(map);
+}
+
+class FootSerializer extends Codec<Foot, Map> {
+  const FootSerializer();
+
+  @override
+  get encoder => const FootEncoder();
+  @override
+  get decoder => const FootDecoder();
   static Foot fromMap(Map map) {
     return new Foot(
         id: map['id'] as String,

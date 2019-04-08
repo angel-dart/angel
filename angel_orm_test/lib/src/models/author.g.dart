@@ -178,6 +178,11 @@ class Author extends _Author {
     return hashObjects([id, name, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Author(id=$id, name=$name, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return AuthorSerializer.toMap(this);
   }
@@ -187,7 +192,29 @@ class Author extends _Author {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class AuthorSerializer {
+const AuthorSerializer authorSerializer = const AuthorSerializer();
+
+class AuthorEncoder extends Converter<Author, Map> {
+  const AuthorEncoder();
+
+  @override
+  Map convert(Author model) => AuthorSerializer.toMap(model);
+}
+
+class AuthorDecoder extends Converter<Map, Author> {
+  const AuthorDecoder();
+
+  @override
+  Author convert(Map map) => AuthorSerializer.fromMap(map);
+}
+
+class AuthorSerializer extends Codec<Author, Map> {
+  const AuthorSerializer();
+
+  @override
+  get encoder => const AuthorEncoder();
+  @override
+  get decoder => const AuthorDecoder();
   static Author fromMap(Map map) {
     return new Author(
         id: map['id'] as String,

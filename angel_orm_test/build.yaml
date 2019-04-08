@@ -21,22 +21,22 @@ builders:
 targets:
   _standalone:
     sources:
-      - test/models/author.dart
-      - test/models/car.dart
-      - test/models/customer.dart
-      - test/models/foot.dart
-      - test/models/fruit.dart
-      - test/models/has_map.dart
-      - test/models/role.dart
-      - test/models/unorthodox.dart
+      - lib/src/models/author.dart
+      - lib/src/models/car.dart
+      - lib/src/models/customer.dart
+      - lib/src/models/foot.dart
+      - lib/src/models/fruit.dart
+      - lib/src/models/has_map.dart
+      - lib/src/models/role.dart
+      - lib/src/models/unorthodox.dart
   $default:
     dependencies:
       - angel_serialize_generator
       - :_standalone
     sources:
-      - test/models/book.dart
-      - test/models/has_car.dart
-      - test/models/leg.dart
-      - test/models/order.dart
-      - test/models/tree.dart
-      - test/models/user.dart
+      - lib/src/models/book.dart
+      - lib/src/models/has_car.dart
+      - lib/src/models/leg.dart
+      - lib/src/models/order.dart
+      - lib/src/models/tree.dart
+      - lib/src/models/user.dart

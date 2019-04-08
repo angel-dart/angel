@@ -197,6 +197,11 @@ class Fruit extends _Fruit {
     return hashObjects([id, treeId, commonName, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Fruit(id=$id, treeId=$treeId, commonName=$commonName, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return FruitSerializer.toMap(this);
   }
@@ -206,7 +211,29 @@ class Fruit extends _Fruit {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class FruitSerializer {
+const FruitSerializer fruitSerializer = const FruitSerializer();
+
+class FruitEncoder extends Converter<Fruit, Map> {
+  const FruitEncoder();
+
+  @override
+  Map convert(Fruit model) => FruitSerializer.toMap(model);
+}
+
+class FruitDecoder extends Converter<Map, Fruit> {
+  const FruitDecoder();
+
+  @override
+  Fruit convert(Map map) => FruitSerializer.fromMap(map);
+}
+
+class FruitSerializer extends Codec<Fruit, Map> {
+  const FruitSerializer();
+
+  @override
+  get encoder => const FruitEncoder();
+  @override
+  get decoder => const FruitDecoder();
   static Fruit fromMap(Map map) {
     return new Fruit(
         id: map['id'] as String,

@@ -262,6 +262,11 @@ class Order extends _Order {
         [id, customer, employeeId, orderDate, shipperId, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Order(id=$id, customer=$customer, employeeId=$employeeId, orderDate=$orderDate, shipperId=$shipperId, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return OrderSerializer.toMap(this);
   }
@@ -271,7 +276,29 @@ class Order extends _Order {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class OrderSerializer {
+const OrderSerializer orderSerializer = const OrderSerializer();
+
+class OrderEncoder extends Converter<Order, Map> {
+  const OrderEncoder();
+
+  @override
+  Map convert(Order model) => OrderSerializer.toMap(model);
+}
+
+class OrderDecoder extends Converter<Map, Order> {
+  const OrderDecoder();
+
+  @override
+  Order convert(Map map) => OrderSerializer.fromMap(map);
+}
+
+class OrderSerializer extends Codec<Order, Map> {
+  const OrderSerializer();
+
+  @override
+  get encoder => const OrderEncoder();
+  @override
+  get decoder => const OrderDecoder();
   static Order fromMap(Map map) {
     return new Order(
         id: map['id'] as String,

@@ -839,6 +839,11 @@ class Unorthodox implements _Unorthodox {
     return hashObjects([name]);
   }
 
+  @override
+  String toString() {
+    return "Unorthodox(name=$name)";
+  }
+
   Map<String, dynamic> toJson() {
     return UnorthodoxSerializer.toMap(this);
   }
@@ -898,6 +903,11 @@ class WeirdJoin implements _WeirdJoin {
     return hashObjects([id, unorthodox, song, numbas, foos]);
   }
 
+  @override
+  String toString() {
+    return "WeirdJoin(id=$id, unorthodox=$unorthodox, song=$song, numbas=$numbas, foos=$foos)";
+  }
+
   Map<String, dynamic> toJson() {
     return WeirdJoinSerializer.toMap(this);
   }
@@ -950,6 +960,11 @@ class Song extends _Song {
     return hashObjects([id, weirdJoinId, title, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Song(id=$id, weirdJoinId=$weirdJoinId, title=$title, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return SongSerializer.toMap(this);
   }
@@ -976,6 +991,11 @@ class Numba extends _Numba {
   @override
   int get hashCode {
     return hashObjects([i, parent]);
+  }
+
+  @override
+  String toString() {
+    return "Numba(i=$i, parent=$parent)";
   }
 
   Map<String, dynamic> toJson() {
@@ -1010,6 +1030,11 @@ class Foo implements _Foo {
     return hashObjects([bar, weirdJoins]);
   }
 
+  @override
+  String toString() {
+    return "Foo(bar=$bar, weirdJoins=$weirdJoins)";
+  }
+
   Map<String, dynamic> toJson() {
     return FooSerializer.toMap(this);
   }
@@ -1041,6 +1066,11 @@ class FooPivot implements _FooPivot {
     return hashObjects([weirdJoin, foo]);
   }
 
+  @override
+  String toString() {
+    return "FooPivot(weirdJoin=$weirdJoin, foo=$foo)";
+  }
+
   Map<String, dynamic> toJson() {
     return FooPivotSerializer.toMap(this);
   }
@@ -1050,7 +1080,29 @@ class FooPivot implements _FooPivot {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class UnorthodoxSerializer {
+const UnorthodoxSerializer unorthodoxSerializer = const UnorthodoxSerializer();
+
+class UnorthodoxEncoder extends Converter<Unorthodox, Map> {
+  const UnorthodoxEncoder();
+
+  @override
+  Map convert(Unorthodox model) => UnorthodoxSerializer.toMap(model);
+}
+
+class UnorthodoxDecoder extends Converter<Map, Unorthodox> {
+  const UnorthodoxDecoder();
+
+  @override
+  Unorthodox convert(Map map) => UnorthodoxSerializer.fromMap(map);
+}
+
+class UnorthodoxSerializer extends Codec<Unorthodox, Map> {
+  const UnorthodoxSerializer();
+
+  @override
+  get encoder => const UnorthodoxEncoder();
+  @override
+  get decoder => const UnorthodoxDecoder();
   static Unorthodox fromMap(Map map) {
     return new Unorthodox(name: map['name'] as String);
   }
@@ -1069,7 +1121,29 @@ abstract class UnorthodoxFields {
   static const String name = 'name';
 }
 
-abstract class WeirdJoinSerializer {
+const WeirdJoinSerializer weirdJoinSerializer = const WeirdJoinSerializer();
+
+class WeirdJoinEncoder extends Converter<WeirdJoin, Map> {
+  const WeirdJoinEncoder();
+
+  @override
+  Map convert(WeirdJoin model) => WeirdJoinSerializer.toMap(model);
+}
+
+class WeirdJoinDecoder extends Converter<Map, WeirdJoin> {
+  const WeirdJoinDecoder();
+
+  @override
+  WeirdJoin convert(Map map) => WeirdJoinSerializer.fromMap(map);
+}
+
+class WeirdJoinSerializer extends Codec<WeirdJoin, Map> {
+  const WeirdJoinSerializer();
+
+  @override
+  get encoder => const WeirdJoinEncoder();
+  @override
+  get decoder => const WeirdJoinDecoder();
   static WeirdJoin fromMap(Map map) {
     return new WeirdJoin(
         id: map['id'] as int,
@@ -1127,7 +1201,29 @@ abstract class WeirdJoinFields {
   static const String foos = 'foos';
 }
 
-abstract class SongSerializer {
+const SongSerializer songSerializer = const SongSerializer();
+
+class SongEncoder extends Converter<Song, Map> {
+  const SongEncoder();
+
+  @override
+  Map convert(Song model) => SongSerializer.toMap(model);
+}
+
+class SongDecoder extends Converter<Map, Song> {
+  const SongDecoder();
+
+  @override
+  Song convert(Map map) => SongSerializer.fromMap(map);
+}
+
+class SongSerializer extends Codec<Song, Map> {
+  const SongSerializer();
+
+  @override
+  get encoder => const SongEncoder();
+  @override
+  get decoder => const SongDecoder();
   static Song fromMap(Map map) {
     return new Song(
         id: map['id'] as String,
@@ -1179,7 +1275,29 @@ abstract class SongFields {
   static const String updatedAt = 'updated_at';
 }
 
-abstract class NumbaSerializer {
+const NumbaSerializer numbaSerializer = const NumbaSerializer();
+
+class NumbaEncoder extends Converter<Numba, Map> {
+  const NumbaEncoder();
+
+  @override
+  Map convert(Numba model) => NumbaSerializer.toMap(model);
+}
+
+class NumbaDecoder extends Converter<Map, Numba> {
+  const NumbaDecoder();
+
+  @override
+  Numba convert(Map map) => NumbaSerializer.fromMap(map);
+}
+
+class NumbaSerializer extends Codec<Numba, Map> {
+  const NumbaSerializer();
+
+  @override
+  get encoder => const NumbaEncoder();
+  @override
+  get decoder => const NumbaDecoder();
   static Numba fromMap(Map map) {
     return new Numba(i: map['i'] as int, parent: map['parent'] as int);
   }
@@ -1200,7 +1318,29 @@ abstract class NumbaFields {
   static const String parent = 'parent';
 }
 
-abstract class FooSerializer {
+const FooSerializer fooSerializer = const FooSerializer();
+
+class FooEncoder extends Converter<Foo, Map> {
+  const FooEncoder();
+
+  @override
+  Map convert(Foo model) => FooSerializer.toMap(model);
+}
+
+class FooDecoder extends Converter<Map, Foo> {
+  const FooDecoder();
+
+  @override
+  Foo convert(Map map) => FooSerializer.fromMap(map);
+}
+
+class FooSerializer extends Codec<Foo, Map> {
+  const FooSerializer();
+
+  @override
+  get encoder => const FooEncoder();
+  @override
+  get decoder => const FooDecoder();
   static Foo fromMap(Map map) {
     return new Foo(
         bar: map['bar'] as String,
@@ -1232,7 +1372,29 @@ abstract class FooFields {
   static const String weirdJoins = 'weird_joins';
 }
 
-abstract class FooPivotSerializer {
+const FooPivotSerializer fooPivotSerializer = const FooPivotSerializer();
+
+class FooPivotEncoder extends Converter<FooPivot, Map> {
+  const FooPivotEncoder();
+
+  @override
+  Map convert(FooPivot model) => FooPivotSerializer.toMap(model);
+}
+
+class FooPivotDecoder extends Converter<Map, FooPivot> {
+  const FooPivotDecoder();
+
+  @override
+  FooPivot convert(Map map) => FooPivotSerializer.fromMap(map);
+}
+
+class FooPivotSerializer extends Codec<FooPivot, Map> {
+  const FooPivotSerializer();
+
+  @override
+  get encoder => const FooPivotEncoder();
+  @override
+  get decoder => const FooPivotDecoder();
   static FooPivot fromMap(Map map) {
     return new FooPivot(
         weirdJoin: map['weird_join'] != null

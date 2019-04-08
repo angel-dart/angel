@@ -159,6 +159,11 @@ class Customer extends _Customer {
     return hashObjects([id, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Customer(id=$id, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return CustomerSerializer.toMap(this);
   }
@@ -168,7 +173,29 @@ class Customer extends _Customer {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class CustomerSerializer {
+const CustomerSerializer customerSerializer = const CustomerSerializer();
+
+class CustomerEncoder extends Converter<Customer, Map> {
+  const CustomerEncoder();
+
+  @override
+  Map convert(Customer model) => CustomerSerializer.toMap(model);
+}
+
+class CustomerDecoder extends Converter<Map, Customer> {
+  const CustomerDecoder();
+
+  @override
+  Customer convert(Map map) => CustomerSerializer.fromMap(map);
+}
+
+class CustomerSerializer extends Codec<Customer, Map> {
+  const CustomerSerializer();
+
+  @override
+  get encoder => const CustomerEncoder();
+  @override
+  get decoder => const CustomerDecoder();
   static Customer fromMap(Map map) {
     return new Customer(
         id: map['id'] as String,

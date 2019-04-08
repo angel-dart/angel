@@ -1,4 +1,4 @@
-# 2.0.0-dev.8
+# 2.0.0
 * `parse` -> `tryParse` where used.
 
 # 2.0.0-dev.7

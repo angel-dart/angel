@@ -197,6 +197,11 @@ class Leg extends _Leg {
     return hashObjects([id, foot, name, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Leg(id=$id, foot=$foot, name=$name, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return LegSerializer.toMap(this);
   }
@@ -206,7 +211,29 @@ class Leg extends _Leg {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class LegSerializer {
+const LegSerializer legSerializer = const LegSerializer();
+
+class LegEncoder extends Converter<Leg, Map> {
+  const LegEncoder();
+
+  @override
+  Map convert(Leg model) => LegSerializer.toMap(model);
+}
+
+class LegDecoder extends Converter<Map, Leg> {
+  const LegDecoder();
+
+  @override
+  Leg convert(Map map) => LegSerializer.fromMap(map);
+}
+
+class LegSerializer extends Codec<Leg, Map> {
+  const LegSerializer();
+
+  @override
+  get encoder => const LegEncoder();
+  @override
+  get decoder => const LegDecoder();
   static Leg fromMap(Map map) {
     return new Leg(
         id: map['id'] as String,

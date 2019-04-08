@@ -635,6 +635,11 @@ class User extends _User {
         [id, username, password, email, roles, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "User(id=$id, username=$username, password=$password, email=$email, roles=$roles, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return UserSerializer.toMap(this);
   }
@@ -661,6 +666,11 @@ class RoleUser implements _RoleUser {
   @override
   int get hashCode {
     return hashObjects([role, user]);
+  }
+
+  @override
+  String toString() {
+    return "RoleUser(role=$role, user=$user)";
   }
 
   Map<String, dynamic> toJson() {
@@ -717,6 +727,11 @@ class Role extends _Role {
     return hashObjects([id, name, users, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Role(id=$id, name=$name, users=$users, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return RoleSerializer.toMap(this);
   }
@@ -726,7 +741,29 @@ class Role extends _Role {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class UserSerializer {
+const UserSerializer userSerializer = const UserSerializer();
+
+class UserEncoder extends Converter<User, Map> {
+  const UserEncoder();
+
+  @override
+  Map convert(User model) => UserSerializer.toMap(model);
+}
+
+class UserDecoder extends Converter<Map, User> {
+  const UserDecoder();
+
+  @override
+  User convert(Map map) => UserSerializer.fromMap(map);
+}
+
+class UserSerializer extends Codec<User, Map> {
+  const UserSerializer();
+
+  @override
+  get encoder => const UserEncoder();
+  @override
+  get decoder => const UserDecoder();
   static User fromMap(Map map) {
     return new User(
         id: map['id'] as String,
@@ -793,7 +830,29 @@ abstract class UserFields {
   static const String updatedAt = 'updated_at';
 }
 
-abstract class RoleUserSerializer {
+const RoleUserSerializer roleUserSerializer = const RoleUserSerializer();
+
+class RoleUserEncoder extends Converter<RoleUser, Map> {
+  const RoleUserEncoder();
+
+  @override
+  Map convert(RoleUser model) => RoleUserSerializer.toMap(model);
+}
+
+class RoleUserDecoder extends Converter<Map, RoleUser> {
+  const RoleUserDecoder();
+
+  @override
+  RoleUser convert(Map map) => RoleUserSerializer.fromMap(map);
+}
+
+class RoleUserSerializer extends Codec<RoleUser, Map> {
+  const RoleUserSerializer();
+
+  @override
+  get encoder => const RoleUserEncoder();
+  @override
+  get decoder => const RoleUserDecoder();
   static RoleUser fromMap(Map map) {
     return new RoleUser(
         role: map['role'] != null
@@ -823,7 +882,29 @@ abstract class RoleUserFields {
   static const String user = 'user';
 }
 
-abstract class RoleSerializer {
+const RoleSerializer roleSerializer = const RoleSerializer();
+
+class RoleEncoder extends Converter<Role, Map> {
+  const RoleEncoder();
+
+  @override
+  Map convert(Role model) => RoleSerializer.toMap(model);
+}
+
+class RoleDecoder extends Converter<Map, Role> {
+  const RoleDecoder();
+
+  @override
+  Role convert(Map map) => RoleSerializer.fromMap(map);
+}
+
+class RoleSerializer extends Codec<Role, Map> {
+  const RoleSerializer();
+
+  @override
+  get encoder => const RoleEncoder();
+  @override
+  get decoder => const RoleDecoder();
   static Role fromMap(Map map) {
     return new Role(
         id: map['id'] as String,

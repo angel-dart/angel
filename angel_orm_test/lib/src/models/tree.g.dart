@@ -260,6 +260,11 @@ class Tree extends _Tree {
     return hashObjects([id, rings, fruits, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Tree(id=$id, rings=$rings, fruits=$fruits, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return TreeSerializer.toMap(this);
   }
@@ -269,7 +274,29 @@ class Tree extends _Tree {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class TreeSerializer {
+const TreeSerializer treeSerializer = const TreeSerializer();
+
+class TreeEncoder extends Converter<Tree, Map> {
+  const TreeEncoder();
+
+  @override
+  Map convert(Tree model) => TreeSerializer.toMap(model);
+}
+
+class TreeDecoder extends Converter<Map, Tree> {
+  const TreeDecoder();
+
+  @override
+  Tree convert(Map map) => TreeSerializer.fromMap(map);
+}
+
+class TreeSerializer extends Codec<Tree, Map> {
+  const TreeSerializer();
+
+  @override
+  get encoder => const TreeEncoder();
+  @override
+  get decoder => const TreeDecoder();
   static Tree fromMap(Map map) {
     return new Tree(
         id: map['id'] as String,

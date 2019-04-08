@@ -145,6 +145,11 @@ class HasMap implements _HasMap {
     return hashObjects([value, list]);
   }
 
+  @override
+  String toString() {
+    return "HasMap(value=$value, list=$list)";
+  }
+
   Map<String, dynamic> toJson() {
     return HasMapSerializer.toMap(this);
   }
@@ -154,7 +159,29 @@ class HasMap implements _HasMap {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class HasMapSerializer {
+const HasMapSerializer hasMapSerializer = const HasMapSerializer();
+
+class HasMapEncoder extends Converter<HasMap, Map> {
+  const HasMapEncoder();
+
+  @override
+  Map convert(HasMap model) => HasMapSerializer.toMap(model);
+}
+
+class HasMapDecoder extends Converter<Map, HasMap> {
+  const HasMapDecoder();
+
+  @override
+  HasMap convert(Map map) => HasMapSerializer.fromMap(map);
+}
+
+class HasMapSerializer extends Codec<HasMap, Map> {
+  const HasMapSerializer();
+
+  @override
+  get encoder => const HasMapEncoder();
+  @override
+  get decoder => const HasMapDecoder();
   static HasMap fromMap(Map map) {
     return new HasMap(
         value: map['value'] is Map

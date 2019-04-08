@@ -1,5 +1,5 @@
 name: angel_orm_generator
-version: 2.0.0-dev.7
+version: 2.0.0
 description: Code generators for Angel's ORM. Generates query builder classes.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/orm
@@ -16,10 +16,7 @@ dependencies:
   build_config: ^0.3.0
   code_builder: ^3.0.0
   dart_style: ^1.0.0
-  inflection:
-    git:
-      url: https://github.com/thosakwe/dart-inflection.git
-      ref: dart2
+  inflection2: ^0.4.2
   meta: ^1.0.0
   path: ^1.0.0
   recase: ^2.0.0

@@ -261,6 +261,11 @@ class Car extends _Car {
     ]);
   }
 
+  @override
+  String toString() {
+    return "Car(id=$id, make=$make, description=$description, familyFriendly=$familyFriendly, recalledAt=$recalledAt, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return CarSerializer.toMap(this);
   }
@@ -270,7 +275,29 @@ class Car extends _Car {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class CarSerializer {
+const CarSerializer carSerializer = const CarSerializer();
+
+class CarEncoder extends Converter<Car, Map> {
+  const CarEncoder();
+
+  @override
+  Map convert(Car model) => CarSerializer.toMap(model);
+}
+
+class CarDecoder extends Converter<Map, Car> {
+  const CarDecoder();
+
+  @override
+  Car convert(Map map) => CarSerializer.fromMap(map);
+}
+
+class CarSerializer extends Codec<Car, Map> {
+  const CarSerializer();
+
+  @override
+  get encoder => const CarEncoder();
+  @override
+  get decoder => const CarDecoder();
   static Car fromMap(Map map) {
     return new Car(
         id: map['id'] as String,

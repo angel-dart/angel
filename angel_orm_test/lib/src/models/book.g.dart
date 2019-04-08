@@ -243,6 +243,11 @@ class Book extends _Book {
     return hashObjects([id, author, partnerAuthor, name, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Book(id=$id, author=$author, partnerAuthor=$partnerAuthor, name=$name, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return BookSerializer.toMap(this);
   }
@@ -252,7 +257,29 @@ class Book extends _Book {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class BookSerializer {
+const BookSerializer bookSerializer = const BookSerializer();
+
+class BookEncoder extends Converter<Book, Map> {
+  const BookEncoder();
+
+  @override
+  Map convert(Book model) => BookSerializer.toMap(model);
+}
+
+class BookDecoder extends Converter<Map, Book> {
+  const BookDecoder();
+
+  @override
+  Book convert(Map map) => BookSerializer.fromMap(map);
+}
+
+class BookSerializer extends Codec<Book, Map> {
+  const BookSerializer();
+
+  @override
+  get encoder => const BookEncoder();
+  @override
+  get decoder => const BookDecoder();
   static Book fromMap(Map map) {
     return new Book(
         id: map['id'] as String,

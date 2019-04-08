@@ -176,6 +176,11 @@ class HasCar extends _HasCar {
     return hashObjects([id, type, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "HasCar(id=$id, type=$type, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return HasCarSerializer.toMap(this);
   }
@@ -185,7 +190,29 @@ class HasCar extends _HasCar {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class HasCarSerializer {
+const HasCarSerializer hasCarSerializer = const HasCarSerializer();
+
+class HasCarEncoder extends Converter<HasCar, Map> {
+  const HasCarEncoder();
+
+  @override
+  Map convert(HasCar model) => HasCarSerializer.toMap(model);
+}
+
+class HasCarDecoder extends Converter<Map, HasCar> {
+  const HasCarDecoder();
+
+  @override
+  HasCar convert(Map map) => HasCarSerializer.fromMap(map);
+}
+
+class HasCarSerializer extends Codec<HasCar, Map> {
+  const HasCarSerializer();
+
+  @override
+  get encoder => const HasCarEncoder();
+  @override
+  get decoder => const HasCarDecoder();
   static HasCar fromMap(Map map) {
     if (map['type'] == null) {
       throw new FormatException("Missing required field 'type' on HasCar.");

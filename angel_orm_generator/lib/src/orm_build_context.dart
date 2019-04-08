@@ -10,7 +10,7 @@ import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:angel_serialize_generator/build_context.dart';
 import 'package:angel_serialize_generator/context.dart';
 import 'package:build/build.dart';
-import 'package:inflection/inflection.dart';
+import 'package:inflection2/inflection2.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
