@@ -1,15 +1,15 @@
 import 'dart:io';
 
 /// A constant instance of [AngelEnv].
-const AngelEnv angelEnv = const AngelEnv();
+const AngelEnvironment angelEnv = const AngelEnvironment();
 
 /// Queries the environment's `ANGEL_ENV` value.
-class AngelEnv {
+class AngelEnvironment {
   final String _customValue;
 
   /// You can optionally provide a custom value, in order to override the system's
   /// value.
-  const AngelEnv([this._customValue]);
+  const AngelEnvironment([this._customValue]);
 
   /// Returns the value of the `ANGEL_ENV` variable; defaults to `'development'`.
   String get value =>

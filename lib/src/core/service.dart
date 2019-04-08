@@ -195,12 +195,12 @@ class Service<Id, Data> extends Routable {
 
     // Add global middleware if declared on the instance itself
     Middleware before =
-        getAnnotation(service, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service, app.container.reflector);
 
     if (before != null) handlers.addAll(before.handlers);
 
     Middleware indexMiddleware =
-        getAnnotation(service.index, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service.index, app.container.reflector);
     get('/', (req, res) {
       return this.index(mergeMap([
         {'query': req.queryParameters},
@@ -213,7 +213,7 @@ class Service<Id, Data> extends Routable {
           ..addAll((indexMiddleware == null) ? [] : indexMiddleware.handlers));
 
     Middleware createMiddleware =
-        getAnnotation(service.create, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service.create, app.container.reflector);
     post('/', (req, ResponseContext res) {
       return req.parseBody().then((_) {
         return this
@@ -236,7 +236,7 @@ class Service<Id, Data> extends Routable {
               (createMiddleware == null) ? [] : createMiddleware.handlers));
 
     Middleware readMiddleware =
-        getAnnotation(service.read, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service.read, app.container.reflector);
 
     get('/:id', (req, res) {
       return this.read(
@@ -252,7 +252,7 @@ class Service<Id, Data> extends Routable {
           ..addAll((readMiddleware == null) ? [] : readMiddleware.handlers));
 
     Middleware modifyMiddleware =
-        getAnnotation(service.modify, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service.modify, app.container.reflector);
     patch('/:id', (req, res) {
       return req.parseBody().then((_) {
         return this.modify(
@@ -271,7 +271,7 @@ class Service<Id, Data> extends Routable {
               (modifyMiddleware == null) ? [] : modifyMiddleware.handlers));
 
     Middleware updateMiddleware =
-        getAnnotation(service.update, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service.update, app.container.reflector);
     post('/:id', (req, res) {
       return req.parseBody().then((_) {
         return this.update(
@@ -306,7 +306,7 @@ class Service<Id, Data> extends Routable {
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
 
     Middleware removeMiddleware =
-        getAnnotation(service.remove, Middleware, app.container.reflector);
+        getAnnotation<Middleware>(service.remove, app.container.reflector);
     delete('/', (req, res) {
       return this.remove(
           null,

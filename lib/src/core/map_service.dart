@@ -51,7 +51,7 @@ class MapService extends Service<String, Map<String, dynamic>> {
     if (allowQuery == false || params == null || params['query'] is! Map)
       return new Future.value(items);
     else {
-      Map query = params['query'];
+      var query = params['query'] as Map;
 
       return new Future.value(items.where((item) {
         for (var key in query.keys) {

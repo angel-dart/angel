@@ -73,19 +73,19 @@ main() {
 
   test("make in route", () async {
     var response = await client.get("$url/errands3");
-    String text = await json.decode(response.body);
+    var text = await json.decode(response.body) as String;
     expect(text, equals(TEXT));
   });
 
   test("make in controller", () async {
     var response = await client.get("$url/errands4");
-    String text = await json.decode(response.body);
+    var text = await json.decode(response.body) as String;
     expect(text, equals(TEXT));
   });
 }
 
 void validateTodoSingleton(response) {
-  Map todo = json.decode(response.body.toString());
+  var todo = json.decode(response.body.toString()) as Map;
   expect(todo["id"], equals(null));
   expect(todo["text"], equals(TEXT));
   expect(todo["over"], equals(OVER));

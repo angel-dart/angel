@@ -15,6 +15,7 @@ import 'package:mime/mime.dart';
 import 'package:tuple/tuple.dart';
 
 import 'controller.dart';
+import 'env.dart';
 import 'hooked_service.dart';
 import 'request_context.dart';
 import 'response_context.dart';
@@ -42,7 +43,6 @@ class Angel extends Routable {
           MiddlewarePipeline>> handlerCache = new HashMap();
 
   Router<RequestHandler> _flattened;
-  bool _isProduction;
   Angel _parent;
 
   /// A global Map of converters that can transform responses bodies.
@@ -75,6 +75,8 @@ class Angel extends Routable {
   /// A set of [Controller] objects that have been loaded into the application.
   Map<Pattern, Controller> get controllers => _controllers;
 
+  /// Now *deprecated*, in favor of [AngelEnv] and [angelEnv].
+  ///
   /// Indicates whether the application is running in a production environment.
   ///
   /// The criteria for this is the `ANGEL_ENV` environment variable being set to
@@ -82,10 +84,8 @@ class Angel extends Routable {
   ///
   /// This value is memoized the first time you call it, so do not change environment
   /// configuration at runtime!
-  bool get isProduction {
-    return _isProduction ??=
-        (Platform.environment['ANGEL_ENV'] == 'production');
-  }
+  @deprecated
+  bool get isProduction => angelEnv.isProduction;
 
   /// Returns the parent instance of this application, if any.
   Angel get parent => _parent;
@@ -282,7 +282,7 @@ class Angel extends Routable {
     return parent != null ? parent.findProperty(key) : null;
   }
 
-  /// Runs several optimizations, *if* [isProduction] is `true`.
+  /// Runs several optimizations, *if* [angelEnv.isProduction] is `true`.
   ///
   /// * Preprocesses all dependency injection, and eliminates the burden of reflecting handlers
   /// at run-time.
@@ -291,7 +291,6 @@ class Angel extends Routable {
   /// You may [force] the optimization to run, if you are not running in production.
   void optimizeForProduction({bool force: false}) {
     if (isProduction == true || force == true) {
-      _isProduction = true;
       _flattened ??= flatten(this);
       logger?.info('Angel is running in production mode.');
     }

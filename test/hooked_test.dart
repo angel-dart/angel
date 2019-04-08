@@ -77,7 +77,7 @@ main() {
         body: json.encode({"arbitrary": "data"}),
         headers: headers as Map<String, String>);
     print(response.body);
-    Map result = json.decode(response.body);
+    var result = json.decode(response.body) as Map;
     expect(result["hello"], equals("hooked world"));
   });
 
@@ -95,7 +95,7 @@ main() {
 
     var response = await client.get("$url/todos");
     print(response.body);
-    List result = json.decode(response.body);
+    var result = json.decode(response.body) as List;
     expect(result[0]["angel"], equals("framework"));
   });
 

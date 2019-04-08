@@ -122,7 +122,7 @@ main() {
 
     expect(rgx.firstMatch(response.body)?.start, equals(0));
 
-    Map todo = json.decode(response.body.replaceAll(rgx, ""));
+    var todo = json.decode(response.body.replaceAll(rgx, "")) as Map;
     print("Todo: $todo");
     expect(todo['text'], equals("Hello"));
     expect(todo['over'], equals("world"));

@@ -75,9 +75,9 @@ class Controller {
           methodName != 'call' &&
           methodName != 'equals' &&
           methodName != '==') {
-        Expose exposeDecl = decl.function.annotations
+        var exposeDecl = decl.function.annotations
             .map((m) => m.reflectee)
-            .firstWhere((r) => r is Expose, orElse: () => null);
+            .firstWhere((r) => r is Expose, orElse: () => null) as Expose;
 
         if (exposeDecl == null) return;
 

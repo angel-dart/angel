@@ -53,8 +53,8 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
       requirement.length == 2 &&
       requirement.first is String &&
       requirement.last is Type) {
-    String key = requirement.first;
-    Type type = requirement.last;
+    var key = requirement.first;
+    var type = requirement.last;
     if (req.params.containsKey(key) ||
         req.app.configuration.containsKey(key) ||
         _primitiveTypes.contains(type)) {

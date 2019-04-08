@@ -1,3 +1,7 @@
+# 2.0.0-alpha.24
+* Add `AngelEnv` class to `core`.
+* Deprecate `Angel.isProduction`, in favor of `AngelEnv`.
+
 # 2.0.0-alpha.23
 * `ResponseContext.render` sets `charset` to `utf8` in `contentType`.
 

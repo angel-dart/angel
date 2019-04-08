@@ -1,6 +1,7 @@
 export 'anonymous_service.dart';
 export 'controller.dart';
 export 'driver.dart';
+export 'env.dart';
 export 'hooked_service.dart';
 export 'map_service.dart';
 export 'metadata.dart';
