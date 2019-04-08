@@ -4,17 +4,14 @@ import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel(
+  // Logging set up/boilerplate
+  Logger.root.onRecord.listen(print);
+
+  // Create our server.
+  var app = Angel(
     logger: Logger('angel'),
     reflector: MirrorsReflector(),
   );
-
-  app.logger = new Logger('angel')
-    ..onRecord.listen((rec) {
-      print(rec);
-      if (rec.error != null) print(rec.error);
-      if (rec.stackTrace != null) print(rec.stackTrace);
-    });
 
   // Index route. Returns JSON.
   app.get('/', (req, res) => 'Welcome to Angel!');
@@ -44,12 +41,12 @@ main() async {
 
   // Simple fallback to throw a 404 on unknown paths.
   app.fallback((req, res) {
-    throw new AngelHttpException.notFound(
+    throw AngelHttpException.notFound(
       message: 'Unknown path: "${req.uri.path}"',
     );
   });
 
-  var http = new AngelHttp(app);
+  var http = AngelHttp(app);
   var server = await http.startServer('127.0.0.1', 3000);
   var url = 'http://${server.address.address}:${server.port}';
   print('Listening at $url');

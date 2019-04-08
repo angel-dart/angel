@@ -3,8 +3,6 @@ library angel_framework.http.server;
 import 'dart:async';
 import 'dart:collection' show HashMap;
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_route/angel_route.dart';
@@ -13,7 +11,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:tuple/tuple.dart';
-
 import 'controller.dart';
 import 'env.dart';
 import 'hooked_service.dart';
@@ -357,6 +354,16 @@ class Angel extends Routable {
       this.serializer,
       this.viewGenerator})
       : super(reflector) {
+    if (reflector == const EmptyReflector()) {
+      var msg =
+          'No `reflector` was passed to the Angel constructor, so reflection will not be available.\n'
+          'Features like controllers, constructor dependency injection, and `ioc` require reflection, '
+          'and will not work without it.\n\n'
+          'For more, see the documentation:\n'
+          'https://docs.angel-dart.dev/guides/dependency-injection#enabling-dart-mirrors-or-other-reflection';
+      logger?.warning(msg);
+    }
+
     bootstrapContainer();
     viewGenerator ??= noViewEngineConfigured;
     serializer ??= json.encode;

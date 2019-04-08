@@ -1,3 +1,6 @@
+# 2.0.0-rc.0
+* Log a warning when no `reflector` is provided.
+
 # 2.0.0-alpha.24
 * Add `AngelEnv` class to `core`.
 * Deprecate `Angel.isProduction`, in favor of `AngelEnv`.
