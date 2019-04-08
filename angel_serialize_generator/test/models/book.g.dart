@@ -34,6 +34,7 @@ class Book extends _Book {
   @override
   final String description;
 
+  /// The number of pages the book has.
   @override
   final int pageCount;
 
@@ -100,6 +101,11 @@ class Book extends _Book {
     ]);
   }
 
+  @override
+  String toString() {
+    return "Book(id=$id, author=$author, title=$title, description=$description, pageCount=$pageCount, notModels=$notModels, camelCaseString=$camelCaseString, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return BookSerializer.toMap(this);
   }
@@ -131,6 +137,7 @@ class Author extends _Author {
   @override
   final List<_Book> books;
 
+  /// The newest book.
   @override
   final _Book newestBook;
 
@@ -197,6 +204,11 @@ class Author extends _Author {
     ]);
   }
 
+  @override
+  String toString() {
+    return "Author(id=$id, name=$name, age=$age, books=$books, newestBook=$newestBook, secret=$secret, obscured=$obscured, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return AuthorSerializer.toMap(this);
   }
@@ -246,6 +258,11 @@ class Library extends _Library {
   @override
   int get hashCode {
     return hashObjects([id, collection, createdAt, updatedAt]);
+  }
+
+  @override
+  String toString() {
+    return "Library(id=$id, collection=$collection, createdAt=$createdAt, updatedAt=$updatedAt)";
   }
 
   Map<String, dynamic> toJson() {
@@ -315,6 +332,11 @@ class Bookmark extends _Bookmark {
     return hashObjects([id, history, page, comment, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Bookmark(id=$id, history=$history, page=$page, comment=$comment, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return BookmarkSerializer.toMap(this);
   }
@@ -324,7 +346,29 @@ class Bookmark extends _Bookmark {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class BookSerializer {
+const BookSerializer bookSerializer = const BookSerializer();
+
+class BookEncoder extends Converter<Book, Map> {
+  const BookEncoder();
+
+  @override
+  Map convert(Book model) => BookSerializer.toMap(model);
+}
+
+class BookDecoder extends Converter<Map, Book> {
+  const BookDecoder();
+
+  @override
+  Book convert(Map map) => BookSerializer.fromMap(map);
+}
+
+class BookSerializer extends Codec<Book, Map> {
+  const BookSerializer();
+
+  @override
+  get encoder => const BookEncoder();
+  @override
+  get decoder => const BookDecoder();
   static Book fromMap(Map map) {
     return new Book(
         id: map['id'] as String,
@@ -398,7 +442,29 @@ abstract class BookFields {
   static const String updatedAt = 'updated_at';
 }
 
-abstract class AuthorSerializer {
+const AuthorSerializer authorSerializer = const AuthorSerializer();
+
+class AuthorEncoder extends Converter<Author, Map> {
+  const AuthorEncoder();
+
+  @override
+  Map convert(Author model) => AuthorSerializer.toMap(model);
+}
+
+class AuthorDecoder extends Converter<Map, Author> {
+  const AuthorDecoder();
+
+  @override
+  Author convert(Map map) => AuthorSerializer.fromMap(map);
+}
+
+class AuthorSerializer extends Codec<Author, Map> {
+  const AuthorSerializer();
+
+  @override
+  get encoder => const AuthorEncoder();
+  @override
+  get decoder => const AuthorDecoder();
   static Author fromMap(Map map) {
     if (map['name'] == null) {
       throw new FormatException("Missing required field 'name' on Author.");
@@ -490,7 +556,29 @@ abstract class AuthorFields {
   static const String updatedAt = 'updated_at';
 }
 
-abstract class LibrarySerializer {
+const LibrarySerializer librarySerializer = const LibrarySerializer();
+
+class LibraryEncoder extends Converter<Library, Map> {
+  const LibraryEncoder();
+
+  @override
+  Map convert(Library model) => LibrarySerializer.toMap(model);
+}
+
+class LibraryDecoder extends Converter<Map, Library> {
+  const LibraryDecoder();
+
+  @override
+  Library convert(Map map) => LibrarySerializer.fromMap(map);
+}
+
+class LibrarySerializer extends Codec<Library, Map> {
+  const LibrarySerializer();
+
+  @override
+  get encoder => const LibraryEncoder();
+  @override
+  get decoder => const LibraryDecoder();
   static Library fromMap(Map map) {
     return new Library(
         id: map['id'] as String,

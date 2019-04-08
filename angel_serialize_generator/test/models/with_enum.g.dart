@@ -41,6 +41,11 @@ class WithEnum implements _WithEnum {
     return hashObjects([type, finalList, imageBytes]);
   }
 
+  @override
+  String toString() {
+    return "WithEnum(type=$type, finalList=$finalList, imageBytes=$imageBytes)";
+  }
+
   Map<String, dynamic> toJson() {
     return WithEnumSerializer.toMap(this);
   }
@@ -50,7 +55,29 @@ class WithEnum implements _WithEnum {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class WithEnumSerializer {
+const WithEnumSerializer withEnumSerializer = const WithEnumSerializer();
+
+class WithEnumEncoder extends Converter<WithEnum, Map> {
+  const WithEnumEncoder();
+
+  @override
+  Map convert(WithEnum model) => WithEnumSerializer.toMap(model);
+}
+
+class WithEnumDecoder extends Converter<Map, WithEnum> {
+  const WithEnumDecoder();
+
+  @override
+  WithEnum convert(Map map) => WithEnumSerializer.fromMap(map);
+}
+
+class WithEnumSerializer extends Codec<WithEnum, Map> {
+  const WithEnumSerializer();
+
+  @override
+  get encoder => const WithEnumEncoder();
+  @override
+  get decoder => const WithEnumDecoder();
   static WithEnum fromMap(Map map) {
     return new WithEnum(
         type: map['type'] is WithEnumType

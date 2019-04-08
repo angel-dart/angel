@@ -30,6 +30,11 @@ class Todo extends _Todo {
     return hashObjects([text, completed]);
   }
 
+  @override
+  String toString() {
+    return "Todo(text=$text, completed=$completed)";
+  }
+
   Map<String, dynamic> toJson() {
     return TodoSerializer.toMap(this);
   }
@@ -39,7 +44,29 @@ class Todo extends _Todo {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class TodoSerializer {
+const TodoSerializer todoSerializer = const TodoSerializer();
+
+class TodoEncoder extends Converter<Todo, Map> {
+  const TodoEncoder();
+
+  @override
+  Map convert(Todo model) => TodoSerializer.toMap(model);
+}
+
+class TodoDecoder extends Converter<Map, Todo> {
+  const TodoDecoder();
+
+  @override
+  Todo convert(Map map) => TodoSerializer.fromMap(map);
+}
+
+class TodoSerializer extends Codec<Todo, Map> {
+  const TodoSerializer();
+
+  @override
+  get encoder => const TodoEncoder();
+  @override
+  get decoder => const TodoDecoder();
   static Todo fromMap(Map map) {
     return new Todo(
         text: map['text'] as String, completed: map['completed'] as bool);

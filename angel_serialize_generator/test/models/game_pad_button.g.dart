@@ -32,6 +32,11 @@ class GamepadButton implements _GamepadButton {
     return hashObjects([name, radius]);
   }
 
+  @override
+  String toString() {
+    return "GamepadButton(name=$name, radius=$radius)";
+  }
+
   Map<String, dynamic> toJson() {
     return GamepadButtonSerializer.toMap(this);
   }
@@ -72,6 +77,11 @@ class Gamepad extends _Gamepad {
     return hashObjects([buttons, dynamicMap]);
   }
 
+  @override
+  String toString() {
+    return "Gamepad(buttons=$buttons, dynamicMap=$dynamicMap)";
+  }
+
   Map<String, dynamic> toJson() {
     return GamepadSerializer.toMap(this);
   }
@@ -81,7 +91,30 @@ class Gamepad extends _Gamepad {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class GamepadButtonSerializer {
+const GamepadButtonSerializer gamepadButtonSerializer =
+    const GamepadButtonSerializer();
+
+class GamepadButtonEncoder extends Converter<GamepadButton, Map> {
+  const GamepadButtonEncoder();
+
+  @override
+  Map convert(GamepadButton model) => GamepadButtonSerializer.toMap(model);
+}
+
+class GamepadButtonDecoder extends Converter<Map, GamepadButton> {
+  const GamepadButtonDecoder();
+
+  @override
+  GamepadButton convert(Map map) => GamepadButtonSerializer.fromMap(map);
+}
+
+class GamepadButtonSerializer extends Codec<GamepadButton, Map> {
+  const GamepadButtonSerializer();
+
+  @override
+  get encoder => const GamepadButtonEncoder();
+  @override
+  get decoder => const GamepadButtonDecoder();
   static GamepadButton fromMap(Map map) {
     return new GamepadButton(
         name: map['name'] as String, radius: map['radius'] as int);
@@ -103,7 +136,29 @@ abstract class GamepadButtonFields {
   static const String radius = 'radius';
 }
 
-abstract class GamepadSerializer {
+const GamepadSerializer gamepadSerializer = const GamepadSerializer();
+
+class GamepadEncoder extends Converter<Gamepad, Map> {
+  const GamepadEncoder();
+
+  @override
+  Map convert(Gamepad model) => GamepadSerializer.toMap(model);
+}
+
+class GamepadDecoder extends Converter<Map, Gamepad> {
+  const GamepadDecoder();
+
+  @override
+  Gamepad convert(Map map) => GamepadSerializer.fromMap(map);
+}
+
+class GamepadSerializer extends Codec<Gamepad, Map> {
+  const GamepadSerializer();
+
+  @override
+  get encoder => const GamepadEncoder();
+  @override
+  get decoder => const GamepadDecoder();
   static Gamepad fromMap(Map map) {
     return new Gamepad(
         buttons: map['buttons'] is Iterable

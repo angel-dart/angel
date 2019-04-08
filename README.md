@@ -96,6 +96,12 @@ Producing these classes:
 - `Book`: Extends or implements `_Book`; may be `const`-enabled.
 - `BookSerializer`: static functionality for serializing `Book` models.
 - `BookFields`: The names of all fields from the `Book` model, statically-available.
+- `BookEncoder`: Allows `BookSerializer` to extend `Codec<Book, Map>`.
+- `BookDecoder`: Also allows `BookSerializer` to extend `Codec<Book, Map>`.
+
+And the following other features:
+- `bookSerializer`: A top-level, `const` instance of `BookSerializer`.
+- `Book.toString`: Prints out all of a `Book` instance's fields.
 
 # Serialization
 

@@ -15,7 +15,10 @@ part 'book.g.dart';
 )
 abstract class _Book extends Model {
   String author, title, description;
+
+  /// The number of pages the book has.
   int pageCount;
+
   List<double> notModels;
 
   @SerializableField(alias: 'camelCase', isNullable: true)
@@ -35,6 +38,7 @@ abstract class _Author extends Model {
 
   List<_Book> get books;
 
+  /// The newest book.
   _Book get newestBook;
 
   @SerializableField(exclude: true, isNullable: true)

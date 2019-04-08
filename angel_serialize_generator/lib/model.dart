@@ -48,6 +48,12 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             ..modifier = FieldModifier.final$
             ..annotations.add(new CodeExpression(new Code('override')))
             ..type = convertTypeReference(field.type);
+
+          for (var el in [field.getter, field]) {
+            if (el?.documentationComment != null) {
+              b.docs.addAll(el.documentationComment.split('\n'));
+            }
+          }
         }));
       }
 
@@ -55,6 +61,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       generateCopyWithMethod(ctx, clazz, file);
       generateEqualsOperator(ctx, clazz, file);
       generateHashCode(ctx, clazz);
+      generateToString(ctx, clazz);
 
       // Generate toJson() method if necessary
       var serializers = annotation.peek('serializers')?.listValue ?? [];
@@ -233,6 +240,25 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
               .returned
               .statement;
       }));
+  }
+
+  void generateToString(BuildContext ctx, ClassBuilder clazz) {
+    clazz.methods.add(Method((b) {
+      b
+        ..name = 'toString'
+        ..returns = refer('String')
+        ..annotations.add(refer('override'))
+        ..body = Block((b) {
+          var buf = StringBuffer('\"${ctx.modelClassName}(');
+          var i = 0;
+          for (var field in ctx.fields) {
+            if (i++ > 0) buf.write(', ');
+            buf.write('${field.name}=\$${field.name}');
+          }
+          buf.write(')\"');
+          b.addExpression(CodeExpression(Code(buf.toString())).returned);
+        });
+    }));
   }
 
   void generateEqualsOperator(

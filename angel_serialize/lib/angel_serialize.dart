@@ -1,3 +1,4 @@
+export 'dart:convert' show json, Codec, Converter;
 export 'package:angel_model/angel_model.dart';
 export 'package:collection/collection.dart';
 export 'package:meta/meta.dart' show required, Required;

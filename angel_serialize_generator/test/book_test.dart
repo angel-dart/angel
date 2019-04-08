@@ -13,7 +13,7 @@ main() {
       notModels: [1.0, 3.0],
       updatedAt: new DateTime.now());
   var serializedDeathlyHallows = deathlyHallows.toJson();
-  print('Deathly Hallows: $serializedDeathlyHallows');
+  print('Deathly Hallows: $deathlyHallows');
 
   var jkRowling = new Author(
       id: '1',
@@ -21,13 +21,13 @@ main() {
       age: 51,
       books: [deathlyHallows],
       newestBook: deathlyHallows);
-  Map serializedJkRowling = AuthorSerializer.toMap(jkRowling);
-  Map deathlyHallowsMap = BookSerializer.toMap(deathlyHallows);
-  print('J.K. Rowling: $serializedJkRowling');
+  var serializedJkRowling = authorSerializer.encode(jkRowling);
+  var deathlyHallowsMap = bookSerializer.encode(deathlyHallows);
+  print('J.K. Rowling: $jkRowling');
 
   var library = new Library(collection: {deathlyHallowsIsbn: deathlyHallows});
   var serializedLibrary = LibrarySerializer.toMap(library);
-  print('Library: $serializedLibrary');
+  print('Library: $library');
 
   group('serialization', () {
     test('serialization sets proper fields', () {
@@ -56,7 +56,7 @@ main() {
 
     test('heeds canDeserialize', () {
       var map = new Map.from(serializedJkRowling)..['obscured'] = 'foo';
-      var author = AuthorSerializer.fromMap(map);
+      var author = authorSerializer.decode(map);
       expect(author.obscured, 'foo');
     });
 

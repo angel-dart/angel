@@ -32,6 +32,11 @@ class Goat implements _Goat {
     return hashObjects([integer, list]);
   }
 
+  @override
+  String toString() {
+    return "Goat(integer=$integer, list=$list)";
+  }
+
   Map<String, dynamic> toJson() {
     return GoatSerializer.toMap(this);
   }
@@ -41,7 +46,29 @@ class Goat implements _Goat {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class GoatSerializer {
+const GoatSerializer goatSerializer = const GoatSerializer();
+
+class GoatEncoder extends Converter<Goat, Map> {
+  const GoatEncoder();
+
+  @override
+  Map convert(Goat model) => GoatSerializer.toMap(model);
+}
+
+class GoatDecoder extends Converter<Map, Goat> {
+  const GoatDecoder();
+
+  @override
+  Goat convert(Map map) => GoatSerializer.fromMap(map);
+}
+
+class GoatSerializer extends Codec<Goat, Map> {
+  const GoatSerializer();
+
+  @override
+  get encoder => const GoatEncoder();
+  @override
+  get decoder => const GoatDecoder();
   static Goat fromMap(Map map) {
     return new Goat(
         integer: map['integer'] as int ?? 34,

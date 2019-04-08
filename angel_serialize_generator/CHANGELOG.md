@@ -1,3 +1,8 @@
+# 2.4.3
+* Generate `Codec` and `Converter` classes.
+* Generate `toString` methods.
+* Include original documentation comments from the model.
+
 # 2.4.2
 * Fix bug where enums didn't support default values.
 * Stop emitting `@required` on items with default values.

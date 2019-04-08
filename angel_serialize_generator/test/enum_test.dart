@@ -53,7 +53,7 @@ void main() {
         imageBytes:
             new Uint8List.fromList(new List<int>.generate(1000, (i) => i)));
     var eeMap = ee.toJson();
-    print(eeMap);
+    print(ee);
     var ef = WithEnumSerializer.fromMap(eeMap);
     expect(ee.copyWith(), ee);
     expect(ef, ee);

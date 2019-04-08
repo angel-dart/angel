@@ -1,3 +1,6 @@
+# 2.2.3+1
+* Export `json`, `Codec`, and `Converter` from `dart:convert`.
+
 # 2.2.3
 * `isNullable` defaults to `true`, and will not change.
 * Deprecate `@nullable`.

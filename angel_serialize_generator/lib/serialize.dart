@@ -35,10 +35,53 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
   /// Generate a serializer class.
   void generateClass(
       List<int> serializers, BuildContext ctx, LibraryBuilder file) {
+    // Generate canonical codecs, etc.
+    var pascal = ctx.modelClassNameRecase.pascalCase,
+        camel = ctx.modelClassNameRecase.camelCase;
+
+    if (ctx.constructorParameters.isEmpty) {
+      file.body.add(new Code('''
+const ${pascal}Serializer ${camel}Serializer = const ${pascal}Serializer();
+
+class ${pascal}Encoder extends Converter<${pascal}, Map> {
+  const ${pascal}Encoder();
+
+  @override
+  Map convert(${pascal} model) => ${pascal}Serializer.toMap(model);
+}
+
+class ${pascal}Decoder extends Converter<Map, ${pascal}> {
+  const ${pascal}Decoder();
+  
+  @override
+  ${pascal} convert(Map map) => ${pascal}Serializer.fromMap(map);
+}
+    '''));
+    }
+
     file.body.add(new Class((clazz) {
-      clazz
-        ..name = '${ctx.modelClassNameRecase.pascalCase}Serializer'
-        ..abstract = true;
+      clazz..name = '${pascal}Serializer';
+      if (ctx.constructorParameters.isEmpty) {
+        clazz
+          ..extend = TypeReference((b) => b
+            ..symbol = 'Codec'
+            ..types.addAll([ctx.modelClassType, refer('Map')]));
+
+        // Add constructor, Codec impl, etc.
+        clazz.constructors.add(Constructor((b) => b..constant = true));
+        clazz.methods.add(Method((b) => b
+          ..name = 'encoder'
+          ..type = MethodType.getter
+          ..annotations.add(refer('override'))
+          ..body = refer('${pascal}Encoder').constInstance([]).code));
+        clazz.methods.add(Method((b) => b
+          ..name = 'decoder'
+          ..type = MethodType.getter
+          ..annotations.add(refer('override'))
+          ..body = refer('${pascal}Decoder').constInstance([]).code));
+      } else {
+        clazz.abstract = true;
+      }
 
       if (serializers.contains(Serializers.map)) {
         generateFromMapMethod(clazz, ctx, file);
