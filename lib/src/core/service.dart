@@ -177,7 +177,7 @@ class Service<Id, Data> extends Routable {
     else if (T == bool)
       return (id == true || id?.toString() == 'true') as T;
     else if (T == double)
-      return int.parse(id.toString()) as T;
+      return double.parse(id.toString()) as T;
     else if (T == num)
       return num.parse(id.toString()) as T;
     else

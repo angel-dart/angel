@@ -5,6 +5,7 @@
     * Deprecated `app.isProduction` in favor of `app.environment.isProduction`.
 * Allow setting of `bodyAsObject`, `bodyAsMap`, or `bodyAsList` **exactly once**.
 * Resolve named singletons in `resolveInjection`.
+* Fix a bug where `Service.parseId<double>` would attempt to parse an `int`.
 
 # 2.0.0-alpha.24
 * Add `AngelEnv` class to `core`.
