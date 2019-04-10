@@ -1,3 +1,6 @@
+# 1.0.1
+* Added `hasNamed`.
+
 # 1.0.0
 * Removed `@GenerateReflector`.
 

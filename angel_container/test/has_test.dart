@@ -7,12 +7,20 @@ void main() {
   setUp(() {
     container = new Container(const EmptyReflector())
       ..registerSingleton<Song>(new Song(title: 'I Wish'))
+      ..registerNamedSingleton('foo', 1)
       ..registerFactory<Artist>((container) {
         return new Artist(
           name: 'Stevie Wonder',
           song: container.make<Song>(),
         );
       });
+  });
+
+  test('hasNamed', () {
+    var child = container.createChild()..registerNamedSingleton('bar', 2);
+    expect(child.hasNamed('foo'), true);
+    expect(child.hasNamed('bar'), true);
+    expect(child.hasNamed('baz'), false);
   });
 
   test('has on singleton', () {

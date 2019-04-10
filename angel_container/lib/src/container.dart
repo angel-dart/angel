@@ -21,6 +21,7 @@ class Container {
     return new Container._child(this);
   }
 
+  /// Determines if the container has an injection of the given type.
   bool has<T>([Type t]) {
     var search = this;
     t ??= T == dynamic ? t : T;
@@ -29,6 +30,21 @@ class Container {
       if (search._singletons.containsKey(t)) {
         return true;
       } else if (search._factories.containsKey(t)) {
+        return true;
+      } else {
+        search = search._parent;
+      }
+    }
+
+    return false;
+  }
+
+  /// Determines if the container has a named singleton with the given [name].
+  bool hasNamed(String name) {
+    var search = this;
+
+    while (search != null) {
+      if (search._namedSingletons.containsKey(name)) {
         return true;
       } else {
         search = search._parent;
