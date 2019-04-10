@@ -39,6 +39,8 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     if (value == null && param.required != false) throw param.error;
     return value;
   } else if (requirement is String) {
+    if (req.container.hasNamed(requirement))
+      return req.container.findByName(requirement);
     if (req.params.containsKey(requirement)) {
       return req.params[requirement];
     } else if ((propFromApp = req.app.findProperty(requirement)) != null)

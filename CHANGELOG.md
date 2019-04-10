@@ -4,6 +4,7 @@
     * Add `Angel.environment`.
     * Deprecated `app.isProduction` in favor of `app.environment.isProduction`.
 * Allow setting of `bodyAsObject`, `bodyAsMap`, or `bodyAsList` **exactly once**.
+* Resolve named singletons in `resolveInjection`.
 
 # 2.0.0-alpha.24
 * Add `AngelEnv` class to `core`.
