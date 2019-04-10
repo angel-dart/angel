@@ -113,6 +113,11 @@ abstract class RequestContext<RawRequest> {
     return _bodyFields;
   }
 
+  /// This setter allows you to explicitly set the request body **exactly once**.
+  ///
+  /// Use this if the format of the body is not natively parsed by Angel.
+  set bodyAsMap(Map<String, dynamic> value) => bodyAsObject = value;
+
   /// Returns a *mutable* [List] parsed from the request [body].
   ///
   /// Note that [parseBody] must be called first.
@@ -126,6 +131,11 @@ abstract class RequestContext<RawRequest> {
     return _bodyList;
   }
 
+  /// This setter allows you to explicitly set the request body **exactly once**.
+  ///
+  /// Use this if the format of the body is not natively parsed by Angel.
+  set bodyAsList(List value) => bodyAsObject = value;
+
   /// Returns the parsed request body, whatever it may be (typically a [Map] or [List]).
   ///
   /// Note that [parseBody] must be called first.
@@ -135,6 +145,21 @@ abstract class RequestContext<RawRequest> {
     }
 
     return _bodyObject;
+  }
+
+  /// This setter allows you to explicitly set the request body **exactly once**.
+  ///
+  /// Use this if the format of the body is not natively parsed by Angel.
+  set bodyAsObject(value) {
+    if (_bodyObject != null) {
+      throw StateError(
+          'The request body has already been parsed/set, and cannot be overwritten.');
+    } else {
+      if (value is List) _bodyList = value;
+      if (value is Map<String, dynamic>) _bodyFields = value;
+      _bodyObject = value;
+      _hasParsedBody = true;
+    }
   }
 
   /// Returns a *mutable* map of the files parsed from the request [body].
