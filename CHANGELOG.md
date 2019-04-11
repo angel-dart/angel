@@ -1,3 +1,6 @@
+# 2.0.0-rc.3
+* `MapService.modify` was not actually modifying items.
+
 # 2.0.0-rc.2
 * Fixes Pub analyzer lints (see `angel_route@3.0.6`)
 

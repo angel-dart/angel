@@ -102,13 +102,15 @@ class MapService extends Service<String, Map<String, dynamic>> {
     if (!items.any(_matchesId(id))) return create(data, params);
 
     return read(id).then((item) {
+      var idx = items.indexOf(item);
+      if (idx < 0) return create(data, params);
       var result = new Map<String, dynamic>.from(item)..addAll(data);
 
       if (autoIdAndDateFields == true)
         result
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
               new DateTime.now().toIso8601String();
-      return new Future.value(result);
+      return new Future.value(items[idx] = result);
     });
   }
 
