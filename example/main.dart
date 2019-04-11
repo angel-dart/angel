@@ -38,10 +38,18 @@ main() async {
           'http://localhost:3000/auth/twitter/callback',
     ),
     (twit, req, res) async {
-      var response =
-          await twit.twitterClient.get('/account/verify_credentials.json');
+      var response = await twit.twitterClient
+          .get('https://api.twitter.com/1.1/account/verify_credentials.json');
       var userData = json.decode(response.body) as Map;
       return _User(userData['screen_name'] as String);
+    },
+    (e, req, res) async {
+      // When an error occurs, i.e. the user declines to approve the application.
+      if (e.isDenial) {
+        res.write("Why'd you say no???");
+      } else {
+        res.write("oops: ${e.message}");
+      }
     },
   );
 
@@ -69,6 +77,7 @@ main() async {
       (req, res) {
         var user = req.container.make<_User>();
         res.write('Your Twitter handle is ${user.handle}');
+        return false;
       },
     ]),
   );
