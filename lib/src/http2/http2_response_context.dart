@@ -166,27 +166,29 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
     else if (!isBuffered) {
       _openStream();
 
-      if (encoders.isNotEmpty && correspondingRequest != null) {
-        if (_allowedEncodings != null) {
-          for (var encodingName in _allowedEncodings) {
-            Converter<List<int>, List<int>> encoder;
-            String key = encodingName;
+      if (!_isClosed) {
+        if (encoders.isNotEmpty && correspondingRequest != null) {
+          if (_allowedEncodings != null) {
+            for (var encodingName in _allowedEncodings) {
+              Converter<List<int>, List<int>> encoder;
+              String key = encodingName;
 
-            if (encoders.containsKey(encodingName))
-              encoder = encoders[encodingName];
-            else if (encodingName == '*') {
-              encoder = encoders[key = encoders.keys.first];
-            }
+              if (encoders.containsKey(encodingName))
+                encoder = encoders[encodingName];
+              else if (encodingName == '*') {
+                encoder = encoders[key = encoders.keys.first];
+              }
 
-            if (encoder != null) {
-              data = encoders[key].convert(data);
-              break;
+              if (encoder != null) {
+                data = encoders[key].convert(data);
+                break;
+              }
             }
           }
         }
-      }
 
-      stream.sendData(data);
+        stream.sendData(data);
+      }
     } else
       buffer.add(data);
   }

@@ -159,29 +159,31 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
     if (_isClosed && isBuffered)
       throw ResponseContext.closed();
     else if (!isBuffered) {
-      _openStream();
+      if (!_isClosed) {
+        _openStream();
 
-      if (encoders.isNotEmpty && correspondingRequest != null) {
-        if (_allowedEncodings != null) {
-          for (var encodingName in _allowedEncodings) {
-            Converter<List<int>, List<int>> encoder;
-            String key = encodingName;
+        if (encoders.isNotEmpty && correspondingRequest != null) {
+          if (_allowedEncodings != null) {
+            for (var encodingName in _allowedEncodings) {
+              Converter<List<int>, List<int>> encoder;
+              String key = encodingName;
 
-            if (encoders.containsKey(encodingName))
-              encoder = encoders[encodingName];
-            else if (encodingName == '*') {
-              encoder = encoders[key = encoders.keys.first];
-            }
+              if (encoders.containsKey(encodingName))
+                encoder = encoders[encodingName];
+              else if (encodingName == '*') {
+                encoder = encoders[key = encoders.keys.first];
+              }
 
-            if (encoder != null) {
-              data = encoders[key].convert(data);
-              break;
+              if (encoder != null) {
+                data = encoders[key].convert(data);
+                break;
+              }
             }
           }
         }
-      }
 
-      rawResponse.add(data);
+        rawResponse.add(data);
+      }
     } else
       buffer.add(data);
   }
