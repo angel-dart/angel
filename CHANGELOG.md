@@ -6,6 +6,7 @@
 * Allow setting of `bodyAsObject`, `bodyAsMap`, or `bodyAsList` **exactly once**.
 * Resolve named singletons in `resolveInjection`.
 * Fix a bug where `Service.parseId<double>` would attempt to parse an `int`.
+* Replace as Data cast in Service.dart with a method that throws a 400 on error.
 
 # 2.0.0-alpha.24
 * Add `AngelEnv` class to `core`.

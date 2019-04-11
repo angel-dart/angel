@@ -8,6 +8,7 @@ import '../util.dart';
 import 'anonymous_service.dart';
 import 'hooked_service.dart' show HookedService;
 import 'metadata.dart';
+import 'request_context.dart';
 import 'response_context.dart';
 import 'routable.dart';
 import 'server.dart';
@@ -71,6 +72,26 @@ class Service<Id, Data> extends Routable {
 
   /// Closes this service, including any database connections or stream controllers.
   void close() {}
+
+  /// An optional [readData] function can be passed to handle non-map/non-json bodies.
+  Service({FutureOr<Data> Function(RequestContext, ResponseContext) readData}) {
+    _readData = readData ??
+        (req, res) {
+          if (req.bodyAsObject is! Data) {
+            throw AngelHttpException.badRequest(
+                message:
+                    'Invalid request body. Expected $Data; found ${req.bodyAsObject} instead.');
+          } else {
+            return req.bodyAsObject as Data;
+          }
+        };
+  }
+
+  FutureOr<Data> Function(RequestContext, ResponseContext) _readData;
+
+  /// A [Function] that reads the request body and converts it into [Data].
+  FutureOr<Data> Function(RequestContext, ResponseContext) get readData =>
+      _readData;
 
   /// Retrieves the first object from the result of calling [index] with the given [params].
   ///
@@ -215,10 +236,10 @@ class Service<Id, Data> extends Routable {
     Middleware createMiddleware =
         getAnnotation<Middleware>(service.create, app.container.reflector);
     post('/', (req, ResponseContext res) {
-      return req.parseBody().then((_) {
-        return this
+      return req.parseBody().then((_) async {
+        return await this
             .create(
-                req.bodyAsMap as Data,
+                await readData(req, res),
                 mergeMap([
                   {'query': req.queryParameters},
                   restProvider,
@@ -254,10 +275,10 @@ class Service<Id, Data> extends Routable {
     Middleware modifyMiddleware =
         getAnnotation<Middleware>(service.modify, app.container.reflector);
     patch('/:id', (req, res) {
-      return req.parseBody().then((_) {
-        return this.modify(
+      return req.parseBody().then((_) async {
+        return await this.modify(
             parseId<Id>(req.params['id']),
-            req.bodyAsMap as Data,
+            await readData(req, res),
             mergeMap([
               {'query': req.queryParameters},
               restProvider,
@@ -273,10 +294,10 @@ class Service<Id, Data> extends Routable {
     Middleware updateMiddleware =
         getAnnotation<Middleware>(service.update, app.container.reflector);
     post('/:id', (req, res) {
-      return req.parseBody().then((_) {
-        return this.update(
+      return req.parseBody().then((_) async {
+        return await this.update(
             parseId<Id>(req.params['id']),
-            req.bodyAsMap as Data,
+            await readData(req, res),
             mergeMap([
               {'query': req.queryParameters},
               restProvider,
@@ -289,10 +310,10 @@ class Service<Id, Data> extends Routable {
           ..addAll(
               (updateMiddleware == null) ? [] : updateMiddleware.handlers));
     put('/:id', (req, res) {
-      return req.parseBody().then((_) {
-        return this.update(
+      return req.parseBody().then((_) async {
+        return await this.update(
             parseId<Id>(req.params['id']),
-            req.bodyAsMap as Data,
+            await readData(req, res),
             mergeMap([
               {'query': req.queryParameters},
               restProvider,
