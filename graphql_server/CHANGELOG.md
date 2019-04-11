@@ -1,3 +1,6 @@
+# 1.0.0-beta.2
+* Fix bug where field aliases would not be resolved.
+
 # 1.0.0-beta.1
 * Add (currently untested) subscription support.
 
