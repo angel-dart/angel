@@ -9,19 +9,19 @@ import 'package:star_wars/star_wars.dart' as star_wars;
 
 main() async {
   Future<Angel> createServer() async {
-    var app = new Angel();
     hierarchicalLoggingEnabled = true;
-    app.logger = new Logger.detached('star_wars')
+    var logger = Logger.detached('star_wars')
       ..onRecord.listen(star_wars.prettyLog);
+    var app = Angel(logger: logger);
     await app.configure(star_wars.configureServer);
     return app;
   }
 
-  var hot = new HotReloader(createServer, [new Directory('lib')]);
+  var hot = HotReloader(createServer, [Directory('lib')]);
 
   var server = await hot.startServer('127.0.0.1', 3000);
   var serverUrl =
-      new Uri(scheme: 'http', host: server.address.address, port: server.port);
+      Uri(scheme: 'http', host: server.address.address, port: server.port);
   var graphiQLUrl = serverUrl.replace(path: '/graphiql');
   print('Listening at $serverUrl');
   print('GraphiQL endpoint: $graphiQLUrl');

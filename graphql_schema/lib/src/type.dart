@@ -19,6 +19,9 @@ abstract class GraphQLType<Value, Serialized> {
   /// Deserializes a serialized value.
   Value deserialize(Serialized serialized);
 
+  /// Attempts to cast a dynamic [value] into a [Serialized] instance.
+  Serialized convert(value) => value as Serialized;
+
   /// Performs type coercion against an [input] value, and returns a list of errors if the validation was unsuccessful.
   ValidationResult<Serialized> validate(String key, Serialized input);
 
@@ -44,6 +47,15 @@ class GraphQLListType<Value, Serialized>
   final GraphQLType<Value, Serialized> ofType;
 
   GraphQLListType(this.ofType);
+
+  @override
+  List<Serialized> convert(value) {
+    if (value is Iterable) {
+      return value.cast<Serialized>().toList();
+    } else {
+      return super.convert(value);
+    }
+  }
 
   @override
   String get name => null;

@@ -571,6 +571,7 @@ class GraphQL {
 
     var errors = <GraphQLExceptionError>[];
 
+    print(possibleTypes);
     for (var t in possibleTypes) {
       try {
         var validation =
@@ -582,7 +583,9 @@ class GraphQL {
 
         errors
             .addAll(validation.errors.map((m) => new GraphQLExceptionError(m)));
-      } catch (_) {}
+      } on GraphQLException catch (e) {
+        errors.addAll(e.errors);
+      }
     }
 
     errors.insert(

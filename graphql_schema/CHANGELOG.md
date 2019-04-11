@@ -1,3 +1,6 @@
+# 1.0.4
+* Add `convert` method to types, to avoid some annoying generics bugs.
+
 # 1.0.3
 * `enumTypeFromStrings` now returns `GraphQLEnumType<String>`.
 
