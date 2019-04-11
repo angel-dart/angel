@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:file/file.dart';
 import 'package:markdown/markdown.dart';
 
 final RegExp _braces = new RegExp(r'@?{{(((\\})|([^}]))+)}}');
@@ -18,15 +18,15 @@ AngelConfigurer markdown(
   Directory viewsDirectory, {
   String extension,
   ExtensionSet extensionSet,
-  FutureOr<String> template(String content, Map locals),
+  FutureOr<String> template(String content, Map<String, dynamic> locals),
 }) {
   extension ??= '.md';
-  extensionSet ??= ExtensionSet.gitHub;
+  extensionSet ??= ExtensionSet.gitHubWeb;
 
   return (Angel app) async {
-    app.viewGenerator = (String name, [Map locals]) async {
-      var file =
-          new File.fromUri(viewsDirectory.uri.resolve('$name$extension'));
+    app.viewGenerator = (String name, [Map<String, dynamic> locals]) async {
+      var file = viewsDirectory.childFile(
+          viewsDirectory.fileSystem.path.setExtension(name, extension));
       var contents = await file.readAsString();
 
       contents = contents.replaceAllMapped(_braces, (m) {
@@ -40,7 +40,7 @@ AngelConfigurer markdown(
           var split = expr.split('.');
           var root = split[0];
 
-          if (!locals?.containsKey(root) == true)
+          if (locals?.containsKey(root) != true)
             throw new UnimplementedError(
                 'Expected a local named "$root", but none was provided. Expression text: "$text"');
 

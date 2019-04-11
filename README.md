@@ -17,13 +17,15 @@ dependencies:
 ```
 
 # Usage
-It's very straightforward to configure an Angel server to use Markdown:
+It's very straightforward to configure an Angel server to use Markdown.
+Keep in mind to use `package:file` instead of `dart:io`:
 
 ```dart
 configureServer(Angel app) async {
+  var fs = LocalFileSystem();
   await app.configure(markdown(
     // The directory where your views are located.
-    new Directory('views'),
+    fs.directory('views'),
   ));
 }
 ```
@@ -73,7 +75,7 @@ configureServer(Angel app) async {
   await app.configure(
     markdown(
         // The directory where your views are located.
-        new Directory('views'), template: (content, Map locals) {
+        fs.directory('views'), template: (content, Map locals) {
       return '''<!DOCTYPE html>
 <html>
     <head>

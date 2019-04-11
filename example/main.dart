@@ -1,19 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
 import 'package:angel_markdown/angel_markdown.dart';
+import 'package:file/local.dart';
 
 main() async {
   var app = await createServer();
-  var server = await app.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
+  var http = AngelHttp(app);
+  var server = await http.startServer(InternetAddress.loopbackIPv4, 3000);
   print('Listening at http://${server.address.address}:${server.port}');
 }
 
 Future<Angel> createServer() async {
   // Create a new server, and install the Markdown renderer.
   var app = new Angel();
+  var fs = LocalFileSystem();
   await app
-      .configure(markdown(new Directory('views'), template: (content, locals) {
+      .configure(markdown(fs.directory('views'), template: (content, locals) {
     return '''
 <!DOCTYPE html>
 <html>
@@ -38,7 +42,7 @@ Future<Angel> createServer() async {
   }));
 
   // Compile a landing page
-  app.get('/', (res) => res.render('hello', {'title': 'Welcome'}));
+  app.get('/', (req, res) => res.render('hello', {'title': 'Welcome'}));
 
   return app;
 }

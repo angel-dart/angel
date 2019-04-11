@@ -7,6 +7,7 @@ environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
   angel_framework: ^2.0.0-alpha
+  file: ^5.0.0
   markdown: ^2.0.0
 dev_dependencies:
   angel_test: ^2.0.0
