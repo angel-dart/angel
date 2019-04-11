@@ -29,7 +29,7 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
           'Please provide a valid username and password.',
       bool this.allowBasic = true,
       bool this.forceBasic = false,
-      String this.realm = 'Authentication is required.'}) {}
+      String this.realm = 'Authentication is required.'});
 
   @override
   Future<User> authenticate(RequestContext req, ResponseContext res,

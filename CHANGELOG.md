@@ -1,3 +1,6 @@
+# 2.1.2
+* Change empty cookie string to have double quotes (thanks @korsvanloon).
+
 # 2.1.1
 * Added `scopes` to `ExternalAuthOptions`.
 
