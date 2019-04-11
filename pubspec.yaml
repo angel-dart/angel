@@ -7,7 +7,9 @@ name: "angel_auth_twitter"
 version: 2.0.0
 dependencies:
   angel_auth: ^2.0.0
+  angel_framework: ^2.0.0-alpha
   http: ">=0.11.0 <0.13.0"
+  path: ^1.0.0
   # oauth:
   #   git:
   #     url: git://github.com/sh4869/oauth.dart.git
