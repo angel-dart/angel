@@ -24,8 +24,8 @@ void main() {
           pokemonType.validate('@root', x as Map<String, dynamic>).successful,
       'is a valid Pokémon');
 
-  var throwsATypeError =
-      throwsA(predicate((x) => x is TypeError, 'is a type error'));
+  var throwsATypeError = throwsA(predicate(
+      (x) => x is TypeError || x is CastError, 'is a type or cast error'));
 
   test('object accepts valid input', () {
     expect({'name': 'Charmander', 'type': 'FIRE'}, isValidPokemon);
