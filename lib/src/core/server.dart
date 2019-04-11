@@ -150,7 +150,8 @@ class Angel extends Routable {
   @override
   Route<RequestHandler> addRoute(
       String method, String path, RequestHandler handler,
-      {Iterable<RequestHandler> middleware = const []}) {
+      {Iterable<RequestHandler> middleware}) {
+    middleware ??= [];
     if (_flattened != null) {
       logger?.warning(
           'WARNING: You added a route ($method $path) to the router, after it had been optimized.');

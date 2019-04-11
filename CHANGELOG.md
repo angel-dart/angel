@@ -1,3 +1,6 @@
+# 2.0.0-rc.2
+* Fixes Pub analyzer lints (see `angel_route@3.0.6`)
+
 # 2.0.0-rc.1
 * Fix logic error that allowed content to be written to streaming responses after `close` was closed.
 
