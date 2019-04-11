@@ -1,10 +1,4 @@
-/// `dart:mirrors` functionality for this package will soon be removed;
-/// use `package:graphql_generator` to generate schemas instead.
-@deprecated
-library graphql_server.mirrors;
-
 import 'dart:mirrors';
-
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:recase/recase.dart';
