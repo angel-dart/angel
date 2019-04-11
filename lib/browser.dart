@@ -18,7 +18,7 @@ abstract class BrowserRouter<T> extends Router<T> {
 
   /// Set `hash` to true to use hash routing instead of push state.
   /// `listen` as `true` will call `listen` after initialization.
-  factory BrowserRouter({bool hash: false, bool listen: false}) {
+  factory BrowserRouter({bool hash = false, bool listen = false}) {
     return hash
         ? new _HashRouter<T>(listen: listen)
         : new _PushStateRouter<T>(listen: listen);

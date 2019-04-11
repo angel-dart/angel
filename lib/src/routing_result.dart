@@ -81,7 +81,7 @@ class RoutingResult<T> {
 
   RoutingResult(
       {this.parseResult,
-      Map<String, dynamic> params: const {},
+      Map<String, dynamic> params = const {},
       this.nested,
       this.shallowRoute,
       this.shallowRouter,

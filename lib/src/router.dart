@@ -118,8 +118,8 @@ class Router<T> {
   /// passes it to a callback. If none is provided, `print` is called.
   void dumpTree(
       {callback(String tree),
-      String header: 'Dumping route tree:',
-      String tab: '  '}) {
+      String header = 'Dumping route tree:',
+      String tab = '  '}) {
     final buf = new StringBuffer();
     int tabs = 0;
 
@@ -165,7 +165,7 @@ class Router<T> {
   /// Returns the created route.
   /// You can also register middleware within the router.
   SymlinkRoute<T> group(String path, void callback(Router<T> router),
-      {Iterable<T> middleware, String name: null}) {
+      {Iterable<T> middleware, String name}) {
     middleware ??= <T>[];
     final router = new Router<T>().._middleware.addAll(middleware);
     callback(router);
@@ -199,7 +199,7 @@ class Router<T> {
   /// ```dart
   /// router.navigate(['users/:id', {'id': '1337'}, 'profile']);
   /// ```
-  String navigate(Iterable linkParams, {bool absolute: true}) {
+  String navigate(Iterable linkParams, {bool absolute = true}) {
     final List<String> segments = [];
     Router search = this;
     Route lastRoute;
@@ -270,7 +270,7 @@ class Router<T> {
   /// Finds the first [Route] that matches the given path,
   /// with the given method.
   bool resolve(String absolute, String relative, List<RoutingResult<T>> out,
-      {String method: 'GET', bool strip: true}) {
+      {String method = 'GET', bool strip = true}) {
     final cleanRelative =
         strip == false ? relative : stripStraySlashes(relative);
     var scanner = new SpanScanner(cleanRelative);
@@ -315,13 +315,13 @@ class Router<T> {
   /// Returns the result of [resolve] with [path] passed as
   /// both `absolute` and `relative`.
   Iterable<RoutingResult<T>> resolveAbsolute(String path,
-          {String method: 'GET', bool strip: true}) =>
+          {String method = 'GET', bool strip = true}) =>
       resolveAll(path, path, method: method, strip: strip);
 
   /// Finds every possible [Route] that matches the given path,
   /// with the given method.
   Iterable<RoutingResult<T>> resolveAll(String absolute, String relative,
-      {String method: 'GET', bool strip: true}) {
+      {String method = 'GET', bool strip = true}) {
     if (_useCache == true) {
       return _cache.putIfAbsent('$method$absolute',
           () => _resolveAll(absolute, relative, method: method, strip: strip));
@@ -331,7 +331,7 @@ class Router<T> {
   }
 
   Iterable<RoutingResult<T>> _resolveAll(String absolute, String relative,
-      {String method: 'GET', bool strip: true}) {
+      {String method = 'GET', bool strip = true}) {
     var results = <RoutingResult<T>>[];
     resolve(absolute, relative, results, method: method, strip: strip);
 
@@ -413,9 +413,9 @@ class _ChainedRouter<T> extends Router<T> {
 
   @override
   SymlinkRoute<T> group(String path, void callback(Router<T> router),
-      {Iterable<T> middleware, String name: null}) {
-    final router =
-        new _ChainedRouter<T>(_root, []..addAll(_handlers)..addAll(middleware));
+      {Iterable<T> middleware, String name}) {
+    final router = new _ChainedRouter<T>(
+        _root, []..addAll(_handlers)..addAll(middleware ?? []));
     callback(router);
     return mount(path, router)..name = name;
   }
