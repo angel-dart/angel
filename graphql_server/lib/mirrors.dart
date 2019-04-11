@@ -9,6 +9,15 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:recase/recase.dart';
 
+/// Uses `dart:mirrors` to read field names from items. If they are Maps, performs a regular lookup.
+T mirrorsFieldResolver<T>(objectValue, String fieldName,
+    [Map<String, dynamic> objectValues]) {
+  if (objectValue is Map)
+    return objectValue[fieldName] as T;
+  else
+    return reflect(objectValue).getField(Symbol(fieldName)).reflectee as T;
+}
+
 /// Reflects upon a given [type] and dynamically generates a [GraphQLType] that corresponds to it.
 ///
 /// This function is aware of the annotations from `package:angel_serialize`, and works seamlessly

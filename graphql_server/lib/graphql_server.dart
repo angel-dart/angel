@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
-
 import 'introspection.dart';
 
+/// Transforms any [Map] into `Map<String, dynamic>`.
 Map<String, dynamic> foldToStringDynamic(Map map) {
   return map == null
       ? null
@@ -12,12 +11,21 @@ Map<String, dynamic> foldToStringDynamic(Map map) {
           <String, dynamic>{}, (out, k) => out..[k.toString()] = map[k]);
 }
 
+/// A Dart implementation of a GraphQL server.
 class GraphQL {
+  /// Any custom types to include in introspection information.
   final List<GraphQLType> customTypes = [];
+
+  /// An optional callback that can be used to resolve fields from objects that are not [Map]s,
+  /// when the related field has no resolver.
+  final FutureOr<T> Function<T>(T, String, Map<String, dynamic>)
+      defaultFieldResolver;
+
   GraphQLSchema _schema;
 
   GraphQL(GraphQLSchema schema,
       {bool introspect: true,
+      this.defaultFieldResolver,
       List<GraphQLType> customTypes = const <GraphQLType>[]})
       : _schema = schema {
     if (customTypes?.isNotEmpty == true) {
@@ -473,6 +481,14 @@ class GraphQL {
     var field = objectType.fields.firstWhere((f) => f.name == fieldName);
 
     if (field.resolve == null) {
+      if (defaultFieldResolver != null)
+        return await defaultFieldResolver(
+            objectValue, fieldName, argumentValues);
+
+      if (objectValue is Map) {
+        return objectValue[fieldName] as T;
+      }
+
       return null;
     } else {
       return await field.resolve(objectValue, argumentValues) as T;
@@ -571,7 +587,6 @@ class GraphQL {
 
     var errors = <GraphQLExceptionError>[];
 
-    print(possibleTypes);
     for (var t in possibleTypes) {
       try {
         var validation =
