@@ -204,7 +204,7 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
 
   /// Pushes a resource to the client.
   Http2ResponseContext push(String path,
-      {Map<String, String> headers: const {}, String method: 'GET'}) {
+      {Map<String, String> headers = const {}, String method = 'GET'}) {
     var targetUri = _req.uri.replace(path: path);
 
     var h = <Header>[

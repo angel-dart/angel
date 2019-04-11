@@ -23,10 +23,10 @@ class MapService extends Service<String, Map<String, dynamic>> {
   final List<Map<String, dynamic>> items = [];
 
   MapService(
-      {this.allowRemoveAll: false,
-      this.allowQuery: true,
-      this.autoIdAndDateFields: true,
-      this.autoSnakeCaseNames: true})
+      {this.allowRemoveAll = false,
+      this.allowQuery = true,
+      this.autoIdAndDateFields = true,
+      this.autoSnakeCaseNames = true})
       : super();
 
   String get createdAtKey =>

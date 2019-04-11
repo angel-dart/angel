@@ -95,7 +95,7 @@ class Routable extends Router<RequestHandler> {
   @override
   Route<RequestHandler> addRoute(
       String method, String path, RequestHandler handler,
-      {Iterable<RequestHandler> middleware: const <RequestHandler>[]}) {
+      {Iterable<RequestHandler> middleware = const []}) {
     final handlers = <RequestHandler>[];
     // Merge @Middleware declaration, if any
     Middleware middlewareDeclaration =

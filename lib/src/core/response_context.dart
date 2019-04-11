@@ -173,7 +173,7 @@ abstract class ResponseContext<RawResponse>
   /// Returns a JSONP response.
   ///
   /// You can override the [contentType] sent; by default it is `application/javascript`.
-  void jsonp(value, {String callbackName: "callback", MediaType contentType}) {
+  void jsonp(value, {String callbackName = "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
     this.contentType =
         contentType ?? new MediaType('application', 'javascript');
@@ -201,7 +201,7 @@ abstract class ResponseContext<RawResponse>
   /// based on the provided params.
   ///
   /// See [Router]#navigate for more. :)
-  void redirect(url, {bool absolute: true, int code: 302}) {
+  void redirect(url, {bool absolute = true, int code = 302}) {
     if (!isOpen) throw closed();
     headers
       ..['content-type'] = 'text/html'

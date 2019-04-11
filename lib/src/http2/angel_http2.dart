@@ -30,7 +30,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
         );
 
   factory AngelHttp2(Angel app, SecurityContext securityContext,
-      {bool useZone: true, ServerSettings settings}) {
+      {bool useZone = true, ServerSettings settings}) {
     return new AngelHttp2.custom(app, securityContext, SecureServerSocket.bind,
         settings: settings);
   }
@@ -40,7 +40,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
       SecurityContext ctx,
       Future<SecureServerSocket> serverGenerator(
           address, int port, SecurityContext ctx),
-      {bool useZone: true,
+      {bool useZone = true,
       ServerSettings settings}) {
     return new AngelHttp2._(app, (address, port) {
       var addr = address is InternetAddress

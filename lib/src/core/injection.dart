@@ -7,7 +7,7 @@ const List<Type> _primitiveTypes = [String, int, num, double, Null];
 /// Use this to instantly create a request handler for a DI-enabled method.
 ///
 /// Calling [ioc] also auto-serializes the result of a [handler].
-RequestHandler ioc(Function handler, {Iterable<String> optional: const []}) {
+RequestHandler ioc(Function handler, {Iterable<String> optional = const []}) {
   InjectionRequest injection;
   RequestHandler contained;
 
@@ -129,10 +129,10 @@ class InjectionRequest {
   final Map<String, Parameter> parameters;
 
   const InjectionRequest.constant(
-      {this.named: const {},
-      this.required: const [],
-      this.optional: const [],
-      this.parameters: const {}});
+      {this.named = const {},
+      this.required = const [],
+      this.optional = const [],
+      this.parameters = const {}});
 
   InjectionRequest()
       : named = {},

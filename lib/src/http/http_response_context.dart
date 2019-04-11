@@ -71,7 +71,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   }
 
   @override
-  void set contentType(MediaType value) {
+  set contentType(MediaType value) {
     super.contentType = value;
     if (!_streamInitialized)
       rawResponse.headers.contentType =

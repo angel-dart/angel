@@ -26,19 +26,19 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
       Future<HttpServer> Function(dynamic, int) serverGenerator, bool useZone)
       : super(app, serverGenerator, useZone: useZone);
 
-  factory AngelHttp(Angel app, {bool useZone: true}) {
+  factory AngelHttp(Angel app, {bool useZone = true}) {
     return new AngelHttp._(app, HttpServer.bind, useZone);
   }
 
   /// An instance mounted on a server started by the [serverGenerator].
   factory AngelHttp.custom(
       Angel app, Future<HttpServer> Function(dynamic, int) serverGenerator,
-      {bool useZone: true}) {
+      {bool useZone = true}) {
     return new AngelHttp._(app, serverGenerator, useZone);
   }
 
   factory AngelHttp.fromSecurityContext(Angel app, SecurityContext context,
-      {bool useZone: true}) {
+      {bool useZone = true}) {
     return new AngelHttp._(app, (address, int port) {
       return HttpServer.bindSecure(address, port, context);
     }, useZone);
@@ -51,7 +51,7 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
   /// the server.
   factory AngelHttp.secure(
       Angel app, String certificateChainPath, String serverKeyPath,
-      {String password, bool useZone: true}) {
+      {String password, bool useZone = true}) {
     var certificateChain =
         Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
@@ -86,7 +86,7 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
   Future<HttpRequestContext> createRequestContext(
       HttpRequest request, HttpResponse response) {
     var path = request.uri.path.replaceAll(_straySlashes, '');
-    if (path.length == 0) path = '/';
+    if (path.isEmpty) path = '/';
     return HttpRequestContext.from(request, app, path);
   }
 

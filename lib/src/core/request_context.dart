@@ -191,7 +191,7 @@ abstract class RequestContext<RawRequest> {
   /// [contentType] can be either of the following:
   /// * A [ContentType], in which case the `Accept` header will be compared against its `mimeType` property.
   /// * Any other Dart value, in which case the `Accept` header will be compared against the result of a `toString()` call.
-  bool accepts(contentType, {bool strict: false}) {
+  bool accepts(contentType, {bool strict = false}) {
     var contentTypeString = contentType is MediaType
         ? contentType.mimeType
         : contentType?.toString();
@@ -215,7 +215,7 @@ abstract class RequestContext<RawRequest> {
   bool get acceptsAll => _acceptsAllCache ??= accepts('*/*');
 
   /// Manually parses the request body, if it has not already been parsed.
-  Future<void> parseBody({Encoding encoding: utf8}) async {
+  Future<void> parseBody({Encoding encoding = utf8}) async {
     if (contentType == null) {
       throw FormatException('Missing "content-type" header.');
     }
@@ -322,7 +322,7 @@ class UploadedFile {
   }
 
   /// Reads the contents of the file as [String], using the given [encoding].
-  Future<String> readAsString({Encoding encoding: utf8}) {
+  Future<String> readAsString({Encoding encoding = utf8}) {
     return data.transform(encoding.decoder).join();
   }
 }

@@ -18,7 +18,7 @@ class Hooks {
   final List<HookedServiceEventListener> before;
   final List<HookedServiceEventListener> after;
 
-  const Hooks({this.before: const [], this.after: const []});
+  const Hooks({this.before = const [], this.after = const []});
 }
 
 /// Exposes a [Controller] to the Internet.
@@ -30,10 +30,10 @@ class Expose {
   final List<String> allowNull;
 
   const Expose(this.path,
-      {this.method: "GET",
-      this.middleware: const [],
-      this.as: null,
-      this.allowNull: const []});
+      {this.method = "GET",
+      this.middleware = const [],
+      this.as,
+      this.allowNull = const []});
 }
 
 /// Used to apply special dependency injections or functionality to a function parameter.
@@ -101,7 +101,7 @@ class Parameter {
 
 /// Shortcut for declaring a request header [Parameter].
 class Header extends Parameter {
-  const Header(String header, {match, defaultValue, bool required: true})
+  const Header(String header, {match, defaultValue, bool required = true})
       : super(
             header: header,
             match: match,
@@ -111,7 +111,7 @@ class Header extends Parameter {
 
 /// Shortcut for declaring a request session [Parameter].
 class Session extends Parameter {
-  const Session(String session, {match, defaultValue, bool required: true})
+  const Session(String session, {match, defaultValue, bool required = true})
       : super(
             session: session,
             match: match,
@@ -121,7 +121,7 @@ class Session extends Parameter {
 
 /// Shortcut for declaring a request query [Parameter].
 class Query extends Parameter {
-  const Query(String query, {match, defaultValue, bool required: true})
+  const Query(String query, {match, defaultValue, bool required = true})
       : super(
             query: query,
             match: match,
@@ -131,7 +131,7 @@ class Query extends Parameter {
 
 /// Shortcut for declaring a request cookie [Parameter].
 class CookieValue extends Parameter {
-  const CookieValue(String cookie, {match, defaultValue, bool required: true})
+  const CookieValue(String cookie, {match, defaultValue, bool required = true})
       : super(
             cookie: cookie,
             match: match,

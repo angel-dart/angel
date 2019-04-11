@@ -11,8 +11,8 @@ void main() {
   var http = AngelHttp(app);
 
   Future<RequestContext> request(
-      {bool asJson: true,
-      bool parse: true,
+      {bool asJson = true,
+      bool parse = true,
       Map<String, dynamic> bodyFields,
       List bodyList}) async {
     var rq = MockHttpRequest('POST', Uri(path: '/'));

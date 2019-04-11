@@ -150,7 +150,7 @@ class Angel extends Routable {
   @override
   Route<RequestHandler> addRoute(
       String method, String path, RequestHandler handler,
-      {Iterable<RequestHandler> middleware: const <RequestHandler>[]}) {
+      {Iterable<RequestHandler> middleware = const []}) {
     if (_flattened != null) {
       logger?.warning(
           'WARNING: You added a route ($method $path) to the router, after it had been optimized.');
@@ -216,9 +216,9 @@ class Angel extends Routable {
   @override
   void dumpTree(
       {callback(String tree),
-      String header: 'Dumping route tree:',
-      String tab: '  ',
-      bool showMatchers: false}) {
+      String header = 'Dumping route tree:',
+      String tab = '  ',
+      bool showMatchers = false}) {
     if (environment.isProduction) {
       _flattened ??= flatten(this);
 
@@ -292,7 +292,7 @@ class Angel extends Routable {
   /// * [flatten]s the route tree into a linear one.
   ///
   /// You may [force] the optimization to run, if you are not running in production.
-  void optimizeForProduction({bool force: false}) {
+  void optimizeForProduction({bool force = false}) {
     if (environment.isProduction || force == true) {
       _flattened ??= flatten(this);
       logger?.info('Angel is running in production mode.');
@@ -354,10 +354,10 @@ class Angel extends Routable {
   }
 
   Angel(
-      {Reflector reflector: const EmptyReflector(),
-      this.environment: angelEnv,
+      {Reflector reflector = const EmptyReflector(),
+      this.environment = angelEnv,
       this.logger,
-      this.allowMethodOverrides: true,
+      this.allowMethodOverrides = true,
       this.serializer,
       this.viewGenerator})
       : super(reflector) {
