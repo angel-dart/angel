@@ -8,17 +8,17 @@ import 'package:graphql_server/mirrors.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel();
-  var http = new AngelHttp(app);
-  hierarchicalLoggingEnabled = true;
-  app.logger = new Logger('angel_graphql')
-    ..onRecord.listen((rec) {
-      print(rec);
-      if (rec.error != null) print(rec.error);
-      if (rec.stackTrace != null) print(rec.stackTrace);
-    });
+  var logger = Logger('angel_graphql');
+  var app = Angel(
+      logger: logger
+        ..onRecord.listen((rec) {
+          print(rec);
+          if (rec.error != null) print(rec.error);
+          if (rec.stackTrace != null) print(rec.stackTrace);
+        }));
+  var http = AngelHttp(app);
 
-  var todoService = app.use('api/todos', new MapService());
+  var todoService = app.use('api/todos', MapService());
 
   var queryType = objectType(
     'Query',
@@ -34,7 +34,7 @@ main() async {
         convertDartType(Todo),
         resolve: resolveViaServiceRead(todoService),
         inputs: [
-          new GraphQLFieldInput('id', graphQLId.nonNullable()),
+          GraphQLFieldInput('id', graphQLId.nonNullable()),
         ],
       ),
     ],
@@ -56,7 +56,7 @@ main() async {
     mutationType: mutationType,
   );
 
-  app.all('/graphql', graphQLHttp(new GraphQL(schema)));
+  app.all('/graphql', graphQLHttp(GraphQL(schema)));
   app.get('/graphiql', graphiQL());
 
   await todoService
@@ -70,7 +70,7 @@ main() async {
 
   var server = await http.startServer('127.0.0.1', 3000);
   var uri =
-      new Uri(scheme: 'http', host: server.address.address, port: server.port);
+      Uri(scheme: 'http', host: server.address.address, port: server.port);
   var graphiqlUri = uri.replace(path: 'graphiql');
   print('Listening at $uri');
   print('Access graphiql at $graphiqlUri');

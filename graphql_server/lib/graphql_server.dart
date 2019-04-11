@@ -241,8 +241,8 @@ class GraphQL {
           'The grouped field set from this query must have exactly one entry.',
           selectionSet.span);
     var fields = groupedFieldSet.entries.first.value;
-    // TODO: This value is unaffected if an alias is used. (is this true?)
-    var fieldName = fields.first.field.fieldName.name;
+    var fieldName = fields.first.field.fieldName.alias?.name ??
+        fields.first.field.fieldName.name;
     var field = fields.first;
     var argumentValues =
         coerceArgumentValues(subscriptionType, field, variableValues);
@@ -321,7 +321,8 @@ class GraphQL {
       var fields = groupedFieldSet[responseKey];
 
       for (var field in fields) {
-        var fieldName = field.field.fieldName.name;
+        var fieldName =
+            field.field.fieldName.alias?.name ?? field.field.fieldName.name;
         var responseValue;
 
         if (fieldName == '__typename') {
@@ -364,7 +365,7 @@ class GraphQL {
     var argumentValues =
         coerceArgumentValues(objectType, field, variableValues);
     var resolvedValue = await resolveFieldValue(
-        objectType, objectValue, field.field.fieldName.name, argumentValues);
+        objectType, objectValue, fieldName, argumentValues);
     return completeValue(document, fieldName, fieldType, fields, resolvedValue,
         variableValues, globalVariables);
   }
@@ -373,7 +374,8 @@ class GraphQL {
       SelectionContext field, Map<String, dynamic> variableValues) {
     var coercedValues = <String, dynamic>{};
     var argumentValues = field.field.arguments;
-    var fieldName = field.field.fieldName.name;
+    var fieldName =
+        field.field.fieldName.alias?.name ?? field.field.fieldName.name;
     var desiredField = objectType.fields.firstWhere((f) => f.name == fieldName);
     var argumentDefinitions = desiredField.inputs;
 
@@ -621,7 +623,8 @@ class GraphQL {
           false) continue;
 
       if (selection.field != null) {
-        var responseKey = selection.field.fieldName.name;
+        var responseKey = selection.field.fieldName.alias?.alias ??
+            selection.field.fieldName.name;
         var groupForResponseKey =
             groupedFields.putIfAbsent(responseKey, () => []);
         groupForResponseKey.add(selection);
