@@ -1,3 +1,6 @@
+# 3.0.6
+* Remove static default values for `middleware`.
+
 # 3.0.5
 * Add `MiddlewarePipelineIterator`.
 

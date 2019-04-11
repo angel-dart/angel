@@ -72,7 +72,9 @@ abstract class _BrowserRouterImpl<T> extends Router<T>
       all(path, handler, middleware: middleware);
 
   void prepareAnchors() {
-    final anchors = window.document.querySelectorAll('a'); //:not([dynamic])');
+    final anchors = window.document
+        .querySelectorAll('a')
+        .cast<AnchorElement>(); //:not([dynamic])');
 
     for (final AnchorElement $a in anchors) {
       if ($a.attributes.containsKey('href') &&

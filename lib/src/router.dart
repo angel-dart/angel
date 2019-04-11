@@ -69,7 +69,8 @@ class Router<T> {
   /// for requests with the given method (case-insensitive).
   /// Provide '*' as the method to respond to all methods.
   Route<T> addRoute(String method, String path, T handler,
-      {Iterable<T> middleware: const []}) {
+      {Iterable<T> middleware}) {
+    middleware ??= <T>[];
     if (_useCache == true)
       throw new StateError('Cannot add routes after caching is enabled.');
 
@@ -164,7 +165,8 @@ class Router<T> {
   /// Returns the created route.
   /// You can also register middleware within the router.
   SymlinkRoute<T> group(String path, void callback(Router<T> router),
-      {Iterable<T> middleware: const [], String name: null}) {
+      {Iterable<T> middleware, String name: null}) {
+    middleware ??= <T>[];
     final router = new Router<T>().._middleware.addAll(middleware);
     callback(router);
     return mount(path, router)..name = name;
@@ -402,15 +404,16 @@ class _ChainedRouter<T> extends Router<T> {
 
   @override
   Route<T> addRoute(String method, String path, handler,
-      {Iterable<T> middleware: const []}) {
+      {Iterable<T> middleware}) {
     var route = super.addRoute(method, path, handler,
         middleware: []..addAll(_handlers)..addAll(middleware ?? []));
     //_root._routes.add(route);
     return route;
   }
 
+  @override
   SymlinkRoute<T> group(String path, void callback(Router<T> router),
-      {Iterable<T> middleware: const [], String name: null}) {
+      {Iterable<T> middleware, String name: null}) {
     final router =
         new _ChainedRouter<T>(_root, []..addAll(_handlers)..addAll(middleware));
     callback(router);
