@@ -16,6 +16,6 @@ dependencies:
 dev_dependencies:
   angel_serialize: ^2.0.0
   logging: ^0.11.0
-dependency_overrides:
-  graphql_server:
-    path: ../graphql_server
+# dependency_overrides:
+#   graphql_server:
+#     path: ../graphql_server
