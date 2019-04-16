@@ -9,7 +9,7 @@ packages:
     source: hosted
     version: "0.35.0"
   angel_model:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: angel_model
       url: "https://pub.dartlang.org"
