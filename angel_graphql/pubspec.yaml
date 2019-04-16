@@ -1,5 +1,5 @@
 name: angel_graphql
-version: 1.0.0-alpha
+version: 1.0.0-beta
 description: The fastest + easiest way to get a GraphQL backend in Dart, using Angel.
 homepage: https://github.com/angel-dart/graphql
 author: Tobe O <thosakwe@gmail.com>
