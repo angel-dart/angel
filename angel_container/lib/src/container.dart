@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'exception.dart';
 import 'reflector.dart';
 
@@ -52,6 +53,21 @@ class Container {
     }
 
     return false;
+  }
+
+  /// Instantiates an instance of [T], asynchronously.
+  ///
+  /// It is similar to [make], but resolves an injection of either
+  /// `Future<T>` or `T`.
+  Future<T> makeAsync<T>() async {
+    if (has<Future<T>>()) {
+      return make<Future<T>>();
+    } else if (has<T>()) {
+      return Future<T>.value(make<T>());
+    } else {
+      throw new ReflectionException(
+          'No injection for Future<$T> or $T was found.');
+    }
   }
 
   /// Instantiates an instance of [T].

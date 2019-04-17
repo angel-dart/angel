@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:angel_container/angel_container.dart';
 import 'package:test/test.dart';
 
@@ -10,6 +12,7 @@ void testReflector(Reflector reflector) {
   setUp(() {
     container = new Container(reflector);
     container.registerSingleton(blaziken);
+    container.registerFactory<Future<int>>((_) async => 46);
   });
 
   test('get field', () {
@@ -48,6 +51,14 @@ void testReflector(Reflector reflector) {
 
   test('make with generic returns same as make with explicit type', () {
     expect(container.make<Pokemon>(), blaziken);
+  });
+
+  test('make async returns async object', () async {
+    expect(container.makeAsync<int>(), completion(46));
+  });
+
+  test('make async returns sync object', () async {
+    expect(container.makeAsync<Pokemon>(), completion(blaziken));
   });
 
   test('make on aliased singleton returns singleton', () {

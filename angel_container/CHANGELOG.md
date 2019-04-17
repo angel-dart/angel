@@ -1,3 +1,6 @@
+# 1.0.2
+* Added `makeAsync<T>`.
+
 # 1.0.1
 * Added `hasNamed`.
 

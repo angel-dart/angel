@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_container/mirrors.dart';
 
-void main() {
+Future<void> main() async {
   // Create a container instance.
   var container = new Container(const MirrorsReflector());
 
@@ -20,6 +22,13 @@ void main() {
 
   // Use `make` to create an instance.
   var truck = container.make<Truck>();
+
+  // You can also resolve injections asynchronously.
+  container.registerFactory<Future<int>>((_) async => 24);
+  print(await container.makeAsync<int>());
+
+  // Asynchronous resolution also works for plain objects.
+  await container.makeAsync<Truck>().then((t) => t.drive());
 
   // Register a named singleton.
   container.registerNamedSingleton('the_truck', truck);
