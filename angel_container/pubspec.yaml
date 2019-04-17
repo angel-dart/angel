@@ -1,5 +1,5 @@
 name: angel_container
-version: 1.0.3
+version: 1.0.4
 author: Tobe O <thosakwe@gmail.com>
 description: "A better IoC container and dependency injector for Angel, ultimately allowing Angel to be used without dart:mirrors."
 homepage: https://github.com/angel-dart/container.git
