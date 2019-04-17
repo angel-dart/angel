@@ -1,5 +1,5 @@
 author: Tobe O <thosakwe@gmail.com>
-description: Command-line tools for the Angel framework.
+description: Command-line tools for the Angel framework, including scaffolding.
 homepage: https://github.com/angel-dart/angel_cli
 name: angel_cli
 version: 2.1.5+1

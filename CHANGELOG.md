@@ -1,3 +1,6 @@
+# 2.1.5+1
+* Update to `inflection2`.
+
 # 2.1.5
 * Add `shared` boilerplates.
 * Remove uncecessary `angel_model` imports.
