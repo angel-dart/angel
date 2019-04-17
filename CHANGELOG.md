@@ -1,3 +1,6 @@
+# 2.0.1
+* Pass everything through `_jsonifyToSD` when returning responses.
+
 # 2.0.0
 * Dart/Angel 2 update.
 * Remove `package:dart2_constant`

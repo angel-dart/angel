@@ -60,17 +60,19 @@ class JsonFileService extends Service<String, Map<String, dynamic>> {
   @override
   Future<List<Map<String, dynamic>>> index(
           [Map<String, dynamic> params]) async =>
-      _load().then((_) => _store.index(params));
+      _load()
+          .then((_) => _store.index(params))
+          .then((it) => it.map(_jsonifyToSD).toList());
 
   @override
   Future<Map<String, dynamic>> read(id, [Map<String, dynamic> params]) =>
-      _load().then((_) => _store.read(id, params));
+      _load().then((_) => _store.read(id, params)).then(_jsonifyToSD);
 
   @override
   Future<Map<String, dynamic>> create(data,
       [Map<String, dynamic> params]) async {
     await _load();
-    var created = await _store.create(data, params);
+    var created = await _store.create(data, params).then(_jsonifyToSD);
     await _save();
     return created;
   }
@@ -78,7 +80,7 @@ class JsonFileService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> remove(id, [Map<String, dynamic> params]) async {
     await _load();
-    var r = await _store.remove(id, params);
+    var r = await _store.remove(id, params).then(_jsonifyToSD);
     await _save();
     return r;
   }
@@ -87,7 +89,7 @@ class JsonFileService extends Service<String, Map<String, dynamic>> {
   Future<Map<String, dynamic>> update(id, data,
       [Map<String, dynamic> params]) async {
     await _load();
-    var r = await _store.update(id, data, params);
+    var r = await _store.update(id, data, params).then(_jsonifyToSD);
     await _save();
     return r;
   }
@@ -96,7 +98,7 @@ class JsonFileService extends Service<String, Map<String, dynamic>> {
   Future<Map<String, dynamic>> modify(id, data,
       [Map<String, dynamic> params]) async {
     await _load();
-    var r = await _store.update(id, data, params);
+    var r = await _store.update(id, data, params).then(_jsonifyToSD);
     await _save();
     return r;
   }
@@ -118,6 +120,9 @@ _safeForJson(x) {
 Map _jsonify(Map map) {
   return map.keys.fold<Map>({}, (out, k) => out..[k] = _safeForJson(map[k]));
 }
+
+Map<String, dynamic> _jsonifyToSD(Map<String, dynamic> map) =>
+    _jsonify(map).cast<String, dynamic>();
 
 dynamic _revive(x) {
   if (x is Map) {

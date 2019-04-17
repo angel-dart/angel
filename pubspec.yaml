@@ -1,5 +1,5 @@
 name: angel_file_service
-version: 2.0.0
+version: 2.0.1
 description: Angel service that persists data to a file on disk.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/file_service
