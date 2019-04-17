@@ -20,7 +20,7 @@ class ContainedReflectable extends Reflectable {
 }
 
 /// A [Reflector] instance that uses a [Reflectable] to reflect upon data.
-class GeneratedReflector implements Reflector {
+class GeneratedReflector extends Reflector {
   final Reflectable reflectable;
 
   const GeneratedReflector([this.reflectable = contained]);

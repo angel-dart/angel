@@ -6,7 +6,7 @@ final Map<Symbol, String> _symbolNames = <Symbol, String>{};
 /// instead returning empty objects on every invocation.
 ///
 /// Use this in contexts where you know you won't need any reflective capabilities.
-class EmptyReflector implements Reflector {
+class EmptyReflector extends Reflector {
   /// A [RegExp] that can be used to extract the name of a symbol without reflection.
   static final RegExp symbolRegex = new RegExp(r'Symbol\("([^"]+)"\)');
 

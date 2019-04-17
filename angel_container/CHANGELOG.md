@@ -1,3 +1,6 @@
+# 1.0.3
+* Added `Future` support to `Reflector`.
+
 # 1.0.2
 * Added `makeAsync<T>`.
 

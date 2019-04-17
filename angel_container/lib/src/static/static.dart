@@ -3,7 +3,7 @@ import 'package:angel_container/angel_container.dart';
 /// A [Reflector] implementation that performs simple [Map] lookups.
 ///
 /// `package:angel_container_generator` uses this to create reflectors from analysis metadata.
-class StaticReflector implements Reflector {
+class StaticReflector extends Reflector {
   final Map<Symbol, String> names;
   final Map<Type, ReflectedType> types;
   final Map<Function, ReflectedFunction> functions;

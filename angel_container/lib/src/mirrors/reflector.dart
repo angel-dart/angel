@@ -1,12 +1,12 @@
+import 'dart:async';
 import 'dart:mirrors' as dart;
-
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_container/src/reflector.dart';
 
 /// A [Reflector] implementation that forwards to `dart:mirrors`.
 ///
 /// Useful on the server, where reflection is supported.
-class MirrorsReflector implements Reflector {
+class MirrorsReflector extends Reflector {
   const MirrorsReflector();
 
   @override
@@ -42,6 +42,22 @@ class MirrorsReflector implements Reflector {
         return new _ReflectedTypeMirror(mirror);
       }
     }
+  }
+
+  @override
+  ReflectedType reflectFutureOf(Type type) {
+    var inner = reflectType(type);
+    dart.TypeMirror _mirror;
+    if (inner is _ReflectedClassMirror) {
+      _mirror = inner.mirror;
+    } else if (inner is _ReflectedTypeMirror) {
+      _mirror = inner.mirror;
+    } else {
+      throw ArgumentError('$type is not a class or type.');
+    }
+
+    var future = dart.reflectType(Future, [_mirror.reflectedType]);
+    return _ReflectedTypeMirror(future);
   }
 
   @override

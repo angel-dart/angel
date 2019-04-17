@@ -2,6 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
 abstract class Reflector {
+  const Reflector();
+
   String getName(Symbol symbol);
 
   ReflectedClass reflectClass(Type clazz);
@@ -11,6 +13,10 @@ abstract class Reflector {
   ReflectedType reflectType(Type type);
 
   ReflectedInstance reflectInstance(Object object);
+
+  ReflectedType reflectFutureOf(Type type) {
+    throw new UnsupportedError('`reflectFutureOf` requires `dart:mirrors`.');
+  }
 }
 
 abstract class ReflectedInstance {
