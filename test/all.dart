@@ -1,18 +1,20 @@
 import 'dart:io';
-
 import 'package:io/ansi.dart';
-
 import 'accepts_test.dart' as accepts;
 import 'anonymous_service_test.dart' as anonymous_service;
+import 'body_test.dart' as body;
 import 'controller_test.dart' as controller;
+import 'detach_test.dart' as detach;
 import 'di_test.dart' as di;
 import 'encoders_buffer_test.dart' as encoders_buffer;
+import 'env_test.dart' as env;
 import 'exception_test.dart' as exception;
 import 'extension_test.dart' as extension;
 import 'find_one_test.dart' as find_one;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
 import 'parameter_meta_test.dart' as parameter_meta;
+import 'parse_id_test.dart' as parse_id;
 import 'precontained_test.dart' as precontained;
 import 'primitives_test.dart' as primitives;
 import 'repeat_request_test.dart' as repeat_request;
@@ -30,15 +32,19 @@ main() {
   print(cyan.wrap('Running tests on ${Platform.version}'));
   group('accepts', accepts.main);
   group('anonymous service', anonymous_service.main);
+  group('body', body.main);
   group('controller', controller.main);
+  group('detach', detach.main);
   group('di', di.main);
   group('encoders_buffer', encoders_buffer.main);
+  group('env', env.main);
   group('exception', exception.main);
   group('extension', extension.main);
   group('find_one', find_one.main);
   group('general', general.main);
   group('hooked', hooked.main);
   group('parameter_meta', parameter_meta.main);
+  group('parse_id', parse_id.main);
   group('precontained', precontained.main);
   group('primitives', primitives.main);
   group('repeat request', repeat_request.main);

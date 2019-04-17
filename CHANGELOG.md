@@ -1,3 +1,7 @@
+# 2.0.0-rc.5
+* Make `serializer` `FutureOr<String> Function(Object)`.
+* Make `ResponseContext.serialize` return `Future<bool>`.
+
 # 2.0.0-rc.4
 * Support resolution of asynchronous injections in controllers and `ioc`.
 * Inject `RequestContext` and `ResponseContext` into requests.

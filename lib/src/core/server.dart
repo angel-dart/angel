@@ -51,7 +51,7 @@ class Angel extends Routable {
   final MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
 
   /// A middleware to inject a serialize on every request.
-  String Function(dynamic) serializer;
+  FutureOr<String> Function(dynamic) serializer;
 
   /// A [Map] of dependency data obtained via reflection.
   ///

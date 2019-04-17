@@ -71,7 +71,7 @@ abstract class ResponseContext<RawResponse>
   /// ```dart
   /// app.injectSerializer(JSON.encode);
   /// ```
-  String Function(dynamic) serializer = c.json.encode;
+  FutureOr<String> Function(dynamic) serializer = c.json.encode;
 
   /// This response's status code.
   int get statusCode => _statusCode;
@@ -295,13 +295,13 @@ abstract class ResponseContext<RawResponse>
   }
 
   /// Serializes data to the response.
-  bool serialize(value, {MediaType contentType}) {
+  Future<bool> serialize(value, {MediaType contentType}) async {
     if (!isOpen) throw closed();
     this.contentType = contentType ?? new MediaType('application', 'json');
-    var text = serializer(value);
+    var text = await serializer(value);
     if (text.isEmpty) return true;
     write(text);
-    close();
+    await close();
     return false;
   }
 
