@@ -76,13 +76,11 @@ void main() {
       res.write('ok');
 
       if (res is Http2ResponseContext && res.canPush) {
-        res.push('a')
-          ..write('a')
-          ..close();
+        var a = res.push('a')..write('a');
+        await a.close();
 
-        res.push('b')
-          ..write('b')
-          ..close();
+        var b = res.push('b')..write('b');
+        await b.close();
       }
 
       await res.close();

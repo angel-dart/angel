@@ -14,9 +14,8 @@ void main() {
     app.get('/detach', (req, res) async {
       if (res is HttpResponseContext) {
         var io = await res.detach();
-        io
-          ..write('Hey!')
-          ..close();
+        io..write('Hey!');
+        await io.close();
       } else {
         throw new StateError('This endpoint only supports HTTP/1.1.');
       }
@@ -26,7 +25,8 @@ void main() {
   tearDown(() => http.close());
 
   test('detach response', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/detach'))..close();
+    var rq = new MockHttpRequest('GET', Uri.parse('/detach'));
+    await rq.close();
     var rs = rq.response;
     await http.handleRequest(rq);
     var body = await rs.transform(utf8.decoder).join();

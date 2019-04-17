@@ -62,7 +62,8 @@ main() {
       return app.runContained((Todo t) => t.text, req, res, c);
     });
 
-    var rq = new MockHttpRequest('GET', new Uri(path: '/'))..close();
+    var rq = new MockHttpRequest('GET', new Uri(path: '/'));
+    await rq.close();
     var rs = rq.response;
     await new AngelHttp(app).handleRequest(rq);
     var text = await rs.transform(utf8.decoder).join();

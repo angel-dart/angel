@@ -51,7 +51,8 @@ void encodingTests(Angel getApp()) {
     });
 
     test('sends plaintext if no accept-encoding', () async {
-      var rq = new MockHttpRequest('GET', Uri.parse('/hello'))..close();
+      var rq = new MockHttpRequest('GET', Uri.parse('/hello'));
+      await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
 
@@ -61,8 +62,8 @@ void encodingTests(Angel getApp()) {
 
     test('encodes if wildcard', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set('accept-encoding', '*')
-        ..close();
+        ..headers.set('accept-encoding', '*');
+      await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
 
@@ -74,8 +75,8 @@ void encodingTests(Angel getApp()) {
 
     test('encodes if wildcard + multiple', () async {
       var rq = new MockHttpRequest('GET', Uri.parse('/hello'))
-        ..headers.set('accept-encoding', ['foo', 'bar', '*'])
-        ..close();
+        ..headers.set('accept-encoding', ['foo', 'bar', '*']);
+      await rq.close();
       var rs = rq.response;
       await http.handleRequest(rq);
 

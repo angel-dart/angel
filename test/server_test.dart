@@ -7,6 +7,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:matcher/matcher.dart';
 import 'package:mock_request/mock_request.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 final Uri $foo = Uri.parse('http://localhost:3000/foo');
@@ -42,7 +43,7 @@ main() {
     var app = new Angel(reflector: MirrorsReflector());
     var http = new AngelHttp(app);
     var rq = new MockHttpRequest('GET', $foo);
-    rq.close();
+    unawaited(rq.close());
     var rs = rq.response;
     var req = await http.createRequestContext(rq, rs);
     var res = await http.createResponseContext(rq, rs);
@@ -94,7 +95,8 @@ main() {
       ..configuration['a'] = 'b';
     var http = new AngelHttp(app);
     app.get('/', ioc((String a) => a));
-    var rq = new MockHttpRequest('GET', Uri.parse('/'))..close();
+    var rq = new MockHttpRequest('GET', Uri.parse('/'));
+    unawaited(rq.close());
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
     expect(body, json.encode('b'));
@@ -104,7 +106,8 @@ main() {
     var app = new Angel(reflector: MirrorsReflector())..serializer = (_) => 'x';
     var http = new AngelHttp(app);
     app.get($foo.path, (req, ResponseContext res) => res.serialize(null));
-    var rq = new MockHttpRequest('GET', $foo)..close();
+    var rq = new MockHttpRequest('GET', $foo);
+    unawaited(rq.close());
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
     expect(body, 'x');
@@ -119,7 +122,8 @@ main() {
     ResponseContext res;
 
     setUp(() async {
-      var rq = new MockHttpRequest('GET', $foo)..close();
+      var rq = new MockHttpRequest('GET', $foo);
+      unawaited(rq.close());
       req = await http.createRequestContext(rq, rq.response);
       res = await http.createResponseContext(rq, rq.response);
     });
@@ -176,8 +180,8 @@ main() {
     test('can send json', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
         ..headers.set('accept', 'application/json');
-      rq.close();
-      http.handleRequest(rq);
+      unawaited(rq.close());
+      unawaited(http.handleRequest(rq));
       await rq.response.toList();
       expect(rq.response.statusCode, 403);
       expect(rq.response.headers.contentType.mimeType, 'application/json');
@@ -186,8 +190,8 @@ main() {
     test('can throw in finalizer', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
         ..headers.set('accept', 'application/json');
-      rq.close();
-      http.handleRequest(rq);
+      unawaited(rq.close());
+      unawaited(http.handleRequest(rq));
       await rq.response.toList();
       expect(rq.response.statusCode, 403);
       expect(rq.response.headers.contentType.mimeType, 'application/json');
@@ -196,8 +200,8 @@ main() {
     test('can send html', () async {
       var rq = new MockHttpRequest('GET', new Uri(path: 'wtf2'));
       rq.headers.set('accept', 'text/html');
-      rq.close();
-      http.handleRequest(rq);
+      unawaited(rq.close());
+      unawaited(http.handleRequest(rq));
       await rq.response.toList();
       expect(rq.response.statusCode, 403);
       expect(rq.response.headers.contentType?.mimeType, 'text/html');

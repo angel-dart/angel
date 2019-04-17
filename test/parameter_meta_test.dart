@@ -5,6 +5,7 @@ import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:mock_request/mock_request.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 Future<String> readResponse(MockHttpResponse rs) {
@@ -68,19 +69,20 @@ parameterMetaTests() {
 
   test('injects header or throws', () async {
     // Invalid request
-    var rq = new MockHttpRequest('GET', Uri.parse('/header'))..close();
+    var rq = new MockHttpRequest('GET', Uri.parse('/header'));
+    unawaited(rq.close());
     var rs = rq.response;
-    http.handleRequest(rq);
+    unawaited(http.handleRequest(rq));
 
     await printResponse(rs);
     expect(rs.statusCode, 400);
 
     // Valid request
     rq = new MockHttpRequest('GET', Uri.parse('/header'))
-      ..headers.add('x-foo', 'bar')
-      ..close();
+      ..headers.add('x-foo', 'bar');
+    unawaited(rq.close());
     rs = rq.response;
-    await http.handleRequest(rq);
+    await unawaited(http.handleRequest(rq));
 
     var body = await readResponse(rs);
     print('Body: $body');
@@ -90,21 +92,22 @@ parameterMetaTests() {
 
   test('injects session or throws', () async {
     // Invalid request
-    var rq = new MockHttpRequest('GET', Uri.parse('/session'))..close();
+    var rq = new MockHttpRequest('GET', Uri.parse('/session'));
+    unawaited(rq.close());
     var rs = rq.response;
-    http
+    unawaited(http
         .handleRequest(rq)
         .timeout(const Duration(seconds: 5))
-        .catchError((_) => null);
+        .catchError((_) => null));
 
     await printResponse(rs);
     expect(rs.statusCode, 500);
 
     rq = new MockHttpRequest('GET', Uri.parse('/session'));
     rq.session['foo'] = 'bar';
-    rq.close();
+    unawaited(rq.close());
     rs = rq.response;
-    http.handleRequest(rq);
+    unawaited(http.handleRequest(rq));
 
     await printResponse(rs);
     expect(rs.statusCode, 200);
@@ -115,26 +118,29 @@ parameterMetaTests() {
   // they will all function the same way.
 
   test('pattern matching', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/match?mode=pos'))..close();
+    var rq = new MockHttpRequest('GET', Uri.parse('/match?mode=pos'));
+    unawaited(rq.close());
     var rs = rq.response;
-    http.handleRequest(rq);
+    unawaited(http.handleRequest(rq));
     var body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
     expect(body, json.encode('YES pos'));
 
-    rq = new MockHttpRequest('GET', Uri.parse('/match?mode=neg'))..close();
+    rq = new MockHttpRequest('GET', Uri.parse('/match?mode=neg'));
+    unawaited(rq.close());
     rs = rq.response;
-    http.handleRequest(rq);
+    unawaited(http.handleRequest(rq));
     body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);
     expect(body, json.encode('NO neg'));
 
     // Fallback
-    rq = new MockHttpRequest('GET', Uri.parse('/match?mode=ambi'))..close();
+    rq = new MockHttpRequest('GET', Uri.parse('/match?mode=ambi'));
+    unawaited(rq.close());
     rs = rq.response;
-    http.handleRequest(rq);
+    unawaited(http.handleRequest(rq));
     body = await readResponse(rs);
     print('Body: $body');
     expect(rs.statusCode, 200);

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart' hide Header;
 import 'package:http2/transport.dart';
 import 'package:mock_request/mock_request.dart';
+import 'package:pedantic/pedantic.dart';
 import 'http2_request_context.dart';
 import 'http2_response_context.dart';
 import 'package:uuid/uuid.dart';
@@ -148,7 +149,7 @@ class _FakeServerSocket extends Stream<Socket> implements ServerSocket {
 
   @override
   Future<ServerSocket> close() async {
-    _ctrl.close();
+    unawaited(_ctrl.close());
     return this;
   }
 
@@ -202,9 +203,9 @@ class _AngelHttp2ServerSocket extends Stream<SecureSocket>
   int get port => socket.port;
 
   Future<SecureServerSocket> close() async {
-    _sub?.cancel();
-    _fake.close();
-    _ctrl.close();
+    unawaited(_sub?.cancel());
+    unawaited(_fake.close());
+    unawaited(_ctrl.close());
     return await socket.close();
   }
 

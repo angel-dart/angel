@@ -8,6 +8,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import 'encoders_buffer_test.dart' show encodingTests;
@@ -76,7 +77,8 @@ main() {
   tearDown(() => http.close());
 
   _expectHelloBye(String path) async {
-    var rq = new MockHttpRequest('GET', Uri.parse(path))..close();
+    var rq = new MockHttpRequest('GET', Uri.parse(path));
+    unawaited(rq.close());
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
     expect(body, 'Hello, world!bye');
@@ -88,7 +90,8 @@ main() {
 
   test('cannot write after close', () async {
     try {
-      var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'))..close();
+      var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'));
+      unawaited(rq.close());
       await http.handleRequest(rq);
       var body = await rq.response.transform(utf8.decoder).join();
 
@@ -101,7 +104,8 @@ main() {
 
   test('res => addError', () async {
     try {
-      var rq = new MockHttpRequest('GET', Uri.parse('/error'))..close();
+      var rq = new MockHttpRequest('GET', Uri.parse('/error'));
+      unawaited(rq.close());
       await http.handleRequest(rq);
       var body = await rq.response.transform(utf8.decoder).join();
       throw 'addError should throw error; response: $body';
