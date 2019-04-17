@@ -57,7 +57,7 @@ class MirrorsReflector extends Reflector {
     }
 
     var future = dart.reflectType(Future, [_mirror.reflectedType]);
-    return _ReflectedTypeMirror(future);
+    return _ReflectedClassMirror(future as dart.ClassMirror);
   }
 
   @override

@@ -1,3 +1,6 @@
+# 1.0.4
+* Slight patch to prevent annoying segfault.
+
 # 1.0.3
 * Added `Future` support to `Reflector`.
 

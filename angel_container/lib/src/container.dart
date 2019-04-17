@@ -59,14 +59,27 @@ class Container {
   ///
   /// It is similar to [make], but resolves an injection of either
   /// `Future<T>` or `T`.
-  Future<T> makeAsync<T>() async {
-    if (has<Future<T>>()) {
+  Future<T> makeAsync<T>([Type type]) {
+    type ??= T;
+    Type futureType = null; //.Future<T>.value(null).runtimeType;
+
+    if (T == dynamic) {
+      try {
+        futureType = reflector.reflectFutureOf(type).reflectedType;
+      } on UnsupportedError {
+        // Ignore this.
+      }
+    }
+
+    if (has<T>(type)) {
+      return Future<T>.value(make(type));
+    } else if (has<Future<T>>()) {
       return make<Future<T>>();
-    } else if (has<T>()) {
-      return Future<T>.value(make<T>());
+    } else if (futureType != null) {
+      return make(futureType);
     } else {
       throw new ReflectionException(
-          'No injection for Future<$T> or $T was found.');
+          'No injection for Future<$type> or $type was found.');
     }
   }
 
