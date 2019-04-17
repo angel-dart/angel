@@ -1,6 +1,6 @@
 import 'generator.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:inflection/inflection.dart';
+import 'package:inflection2/inflection2.dart';
 import '../make/maker.dart';
 
 class FileServiceGenerator extends ServiceGenerator {

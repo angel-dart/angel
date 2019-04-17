@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:inflection/inflection.dart';
+import 'package:inflection2/inflection2.dart';
 import 'package:io/ansi.dart';
 import 'package:prompts/prompts.dart' as prompts;
 import 'package:recase/recase.dart';
