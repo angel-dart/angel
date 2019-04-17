@@ -68,12 +68,13 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
   } else if (requirement is Type && requirement != dynamic) {
     try {
       var futureType = container.reflector.reflectFutureOf(requirement);
-      return await container.make(futureType.reflectedType);
+      if (container.has(futureType.reflectedType))
+        return await container.make(futureType.reflectedType);
     } on UnsupportedError {
-      // Ignore this; it just means that the reflector doesn't support futures.
+      // Ignore.
     }
 
-    return container.make(requirement);
+    return await container.make(requirement);
   } else if (throwOnUnresolved) {
     throw new ArgumentError(
         '$requirement cannot be injected into a request handler.');
