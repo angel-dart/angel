@@ -1,3 +1,7 @@
+# 2.0.0-rc.4
+* Support resolution of asynchronous injections in controllers and `ioc`.
+* Inject `RequestContext` and `ResponseContext` into requests.
+
 # 2.0.0-rc.3
 * `MapService.modify` was not actually modifying items.
 

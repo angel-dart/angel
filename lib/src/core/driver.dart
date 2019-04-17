@@ -122,6 +122,8 @@ abstract class Driver<
           req.params.addAll(tuple.item2);
 
           req.container
+            ..registerSingleton<RequestContext>(req)
+            ..registerSingleton<ResponseContext>(res)
             ..registerSingleton<MiddlewarePipeline>(tuple.item4)
             ..registerSingleton<MiddlewarePipeline<RequestHandler>>(line)
             ..registerSingleton<MiddlewarePipelineIterator>(it)

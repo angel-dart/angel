@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_container/mirrors.dart';
@@ -26,12 +26,18 @@ main() {
 
     // Inject some todos
     app.container.registerSingleton(new Todo(text: TEXT, over: OVER));
+    app.container.registerFactory<Future<Foo>>((container) async {
+      var req = container.make<RequestContext>();
+      var text = await req.body.transform(utf8.decoder).join();
+      return Foo(text);
+    });
 
     app.get("/errands", ioc((Todo singleton) => singleton));
     app.get(
         "/errands3",
         ioc(({Errand singleton, Todo foo, RequestContext req}) =>
             singleton.text));
+    app.post('/async', ioc((Foo foo) => {'baz': foo.bar}));
     await app.configure(new SingletonController().configureServer);
     await app.configure(new ErrandController().configureServer);
 
@@ -82,6 +88,16 @@ main() {
     var text = await json.decode(response.body) as String;
     expect(text, equals(TEXT));
   });
+
+  test('resolve from future in controller', () async {
+    var response = await client.post('$url/errands4/async', body: 'hey');
+    expect(response.body, json.encode({'bar': 'hey'}));
+  });
+
+  test('resolve from future in route', () async {
+    var response = await client.post('$url/async', body: 'yes');
+    expect(response.body, json.encode({'baz': 'yes'}));
+  });
 }
 
 void validateTodoSingleton(response) {
@@ -103,6 +119,17 @@ class ErrandController extends Controller {
   errand(Errand errand) {
     return errand.text;
   }
+
+  @Expose('/async', method: 'POST')
+  asyncResolve(Foo foo) {
+    return {'bar': foo.bar};
+  }
+}
+
+class Foo {
+  final String bar;
+
+  Foo(this.bar);
 }
 
 class Errand {

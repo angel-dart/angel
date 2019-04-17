@@ -24,7 +24,7 @@ RequestHandler ioc(Function handler, {Iterable<String> optional = const []}) {
 
 resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     ResponseContext res, bool throwOnUnresolved,
-    [Container container]) {
+    [Container container]) async {
   var propFromApp;
   container ??= req?.container ?? res?.app?.container;
 
@@ -60,12 +60,19 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     if (req.params.containsKey(key) ||
         req.app.configuration.containsKey(key) ||
         _primitiveTypes.contains(type)) {
-      return resolveInjection(
+      return await resolveInjection(
           key, injection, req, res, throwOnUnresolved, container);
     } else
-      return resolveInjection(
+      return await resolveInjection(
           type, injection, req, res, throwOnUnresolved, container);
   } else if (requirement is Type && requirement != dynamic) {
+    try {
+      var futureType = container.reflector.reflectFutureOf(requirement);
+      return await container.make(futureType.reflectedType);
+    } on UnsupportedError {
+      // Ignore this; it just means that the reflector doesn't support futures.
+    }
+
     return container.make(requirement);
   } else if (throwOnUnresolved) {
     throw new ArgumentError(
@@ -86,7 +93,7 @@ bool suitableForInjection(
 /// Handles a request with a DI-enabled handler.
 RequestHandler handleContained(Function handler, InjectionRequest injection,
     [Container container]) {
-  return (RequestContext req, ResponseContext res) {
+  return (RequestContext req, ResponseContext res) async {
     if (injection.parameters.isNotEmpty &&
         injection.parameters.values.any((p) => p.match != null) &&
         !suitableForInjection(req, res, injection))
@@ -95,14 +102,16 @@ RequestHandler handleContained(Function handler, InjectionRequest injection,
     List args = [];
 
     Map<Symbol, dynamic> named = {};
-    args.addAll(injection.required
-        .map((r) => resolveInjection(r, injection, req, res, true, container)));
 
-    injection.named.forEach((k, v) {
-      var name = new Symbol(k);
-      named[name] =
-          resolveInjection([k, v], injection, req, res, false, container);
-    });
+    for (var r in injection.required) {
+      args.add(await resolveInjection(r, injection, req, res, true, container));
+    }
+
+    for (var entry in injection.named.entries) {
+      var name = new Symbol(entry.key);
+      named[name] = await resolveInjection(
+          [entry.key, entry.value], injection, req, res, false, container);
+    }
 
     return Function.apply(handler, args, named);
   };
