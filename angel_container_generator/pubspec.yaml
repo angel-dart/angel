@@ -1,5 +1,5 @@
 name: angel_container_generator
-version: 1.0.0
+version: 1.0.1
 author: Tobe O <thosakwe@gmail.com>
 description: Codegen support for using pkg:reflectable with pkg:angel_container.
 homepage: https://github.com/angel-dart/container.git
