@@ -104,6 +104,19 @@ Take the following GraphQL query:
 }
 ```
 
+And subsequently, its schema:
+
+```graphql
+type AnimeQuery {
+  characters($title: String!): [Character!]
+}
+
+type Character {
+  name: String
+  age: Int
+}
+```
+
 The field `characters` accepts a parameter, `title`. To reproduce this in
 `package:graphql_schema`, use `GraphQLFieldInput`:
 
