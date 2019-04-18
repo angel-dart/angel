@@ -1,3 +1,6 @@
+# 2.0.0+2
+* Widen `analyzer` dependency range.
+
 # 2.0.0+1
 * Restore `build.yaml`, which at some point, got deleted.
 
