@@ -226,6 +226,7 @@ In all, there are:
 * `resolveViaServiceIndex`
 * `resolveViaServiceFindOne`
 * `resolveViaServiceRead`
+* `resolveViaServiceCreate`
 * `resolveViaServiceModify`
 * `resolveViaServiceUpdate`
 * `resolveViaServiceRemove`
