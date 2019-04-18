@@ -74,3 +74,23 @@ await server.done;
 
 See `graphQLWS` in `package:angel_graphql` for a good example:
 https://github.com/angel-dart/graphql/blob/master/angel_graphql/lib/src/graphql_ws.dart
+
+## Introspection
+Introspection of a GraphQL schema allows clients to query the schema itself,
+and get information about the response the server expects. The `GraphQL`
+class handles this automatically, so you don't have to write any code for it.
+
+However, you can call the `reflectSchema` method to manually reflect a schema:
+https://pub.dartlang.org/documentation/graphql_server/latest/introspection/reflectSchema.html
+
+## Mirrors Usage
+By default, `dart:mirrors` is not required, but it can be optionally used.
+
+The `mirrorsFieldResolver` can resolve fields from concrete objects, instead of you
+first having to serialize them:
+https://pub.dartlang.org/documentation/graphql_server/latest/graphql_server.mirrors/mirrorsFieldResolver.html
+
+You can also use `convertDartType` to convert a concrete Dart type into a `GraphQLType`. However,
+the ideal choice is `package:graphql_generator`.
+* https://pub.dartlang.org/documentation/graphql_server/latest/graphql_server.mirrors/convertDartType.html
+* https://pub.dartlang.org/packages/graphql_generator

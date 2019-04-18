@@ -1,6 +1,11 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
+/// Performs introspection over a GraphQL [schema], and returns a new one, containing
+/// introspective information.
+/// 
+/// [allTypes] should contain all types, not directly defined in the schema, that you
+/// would like to have introspection available for.
 GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   for (var type in allTypes.toList()) {
     var custom = _fetchAllTypesFromType(type);
