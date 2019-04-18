@@ -47,15 +47,15 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
 
     var oldErrorHandler = app.errorHandler;
     app.errorHandler = (e, req, res) async {
-      if (!req.accepts('text/html', strict: true))
-        return await oldErrorHandler(e, req, res);
-      else {
-        if (e.statusCode == 404) {
-          return await res
+      if (req.accepts('text/html', strict: true)) {
+        if (e.statusCode == 404 && req.accepts('text/html', strict: true)) {
+          await res
               .render('error', {'message': 'No file exists at ${req.uri}.'});
+        } else {
+          await res.render('error', {'message': e.message});
         }
-
-        return await res.render('error', {'message': e.message});
+      } else {
+        return await oldErrorHandler(e, req, res);
       }
     };
   };
