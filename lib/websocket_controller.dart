@@ -51,7 +51,7 @@ class WebSocketController extends Controller {
             orElse: () => null);
 
         if (exposeMirror != null) {
-          ExposeWs exposeWs = exposeMirror.reflectee;
+          ExposeWs exposeWs = exposeMirror.reflectee as ExposeWs;
           _handlers[exposeWs.eventName] = mirror;
           _handlerSymbols[exposeWs.eventName] = sym;
         }

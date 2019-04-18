@@ -1,3 +1,7 @@
+# 2.0.2
+* Update `stream_channel` to `2.0.0`.
+* Use `angel_framework^@2.0.0-rc.0`.
+
 # 2.0.1
 * Add `reconnectOnClose` and `reconnectinterval` parameters in top-level `WebSockets` constructors.
 * Close `WebSocketExtraneousEventHandler`.

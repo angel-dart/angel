@@ -9,7 +9,7 @@ import 'package:logging/logging.dart';
 main(List<String> args) async {
   var app = new Angel();
   var http = new AngelHttp(app);
-  var ws = new AngelWebSocket(app, sendErrors: !app.isProduction);
+  var ws = new AngelWebSocket(app, sendErrors: !app.environment.isProduction);
   var fs = const LocalFileSystem();
   app.logger = new Logger('angel_websocket');
 
