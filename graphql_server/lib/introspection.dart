@@ -89,6 +89,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
   return new GraphQLSchema(
     queryType: objectType(schema.queryType.name, fields: fields),
     mutationType: schema.mutationType,
+    subscriptionType: schema.subscriptionType,
   );
 }
 
@@ -434,6 +435,10 @@ List<GraphQLType> fetchAllTypes(
 
   if (schema.mutationType != null) {
     types.addAll(_fetchAllTypesFromObject(schema.mutationType));
+  }
+
+  if (schema.subscriptionType != null) {
+    types.addAll(_fetchAllTypesFromObject(schema.subscriptionType));
   }
 
   return types;

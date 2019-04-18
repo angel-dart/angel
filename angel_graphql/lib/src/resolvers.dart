@@ -62,6 +62,24 @@ GraphQLFieldResolver<Value, Serialized>
   };
 }
 
+/// A GraphQL resolver that `creates` a single value in an Angel service.
+///
+/// This resolver should be used on a field with at least the following input:
+/// * `data`: a [GraphQLObjectType] corresponding to the format of `data` to be passed to `create`
+///
+/// The arguments passed to the resolver will be forwarded to the service, and the
+/// service will receive [Providers.graphql].
+GraphQLFieldResolver<Value, Serialized>
+    resolveViaServiceCreate<Value, Serialized>(
+        Service<dynamic, Value> service) {
+  return (_, arguments) async {
+    var _requestInfo = _fetchRequestInfo(arguments);
+    var params = {'query': _getQuery(arguments), 'provider': Providers.graphQL}
+      ..addAll(_requestInfo);
+    return await service.create(arguments['data'] as Value, params);
+  };
+}
+
 /// A GraphQL resolver that `modifies` a single value from an Angel service.
 ///
 /// This resolver should be used on a field with at least the following inputs:
@@ -77,7 +95,6 @@ GraphQLFieldResolver<Value, Serialized>
     var _requestInfo = _fetchRequestInfo(arguments);
     var params = {'query': _getQuery(arguments), 'provider': Providers.graphQL}
       ..addAll(_requestInfo);
-    print(params);
     var id = arguments.remove(idField);
     return await service.modify(id, arguments['data'] as Value, params);
   };

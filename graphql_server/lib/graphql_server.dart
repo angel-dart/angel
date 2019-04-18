@@ -47,6 +47,8 @@ class GraphQL {
     if (_schema.queryType != null) this.customTypes.add(_schema.queryType);
     if (_schema.mutationType != null)
       this.customTypes.add(_schema.mutationType);
+    if (_schema.subscriptionType != null)
+      this.customTypes.add(_schema.subscriptionType);
   }
 
   GraphQLType convertType(TypeContext ctx) {
@@ -269,7 +271,7 @@ class GraphQL {
   ) async* {
     await for (var event in sourceStream) {
       yield await executeSubscriptionEvent(document, subscription, schema,
-          initialValue, variableValues, globalVariables, event);
+          event, variableValues, globalVariables);
     }
   }
 
@@ -279,8 +281,7 @@ class GraphQL {
       GraphQLSchema schema,
       initialValue,
       Map<String, dynamic> variableValues,
-      Map<String, dynamic> globalVariables,
-      event) async {
+      Map<String, dynamic> globalVariables) async {
     var selectionSet = subscription.selectionSet;
     var subscriptionType = schema.subscriptionType;
     if (subscriptionType == null)
@@ -290,7 +291,7 @@ class GraphQL {
     try {
       var data = await executeSelectionSet(document, selectionSet,
           subscriptionType, initialValue, variableValues, globalVariables);
-      return {'data': data, 'errors': []};
+      return {'data': data};
     } on GraphQLException catch (e) {
       return {
         'data': null,
@@ -384,7 +385,9 @@ class GraphQL {
     var argumentValues = field.field.arguments;
     var fieldName =
         field.field.fieldName.alias?.name ?? field.field.fieldName.name;
-    var desiredField = objectType.fields.firstWhere((f) => f.name == fieldName);
+    var desiredField = objectType.fields.firstWhere((f) => f.name == fieldName,
+        orElse: () => throw FormatException(
+            '${objectType.name} has no field named "$fieldName".'));
     var argumentDefinitions = desiredField.inputs;
 
     for (var argumentDefinition in argumentDefinitions) {
@@ -480,14 +483,12 @@ class GraphQL {
       String fieldName, Map<String, dynamic> argumentValues) async {
     var field = objectType.fields.firstWhere((f) => f.name == fieldName);
 
-    if (field.resolve == null) {
+    if (objectValue is Map) {
+      return objectValue[fieldName] as T;
+    } else if (field.resolve == null) {
       if (defaultFieldResolver != null)
         return await defaultFieldResolver(
             objectValue, fieldName, argumentValues);
-
-      if (objectValue is Map) {
-        return objectValue[fieldName] as T;
-      }
 
       return null;
     } else {
@@ -505,7 +506,7 @@ class GraphQL {
       Map<String, dynamic> globalVariables) async {
     if (fieldType is GraphQLNonNullableType) {
       var innerType = fieldType.ofType;
-      var completedResult = completeValue(document, fieldName, innerType,
+      var completedResult = await completeValue(document, fieldName, innerType,
           fields, result, variableValues, globalVariables);
 
       if (completedResult == null) {

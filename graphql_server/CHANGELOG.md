@@ -1,3 +1,6 @@
+# 1.0.0-beta.3
+* Introspection on subscription types (if any).
+
 # 1.0.0-beta.2
 * Fix bug where field aliases would not be resolved.
 
