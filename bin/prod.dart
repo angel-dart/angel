@@ -1,4 +1,5 @@
 import 'package:angel/angel.dart';
+import 'package:angel_container/mirrors.dart';
 import 'package:angel_production/angel_production.dart';
 
 // NOTE: By default, the Runner class does not use the `MirrorsReflector`, or any
@@ -11,7 +12,7 @@ import 'package:angel_production/angel_production.dart';
 // * Use of Controllers, via @Expose() or @ExposeWS()
 // * Use of dependency injection into constructors, whether in controllers or plain `container.make` calls
 // * Use of the `ioc` function in any route
-// 
+//
 // The `MirrorsReflector` from `package:angel_container/mirrors.dart` is by far the most convenient pattern,
 // so use it if possible.
 //
@@ -24,4 +25,6 @@ import 'package:angel_production/angel_production.dart';
 // so in the meantime, visit the Angel chat for further questions:
 //
 // https://gitter.im/angel_dart/discussion
-main(List<String> args) => Runner('{{angel}}', configureServer).run(args);
+main(List<String> args) =>
+    Runner('{{angel}}', configureServer, reflector: MirrorsReflector())
+        .run(args);

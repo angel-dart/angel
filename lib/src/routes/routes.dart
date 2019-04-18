@@ -56,7 +56,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     // Read the following two sources for documentation:
     // * https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae
     // * https://github.com/angel-dart/static
-    if (!app.isProduction) {
+    if (!app.environment.isProduction) {
       var vDir = VirtualDirectory(
         app,
         fileSystem,
@@ -75,15 +75,15 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
 
     var oldErrorHandler = app.errorHandler;
     app.errorHandler = (e, req, res) async {
-      if (!req.accepts('text/html', strict: true))
-        return await oldErrorHandler(e, req, res);
-      else {
-        if (e.statusCode == 404) {
-          return await res
+      if (req.accepts('text/html', strict: true)) {
+        if (e.statusCode == 404 && req.accepts('text/html', strict: true)) {
+          await res
               .render('error', {'message': 'No file exists at ${req.uri}.'});
+        } else {
+          await res.render('error', {'message': e.message});
         }
-
-        return await res.render('error', {'message': e.message});
+      } else {
+        return await oldErrorHandler(e, req, res);
       }
     };
   };

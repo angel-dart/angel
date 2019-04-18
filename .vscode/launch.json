@@ -12,7 +12,10 @@
       "name": "Production Server",
       "type": "dart",
       "request": "launch",
-      "program": "${workspaceRoot}/bin/prod.dart"
+      "program": "${workspaceRoot}/bin/prod.dart",
+      "env": {
+        "ANGEL_ENV": "production"
+      }
     }
   ]
 }
