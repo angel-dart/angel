@@ -7,7 +7,7 @@ homepage: https://github.com/angel-dart/angel
 dependencies:
   angel_auth: ^2.0.0 # Supports stateless authentication via JWT
   angel_configuration: ^2.0.0 # Loads application configuration, along with support for .env files.
-  angel_framework: ^2.0.0-alpha # The core server library.
+  angel_framework: ^2.0.0-rc.0 # The core server library.
   angel_jael: ^2.0.0 # Server-side templating engine
   angel_production: ^1.0.0-alpha
   angel_static: ^2.0.0 # Static file server
