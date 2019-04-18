@@ -8,7 +8,10 @@ class RemoteClient extends StreamChannelMixin<OperationMessage> {
       StreamChannelController();
 
   RemoteClient.withoutJson(this.channel) {
-    _ctrl.local.stream.map((m) => m.toJson()).cast<Map>().pipe(channel.sink);
+    _ctrl.local.stream
+        .map((m) => m.toJson())
+        .cast<Map>()
+        .forEach(channel.sink.add);
     channel.stream.listen((m) {
       _ctrl.local.sink.add(OperationMessage.fromJson(m));
     });

@@ -18,15 +18,24 @@ import 'package:web_socket_channel/io.dart';
 ///
 /// See:
 /// * https://github.com/apollographql/subscriptions-transport-ws
-RequestHandler graphQLWS(GraphQL graphQL) {
+RequestHandler graphQLWS(GraphQL graphQL, {Duration keepAliveInterval}) {
   return (req, res) async {
     if (req is HttpRequestContext) {
       if (WebSocketTransformer.isUpgradeRequest(req.rawRequest)) {
         await res.detach();
-        var socket = await WebSocketTransformer.upgrade(req.rawRequest);
+        var socket = await WebSocketTransformer.upgrade(req.rawRequest,
+            protocolSelector: (protocols) {
+          if (protocols.contains('graphql-subscriptions'))
+            return 'graphql-subscriptions';
+          else
+            throw AngelHttpException.badRequest(
+                message:
+                    'Only the "graphql-subscriptions" protocol is allowed.');
+        });
         var channel = IOWebSocketChannel(socket);
         var client = stw.RemoteClient(channel.cast<String>());
-        var server = _GraphQLWSServer(client, graphQL, req, res);
+        var server =
+            _GraphQLWSServer(client, graphQL, req, res, keepAliveInterval);
         await server.done;
       } else {
         throw AngelHttpException.badRequest(
@@ -44,8 +53,9 @@ class _GraphQLWSServer extends stw.Server {
   final RequestContext req;
   final ResponseContext res;
 
-  _GraphQLWSServer(stw.RemoteClient client, this.graphQL, this.req, this.res)
-      : super(client);
+  _GraphQLWSServer(stw.RemoteClient client, this.graphQL, this.req, this.res,
+      Duration keepAliveInterval)
+      : super(client, keepAliveInterval: keepAliveInterval);
 
   @override
   bool onConnect(stw.RemoteClient client, [Map connectionParams]) => true;

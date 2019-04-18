@@ -5,16 +5,38 @@ import 'package:http_parser/http_parser.dart';
 ///
 /// By default, the interface expects your backend to be mounted at `/graphql`; this is configurable
 /// via [graphQLEndpoint].
-RequestHandler graphiQL({String graphQLEndpoint: '/graphql'}) {
+RequestHandler graphiQL(
+    {String graphQLEndpoint: '/graphql', String subscriptionsEndpoint}) {
   return (req, res) {
     res
       ..contentType = new MediaType('text', 'html')
-      ..write(renderGraphiql(graphqlEndpoint: graphQLEndpoint))
+      ..write(renderGraphiql(
+          graphqlEndpoint: graphQLEndpoint,
+          subscriptionsEndpoint: subscriptionsEndpoint))
       ..close();
   };
 }
 
-String renderGraphiql({String graphqlEndpoint: '/graphql'}) {
+String renderGraphiql(
+    {String graphqlEndpoint: '/graphql', String subscriptionsEndpoint}) {
+  var subscriptionsScripts = '',
+      subscriptionsFetcher = '',
+      fetcherName = 'graphQLFetcher';
+
+  if (subscriptionsEndpoint != null) {
+    fetcherName = 'subscriptionsFetcher';
+    subscriptionsScripts = '''
+  <script src="//unpkg.com/subscriptions-transport-ws@0.5.4/browser/client.js"></script>
+  <script src="//unpkg.com/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>
+  ''';
+    subscriptionsFetcher = '''
+  let subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient('$subscriptionsEndpoint', {
+    reconnect: true
+  });
+  let $fetcherName = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(subscriptionsClient, graphQLFetcher);
+  ''';
+  }
+
   return '''
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +60,7 @@ String renderGraphiql({String graphqlEndpoint: '/graphql'}) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.11.11/graphiql.js"></script>
+$subscriptionsScripts
 <script>
     window.onload = function() {
         function graphQLFetcher(graphQLParams) {
@@ -49,10 +72,11 @@ String renderGraphiql({String graphqlEndpoint: '/graphql'}) {
                 return response.json();
             });
         }
+        $subscriptionsFetcher
         ReactDOM.render(
             React.createElement(
                 GraphiQL,
-                {fetcher: graphQLFetcher}
+                {fetcher: $fetcherName}
             ),
             document.getElementById('app')
         );
