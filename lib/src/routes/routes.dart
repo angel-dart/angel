@@ -28,7 +28,7 @@ AngelConfigurer configureServer(FileSystem fileSystem) {
     // Read the following two sources for documentation:
     // * https://medium.com/the-angel-framework/serving-static-files-with-the-angel-framework-2ddc7a2b84ae
     // * https://github.com/angel-dart/static
-    if (!app.isProduction) {
+    if (!app.environment.isProduction) {
       var vDir = VirtualDirectory(
         app,
         fileSystem,
