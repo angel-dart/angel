@@ -21,11 +21,12 @@ dependencies:
 ```
 
 # Usage
-The AST featured in this library is directly based off this ANTLR4 grammar created by Joseph T. McBride:
+The AST featured in this library was originally directly based off this ANTLR4 grammar created by Joseph T. McBride:
 https://github.com/antlr/grammars-v4/blob/master/graphql/GraphQL.g4
 
 It has since been updated to reflect upon the grammar in the official GraphQL
-specification.
+specification (
+[June 2018](https://facebook.github.io/graphql/June2018/)).
 
 ```dart
 import 'package:graphql_parser/graphql_parser.dart';
