@@ -8,8 +8,10 @@
 
 * [Installation](#installation)
 * [Usage](#usage)
+* [Subscriptions](#subscriptions)
 * [Integration with Angel `Service`s](#using-services)
 * [Documenting API's](#documentation)
+* [Deprecated - Mirrors Usage](#mirrors)
 
 A complete implementation of the official
 [GraphQL specification](http://facebook.github.io/graphql/October2016/#sec-Language) - these
@@ -127,6 +129,64 @@ UI, ready-to-go!
 
 Now you're ready to build a GraphQL API!
 
+## Subscriptions
+Example:
+https://github.com/angel-dart/graphql/blob/master/angel_graphql/example/subscription.dart
+
+In GraphQL, as of the June 2018 spec, clients can subscribe to streams of events
+from the server. In your schema, all you need to do is return a `Stream` from a `resolve`
+callback, rather than a plain object:
+
+```dart
+var postAdded = postService.afterCreated
+      .asStream()
+      .map((e) => {'postAdded': e.result})
+      .asBroadcastStream();
+
+var schema = graphQLSchema(
+  // ...
+  subscriptionType: objectType(
+    'Subscription',
+    fields: [
+      field('postAdded', postType, resolve: (_, __) => postAdded),
+    ],
+  ),
+);
+```
+
+By default, `graphQLHttp` has no support for subscriptions, because regular
+HTTP requests are stateless, and are not ideal for continuous data pushing.
+You can add your own handler:
+
+```dart
+graphQLHttp(graphQL, onSubscription: (req, res, stream) {
+  // Do something with the stream here. It's up to you.
+});
+```
+
+There is, however, `graphQLWS`, which implements Apollo's
+`subscriptions-transport-ws` protocol:
+
+```dart
+app.get('/subscriptions', graphQLWS(GraphQL(schema)));
+```
+
+You can then use existing JavaScript clients to handle subscriptions.
+
+The `graphiQL` handler also supports using subscriptions. In the following snippet, the
+necessary scripts will be added to the rendered page, so that the `subscriptions-transport-ws`
+client can be used by GraphiQL:
+
+```dart
+app.get('/graphiql',
+    graphiQL(subscriptionsEndpoint: 'ws://localhost:3000/subscriptions'));
+```
+
+**NOTE: Apollo's spec for the aforementioned protocol is very far outdated, and completely inaccurate,**
+**so as of April 18th, 2019, GraphiQL and the `subscriptions-transport-ws` client might not yet work.**
+**See this issue for more:**
+**https://github.com/apollographql/subscriptions-transport-ws/issues/551**
+
 ## Using Services
 What would Angel be without services? For those unfamiliar - in Angel,
 `Service` is a base class that implements CRUD functionality, and serves
@@ -175,6 +235,33 @@ it much quicker to implement CRUD functionality in a GraphQL
 API.
 
 ## Documentation
+Using `package:graphql_generator`, you can generate GraphQL schemas for concrete Dart
+types:
+
+```dart
+configureServer(Angel app) async {
+  var schema = graphQLSchema(
+    queryType: objectType('Query', fields: [
+      field('todos', listOf(todoGraphQLType), resolve: (_, __) => ...)
+    ]);
+  );
+}
+
+@graphQLClass
+class Todo {
+  String text;
+
+  @GraphQLDocumentation(description: 'Whether this item is complete.')
+  bool isComplete;
+}
+```
+
+For more documentation, see:
+https://pub.dartlang.org/packages/graphql_generator
+
+## Mirrors
+**NOTE: Mirrors support is deprecated, and will not be updated further.**
+
 The `convertDartType` function can automatically read the documentation
 from a type like the following:
 
