@@ -5,12 +5,9 @@ import 'package:angel_file_service/angel_file_service.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_graphql/angel_graphql.dart';
-import 'package:angel_serialize/angel_serialize.dart';
 import 'package:file/local.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:graphql_server/graphql_server.dart';
-import 'package:graphql_server/mirrors.dart';
-import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
 
 main() async {
