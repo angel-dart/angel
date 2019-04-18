@@ -1,3 +1,6 @@
+# 1.0.0-beta.4
+For some reason, Pub was not including `subscriptions_transport_ws.dart`.
+
 # 1.0.0-beta.3
 * Introspection on subscription types (if any).
 

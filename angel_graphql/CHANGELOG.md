@@ -1,3 +1,6 @@
+# 1.0.0-beta.1
+* Add `graphQLWS` handler, and support subscriptions.
+
 # 1.0.0-beta
 * Angel RC updates.
 
