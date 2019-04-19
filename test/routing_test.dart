@@ -85,7 +85,7 @@ main() {
             (RequestContext req, res) async => "Hello ${req.params['name']}")
         .name = 'Named routes';
     app.get('/named', (req, ResponseContext res) async {
-      res.redirectTo('Named routes', {'name': 'tests'});
+      await res.redirectTo('Named routes', {'name': 'tests'});
     });
     app.get('/log', (RequestContext req, res) async {
       print("Query: ${req.queryParameters}");

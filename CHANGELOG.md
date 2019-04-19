@@ -1,3 +1,6 @@
+# 2.0.0-rc.6
+* Make `redirect` and `download` methods asynchronous.
+
 # 2.0.0-rc.5
 * Make `serializer` `FutureOr<String> Function(Object)`.
 * Make `ResponseContext.serialize` return `Future<bool>`.

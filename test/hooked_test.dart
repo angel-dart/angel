@@ -99,6 +99,12 @@ main() {
     expect(result[0]["angel"], equals("framework"));
   });
 
+  test('asStream() fires', () async {
+    var stream = todoService.afterCreated.asStream();
+    await todoService.create({'angel': 'framework'});
+    expect(await stream.first.then((e) => e.result['angel']), 'framework');
+  });
+
   test('metadata', () async {
     final service = new HookedService(new IncrementService())..addHooks(app);
     expect(service.inner, isNot(const IsInstanceOf<MapService>()));

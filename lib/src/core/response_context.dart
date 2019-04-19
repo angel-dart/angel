@@ -139,7 +139,7 @@ abstract class ResponseContext<RawResponse>
       new StateError('Cannot modify a closed response.');
 
   /// Sends a download as a response.
-  void download(File file, {String filename}) {
+  Future<void> download(File file, {String filename}) async {
     if (!isOpen) throw closed();
 
     headers["Content-Disposition"] =
@@ -148,15 +148,15 @@ abstract class ResponseContext<RawResponse>
     headers['content-length'] = file.lengthSync().toString();
 
     if (!isBuffered) {
-      file.openRead().pipe(this);
+      await file.openRead().pipe(this);
     } else {
       buffer.add(file.readAsBytesSync());
-      close();
+      await close();
     }
   }
 
   /// Prevents more data from being written to the response, and locks it entire from further editing.
-  Future close() {
+  Future<void> close() {
     if (buffer is LockableBytesBuilder) {
       (buffer as LockableBytesBuilder).lock();
     }
@@ -173,16 +173,17 @@ abstract class ResponseContext<RawResponse>
   /// Returns a JSONP response.
   ///
   /// You can override the [contentType] sent; by default it is `application/javascript`.
-  void jsonp(value, {String callbackName = "callback", MediaType contentType}) {
+  Future<void> jsonp(value,
+      {String callbackName = "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
     this.contentType =
         contentType ?? new MediaType('application', 'javascript');
     write("$callbackName(${serializer(value)})");
-    close();
+    return close();
   }
 
   /// Renders a view to the response stream, and closes the response.
-  Future render(String view, [Map<String, dynamic> data]) {
+  Future<void> render(String view, [Map<String, dynamic> data]) {
     if (!isOpen) throw closed();
     contentType = new MediaType('text', 'html', {'charset': 'utf-8'});
     return Future<String>.sync(() => app.viewGenerator(
@@ -190,7 +191,7 @@ abstract class ResponseContext<RawResponse>
         new Map<String, dynamic>.from(renderParams)
           ..addAll(data ?? <String, dynamic>{}))).then((content) {
       write(content);
-      close();
+      return close();
     });
   }
 
@@ -201,7 +202,7 @@ abstract class ResponseContext<RawResponse>
   /// based on the provided params.
   ///
   /// See [Router]#navigate for more. :)
-  void redirect(url, {bool absolute = true, int code = 302}) {
+  Future<void> redirect(url, {bool absolute = true, int code = 302}) {
     if (!isOpen) throw closed();
     headers
       ..['content-type'] = 'text/html'
@@ -226,11 +227,11 @@ abstract class ResponseContext<RawResponse>
       </body>
     </html>
     ''');
-    close();
+    return close();
   }
 
   /// Redirects to the given named [Route].
-  void redirectTo(String name, [Map params, int code]) {
+  Future<void> redirectTo(String name, [Map params, int code]) async {
     if (!isOpen) throw closed();
     Route _findRoute(Router r) {
       for (Route route in r.routes) {
@@ -247,7 +248,7 @@ abstract class ResponseContext<RawResponse>
     Route matched = _findRoute(app);
 
     if (matched != null) {
-      redirect(
+      await redirect(
           matched.makeUri(params.keys.fold<Map<String, dynamic>>({}, (out, k) {
             return out..[k.toString()] = params[k];
           })),
@@ -259,7 +260,7 @@ abstract class ResponseContext<RawResponse>
   }
 
   /// Redirects to the given [Controller] action.
-  void redirectToAction(String action, [Map params, int code]) {
+  Future<void> redirectToAction(String action, [Map params, int code]) {
     if (!isOpen) throw closed();
     // UserController@show
     List<String> split = action.split("@");
@@ -291,7 +292,7 @@ abstract class ResponseContext<RawResponse>
         }))
         .replaceAll(_straySlashes, '');
 
-    redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
+    return redirect('$head/$tail'.replaceAll(_straySlashes, ''), code: code);
   }
 
   /// Serializes data to the response.
