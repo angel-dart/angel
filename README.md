@@ -303,7 +303,7 @@ final Validator todo = new Validator({
 main() async {
     var app = new Angel();
 
-    app.chain(validate(echo)).post('/echo', (req, res) async {
+    app.chain([validate(echo)]).post('/echo', (req, res) async {
         res.write('You said: "${req.bodyAsMap["message"]}"');
     });
 
