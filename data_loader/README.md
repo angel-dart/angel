@@ -1,4 +1,8 @@
 # data_loader
+[![Pub](https://img.shields.io/pub/v/data_loader.svg)](https://pub.dartlang.org/packages/data_loader)
+[![build status](https://travis-ci.org/angel-dart/graphql.svg)](https://travis-ci.org/angel-dart/graphql)
+
+
 Batch and cache database lookups. Works well with GraphQL.
 Ported from the original JS version:
 https://github.com/graphql/dataloader
