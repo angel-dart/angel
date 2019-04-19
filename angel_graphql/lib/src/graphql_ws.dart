@@ -26,8 +26,7 @@ RequestHandler graphQLWS(GraphQL graphQL, {Duration keepAliveInterval}) {
             return 'graphql-ws';
           else
             throw AngelHttpException.badRequest(
-                message:
-                    'Only the "graphql-ws" protocol is allowed.');
+                message: 'Only the "graphql-ws" protocol is allowed.');
         });
         var channel = IOWebSocketChannel(socket);
         var client = stw.RemoteClient(channel.cast<String>());

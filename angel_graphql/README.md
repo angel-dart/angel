@@ -183,7 +183,6 @@ app.get('/graphiql',
 ```
 
 **NOTE: Apollo's spec for the aforementioned protocol is very far outdated, and completely inaccurate,**
-**so as of April 18th, 2019, GraphiQL and the `subscriptions-transport-ws` client might not yet work.**
 **See this issue for more:**
 **https://github.com/apollographql/subscriptions-transport-ws/issues/551**
 
