@@ -25,6 +25,7 @@ This mono repo is split into several sub-projects,
 each with its own detailed documentation and examples:
 * `angel_graphql` - Support for handling GraphQL via HTTP and
 WebSockets in the [Angel](https://angel-dart.dev) framework. Also serves as the `package:graphql_server` reference implementation.
+* `data_loader` - A Dart port of [`graphql/data_loader`](https://github.com/graphql/dataloader).
 * `example_star_wars`: An example GraphQL API built using
 `package:angel_graphql`.
 * `graphql_generator`: Generates `package:graphql_schema` object types from concrete Dart classes.
