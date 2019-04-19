@@ -1,3 +1,6 @@
+# 2.1.4
+* Deprecate `decodeJwt`, in favor of asynchronous injections.
+
 # 2.1.3
 * Use `await` on redirects, etc.
 

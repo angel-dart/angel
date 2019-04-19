@@ -75,7 +75,6 @@ main() {
         (id) async => await app.findService('users').read(id) as User;
 
     await app.configure(auth.configureServer);
-    app.fallback(auth.decodeJwt);
 
     auth.strategies['local'] = LocalAuthStrategy((username, password) async {
       var users = await app

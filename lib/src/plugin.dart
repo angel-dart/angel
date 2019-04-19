@@ -89,7 +89,9 @@ class AngelAuth<User> {
     _jwtLifeSpan = jwtLifeSpan?.toInt() ?? -1;
   }
 
-  Future configureServer(Angel app) async {
+  /// Configures an Angel server to decode and validate JSON Web tokens on demand,
+  /// whenever an instance of [User] is injected.
+  Future<void> configureServer(Angel app) async {
     if (serializer == null)
       throw StateError(
           'An `AngelAuth` plug-in was called without its `serializer` being set. All authentication will fail.');
@@ -100,6 +102,30 @@ class AngelAuth<User> {
     app.container.registerSingleton(this);
     if (runtimeType != AngelAuth)
       app.container.registerSingleton(this, as: AngelAuth);
+
+    if (!app.container.has<_AuthResult<User>>()) {
+      app.container
+          .registerLazySingleton<Future<_AuthResult<User>>>((container) async {
+        var req = container.make<RequestContext>();
+        var res = container.make<ResponseContext>();
+        var result = await _decodeJwt(req, res);
+        if (result != null) {
+          return result;
+        } else {
+          throw AngelHttpException.forbidden();
+        }
+      });
+
+      app.container.registerLazySingleton<Future<User>>((container) async {
+        var result = await container.makeAsync<_AuthResult<User>>();
+        return result.user;
+      });
+
+      app.container.registerLazySingleton<Future<AuthToken>>((container) async {
+        var result = await container.makeAsync<_AuthResult<User>>();
+        return result.token;
+      });
+    }
 
     if (reviveTokenEndpoint != null) {
       app.post(reviveTokenEndpoint, reviveJwt);
@@ -112,7 +138,7 @@ class AngelAuth<User> {
 
   void _apply(
       RequestContext req, ResponseContext res, AuthToken token, User user) {
-    if (!req.container.has<User>()) {
+    if (!req.container.has<User>() && !req.container.has<Future<User>>()) {
       req.container
         ..registerSingleton<AuthToken>(token)
         ..registerSingleton<User>(user);
@@ -123,12 +149,39 @@ class AngelAuth<User> {
     }
   }
 
-  /// A middleware that decodes a JWT from a request, and injects a corresponding user.
+  /// DEPRECATED: A middleware that decodes a JWT from a request, and injects a corresponding user.
+  ///
+  /// Now that `package:angel_framework` supports asynchronous injections, this middleware
+  /// is no longer directly necessary. Instead, call [configureServer]. You can then use
+  /// `makeAsync<User>`, or Angel's injections directly:
+  ///
+  /// ```dart
+  /// var auth = AngelAuth<User>(...);
+  /// await app.configure(auth.configureServer);
+  ///
+  /// app.get('/hmm', (User user) async {
+  ///   // `package:angel_auth` decodes the JWT on demand.
+  ///   print(user.name);
+  /// });
+  ///
+  /// @Expose('/my')
+  /// class MyController extends Controller {
+  ///   @Expose('/hmm')
+  ///   String getUsername(User user) => user.name
+  /// }
+  /// ```
+  @deprecated
   Future decodeJwt(RequestContext req, ResponseContext res) async {
     if (req.method == "POST" && req.path == reviveTokenEndpoint) {
       return await reviveJwt(req, res);
+    } else {
+      await _decodeJwt(req, res);
+      return true;
     }
+  }
 
+  Future<_AuthResult<User>> _decodeJwt(
+      RequestContext req, ResponseContext res) async {
     String jwt = getJwt(req);
 
     if (jwt != null) {
@@ -148,11 +201,12 @@ class AngelAuth<User> {
           throw AngelHttpException.forbidden(message: "Expired JWT.");
       }
 
-      final user = await deserializer(token.userId);
+      var user = await deserializer(token.userId);
       _apply(req, res, token, user);
+      return _AuthResult(user, token);
     }
 
-    return true;
+    return null;
   }
 
   /// Retrieves a JWT from a request, if any was sent at all.
@@ -383,4 +437,11 @@ class AngelAuth<User> {
       return true;
     };
   }
+}
+
+class _AuthResult<User> {
+  final User user;
+  final AuthToken token;
+
+  _AuthResult(this.user, this.token);
 }

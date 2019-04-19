@@ -17,13 +17,19 @@ Ensure you have read the [wiki](https://github.com/angel-dart/auth/wiki).
 
 ```dart
 configureServer(Angel app) async {
-  var auth = AngelAuth();
+  var auth = AngelAuth<User>();
   auth.serializer = ...;
   auth.deserializer = ...;
   auth.strategies['local'] = LocalAuthStrategy(...);
   
   // POST route to handle username+password
   app.post('/local', auth.authenticate('local'));
+
+  // Using Angel's asynchronous injections, we can parse the JWT
+  // on demand. It won't be parsed until we check.
+  app.get('/profile', ioc((User user) {
+    print(user.description);
+  }));
   
   // Use a comma to try multiple strategies!!!
   //
@@ -37,11 +43,8 @@ configureServer(Angel app) async {
     authOptions
   );
   
-  // Apply angel_auth-specific configuration
+  // Apply angel_auth-specific configuration.
   await app.configure(auth.configureServer);
-  
-  // Middleware to decode JWT's...
-  app.use(auth.decodeJwt);
 }
 ```
 

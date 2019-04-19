@@ -27,7 +27,6 @@ Future wireAuth(Angel app) async {
 
   auth.strategies['local'] = LocalAuthStrategy(verifier);
   await app.configure(auth.configureServer);
-  app.fallback(auth.decodeJwt);
 }
 
 main() async {

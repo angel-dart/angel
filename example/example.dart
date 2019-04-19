@@ -12,7 +12,7 @@ main() async {
   auth.deserializer = (id) => fetchAUserByIdSomehow(id);
 
   // Middleware to decode JWT's and inject a user object...
-  app.fallback(auth.decodeJwt);
+  await app.configure(auth.configureServer);
 
   auth.strategies['local'] = LocalAuthStrategy((username, password) {
     // Retrieve a user somehow...

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 
 /// Forces Basic authentication over the requested resource, with the given [realm] name, if no JWT is present.
@@ -5,7 +6,13 @@ import 'package:angel_framework/angel_framework.dart';
 /// [realm] defaults to `'angel_auth'`.
 RequestHandler forceBasicAuth<User>({String realm}) {
   return (RequestContext req, ResponseContext res) async {
-    if (req.container.has<User>()) return true;
+    if (req.container.has<User>())
+      return true;
+    else if (req.container.has<Future<User>>()) {
+      await req.container.makeAsync<User>();
+      return true;
+    }
+
     res.headers['www-authenticate'] = 'Basic realm="${realm ?? 'angel_auth'}"';
     throw AngelHttpException.notAuthenticated();
   };
@@ -25,7 +32,10 @@ RequestHandler requireAuthentication<User>() {
 
     if (req.container.has<User>() || req.method == 'OPTIONS')
       return true;
-    else
+    else if (req.container.has<Future<User>>()) {
+      await req.container.makeAsync<User>();
+      return true;
+    } else
       return _reject(res);
   };
 }
