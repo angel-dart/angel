@@ -7,20 +7,20 @@ const Duration threeDays = const Duration(days: 3);
 
 void main() {
   Cookie defaultCookie;
-  var auth = new AngelAuth(
+  var auth = AngelAuth(
     secureCookies: true,
     cookieDomain: 'SECURE',
     jwtLifeSpan: threeDays.inMilliseconds,
   );
 
-  setUp(() => defaultCookie = new Cookie('a', 'b'));
+  setUp(() => defaultCookie = Cookie('a', 'b'));
 
   test('sets maxAge', () {
     expect(auth.protectCookie(defaultCookie).maxAge, threeDays.inSeconds);
   });
 
   test('sets expires', () {
-    var now = new DateTime.now();
+    var now = DateTime.now();
     var expiry = auth.protectCookie(defaultCookie).expires;
     var diff = expiry.difference(now);
     expect(diff.inSeconds, threeDays.inSeconds);

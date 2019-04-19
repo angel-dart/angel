@@ -11,8 +11,8 @@ typedef FutureOr<User> LocalAuthVerifier<User>(
     String username, String password);
 
 class LocalAuthStrategy<User> extends AuthStrategy<User> {
-  RegExp _rgxBasic = new RegExp(r'^Basic (.+)$', caseSensitive: false);
-  RegExp _rgxUsrPass = new RegExp(r'^([^:]+):(.+)$');
+  RegExp _rgxBasic = RegExp(r'^Basic (.+)$', caseSensitive: false);
+  RegExp _rgxUsrPass = RegExp(r'^([^:]+):(.+)$');
 
   LocalAuthVerifier<User> verifier;
   String usernameField;
@@ -34,7 +34,7 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
   @override
   Future<User> authenticate(RequestContext req, ResponseContext res,
       [AngelAuthOptions options_]) async {
-    AngelAuthOptions options = options_ ?? new AngelAuthOptions();
+    AngelAuthOptions options = options_ ?? AngelAuthOptions();
     User verificationResult;
 
     if (allowBasic) {
@@ -43,13 +43,13 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
       if (_rgxBasic.hasMatch(authHeader)) {
         String base64AuthString = _rgxBasic.firstMatch(authHeader).group(1);
         String authString =
-            new String.fromCharCodes(base64.decode(base64AuthString));
+            String.fromCharCodes(base64.decode(base64AuthString));
         if (_rgxUsrPass.hasMatch(authString)) {
           Match usrPassMatch = _rgxUsrPass.firstMatch(authString);
           verificationResult =
               await verifier(usrPassMatch.group(1), usrPassMatch.group(2));
         } else
-          throw new AngelHttpException.badRequest(errors: [invalidMessage]);
+          throw AngelHttpException.badRequest(errors: [invalidMessage]);
 
         if (verificationResult == false || verificationResult == null) {
           res
@@ -78,20 +78,20 @@ class LocalAuthStrategy<User> extends AuthStrategy<User> {
     if (verificationResult == false || verificationResult == null) {
       if (options.failureRedirect != null &&
           options.failureRedirect.isNotEmpty) {
-        res.redirect(options.failureRedirect, code: 401);
+        await res.redirect(options.failureRedirect, code: 401);
         return null;
       }
 
       if (forceBasic) {
         res.headers['www-authenticate'] = 'Basic realm="$realm"';
-        throw new AngelHttpException.notAuthenticated();
+        throw AngelHttpException.notAuthenticated();
       }
 
       return null;
     } else if (verificationResult != null && verificationResult != false) {
       return verificationResult;
     } else {
-      throw new AngelHttpException.notAuthenticated();
+      throw AngelHttpException.notAuthenticated();
     }
   }
 }

@@ -4,8 +4,8 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 
 main() async {
-  var app = new Angel();
-  var auth = new AngelAuth<User>();
+  var app = Angel();
+  var auth = AngelAuth<User>();
 
   auth.serializer = (user) => user.id;
 
@@ -14,7 +14,7 @@ main() async {
   // Middleware to decode JWT's and inject a user object...
   app.fallback(auth.decodeJwt);
 
-  auth.strategies['local'] = new LocalAuthStrategy((username, password) {
+  auth.strategies['local'] = LocalAuthStrategy((username, password) {
     // Retrieve a user somehow...
     // If authentication succeeds, return a User object.
     //
@@ -23,7 +23,7 @@ main() async {
 
   app.post('/auth/local', auth.authenticate('local'));
 
-  var http = new AngelHttp(app);
+  var http = AngelHttp(app);
   await http.startServer('127.0.0.1', 3000);
 
   print('Listening at http://127.0.0.1:3000');
@@ -35,5 +35,5 @@ class User {
 
 Future<User> fetchAUserByIdSomehow(id) async {
   // Fetch a user somehow...
-  throw new UnimplementedError();
+  throw UnimplementedError();
 }

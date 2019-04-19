@@ -11,10 +11,10 @@ import 'strategy.dart';
 class AngelAuth<User> {
   Hmac _hs256;
   int _jwtLifeSpan;
-  final StreamController<User> _onLogin = new StreamController<User>(),
-      _onLogout = new StreamController<User>();
-  Math.Random _random = new Math.Random.secure();
-  final RegExp _rgxBearer = new RegExp(r"^Bearer");
+  final StreamController<User> _onLogin = StreamController<User>(),
+      _onLogout = StreamController<User>();
+  Math.Random _random = Math.Random.secure();
+  final RegExp _rgxBearer = RegExp(r"^Bearer");
 
   /// If `true` (default), then JWT's will be stored and retrieved from a `token` cookie.
   final bool allowCookie;
@@ -68,7 +68,7 @@ class AngelAuth<User> {
           "ABCDEFHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"}) {
     var chars = <int>[];
     while (chars.length < length) chars.add(_random.nextInt(validChars.length));
-    return new String.fromCharCodes(chars);
+    return String.fromCharCodes(chars);
   }
 
   /// `jwtLifeSpan` - should be in *milliseconds*.
@@ -85,16 +85,16 @@ class AngelAuth<User> {
       this.secureCookies = true,
       this.reviveTokenEndpoint = "/auth/token"})
       : super() {
-    _hs256 = new Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
+    _hs256 = Hmac(sha256, (jwtKey ?? _randomString()).codeUnits);
     _jwtLifeSpan = jwtLifeSpan?.toInt() ?? -1;
   }
 
   Future configureServer(Angel app) async {
     if (serializer == null)
-      throw new StateError(
+      throw StateError(
           'An `AngelAuth` plug-in was called without its `serializer` being set. All authentication will fail.');
     if (deserializer == null)
-      throw new StateError(
+      throw StateError(
           'An `AngelAuth` plug-in was called without its `deserializer` being set. All authentication will fail.');
 
     app.container.registerSingleton(this);
@@ -132,20 +132,20 @@ class AngelAuth<User> {
     String jwt = getJwt(req);
 
     if (jwt != null) {
-      var token = new AuthToken.validate(jwt, _hs256);
+      var token = AuthToken.validate(jwt, _hs256);
 
       if (enforceIp) {
         if (req.ip != null && req.ip != token.ipAddress)
-          throw new AngelHttpException.forbidden(
+          throw AngelHttpException.forbidden(
               message: "JWT cannot be accessed from this IP address.");
       }
 
       if (token.lifeSpan > -1) {
-        var expiry = token.issuedAt
-            .add(new Duration(milliseconds: token.lifeSpan.toInt()));
+        var expiry =
+            token.issuedAt.add(Duration(milliseconds: token.lifeSpan.toInt()));
 
-        if (!expiry.isAfter(new DateTime.now()))
-          throw new AngelHttpException.forbidden(message: "Expired JWT.");
+        if (!expiry.isAfter(DateTime.now()))
+          throw AngelHttpException.forbidden(message: "Expired JWT.");
       }
 
       final user = await deserializer(token.userId);
@@ -176,7 +176,7 @@ class AngelAuth<User> {
 
   void _addProtectedCookie(ResponseContext res, String name, String value) {
     if (!res.cookies.any((c) => c.name == name)) {
-      res.cookies.add(protectCookie(new Cookie(name, value)));
+      res.cookies.add(protectCookie(Cookie(name, value)));
     }
   }
 
@@ -190,7 +190,7 @@ class AngelAuth<User> {
     if (_jwtLifeSpan > 0) {
       cookie.maxAge ??= _jwtLifeSpan < 0 ? -1 : _jwtLifeSpan ~/ 1000;
       cookie.expires ??=
-          new DateTime.now().add(new Duration(milliseconds: _jwtLifeSpan));
+          DateTime.now().add(Duration(milliseconds: _jwtLifeSpan));
     }
 
     cookie.domain ??= cookieDomain;
@@ -209,24 +209,24 @@ class AngelAuth<User> {
         jwt = body['token']?.toString();
       }
       if (jwt == null) {
-        throw new AngelHttpException.forbidden(message: "No JWT provided");
+        throw AngelHttpException.forbidden(message: "No JWT provided");
       } else {
-        var token = new AuthToken.validate(jwt, _hs256);
+        var token = AuthToken.validate(jwt, _hs256);
         if (enforceIp) {
           if (req.ip != token.ipAddress)
-            throw new AngelHttpException.forbidden(
+            throw AngelHttpException.forbidden(
                 message: "JWT cannot be accessed from this IP address.");
         }
 
         if (token.lifeSpan > -1) {
           var expiry = token.issuedAt
-              .add(new Duration(milliseconds: token.lifeSpan.toInt()));
+              .add(Duration(milliseconds: token.lifeSpan.toInt()));
 
-          if (!expiry.isAfter(new DateTime.now())) {
+          if (!expiry.isAfter(DateTime.now())) {
             //print(
             //    'Token has indeed expired! Resetting assignment date to current timestamp...');
             // Extend its lifespan by changing iat
-            token.issuedAt = new DateTime.now();
+            token.issuedAt = DateTime.now();
           }
         }
 
@@ -239,7 +239,7 @@ class AngelAuth<User> {
       }
     } catch (e) {
       if (e is AngelHttpException) rethrow;
-      throw new AngelHttpException.badRequest(message: "Malformed JWT");
+      throw AngelHttpException.badRequest(message: "Malformed JWT");
     }
   }
 
@@ -254,7 +254,9 @@ class AngelAuth<User> {
   RequestHandler authenticate(type, [AngelAuthOptions<User> options]) {
     return (RequestContext req, ResponseContext res) async {
       List<String> names = [];
-      var arr = type is Iterable ? type.toList() : [type];
+      var arr = type is Iterable
+          ? type.map((x) => x.toString()).toList()
+          : [type.toString()];
 
       for (String t in arr) {
         var n = t
@@ -269,7 +271,7 @@ class AngelAuth<User> {
         var name = names[i];
 
         var strategy = strategies[name] ??=
-            throw new ArgumentError('No strategy "$name" found.');
+            throw ArgumentError('No strategy "$name" found.');
 
         var hasExisting = req.container.has<User>();
         var result = hasExisting
@@ -281,7 +283,7 @@ class AngelAuth<User> {
           var userId = await serializer(result);
 
           // Create JWT
-          var token = new AuthToken(
+          var token = AuthToken(
               userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
           var jwt = token.serialize(_hs256);
 
@@ -306,7 +308,7 @@ class AngelAuth<User> {
           }
 
           if (options?.successRedirect?.isNotEmpty == true) {
-            res.redirect(options.successRedirect);
+            await res.redirect(options.successRedirect);
             return false;
           } else if (options?.canRespondWithJson != false &&
               req.accepts('application/json')) {
@@ -326,10 +328,10 @@ class AngelAuth<User> {
               res.headers.containsKey('location'))
             return false;
           else if (options?.failureRedirect != null) {
-            res.redirect(options.failureRedirect);
+            await res.redirect(options.failureRedirect);
             return false;
           } else
-            throw new AngelHttpException.notAuthenticated();
+            throw AngelHttpException.notAuthenticated();
         }
       }
     };
@@ -349,8 +351,8 @@ class AngelAuth<User> {
   /// Log a user in on-demand.
   Future loginById(userId, RequestContext req, ResponseContext res) async {
     var user = await deserializer(userId);
-    var token = new AuthToken(
-        userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
+    var token =
+        AuthToken(userId: userId, lifeSpan: _jwtLifeSpan, ipAddress: req.ip);
     _apply(req, res, token, user);
     _onLogin.add(user);
 
@@ -375,7 +377,7 @@ class AngelAuth<User> {
       if (options != null &&
           options.successRedirect != null &&
           options.successRedirect.isNotEmpty) {
-        res.redirect(options.successRedirect);
+        await res.redirect(options.successRedirect);
       }
 
       return true;

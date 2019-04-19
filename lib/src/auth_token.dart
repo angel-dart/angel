@@ -26,7 +26,7 @@ String decodeBase64(String str) {
 
 class AuthToken {
   final SplayTreeMap<String, String> _header =
-      new SplayTreeMap.from({"alg": "HS256", "typ": "JWT"});
+      SplayTreeMap.from({"alg": "HS256", "typ": "JWT"});
 
   String ipAddress;
   DateTime issuedAt;
@@ -40,17 +40,17 @@ class AuthToken {
       this.userId,
       DateTime issuedAt,
       Map payload = const {}}) {
-    this.issuedAt = issuedAt ?? new DateTime.now();
+    this.issuedAt = issuedAt ?? DateTime.now();
     this.payload.addAll(
         payload?.keys?.fold({}, (out, k) => out..[k.toString()] = payload[k]) ??
             {});
   }
 
   factory AuthToken.fromJson(String jsons) =>
-      new AuthToken.fromMap(json.decode(jsons) as Map);
+      AuthToken.fromMap(json.decode(jsons) as Map);
 
   factory AuthToken.fromMap(Map data) {
-    return new AuthToken(
+    return AuthToken(
         ipAddress: data["aud"].toString(),
         lifeSpan: data["exp"] as num,
         issuedAt: DateTime.parse(data["iat"].toString()),
@@ -62,17 +62,17 @@ class AuthToken {
     var split = jwt.split(".");
 
     if (split.length != 3)
-      throw new AngelHttpException.notAuthenticated(message: "Invalid JWT.");
+      throw AngelHttpException.notAuthenticated(message: "Invalid JWT.");
 
     var payloadString = decodeBase64(split[1]);
-    return new AuthToken.fromMap(json.decode(payloadString) as Map);
+    return AuthToken.fromMap(json.decode(payloadString) as Map);
   }
 
   factory AuthToken.validate(String jwt, Hmac hmac) {
     var split = jwt.split(".");
 
     if (split.length != 3)
-      throw new AngelHttpException.notAuthenticated(message: "Invalid JWT.");
+      throw AngelHttpException.notAuthenticated(message: "Invalid JWT.");
 
     // var headerString = decodeBase64(split[0]);
     var payloadString = decodeBase64(split[1]);
@@ -80,10 +80,10 @@ class AuthToken {
     var signature = base64Url.encode(hmac.convert(data.codeUnits).bytes);
 
     if (signature != split[2])
-      throw new AngelHttpException.notAuthenticated(
+      throw AngelHttpException.notAuthenticated(
           message: "JWT payload does not match hashed version.");
 
-    return new AuthToken.fromMap(json.decode(payloadString) as Map);
+    return AuthToken.fromMap(json.decode(payloadString) as Map);
   }
 
   String serialize(Hmac hmac) {
@@ -111,7 +111,7 @@ SplayTreeMap _splayify(Map map) {
   map.forEach((k, v) {
     data[k] = _splay(v);
   });
-  return new SplayTreeMap.from(data);
+  return SplayTreeMap.from(data);
 }
 
 _splay(value) {

@@ -10,7 +10,7 @@ AngelAuthCallback confirmPopupAuthentication({String eventName = 'token'}) {
     var detail = json.encode({'detail': jwt});
 
     res
-      ..contentType = new MediaType('text', 'html')
+      ..contentType = MediaType('text', 'html')
       ..write('''
       <!DOCTYPE html>
       <html>
@@ -18,7 +18,7 @@ AngelAuthCallback confirmPopupAuthentication({String eventName = 'token'}) {
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <title>Authentication Success</title>
           <script>
-            var ev = new CustomEvent($evt, $detail);
+            var ev = CustomEvent($evt, $detail);
             window.opener.dispatchEvent(ev);
             window.close();
           </script>

@@ -17,10 +17,10 @@ Ensure you have read the [wiki](https://github.com/angel-dart/auth/wiki).
 
 ```dart
 configureServer(Angel app) async {
-  var auth = new AngelAuth();
+  var auth = AngelAuth();
   auth.serializer = ...;
   auth.deserializer = ...;
-  auth.strategies['local'] = new LocalAuthStrategy(...);
+  auth.strategies['local'] = LocalAuthStrategy(...);
   
   // POST route to handle username+password
   app.post('/local', auth.authenticate('local'));
@@ -55,7 +55,7 @@ in this package.
 configureServer(Angel app) async {
   var handler = auth.authenticate(
     'facebook',
-    new AngelAuthOptions(callback: confirmPopupAuthentication()));
+    AngelAuthOptions(callback: confirmPopupAuthentication()));
   app.get('/auth/facebook', handler);
   
   // Use a comma to try multiple strategies!!!

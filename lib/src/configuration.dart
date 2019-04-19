@@ -20,9 +20,9 @@ class ExternalAuthOptions {
   ExternalAuthOptions._(
       this.clientId, this.clientSecret, this.redirectUri, this.scopes) {
     if (clientId == null) {
-      throw new ArgumentError.notNull('clientId');
+      throw ArgumentError.notNull('clientId');
     } else if (clientSecret == null) {
-      throw new ArgumentError.notNull('clientSecret');
+      throw ArgumentError.notNull('clientSecret');
     }
   }
 
@@ -32,13 +32,13 @@ class ExternalAuthOptions {
       @required redirectUri,
       Iterable<String> scopes = const []}) {
     if (redirectUri is String) {
-      return new ExternalAuthOptions._(
+      return ExternalAuthOptions._(
           clientId, clientSecret, Uri.parse(redirectUri), scopes.toSet());
     } else if (redirectUri is Uri) {
-      return new ExternalAuthOptions._(
+      return ExternalAuthOptions._(
           clientId, clientSecret, redirectUri, scopes.toSet());
     } else {
-      throw new ArgumentError.value(
+      throw ArgumentError.value(
           redirectUri, 'redirectUri', 'must be a String or Uri');
     }
   }
@@ -50,7 +50,7 @@ class ExternalAuthOptions {
   /// * `client_secret`
   /// * `redirect_uri`
   factory ExternalAuthOptions.fromMap(Map map) {
-    return new ExternalAuthOptions(
+    return ExternalAuthOptions(
       clientId: map['client_id'] as String,
       clientSecret: map['client_secret'] as String,
       redirectUri: map['redirect_uri'],
@@ -77,7 +77,7 @@ class ExternalAuthOptions {
       String clientSecret,
       redirectUri,
       Iterable<String> scopes}) {
-    return new ExternalAuthOptions(
+    return ExternalAuthOptions(
       clientId: clientId ?? this.clientId,
       clientSecret: clientSecret ?? this.clientSecret,
       redirectUri: redirectUri ?? this.redirectUri,
@@ -118,11 +118,11 @@ class ExternalAuthOptions {
       secret = clientSecret;
     } else {
       var codeUnits =
-          new List<int>.filled(asteriskCount ?? clientSecret.length, $asterisk);
-      secret = new String.fromCharCodes(codeUnits);
+          List<int>.filled(asteriskCount ?? clientSecret.length, $asterisk);
+      secret = String.fromCharCodes(codeUnits);
     }
 
-    var b = new StringBuffer('ExternalAuthOptions(');
+    var b = StringBuffer('ExternalAuthOptions(');
     b.write('clientId=$clientId');
     b.write(', clientSecret=$secret');
     b.write(', redirectUri=$redirectUri');

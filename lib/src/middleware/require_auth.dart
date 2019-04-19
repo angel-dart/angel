@@ -7,7 +7,7 @@ RequestHandler forceBasicAuth<User>({String realm}) {
   return (RequestContext req, ResponseContext res) async {
     if (req.container.has<User>()) return true;
     res.headers['www-authenticate'] = 'Basic realm="${realm ?? 'angel_auth'}"';
-    throw new AngelHttpException.notAuthenticated();
+    throw AngelHttpException.notAuthenticated();
   };
 }
 
@@ -18,7 +18,7 @@ RequestHandler requireAuthentication<User>() {
     bool _reject(ResponseContext res) {
       if (throwError) {
         res.statusCode = 403;
-        throw new AngelHttpException.forbidden();
+        throw AngelHttpException.forbidden();
       } else
         return false;
     }

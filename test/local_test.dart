@@ -8,10 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
-final AngelAuth<Map<String, String>> auth =
-    new AngelAuth<Map<String, String>>();
+final AngelAuth<Map<String, String>> auth = AngelAuth<Map<String, String>>();
 var headers = <String, String>{'accept': 'application/json'};
-var localOpts = new AngelAuthOptions<Map<String, String>>(
+var localOpts = AngelAuthOptions<Map<String, String>>(
     failureRedirect: '/failure', successRedirect: '/success');
 Map<String, String> sampleUser = {'hello': 'world'};
 
@@ -26,7 +25,7 @@ Future wireAuth(Angel app) async {
   auth.serializer = (user) async => 1337;
   auth.deserializer = (id) async => sampleUser;
 
-  auth.strategies['local'] = new LocalAuthStrategy(verifier);
+  auth.strategies['local'] = LocalAuthStrategy(verifier);
   await app.configure(auth.configureServer);
   app.fallback(auth.decodeJwt);
 }
@@ -39,9 +38,9 @@ main() async {
   String basicAuthUrl;
 
   setUp(() async {
-    client = new http.Client();
-    app = new Angel();
-    angelHttp = new AngelHttp(app, useZone: false);
+    client = http.Client();
+    app = Angel();
+    angelHttp = AngelHttp(app, useZone: false);
     await app.configure(wireAuth);
     app.get('/hello', (req, res) => 'Woo auth',
         middleware: [auth.authenticate('local')]);
@@ -52,7 +51,7 @@ main() async {
     ]);
     app.get('/failure', (req, res) => "nope");
 
-    app.logger = new Logger('angel_auth')
+    app.logger = Logger('angel_auth')
       ..onRecord.listen((rec) {
         if (rec.error != null) {
           print(rec.error);
@@ -114,7 +113,7 @@ main() async {
   test('force basic', () async {
     auth.strategies.clear();
     auth.strategies['local'] =
-        new LocalAuthStrategy(verifier, forceBasic: true, realm: 'test');
+        LocalAuthStrategy(verifier, forceBasic: true, realm: 'test');
     var response = await client.get("$url/hello", headers: {
       'accept': 'application/json',
       'content-type': 'application/json'

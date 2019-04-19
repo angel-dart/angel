@@ -1,3 +1,6 @@
+# 2.1.3
+* Use `await` on redirects, etc.
+
 # 2.1.2
 * Change empty cookie string to have double quotes (thanks @korsvanloon).
 

@@ -14,7 +14,7 @@ class User extends Model {
   User({this.username, this.password});
 
   static User parse(Map map) {
-    return new User(
+    return User(
       username: map['username'] as String,
       password: map['password'] as String,
     );
@@ -41,9 +41,9 @@ main() {
 
   setUp(() async {
     hierarchicalLoggingEnabled = true;
-    app = new Angel();
-    angelHttp = new AngelHttp(app);
-    app.use('/users', new MapService());
+    app = Angel();
+    angelHttp = AngelHttp(app);
+    app.use('/users', MapService());
 
     var oldErrorHandler = app.errorHandler;
     app.errorHandler = (e, req, res) {
@@ -51,7 +51,7 @@ main() {
       return oldErrorHandler(e, req, res);
     };
 
-    app.logger = new Logger('angel_auth')
+    app.logger = Logger('angel_auth')
       ..level = Level.FINEST
       ..onRecord.listen((rec) {
         print(rec);
@@ -69,7 +69,7 @@ main() {
         .findService('users')
         .create({'username': 'jdoe1', 'password': 'password'});
 
-    auth = new AngelAuth<User>();
+    auth = AngelAuth<User>();
     auth.serializer = (u) => u.id;
     auth.deserializer =
         (id) async => await app.findService('users').read(id) as User;
@@ -77,8 +77,7 @@ main() {
     await app.configure(auth.configureServer);
     app.fallback(auth.decodeJwt);
 
-    auth.strategies['local'] =
-        new LocalAuthStrategy((username, password) async {
+    auth.strategies['local'] = LocalAuthStrategy((username, password) async {
       var users = await app
           .findService('users')
           .index()
@@ -91,7 +90,7 @@ main() {
     app.post(
         '/login',
         auth.authenticate('local',
-            new AngelAuthOptions(callback: (req, res, token) {
+            AngelAuthOptions(callback: (req, res, token) {
           res
             ..write('Hello!')
             ..close();
@@ -101,7 +100,7 @@ main() {
       (req, res) {
         if (!req.container.has<User>()) {
           req.container.registerSingleton<User>(
-              new User(username: req.params['name']?.toString()));
+              User(username: req.params['name']?.toString()));
         }
         return true;
       }
@@ -110,7 +109,7 @@ main() {
       auth.authenticate('local'),
     );
 
-    client = new http.Client();
+    client = http.Client();
     server = await angelHttp.startServer();
     url = 'http://${server.address.address}:${server.port}';
   });

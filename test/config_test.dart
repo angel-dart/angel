@@ -2,7 +2,7 @@ import 'package:angel_auth/angel_auth.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var options = new ExternalAuthOptions(
+  var options = ExternalAuthOptions(
     clientId: 'foo',
     clientSecret: 'bar',
     redirectUri: 'http://example.com',
@@ -25,7 +25,7 @@ void main() {
           redirectUri: 'https://yes.no',
           scopes: ['a', 'b'],
         ),
-        new ExternalAuthOptions(
+        ExternalAuthOptions(
           clientId: 'hey',
           clientSecret: 'hello',
           redirectUri: 'https://yes.no',
@@ -42,7 +42,7 @@ void main() {
   group('new()', () {
     test('accepts uri', () {
       expect(
-        new ExternalAuthOptions(
+        ExternalAuthOptions(
           clientId: 'foo',
           clientSecret: 'bar',
           redirectUri: Uri.parse('http://example.com'),
@@ -53,7 +53,7 @@ void main() {
 
     test('accepts string', () {
       expect(
-        new ExternalAuthOptions(
+        ExternalAuthOptions(
           clientId: 'foo',
           clientSecret: 'bar',
           redirectUri: 'http://example.com',
@@ -64,7 +64,7 @@ void main() {
 
     test('rejects invalid redirectUri', () {
       expect(
-        () => new ExternalAuthOptions(
+        () => ExternalAuthOptions(
             clientId: 'foo', clientSecret: 'bar', redirectUri: 24.5),
         throwsArgumentError,
       );
@@ -72,7 +72,7 @@ void main() {
 
     test('ensures id not null', () {
       expect(
-        () => new ExternalAuthOptions(
+        () => ExternalAuthOptions(
             clientId: null,
             clientSecret: 'bar',
             redirectUri: 'http://example.com'),
@@ -82,7 +82,7 @@ void main() {
 
     test('ensures secret not null', () {
       expect(
-        () => new ExternalAuthOptions(
+        () => ExternalAuthOptions(
             clientId: 'foo',
             clientSecret: null,
             redirectUri: 'http://example.com'),
@@ -94,14 +94,14 @@ void main() {
   group('fromMap()', () {
     test('rejects invalid map', () {
       expect(
-        () => new ExternalAuthOptions.fromMap({'yes': 'no'}),
+        () => ExternalAuthOptions.fromMap({'yes': 'no'}),
         throwsArgumentError,
       );
     });
 
     test('accepts correct map', () {
       expect(
-        new ExternalAuthOptions.fromMap({
+        ExternalAuthOptions.fromMap({
           'client_id': 'foo',
           'client_secret': 'bar',
           'redirect_uri': 'http://example.com',
