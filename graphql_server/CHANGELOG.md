@@ -1,3 +1,6 @@
+# 1.0.0-rc.0
+* Get the Apollo support working with the latest version of `subscriptions-transport-ws`.
+
 # 1.0.0-beta.4
 For some reason, Pub was not including `subscriptions_transport_ws.dart`.
 

@@ -8,6 +8,7 @@ abstract class Server {
   final Completer _done = Completer();
   StreamSubscription<OperationMessage> _sub;
   bool _init = false;
+  Timer _timer;
 
   Future get done => _done.future;
 
@@ -29,10 +30,14 @@ abstract class Server {
               client.sink
                   .add(OperationMessage(OperationMessage.gqlConnectionAck));
 
-              // if (keepAliveInterval != null) {
-              //   client.sink.add(
-              //       OperationMessage(OperationMessage.gqlConnectionKeepAlive));
-              // }
+              if (keepAliveInterval != null) {
+                client.sink.add(
+                    OperationMessage(OperationMessage.gqlConnectionKeepAlive));
+                _timer ??= Timer.periodic(keepAliveInterval, (timer) {
+                  client.sink.add(OperationMessage(
+                      OperationMessage.gqlConnectionKeepAlive));
+                });
+              }
             } catch (e) {
               if (e == false)
                 _reportError('The connection was rejected.');
@@ -66,46 +71,46 @@ abstract class Server {
                   query as String,
                   (variables as Map)?.cast<String, dynamic>(),
                   operationName as String);
-              // var c = Completer();
-              // if (keepAliveInterval != null) {
-              //   Timer.periodic(keepAliveInterval, (timer) {
-              //     if (c.isCompleted) {
-              //       timer.cancel();
-              //     } else {
-              //       client.sink.add(OperationMessage(
-              //           OperationMessage.gqlConnectionKeepAlive,
-              //           id: msg.id));
-              //     }
-              //   });
-              // }
-
               var data = result.data;
 
-              if (data is Stream) {
-                await for (var event in data) {
-                  client.sink.add(OperationMessage(OperationMessage.gqlData,
-                      id: msg.id,
-                      payload: {'data': event, 'errors': result.errors}));
-                }
-              } else {
+              if (result.errors.isNotEmpty) {
                 client.sink.add(OperationMessage(OperationMessage.gqlData,
-                    id: msg.id,
-                    payload: {'data': data, 'errors': result.errors}));
+                    id: msg.id, payload: {'errors': result.errors.toList()}));
+              } else {
+                if (data is Map &&
+                    data.keys.length == 1 &&
+                    data.containsKey('data')) {
+                  data = data['data'];
+                }
+
+                if (data is Stream) {
+                  await for (var event in data) {
+                    if (event is Map &&
+                        event.keys.length == 1 &&
+                        event.containsKey('data')) {
+                      event = event['data'];
+                    }
+                    client.sink.add(OperationMessage(OperationMessage.gqlData,
+                        id: msg.id, payload: {'data': event}));
+                  }
+                } else {
+                  client.sink.add(OperationMessage(OperationMessage.gqlData,
+                      id: msg.id, payload: {'data': data}));
+                }
               }
 
               // c.complete();
               client.sink.add(
                   OperationMessage(OperationMessage.gqlComplete, id: msg.id));
+            } else if (msg.type == OperationMessage.gqlConnectionTerminate) {
+              await _sub?.cancel();
             }
-            // TODO: https://github.com/apollographql/subscriptions-transport-ws/issues/551
-            // else if (msg.type == OperationMessage.gqlConnectionTerminate) {
-            //   await _sub?.cancel();
-            // }
           }
         },
         onError: _done.completeError,
         onDone: () {
           _done.complete();
+          _timer?.cancel();
         });
   }
 

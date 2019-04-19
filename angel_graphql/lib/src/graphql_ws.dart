@@ -22,12 +22,12 @@ RequestHandler graphQLWS(GraphQL graphQL, {Duration keepAliveInterval}) {
         await res.detach();
         var socket = await WebSocketTransformer.upgrade(req.rawRequest,
             protocolSelector: (protocols) {
-          if (protocols.contains('graphql-subscriptions'))
-            return 'graphql-subscriptions';
+          if (protocols.contains('graphql-ws'))
+            return 'graphql-ws';
           else
             throw AngelHttpException.badRequest(
                 message:
-                    'Only the "graphql-subscriptions" protocol is allowed.');
+                    'Only the "graphql-ws" protocol is allowed.');
         });
         var channel = IOWebSocketChannel(socket);
         var client = stw.RemoteClient(channel.cast<String>());

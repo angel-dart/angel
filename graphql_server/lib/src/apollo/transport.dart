@@ -1,21 +1,28 @@
-import 'dart:async';
 import 'package:graphql_schema/graphql_schema.dart';
-import 'package:stream_channel/stream_channel.dart';
 
 /// A basic message in the Apollo WebSocket protocol.
 class OperationMessage {
-  static const String gqlConnectionInit = 'init',
-      gqlConnectionAck = 'init_success',
-      gqlConnectionKeepAlive = 'keepalive',
-      gqlConnectionError = 'init_fail',
-      gqlStart = 'subscription_start',
-      gqlStop = 'subscription_end',
-      // TODO: Does this have a replacement?
-      // https://github.com/apollographql/subscriptions-transport-ws/issues/551
-      // gqlConnectionTerminate = 'subscription_end',
-      gqlData = 'subscription_data',
-      gqlError = 'subscription_fail',
-      gqlComplete = 'subscription_success';
+  static const String gqlConnectionInit = 'connection_init',
+      gqlConnectionAck = 'connection_ack',
+      gqlConnectionKeepAlive = 'ka',
+      gqlConnectionError = 'connection_error',
+      gqlStart = 'start',
+      gqlStop = 'stop',
+      gqlConnectionTerminate = 'connection_terminate',
+      gqlData = 'data',
+      gqlError = 'error',
+      gqlComplete = 'complete';
+  static const String legacyGqlConnectionInit = 'connection_init',
+      legacyGqlConnectionAck = 'connection_ack',
+      legacyGqlConnectionKeepAlive = 'ka',
+      legacyGqlConnectionError = 'connection_error',
+      legacyGqlStart = 'start',
+      legacyGqlStop = 'stop',
+      legacyGqlConnectionTerminate = 'connection_terminate',
+      legacyGqlData = 'data',
+      legacyGqlError = 'error',
+      legacyGqlComplete = 'complete';
+
   // static const String gqlConnectionInit = 'GQL_CONNECTION_INIT',
   //     gqlConnectionAck = 'GQL_CONNECTION_ACK',
   //     gqlConnectionKeepAlive = 'GQL_CONNECTION_KEEP_ALIVE',

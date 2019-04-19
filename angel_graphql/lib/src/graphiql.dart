@@ -26,7 +26,7 @@ String renderGraphiql(
   if (subscriptionsEndpoint != null) {
     fetcherName = 'subscriptionsFetcher';
     subscriptionsScripts = '''
-  <script src="//unpkg.com/subscriptions-transport-ws@0.5.4/browser/client.js"></script>
+  <script src="//unpkg.com/subscriptions-transport-ws@0.8.3/browser/client.js"></script>
   <script src="//unpkg.com/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>
   ''';
     subscriptionsFetcher = '''

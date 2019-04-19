@@ -81,8 +81,9 @@ main() async {
   );
 
   // Mount GraphQL routes; we'll support HTTP and WebSockets transports.
-  app.get('/graphql', graphQLHttp(GraphQL(schema)));
-  app.get('/subscriptions', graphQLWS(GraphQL(schema)));
+  app.all('/graphql', graphQLHttp(GraphQL(schema)));
+  app.get('/subscriptions',
+      graphQLWS(GraphQL(schema), keepAliveInterval: Duration(seconds: 3)));
   app.get('/graphiql',
       graphiQL(subscriptionsEndpoint: 'ws://localhost:3000/subscriptions'));
 
