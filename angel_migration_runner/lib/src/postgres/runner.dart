@@ -61,7 +61,7 @@ class PostgresMigrationRunner implements MigrationRunner {
       int curBatch = (r[0][0] ?? 0) as int;
       int batch = curBatch + 1;
 
-      for (var k in toRun.reversed) {
+      for (var k in toRun) {
         var migration = migrations[k];
         var schema = new PostgresSchema();
         migration.up(schema);
@@ -113,10 +113,10 @@ class PostgresMigrationRunner implements MigrationRunner {
     var r = await connection
         .query('SELECT path from migrations ORDER BY batch DESC;');
     Iterable<String> existing = r.expand((x) => x).cast<String>();
-    var toRun = existing.where(migrations.containsKey);
+    var toRun = existing.where(migrations.containsKey).toList();
 
     if (toRun.isNotEmpty) {
-      for (var k in toRun) {
+      for (var k in toRun.reversed) {
         var migration = migrations[k];
         var schema = new PostgresSchema();
         migration.down(schema);
