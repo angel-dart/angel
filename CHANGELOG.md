@@ -1,3 +1,7 @@
+# 2.0.0-rc.7
+* `AnonymousService` can override `readData`.
+* `Service.map` now overrides `readData`.
+
 # 2.0.0-rc.6
 * Make `redirect` and `download` methods asynchronous.
 

@@ -160,8 +160,15 @@ class Service<Id, Data> extends Routable {
   /// using two converter functions.
   ///
   /// Handy utility for handling data in a type-safe manner.
-  Service<Id, U> map<U>(U Function(Data) encoder, Data Function(U) decoder) {
+  Service<Id, U> map<U>(U Function(Data) encoder, Data Function(U) decoder,
+      {FutureOr<U> Function(RequestContext, ResponseContext) readData}) {
+    readData ??= (req, res) async {
+      var inner = await this.readData(req, res);
+      return encoder(inner);
+    };
+
     return new AnonymousService<Id, U>(
+      readData: readData,
       index: ([params]) {
         return index(params).then((it) => it.map(encoder).toList());
       },
