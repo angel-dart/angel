@@ -1,5 +1,5 @@
 # angel_orm_service
-[![Pub](https://img.shields.io/pub/v/angel_orm.svg)](https://pub.dartlang.org/packages/angel_orm_service)
+[![Pub](https://img.shields.io/pub/v/angel_orm_service.svg)](https://pub.dartlang.org/packages/angel_orm_service)
 [![build status](https://travis-ci.org/angel-dart/orm.svg)](https://travis-ci.org/angel-dart/orm)
 
 Service implementation that wraps over Angel ORM Query classes.
