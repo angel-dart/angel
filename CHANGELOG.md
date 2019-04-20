@@ -1,3 +1,6 @@
+# 2.0.2
+* Fix flaw where clients could remove all records, even if `allowRemoveAll` were `false`.
+
 # 2.0.1
 * Override `readMany` and `findOne`.
 

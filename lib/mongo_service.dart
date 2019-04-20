@@ -12,10 +12,12 @@ class MongoService extends Service<String, Map<String, dynamic>> {
   /// If set to `true`, parameters in `req.query` are applied to the database query.
   final bool allowQuery;
 
+  /// No longer used. Will be removed by `2.1.0`.
+  @deprecated
   final bool debug;
 
   MongoService(DbCollection this.collection,
-      {this.allowRemoveAll: false, this.allowQuery: true, this.debug: true})
+      {this.allowRemoveAll = false, this.allowQuery = true, this.debug = true})
       : super();
 
   SelectorBuilder _makeQuery([Map<String, dynamic> params_]) {
@@ -51,7 +53,7 @@ class MongoService extends Service<String, Map<String, dynamic>> {
         }
       } else if (key == 'query' &&
           (allowQuery == true || !params.containsKey('provider'))) {
-        Map query = params[key];
+        var query = params[key] as Map;
         query.forEach((key, v) {
           var value = v is Map<String, dynamic> ? _filterNoQuery(v) : v;
 
@@ -99,7 +101,7 @@ class MongoService extends Service<String, Map<String, dynamic>> {
     var item = _removeSensitive(data);
 
     try {
-      String nonce = (await collection.db.getNonce())['nonce'];
+      var nonce = (await collection.db.getNonce())['nonce'] as String;
       var result = await collection.findAndModify(
           query: where.eq(_NONCE_KEY, nonce),
           update: item,
@@ -209,12 +211,16 @@ class MongoService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> remove(String id,
       [Map<String, dynamic> params]) async {
-    if (id == null ||
-        id == 'null' &&
-            (allowRemoveAll == true ||
-                params?.containsKey('provider') != true)) {
-      await collection.remove(null);
-      return {};
+    if (id == null || id == 'null') {
+      // Remove everything...
+      if (!(allowRemoveAll == true ||
+          params?.containsKey('provider') != true)) {
+        throw AngelHttpException.forbidden(
+            message: 'Clients are not allowed to delete all items.');
+      } else {
+        await collection.remove(null);
+        return {};
+      }
     }
 
     // var result = await read(id, params);

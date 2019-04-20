@@ -80,8 +80,8 @@ main() {
 
       response = await client.get("$url/api");
       expect(response.statusCode, isIn([200, 201]));
-      List<Map> users =
-          god.deserialize(response.body, outputType: <Map>[].runtimeType);
+      var users = god.deserialize(response.body,
+          outputType: <Map>[].runtimeType) as List<Map>;
       expect(users.length, equals(1));
     });
 
@@ -89,11 +89,11 @@ main() {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, isIn([200, 201]));
-      Map created = god.deserialize(response.body);
+      var created = god.deserialize(response.body) as Map;
 
       response = await client.get("$url/api/${created['id']}");
       expect(response.statusCode, isIn([200, 201]));
-      Map read = god.deserialize(response.body);
+      var read = god.deserialize(response.body) as Map;
       expect(read['id'], equals(created['id']));
       expect(read['to'], equals('world'));
       //expect(read['createdAt'], isNot(null));
@@ -103,7 +103,7 @@ main() {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, isIn([200, 201]));
-      Map created = god.deserialize(response.body);
+      var created = god.deserialize(response.body) as Map;
 
       var id = new ObjectId.fromHexString(created['id'] as String);
       var read = await greetingService.findOne({'query': where.id(id)});
@@ -116,7 +116,7 @@ main() {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, isIn([200, 201]));
-      Map created = god.deserialize(response.body);
+      var created = god.deserialize(response.body) as Map;
 
       var id = new ObjectId.fromHexString(created['id'] as String);
       var read = await greetingService.readMany([id.toHexString()]);
@@ -128,11 +128,11 @@ main() {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, isIn([200, 201]));
-      Map created = god.deserialize(response.body);
+      var created = god.deserialize(response.body) as Map;
 
       response = await client.patch("$url/api/${created['id']}",
           body: god.serialize({"to": "Mom"}), headers: headers);
-      Map modified = god.deserialize(response.body);
+      var modified = god.deserialize(response.body) as Map;
       expect(response.statusCode, isIn([200, 201]));
       expect(modified['id'], equals(created['id']));
       expect(modified['to'], equals('Mom'));
@@ -143,11 +143,11 @@ main() {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
       expect(response.statusCode, isIn([200, 201]));
-      Map created = god.deserialize(response.body);
+      var created = god.deserialize(response.body) as Map;
 
       response = await client.post("$url/api/${created['id']}",
           body: god.serialize({"to": "Updated"}), headers: headers);
-      Map modified = god.deserialize(response.body);
+      var modified = god.deserialize(response.body) as Map;
       expect(response.statusCode, isIn([200, 201]));
       expect(modified['id'], equals(created['id']));
       expect(modified['to'], equals('Updated'));
@@ -157,12 +157,17 @@ main() {
     test('remove item', () async {
       var response = await client.post("$url/api",
           body: god.serialize(testGreeting), headers: headers);
-      Map created = god.deserialize(response.body);
+      var created = god.deserialize(response.body) as Map;
 
       int lastCount = (await greetingService.index()).length;
 
       await client.delete("$url/api/${created['id']}");
       expect((await greetingService.index()).length, equals(lastCount - 1));
+    });
+
+    test('cannot remove all unless explicitly set', () async {
+      var response = await client.delete('$url/api/null');
+      expect(response.statusCode, 403);
     });
 
     test('\$sort and query parameters', () async {
@@ -173,8 +178,8 @@ main() {
 
       var response = await client.get("$url/api?to=world");
       print(response.body);
-      List<Map> queried =
-          god.deserialize(response.body, outputType: <Map>[].runtimeType);
+      var queried = god.deserialize(response.body,
+          outputType: <Map>[].runtimeType) as List<Map>;
       expect(queried.length, equals(1));
       expect(queried[0].keys.length, equals(2));
       expect(queried[0]["id"], equals(world["id"]));
