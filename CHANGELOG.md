@@ -1,3 +1,6 @@
+# 2.1.5
+* Modify `_apply` to honor an existing `User` over `Future<User>`.
+
 # 2.1.4
 * Deprecate `decodeJwt`, in favor of asynchronous injections.
 

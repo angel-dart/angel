@@ -138,10 +138,12 @@ class AngelAuth<User> {
 
   void _apply(
       RequestContext req, ResponseContext res, AuthToken token, User user) {
-    if (!req.container.has<User>() && !req.container.has<Future<User>>()) {
-      req.container
-        ..registerSingleton<AuthToken>(token)
-        ..registerSingleton<User>(user);
+    if (!req.container.has<User>()) {
+      req.container.registerSingleton<User>(user);
+    }
+
+    if (!req.container.has<AuthToken>()) {
+      req.container.registerSingleton<AuthToken>(token);
     }
 
     if (allowCookie == true) {
