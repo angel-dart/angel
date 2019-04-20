@@ -138,8 +138,9 @@ abstract class BaseAngelClient extends Angel {
         request.body = body;
       } else if (body is List<int>) {
         request.bodyBytes = new List<int>.from(body);
-      } else if (body is Map<String, String>) {
-        request.bodyFields = new Map<String, String>.from(body);
+      } else if (body is Map<String, dynamic>) {
+        request.bodyFields =
+            body.map((k, v) => MapEntry(k, v is String ? v : v.toString()));
       } else {
         throw new ArgumentError.value(body, 'body',
             'must be a String, List<int>, or Map<String, String>.');
