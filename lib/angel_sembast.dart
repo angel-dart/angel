@@ -15,7 +15,7 @@ class SembastService extends Service<String, Map<String, dynamic>> {
   final bool allowQuery;
 
   SembastService(this.database,
-      {String store, this.allowRemoveAll: false, this.allowQuery: true})
+      {String store, this.allowRemoveAll = false, this.allowQuery = true})
       : this.store =
             (store == null ? database.mainStore : database.getStore(store)),
         super();
@@ -151,12 +151,16 @@ class SembastService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> remove(String id,
       [Map<String, dynamic> params]) async {
-    if (id == null ||
-        id == 'null' &&
-            (allowRemoveAll == true ||
-                params?.containsKey('provider') != true)) {
-      await store.deleteAll(await store.findKeys(new Finder()));
-      return {};
+    if (id == null || id == 'null') {
+      // Remove everything...
+      if (!(allowRemoveAll == true ||
+          params?.containsKey('provider') != true)) {
+        throw AngelHttpException.forbidden(
+            message: 'Clients are not allowed to delete all items.');
+      } else {
+        await store.deleteAll(await store.findKeys(new Finder()));
+        return {};
+      }
     }
 
     return database.transaction((txn) async {

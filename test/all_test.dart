@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_http_exception/angel_http_exception.dart';
 import 'package:angel_sembast/angel_sembast.dart';
 import 'package:sembast/sembast.dart';
@@ -73,6 +74,35 @@ main() async {
 
     expect(await service.index(), isNotEmpty);
     await service.remove(null);
+    expect(await service.index(), isEmpty);
+  });
+
+  test('cannot remove all unless explicitly set', () async {
+    expect(() => service.remove(null, {'provider': Providers.rest}),
+        throwsA(const TypeMatcher<AngelHttpException>()));
+    expect(
+        () => service.remove(null, {'provider': Providers.rest}),
+        throwsA(predicate((x) => x is AngelHttpException && x.statusCode == 403,
+            'throws forbidden')));
+    expect(() => service.remove('null', {'provider': Providers.rest}),
+        throwsA(const TypeMatcher<AngelHttpException>()));
+    expect(
+        () => service.remove('null', {'provider': Providers.rest}),
+        throwsA(predicate((x) => x is AngelHttpException && x.statusCode == 403,
+            'throws forbidden')));
+  });
+
+  test('can remove all on server side', () async {
+    await service.create({'bar': 'baz'});
+    await service.create({'bar': 'baz'});
+    await service.create({'bar': 'baz'});
+    await service.remove(null);
+    expect(await service.index(), isEmpty);
+
+    await service.create({'bar': 'baz'});
+    await service.create({'bar': 'baz'});
+    await service.create({'bar': 'baz'});
+    await service.remove('null');
     expect(await service.index(), isEmpty);
   });
 
