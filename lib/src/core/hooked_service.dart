@@ -48,6 +48,10 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
     if (inner.app != null) this.app = inner.app;
   }
 
+  @override
+  FutureOr<Data> Function(RequestContext, ResponseContext) get readData =>
+      inner.readData;
+
   RequestContext _getRequest(Map params) {
     if (params == null) return null;
     return params['__requestctx'] as RequestContext;
