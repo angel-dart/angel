@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 export POSTGRES_USERNAME="angel_orm"
 export POSTGRES_PASSWORD="angel_orm" 
+set -ex
 
 function angel_orm_test () {
     cd $1;
