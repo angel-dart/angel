@@ -145,12 +145,16 @@ class MapService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> remove(String id,
       [Map<String, dynamic> params]) {
-    if (id == null ||
-        id == 'null' &&
-            (allowRemoveAll == true ||
-                params?.containsKey('provider') != true)) {
-      items.clear();
-      return new Future.value({});
+    if (id == null || id == 'null') {
+      // Remove everything...
+      if (!(allowRemoveAll == true ||
+          params?.containsKey('provider') != true)) {
+        throw AngelHttpException.forbidden(
+            message: 'Clients are not allowed to delete all items.');
+      } else {
+        items.clear();
+        return new Future.value({});
+      }
     }
 
     return read(id, params).then((result) {

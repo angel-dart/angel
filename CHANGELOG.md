@@ -1,3 +1,6 @@
+# 2.0.0-rc.8
+* Fix `MapService` flaw where clients could remove all records, even if `allowRemoveAll` were `false`.
+
 # 2.0.0-rc.7
 * `AnonymousService` can override `readData`.
 * `Service.map` now overrides `readData`.

@@ -25,7 +25,7 @@ main() {
     app = new Angel(reflector: MirrorsReflector())
       ..use('/todos', service = new MapService())
       ..errorHandler = (e, req, res) {
-        print('Whoops: ${e.error}');
+        if (e.error != null) print('Whoops: ${e.error}');
         if (e.stackTrace != null) print(new Chain.forTrace(e.stackTrace).terse);
       };
 
@@ -123,6 +123,11 @@ main() {
       var json_ = json.decode(response.body);
       print(json_);
       expect(json_['text'], equals('Hello, world!'));
+    });
+
+    test('cannot remove all unless explicitly set', () async {
+      var response = await client.delete('$url/todos/null');
+      expect(response.statusCode, 403);
     });
   });
 }
