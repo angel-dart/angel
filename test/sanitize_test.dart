@@ -1,26 +1,26 @@
-import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_security/angel_security.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:angel_validate/server.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
 import 'package:matcher/matcher.dart';
 import 'package:test/test.dart';
 import 'pretty_logging.dart';
 
-final Validator untrustedSchema = new Validator({'html*': isString});
+final Validator untrustedSchema = Validator({'html*': isString});
 
 main() async {
   Angel app;
   TestClient client;
 
   setUp(() async {
-    app = new Angel();
+    app = Angel();
     app.chain([validate(untrustedSchema), sanitizeHtmlInput()])
       ..post('/untrusted', (RequestContext req, ResponseContext res) async {
-        String untrusted = req.body['html'];
+        String untrusted = req.bodyAsMap['html'];
         res
-          ..contentType = ContentType.HTML
+          ..contentType = MediaType('text', 'html')
           ..write('''
           <!DOCTYPE html>
           <html>
@@ -31,9 +31,9 @@ main() async {
           </html>''');
       })
       ..post('/attribute', (RequestContext req, ResponseContext res) async {
-        String untrusted = req.body['html'];
+        String untrusted = req.bodyAsMap['html'];
         res
-          ..contentType = ContentType.HTML
+          ..contentType = MediaType('text', 'html')
           ..write('''
           <!DOCTYPE html>
           <html>
@@ -46,8 +46,7 @@ main() async {
           </html>''');
       });
 
-    app.logger = new Logger.detached('angel_security')
-      ..onRecord.listen(prettyLog);
+    app.logger = Logger.detached('angel_security')..onRecord.listen(prettyLog);
     client = await connectTo(app);
   });
 

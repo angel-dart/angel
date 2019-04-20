@@ -2,20 +2,21 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:uuid/uuid.dart';
 
-final Uuid _uuid = new Uuid();
+final Uuid _uuid = Uuid();
 
 /// Ensures that the request contains a correct CSRF token.
-RequestMiddleware verifyCsrfToken(
-    {bool allowCookie: false,
-    bool allowQuery: true,
-    String name: 'csrf_token'}) {
+RequestHandler verifyCsrfToken(
+    {bool allowCookie = false,
+    bool allowQuery = true,
+    String name = 'csrf_token'}) {
   return (RequestContext req, res) async {
     String csrfToken;
 
-    if (allowQuery && (await req.lazyQuery()).containsKey(name))
-      csrfToken = req.query[name];
-    else if ((await req.lazyBody()).containsKey(name))
-      csrfToken = req.body[name];
+    if (allowQuery && req.queryParameters.containsKey(name))
+      csrfToken = req.queryParameters[name];
+    else if ((await req.parseBody().then((_) => req.bodyAsMap))
+        .containsKey(name))
+      csrfToken = req.bodyAsMap[name];
     else if (allowCookie) {
       var cookie =
           req.cookies.firstWhere((c) => c.name == name, orElse: () => null);
@@ -23,22 +24,22 @@ RequestMiddleware verifyCsrfToken(
     }
 
     if (csrfToken == null || !req.session.containsKey(name))
-      throw new AngelHttpException.badRequest(message: 'Missing CSRF token.');
+      throw AngelHttpException.badRequest(message: 'Missing CSRF token.');
 
     String correctToken = req.session[name];
 
     if (csrfToken != correctToken)
-      throw new AngelHttpException.badRequest(message: 'Invalid CSRF token.');
+      throw AngelHttpException.badRequest(message: 'Invalid CSRF token.');
 
     return true;
   };
 }
 
 /// Adds a CSRF token to the session, if none is present.
-RequestHandler setCsrfToken({String name: 'csrf_token', bool cookie: false}) {
+RequestHandler setCsrfToken({String name = 'csrf_token', bool cookie = false}) {
   return (RequestContext req, res) async {
     if (!req.session.containsKey(name)) req.session[name] = _uuid.v4();
-    if (cookie) res.cookies.add(new Cookie(name, req.session[name]));
+    if (cookie) res.cookies.add(Cookie(name, req.session[name]));
     return true;
   };
 }

@@ -10,33 +10,33 @@ main() {
   TestClient client;
 
   setUp(() async {
-    app = new Angel()
-      ..lazyParseBodies = true
-      ..use((RequestContext req, res) async {
+    app = Angel()
+      ..fallback((req, res) async {
         var xUser = req.headers.value('X-User');
-        if (xUser != null)
-          req.inject('user',
-              new User(id: xUser, roles: xUser == 'John' ? ['foo:bar'] : []));
+        if (xUser != null) {
+          req.container.registerSingleton(
+              User(id: xUser, roles: xUser == 'John' ? ['foo:bar'] : []));
+        }
         return true;
       });
 
     app
-      ..use('/user_data', new UserDataService())
-      ..use('/artists', new ArtistService())
-      ..use('/roled', new RoledService());
+      ..use('/user_data', UserDataService())
+      ..use('/artists', ArtistService())
+      ..use('/roled', RoledService());
 
-    (app.service('user_data') as HookedService)
+    (app.findService('user_data') as HookedService)
       ..beforeIndexed.listen(hooks.queryWithCurrentUser())
       ..beforeCreated.listen(hooks.hashPassword());
 
-    app.service('artists') as HookedService
+    app.findService('artists') as HookedService
       ..beforeIndexed.listen(hooks.restrictToAuthenticated())
       ..beforeRead.listen(hooks.restrictToOwner())
       ..beforeCreated.listen(hooks.associateCurrentUser());
 
-    (app.service('roled') as HookedService)
-      ..beforeIndexed.listen(new Permission('foo:*').toHook())
-      ..beforeRead.listen(new Permission('foo:*').toHook(owner: true));
+    (app.findService('roled') as HookedService)
+      ..beforeIndexed.listen(Permission('foo:*').toHook())
+      ..beforeRead.listen(Permission('foo:*').toHook(owner: true));
 
     var errorHandler = app.errorHandler;
     app.errorHandler = (e, req, res) {
@@ -55,10 +55,10 @@ main() {
       try {
         var response = await client.service('artists').create({'foo': 'bar'});
         print(response);
-        throw new StateError('Creating without userId bad request');
+        throw StateError('Creating without userId bad request');
       } catch (e) {
         print(e);
-        expect(e, new isInstanceOf<AngelHttpException>());
+        expect(e, const TypeMatcher<AngelHttpException>());
         var err = e as AngelHttpException;
         expect(err.statusCode, equals(403));
       }
@@ -78,10 +78,10 @@ main() {
       try {
         var response = await client.service('user_data').index();
         print(response);
-        throw new StateError('Indexing without user forbidden');
+        throw StateError('Indexing without user forbidden');
       } catch (e) {
         print(e);
-        expect(e, new isInstanceOf<AngelHttpException>());
+        expect(e, const TypeMatcher<AngelHttpException>());
         var err = e as AngelHttpException;
         expect(err.statusCode, equals(403));
       }
@@ -107,10 +107,10 @@ main() {
       try {
         var response = await client.service('artists').index();
         print(response);
-        throw new StateError('Indexing without user forbidden');
+        throw StateError('Indexing without user forbidden');
       } catch (e) {
         print(e);
-        expect(e, new isInstanceOf<AngelHttpException>());
+        expect(e, const TypeMatcher<AngelHttpException>());
         var err = e as AngelHttpException;
         expect(err.statusCode, equals(403));
       }
@@ -139,10 +139,10 @@ main() {
       try {
         var response = await client.service('artists').read('king_of_pop');
         print(response);
-        throw new StateError('Reading without owner forbidden');
+        throw StateError('Reading without owner forbidden');
       } catch (e) {
         print(e);
-        expect(e, new isInstanceOf<AngelHttpException>());
+        expect(e, const TypeMatcher<AngelHttpException>());
         var err = e as AngelHttpException;
         expect(err.statusCode, equals(401));
       }
@@ -169,10 +169,10 @@ main() {
       try {
         var response = await client.service('roled').index();
         print(response);
-        throw new StateError('Reading without roles forbidden');
+        throw StateError('Reading without roles forbidden');
       } catch (e) {
         print(e);
-        expect(e, new isInstanceOf<AngelHttpException>());
+        expect(e, const TypeMatcher<AngelHttpException>());
         var err = e as AngelHttpException;
         expect(err.statusCode, equals(403));
       }
@@ -208,7 +208,7 @@ main() {
 class User {
   String id;
   List<String> roles;
-  User({this.id, this.roles: const []});
+  User({this.id, this.roles = const []});
 }
 
 class UserDataService extends Service {
@@ -220,12 +220,12 @@ class UserDataService extends Service {
   index([Map params]) async {
     print('Params: $params');
     if (params?.containsKey('query') != true)
-      throw new AngelHttpException.badRequest(message: 'query required');
+      throw AngelHttpException.badRequest(message: 'query required');
 
     String name = params['query']['userId']?.toString();
 
     if (!_data.containsKey(name))
-      throw new AngelHttpException.notFound(
+      throw AngelHttpException.notFound(
           message: "No data found for user '$name'.");
 
     return _data[name];
@@ -234,13 +234,13 @@ class UserDataService extends Service {
   @override
   create(data, [Map params]) async {
     if (data is! Map || !data.containsKey('password'))
-      throw new AngelHttpException.badRequest(message: 'Required password!');
+      throw AngelHttpException.badRequest(message: 'Required password!');
 
     var expected =
-        new String.fromCharCodes(sha256.convert('jdoe1'.codeUnits).bytes);
+        String.fromCharCodes(sha256.convert('jdoe1'.codeUnits).bytes);
 
     if (data['password'] != (expected))
-      throw new AngelHttpException.conflict(message: 'Passwords do not match.');
+      throw AngelHttpException.conflict(message: 'Passwords do not match.');
     return {'foo': 'bar'};
   }
 }
@@ -257,7 +257,7 @@ class ArtistService extends Service {
   @override
   create(data, [params]) async {
     if (data is! Map || !data.containsKey('userId'))
-      throw new AngelHttpException.badRequest(message: 'Required userId');
+      throw AngelHttpException.badRequest(message: 'Required userId');
 
     return {'foo': 'bar'};
   }

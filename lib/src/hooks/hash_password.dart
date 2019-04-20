@@ -24,7 +24,7 @@ HookedServiceEventListener hashPassword(
         return user?.password;
       else
         return reflect(user)
-            .getField(new Symbol(passwordField ?? 'password'))
+            .getField(Symbol(passwordField ?? 'password'))
             .reflectee;
     }
 
@@ -34,8 +34,7 @@ HookedServiceEventListener hashPassword(
       else if (user is Map)
         user[passwordField ?? 'password'] = password;
       else
-        reflect(user)
-            .setField(new Symbol(passwordField ?? 'password'), password);
+        reflect(user).setField(Symbol(passwordField ?? 'password'), password);
     }
 
     if (e.data != null) {
@@ -44,7 +43,7 @@ HookedServiceEventListener hashPassword(
 
         if (password != null) {
           var digest = h.convert(password.codeUnits);
-          return _setPassword(new String.fromCharCodes(digest.bytes), user);
+          return _setPassword(String.fromCharCodes(digest.bytes), user);
         }
       }
 

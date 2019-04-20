@@ -4,16 +4,16 @@ import 'package:angel_test/angel_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
-final RegExp _sessId = new RegExp(r'DARTSESSID=([^;]+);');
+final RegExp _sessId = RegExp(r'DARTSESSID=([^;]+);');
 
 main() async {
   Angel app;
   TestClient client;
 
   setUp(() async {
-    app = new Angel()..responseFinalizers.add(setCsrfToken());
+    app = Angel()..responseFinalizers.add(setCsrfToken());
 
-    app.chain(verifyCsrfToken()).get('/valid', 'Valid!');
+    app.chain([verifyCsrfToken()]).get('/valid', (req, res) => 'Valid!');
 
     client = await connectTo(app);
   });

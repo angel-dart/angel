@@ -14,36 +14,42 @@ main() {
   TestClient client;
 
   setUp(() async {
-    app = new Angel();
+    app = Angel();
 
-    app.use((RequestContext req, res) async {
+    app.fallback((req, res) async {
       // In real life, you'd use auth to check user roles,
       // but in this case, let's just set the user manually
-      var xRoles = req.headers.value('X-Roles');
+      var xRoles = req.headers['X-Roles'];
 
       if (xRoles?.isNotEmpty == true) {
-        req.inject('user', new User(req.headers['X-Roles']));
+        req.container.registerSingleton(User(xRoles));
       }
 
       return true;
     });
 
-    app.chain(new PermissionBuilder.wildcard()).get('/', 'Hello, world!');
-    app.chain(new Permission('foo')).get('/one', 'Hello, world!');
-    app.chain(new Permission('two:foo')).get('/two', 'Hello, world!');
-    app.chain(new Permission('two:*')).get('/two-star', 'Hello, world!');
-    app.chain(new Permission('three:foo:bar')).get('/three', 'Hello, world!');
-    app
-        .chain(new Permission('three:*:bar'))
-        .get('/three-star', 'Hello, world!');
+    app.chain([PermissionBuilder.wildcard().toPermission().toMiddleware()]).get(
+        '/', (req, res) => 'Hello, world!');
+    app.chain([Permission('foo').toMiddleware()]).get(
+        '/one', (req, res) => 'Hello, world!');
+    app.chain([Permission('two:foo').toMiddleware()]).get(
+        '/two', (req, res) => 'Hello, world!');
+    app.chain([Permission('two:*').toMiddleware()]).get(
+        '/two-star', (req, res) => 'Hello, world!');
+    app.chain([Permission('three:foo:bar').toMiddleware()]).get(
+        '/three', (req, res) => 'Hello, world!');
+    app.chain([Permission('three:*:bar').toMiddleware()]).get(
+        '/three-star', (req, res) => 'Hello, world!');
 
-    app
-        .chain(new PermissionBuilder('super')
-            .add('specific')
-            .add('permission')
-            .allowAll()
-            .or(new PermissionBuilder('admin')))
-        .get('/or', 'Hello, world!');
+    app.chain([
+      PermissionBuilder('super')
+          .add('specific')
+          .add('permission')
+          .allowAll()
+          .or(PermissionBuilder('admin'))
+          .toPermission()
+          .toMiddleware()
+    ]).get('/or', (req, res) => 'Hello, world!');
 
     client = await connectTo(app);
   });

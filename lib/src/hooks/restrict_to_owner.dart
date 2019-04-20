@@ -1,64 +1,60 @@
+import 'dart:async';
 import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'errors.dart';
 import 'is_server_side.dart';
 
 /// Restricts users to accessing only their own resources.
-HookedServiceEventListener restrictToOwner(
+HookedServiceEventListener restrictToOwner<Id, Data, User>(
     {String idField,
     String ownerField,
-    userKey,
     String errorMessage,
-    getId(user),
-    getOwner(obj)}) {
+    FutureOr<Id> Function(User) getId,
+    FutureOr<Id> Function(Data) getOwnerId}) {
   return (HookedServiceEvent e) async {
     if (!isServerSide(e)) {
-      var user = e.request?.grab(userKey ?? 'user');
+      var user = await e.request?.container?.makeAsync<User>();
 
       if (user == null)
-        throw new AngelHttpException.notAuthenticated(
+        throw AngelHttpException.notAuthenticated(
             message:
                 'The current user is missing. You must not be authenticated.');
 
-      _getId(user) {
+      Future<Id> _getId(User user) async {
         if (getId != null)
           return getId(user);
         else if (user is Map)
           return user[idField ?? 'id'];
-        else if (idField == null || idField == 'id')
-          return user.id;
         else
-          return reflect(user).getField(new Symbol(idField ?? 'id')).reflectee;
+          return reflect(user).getField(Symbol(idField ?? 'id')).reflectee;
       }
 
       var id = await _getId(user);
 
-      if (id == null) throw new Exception('The current user has no ID.');
+      if (id == null) throw Exception('The current user has no ID.');
 
       var resource = await e.service.read(
           e.id,
           {}
             ..addAll(e.params ?? {})
-            ..remove('provider'));
+            ..remove('provider')) as Data;
 
       if (resource != null) {
-        _getOwner(obj) {
-          if (getOwner != null)
-            return getOwner(obj);
+        Future<Id> _getOwner(Data obj) async {
+          if (getOwnerId != null)
+            return await getOwnerId(obj);
           else if (obj is Map)
-            return obj[ownerField ?? 'userId'];
-          else if (ownerField == null || ownerField == 'userId')
-            return obj.userId;
+            return obj[ownerField ?? 'user_id'];
           else
             return reflect(obj)
-                .getField(new Symbol(ownerField ?? 'userId'))
+                .getField(Symbol(ownerField ?? 'userId'))
                 .reflectee;
         }
 
         var ownerId = await _getOwner(resource);
 
         if ((ownerId is Iterable && !ownerId.contains(id)) || ownerId != id)
-          throw new AngelHttpException.forbidden(
+          throw AngelHttpException.forbidden(
               message: errorMessage ?? Errors.INSUFFICIENT_PERMISSIONS);
       }
     }

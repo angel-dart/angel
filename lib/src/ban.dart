@@ -9,8 +9,8 @@ import 'package:angel_framework/angel_framework.dart';
 /// String can take the following formats:
 /// 1. 1.2.3.4
 /// 2. 1.2.3.*, 1.2.*.*, etc.
-RequestMiddleware banIp(filter,
-    {String message:
+RequestHandler banIp(filter,
+    {String message =
         'Your IP address is forbidden from accessing this server.'}) {
   var filters = [];
   Iterable inputs = filter is Iterable ? filter : [filter];
@@ -22,10 +22,10 @@ RequestMiddleware banIp(filter,
       if (!input.contains('*'))
         filters.add(input);
       else {
-        filters.add(new RegExp(input.replaceAll('*', '[0-9]+')));
+        filters.add(RegExp(input.replaceAll('*', '[0-9]+')));
       }
     } else
-      throw new ArgumentError('Cannot use $input as an IP filter.');
+      throw ArgumentError('Cannot use $input as an IP filter.');
   }
 
   return (RequestContext req, ResponseContext res) async {
@@ -43,7 +43,7 @@ RequestMiddleware banIp(filter,
       return true;
     }
 
-    if (!check()) throw new AngelHttpException.forbidden(message: message);
+    if (!check()) throw AngelHttpException.forbidden(message: message);
     return true;
   };
 }
@@ -56,9 +56,9 @@ RequestMiddleware banIp(filter,
 /// String can take the following formats:
 /// 1. example.com
 /// 2. *.example.com, a.b.*.d.e.f, etc.
-RequestMiddleware banOrigin(filter,
-    {String message: 'You are forbidden from accessing this server.',
-    bool allowEmptyOrigin: false}) {
+RequestHandler banOrigin(filter,
+    {String message = 'You are forbidden from accessing this server.',
+    bool allowEmptyOrigin = false}) {
   var filters = [];
   Iterable inputs = filter is Iterable ? filter : [filter];
 
@@ -69,17 +69,17 @@ RequestMiddleware banOrigin(filter,
       if (!input.contains('*'))
         filters.add(input);
       else {
-        filters.add(new RegExp(input.replaceAll('*', '[^\.]+')));
+        filters.add(RegExp(input.replaceAll('*', '[^\.]+')));
       }
     } else
-      throw new ArgumentError('Cannot use $input as an origin filter.');
+      throw ArgumentError('Cannot use $input as an origin filter.');
   }
 
   return (RequestContext req, ResponseContext res) async {
     var origin = req.headers.value('origin');
 
     if ((origin == null || origin.isEmpty) && !allowEmptyOrigin)
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message: "'Origin' header is required.");
 
     bool check() {
@@ -92,7 +92,7 @@ RequestMiddleware banOrigin(filter,
       return true;
     }
 
-    if (!check()) throw new AngelHttpException.forbidden(message: message);
+    if (!check()) throw AngelHttpException.forbidden(message: message);
     return true;
   };
 }

@@ -8,10 +8,11 @@ main() {
   TestClient client;
 
   setUp(() async {
-    app = new Angel()
-      ..chain(banIp('*.*.*.*')).get('/ban', 'WTF')
-      ..chain(banOrigin('*')).get('/ban-origin', 'WTF')
-      ..chain(banOrigin('*.foo.bar')).get('/allow-origin', 'YAY');
+    app = Angel()
+      ..chain([banIp('*.*.*.*')]).get('/ban', (req, res) => 'WTF')
+      ..chain([banOrigin('*')]).get('/ban-origin', (req, res) => 'WTF')
+      ..chain([banOrigin('*.foo.bar')])
+          .get('/allow-origin', (req, res) => 'YAY');
 
     client = await connectTo(app);
   });

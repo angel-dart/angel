@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'errors.dart';
@@ -7,55 +8,51 @@ import 'is_server_side.dart';
 ///
 ///Default [idField] is `'id'`.
 /// Default [ownerField] is `'userId'`.
-/// Default [userKey] is `'user'`.
-HookedServiceEventListener associateCurrentUser(
+HookedServiceEventListener associateCurrentUser<Id, Data, User>(
     {String idField,
     String ownerField,
-    userKey,
     String errorMessage,
-    bool allowNullUserId: false,
-    getId(user),
-    assignUserId(id, obj)}) {
+    bool allowNullUserId = false,
+    FutureOr<Id> Function(User) getId,
+    FutureOr<Data> Function(Id, Data) assignUserId}) {
   return (HookedServiceEvent e) async {
     var fieldName = ownerField?.isNotEmpty == true ? ownerField : 'userId';
-    var user = e.request?.grab(userKey ?? 'user');
+    var user = await e.request?.container?.makeAsync<User>();
 
     if (user == null) {
       if (!isServerSide(e))
-        throw new AngelHttpException.forbidden(
+        throw AngelHttpException.forbidden(
             message: errorMessage ?? Errors.NOT_LOGGED_IN);
       else
         return;
     }
 
-    _getId(user) {
+    Future<Id> _getId(User user) async {
       if (getId != null)
-        return getId(user);
+        return await getId(user);
       else if (user is Map)
         return user[idField ?? 'id'];
-      else if (idField == null || idField == 'id')
-        return user.id;
       else
-        return reflect(user).getField(new Symbol(idField ?? 'id')).reflectee;
+        return reflect(user).getField(Symbol(idField ?? 'id')).reflectee;
     }
 
     var id = await _getId(user);
 
     if (id == null && allowNullUserId != true)
-      throw new AngelHttpException.notProcessable(
+      throw AngelHttpException.notProcessable(
           message: 'Current user is missing a $fieldName field.');
 
-    _assignUserId(id, obj) {
+    Future<Data> _assignUserId(Id id, Data obj) async {
       if (assignUserId != null)
         return assignUserId(id, obj);
       else if (obj is Map)
-        obj[fieldName] = id;
-      else if (fieldName == 'userId')
-        obj.userId = id;
-      else
-        reflect(obj).setField(new Symbol(fieldName), id);
+        return obj..[fieldName] = id;
+      else {
+        reflect(obj).setField(Symbol(fieldName), id);
+        return obj;
+      }
     }
 
-    await _assignUserId(id, e.data);
+    e.data = await _assignUserId(id, e.data);
   };
 }

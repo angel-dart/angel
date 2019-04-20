@@ -8,15 +8,13 @@ main() {
   TestClient client;
 
   setUp(() async {
-    app = new Angel();
+    app = Angel();
 
-    app
-        .chain(throttleRequests(1, new Duration(hours: 1)))
-        .get('/once-per-hour', 'OK');
+    app.chain([throttleRequests(1, Duration(hours: 1))]).get(
+        '/once-per-hour', (req, res) => 'OK');
 
-    app
-        .chain(throttleRequests(3, new Duration(minutes: 1)))
-        .get('/thrice-per-minute', 'OK');
+    app.chain([throttleRequests(3, Duration(minutes: 1))]).get(
+        '/thrice-per-minute', (req, res) => 'OK');
 
     client = await connectTo(app);
   });
@@ -45,12 +43,10 @@ main() {
     print(response.body);
     expect(response, hasBody('"OK"'));
 
-
     // Second request within the minute is fine
     response = await client.get('/thrice-per-minute');
     print(response.body);
     expect(response, hasBody('"OK"'));
-
 
     // Third request within the minute is fine
     response = await client.get('/thrice-per-minute');

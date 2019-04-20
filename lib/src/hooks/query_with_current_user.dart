@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:mirrors';
 import 'package:angel_framework/angel_framework.dart';
 import 'errors.dart';
@@ -7,20 +8,19 @@ import 'is_server_side.dart';
 ///
 /// Default [as] is `'userId'`.
 /// Default [userKey] is `'user'`.
-HookedServiceEventListener queryWithCurrentUser(
+HookedServiceEventListener queryWithCurrentUser<Id, User>(
     {String as,
     String idField,
-    userKey,
     String errorMessage,
-    bool allowNullUserId: false,
-    getId(user)}) {
+    bool allowNullUserId = false,
+    FutureOr<Id> Function(User) getId}) {
   return (HookedServiceEvent e) async {
     var fieldName = idField?.isNotEmpty == true ? idField : 'id';
-    var user = e.request?.grab(userKey ?? 'user');
+    var user = await e.request?.container?.makeAsync<User>();
 
     if (user == null) {
       if (!isServerSide(e))
-        throw new AngelHttpException.forbidden(
+        throw AngelHttpException.forbidden(
             message: errorMessage ?? Errors.NOT_LOGGED_IN);
       else
         return;
@@ -34,13 +34,13 @@ HookedServiceEventListener queryWithCurrentUser(
       else if (fieldName == 'id')
         return user.id;
       else
-        return reflect(user).getField(new Symbol(fieldName)).reflectee;
+        return reflect(user).getField(Symbol(fieldName)).reflectee;
     }
 
     var id = await _getId(user);
 
     if (id == null && allowNullUserId != true)
-      throw new AngelHttpException.notProcessable(
+      throw AngelHttpException.notProcessable(
           message: 'Current user is missing a \'$fieldName\' field.');
 
     var data = {as?.isNotEmpty == true ? as : 'userId': id};

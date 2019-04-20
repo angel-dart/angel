@@ -7,8 +7,8 @@ import 'package:angel_framework/angel_framework.dart';
 /// The default is to identify requests by their source IP.
 ///
 /// This works well attached to a `multiserver` instance.
-RequestMiddleware throttleRequests(int max, Duration duration,
-    {String message: '429 Too Many Requests', identify(RequestContext req)}) {
+RequestHandler throttleRequests(int max, Duration duration,
+    {String message = '429 Too Many Requests', identify(RequestContext req)}) {
   var identifyRequest = identify ?? (RequestContext req) async => req.ip;
   Map<String, int> table = {};
   Map<String, List<int>> times = {};
@@ -17,7 +17,7 @@ RequestMiddleware throttleRequests(int max, Duration duration,
     var id = (await identifyRequest(req)).toString();
     int currentCount;
 
-    var now = new DateTime.now().millisecondsSinceEpoch;
+    var now = DateTime.now().millisecondsSinceEpoch;
     int firstVisit;
 
     // If the user has visited within the given duration...
@@ -45,7 +45,7 @@ RequestMiddleware throttleRequests(int max, Duration duration,
       currentCount = table[id] = 1;
 
     if (currentCount > max) {
-      throw new AngelHttpException(null,
+      throw AngelHttpException(null,
           statusCode: 429, message: message ?? '429 Too Many Requests');
     }
 

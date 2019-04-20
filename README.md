@@ -41,7 +41,7 @@ app.before.add(banIp('1.2.3.*'));
 app.before.add(banIp('1.2.*.4'));
 
 // Or multiple filters:
-app.before.add(banIp(['1.2.3.4', '192.*.*.*', new RegExp(r'1\.2.\3.\4')]));
+app.before.add(banIp(['1.2.3.4', '192.*.*.*', RegExp(r'1\.2.\3.\4')]));
 
 // Also can ban origins
 app.before.add(banOrigin('*.known-attacker.com'));
@@ -64,7 +64,7 @@ Throws a `429` error if the given rate limit is exceeded.
 
 ```dart
 // Example: 5 requests per minute
-app.before.add(throttleRequests(5, new Duration(minutes: 1)));
+app.before.add(throttleRequests(5, Duration(minutes: 1)));
 ```
 
 # Helmet
@@ -101,11 +101,11 @@ They take the form of:
 The specifics are up to you.
 
 ```dart
-var permission = new Permission('admin | users:find');
+var permission = Permission('admin | users:find');
 
 // Or:
 // PermissionBuilders support + and | operators. Operands can be Strings, Permissions or PermissionBuilders.
-var permission = (new PermissionBuilder('admin') | (new PermissionBuilder('users') + 'find')).toPermission();
+var permission = (PermissionBuilder('admin') | (PermissionBuilder('users') + 'find')).toPermission();
 
 // Transform into middleware
 app.chain(permission.toMiddleware()).get('/protected', ...);
@@ -118,6 +118,6 @@ app.service('protected').beforeModify(permission.toHook());
 //
 // `variantPermission` is included in the `package:angel_security/hooks.dart` library.
 app.service('posts').beforeModify(variantPermission((e) {
-    return new PermissionBuilder('posts:modify:${e.id}');
+    return PermissionBuilder('posts:modify:${e.id}');
 }));
 ```

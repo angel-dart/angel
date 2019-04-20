@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 
 final Map<Pattern, String> DEFAULT_SANITIZERS = {
-  new RegExp(
-      r'<\s*s\s*c\s*r\s*i\s*p\s*t\s*>.*<\s*\/\s*s\s*c\s*r\s*i\s*p\s*t\s*>',
+  RegExp(r'<\s*s\s*c\s*r\s*i\s*p\s*t\s*>.*<\s*\/\s*s\s*c\s*r\s*i\s*p\s*t\s*>',
       caseSensitive: false): ''
 };
 
@@ -12,19 +11,19 @@ final Map<Pattern, String> DEFAULT_SANITIZERS = {
 /// You can also provide a Map of patterns to [replace].
 ///
 /// You can sanitize the [body] or [query] (both `true` by default).
-RequestMiddleware sanitizeHtmlInput(
-    {bool body: true,
-    bool query: true,
-    Map<Pattern, String> replace: const {}}) {
+RequestHandler sanitizeHtmlInput(
+    {bool body = true,
+    bool query = true,
+    Map<Pattern, String> replace = const {}}) {
   var sanitizers = {}..addAll(DEFAULT_SANITIZERS)..addAll(replace ?? {});
 
-  return (RequestContext req, res) async {
+  return (req, res) async {
     if (body) {
-      await req.parse();
-      _sanitizeMap(req.body, sanitizers);
+      await req.parseBody();
+      _sanitizeMap(req.bodyAsMap, sanitizers);
     }
 
-    if (query) _sanitizeMap(req.query, sanitizers);
+    if (query) _sanitizeMap(req.queryParameters, sanitizers);
     return true;
   };
 }
@@ -37,7 +36,7 @@ _sanitize(v, Map<Pattern, String> sanitizers) {
       str = str.replaceAll(needle, replace);
     });
 
-    return HTML_ESCAPE.convert(str);
+    return htmlEscape.convert(str);
   } else if (v is Map) {
     _sanitizeMap(v, sanitizers);
     return v;

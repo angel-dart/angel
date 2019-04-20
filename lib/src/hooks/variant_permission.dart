@@ -9,7 +9,7 @@ HookedServiceEventListener variantPermission(
     createPermission(HookedServiceEvent e),
     {String errorMessage,
     userKey,
-    bool owner: false,
+    bool owner = false,
     getRoles(user),
     getId(user),
     getOwner(obj)}) {
@@ -19,7 +19,7 @@ HookedServiceEventListener variantPermission(
     if (permission is PermissionBuilder) permission = permission.toPermission();
 
     if (permission is! Permission)
-      throw new ArgumentError(
+      throw ArgumentError(
           'createPermission must generate a Permission, whether synchronously or asynchronously.');
     await permission.toHook(
         errorMessage: errorMessage,

@@ -10,7 +10,7 @@ import 'package:angel_framework/angel_framework.dart';
 /// String can take the following formats:
 /// 1. 1.2.3.4
 /// 2. 1.2.3.*, 1.2.*.*, etc.
-RequestMiddleware trustProxy(filter) {
+RequestHandler trustProxy(filter) {
   var filters = [];
   Iterable inputs = filter is Iterable ? filter : [filter];
 
@@ -21,10 +21,10 @@ RequestMiddleware trustProxy(filter) {
       if (!input.contains('*'))
         filters.add(input);
       else {
-        filters.add(new RegExp(input.replaceAll('*', '[0-9]+')));
+        filters.add(RegExp(input.replaceAll('*', '[0-9]+')));
       }
     } else
-      throw new ArgumentError('Cannot use $input as a trusted proxy filter.');
+      throw ArgumentError('Cannot use $input as a trusted proxy filter.');
   }
 
   return (RequestContext req, ResponseContext res) async {
@@ -49,7 +49,8 @@ RequestMiddleware trustProxy(filter) {
         if (k.trim().toLowerCase().startsWith('x-forwarded')) headers[k] = v;
       });
 
-      req.inject(ForwardedClient, new _ForwardedClientImpl(headers));
+      req.container
+          .registerSingleton<ForwardedClient>(_ForwardedClientImpl(headers));
     }
 
     return true;
@@ -78,5 +79,5 @@ class _ForwardedClientImpl extends ForwardedClient {
 
   @override
   Map<String, List<String>> get headers =>
-      new Map<String, List<String>>.unmodifiable(_headers);
+      Map<String, List<String>>.unmodifiable(_headers);
 }
