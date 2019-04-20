@@ -68,7 +68,7 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = HasCar(
         id: row[0].toString(),
-        type: CarType.values[(row[1] as int)],
+        type: row[1] == null ? null : CarType.values[(row[1] as int)],
         createdAt: (row[2] as DateTime),
         updatedAt: (row[3] as DateTime));
     return model;
@@ -116,7 +116,7 @@ class HasCarQueryValues extends MapQueryValues {
     return CarType.values[(values['type'] as int)];
   }
 
-  set type(CarType value) => values['type'] = value.index;
+  set type(CarType value) => values['type'] = value?.index;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }

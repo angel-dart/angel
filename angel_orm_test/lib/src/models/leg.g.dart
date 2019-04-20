@@ -26,7 +26,7 @@ class LegMigration extends Migration {
 class FootMigration extends Migration {
   @override
   up(Schema schema) {
-    schema.create('foots', (table) {
+    schema.create('feet', (table) {
       table.serial('id')..primaryKey();
       table.integer('leg_id');
       table.declare('n_toes', ColumnType('decimal'));
@@ -37,7 +37,7 @@ class FootMigration extends Migration {
 
   @override
   down(Schema schema) {
-    schema.drop('foots');
+    schema.drop('feet');
   }
 }
 
@@ -50,7 +50,7 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = LegQueryWhere(this);
-    leftJoin('foots', 'id', 'leg_id',
+    leftJoin('feet', 'id', 'leg_id',
         additionalFields: const [
           'id',
           'leg_id',
@@ -184,7 +184,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
   @override
   get tableName {
-    return 'foots';
+    return 'feet';
   }
 
   @override

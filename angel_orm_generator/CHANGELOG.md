@@ -1,5 +1,6 @@
 # 2.0.1
 * Gracefully handle `null` in enum fields.
+* Add `take` to wherever `skip` is used.
 
 # 2.0.0+2
 * Widen `analyzer` dependency range.

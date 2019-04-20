@@ -8,7 +8,9 @@ import 'orm_build_context.dart';
 const TypeChecker columnTypeChecker = const TypeChecker.fromRuntime(Column);
 
 Orm reviveORMAnnotation(ConstantReader reader) {
-  return Orm(tableName: reader.peek('tableName')?.stringValue);
+  return Orm(
+      tableName: reader.peek('tableName')?.stringValue,
+      generateMigrations: reader.peek('generateMigrations')?.boolValue ?? true);
 }
 
 class ColumnReader {

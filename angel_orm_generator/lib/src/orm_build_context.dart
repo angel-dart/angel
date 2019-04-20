@@ -80,6 +80,8 @@ Future<OrmBuildContext> buildOrmContext(
       clazz, annotation, buildStep, resolver, autoSnakeCaseNames,
       heedExclude: heedExclude);
   var ormAnnotation = reviveORMAnnotation(annotation);
+  // print(
+  //     'tableName (${annotation.objectValue.type.name}) => ${ormAnnotation.tableName} from ${clazz.name} (${annotation.revive().namedArguments})');
   var ctx = new OrmBuildContext(
       buildCtx,
       ormAnnotation,
@@ -164,7 +166,7 @@ Future<OrmBuildContext> buildOrmContext(
 
             foreign = await buildOrmContext(
                 modelType.element as ClassElement,
-                new ConstantReader(const TypeChecker.fromRuntime(Serializable)
+                new ConstantReader(const TypeChecker.fromRuntime(Orm)
                     .firstAnnotationOf(modelType.element)),
                 buildStep,
                 resolver,
