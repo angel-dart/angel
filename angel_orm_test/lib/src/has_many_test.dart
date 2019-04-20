@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
-import 'models/fruit.dart';
 import 'models/tree.dart';
 
 hasManyTests(FutureOr<QueryExecutor> Function() createExecutor,
@@ -30,7 +29,7 @@ hasManyTests(FutureOr<QueryExecutor> Function() createExecutor,
     Fruit apple, banana;
 
     void verify(Tree tree) {
-      print(tree.fruits.map((f) => f.toJson()).toList());
+      print(tree.fruits.map(FruitSerializer.toMap).toList());
       expect(tree.fruits, hasLength(2));
       expect(tree.fruits[0].commonName, apple.commonName);
       expect(tree.fruits[1].commonName, banana.commonName);

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
-import 'models/author.dart';
 import 'models/book.dart';
 
 belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
@@ -46,7 +45,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
       expect(book.name, deathlyHallows.name);
 
       var author = book.author;
-      print(author.toJson());
+      print(AuthorSerializer.toMap(author));
       expect(author.id, jkRowling.id);
       expect(author.name, jkRowling.name);
     });
@@ -62,7 +61,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
       expect(book.name, deathlyHallows.name);
 
       var author = book.author;
-      print(author.toJson());
+      print(AuthorSerializer.toMap(author));
       expect(author.id, jkRowling.id);
       expect(author.name, jkRowling.name);
     });
@@ -82,7 +81,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
       expect(book.name, deathlyHallows.name);
 
       var author = book.author;
-      print(author.toJson());
+      print(AuthorSerializer.toMap(author));
       expect(author.id, jkRowling.id);
       expect(author.name, jkRowling.name);
     });
@@ -106,7 +105,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
       expect(book.name, deathlyHallows.name);
 
       var author = book.author;
-      print(author.toJson());
+      print(AuthorSerializer.toMap(author));
       expect(author.id, jkRowling.id);
       expect(author.name, jkRowling.name);
     });

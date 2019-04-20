@@ -1,0 +1,18 @@
+name: angel_orm_service
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  angel_orm: ^2.0.0
+  angel_migration: ^2.0.0-alpha
+dev_dependencies:
+  angel_migration_runner:
+    path: ../angel_migration_runner
+  angel_orm_generator:
+    path: ../angel_orm_generator
+  angel_orm_postgres:
+    path: ../angel_orm_postgres
+  angel_orm_test:
+    path: ../angel_orm_test
+  build_runner: ^1.0.0
+  logging: ^0.11.0
+  pedantic: ^1.0.0
+  postgres: ^1.0.0

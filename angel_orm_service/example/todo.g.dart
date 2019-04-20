@@ -1,18 +1,18 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of angel_orm_generator.test.models.fruit;
+part of 'todo.dart';
 
 // **************************************************************************
 // MigrationGenerator
 // **************************************************************************
 
-class FruitMigration extends Migration {
+class TodoMigration extends Migration {
   @override
   up(Schema schema) {
-    schema.create('fruits', (table) {
+    schema.create('todos', (table) {
       table.serial('id')..primaryKey();
-      table.integer('tree_id');
-      table.varChar('common_name');
+      table.boolean('is_complete')..defaultsTo(false);
+      table.varChar('text');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });
@@ -20,7 +20,7 @@ class FruitMigration extends Migration {
 
   @override
   down(Schema schema) {
-    schema.drop('fruits');
+    schema.drop('todos');
   }
 }
 
@@ -28,17 +28,17 @@ class FruitMigration extends Migration {
 // OrmGenerator
 // **************************************************************************
 
-class FruitQuery extends Query<Fruit, FruitQueryWhere> {
-  FruitQuery({Set<String> trampoline}) {
+class TodoQuery extends Query<Todo, TodoQueryWhere> {
+  TodoQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = FruitQueryWhere(this);
+    _where = TodoQueryWhere(this);
   }
 
   @override
-  final FruitQueryValues values = FruitQueryValues();
+  final TodoQueryValues values = TodoQueryValues();
 
-  FruitQueryWhere _where;
+  TodoQueryWhere _where;
 
   @override
   get casts {
@@ -47,30 +47,30 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
 
   @override
   get tableName {
-    return 'fruits';
+    return 'todos';
   }
 
   @override
   get fields {
-    return const ['id', 'tree_id', 'common_name', 'created_at', 'updated_at'];
+    return const ['id', 'is_complete', 'text', 'created_at', 'updated_at'];
   }
 
   @override
-  FruitQueryWhere get where {
+  TodoQueryWhere get where {
     return _where;
   }
 
   @override
-  FruitQueryWhere newWhereClause() {
-    return FruitQueryWhere(this);
+  TodoQueryWhere newWhereClause() {
+    return TodoQueryWhere(this);
   }
 
-  static Fruit parseRow(List row) {
+  static Todo parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = Fruit(
+    var model = Todo(
         id: row[0].toString(),
-        treeId: (row[1] as int),
-        commonName: (row[2] as String),
+        isComplete: (row[1] as bool),
+        text: (row[2] as String),
         createdAt: (row[3] as DateTime),
         updatedAt: (row[4] as DateTime));
     return model;
@@ -82,19 +82,19 @@ class FruitQuery extends Query<Fruit, FruitQueryWhere> {
   }
 }
 
-class FruitQueryWhere extends QueryWhere {
-  FruitQueryWhere(FruitQuery query)
+class TodoQueryWhere extends QueryWhere {
+  TodoQueryWhere(TodoQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
-        treeId = NumericSqlExpressionBuilder<int>(query, 'tree_id'),
-        commonName = StringSqlExpressionBuilder(query, 'common_name'),
+        isComplete = BooleanSqlExpressionBuilder(query, 'is_complete'),
+        text = StringSqlExpressionBuilder(query, 'text'),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
         updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
-  final NumericSqlExpressionBuilder<int> treeId;
+  final BooleanSqlExpressionBuilder isComplete;
 
-  final StringSqlExpressionBuilder commonName;
+  final StringSqlExpressionBuilder text;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
@@ -102,11 +102,11 @@ class FruitQueryWhere extends QueryWhere {
 
   @override
   get expressionBuilders {
-    return [id, treeId, commonName, createdAt, updatedAt];
+    return [id, isComplete, text, createdAt, updatedAt];
   }
 }
 
-class FruitQueryValues extends MapQueryValues {
+class TodoQueryValues extends MapQueryValues {
   @override
   get casts {
     return {};
@@ -117,16 +117,16 @@ class FruitQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
-  int get treeId {
-    return (values['tree_id'] as int);
+  bool get isComplete {
+    return (values['is_complete'] as bool);
   }
 
-  set treeId(int value) => values['tree_id'] = value;
-  String get commonName {
-    return (values['common_name'] as String);
+  set isComplete(bool value) => values['is_complete'] = value;
+  String get text {
+    return (values['text'] as String);
   }
 
-  set commonName(String value) => values['common_name'] = value;
+  set text(String value) => values['text'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
@@ -137,9 +137,9 @@ class FruitQueryValues extends MapQueryValues {
   }
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
-  void copyFrom(Fruit model) {
-    treeId = model.treeId;
-    commonName = model.commonName;
+  void copyFrom(Todo model) {
+    isComplete = model.isComplete;
+    text = model.text;
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
   }
@@ -150,18 +150,22 @@ class FruitQueryValues extends MapQueryValues {
 // **************************************************************************
 
 @generatedSerializable
-class Fruit extends _Fruit {
-  Fruit(
-      {this.id, this.treeId, this.commonName, this.createdAt, this.updatedAt});
+class Todo extends _Todo {
+  Todo(
+      {this.id,
+      this.isComplete = false,
+      @required this.text,
+      this.createdAt,
+      this.updatedAt});
 
   @override
   final String id;
 
   @override
-  final int treeId;
+  final bool isComplete;
 
   @override
-  final String commonName;
+  final String text;
 
   @override
   final DateTime createdAt;
@@ -169,41 +173,41 @@ class Fruit extends _Fruit {
   @override
   final DateTime updatedAt;
 
-  Fruit copyWith(
+  Todo copyWith(
       {String id,
-      int treeId,
-      String commonName,
+      bool isComplete,
+      String text,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Fruit(
+    return new Todo(
         id: id ?? this.id,
-        treeId: treeId ?? this.treeId,
-        commonName: commonName ?? this.commonName,
+        isComplete: isComplete ?? this.isComplete,
+        text: text ?? this.text,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt);
   }
 
   bool operator ==(other) {
-    return other is _Fruit &&
+    return other is _Todo &&
         other.id == id &&
-        other.treeId == treeId &&
-        other.commonName == commonName &&
+        other.isComplete == isComplete &&
+        other.text == text &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
 
   @override
   int get hashCode {
-    return hashObjects([id, treeId, commonName, createdAt, updatedAt]);
+    return hashObjects([id, isComplete, text, createdAt, updatedAt]);
   }
 
   @override
   String toString() {
-    return "Fruit(id=$id, treeId=$treeId, commonName=$commonName, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "Todo(id=$id, isComplete=$isComplete, text=$text, createdAt=$createdAt, updatedAt=$updatedAt)";
   }
 
   Map<String, dynamic> toJson() {
-    return FruitSerializer.toMap(this);
+    return TodoSerializer.toMap(this);
   }
 }
 
@@ -211,34 +215,38 @@ class Fruit extends _Fruit {
 // SerializerGenerator
 // **************************************************************************
 
-const FruitSerializer fruitSerializer = const FruitSerializer();
+const TodoSerializer todoSerializer = const TodoSerializer();
 
-class FruitEncoder extends Converter<Fruit, Map> {
-  const FruitEncoder();
+class TodoEncoder extends Converter<Todo, Map> {
+  const TodoEncoder();
 
   @override
-  Map convert(Fruit model) => FruitSerializer.toMap(model);
+  Map convert(Todo model) => TodoSerializer.toMap(model);
 }
 
-class FruitDecoder extends Converter<Map, Fruit> {
-  const FruitDecoder();
+class TodoDecoder extends Converter<Map, Todo> {
+  const TodoDecoder();
 
   @override
-  Fruit convert(Map map) => FruitSerializer.fromMap(map);
+  Todo convert(Map map) => TodoSerializer.fromMap(map);
 }
 
-class FruitSerializer extends Codec<Fruit, Map> {
-  const FruitSerializer();
+class TodoSerializer extends Codec<Todo, Map> {
+  const TodoSerializer();
 
   @override
-  get encoder => const FruitEncoder();
+  get encoder => const TodoEncoder();
   @override
-  get decoder => const FruitDecoder();
-  static Fruit fromMap(Map map) {
-    return new Fruit(
+  get decoder => const TodoDecoder();
+  static Todo fromMap(Map map) {
+    if (map['text'] == null) {
+      throw new FormatException("Missing required field 'text' on Todo.");
+    }
+
+    return new Todo(
         id: map['id'] as String,
-        treeId: map['tree_id'] as int,
-        commonName: map['common_name'] as String,
+        isComplete: map['is_complete'] as bool ?? false,
+        text: map['text'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -251,34 +259,38 @@ class FruitSerializer extends Codec<Fruit, Map> {
             : null);
   }
 
-  static Map<String, dynamic> toMap(_Fruit model) {
+  static Map<String, dynamic> toMap(_Todo model) {
     if (model == null) {
       return null;
     }
+    if (model.text == null) {
+      throw new FormatException("Missing required field 'text' on Todo.");
+    }
+
     return {
       'id': model.id,
-      'tree_id': model.treeId,
-      'common_name': model.commonName,
+      'is_complete': model.isComplete,
+      'text': model.text,
       'created_at': model.createdAt?.toIso8601String(),
       'updated_at': model.updatedAt?.toIso8601String()
     };
   }
 }
 
-abstract class FruitFields {
+abstract class TodoFields {
   static const List<String> allFields = <String>[
     id,
-    treeId,
-    commonName,
+    isComplete,
+    text,
     createdAt,
     updatedAt
   ];
 
   static const String id = 'id';
 
-  static const String treeId = 'tree_id';
+  static const String isComplete = 'is_complete';
 
-  static const String commonName = 'common_name';
+  static const String text = 'text';
 
   static const String createdAt = 'created_at';
 

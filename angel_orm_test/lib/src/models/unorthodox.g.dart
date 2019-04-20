@@ -232,20 +232,21 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
     var model = WeirdJoin(id: (row[0] as int));
     if (row.length > 2) {
       model = model.copyWith(
-          unorthodox: UnorthodoxQuery.parseRow(row.skip(2).toList()));
+          unorthodox: UnorthodoxQuery.parseRow(row.skip(2).take(1).toList()));
     }
     if (row.length > 3) {
-      model = model.copyWith(song: SongQuery.parseRow(row.skip(3).toList()));
+      model = model.copyWith(
+          song: SongQuery.parseRow(row.skip(3).take(5).toList()));
     }
     if (row.length > 8) {
       model = model.copyWith(
-          numbas: [NumbaQuery.parseRow(row.skip(8).toList())]
+          numbas: [NumbaQuery.parseRow(row.skip(8).take(2).toList())]
               .where((x) => x != null)
               .toList());
     }
     if (row.length > 10) {
       model = model.copyWith(
-          foos: [FooQuery.parseRow(row.skip(10).toList())]
+          foos: [FooQuery.parseRow(row.skip(10).take(1).toList())]
               .where((x) => x != null)
               .toList());
     }
@@ -610,7 +611,7 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
     var model = Foo(bar: (row[0] as String));
     if (row.length > 1) {
       model = model.copyWith(
-          weirdJoins: [WeirdJoinQuery.parseRow(row.skip(1).toList())]
+          weirdJoins: [WeirdJoinQuery.parseRow(row.skip(1).take(2).toList())]
               .where((x) => x != null)
               .toList());
     }
@@ -760,10 +761,11 @@ class FooPivotQuery extends Query<FooPivot, FooPivotQueryWhere> {
     var model = FooPivot();
     if (row.length > 2) {
       model = model.copyWith(
-          weirdJoin: WeirdJoinQuery.parseRow(row.skip(2).toList()));
+          weirdJoin: WeirdJoinQuery.parseRow(row.skip(2).take(2).toList()));
     }
     if (row.length > 4) {
-      model = model.copyWith(foo: FooQuery.parseRow(row.skip(4).toList()));
+      model =
+          model.copyWith(foo: FooQuery.parseRow(row.skip(4).take(1).toList()));
     }
     return model;
   }

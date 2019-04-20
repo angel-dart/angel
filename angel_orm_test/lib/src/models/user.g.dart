@@ -119,7 +119,7 @@ class UserQuery extends Query<User, UserQueryWhere> {
         updatedAt: (row[5] as DateTime));
     if (row.length > 6) {
       model = model.copyWith(
-          roles: [RoleQuery.parseRow(row.skip(6).toList())]
+          roles: [RoleQuery.parseRow(row.skip(6).take(4).toList())]
               .where((x) => x != null)
               .toList());
     }
@@ -321,10 +321,12 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = RoleUser();
     if (row.length > 2) {
-      model = model.copyWith(role: RoleQuery.parseRow(row.skip(2).toList()));
+      model = model.copyWith(
+          role: RoleQuery.parseRow(row.skip(2).take(4).toList()));
     }
     if (row.length > 6) {
-      model = model.copyWith(user: UserQuery.parseRow(row.skip(6).toList()));
+      model = model.copyWith(
+          user: UserQuery.parseRow(row.skip(6).take(6).toList()));
     }
     return model;
   }
@@ -432,7 +434,7 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
         updatedAt: (row[3] as DateTime));
     if (row.length > 4) {
       model = model.copyWith(
-          users: [UserQuery.parseRow(row.skip(4).toList())]
+          users: [UserQuery.parseRow(row.skip(4).take(6).toList())]
               .where((x) => x != null)
               .toList());
     }
