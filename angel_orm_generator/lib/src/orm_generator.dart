@@ -192,7 +192,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     .property('tryParse')
                     .call([expr.property('toString').call([])]);
               } else if (fType is InterfaceType && fType.element.isEnum) {
-                expr = type.property('values').index(expr.asA(refer('int')));
+                var isNull = expr.equalTo(literalNull);
+                expr = isNull.conditional(literalNull,
+                    type.property('values').index(expr.asA(refer('int'))));
               } else
                 expr = expr.asA(type);
 
@@ -691,7 +693,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           Expression value = refer('value');
 
           if (fType is InterfaceType && fType.element.isEnum) {
-            value = value.property('index');
+            value = CodeExpression(Code('value?.index'));
           } else if (const TypeChecker.fromRuntime(List)
               .isAssignableFromType(fType)) {
             value = refer('json').property('encode').call([value]);

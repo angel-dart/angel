@@ -1,3 +1,6 @@
+# 2.0.1
+* Gracefully handle `null` in enum fields.
+
 # 2.0.0+2
 * Widen `analyzer` dependency range.
 

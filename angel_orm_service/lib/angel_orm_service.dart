@@ -63,7 +63,21 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
         await queryObj(query);
       } else if (queryObj is Map) {
         queryObj.forEach((k, v) {
-          if (k is String && v is! RequestContext && v is! ResponseContext) {
+          if (k == r'$sort') {
+            if (v is Map) {
+              v.forEach((key, value) {
+                var descending = false;
+                if (value is String)
+                  descending = value == '-1';
+                else if (value is num) descending = value.toInt() == -1;
+                query.orderBy(key.toString(), descending: descending);
+              });
+            } else if (v is String) {
+              query.orderBy(v);
+            }
+          } else if (k is String &&
+              v is! RequestContext &&
+              v is! ResponseContext) {
             _apply(query, k, v);
           }
         });
@@ -74,6 +88,10 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
   @override
   Future<List<Data>> readMany(List<Id> ids,
       [Map<String, dynamic> params]) async {
+    if (ids.isEmpty) {
+      throw ArgumentError.value(ids, 'ids', 'cannot be empty');
+    }
+
     var query = await queryCreator();
     var builder = _findBuilder(query, idField);
 
@@ -134,7 +152,6 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
 
   @override
   Future<Data> modify(Id id, Data data, [Map<String, dynamic> params]) {
-    // TODO: Is there any way to make this an actual modify, and not an update?
     return update(id, data, params);
   }
 
@@ -151,7 +168,10 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
           '${query.values.runtimeType} has no `copyFrom` method, but OrmService requires this for updates.');
     }
 
-    return await query.updateOne(executor);
+    var result = await query.updateOne(executor);
+    if (result != null) return result;
+    throw new AngelHttpException.notFound(
+        message: 'No record found for ID $id');
   }
 
   @override
@@ -170,7 +190,9 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
       await _applyQuery(query, params);
     }
 
-    var deleted = await query.delete(executor);
-    return deleted.isEmpty ? null : deleted.first;
+    var result = await query.deleteOne(executor);
+    if (result != null) return result;
+    throw new AngelHttpException.notFound(
+        message: 'No record found for ID $id');
   }
 }
