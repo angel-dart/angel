@@ -14,3 +14,4 @@ pub get;
 pub run build_runner build;
 cd ..;
 angel_orm_test angel_orm_postgres
+angel_orm_test angel_orm_service
