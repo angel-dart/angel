@@ -342,6 +342,6 @@ class ServiceList<Id, Data> extends DelegatingList<Data> {
   Stream<ServiceList<Id, Data>> get onChange => _onChange.stream;
 
   Future close() async {
-    _onChange.close();
+    await _onChange.close();
   }
 }

@@ -1,5 +1,5 @@
 name: angel_client
-version: 2.0.1
+version: 2.0.2
 description: Support for querying Angel servers in the browser, Flutter, and command-line.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_client

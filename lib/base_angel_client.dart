@@ -106,8 +106,8 @@ abstract class BaseAngelClient extends Angel {
 
   Future<void> close() async {
     client.close();
-    _onAuthenticated.close();
-    Future.wait(_services.map((s) => s.close())).then((_) {
+    await _onAuthenticated.close();
+    await Future.wait(_services.map((s) => s.close())).then((_) {
       _services.clear();
     });
   }
@@ -162,7 +162,7 @@ abstract class BaseAngelClient extends Angel {
   Uri _join(url) {
     var u = url is Uri ? url : Uri.parse(url.toString());
     if (u.hasScheme || u.hasAuthority) return u;
-    return baseUrl.replace(path: p.join(baseUrl.path, u.path));
+    return u.replace(path: p.join(baseUrl.path, u.path));
   }
 
   @override
@@ -233,12 +233,12 @@ class BaseAngelService<Id, Data> extends Service<Id, Data> {
 
   @override
   Future close() async {
-    _onIndexed.close();
-    _onRead.close();
-    _onCreated.close();
-    _onModified.close();
-    _onUpdated.close();
-    _onRemoved.close();
+    await _onIndexed.close();
+    await _onRead.close();
+    await _onCreated.close();
+    await _onModified.close();
+    await _onUpdated.close();
+    await _onRemoved.close();
   }
 
   BaseAngelService(this.client, this.app, baseUrl, {this.deserializer})

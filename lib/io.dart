@@ -32,8 +32,8 @@ class Rest extends BaseAngelClient {
   }
 
   Future close() async {
-    super.close();
-    Future.wait(_services.map((s) => s.close())).then((_) {
+    await super.close();
+    await Future.wait(_services.map((s) => s.close())).then((_) {
       _services.clear();
     });
   }

@@ -2,5 +2,5 @@ include: package:pedantic/analysis_options.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
-  errors:
-    unawaited_futures: ignore
+  # errors:
+  #   unawaited_futures: ignore

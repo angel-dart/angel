@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:angel_client/io.dart' as c;
 import 'package:angel_framework/angel_framework.dart' as s;
 import 'package:angel_framework/http.dart' as s;
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -31,7 +32,7 @@ main() {
   });
 
   test('listens on create', () async {
-    list.service.create({'foo': 'bar'});
+    unawaited(list.service.create({'foo': 'bar'}));
     await list.onChange.first;
     expect(list, [
       {'foo': 'bar'}
@@ -39,7 +40,7 @@ main() {
   });
 
   test('listens on modify', () async {
-    list.service.create({'id': 1, 'foo': 'bar'});
+    unawaited(list.service.create({'id': 1, 'foo': 'bar'}));
     await queue.next;
 
     await list.service.update(1, {'id': 1, 'bar': 'baz'});
@@ -50,7 +51,7 @@ main() {
   });
 
   test('listens on remove', () async {
-    list.service.create({'id': '1', 'foo': 'bar'});
+    unawaited(list.service.create({'id': '1', 'foo': 'bar'}));
     await queue.next;
 
     await list.service.remove('1');

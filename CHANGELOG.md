@@ -1,3 +1,6 @@
+# 2.0.2
+* `_join` previously discarded quer parameters, etc.
+
 # 2.0.1
 * Change `BaseAngelClient` constructor to accept `dynamic` instead of `String` for `baseUrl.
 
