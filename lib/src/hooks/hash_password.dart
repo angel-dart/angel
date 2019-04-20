@@ -7,10 +7,11 @@ import 'package:angel_framework/angel_framework.dart';
 ///
 /// You may provide your own functions to obtain or set a user's password,
 /// or just provide a [passwordField] if you are only ever going to deal with Maps.
-HookedServiceEventListener hashPassword(
+@deprecated
+HookedServiceEventListener hashPassword<Password, User>(
     {Hash hasher,
     String passwordField,
-    getPassword(user),
+    FutureOr<Password> Function(User) getPassword,
     setPassword(password, user)}) {
   Hash h = hasher ?? sha256;
 

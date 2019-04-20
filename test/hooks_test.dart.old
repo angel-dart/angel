@@ -26,13 +26,14 @@ main() {
       ..use('/roled', RoledService());
 
     (app.findService('user_data') as HookedService)
-      ..beforeIndexed.listen(hooks.queryWithCurrentUser())
+      ..beforeIndexed.listen(hooks.queryWithCurrentUser<String, User>())
       ..beforeCreated.listen(hooks.hashPassword());
 
     app.findService('artists') as HookedService
-      ..beforeIndexed.listen(hooks.restrictToAuthenticated())
-      ..beforeRead.listen(hooks.restrictToOwner())
-      ..beforeCreated.listen(hooks.associateCurrentUser());
+      ..beforeIndexed.listen(hooks.restrictToAuthenticated<Artist>())
+      ..beforeRead.listen(hooks.restrictToOwner<String, Artist, Artist>())
+      ..beforeCreated
+          .listen(hooks.associateCurrentUser<String, Artist, Artist>());
 
     (app.findService('roled') as HookedService)
       ..beforeIndexed.listen(Permission('foo:*').toHook())
@@ -245,7 +246,7 @@ class UserDataService extends Service {
   }
 }
 
-class ArtistService extends Service {
+class ArtistService extends Service<String, Artist> {
   static const List<Artist> _ARTISTS = const [_MICHAEL_JACKSON, _USHER];
 
   @override
@@ -256,10 +257,10 @@ class ArtistService extends Service {
 
   @override
   create(data, [params]) async {
-    if (data is! Map || !data.containsKey('userId'))
-      throw AngelHttpException.badRequest(message: 'Required userId');
-
-    return {'foo': 'bar'};
+    return data;
+    // if (data is! Map || !data.containsKey('userId'))
+    //   throw AngelHttpException.badRequest(message: 'Required userId');
+    // return {'foo': 'bar'};
   }
 }
 
@@ -272,10 +273,11 @@ const Artist _USHER = const Artist(id: 'raymond', userId: 'Bob', name: 'Usher');
 const Artist _MICHAEL_JACKSON =
     const Artist(id: 'king_of_pop', userId: 'John', name: 'Michael Jackson');
 
-class RoledService extends Service {
+class RoledService extends Service<String, Artist> {
   @override
   index([params]) async {
-    return ['foo'];
+    return [Artist(name: 'foo')];
+    // return ['foo'];
   }
 
   @override

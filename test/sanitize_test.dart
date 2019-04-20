@@ -15,7 +15,8 @@ main() async {
   TestClient client;
 
   setUp(() async {
-    app = Angel();
+    var logger = Logger.detached('angel_security')..onRecord.listen(prettyLog);
+    app = Angel(logger: logger);
     app.chain([validate(untrustedSchema), sanitizeHtmlInput()])
       ..post('/untrusted', (RequestContext req, ResponseContext res) async {
         String untrusted = req.bodyAsMap['html'];
@@ -46,7 +47,12 @@ main() async {
           </html>''');
       });
 
-    app.logger = Logger.detached('angel_security')..onRecord.listen(prettyLog);
+    var oldHandler = app.errorHandler;
+    app.errorHandler = (e, req, res) {
+      app.logger.severe(e, e.error, e.stackTrace);
+      return oldHandler(e, req, res);
+    };
+
     client = await connectTo(app);
   });
 

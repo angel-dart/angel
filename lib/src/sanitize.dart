@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 
-final Map<Pattern, String> DEFAULT_SANITIZERS = {
+final Map<Pattern, String> defaultSanitizers = {
   RegExp(r'<\s*s\s*c\s*r\s*i\s*p\s*t\s*>.*<\s*\/\s*s\s*c\s*r\s*i\s*p\s*t\s*>',
       caseSensitive: false): ''
 };
@@ -15,7 +15,8 @@ RequestHandler sanitizeHtmlInput(
     {bool body = true,
     bool query = true,
     Map<Pattern, String> replace = const {}}) {
-  var sanitizers = {}..addAll(DEFAULT_SANITIZERS)..addAll(replace ?? {});
+  var sanitizers = Map<Pattern, String>.from(defaultSanitizers)
+    ..addAll(replace ?? {});
 
   return (req, res) async {
     if (body) {

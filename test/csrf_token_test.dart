@@ -11,9 +11,11 @@ main() async {
   TestClient client;
 
   setUp(() async {
-    app = Angel()..responseFinalizers.add(setCsrfToken());
+    app = Angel();
 
-    app.chain([verifyCsrfToken()]).get('/valid', (req, res) => 'Valid!');
+    app
+      ..chain([verifyCsrfToken()]).get('/valid', (req, res) => 'Valid!')
+      ..fallback(setCsrfToken());
 
     client = await connectTo(app);
   });
@@ -23,15 +25,15 @@ main() async {
   test('need pre-existing token', () async {
     var response = await client.get('/valid?csrf_token=evil');
     print(response.body);
-    expect(response, hasStatus(400));
-    expect(response.body, contains('Missing'));
+    expect(response, hasStatus(403));
   });
 
   test('fake token', () async {
     // Get a valid CSRF, but ignore it.
     var response = await client.get('/');
     var sessionId = getCookie(response);
-    response = await client.get('/valid?csrf_token=evil',
+    response = await client.get(
+        Uri(path: '/valid', queryParameters: {'csrf_token': 'evil'}),
         headers: {'cookie': 'DARTSESSID=$sessionId'});
     print(response.body);
     expect(response, hasStatus(400));

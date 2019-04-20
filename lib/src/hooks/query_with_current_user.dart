@@ -6,7 +6,7 @@ import 'is_server_side.dart';
 
 /// Adds the authed user's id to `params['query']`.
 ///
-/// Default [as] is `'userId'`.
+/// Default [as] is `'user_id'`.
 /// Default [userKey] is `'user'`.
 HookedServiceEventListener queryWithCurrentUser<Id, User>(
     {String as,
@@ -26,15 +26,13 @@ HookedServiceEventListener queryWithCurrentUser<Id, User>(
         return;
     }
 
-    _getId(user) {
+    Future<Id> _getId(User user) async {
       if (getId != null)
         return getId(user);
       else if (user is Map)
-        return user[fieldName];
-      else if (fieldName == 'id')
-        return user.id;
+        return user[fieldName] as Id;
       else
-        return reflect(user).getField(Symbol(fieldName)).reflectee;
+        return reflect(user).getField(Symbol(fieldName)).reflectee as Id;
     }
 
     var id = await _getId(user);
@@ -43,7 +41,7 @@ HookedServiceEventListener queryWithCurrentUser<Id, User>(
       throw AngelHttpException.notProcessable(
           message: 'Current user is missing a \'$fieldName\' field.');
 
-    var data = {as?.isNotEmpty == true ? as : 'userId': id};
+    var data = {as?.isNotEmpty == true ? as : 'user_id': id};
 
     e.params['query'] = e.params.containsKey('query')
         ? (e.params['query']..addAll(data))
