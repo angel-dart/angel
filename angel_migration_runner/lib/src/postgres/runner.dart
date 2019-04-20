@@ -61,7 +61,7 @@ class PostgresMigrationRunner implements MigrationRunner {
       int curBatch = (r[0][0] ?? 0) as int;
       int batch = curBatch + 1;
 
-      for (var k in toRun) {
+      for (var k in toRun.reversed) {
         var migration = migrations[k];
         var schema = new PostgresSchema();
         migration.up(schema);
