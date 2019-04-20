@@ -26,9 +26,9 @@ main() {
 
   tearDown(() async {
     await server.close(force: true);
-    await list.close();
-    await list.service.close();
-    await app.close();
+    unawaited(list.close());
+    unawaited(list.service.close());
+    unawaited(app.close());
   });
 
   test('listens on create', () async {
