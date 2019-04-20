@@ -4,6 +4,14 @@
 
 Service implementation that wraps over Angel ORM Query classes.
 
+## Installation
+In your `pubspec.yaml`:
+
+```yaml
+dependencies:
+    angel_orm_service: ^1.0.0
+```
+
 ## Usage
 Brief snippet (check `example/main.dart` for setup, etc.):
 
