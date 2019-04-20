@@ -1,5 +1,5 @@
 # security
-[![version 1.0.2](https://img.shields.io/badge/pub-v1.0.2-brightgreen.svg)](https://pub.dartlang.org/packages/angel_security)
+[![Pub](https://img.shields.io/pub/v/angel_security.svg)](https://pub.dartlang.org/packages/angel_security)
 [![build status](https://travis-ci.org/angel-dart/security.svg)](https://travis-ci.org/angel-dart/security)
 
 Angel middleware designed to enhance application security by patching common Web security
