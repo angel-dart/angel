@@ -1,3 +1,6 @@
+# 2.0.0-rc.0
+* Make abstract `Schema.alter` use `MutableTable`.
+
 # 2.0.0-alpha.1
 * Changes to work with `package:angel_orm@2.0.0-dev.15`.
 
