@@ -1,3 +1,6 @@
+# 2.0.2
+* Change `build_config` range to `">=0.3.0 <0.5.0"`.
+
 # 2.0.1
 * Gracefully handle `null` in enum fields.
 * Add `take` to wherever `skip` is used.
