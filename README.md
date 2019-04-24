@@ -22,7 +22,7 @@ some sort of documentation.
 
 Documentation for Jael syntax and directives has been
 **moved** to the
-[Angel framework wiki](https://angel-dart.gitbook.io/angel/front-end/jael-template-engine).
+[Angel framework wiki](https://docs.angel-dart.dev/packages/front-end/jael).
 
 ## This Repository
 Within this repository are three packages:
