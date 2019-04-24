@@ -46,8 +46,13 @@ main() async {
     description: 'Modify the to-do list.',
     fields: [
       field(
-        'create',
-        graphQLString,
+        'createTodo',
+        convertDartType(Todo),
+        inputs: [
+          GraphQLFieldInput(
+              'data', convertDartType(Todo).coerceToInputObject()),
+        ],
+        resolve: resolveViaServiceCreate(todoService),
       ),
     ],
   );
