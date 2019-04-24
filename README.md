@@ -20,6 +20,9 @@ Included is also
 server-side Dart users to build backends with GraphQL and
 virtually any database imaginable.
 
+## Tutorial Demo (click to watch)
+[![Youtube thumbnail](video.png)](https://youtu.be/5x6S4kDODa8)
+
 ## Projects
 This mono repo is split into several sub-projects,
 each with its own detailed documentation and examples:
