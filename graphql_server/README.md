@@ -1,4 +1,7 @@
 # graphql_server
+[![Pub](https://img.shields.io/pub/v/graphql_server.svg)](https://pub.dartlang.org/packages/graphql_server)
+[![build status](https://travis-ci.org/angel-dart/graphql.svg)](https://travis-ci.org/angel-dart/graphql)
+
 Base package for implementing GraphQL servers.
 You might prefer [`package:angel_graphql`](https://github.com/angel-dart/graphql),
 the fastest way to implement GraphQL backends in Dart.
@@ -43,6 +46,34 @@ GraphQL queries involving `subscription` operations can return
 a `Stream`. Ultimately, the transport for relaying subscription
 events to clients is not specified in the GraphQL spec, so it's
 up to you.
+
+Note that in a schema like this:
+
+```graphql
+type TodoSubscription {
+    onTodo: TodoAdded!
+}
+
+type TodoAdded {
+    id: ID!
+    text: String!
+    isComplete: Bool
+}
+```
+
+Your Dart schema's resolver for `onTodo` should be
+a `Map` *containing an `onTodo` key*:
+
+```dart
+field(
+  'onTodo',
+  todoAddedType,
+  resolve: (_, __) {
+    return someStreamOfTodos()
+            .map((todo) => {'onTodo': todo});
+  },
+);
+```
 
 For the purposes of reusing existing tooling (i.e. JS clients, etc.),
 `package:graphql_server` rolls with an implementation of Apollo's

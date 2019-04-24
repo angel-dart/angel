@@ -1,3 +1,7 @@
+# 1.0.0
+* Finish testing.
+* Add `package:pedantic` fixes.
+
 # 1.0.0-rc.0
 * Get the Apollo support working with the latest version of `subscriptions-transport-ws`.
 
