@@ -17,7 +17,7 @@ abstract class Server {
         (msg) async {
           if ((msg.type == OperationMessage.gqlConnectionInit) && !_init) {
             try {
-              Map connectionParams = null;
+              Map connectionParams;
               if (msg.payload is Map)
                 connectionParams = msg.payload as Map;
               else if (msg.payload != null)

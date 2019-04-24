@@ -73,5 +73,5 @@ class GraphQLResult {
   final dynamic data;
   final Iterable<GraphQLExceptionError> errors;
 
-  GraphQLResult(this.data, {this.errors: const []});
+  GraphQLResult(this.data, {this.errors = const []});
 }

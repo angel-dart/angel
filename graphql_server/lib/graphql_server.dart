@@ -24,7 +24,7 @@ class GraphQL {
   GraphQLSchema _schema;
 
   GraphQL(GraphQLSchema schema,
-      {bool introspect: true,
+      {bool introspect = true,
       this.defaultFieldResolver,
       List<GraphQLType> customTypes = const <GraphQLType>[]})
       : _schema = schema {
@@ -82,7 +82,7 @@ class GraphQL {
   Future parseAndExecute(String text,
       {String operationName,
       sourceUrl,
-      Map<String, dynamic> variableValues: const {},
+      Map<String, dynamic> variableValues = const {},
       initialValue,
       Map<String, dynamic> globalVariables}) {
     var tokens = scan(text, sourceUrl: sourceUrl);
@@ -109,9 +109,9 @@ class GraphQL {
 
   Future executeRequest(GraphQLSchema schema, DocumentContext document,
       {String operationName,
-      Map<String, dynamic> variableValues: const <String, dynamic>{},
+      Map<String, dynamic> variableValues = const <String, dynamic>{},
       initialValue,
-      Map<String, dynamic> globalVariables: const <String, dynamic>{}}) async {
+      Map<String, dynamic> globalVariables = const <String, dynamic>{}}) async {
     var operation = getOperation(document, operationName);
     var coercedVariableValues = coerceVariableValues(
         schema, operation, variableValues ?? <String, dynamic>{});

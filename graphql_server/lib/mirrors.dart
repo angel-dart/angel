@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:mirrors';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:graphql_schema/graphql_schema.dart';
@@ -281,9 +282,9 @@ Exclude _getExclude(Symbol name, MethodMirror mirror) {
 String _getSerializedName(Symbol name, MethodMirror mirror, ClassMirror clazz) {
   // First search for an @Alias()
   for (var obj in mirror.metadata) {
-    if (obj.reflectee is Alias) {
-      var alias = obj.reflectee as Alias;
-      return alias.name;
+    if (obj.reflectee is SerializableField) {
+      var alias = obj.reflectee as SerializableField;
+      return alias.alias;
     }
   }
 
@@ -304,9 +305,9 @@ String _getSerializedName(Symbol name, MethodMirror mirror, ClassMirror clazz) {
 dynamic _getDefaultValue(MethodMirror mirror) {
   // Search for a @DefaultValue
   for (var obj in mirror.metadata) {
-    if (obj.reflectee is DefaultValue) {
-      var ann = obj.reflectee as DefaultValue;
-      return ann.value;
+    if (obj.reflectee is SerializableField) {
+      var ann = obj.reflectee as SerializableField;
+      return ann.defaultValue;
     }
   }
 
@@ -317,8 +318,9 @@ bool _autoNames(ClassMirror clazz) {
   // Search for a @Serializable()
   for (var obj in clazz.metadata) {
     if (obj.reflectee is Serializable) {
-      var ann = obj.reflectee as Serializable;
-      return ann.autoIdAndDateFields != false;
+      return true;
+      // var ann = obj.reflectee as Serializable;
+      // return ann.autoIdAndDateFields != false;
     }
   }
 
