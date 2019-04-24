@@ -17,5 +17,6 @@ dependencies:
   web_socket_channel: ^1.0.0
 dev_dependencies:
   angel_serialize: ^2.0.0
+  file: ^5.0.0
   logging: ^0.11.0
   pedantic: ^1.0.0
