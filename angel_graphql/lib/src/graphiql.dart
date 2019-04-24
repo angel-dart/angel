@@ -6,7 +6,7 @@ import 'package:http_parser/http_parser.dart';
 /// By default, the interface expects your backend to be mounted at `/graphql`; this is configurable
 /// via [graphQLEndpoint].
 RequestHandler graphiQL(
-    {String graphQLEndpoint: '/graphql', String subscriptionsEndpoint}) {
+    {String graphQLEndpoint = '/graphql', String subscriptionsEndpoint}) {
   return (req, res) {
     res
       ..contentType = new MediaType('text', 'html')
@@ -18,7 +18,7 @@ RequestHandler graphiQL(
 }
 
 String renderGraphiql(
-    {String graphqlEndpoint: '/graphql', String subscriptionsEndpoint}) {
+    {String graphqlEndpoint = '/graphql', String subscriptionsEndpoint}) {
   var subscriptionsScripts = '',
       subscriptionsFetcher = '',
       fetcherName = 'graphQLFetcher';

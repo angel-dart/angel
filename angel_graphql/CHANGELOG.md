@@ -1,3 +1,6 @@
+# 1.0.0
+* Apply `package:pedantic`.
+
 # 1.0.0-rc.0
 * Finish `graphQLWS`.
 

@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_graphql/angel_graphql.dart';

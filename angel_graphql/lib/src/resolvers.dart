@@ -52,7 +52,7 @@ GraphQLFieldResolver<Value, Serialized>
 /// service will receive [Providers.graphql].
 GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceRead<Value, Serialized>(Service<dynamic, Value> service,
-        {String idField: 'id'}) {
+        {String idField = 'id'}) {
   return (_, arguments) async {
     var _requestInfo = _fetchRequestInfo(arguments);
     var params = {'query': _getQuery(arguments), 'provider': Providers.graphQL}
@@ -90,7 +90,7 @@ GraphQLFieldResolver<Value, Serialized>
 /// service will receive [Providers.graphql].
 GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceModify<Value, Serialized>(Service<dynamic, Value> service,
-        {String idField: 'id'}) {
+        {String idField = 'id'}) {
   return (_, arguments) async {
     var _requestInfo = _fetchRequestInfo(arguments);
     var params = {'query': _getQuery(arguments), 'provider': Providers.graphQL}
@@ -113,7 +113,7 @@ GraphQLFieldResolver<Value, Serialized>
 /// To avoid this, use [resolveViaServiceModify] instead.
 GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceUpdate<Value, Serialized>(Service<dynamic, Value> service,
-        {String idField: 'id'}) {
+        {String idField = 'id'}) {
   return (_, arguments) async {
     var _requestInfo = _fetchRequestInfo(arguments);
     var params = {'query': _getQuery(arguments), 'provider': Providers.graphQL}
@@ -132,7 +132,7 @@ GraphQLFieldResolver<Value, Serialized>
 /// service will receive [Providers.graphql].
 GraphQLFieldResolver<Value, Serialized>
     resolveViaServiceRemove<Value, Serialized>(Service<dynamic, Value> service,
-        {String idField: 'id'}) {
+        {String idField = 'id'}) {
   return (_, arguments) async {
     var _requestInfo = _fetchRequestInfo(arguments);
     var params = {'query': _getQuery(arguments), 'provider': Providers.graphQL}
