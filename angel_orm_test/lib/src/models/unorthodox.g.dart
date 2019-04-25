@@ -10,7 +10,7 @@ class UnorthodoxMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('unorthodoxes', (table) {
-      table.varChar('name')..primaryKey();
+      table.varChar('name');
     });
   }
 

@@ -11,7 +11,7 @@ class HasCarMigration extends Migration {
   up(Schema schema) {
     schema.create('has_cars', (table) {
       table.serial('id')..primaryKey();
-      table.integer('type')..defaultsTo(0);
+      table.integer('type');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });

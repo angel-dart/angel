@@ -30,9 +30,7 @@ class AuthorMigration extends Migration {
   up(Schema schema) {
     schema.create('authors', (table) {
       table.serial('id')..primaryKey();
-      table.varChar('name', length: 255)
-        ..defaultsTo('Tobe Osakwe')
-        ..unique();
+      table.varChar('name', length: 255)..defaultsTo('Tobe Osakwe');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });

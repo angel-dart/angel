@@ -41,6 +41,7 @@ FieldElement findPrimaryFieldInList(
       var column = reviveColumn(new ConstantReader(columnAnnotation));
       // print(
       //     '  * Found column on ${field.name} with indexType = ${column.indexType}');
+      // print(element.metadata);
       if (column.indexType == IndexType.primaryKey) return field;
     }
   }
@@ -300,6 +301,11 @@ Column reviveColumn(ConstantReader cr) {
   var indexType = IndexType.values[
       cr.peek('indexType')?.objectValue?.getField('index')?.toIntValue() ??
           IndexType.none.index];
+
+  if (const TypeChecker.fromRuntime(PrimaryKey)
+      .isAssignableFromType(cr.objectValue.type)) {
+    indexType = IndexType.primaryKey;
+  }
 
   if (columnObj != null) {
     columnType = new _ColumnType(columnObj);

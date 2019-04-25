@@ -177,16 +177,22 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
                       refer('RawSql').constInstance([literalString(value)]);
                 } else if (type is InterfaceType && type.element.isEnum) {
                   // Default to enum index.
-                  var index =
-                      ConstantReader(defaultValue).read('index').intValue;
-                  defaultExpr = literalNum(index);
+                  try {
+                    var index =
+                        ConstantReader(defaultValue).read('index')?.intValue;
+                    if (index != null) defaultExpr = literalNum(index);
+                  } catch (_) {
+                    // Extremely weird error occurs here: `Not an instance of int`.
+                    // Definitely an analyzer issue.
+                  }
                 } else {
                   defaultExpr = new CodeExpression(
                     new Code(dartObjectToString(defaultValue)),
                   );
                 }
 
-                cascade.add(refer('defaultsTo').call([defaultExpr]));
+                if (defaultExpr != null)
+                  cascade.add(refer('defaultsTo').call([defaultExpr]));
               }
 
               if (col.indexType == IndexType.primaryKey ||
