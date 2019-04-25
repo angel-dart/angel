@@ -64,7 +64,7 @@ class _GraphQLGenerator extends GeneratorForAnnotation<GraphQLClass> {
           ? c.name.substring(1)
           : c.name;
       var rc = ReCase(name);
-      return refer('${rc.snakeCase}GraphQLType');
+      return refer('${rc.camelCase}GraphQLType');
     }
 
     // Next, check if this is the "id" field of a `Model`.
@@ -133,7 +133,7 @@ class _GraphQLGenerator extends GeneratorForAnnotation<GraphQLClass> {
           args.add(literalConstList(values.map(literalString).toList()));
 
           b
-            ..name = ReCase(clazz.name).snakeCase + 'GraphQLType'
+            ..name = ReCase(clazz.name).camelCase + 'GraphQLType'
             ..docs.add('/// Auto-generated from [${clazz.name}].')
             ..type = TypeReference((b) => b
               ..symbol = 'GraphQLEnumType'
@@ -158,7 +158,7 @@ class _GraphQLGenerator extends GeneratorForAnnotation<GraphQLClass> {
                 ? c.name.substring(1)
                 : c.name;
             var rc = ReCase(name);
-            return refer('${rc.snakeCase}GraphQLType');
+            return refer('${rc.camelCase}GraphQLType');
           });
           named['interfaces'] = literalList(interfaces);
 
@@ -221,7 +221,7 @@ class _GraphQLGenerator extends GeneratorForAnnotation<GraphQLClass> {
           named['fields'] = literalList(fields);
 
           b
-            ..name = ctx.modelClassNameRecase.snakeCase + 'GraphQLType'
+            ..name = ctx.modelClassNameRecase.camelCase + 'GraphQLType'
             ..docs.add('/// Auto-generated from [${ctx.modelClassName}].')
             ..type = refer('GraphQLObjectType')
             ..modifier = FieldModifier.final$

@@ -2,7 +2,7 @@ import 'package:graphql_schema/graphql_schema.dart';
 part 'main.g.dart';
 
 @graphQLClass
-class Todo {
+class TodoItem {
   String text;
 
   @GraphQLDocumentation(description: 'Whether this item is complete.')
@@ -10,5 +10,5 @@ class Todo {
 }
 
 void main() {
-  print(todoGraphQLType.fields.map((f) => f.name));
+  print(todoItemGraphQLType.fields.map((f) => f.name));
 }

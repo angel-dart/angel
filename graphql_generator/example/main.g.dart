@@ -6,8 +6,8 @@ part of 'main.dart';
 // _GraphQLGenerator
 // **************************************************************************
 
-/// Auto-generated from [Todo].
-final GraphQLObjectType todoGraphQLType = objectType('Todo',
+/// Auto-generated from [TodoItem].
+final GraphQLObjectType todoItemGraphQLType = objectType('TodoItem',
     isInterface: false,
     interfaces: [],
     fields: [
