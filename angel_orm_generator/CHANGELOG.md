@@ -1,3 +1,6 @@
+# 2.0.3
+* Remove `targets` in `build.yaml`.
+
 # 2.0.2
 * Change `build_config` range to `">=0.3.0 <0.5.0"`.
 
