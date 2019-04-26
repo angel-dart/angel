@@ -27,7 +27,7 @@ abstract class Table {
     return declare(name, ColumnType.timeStampWithTimeZone);
   }
 
-  MigrationColumn text(String name) => declare(name, ColumnType.serial);
+  MigrationColumn text(String name) => declare(name, ColumnType.text);
 
   MigrationColumn varChar(String name, {int length}) {
     if (length == null) return declare(name, ColumnType.varChar);
