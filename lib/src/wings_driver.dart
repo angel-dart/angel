@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'dart:io' show Cookie;
 import 'dart:typed_data';
 import 'package:angel_framework/angel_framework.dart';
-import 'native_socket.dart';
 import 'wings_request.dart';
 import 'wings_response.dart';
+import 'wings_socket.dart';
 
 class AngelWings extends Driver<int, int, WingsSocket, WingsRequestContext,
     WingsResponseContext> {
   factory AngelWings(Angel app) {
-    return AngelWings._(app, null);
+    return AngelWings._(app, WingsSocket.bind);
   }
 
   AngelWings._(
