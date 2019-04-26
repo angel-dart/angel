@@ -1,3 +1,6 @@
+# 1.0.3
+* `idAsInt` returns `null` when `id` is `null`.
+
 # 1.0.2
 * `idAsInt` now uses `int.tryParse`.
 
