@@ -12,7 +12,7 @@ function angel_orm_test () {
 
 cd angel_orm_generator;
 pub get;
-echo 1 | pub run build_runner build;
+echo 1 | pub run build_runner build --delete-conflicting-outputs;
 cd ..;
 angel_orm_test angel_orm_postgres
 angel_orm_test angel_orm_service
