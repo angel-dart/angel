@@ -1,3 +1,7 @@
+# 2.0.0-rc.9
+* Fix some bugs in the `HookedService` implementation that skipped
+the outputs of `before` events.
+
 # 2.0.0-rc.8
 * Fix `MapService` flaw where clients could remove all records, even if `allowRemoveAll` were `false`.
 

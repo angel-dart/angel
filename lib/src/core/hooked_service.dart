@@ -276,7 +276,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
             params: params))
         .then((before) {
       if (before._canceled) {
-        return beforeIndexed
+        return afterIndexed
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.indexed,
                 params: params, result: before.result))
@@ -302,7 +302,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
             id: id, params: params))
         .then((before) {
       if (before._canceled) {
-        return beforeRead
+        return afterRead
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.read,
                 id: id, params: params, result: before.result))
@@ -328,18 +328,18 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
             data: data, params: params))
         .then((before) {
       if (before._canceled) {
-        return beforeCreated
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
-                _getResponse(_params), inner, HookedServiceEvent.created,
-                data: data, params: params, result: before.result))
-            .then((after) => after.result as Data);
-      }
-
-      return inner.create(data, params).then((result) {
         return afterCreated
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.created,
-                data: data, params: params, result: result))
+                data: before.data, params: params, result: before.result))
+            .then((after) => after.result as Data);
+      }
+
+      return inner.create(before.data, params).then((result) {
+        return afterCreated
+            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+                _getResponse(_params), inner, HookedServiceEvent.created,
+                data: before.data, params: params, result: result))
             .then((after) => after.result as Data);
       });
     });
@@ -354,18 +354,21 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
             id: id, data: data, params: params))
         .then((before) {
       if (before._canceled) {
-        return beforeModified
+        return afterModified
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.modified,
-                id: id, data: data, params: params, result: before.result))
+                id: id,
+                data: before.data,
+                params: params,
+                result: before.result))
             .then((after) => after.result as Data);
       }
 
-      return inner.modify(id, data, params).then((result) {
+      return inner.modify(id, before.data, params).then((result) {
         return afterModified
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.created,
-                id: id, data: data, params: params, result: result))
+                id: id, data: before.data, params: params, result: result))
             .then((after) => after.result as Data);
       });
     });
@@ -380,18 +383,21 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
             id: id, data: data, params: params))
         .then((before) {
       if (before._canceled) {
-        return beforeUpdated
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
-                _getResponse(_params), inner, HookedServiceEvent.updated,
-                id: id, data: data, params: params, result: before.result))
-            .then((after) => after.result as Data);
-      }
-
-      return inner.update(id, data, params).then((result) {
         return afterUpdated
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.updated,
-                id: id, data: data, params: params, result: result))
+                id: id,
+                data: before.data,
+                params: params,
+                result: before.result))
+            .then((after) => after.result as Data);
+      }
+
+      return inner.update(id, before.data, params).then((result) {
+        return afterUpdated
+            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+                _getResponse(_params), inner, HookedServiceEvent.updated,
+                id: id, data: before.data, params: params, result: result))
             .then((after) => after.result as Data);
       });
     });
@@ -406,7 +412,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
             id: id, params: params))
         .then((before) {
       if (before._canceled) {
-        return beforeRemoved
+        return afterRemoved
             ._emit(new HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.removed,
                 id: id, params: params, result: before.result))
