@@ -3,19 +3,18 @@ import 'dart:convert';
 import 'dart:io' show Cookie;
 import 'dart:typed_data';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/http.dart';
 import 'native_socket.dart';
 import 'wings_request.dart';
 import 'wings_response.dart';
 
-class AngelWings extends Driver<int, int, NativeSocket, WingsRequestContext,
+class AngelWings extends Driver<int, int, WingsSocket, WingsRequestContext,
     WingsResponseContext> {
   factory AngelWings(Angel app) {
     return AngelWings._(app, null);
   }
 
   AngelWings._(
-      Angel app, Future<NativeSocket> Function(dynamic, int) serverGenerator)
+      Angel app, Future<WingsSocket> Function(dynamic, int) serverGenerator)
       : super(app, serverGenerator);
 
   @override
@@ -27,7 +26,7 @@ class AngelWings extends Driver<int, int, NativeSocket, WingsRequestContext,
 
   @override
   Future closeResponse(int response) {
-    closeNativeSocket(response);
+    closeNativeSocketDescriptor(response);
     return Future.value();
   }
 
