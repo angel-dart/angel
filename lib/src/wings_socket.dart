@@ -4,11 +4,21 @@ import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart-ext:angel_wings';
 
-int bindWingsIPv4ServerSocket(Uint8List address, int port, bool shared,
-    int backlog, bool v6Only, SendPort sendPort) native 'Dart_WingsSocket_bind';
+int bindWingsIPv4ServerSocket(
+    String address,
+    int port,
+    bool shared,
+    int backlog,
+    bool v6Only,
+    SendPort sendPort) native 'Dart_WingsSocket_bindIPv4';
 
-int bindWingsIPv6ServerSocket(Uint8List address, int port, bool shared,
-    int backlog, bool v6Only, SendPort sendPort) native 'Dart_WingsSocket_bind';
+int bindWingsIPv6ServerSocket(
+    String address,
+    int port,
+    bool shared,
+    int backlog,
+    bool v6Only,
+    SendPort sendPort) native 'Dart_WingsSocket_bindIPV6';
 
 int getWingsServerSocketPort(int pointer) native 'Dart_WingsSocket_getPort';
 
@@ -57,11 +67,11 @@ class WingsSocket extends Stream<int> {
 
     try {
       if (addr.type == InternetAddressType.IPv6) {
-        ptr = bindWingsIPv6ServerSocket(Uint8List.fromList(addr.rawAddress),
-            port, shared, backlog, v6Only, recv.sendPort);
+        ptr = bindWingsIPv6ServerSocket(
+            addr.address, port, shared, backlog, v6Only, recv.sendPort);
       } else {
-        ptr = bindWingsIPv4ServerSocket(Uint8List.fromList(addr.rawAddress),
-            port, shared, backlog, v6Only, recv.sendPort);
+        ptr = bindWingsIPv4ServerSocket(
+            addr.address, port, shared, backlog, v6Only, recv.sendPort);
       }
 
       return WingsSocket._(ptr, recv);

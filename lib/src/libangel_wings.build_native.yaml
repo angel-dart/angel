@@ -1,2 +1,6 @@
+include:
+  - lib/src
 sources:
   - angel_wings|lib/src/angel_wings.cc
+  - angel_wings|lib/src/bind.cc
+  - angel_wings|lib/src/wings_socket.cc

@@ -21,7 +21,11 @@ doc/api/
 *.js.map
 
 *.o
-#*.dylib
-#*.a
+*.dylib
+*.a
+*.so
 *.lib
 *.obj
+
+.vscode/
+.idea/
