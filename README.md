@@ -1,4 +1,6 @@
 # production
+[![Pub](https://img.shields.io/pub/v/angel_production.svg)](https://pub.dartlang.org/packages/angel_production)
+
 Helpers for concurrency, message-passing, rotating loggers, and other production functionality in Angel.
 
 ![Screenshot](screenshot.png)
