@@ -25,11 +25,11 @@ class RunnerOptions {
   final bool useZone, respawn;
 
   RunnerOptions(
-      {this.hostname: '127.0.0.1',
-      this.port: 3000,
-      this.concurrency: 1,
-      this.useZone: false,
-      this.respawn: true});
+      {this.hostname = '127.0.0.1',
+      this.port = 3000,
+      this.concurrency = 1,
+      this.useZone = false,
+      this.respawn = true});
 
   factory RunnerOptions.fromArgResults(ArgResults argResults) {
     return new RunnerOptions(

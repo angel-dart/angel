@@ -23,7 +23,7 @@ class Runner {
   final Reflector reflector;
 
   Runner(this.name, this.configureServer,
-      {this.reflector: const EmptyReflector()});
+      {this.reflector = const EmptyReflector()});
 
   static const String asciiArt = '''
 ____________   ________________________ 
@@ -168,7 +168,7 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
       stderr..writeln('fatal error: $e');
       exitCode = 1;
     } finally {
-      server?.close();
+      await server?.close();
     }
   }
 
