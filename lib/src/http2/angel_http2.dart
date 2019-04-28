@@ -9,6 +9,13 @@ import 'http2_request_context.dart';
 import 'http2_response_context.dart';
 import 'package:uuid/uuid.dart';
 
+/// Boots a shared server instance. Use this if launching multiple isolates.
+Future<SecureServerSocket> startSharedHttp2(
+    address, int port, SecurityContext ctx) {
+  return SecureServerSocket.bind(address, port, ctx, shared: true);
+}
+
+/// Adapts `package:http2`'s [ServerTransportConnection] to serve Angel.
 class AngelHttp2 extends Driver<Socket, ServerTransportStream,
     SecureServerSocket, Http2RequestContext, Http2ResponseContext> {
   final ServerSettings settings;
@@ -47,7 +54,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
       var addr = address is InternetAddress
           ? address
           : new InternetAddress(address.toString());
-      return SecureServerSocket.bind(addr, port, ctx);
+      return Future.sync(() => serverGenerator(addr, port, ctx));
     }, useZone, settings);
   }
 

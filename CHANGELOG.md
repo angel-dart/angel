@@ -1,3 +1,7 @@
+# 2.0.0-rc.10
+* Fix an error that prevented `AngelHttp2.custom` from working properly.
+* Add `startSharedHttp2`.
+
 # 2.0.0-rc.9
 * Fix some bugs in the `HookedService` implementation that skipped
 the outputs of `before` events.
