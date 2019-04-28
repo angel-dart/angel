@@ -35,7 +35,8 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
                                         
 ''';
 
-  static void handleLogRecord(LogRecord record) {
+  static void handleLogRecord(LogRecord record, RunnerOptions options) {
+    if (options.quiet) return;
     var code = chooseLogColor(record.level);
 
     if (record.error == null) print(code.wrap(record.toString()));
@@ -93,25 +94,30 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
         .then((isolate) {})
         .catchError(c.completeError);
 
-    onLogRecord.listen((msg) => handleLogRecord(msg as LogRecord));
+    onLogRecord.listen((msg) => handleLogRecord(msg as LogRecord, options));
 
     onError.listen((msg) {
       if (msg is List) {
         var e = msg[0], st = StackTrace.fromString(msg[1].toString());
-        handleLogRecord(LogRecord(
-            Level.SEVERE, 'Fatal error', runnerArgs.loggerName, e, st));
+        handleLogRecord(
+            LogRecord(
+                Level.SEVERE, 'Fatal error', runnerArgs.loggerName, e, st),
+            options);
       } else {
         handleLogRecord(
-            LogRecord(Level.SEVERE, 'Fatal error', runnerArgs.loggerName, msg));
+            LogRecord(Level.SEVERE, 'Fatal error', runnerArgs.loggerName, msg),
+            options);
       }
     });
 
     onExit.listen((_) {
       if (options.respawn) {
-        handleLogRecord(LogRecord(
-            Level.WARNING,
-            'Instance #$id at ${DateTime.now()} crashed. Respawning immediately...',
-            runnerArgs.loggerName));
+        handleLogRecord(
+            LogRecord(
+                Level.WARNING,
+                'Instance #$id at ${DateTime.now()} crashed. Respawning immediately...',
+                runnerArgs.loggerName),
+            options);
         _spawnIsolate(id, c, options, pubSubSendPort);
       } else {
         c.complete();
@@ -206,7 +212,7 @@ _  ___ |  /|  / / /_/ / _  /___  _  /___
 
       if (app.logger == null) {
         app.logger = Logger(args.loggerName)
-          ..onRecord.listen(Runner.handleLogRecord);
+          ..onRecord.listen((rec) => Runner.handleLogRecord(rec, args.options));
       }
 
       AngelHttp http;
