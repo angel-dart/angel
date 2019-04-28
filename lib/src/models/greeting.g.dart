@@ -28,14 +28,21 @@ class GreetingMigration extends Migration {
 // **************************************************************************
 
 class GreetingQuery extends Query<Greeting, GreetingQueryWhere> {
-  GreetingQuery() {
-    _where = new GreetingQueryWhere(this);
+  GreetingQuery({Set<String> trampoline}) {
+    trampoline ??= Set();
+    trampoline.add(tableName);
+    _where = GreetingQueryWhere(this);
   }
 
   @override
-  final GreetingQueryValues values = new GreetingQueryValues();
+  final GreetingQueryValues values = GreetingQueryValues();
 
   GreetingQueryWhere _where;
+
+  @override
+  get casts {
+    return {};
+  }
 
   @override
   get tableName {
@@ -54,12 +61,12 @@ class GreetingQuery extends Query<Greeting, GreetingQueryWhere> {
 
   @override
   GreetingQueryWhere newWhereClause() {
-    return new GreetingQueryWhere(this);
+    return GreetingQueryWhere(this);
   }
 
   static Greeting parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = new Greeting(
+    var model = Greeting(
         id: row[0].toString(),
         message: (row[1] as String),
         createdAt: (row[2] as DateTime),
@@ -75,10 +82,10 @@ class GreetingQuery extends Query<Greeting, GreetingQueryWhere> {
 
 class GreetingQueryWhere extends QueryWhere {
   GreetingQueryWhere(GreetingQuery query)
-      : id = new NumericSqlExpressionBuilder<int>(query, 'id'),
-        message = new StringSqlExpressionBuilder(query, 'message'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        message = StringSqlExpressionBuilder(query, 'message'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -95,11 +102,16 @@ class GreetingQueryWhere extends QueryWhere {
 }
 
 class GreetingQueryValues extends MapQueryValues {
-  int get id {
-    return (values['id'] as int);
+  @override
+  get casts {
+    return {};
   }
 
-  set id(int value) => values['id'] = value;
+  String get id {
+    return (values['id'] as String);
+  }
+
+  set id(String value) => values['id'] = value;
   String get message {
     return (values['message'] as String);
   }
@@ -116,11 +128,9 @@ class GreetingQueryValues extends MapQueryValues {
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Greeting model) {
-    values.addAll({
-      'message': model.message,
-      'created_at': model.createdAt,
-      'updated_at': model.updatedAt
-    });
+    message = model.message;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
   }
 }
 
@@ -146,7 +156,7 @@ class Greeting extends _Greeting {
 
   Greeting copyWith(
       {String id, String message, DateTime createdAt, DateTime updatedAt}) {
-    return new Greeting(
+    return Greeting(
         id: id ?? this.id,
         message: message ?? this.message,
         createdAt: createdAt ?? this.createdAt,
@@ -166,6 +176,11 @@ class Greeting extends _Greeting {
     return hashObjects([id, message, createdAt, updatedAt]);
   }
 
+  @override
+  String toString() {
+    return "Greeting(id=$id, message=$message, createdAt=$createdAt, updatedAt=$updatedAt)";
+  }
+
   Map<String, dynamic> toJson() {
     return GreetingSerializer.toMap(this);
   }
@@ -175,14 +190,35 @@ class Greeting extends _Greeting {
 // SerializerGenerator
 // **************************************************************************
 
-abstract class GreetingSerializer {
+const GreetingSerializer greetingSerializer = GreetingSerializer();
+
+class GreetingEncoder extends Converter<Greeting, Map> {
+  const GreetingEncoder();
+
+  @override
+  Map convert(Greeting model) => GreetingSerializer.toMap(model);
+}
+
+class GreetingDecoder extends Converter<Map, Greeting> {
+  const GreetingDecoder();
+
+  @override
+  Greeting convert(Map map) => GreetingSerializer.fromMap(map);
+}
+
+class GreetingSerializer extends Codec<Greeting, Map> {
+  const GreetingSerializer();
+
+  @override
+  get encoder => const GreetingEncoder();
+  @override
+  get decoder => const GreetingDecoder();
   static Greeting fromMap(Map map) {
     if (map['message'] == null) {
-      throw new FormatException(
-          "Missing required field 'message' on Greeting.");
+      throw FormatException("Missing required field 'message' on Greeting.");
     }
 
-    return new Greeting(
+    return Greeting(
         id: map['id'] as String,
         message: map['message'] as String,
         createdAt: map['created_at'] != null
@@ -202,8 +238,7 @@ abstract class GreetingSerializer {
       return null;
     }
     if (model.message == null) {
-      throw new FormatException(
-          "Missing required field 'message' on Greeting.");
+      throw FormatException("Missing required field 'message' on Greeting.");
     }
 
     return {
@@ -216,7 +251,7 @@ abstract class GreetingSerializer {
 }
 
 abstract class GreetingFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     message,
     createdAt,
