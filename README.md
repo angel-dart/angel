@@ -80,7 +80,7 @@ print('This is instance #${instanceInfo.id}');
 The `Runner` class supplies options like the following:
 
 ```
-wg-dhcp201d194d221:production thosakwe$ dart example/main.dart --help
+Tobes-MacBook-Air:production thosakwe$ dart example/main.dart --help
 ____________   ________________________ 
 ___    |__  | / /_  ____/__  ____/__  / 
 __  /| |_   |/ /_  / __ __  __/  __  /  
@@ -92,17 +92,25 @@ A batteries-included, full-featured, full-stack framework in Dart.
 https://angel-dart.github.io
 
 Options:
--h, --help            Print this help information.
-    --[no-]respawn    Automatically respawn crashed application instances.
-                      (defaults to on)
+-h, --help                    Print this help information.
+    --[no-]respawn            Automatically respawn crashed application instances.
+                              (defaults to on)
 
-    --use-zone        Create a new Zone for each request.
--a, --address         The address to listen on.
-                      (defaults to "127.0.0.1")
+    --use-zone                Create a new Zone for each request.
+    --quiet                   Completely mute logging.
+    --ssl                     Listen for HTTPS instead of HTTP.
+    --http2                   Listen for HTTP/2 instead of HTTP/1.1.
+-a, --address                 The address to listen on.
+                              (defaults to "127.0.0.1")
 
--j, --concurrency     The number of isolates to spawn.
-                      (defaults to "4")
+-j, --concurrency             The number of isolates to spawn.
+                              (defaults to "4")
 
--p, --port            The port to listen on.
-                      (defaults to "3000")
+-p, --port                    The port to listen on.
+                              (defaults to "3000")
+
+    --certificate-file        The PEM certificate file to read.
+    --certificate-password    The PEM certificate file password.
+    --key-file                The PEM key file to read.
+    --key-password            The PEM key file password.
 ```
