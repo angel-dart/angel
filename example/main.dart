@@ -4,7 +4,7 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_production/angel_production.dart';
 import 'package:pub_sub/pub_sub.dart' as pub_sub;
 
-main(List<String> args) => new Runner('example', configureServer).run(args);
+main(List<String> args) => Runner('example', configureServer).run(args);
 
 Future configureServer(Angel app) async {
   // Use the injected `pub_sub.Client` to send messages.
@@ -22,6 +22,11 @@ Future configureServer(Angel app) async {
   // Add some routes...
   app.get('/', (req, res) => 'Hello, production world!');
 
+  app.get('/404', (req, res) {
+    res.statusCode = 404;
+    return res.close();
+  });
+
   // Create some routes to demonstrate message passing.
   app.get('/greeting', (req, res) => greeting);
 
@@ -35,7 +40,7 @@ Future configureServer(Angel app) async {
   // The `Runner` helps with fault tolerance.
   app.get('/crash', (req, res) {
     // We'll crash this instance deliberately, but the Runner will auto-respawn for us.
-    new Timer(const Duration(seconds: 3), Isolate.current.kill);
+    Timer(const Duration(seconds: 3), Isolate.current.kill);
     return 'Crashing in 3s...';
   });
 }
