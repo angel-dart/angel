@@ -6,7 +6,7 @@
 A high-powered HTTP server with support for dependency injection, sophisticated routing and more.
 
 This is the core of the [Angel](https://github.com/angel-dart/angel) framework.
-To build real-world applications, please see the [homepage](https://angel-dart.github.io).
+To build real-world applications, please see the [homepage](https://angel-dart.dev).
 
 ```dart
 import 'package:angel_container/mirrors.dart';
