@@ -1,3 +1,6 @@
+# 2.0.0
+* Bump to `2.0.0`.
+
 # 2.0.0-beta.1
 * Make `reset` reverse migrations.
 
