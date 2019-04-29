@@ -1,4 +1,4 @@
-CXXFLAGS := $(CXXFLAGS) --std=c++11 -fPIC -DDART_SHARED_LIB=1 -I $(DART_SDK)/include
+CXXFLAGS := $(CXXFLAGS) --std=c++14 -fPIC -DDART_SHARED_LIB=1 -I $(DART_SDK)/include
 objects := lib/src/angel_wings.o lib/src/wings_socket.o\
 lib/src/bind.o lib/src/util.o
 

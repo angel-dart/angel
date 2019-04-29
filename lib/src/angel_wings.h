@@ -13,5 +13,6 @@ void Dart_WingsSocket_getPort(Dart_NativeArguments arguments);
 void Dart_WingsSocket_write(Dart_NativeArguments arguments);
 void Dart_WingsSocket_closeDescriptor(Dart_NativeArguments arguments);
 void Dart_WingsSocket_close(Dart_NativeArguments arguments);
+void Dart_WingsSocket_listen(Dart_NativeArguments arguments);
 
 #endif

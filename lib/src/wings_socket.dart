@@ -28,21 +28,28 @@ void writeToNativeSocket(int fd, Uint8List data)
 void closeNativeSocketDescriptor(int fd)
     native 'Dart_WingsSocket_closeDescriptor';
 
+SendPort wingsSocketListen(int pointer) native 'Dart_WingsSocket_listen';
+
 void closeWingsSocket(int pointer) native 'Dart_WingsSocket_close';
 
 class WingsSocket extends Stream<int> {
   final StreamController<int> _ctrl = StreamController();
+  SendPort _acceptor;
   final int _pointer;
   final RawReceivePort _recv;
   bool _open = true;
   int _port;
 
   WingsSocket._(this._pointer, this._recv) {
+    _acceptor = wingsSocketListen(_pointer);
     _recv.handler = (h) {
       if (!_ctrl.isClosed) {
         _ctrl.add(h as int);
+        _acceptor.send([_recv.sendPort, _pointer]);
       }
     };
+
+    _acceptor.send([_recv.sendPort, _pointer]);
   }
 
   static Future<WingsSocket> bind(address, int port,
