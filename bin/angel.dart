@@ -4,6 +4,7 @@ library angel_cli.tool;
 import "dart:io";
 import "package:args/command_runner.dart";
 import 'package:angel_cli/angel_cli.dart';
+import 'package:io/ansi.dart';
 
 final String DOCTOR = "doctor";
 
@@ -28,17 +29,19 @@ main(List<String> args) async {
     ..addCommand(new RenameCommand())
     ..addCommand(new MakeCommand());
 
-  return await runner.run(args).then((_) {}).catchError((exc, st) {
+  return await runner.run(args).catchError((exc, st) {
     if (exc is String) {
       stdout.writeln(exc);
     } else {
       stderr.writeln("Oops, something went wrong: $exc");
-      exitCode = 1;
-
       if (args.contains('--verbose')) {
         stderr.writeln(st);
       }
     }
+
+    exitCode = 1;
+  }).whenComplete(() {
+    stdout.write(resetAll.wrap(''));
   });
 }
 

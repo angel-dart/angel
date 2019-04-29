@@ -1,3 +1,8 @@
+# 2.1.6
+* Fix a bug where models always defaulted to ORM.
+* Add GraphQL boilerplate.
+* Automatically restore terminal colors on shutdown.
+
 # 2.1.5+1
 * Update to `inflection2`.
 

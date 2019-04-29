@@ -20,7 +20,6 @@ class ModelCommand extends Command {
       ..addFlag('migration',
           abbr: 'm',
           help: 'Generate migrations when running `build_runner`.',
-          defaultsTo: true,
           negatable: false)
       ..addFlag('orm', help: 'Generate angel_orm code.', negatable: false)
       ..addFlag('serializable',

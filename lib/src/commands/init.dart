@@ -221,6 +221,13 @@ Future preBuild(Directory projectDir) async {
   if (buildCode != 0) throw new Exception('Failed to pre-build resources.');
 }
 
+const BoilerplateInfo graphQLBoilerplate = const BoilerplateInfo(
+  'GraphQL',
+  "A starting point for GraphQL API servers.",
+  'https://github.com/angel-dart/angel.git',
+  ref: 'graphql',
+);
+
 const BoilerplateInfo ormBoilerplate = const BoilerplateInfo(
   'ORM',
   "A starting point for applications that use Angel's ORM.",
@@ -256,6 +263,7 @@ const List<BoilerplateInfo> boilerplates = const [
   basicBoilerplate,
   //legacyBoilerplate,
   ormBoilerplate,
+  graphQLBoilerplate,
   sharedBoilerplate,
   sharedOrmBoilerplate,
 ];
