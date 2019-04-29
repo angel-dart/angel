@@ -19,9 +19,9 @@ struct WingsSocketInfo
 class WingsSocket
 {
   public:
-    explicit WingsSocket(const WingsSocketInfo& info);
+    explicit WingsSocket(int sockfd, const WingsSocketInfo& info);
     void incrRef(Dart_Port port);
-    const WingsSocketInfo getInfo() const;
+    const WingsSocketInfo& getInfo() const;
 
   private:
     WingsSocketInfo info;

@@ -37,7 +37,7 @@ void wingsReturnBound(Dart_NativeArguments arguments, WingsSocket *socket)
     Dart_Port sendPort;
     HandleError(Dart_SendPortGetId(socket->getInfo().sendPortHandle, &sendPort));
     socket->incrRef(sendPort);
-    auto ptr = (uint64_t) socket;
+    auto ptr = (uint64_t)socket;
     Dart_Handle ptrHandle = Dart_NewIntegerFromUint64(ptr);
     Dart_SetReturnValue(arguments, ptrHandle);
 }
@@ -138,7 +138,7 @@ WingsSocket *wingsBindNewSocket(Dart_NativeArguments arguments, const WingsSocke
         return nullptr;
     }
 
-    auto *out = new WingsSocket(info);
+    auto *out = new WingsSocket(sock, info);
     globalSocketList.push_back(out);
     return out;
 }
