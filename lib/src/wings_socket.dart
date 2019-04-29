@@ -32,8 +32,17 @@ SendPort wingsSocketListen(int pointer) native 'Dart_WingsSocket_listen';
 
 void closeWingsSocket(int pointer) native 'Dart_WingsSocket_close';
 
-class WingsSocket extends Stream<int> {
-  final StreamController<int> _ctrl = StreamController();
+SendPort wingsParseHttp() native 'Dart_WingsSocket_parseHttp';
+
+class WingsClientSocket {
+  final int fileDescriptor;
+  final InternetAddress remoteAddress;
+
+  WingsClientSocket(this.fileDescriptor, this.remoteAddress);
+}
+
+class WingsSocket extends Stream<WingsClientSocket> {
+  final StreamController<WingsClientSocket> _ctrl = StreamController();
   SendPort _acceptor;
   final int _pointer;
   final RawReceivePort _recv;
@@ -44,7 +53,8 @@ class WingsSocket extends Stream<int> {
     _acceptor = wingsSocketListen(_pointer);
     _recv.handler = (h) {
       if (!_ctrl.isClosed) {
-        _ctrl.add(h as int);
+        _ctrl.add(
+            WingsClientSocket(h[0] as int, InternetAddress(h[1] as String)));
         _acceptor.send([_recv.sendPort, _pointer]);
       }
     };
@@ -91,8 +101,11 @@ class WingsSocket extends Stream<int> {
   int get port => _port ??= getWingsServerSocketPort(_pointer);
 
   @override
-  StreamSubscription<int> listen(void Function(int event) onData,
-      {Function onError, void Function() onDone, bool cancelOnError}) {
+  StreamSubscription<WingsClientSocket> listen(
+      void Function(WingsClientSocket event) onData,
+      {Function onError,
+      void Function() onDone,
+      bool cancelOnError}) {
     return _ctrl.stream
         .listen(onData, onError: onError, cancelOnError: cancelOnError);
   }

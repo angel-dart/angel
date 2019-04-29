@@ -46,7 +46,7 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
 
     WingsSocket *socket = nullptr;
     Dart_Port outPort = message->value.as_array.values[0]->value.as_send_port.id;
-    Dart_CObject* ptrArg = message->value.as_array.values[1];
+    Dart_CObject *ptrArg = message->value.as_array.values[1];
 
     if (ptrArg->type == Dart_CObject_kInt32)
     {
@@ -67,9 +67,34 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
 
         if ((sock = accept(socket->sockfd, &addr, &len)) != -1)
         {
+            char addrBuf[INET6_ADDRSTRLEN] = {0};
+
+            if (addr.sa_family == AF_INET6)
+            {
+                auto as6 = (sockaddr_in6*) &addr;
+                inet_ntop(addr.sa_family, &(as6->sin6_addr), addrBuf, len);
+            }
+            else
+            {
+                auto as4 = (sockaddr_in*) &addr;
+                inet_ntop(AF_INET, &(as4->sin_addr), addrBuf, len);
+            }
+
+            Dart_CObject fdObj;
+            fdObj.type = Dart_CObject_kInt64;
+            fdObj.value.as_int64 = sock;
+
+            Dart_CObject addrObj;
+            addrObj.type = Dart_CObject_kString;
+            addrObj.value.as_string = addrBuf;
+
+            Dart_CObject *values[2] = {&fdObj, &addrObj};
+
             Dart_CObject obj;
-            obj.type = Dart_CObject_kInt64;
-            obj.value.as_int64 = sock;
+            obj.type = Dart_CObject_kArray;
+            obj.value.as_array.length = 2;
+            obj.value.as_array.values = values;
+
             Dart_PostCObject(outPort, &obj);
             // Dispatch the fd to the next listener.
             // auto &ports = socket->sendPorts;

@@ -1,6 +1,8 @@
-CXXFLAGS := $(CXXFLAGS) --std=c++14 -fPIC -DDART_SHARED_LIB=1 -I $(DART_SDK)/include
-objects := lib/src/angel_wings.o lib/src/wings_socket.o\
-lib/src/bind.o lib/src/util.o
+override CXXFLAGS := $(CXXFLAGS) --std=c++14 -fPIC -DDART_SHARED_LIB=1 -I $(DART_SDK)/include \
+-I .dart_tool
+objects := lib/src/angel_wings.o lib/src/wings_socket.o \
+lib/src/bind.o lib/src/util.o lib/src/http.o \
+.dart_tool/http-parser/http_parser.o
 
 .PHONY: distclean clean
 

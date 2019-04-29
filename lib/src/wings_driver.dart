@@ -7,8 +7,8 @@ import 'wings_request.dart';
 import 'wings_response.dart';
 import 'wings_socket.dart';
 
-class AngelWings extends Driver<int, int, WingsSocket, WingsRequestContext,
-    WingsResponseContext> {
+class AngelWings extends Driver<WingsClientSocket, int, WingsSocket,
+    WingsRequestContext, WingsResponseContext> {
   factory AngelWings(Angel app) {
     return AngelWings._(app, WingsSocket.bind);
   }
@@ -31,21 +31,19 @@ class AngelWings extends Driver<int, int, WingsSocket, WingsRequestContext,
   }
 
   @override
-  Future<WingsRequestContext> createRequestContext(int request, int response) {
-    // TODO: implement createRequestContext
-    return null;
+  Future<WingsRequestContext> createRequestContext(WingsClientSocket request, int response) {
+    return WingsRequestContext.from(app, request);
   }
 
   @override
-  Future<WingsResponseContext> createResponseContext(int request, int response,
+  Future<WingsResponseContext> createResponseContext(WingsClientSocket request, int response,
       [WingsRequestContext correspondingRequest]) {
-    // TODO: implement createResponseContext
-    return null;
+    return Future.value(WingsResponseContext(request.fileDescriptor, correspondingRequest));
   }
 
   @override
-  Stream<int> createResponseStreamFromRawRequest(int request) {
-    return Stream.fromIterable([request]);
+  Stream<int> createResponseStreamFromRawRequest(WingsClientSocket request) {
+    return Stream.fromIterable([request.fileDescriptor]);
   }
 
   @override

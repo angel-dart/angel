@@ -49,5 +49,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc, bool *auto_setup_sco
     result = Dart_WingsSocket_close;
   if (strcmp("Dart_WingsSocket_listen", cname) == 0)
     result = Dart_WingsSocket_listen;
+  if (strcmp("Dart_WingsSocket_parseHttp", cname) == 0)
+    result = Dart_WingsSocket_parseHttp;
   return result;
 }
