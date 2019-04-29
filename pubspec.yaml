@@ -8,13 +8,17 @@ dependencies:
   angel_auth: ^2.0.0 # Supports stateless authentication via JWT
   angel_configuration: ^2.0.0 # Loads application configuration, along with support for .env files.
   angel_framework: ^2.0.0 # The core server library.
+  angel_graphql: ^1.0.0 # Infrastructure for serving GraphQL.
   angel_jael: ^2.0.0 # Server-side templating engine
   angel_production: ^1.0.0 # Production application runner.
   angel_static: ^2.0.0 # Static file server
   angel_validate: ^2.0.0 # Allows for validation of input data
 dev_dependencies:
   angel_hot: ^2.0.0 # Hot-reloading support. :)
+  angel_serialize_generator: # Generates serialization code, and more.
   angel_test: ^2.0.0 # Utilities for testing Angel servers.
+  build_runner: ^1.0.0 # Runs code builders.
+  graphql_generator: ^1.0.0 # Generates GraphQL schemas statically.
   io: ^0.3.2 # For pretty printing.
   pedantic: ^1.0.0 # Enforces Dart style conventions.
   test: ^1.0.0 # For unit testing.
