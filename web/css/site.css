@@ -11,6 +11,16 @@ body {
     font-family: 'Lato', sans-serif;
 }
 
+a {
+    color: rgb(8, 114, 175) !important;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+p {
+    font-size: 1.3em;
+}
+
 .container {
     text-align: center;
     display: table-cell;

@@ -1,5 +1,8 @@
 <extend src="layout.jael">
     <block name="content">
         <div class="title">Angel</div>
+        <p>
+            <a href="/graphiql">Click here</a> to access GraphiQL.
+        </p>
     </block>
 </extend>

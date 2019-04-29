@@ -12,7 +12,7 @@ GraphQLSchema createSchema(Angel app) {
 
   var mutationType = objectType(
     'TodoMutation',
-    fields: todoQueryFields(app),
+    fields: todoMutationFields(app),
   );
 
   return graphQLSchema(

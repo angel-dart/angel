@@ -31,7 +31,7 @@ class Todo extends _Todo {
       bool isComplete,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Todo(
+    return Todo(
         id: id ?? this.id,
         text: text ?? this.text,
         isComplete: isComplete ?? this.isComplete,
@@ -67,7 +67,7 @@ class Todo extends _Todo {
 // SerializerGenerator
 // **************************************************************************
 
-const TodoSerializer todoSerializer = const TodoSerializer();
+const TodoSerializer todoSerializer = TodoSerializer();
 
 class TodoEncoder extends Converter<Todo, Map> {
   const TodoEncoder();
@@ -91,7 +91,7 @@ class TodoSerializer extends Codec<Todo, Map> {
   @override
   get decoder => const TodoDecoder();
   static Todo fromMap(Map map) {
-    return new Todo(
+    return Todo(
         id: map['id'] as String,
         text: map['text'] as String,
         isComplete: map['is_complete'] as bool,
