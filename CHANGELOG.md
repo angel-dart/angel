@@ -1,3 +1,6 @@
+# 2.0.0
+* Angel 2! :angel: :rocket:
+
 # 2.0.0-rc.10
 * Fix an error that prevented `AngelHttp2.custom` from working properly.
 * Add `startSharedHttp2`.
