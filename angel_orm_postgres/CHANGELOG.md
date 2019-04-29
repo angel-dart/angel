@@ -1,3 +1,6 @@
+# 1.0.0
+* Bump to `1.0.0`. This package has actually been stable for several months.
+
 # 1.0.0-dev.4
 * Port tests to use `angel_orm_test`.
 
