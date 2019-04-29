@@ -1,3 +1,6 @@
+# 2.0.0
+* Bump to `2.0.0`.
+
 # 2.0.0-rc.0
 * Make abstract `Schema.alter` use `MutableTable`.
 
