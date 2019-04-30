@@ -1,3 +1,6 @@
+# 2.4.4
+* Remove unnecessary `new` and `const`.
+
 # 2.4.3
 * Generate `Codec` and `Converter` classes.
 * Generate `toString` methods.

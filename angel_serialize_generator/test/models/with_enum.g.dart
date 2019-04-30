@@ -22,7 +22,7 @@ class WithEnum implements _WithEnum {
 
   WithEnum copyWith(
       {WithEnumType type, List<int> finalList, Uint8List imageBytes}) {
-    return new WithEnum(
+    return WithEnum(
         type: type ?? this.type,
         finalList: finalList ?? this.finalList,
         imageBytes: imageBytes ?? this.imageBytes);
@@ -31,9 +31,9 @@ class WithEnum implements _WithEnum {
   bool operator ==(other) {
     return other is _WithEnum &&
         other.type == type &&
-        const ListEquality<int>(const DefaultEquality<int>())
+        ListEquality<int>(DefaultEquality<int>())
             .equals(other.finalList, finalList) &&
-        const ListEquality().equals(other.imageBytes, imageBytes);
+        ListEquality().equals(other.imageBytes, imageBytes);
   }
 
   @override
@@ -55,7 +55,7 @@ class WithEnum implements _WithEnum {
 // SerializerGenerator
 // **************************************************************************
 
-const WithEnumSerializer withEnumSerializer = const WithEnumSerializer();
+const WithEnumSerializer withEnumSerializer = WithEnumSerializer();
 
 class WithEnumEncoder extends Converter<WithEnum, Map> {
   const WithEnumEncoder();
@@ -79,7 +79,7 @@ class WithEnumSerializer extends Codec<WithEnum, Map> {
   @override
   get decoder => const WithEnumDecoder();
   static WithEnum fromMap(Map map) {
-    return new WithEnum(
+    return WithEnum(
         type: map['type'] is WithEnumType
             ? (map['type'] as WithEnumType)
             : (map['type'] is int
@@ -91,10 +91,10 @@ class WithEnumSerializer extends Codec<WithEnum, Map> {
         imageBytes: map['image_bytes'] is Uint8List
             ? (map['image_bytes'] as Uint8List)
             : (map['image_bytes'] is Iterable<int>
-                ? new Uint8List.fromList(
+                ? Uint8List.fromList(
                     (map['image_bytes'] as Iterable<int>).toList())
                 : (map['image_bytes'] is String
-                    ? new Uint8List.fromList(
+                    ? Uint8List.fromList(
                         base64.decode(map['image_bytes'] as String))
                     : null)));
   }

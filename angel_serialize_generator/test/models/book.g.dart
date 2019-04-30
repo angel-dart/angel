@@ -20,7 +20,7 @@ class Book extends _Book {
       this.camelCaseString,
       this.createdAt,
       this.updatedAt})
-      : this.notModels = new List.unmodifiable(notModels ?? []);
+      : this.notModels = List.unmodifiable(notModels ?? []);
 
   @override
   final String id;
@@ -60,7 +60,7 @@ class Book extends _Book {
       String camelCaseString,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Book(
+    return Book(
         id: id ?? this.id,
         author: author ?? this.author,
         title: title ?? this.title,
@@ -79,7 +79,7 @@ class Book extends _Book {
         other.title == title &&
         other.description == description &&
         other.pageCount == pageCount &&
-        const ListEquality<double>(const DefaultEquality<double>())
+        ListEquality<double>(DefaultEquality<double>())
             .equals(other.notModels, notModels) &&
         other.camelCaseString == camelCaseString &&
         other.createdAt == createdAt &&
@@ -123,7 +123,7 @@ class Author extends _Author {
       this.obscured,
       this.createdAt,
       this.updatedAt})
-      : this.books = new List.unmodifiable(books ?? []);
+      : this.books = List.unmodifiable(books ?? []);
 
   @override
   final String id;
@@ -163,7 +163,7 @@ class Author extends _Author {
       String obscured,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Author(
+    return Author(
         id: id ?? this.id,
         name: name ?? this.name,
         age: age ?? this.age,
@@ -180,7 +180,7 @@ class Author extends _Author {
         other.id == id &&
         other.name == name &&
         other.age == age &&
-        const ListEquality<_Book>(const DefaultEquality<_Book>())
+        ListEquality<_Book>(DefaultEquality<_Book>())
             .equals(other.books, books) &&
         other.newestBook == newestBook &&
         other.secret == secret &&
@@ -218,7 +218,7 @@ class Author extends _Author {
 class Library extends _Library {
   Library(
       {this.id, Map<String, _Book> collection, this.createdAt, this.updatedAt})
-      : this.collection = new Map.unmodifiable(collection ?? {});
+      : this.collection = Map.unmodifiable(collection ?? {});
 
   @override
   final String id;
@@ -237,7 +237,7 @@ class Library extends _Library {
       Map<String, _Book> collection,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Library(
+    return Library(
         id: id ?? this.id,
         collection: collection ?? this.collection,
         createdAt: createdAt ?? this.createdAt,
@@ -247,9 +247,9 @@ class Library extends _Library {
   bool operator ==(other) {
     return other is _Library &&
         other.id == id &&
-        const MapEquality<String, _Book>(
-                keys: const DefaultEquality<String>(),
-                values: const DefaultEquality<_Book>())
+        MapEquality<String, _Book>(
+                keys: DefaultEquality<String>(),
+                values: DefaultEquality<_Book>())
             .equals(other.collection, collection) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -279,7 +279,7 @@ class Bookmark extends _Bookmark {
       this.comment,
       this.createdAt,
       this.updatedAt})
-      : this.history = new List.unmodifiable(history ?? []),
+      : this.history = List.unmodifiable(history ?? []),
         super(book);
 
   @override
@@ -307,7 +307,7 @@ class Bookmark extends _Bookmark {
       String comment,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Bookmark(book,
+    return Bookmark(book,
         id: id ?? this.id,
         history: history ?? this.history,
         page: page ?? this.page,
@@ -319,7 +319,7 @@ class Bookmark extends _Bookmark {
   bool operator ==(other) {
     return other is _Bookmark &&
         other.id == id &&
-        const ListEquality<int>(const DefaultEquality<int>())
+        ListEquality<int>(DefaultEquality<int>())
             .equals(other.history, history) &&
         other.page == page &&
         other.comment == comment &&
@@ -346,7 +346,7 @@ class Bookmark extends _Bookmark {
 // SerializerGenerator
 // **************************************************************************
 
-const BookSerializer bookSerializer = const BookSerializer();
+const BookSerializer bookSerializer = BookSerializer();
 
 class BookEncoder extends Converter<Book, Map> {
   const BookEncoder();
@@ -370,7 +370,7 @@ class BookSerializer extends Codec<Book, Map> {
   @override
   get decoder => const BookDecoder();
   static Book fromMap(Map map) {
-    return new Book(
+    return Book(
         id: map['id'] as String,
         author: map['author'] as String,
         title: map['title'] as String,
@@ -442,7 +442,7 @@ abstract class BookFields {
   static const String updatedAt = 'updated_at';
 }
 
-const AuthorSerializer authorSerializer = const AuthorSerializer();
+const AuthorSerializer authorSerializer = AuthorSerializer();
 
 class AuthorEncoder extends Converter<Author, Map> {
   const AuthorEncoder();
@@ -467,19 +467,19 @@ class AuthorSerializer extends Codec<Author, Map> {
   get decoder => const AuthorDecoder();
   static Author fromMap(Map map) {
     if (map['name'] == null) {
-      throw new FormatException("Missing required field 'name' on Author.");
+      throw FormatException("Missing required field 'name' on Author.");
     }
 
     if (map['age'] == null) {
-      throw new FormatException("Custom message for missing `age`");
+      throw FormatException("Custom message for missing `age`");
     }
 
-    return new Author(
+    return Author(
         id: map['id'] as String,
         name: map['name'] as String,
         age: map['age'] as int,
         books: map['books'] is Iterable
-            ? new List.unmodifiable(
+            ? List.unmodifiable(
                 ((map['books'] as Iterable).where((x) => x is Map))
                     .cast<Map>()
                     .map(BookSerializer.fromMap))
@@ -505,11 +505,11 @@ class AuthorSerializer extends Codec<Author, Map> {
       return null;
     }
     if (model.name == null) {
-      throw new FormatException("Missing required field 'name' on Author.");
+      throw FormatException("Missing required field 'name' on Author.");
     }
 
     if (model.age == null) {
-      throw new FormatException("Custom message for missing `age`");
+      throw FormatException("Custom message for missing `age`");
     }
 
     return {
@@ -556,7 +556,7 @@ abstract class AuthorFields {
   static const String updatedAt = 'updated_at';
 }
 
-const LibrarySerializer librarySerializer = const LibrarySerializer();
+const LibrarySerializer librarySerializer = LibrarySerializer();
 
 class LibraryEncoder extends Converter<Library, Map> {
   const LibraryEncoder();
@@ -580,10 +580,10 @@ class LibrarySerializer extends Codec<Library, Map> {
   @override
   get decoder => const LibraryDecoder();
   static Library fromMap(Map map) {
-    return new Library(
+    return Library(
         id: map['id'] as String,
         collection: map['collection'] is Map
-            ? new Map.unmodifiable(
+            ? Map.unmodifiable(
                 (map['collection'] as Map).keys.fold({}, (out, key) {
                 return out
                   ..[key] = BookSerializer.fromMap(
@@ -637,10 +637,10 @@ abstract class LibraryFields {
 abstract class BookmarkSerializer {
   static Bookmark fromMap(Map map, _Book book) {
     if (map['page'] == null) {
-      throw new FormatException("Missing required field 'page' on Bookmark.");
+      throw FormatException("Missing required field 'page' on Bookmark.");
     }
 
-    return new Bookmark(book,
+    return Bookmark(book,
         id: map['id'] as String,
         history: map['history'] is Iterable
             ? (map['history'] as Iterable).cast<int>().toList()
@@ -664,7 +664,7 @@ abstract class BookmarkSerializer {
       return null;
     }
     if (model.page == null) {
-      throw new FormatException("Missing required field 'page' on Bookmark.");
+      throw FormatException("Missing required field 'page' on Bookmark.");
     }
 
     return {

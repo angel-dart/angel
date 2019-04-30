@@ -12,18 +12,18 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
     var ctx = await buildContext(element as ClassElement, annotation, buildStep,
         await buildStep.resolver, true);
 
-    var lib = new Library((b) {
+    var lib = Library((b) {
       generateClass(ctx, b, annotation);
     });
 
-    var buf = lib.accept(new DartEmitter());
+    var buf = lib.accept(DartEmitter());
     return buf.toString();
   }
 
   /// Generate an extended model class.
   void generateClass(
       BuildContext ctx, LibraryBuilder file, ConstantReader annotation) {
-    file.body.add(new Class((clazz) {
+    file.body.add(Class((clazz) {
       clazz
         ..name = ctx.modelClassNameRecase.pascalCase
         ..annotations.add(refer('generatedSerializable'));
@@ -33,20 +33,20 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       }
 
       if (shouldBeConstant(ctx)) {
-        clazz.implements.add(new Reference(ctx.originalClassName));
+        clazz.implements.add(Reference(ctx.originalClassName));
       } else {
-        clazz.extend = new Reference(ctx.originalClassName);
+        clazz.extend = Reference(ctx.originalClassName);
       }
 
       //if (ctx.importsPackageMeta)
-      //  clazz.annotations.add(new CodeExpression(new Code('immutable')));
+      //  clazz.annotations.add(CodeExpression(Code('immutable')));
 
       for (var field in ctx.fields) {
-        clazz.fields.add(new Field((b) {
+        clazz.fields.add(Field((b) {
           b
             ..name = field.name
             ..modifier = FieldModifier.final$
-            ..annotations.add(new CodeExpression(new Code('override')))
+            ..annotations.add(CodeExpression(Code('override')))
             ..type = convertTypeReference(field.type);
 
           for (var el in [field.getter, field]) {
@@ -67,11 +67,11 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       var serializers = annotation.peek('serializers')?.listValue ?? [];
 
       if (serializers.any((o) => o.toIntValue() == Serializers.json)) {
-        clazz.methods.add(new Method((method) {
+        clazz.methods.add(Method((method) {
           method
             ..name = 'toJson'
-            ..returns = new Reference('Map<String, dynamic>')
-            ..body = new Code('return ${clazz.name}Serializer.toMap(this);');
+            ..returns = Reference('Map<String, dynamic>')
+            ..body = Code('return ${clazz.name}Serializer.toMap(this);');
         }));
       }
     }));
@@ -87,13 +87,13 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   /// Generate a constructor with named parameters.
   void generateConstructor(
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
-    clazz.constructors.add(new Constructor((constructor) {
+    clazz.constructors.add(Constructor((constructor) {
       // Add all `super` params
       constructor.constant = ctx.clazz.unnamedConstructor?.isConst == true ||
           shouldBeConstant(ctx);
 
       for (var param in ctx.constructorParameters) {
-        constructor.requiredParameters.add(new Parameter((b) => b
+        constructor.requiredParameters.add(Parameter((b) => b
           ..name = param.name
           ..type = convertTypeReference(param.type)));
       }
@@ -111,14 +111,14 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             defaultValue = dartObjectToString(existingDefault);
           }
 
-          constructor.initializers.add(new Code('''
+          constructor.initializers.add(Code('''
               this.${field.name} =
-                new $typeName.unmodifiable(${field.name} ?? $defaultValue)'''));
+                $typeName.unmodifiable(${field.name} ?? $defaultValue)'''));
         }
       }
 
       for (var field in ctx.fields) {
-        constructor.optionalParameters.add(new Parameter((b) {
+        constructor.optionalParameters.add(Parameter((b) {
           b
             ..toThis = shouldBeConstant(ctx)
             ..name = field.name
@@ -127,7 +127,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
           var existingDefault = ctx.defaults[field.name];
 
           if (existingDefault != null) {
-            b.defaultTo = new Code(dartObjectToString(existingDefault));
+            b.defaultTo = Code(dartObjectToString(existingDefault));
           }
 
           if (!isListOrMapType(field.type))
@@ -138,7 +138,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
           if (ctx.requiredFields.containsKey(field.name) &&
               b.defaultTo == null) {
-            b.annotations.add(new CodeExpression(new Code('required')));
+            b.annotations.add(CodeExpression(Code('required')));
           }
         }));
       }
@@ -146,7 +146,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       if (ctx.constructorParameters.isNotEmpty) {
         if (!shouldBeConstant(ctx) ||
             ctx.clazz.unnamedConstructor?.isConst == true)
-          constructor.initializers.add(new Code(
+          constructor.initializers.add(Code(
               'super(${ctx.constructorParameters.map((p) => p.name).join(',')})'));
       }
     }));
@@ -155,7 +155,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   /// Generate a `copyWith` method.
   void generateCopyWithMethod(
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
-    clazz.methods.add(new Method((method) {
+    clazz.methods.add(Method((method) {
       method
         ..name = 'copyWith'
         ..returns = ctx.modelClassType;
@@ -163,13 +163,13 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       // Add all `super` params
       if (ctx.constructorParameters.isNotEmpty) {
         for (var param in ctx.constructorParameters) {
-          method.requiredParameters.add(new Parameter((b) => b
+          method.requiredParameters.add(Parameter((b) => b
             ..name = param.name
             ..type = convertTypeReference(param.type)));
         }
       }
 
-      var buf = new StringBuffer('return new ${ctx.modelClassName}(');
+      var buf = StringBuffer('return ${ctx.modelClassName}(');
       int i = 0;
 
       for (var param in ctx.constructorParameters) {
@@ -179,7 +179,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
       // Add named parameters
       for (var field in ctx.fields) {
-        method.optionalParameters.add(new Parameter((b) {
+        method.optionalParameters.add(Parameter((b) {
           b
             ..name = field.name
             ..named = true
@@ -191,7 +191,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       }
 
       buf.write(');');
-      method.body = new Code(buf.toString());
+      method.body = Code(buf.toString());
     }));
   }
 
@@ -200,22 +200,22 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       if (const TypeChecker.fromRuntime(List).isAssignableFromType(type)) {
         if (type.typeParameters.length == 1) {
           var eq = generateEquality(type.typeArguments[0]);
-          return 'const ListEquality<${type.typeArguments[0].name}>($eq)';
+          return 'ListEquality<${type.typeArguments[0].name}>($eq)';
         } else
-          return 'const ListEquality()';
+          return 'ListEquality()';
       } else if (const TypeChecker.fromRuntime(Map)
           .isAssignableFromType(type)) {
         if (type.typeParameters.length == 2) {
           var keq = generateEquality(type.typeArguments[0]),
               veq = generateEquality(type.typeArguments[1]);
-          return 'const MapEquality<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>(keys: $keq, values: $veq)';
+          return 'MapEquality<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>(keys: $keq, values: $veq)';
         } else
-          return 'const MapEquality()';
+          return 'MapEquality()';
       }
 
-      return nullable ? null : 'const DefaultEquality<${type.name}>()';
+      return nullable ? null : 'DefaultEquality<${type.name}>()';
     } else {
-      return 'const DefaultEquality()';
+      return 'DefaultEquality()';
     }
   }
 
@@ -229,7 +229,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
   void generateHashCode(BuildContext ctx, ClassBuilder clazz) {
     clazz
-      ..methods.add(new Method((method) {
+      ..methods.add(Method((method) {
         method
           ..name = 'hashCode'
           ..type = MethodType.getter
@@ -263,11 +263,11 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
   void generateEqualsOperator(
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
-    clazz.methods.add(new Method((method) {
+    clazz.methods.add(Method((method) {
       method
         ..name = 'operator =='
-        ..returns = new Reference('bool')
-        ..requiredParameters.add(new Parameter((b) => b.name = 'other'));
+        ..returns = Reference('bool')
+        ..requiredParameters.add(Parameter((b) => b.name = 'other'));
 
       var buf = ['other is ${ctx.originalClassName}'];
 
@@ -275,7 +275,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         return generateComparator(f.type)('other.${f.name}', f.name);
       }));
 
-      method.body = new Code('return ${buf.join('&&')};');
+      method.body = Code('return ${buf.join('&&')};');
     }));
   }
 }

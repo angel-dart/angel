@@ -14,13 +14,13 @@ class HasMap implements _HasMap {
   final Map<dynamic, dynamic> value;
 
   HasMap copyWith({Map<dynamic, dynamic> value}) {
-    return new HasMap(value: value ?? this.value);
+    return HasMap(value: value ?? this.value);
   }
 
   bool operator ==(other) {
     return other is _HasMap &&
-        const MapEquality<dynamic, dynamic>(
-                keys: const DefaultEquality(), values: const DefaultEquality())
+        MapEquality<dynamic, dynamic>(
+                keys: DefaultEquality(), values: DefaultEquality())
             .equals(other.value, value);
   }
 
@@ -43,7 +43,7 @@ class HasMap implements _HasMap {
 // SerializerGenerator
 // **************************************************************************
 
-const HasMapSerializer hasMapSerializer = const HasMapSerializer();
+const HasMapSerializer hasMapSerializer = HasMapSerializer();
 
 class HasMapEncoder extends Converter<HasMap, Map> {
   const HasMapEncoder();
@@ -68,10 +68,10 @@ class HasMapSerializer extends Codec<HasMap, Map> {
   get decoder => const HasMapDecoder();
   static HasMap fromMap(Map map) {
     if (map['value'] == null) {
-      throw new FormatException("Missing required field 'value' on HasMap.");
+      throw FormatException("Missing required field 'value' on HasMap.");
     }
 
-    return new HasMap(value: _fromString(map['value']));
+    return HasMap(value: _fromString(map['value']));
   }
 
   static Map<String, dynamic> toMap(_HasMap model) {
@@ -79,7 +79,7 @@ class HasMapSerializer extends Codec<HasMap, Map> {
       return null;
     }
     if (model.value == null) {
-      throw new FormatException("Missing required field 'value' on HasMap.");
+      throw FormatException("Missing required field 'value' on HasMap.");
     }
 
     return {'value': _toString(model.value)};

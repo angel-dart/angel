@@ -17,7 +17,7 @@ class GamepadButton implements _GamepadButton {
   final int radius;
 
   GamepadButton copyWith({String name, int radius}) {
-    return new GamepadButton(
+    return GamepadButton(
         name: name ?? this.name, radius: radius ?? this.radius);
   }
 
@@ -45,8 +45,8 @@ class GamepadButton implements _GamepadButton {
 @generatedSerializable
 class Gamepad extends _Gamepad {
   Gamepad({List<_GamepadButton> buttons, Map<String, dynamic> dynamicMap})
-      : this.buttons = new List.unmodifiable(buttons ?? []),
-        this.dynamicMap = new Map.unmodifiable(dynamicMap ?? {});
+      : this.buttons = List.unmodifiable(buttons ?? []),
+        this.dynamicMap = Map.unmodifiable(dynamicMap ?? {});
 
   @override
   final List<_GamepadButton> buttons;
@@ -56,19 +56,17 @@ class Gamepad extends _Gamepad {
 
   Gamepad copyWith(
       {List<_GamepadButton> buttons, Map<String, dynamic> dynamicMap}) {
-    return new Gamepad(
+    return Gamepad(
         buttons: buttons ?? this.buttons,
         dynamicMap: dynamicMap ?? this.dynamicMap);
   }
 
   bool operator ==(other) {
     return other is _Gamepad &&
-        const ListEquality<_GamepadButton>(
-                const DefaultEquality<_GamepadButton>())
+        ListEquality<_GamepadButton>(DefaultEquality<_GamepadButton>())
             .equals(other.buttons, buttons) &&
-        const MapEquality<String, dynamic>(
-                keys: const DefaultEquality<String>(),
-                values: const DefaultEquality())
+        MapEquality<String, dynamic>(
+                keys: DefaultEquality<String>(), values: DefaultEquality())
             .equals(other.dynamicMap, dynamicMap);
   }
 
@@ -92,7 +90,7 @@ class Gamepad extends _Gamepad {
 // **************************************************************************
 
 const GamepadButtonSerializer gamepadButtonSerializer =
-    const GamepadButtonSerializer();
+    GamepadButtonSerializer();
 
 class GamepadButtonEncoder extends Converter<GamepadButton, Map> {
   const GamepadButtonEncoder();
@@ -116,7 +114,7 @@ class GamepadButtonSerializer extends Codec<GamepadButton, Map> {
   @override
   get decoder => const GamepadButtonDecoder();
   static GamepadButton fromMap(Map map) {
-    return new GamepadButton(
+    return GamepadButton(
         name: map['name'] as String, radius: map['radius'] as int);
   }
 
@@ -136,7 +134,7 @@ abstract class GamepadButtonFields {
   static const String radius = 'radius';
 }
 
-const GamepadSerializer gamepadSerializer = const GamepadSerializer();
+const GamepadSerializer gamepadSerializer = GamepadSerializer();
 
 class GamepadEncoder extends Converter<Gamepad, Map> {
   const GamepadEncoder();
@@ -160,9 +158,9 @@ class GamepadSerializer extends Codec<Gamepad, Map> {
   @override
   get decoder => const GamepadDecoder();
   static Gamepad fromMap(Map map) {
-    return new Gamepad(
+    return Gamepad(
         buttons: map['buttons'] is Iterable
-            ? new List.unmodifiable(
+            ? List.unmodifiable(
                 ((map['buttons'] as Iterable).where((x) => x is Map))
                     .cast<Map>()
                     .map(GamepadButtonSerializer.fromMap))

@@ -17,7 +17,7 @@ class Todo extends _Todo {
   final bool completed;
 
   Todo copyWith({String text, bool completed}) {
-    return new Todo(
+    return Todo(
         text: text ?? this.text, completed: completed ?? this.completed);
   }
 
@@ -44,7 +44,7 @@ class Todo extends _Todo {
 // SerializerGenerator
 // **************************************************************************
 
-const TodoSerializer todoSerializer = const TodoSerializer();
+const TodoSerializer todoSerializer = TodoSerializer();
 
 class TodoEncoder extends Converter<Todo, Map> {
   const TodoEncoder();
@@ -68,7 +68,7 @@ class TodoSerializer extends Codec<Todo, Map> {
   @override
   get decoder => const TodoDecoder();
   static Todo fromMap(Map map) {
-    return new Todo(
+    return Todo(
         text: map['text'] as String, completed: map['completed'] as bool);
   }
 

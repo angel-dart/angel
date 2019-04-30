@@ -3,7 +3,7 @@ part of angel_serialize_generator;
 class TypeScriptDefinitionBuilder implements Builder {
   final bool autoSnakeCaseNames;
 
-  const TypeScriptDefinitionBuilder({this.autoSnakeCaseNames: true});
+  const TypeScriptDefinitionBuilder({this.autoSnakeCaseNames = true});
 
   @override
   Map<String, List<String>> get buildExtensions {
@@ -29,7 +29,7 @@ class TypeScriptDefinitionBuilder implements Builder {
     };
 
     types.forEach((t, tsType) {
-      if (new TypeChecker.fromRuntime(t).isAssignableFromType(type))
+      if (TypeChecker.fromRuntime(t).isAssignableFromType(type))
         typeScriptType = tsType;
     });
 
@@ -48,7 +48,7 @@ class TypeScriptDefinitionBuilder implements Builder {
         //var modelType = type.typeArguments[1];
         /*var innerCtx = await buildContext(
         modelType.element,
-        new ConstantReader(
+        ConstantReader(
             serializableTypeChecker.firstAnnotationOf(modelType.element)),
         buildStep,
         buildStep.resolver,
@@ -56,10 +56,10 @@ class TypeScriptDefinitionBuilder implements Builder {
         true,
       );*/
 
-        typeScriptType = ctx.modelClassNameRecase.pascalCase +
-            new ReCase(fieldName).pascalCase;
+        typeScriptType =
+            ctx.modelClassNameRecase.pascalCase + ReCase(fieldName).pascalCase;
 
-        ext.add(new CodeBuffer()
+        ext.add(CodeBuffer()
           ..writeln('interface $typeScriptType {')
           ..indent()
           ..writeln('[key: $key]: $value;')
@@ -67,7 +67,7 @@ class TypeScriptDefinitionBuilder implements Builder {
           ..writeln('}'));
       } else if (const TypeChecker.fromRuntime(List)
           .isAssignableFromType(type)) {
-        if (type.typeArguments.length == 0)
+        if (type.typeArguments.isEmpty)
           typeScriptType = 'any[]';
         else {
           var arg = await compileToTypeScriptType(
@@ -104,7 +104,7 @@ class TypeScriptDefinitionBuilder implements Builder {
 
         var ctx = await buildContext(
           type.element,
-          new ConstantReader(
+          ConstantReader(
               serializableTypeChecker.firstAnnotationOf(type.element)),
           buildStep,
           buildStep.resolver,
@@ -123,7 +123,7 @@ class TypeScriptDefinitionBuilder implements Builder {
     LibraryReader lib;
 
     try {
-      lib = new LibraryReader(await buildStep.inputLibrary);
+      lib = LibraryReader(await buildStep.inputLibrary);
     } catch (_) {
       return;
     }
@@ -164,7 +164,7 @@ class TypeScriptDefinitionBuilder implements Builder {
     if (contexts.isEmpty) return;
 
     var refs = <String>[];
-    var buf = new CodeBuffer(
+    var buf = CodeBuffer(
       trailingNewline: true,
       sourceUrl: buildStep.inputId.uri,
     );
@@ -209,11 +209,11 @@ class TypeScriptDefinitionBuilder implements Builder {
     buf
       ..outdent()
       ..writeln('}');
-    var finalBuf = new CodeBuffer();
+    var finalBuf = CodeBuffer();
     refs.forEach(finalBuf.writeln);
     buf.copyInto(finalBuf);
 
-    buildStep.writeAsString(
+    await buildStep.writeAsString(
       buildStep.inputId.changeExtension('.d.ts'),
       finalBuf.toString(),
     );

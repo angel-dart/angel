@@ -84,7 +84,8 @@ class Serializable {
   const Serializable(
       {this.serializers: const [Serializers.map, Serializers.json],
       this.autoSnakeCaseNames: true,
-      @deprecated this.autoIdAndDateFields: true,
+      // ignore: deprecated_member_use_from_same_package
+      @deprecated this.autoIdAndDateFields = true,
       this.includeAnnotations: const []});
 
   /// A list of enabled serialization modes.

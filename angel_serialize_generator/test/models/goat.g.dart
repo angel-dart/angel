@@ -17,14 +17,13 @@ class Goat implements _Goat {
   final List<int> list;
 
   Goat copyWith({int integer, List<int> list}) {
-    return new Goat(integer: integer ?? this.integer, list: list ?? this.list);
+    return Goat(integer: integer ?? this.integer, list: list ?? this.list);
   }
 
   bool operator ==(other) {
     return other is _Goat &&
         other.integer == integer &&
-        const ListEquality<int>(const DefaultEquality<int>())
-            .equals(other.list, list);
+        ListEquality<int>(DefaultEquality<int>()).equals(other.list, list);
   }
 
   @override
@@ -46,7 +45,7 @@ class Goat implements _Goat {
 // SerializerGenerator
 // **************************************************************************
 
-const GoatSerializer goatSerializer = const GoatSerializer();
+const GoatSerializer goatSerializer = GoatSerializer();
 
 class GoatEncoder extends Converter<Goat, Map> {
   const GoatEncoder();
@@ -70,7 +69,7 @@ class GoatSerializer extends Codec<Goat, Map> {
   @override
   get decoder => const GoatDecoder();
   static Goat fromMap(Map map) {
-    return new Goat(
+    return Goat(
         integer: map['integer'] as int ?? 34,
         list: map['list'] is Iterable
             ? (map['list'] as Iterable).cast<int>().toList()

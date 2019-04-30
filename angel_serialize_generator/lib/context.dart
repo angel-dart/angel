@@ -54,7 +54,7 @@ class BuildContext {
       this.sourceFilename,
       this.autoSnakeCaseNames,
       this.autoIdAndDateFields,
-      this.includeAnnotations: const <DartObject>[]});
+      this.includeAnnotations = const <DartObject>[]});
 
   /// The name of the generated class.
   String get modelClassName => originalClassName.startsWith('_')
@@ -63,10 +63,10 @@ class BuildContext {
 
   /// A [ReCase] instance reflecting on the [modelClassName].
   ReCase get modelClassNameRecase =>
-      _modelClassNameRecase ??= new ReCase(modelClassName);
+      _modelClassNameRecase ??= ReCase(modelClassName);
 
   TypeReference get modelClassType =>
-      _modelClassType ??= new TypeReference((b) => b.symbol = modelClassName);
+      _modelClassType ??= TypeReference((b) => b.symbol = modelClassName);
 
   /// The [FieldElement] pointing to the primary key.
   FieldElement get primaryKeyField =>

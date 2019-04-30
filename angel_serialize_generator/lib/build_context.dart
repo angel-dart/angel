@@ -13,28 +13,28 @@ import 'package:source_gen/source_gen.dart';
 import 'context.dart';
 
 // ignore: deprecated_member_use
-const TypeChecker aliasTypeChecker = const TypeChecker.fromRuntime(Alias);
+const TypeChecker aliasTypeChecker = TypeChecker.fromRuntime(Alias);
 
-const TypeChecker dateTimeTypeChecker = const TypeChecker.fromRuntime(DateTime);
+const TypeChecker dateTimeTypeChecker = TypeChecker.fromRuntime(DateTime);
 
 // ignore: deprecated_member_use
-const TypeChecker excludeTypeChecker = const TypeChecker.fromRuntime(Exclude);
+const TypeChecker excludeTypeChecker = TypeChecker.fromRuntime(Exclude);
 
 const TypeChecker serializableFieldTypeChecker =
-    const TypeChecker.fromRuntime(SerializableField);
+    TypeChecker.fromRuntime(SerializableField);
 
 const TypeChecker serializableTypeChecker =
-    const TypeChecker.fromRuntime(Serializable);
+    TypeChecker.fromRuntime(Serializable);
 
 const TypeChecker generatedSerializableTypeChecker =
-    const TypeChecker.fromRuntime(GeneratedSerializable);
+    TypeChecker.fromRuntime(GeneratedSerializable);
 
 final Map<String, BuildContext> _cache = {};
 
 /// Create a [BuildContext].
 Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
     BuildStep buildStep, Resolver resolver, bool autoSnakeCaseNames,
-    {bool heedExclude: true}) async {
+    {bool heedExclude = true}) async {
   var id = clazz.location.components.join('-');
   if (_cache.containsKey(id)) {
     return _cache[id];
@@ -44,7 +44,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
   autoSnakeCaseNames =
       annotation.peek('autoSnakeCaseNames')?.boolValue ?? autoSnakeCaseNames;
 
-  var ctx = new BuildContext(
+  var ctx = BuildContext(
     annotation,
     clazz,
     originalClassName: clazz.name,
@@ -80,7 +80,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
         if (sField.alias != null) {
           ctx.aliases[field.name] = sField.alias;
         } else if (autoSnakeCaseNames != false) {
-          ctx.aliases[field.name] = new ReCase(field.name).snakeCase;
+          ctx.aliases[field.name] = ReCase(field.name).snakeCase;
         }
 
         if (sField.isNullable == false) {
@@ -91,7 +91,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
 
         if (sField.exclude) {
           // ignore: deprecated_member_use
-          ctx.excluded[field.name] = new Exclude(
+          ctx.excluded[field.name] = Exclude(
             canSerialize: sField.canSerialize,
             canDeserialize: sField.canDeserialize,
           );
@@ -123,11 +123,11 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
         var excludeAnnotation = excludeTypeChecker.firstAnnotationOf(el);
 
         if (excludeAnnotation != null) {
-          var cr = new ConstantReader(excludeAnnotation);
+          var cr = ConstantReader(excludeAnnotation);
           foundNone = false;
 
           // ignore: deprecated_member_use
-          ctx.excluded[field.name] = new Exclude(
+          ctx.excluded[field.name] = Exclude(
             canSerialize: cr.read('canSerialize').boolValue,
             canDeserialize: cr.read('canDeserialize').boolValue,
           );
@@ -138,7 +138,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
             // ignore: deprecated_member_use
             const TypeChecker.fromRuntime(DefaultValue).firstAnnotationOf(el);
         if (defAnn != null) {
-          var rev = new ConstantReader(defAnn).revive().positionalArguments[0];
+          var rev = ConstantReader(defAnn).revive().positionalArguments[0];
           ctx.defaults[field.name] = rev;
           foundNone = false;
         }
@@ -150,14 +150,14 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
 
         if (aliasAnn != null) {
           // ignore: deprecated_member_use
-          alias = new Alias(aliasAnn.getField('name').toStringValue());
+          alias = Alias(aliasAnn.getField('name').toStringValue());
           foundNone = false;
         }
 
         if (alias?.name?.isNotEmpty == true) {
           ctx.aliases[field.name] = alias.name;
         } else if (autoSnakeCaseNames != false) {
-          ctx.aliases[field.name] = new ReCase(field.name).snakeCase;
+          ctx.aliases[field.name] = ReCase(field.name).snakeCase;
         }
 
         // Check for @required
@@ -167,7 +167,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
         if (required != null) {
           log.warning(
               'Using @required on fields (like ${clazz.name}.${field.name}) is now deprecated; use @SerializableField(isNullable: false) instead.');
-          var cr = new ConstantReader(required);
+          var cr = ConstantReader(required);
           var reason = cr.peek('reason')?.stringValue ??
               "Missing required field '${ctx.resolveFieldName(field.name)}' on ${ctx.modelClassName}.";
           ctx.requiredFields[field.name] = reason;
@@ -198,8 +198,7 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
 
   if (const TypeChecker.fromRuntime(Model).isAssignableFromType(clazz.type)) {
     if (!fieldNames.contains('id')) {
-      var idField =
-          new ShimFieldImpl('id', lib.context.typeProvider.stringType);
+      var idField = ShimFieldImpl('id', lib.context.typeProvider.stringType);
       ctx.fields.insert(0, idField);
       ctx.shimmed['id'] = true;
     }
@@ -214,8 +213,8 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
           dateTime = dt.type;
         }
 
-        var field = new ShimFieldImpl(key, dateTime);
-        ctx.aliases[key] = new ReCase(key).snakeCase;
+        var field = ShimFieldImpl(key, dateTime);
+        ctx.aliases[key] = ReCase(key).snakeCase;
         ctx.fields.add(field);
         ctx.shimmed[key] = true;
       }

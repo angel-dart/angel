@@ -11,7 +11,6 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:code_buffer/code_buffer.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
@@ -26,22 +25,21 @@ part 'serialize.dart';
 part 'typescript.dart';
 
 Builder jsonModelBuilder(_) {
-  return new SharedPartBuilder(
-      const [const JsonModelGenerator()], 'angel_serialize');
+  return SharedPartBuilder(const [JsonModelGenerator()], 'angel_serialize');
 }
 
 Builder serializerBuilder(_) {
-  return new SharedPartBuilder(
-      const [const SerializerGenerator()], 'angel_serialize_serializer');
+  return SharedPartBuilder(
+      const [SerializerGenerator()], 'angel_serialize_serializer');
 }
 
 Builder typescriptDefinitionBuilder(_) {
-  return const TypeScriptDefinitionBuilder();
+  return TypeScriptDefinitionBuilder();
 }
 
 /// Converts a [DartType] to a [TypeReference].
 TypeReference convertTypeReference(DartType t) {
-  return new TypeReference((b) {
+  return TypeReference((b) {
     b..symbol = t.name;
 
     if (t is InterfaceType) {
@@ -94,9 +92,7 @@ String dartObjectToString(DartObject v) {
         '}';
   }
   if (v.toStringValue() != null) {
-    return literalString(v.toStringValue())
-        .accept(new DartEmitter())
-        .toString();
+    return literalString(v.toStringValue()).accept(DartEmitter()).toString();
   }
   if (type is InterfaceType && type.element.isEnum) {
     // Find the index of the enum, then find the member.
@@ -110,7 +106,7 @@ String dartObjectToString(DartObject v) {
     }
   }
 
-  throw new ArgumentError(v.toString());
+  throw ArgumentError(v.toString());
 }
 
 /// Determines if a type supports `package:angel_serialize`.

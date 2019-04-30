@@ -4,18 +4,18 @@ import 'models/book.dart';
 const String deathlyHallowsIsbn = '0-545-01022-5';
 
 main() {
-  var deathlyHallows = new Book(
+  var deathlyHallows = Book(
       id: '0',
       author: 'J.K. Rowling',
       title: 'Harry Potter and the Deathly Hallows',
       description: 'The 7th book.',
       pageCount: 759,
       notModels: [1.0, 3.0],
-      updatedAt: new DateTime.now());
+      updatedAt: DateTime.now());
   var serializedDeathlyHallows = deathlyHallows.toJson();
   print('Deathly Hallows: $deathlyHallows');
 
-  var jkRowling = new Author(
+  var jkRowling = Author(
       id: '1',
       name: 'J.K. Rowling',
       age: 51,
@@ -25,7 +25,7 @@ main() {
   var deathlyHallowsMap = bookSerializer.encode(deathlyHallows);
   print('J.K. Rowling: $jkRowling');
 
-  var library = new Library(collection: {deathlyHallowsIsbn: deathlyHallows});
+  var library = Library(collection: {deathlyHallowsIsbn: deathlyHallows});
   var serializedLibrary = LibrarySerializer.toMap(library);
   print('Library: $library');
 
@@ -55,7 +55,7 @@ main() {
     });
 
     test('heeds canDeserialize', () {
-      var map = new Map.from(serializedJkRowling)..['obscured'] = 'foo';
+      var map = Map.from(serializedJkRowling)..['obscured'] = 'foo';
       var author = authorSerializer.decode(map);
       expect(author.obscured, 'foo');
     });
@@ -99,7 +99,7 @@ main() {
   });
 
   test('required fields toMap', () {
-    var author = new Author(name: null, age: 24);
+    var author = Author(name: null, age: 24);
     expect(() => author.toJson(), throwsFormatException);
   });
 

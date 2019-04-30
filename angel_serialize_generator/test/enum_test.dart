@@ -3,17 +3,17 @@ import 'dart:typed_data';
 import 'package:test/test.dart';
 import 'models/with_enum.dart';
 
-const WithEnum aWithEnum = const WithEnum(type: WithEnumType.a);
-const WithEnum aWithEnum2 = const WithEnum(type: WithEnumType.a);
+const WithEnum aWithEnum = WithEnum(type: WithEnumType.a);
+const WithEnum aWithEnum2 = WithEnum(type: WithEnumType.a);
 
 void main() {
   test('enum serializes to int', () {
-    var w = new WithEnum(type: WithEnumType.b).toJson();
+    var w = WithEnum(type: WithEnumType.b).toJson();
     expect(w[WithEnumFields.type], WithEnumType.values.indexOf(WithEnumType.b));
   });
 
   test('enum serializes null if null', () {
-    var w = new WithEnum(type: null).toJson();
+    var w = WithEnum(type: null).toJson();
     expect(w[WithEnumFields.type], null);
   });
 
@@ -38,10 +38,9 @@ void main() {
   });
 
   test('equality', () {
+    expect(WithEnum(type: WithEnumType.a), WithEnum(type: WithEnumType.a));
     expect(
-        new WithEnum(type: WithEnumType.a), new WithEnum(type: WithEnumType.a));
-    expect(new WithEnum(type: WithEnumType.a),
-        isNot(new WithEnum(type: WithEnumType.b)));
+        WithEnum(type: WithEnumType.a), isNot(WithEnum(type: WithEnumType.b)));
   });
 
   test('const', () {
@@ -49,9 +48,8 @@ void main() {
   });
 
   test('uint8list', () {
-    var ee = new WithEnum(
-        imageBytes:
-            new Uint8List.fromList(new List<int>.generate(1000, (i) => i)));
+    var ee = WithEnum(
+        imageBytes: Uint8List.fromList(List<int>.generate(1000, (i) => i)));
     var eeMap = ee.toJson();
     print(ee);
     var ef = WithEnumSerializer.fromMap(eeMap);
