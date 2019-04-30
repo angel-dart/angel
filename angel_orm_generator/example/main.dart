@@ -1,11 +1,10 @@
 import 'dart:async';
-
+import 'package:angel_migration/angel_migration.dart';
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_orm/src/query.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 part 'main.g.dart';
-part 'main.serializer.g.dart';
 
 main() async {
   var query = new EmployeeQuery()
@@ -46,67 +45,8 @@ abstract class _Employee extends Model {
 
   String get lastName;
 
+  @Column(indexType: IndexType.unique)
+  String uniqueId;
+
   double get salary;
-}
-
-class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
-  @override
-  final QueryValues values = new MapQueryValues();
-
-  EmployeeQueryWhere _where;
-
-  EmployeeQuery() {
-    _where = new EmployeeQueryWhere(this);
-  }
-
-  @override
-  EmployeeQueryWhere get where => _where;
-
-  @override
-  String get tableName => 'employees';
-
-  @override
-  List<String> get fields =>
-      ['id', 'first_name', 'last_name', 'salary', 'created_at', 'updated_at'];
-
-  @override
-  EmployeeQueryWhere newWhereClause() => new EmployeeQueryWhere(this);
-
-  @override
-  Employee deserialize(List row) {
-    return new Employee(
-        id: row[0].toString(),
-        firstName: row[1] as String,
-        lastName: row[2] as String,
-        salary: row[3] as double,
-        createdAt: row[4] as DateTime,
-        updatedAt: row[5] as DateTime);
-  }
-}
-
-class EmployeeQueryWhere extends QueryWhere {
-  EmployeeQueryWhere(EmployeeQuery query)
-      : id = new NumericSqlExpressionBuilder(query, 'id'),
-        firstName = new StringSqlExpressionBuilder(query, 'first_name'),
-        lastName = new StringSqlExpressionBuilder(query, 'last_name'),
-        salary = new NumericSqlExpressionBuilder(query, 'salary'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
-
-  @override
-  Iterable<SqlExpressionBuilder> get expressionBuilders {
-    return [id, firstName, lastName, salary, createdAt, updatedAt];
-  }
-
-  final NumericSqlExpressionBuilder<int> id;
-
-  final StringSqlExpressionBuilder firstName;
-
-  final StringSqlExpressionBuilder lastName;
-
-  final NumericSqlExpressionBuilder<double> salary;
-
-  final DateTimeSqlExpressionBuilder createdAt;
-
-  final DateTimeSqlExpressionBuilder updatedAt;
 }

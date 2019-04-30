@@ -27,11 +27,15 @@ bool isSpecialId(OrmBuildContext ctx, FieldElement field) {
               .isAssignableFromType(ctx.buildContext.clazz.type));
 }
 
+Element _findElement(FieldElement field) {
+  return (field.setter == null ? field.getter : field) ?? field;
+}
+
 FieldElement findPrimaryFieldInList(
     OrmBuildContext ctx, Iterable<FieldElement> fields) {
   for (var field_ in fields) {
     var field = field_ is RelationFieldImpl ? field_.originalField : field_;
-    var element = field.getter ?? field;
+    var element = _findElement(field);
     // print(
     //     'Searching in ${ctx.buildContext.originalClassName}=>${field?.name} (${field.runtimeType})');
     // Check for column annotation...
@@ -95,8 +99,9 @@ Future<OrmBuildContext> buildOrmContext(
   for (var field in buildCtx.fields) {
     // Check for column annotation...
     Column column;
-    var element = field.getter ?? field;
+    var element = _findElement(field);
     var columnAnnotation = columnTypeChecker.firstAnnotationOf(element);
+    // print('${element.name} => $columnAnnotation');
 
     if (columnAnnotation != null) {
       column = reviveColumn(new ConstantReader(columnAnnotation));
@@ -128,7 +133,7 @@ Future<OrmBuildContext> buildOrmContext(
     }
 
     // Try to find a relationship
-    var el = field.setter == null ? field.getter : field;
+    var el = _findElement(field);
     el ??= field;
     var ann = relationshipTypeChecker.firstAnnotationOf(el);
 
@@ -296,11 +301,13 @@ ColumnType inferColumnType(DartType type) {
 Column reviveColumn(ConstantReader cr) {
   ColumnType columnType;
 
+  var indexTypeObj = cr.peek('indexType')?.objectValue;
+  indexTypeObj ??= cr.revive().namedArguments['indexType'];
+
   var columnObj =
       cr.peek('type')?.objectValue?.getField('name')?.toStringValue();
   var indexType = IndexType.values[
-      cr.peek('indexType')?.objectValue?.getField('index')?.toIntValue() ??
-          IndexType.none.index];
+      indexTypeObj?.getField('index')?.toIntValue() ?? IndexType.none.index];
 
   if (const TypeChecker.fromRuntime(PrimaryKey)
       .isAssignableFromType(cr.objectValue.type)) {

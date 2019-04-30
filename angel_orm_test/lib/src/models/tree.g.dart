@@ -11,7 +11,7 @@ class TreeMigration extends Migration {
   up(Schema schema) {
     schema.create('trees', (table) {
       table.serial('id')..primaryKey();
-      table.integer('rings');
+      table.declare('rings', ColumnType('smallint'));
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
     });

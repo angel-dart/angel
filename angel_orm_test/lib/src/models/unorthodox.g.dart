@@ -56,7 +56,7 @@ class NumbaMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('numbas', (table) {
-      table.integer('i');
+      table.declare('i', ColumnType('serial'))..primaryKey();
       table.integer('parent');
     });
   }

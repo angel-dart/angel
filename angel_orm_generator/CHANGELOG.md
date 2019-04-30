@@ -1,3 +1,6 @@
+# 2.0.4
+* Fix `reviveColumn` and element finding to properly detect all annotations now.
+
 # 2.0.3
 * Remove `targets` in `build.yaml`.
 
