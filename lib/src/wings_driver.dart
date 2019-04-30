@@ -31,14 +31,17 @@ class AngelWings extends Driver<WingsClientSocket, int, WingsSocket,
   }
 
   @override
-  Future<WingsRequestContext> createRequestContext(WingsClientSocket request, int response) {
+  Future<WingsRequestContext> createRequestContext(
+      WingsClientSocket request, int response) {
     return WingsRequestContext.from(app, request);
   }
 
   @override
-  Future<WingsResponseContext> createResponseContext(WingsClientSocket request, int response,
+  Future<WingsResponseContext> createResponseContext(
+      WingsClientSocket request, int response,
       [WingsRequestContext correspondingRequest]) {
-    return Future.value(WingsResponseContext(request.fileDescriptor, correspondingRequest));
+    return Future.value(WingsResponseContext(
+        app, request.fileDescriptor, correspondingRequest));
   }
 
   @override
@@ -68,8 +71,9 @@ class AngelWings extends Driver<WingsClientSocket, int, WingsSocket,
   }
 
   @override
-  // TODO: implement uri
-  Uri get uri => null;
+  Uri get uri {
+    return Uri(scheme: 'http', host: server.address.address, port: server.port);
+  }
 
   @override
   void writeStringToResponse(int response, String value) {

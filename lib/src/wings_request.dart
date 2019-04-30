@@ -28,6 +28,11 @@ class WingsRequestContext extends RequestContext<WingsClientSocket> {
   WingsRequestContext._(this.app, this.rawRequest, this._recv)
       : container = app.container.createChild();
 
+  Future<void> close() async {
+    await _body.close();
+    _recv.close();
+  }
+
   static const int DELETE = 0,
       GET = 1,
       HEAD = 2,
@@ -106,18 +111,19 @@ class WingsRequestContext extends RequestContext<WingsClientSocket> {
         if (e == 0) {
           state = _ParseState.method;
         } else {
-          lastHeader = e as String;
+          lastHeader = e as String; //Uri.decodeFull(e as String);
           state = _ParseState.headerValue;
         }
       } else if (state == _ParseState.headerValue) {
         if (e == 0) {
           state = _ParseState.method;
         } else {
+          var value = e as String; //Uri.decodeFull(e as String);
           if (lastHeader != null) {
             if (lastHeader == 'cookie') {
-              rq.__cookies.add(Cookie.fromSetCookieValue(e as String));
+              rq.__cookies.add(Cookie.fromSetCookieValue(value));
             } else {
-              rq._headers.add(lastHeader, e as String);
+              rq._headers.add(lastHeader, value);
             }
             lastHeader = null;
           }

@@ -8,4 +8,5 @@ dependencies:
 dev_dependencies:
   angel_static: ^2.0.0
   build_runner: ^1.0.0
+  io: ^0.3.2
   pedantic: ^1.0.0

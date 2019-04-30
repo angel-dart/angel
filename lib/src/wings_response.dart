@@ -9,6 +9,9 @@ import 'wings_socket.dart';
 
 class WingsResponseContext extends ResponseContext<int> {
   @override
+  final Angel app;
+
+  @override
   final WingsRequestContext correspondingRequest;
 
   LockableBytesBuilder _buffer;
@@ -18,7 +21,7 @@ class WingsResponseContext extends ResponseContext<int> {
 
   bool _isDetached = false, _isClosed = false, _streamInitialized = false;
 
-  WingsResponseContext(this.rawResponse, [this.correspondingRequest]);
+  WingsResponseContext(this.app, this.rawResponse, [this.correspondingRequest]);
 
   Iterable<String> __allowedEncodings;
 
@@ -78,8 +81,9 @@ class WingsResponseContext extends ResponseContext<int> {
       }
 
       void _wh(String k, String v) {
-        var headerLine =
-            utf8.encode('$k: ${Uri.encodeComponent(v)}').followedBy([$cr, $lf]);
+        // var vv =Uri.encodeComponent(v);
+        var vv = v;
+        var headerLine = utf8.encode('$k: $vv').followedBy([$cr, $lf]);
         writeToNativeSocket(
             rawResponse, Uint8List.fromList(headerLine.toList()));
       }
@@ -127,8 +131,9 @@ class WingsResponseContext extends ResponseContext<int> {
     }
 
     return output.forEach((buf) {
-      writeToNativeSocket(
-          rawResponse, buf is Uint8List ? buf : Uint8List.fromList(buf));
+      if (!_isClosed)
+        writeToNativeSocket(
+            rawResponse, buf is Uint8List ? buf : Uint8List.fromList(buf));
     });
   }
 
@@ -168,27 +173,21 @@ class WingsResponseContext extends ResponseContext<int> {
   }
 
   @override
-  Future close() {
+  Future close() async {
     if (!_isDetached) {
       if (!_isClosed) {
+        _isClosed = true;
         if (!isBuffered) {
-          try {
-            _openStream();
-            closeNativeSocketDescriptor(rawResponse);
-          } catch (_) {
-            // This only seems to occur on `MockHttpRequest`, but
-            // this try/catch prevents a crash.
-          }
+          _openStream();
+          closeNativeSocketDescriptor(rawResponse);
         } else {
           _buffer.lock();
         }
-
-        _isClosed = true;
       }
 
-      super.close();
+      await correspondingRequest?.close();
+      await super.close();
     }
-    return new Future.value();
   }
 
   @override

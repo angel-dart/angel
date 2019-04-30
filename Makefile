@@ -25,7 +25,7 @@ libangel_wings.dylib: lib/src/libangel_wings.dylib
 lib/src/libangel_wings.dylib: $(objects)
 
 %.dylib: $(objects)
-	$(CXX) -shared -undefined dynamic_lookup -o $@ $^
+	$(CXX) -shared -Wl,-undefined -Wl,dynamic_lookup -o $@ $^
 
 %.so: $(objects)
 	$(CXX) -shared -o $@ $^

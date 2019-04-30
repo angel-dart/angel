@@ -44,6 +44,7 @@ class WingsClientSocket {
 class WingsSocket extends Stream<WingsClientSocket> {
   final StreamController<WingsClientSocket> _ctrl = StreamController();
   SendPort _acceptor;
+  InternetAddress _address;
   final int _pointer;
   final RawReceivePort _recv;
   bool _open = true;
@@ -91,12 +92,14 @@ class WingsSocket extends Stream<WingsClientSocket> {
             addr.address, port, shared, backlog, v6Only, recv.sendPort);
       }
 
-      return WingsSocket._(ptr, recv);
+      return WingsSocket._(ptr, recv).._address = addr;
     } catch (e) {
       recv.close();
       rethrow;
     }
   }
+
+  InternetAddress get address => _address;
 
   int get port => _port ??= getWingsServerSocketPort(_pointer);
 
