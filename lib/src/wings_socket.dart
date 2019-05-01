@@ -20,6 +20,9 @@ int bindWingsIPv6ServerSocket(
     bool v6Only,
     SendPort sendPort) native 'Dart_WingsSocket_bindIPV6';
 
+String getWingsServerSocketAddress(int pointer)
+    native 'Dart_WingsSocket_getAddress';
+
 int getWingsServerSocketPort(int pointer) native 'Dart_WingsSocket_getPort';
 
 void writeToNativeSocket(int fd, Uint8List data)
@@ -92,14 +95,15 @@ class WingsSocket extends Stream<WingsClientSocket> {
             addr.address, port, shared, backlog, v6Only, recv.sendPort);
       }
 
-      return WingsSocket._(ptr, recv).._address = addr;
+      return WingsSocket._(ptr, recv); //.._address = addr;
     } catch (e) {
       recv.close();
       rethrow;
     }
   }
 
-  InternetAddress get address => _address;
+  InternetAddress get address =>
+      _address ??= InternetAddress(getWingsServerSocketAddress(_pointer));
 
   int get port => _port ??= getWingsServerSocketPort(_pointer);
 

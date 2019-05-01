@@ -39,6 +39,8 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc, bool *auto_setup_sco
     result = Dart_WingsSocket_bindIPv4;
   if (strcmp("Dart_WingsSocket_bindIPv6", cname) == 0)
     result = Dart_WingsSocket_bindIPv6;
+  if (strcmp("Dart_WingsSocket_getAddress", cname) == 0)
+    result = Dart_WingsSocket_getAddress;
   if (strcmp("Dart_WingsSocket_getPort", cname) == 0)
     result = Dart_WingsSocket_getPort;
   if (strcmp("Dart_WingsSocket_write", cname) == 0)

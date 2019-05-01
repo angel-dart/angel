@@ -1,3 +1,4 @@
+#include <vector>
 #include "angel_wings.h"
 #include "wings_socket.h"
 using namespace wings;
@@ -10,20 +11,22 @@ WingsSocket *wingsBindNewSocket(Dart_NativeArguments arguments, const WingsSocke
 
 void wingsReturnBound(Dart_NativeArguments arguments, WingsSocket *socket);
 
-void Dart_WingsSocket_bindIPv4(Dart_NativeArguments arguments)
+void Dart_WingsSocket_bind(sa_family_t af, Dart_NativeArguments arguments)
 {
     WingsSocketInfo info;
     getWingsSocketInfo(arguments, &info);
-    WingsSocket *socket = wingsFindSocket(arguments, info, AF_INET);
+    WingsSocket *socket = wingsFindSocket(arguments, info, af);
     wingsReturnBound(arguments, socket);
+}
+
+void Dart_WingsSocket_bindIPv4(Dart_NativeArguments arguments)
+{
+    Dart_WingsSocket_bind(AF_INET, arguments);
 }
 
 void Dart_WingsSocket_bindIPv6(Dart_NativeArguments arguments)
 {
-    WingsSocketInfo info;
-    getWingsSocketInfo(arguments, &info);
-    WingsSocket *socket = wingsFindSocket(arguments, info, AF_INET6);
-    wingsReturnBound(arguments, socket);
+    Dart_WingsSocket_bind(AF_INET6, arguments);
 }
 
 void wingsReturnBound(Dart_NativeArguments arguments, WingsSocket *socket)
@@ -34,18 +37,6 @@ void wingsReturnBound(Dart_NativeArguments arguments, WingsSocket *socket)
     auto ptr = (uint64_t)socket;
     Dart_Handle ptrHandle = Dart_NewIntegerFromUint64(ptr);
     Dart_SetReturnValue(arguments, ptrHandle);
-}
-
-void wingsThrowStateError(const char *msg)
-{
-    Dart_Handle msgHandle = Dart_NewStringFromCString(msg);
-    Dart_Handle emptyHandle = Dart_NewStringFromCString("");
-    Dart_Handle stateErrorHandle = Dart_NewStringFromCString("StateError");
-    Dart_Handle dartCoreHandle = Dart_NewStringFromCString("dart:core");
-    Dart_Handle dartCore = Dart_LookupLibrary(dartCoreHandle);
-    Dart_Handle stateError = Dart_GetType(dartCore, stateErrorHandle, 0, nullptr);
-    Dart_Handle errHandle = Dart_New(stateError, emptyHandle, 1, &msgHandle);
-    Dart_ThrowException(errHandle);
 }
 
 WingsSocket *wingsFindSocket(Dart_NativeArguments arguments, const WingsSocketInfo &info, int af)
@@ -76,7 +67,7 @@ WingsSocket *wingsBindNewSocket(Dart_NativeArguments arguments, const WingsSocke
 
     if (sock < 0)
     {
-        wingsThrowStateError("Failed to create socket.");
+        wingsThrowError("Failed to create socket.");
         return nullptr;
     }
 
@@ -85,7 +76,7 @@ WingsSocket *wingsBindNewSocket(Dart_NativeArguments arguments, const WingsSocke
 
     if (ret < 0)
     {
-        wingsThrowStateError("Cannot reuse address for socket.");
+        wingsThrowError("Cannot reuse address for socket.");
         return nullptr;
     }
 
@@ -116,23 +107,23 @@ WingsSocket *wingsBindNewSocket(Dart_NativeArguments arguments, const WingsSocke
 
     if (ret < 0)
     {
-        wingsThrowStateError("Failed to bind socket.");
+        wingsThrowError("Failed to bind socket.");
         return nullptr;
     }
 
     if (listen(sock, SOMAXCONN) < 0)
     {
-        wingsThrowStateError("Failed to set SOMAXCONN on bound socket.");
+        wingsThrowError("Failed to set SOMAXCONN on bound socket.");
         return nullptr;
     }
 
     if (listen(sock, (int)info.backlog) < 0)
     {
-        wingsThrowStateError("Failed to set backlog on bound socket.");
+        wingsThrowError("Failed to set backlog on bound socket.");
         return nullptr;
     }
 
-    auto *out = new WingsSocket(sock, info);
+    auto *out = new WingsSocket(af, sock, info);
     globalSocketList.push_back(out);
     return out;
 }
@@ -151,4 +142,25 @@ void getWingsSocketInfo(Dart_NativeArguments arguments, WingsSocketInfo *info)
     HandleError(Dart_BooleanValue(sharedHandle, &info->shared));
     HandleError(Dart_IntegerToUint64(backlogHandle, &info->backlog));
     HandleError(Dart_BooleanValue(v6OnlyHandle, &info->v6Only));
+}
+
+void wingsThrowError(const char *msg, const char *lib, const char *name, int n)
+{
+    Dart_Handle msgHandle = Dart_NewStringFromCString(msg);
+    Dart_Handle emptyHandle = Dart_NewStringFromCString("");
+    Dart_Handle stateErrorHandle = Dart_NewStringFromCString(name);
+    Dart_Handle dartCoreHandle = Dart_NewStringFromCString(lib);
+    Dart_Handle dartCore = Dart_LookupLibrary(dartCoreHandle);
+    Dart_Handle stateError = Dart_GetType(dartCore, stateErrorHandle, 0, nullptr);
+
+    std::vector<Dart_Handle> args;
+    args.push_back(msgHandle);
+
+    if (n > -1)
+    {
+        args.push_back(Dart_NewInteger(n));
+    }
+
+    Dart_Handle errHandle = Dart_New(stateError, emptyHandle, args.size(), args.data());
+    Dart_ThrowException(errHandle);
 }

@@ -11,7 +11,8 @@ bool WingsSocketInfo::operator==(const WingsSocketInfo &other) const
            port == other.port;
 }
 
-WingsSocket::WingsSocket(int sockfd, const WingsSocketInfo &info) : sockfd(sockfd), info(info)
+WingsSocket::WingsSocket(sa_family_t family, int sockfd, const WingsSocketInfo &info)
+    : sockfd(sockfd), info(info), family(family)
 {
     refCount = 0;
     workerThread = nullptr;
@@ -26,6 +27,16 @@ void WingsSocket::incrRef(Dart_Port port)
 const WingsSocketInfo &WingsSocket::getInfo() const
 {
     return info;
+}
+
+int WingsSocket::getFD() const
+{
+    return sockfd;
+}
+
+sa_family_t WingsSocket::getFamily() const
+{
+    return family;
 }
 
 void WingsSocket::start(Dart_NativeArguments arguments)
@@ -71,12 +82,12 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
 
             if (addr.sa_family == AF_INET6)
             {
-                auto as6 = (sockaddr_in6*) &addr;
+                auto as6 = (sockaddr_in6 *)&addr;
                 inet_ntop(addr.sa_family, &(as6->sin6_addr), addrBuf, len);
             }
             else
             {
-                auto as4 = (sockaddr_in*) &addr;
+                auto as4 = (sockaddr_in *)&addr;
                 inet_ntop(AF_INET, &(as4->sin_addr), addrBuf, len);
             }
 

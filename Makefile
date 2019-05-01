@@ -14,6 +14,13 @@ clean:
 	find . -type f -name '*.obj' -delete
 	find . -type f -name '*.so' -delete
 	find . -type f -name '*.dylib' -delete
+	find . -type f -name '*.dill' -delete
+
+%-run: % example/main.dart
+	dart example/main.dill
+
+example/main.dill: ./**/*.dart
+	dart --snapshot="$@" example/main.dart
 
 mac: libangel_wings.dylib
 

@@ -28,16 +28,19 @@ struct WingsSocketInfo
 class WingsSocket
 {
 public:
-  explicit WingsSocket(int sockfd, const WingsSocketInfo &info);
+  WingsSocket(sa_family_t family, int sockfd, const WingsSocketInfo &info);
   void incrRef(Dart_Port port);
   const WingsSocketInfo &getInfo() const;
   void start(Dart_NativeArguments arguments);
+  int getFD() const;
+  sa_family_t getFamily() const;
 
 private:
   static void threadCallback(Dart_Port dest_port_id, Dart_CObject *message);
   WingsSocketInfo info;
   int sockfd;
   int refCount;
+  sa_family_t family;
   std::unique_ptr<std::thread> workerThread;
   std::vector<Dart_Port> sendPorts;
 };
