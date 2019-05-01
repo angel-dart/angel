@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_websocket/base_websocket_client.dart';
@@ -23,7 +25,7 @@ class TodoService extends MapService {
 
 testIndex(BaseWebSocketClient client) async {
   var todoService = client.service('api/todos');
-  todoService.index();
+  scheduleMicrotask(() => todoService.index());
 
   var indexed = await todoService.onIndexed.first;
   print('indexed: $indexed');

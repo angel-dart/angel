@@ -46,7 +46,7 @@ main(List<String> args) async {
     }
 
     var http2 = new AngelHttp2(app, ctx);
-    http2.onHttp1.forEach(http.handleRequest);
+    http2.onHttp1.listen(http.handleRequest);
     await http2.startServer('127.0.0.1', 3000);
     print('Listening at ${http2.uri}');
   } else {

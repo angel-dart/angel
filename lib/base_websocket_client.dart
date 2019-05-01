@@ -95,13 +95,15 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
   @override
   Future close() async {
     on._close();
-    await _socket.sink.close(status.goingAway);
-    _onData.close();
-    _onAllEvents.close();
-    _onAuthenticated.close();
-    _onError.close();
-    _onServiceEvent.close();
-    _onWebSocketChannelException.close();
+    scheduleMicrotask(() async {
+      await _socket.sink.close(status.goingAway);
+      await _onData.close();
+      await _onAllEvents.close();
+      await _onAuthenticated.close();
+      await _onError.close();
+      await _onServiceEvent.close();
+      await _onWebSocketChannelException.close();
+    });
   }
 
   /// Connects the WebSocket. [timeout] is optional.
@@ -119,22 +121,24 @@ abstract class BaseWebSocketClient extends BaseAngelClient {
         }
       });
 
-      getConnectedWebSocket().then((socket) {
-        if (!c.isCompleted) {
-          if (timer.isActive) timer.cancel();
+      scheduleMicrotask(() {
+        return getConnectedWebSocket().then((socket) {
+          if (!c.isCompleted) {
+            if (timer.isActive) timer.cancel();
 
-          while (_queue.isNotEmpty) {
-            var action = _queue.removeFirst();
-            socket.sink.add(serialize(action));
+            while (_queue.isNotEmpty) {
+              var action = _queue.removeFirst();
+              socket.sink.add(serialize(action));
+            }
+
+            c.complete(socket);
           }
-
-          c.complete(socket);
-        }
-      }).catchError((e, StackTrace st) {
-        if (!c.isCompleted) {
-          if (timer.isActive) timer.cancel();
-          c.completeError(e, st);
-        }
+        }).catchError((e, StackTrace st) {
+          if (!c.isCompleted) {
+            if (timer.isActive) timer.cancel();
+            c.completeError(e, st);
+          }
+        });
       });
 
       return await c.future.then((socket) {
@@ -293,13 +297,13 @@ class WebSocketsService<Id, Data> extends Service<Id, Data> {
   }
 
   Future close() async {
-    _onAllEvents.close();
-    _onCreated.close();
-    _onIndexed.close();
-    _onModified.close();
-    _onRead.close();
-    _onRemoved.close();
-    _onUpdated.close();
+    await _onAllEvents.close();
+    await _onCreated.close();
+    await _onIndexed.close();
+    await _onModified.close();
+    await _onRead.close();
+    await _onRemoved.close();
+    await _onUpdated.close();
   }
 
   /// Serializes an [action] to be sent over a WebSocket.

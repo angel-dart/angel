@@ -40,12 +40,14 @@ class WebSocketContext {
 
   /// Closes the underlying [StreamChannel].
   Future close() async {
-    await channel.sink.close();
-    _onAction.close();
-    _onAuthenticated.close();
-    _onData.close();
-    _onClose.add(null);
-    _onClose.close();
+    scheduleMicrotask(() async {
+      await channel.sink.close();
+      await _onAction.close();
+      await _onAuthenticated.close();
+      await _onData.close();
+      await _onClose.add(null);
+      await _onClose.close();
+    });
   }
 
   /// Sends an arbitrary [WebSocketEvent];

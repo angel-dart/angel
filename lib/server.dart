@@ -387,7 +387,7 @@ class AngelWebSocket {
       var ws = await WebSocketTransformer.upgrade(req.rawRequest);
       var channel = new IOWebSocketChannel(ws);
       var socket = new WebSocketContext(channel, req, res);
-      handleClient(socket);
+      scheduleMicrotask(() => handleClient(socket));
       return false;
     } else if (req is Http2RequestContext && res is Http2ResponseContext) {
       var connection =
@@ -428,9 +428,9 @@ class AngelWebSocket {
         });
 
         if (req.hasParsedBody) {
-          ctrl.local.sink.close();
+          await ctrl.local.sink.close();
         } else {
-          req.body.pipe(ctrl.local.sink);
+          await req.body.pipe(ctrl.local.sink);
         }
 
         var sink = utf8.encoder.startChunkedConversion(ctrl.foreign.sink);
@@ -443,7 +443,7 @@ class AngelWebSocket {
 
         var ws = new WebSocketChannel(ctrl.foreign);
         var socket = new WebSocketContext(ws, req, res);
-        handleClient(socket);
+        scheduleMicrotask(() => handleClient(socket));
         return false;
       }
     } else {

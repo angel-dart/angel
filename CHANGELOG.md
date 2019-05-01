@@ -1,5 +1,6 @@
 # 2.0.3
 * Remove `WebSocketController.plugin`.
+* Remove any unawaited futures.
 
 # 2.0.2
 * Update `stream_channel` to `2.0.0`.
