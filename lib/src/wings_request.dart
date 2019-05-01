@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:mock_request/mock_request.dart';
@@ -94,52 +95,86 @@ class WingsRequestContext extends RequestContext<WingsClientSocket> {
   }
 
   static Future<WingsRequestContext> from(Angel app, WingsClientSocket socket) {
-    var state = _ParseState.url;
+    // var state = _ParseState.url;
     var c = Completer<WingsRequestContext>();
     var recv = RawReceivePort();
     var rq = WingsRequestContext._(app, socket, recv);
     rq._remoteAddress = socket.remoteAddress;
-    String lastHeader;
-    recv.handler = (e) {
-      if (state == _ParseState.url) {
-        rq._uri = Uri.parse(e as String);
-        var path = rq._uri.path.replaceAll(_straySlashes, '');
-        if (path.isEmpty) path = '/';
-        rq._path = path;
-        state = _ParseState.headerField;
-      } else if (state == _ParseState.headerField) {
-        if (e == 0) {
-          state = _ParseState.method;
+    var ct = StreamController();
+    recv.handler = ct.add;
+    recv.handler = (ee) {
+      if (ee is Uint8List) {
+        if (!rq._body.isClosed) rq._body.add(ee);
+      } else if (ee is List) {
+        var type = ee[0] as int;
+
+        if (type == 2) {
+          rq._method = methodToString(ee[1] as int);
         } else {
-          lastHeader = e as String; //Uri.decodeFull(e as String);
-          state = _ParseState.headerValue;
-        }
-      } else if (state == _ParseState.headerValue) {
-        if (e == 0) {
-          state = _ParseState.method;
-        } else {
-          var value = e as String; //Uri.decodeFull(e as String);
-          if (lastHeader != null) {
-            if (lastHeader == 'cookie') {
-              rq.__cookies.add(Cookie.fromSetCookieValue(value));
+          var value = ee[1] as String;
+
+          if (type == 0) {
+            rq._uri = Uri.parse(value);
+            var path = rq._uri.path.replaceAll(_straySlashes, '');
+            if (path.isEmpty) path = '/';
+            rq._path = path;
+          } else if (type == 1) {
+            var k = value, v = ee[2] as String;
+            if (k == 'cookie') {
+              rq.__cookies.add(Cookie.fromSetCookieValue(v));
             } else {
-              rq._headers.add(lastHeader, value);
+              rq._headers.add(k, v);
             }
-            lastHeader = null;
+          } else {
+            // print("h: $ee');");
           }
         }
-        state = _ParseState.headerField;
-      } else if (state == _ParseState.method) {
-        rq._method = methodToString(e as int);
-        state = _ParseState.body;
+      } else if (ee == 100) {
+        // Headers done, just listen for body.
         c.complete(rq);
-      } else if (state == _ParseState.body) {
-        if (e == 1) {
-          rq._body.close();
-        } else {
-          rq._body.add(e as List<int>);
-        }
+      } else if (ee == 200) {
+        // Message complete.
+        rq._body.close();
       }
+      // if (state == _ParseState.url) {
+      //   rq._uri = Uri.parse(e as String);
+      //   var path = rq._uri.path.replaceAll(_straySlashes, '');
+      //   if (path.isEmpty) path = '/';
+      //   rq._path = path;
+      //   state = _ParseState.headerField;
+      // } else if (state == _ParseState.headerField) {
+      //   if (e == 0) {
+      //     state = _ParseState.method;
+      //   } else {
+      //     lastHeader = e as String; //Uri.decodeFull(e as String);
+      //     state = _ParseState.headerValue;
+      //   }
+      // } else if (state == _ParseState.headerValue) {
+      //   if (e == 0) {
+      //     state = _ParseState.method;
+      //   } else {
+      //     var value = e as String; //Uri.decodeFull(e as String);
+      //     if (lastHeader != null) {
+      //       if (lastHeader == 'cookie') {
+      //         rq.__cookies.add(Cookie.fromSetCookieValue(value));
+      //       } else {
+      //         rq._headers.add(lastHeader, value);
+      //       }
+      //       lastHeader = null;
+      //     }
+      //   }
+      //   state = _ParseState.headerField;
+      // } else if (state == _ParseState.method) {
+      //   rq._method = methodToString(e as int);
+      //   state = _ParseState.body;
+      //   c.complete(rq);
+      // } else if (state == _ParseState.body) {
+      //   if (e == 1) {
+      //     rq._body.close();
+      //   } else {
+      //     rq._body.add(e as List<int>);
+      //   }
+      // }
     };
     wingsParseHttp().send([recv.sendPort, socket.fileDescriptor]);
     return c.future;

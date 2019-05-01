@@ -159,5 +159,13 @@ void Dart_WingsSocket_closeDescriptor(Dart_NativeArguments arguments)
 
 void Dart_WingsSocket_close(Dart_NativeArguments arguments)
 {
-    // TODO: Actually do something.
+    Dart_Port port;
+    uint64_t ptr;
+    Dart_Handle pointerHandle = Dart_GetNativeArgument(arguments, 0);
+    Dart_Handle sendPortHandle = Dart_GetNativeArgument(arguments, 1);
+    HandleError(Dart_IntegerToUint64(pointerHandle, &ptr));
+    HandleError(Dart_SendPortGetId(sendPortHandle, &port));
+
+    auto *socket = (WingsSocket *)ptr;
+    socket->decrRef(port);
 }

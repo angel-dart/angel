@@ -5,23 +5,53 @@ using namespace wings;
 
 std::vector<WingsSocket *> wings::globalSocketList;
 
-bool WingsSocketInfo::operator==(const WingsSocketInfo &other) const
+bool WingsSocketInfo::equals(const WingsSocketInfo &right) const
 {
-    return (strcmp(address, other.address) == 0) &&
-           port == other.port;
+    // std::cout << address << " vs " << right.address << std::endl;
+    // std::cout << port << " vs " << right.port << std::endl;
+    return (strcmp(address, right.address) == 0) &&
+           port == right.port;
 }
 
 WingsSocket::WingsSocket(sa_family_t family, int sockfd, const WingsSocketInfo &info)
     : sockfd(sockfd), info(info), family(family)
 {
+    index = 0;
+    open = true;
     refCount = 0;
     workerThread = nullptr;
+    this->info.address = strdup(info.address);
 }
 
 void WingsSocket::incrRef(Dart_Port port)
 {
     refCount++;
     sendPorts.push_back(port);
+}
+
+void WingsSocket::decrRef(Dart_Port port)
+{
+    auto it = std::find(sendPorts.begin(), sendPorts.end(), port);
+
+    if (it != sendPorts.end())
+    {
+        sendPorts.erase(it);
+    }
+
+    refCount--;
+
+    if (refCount <= 0 && open)
+    {
+        close(sockfd);
+    }
+}
+
+Dart_Port WingsSocket::nextPort()
+{
+    if (index >= sendPorts.size())
+        index = 0;
+    Dart_Port port = sendPorts.at(index++);
+    return port;
 }
 
 const WingsSocketInfo &WingsSocket::getInfo() const
@@ -59,6 +89,7 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
     Dart_Port outPort = message->value.as_array.values[0]->value.as_send_port.id;
     Dart_CObject *ptrArg = message->value.as_array.values[1];
 
+    // If there are no listeners, quit.
     if (ptrArg->type == Dart_CObject_kInt32)
     {
         auto as64 = (int64_t)ptrArg->value.as_int32;
@@ -71,6 +102,11 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
 
     if (socket != nullptr)
     {
+        if (socket->sendPorts.empty())
+        {
+            return;
+        }
+
         int sock;
         unsigned long index = 0;
         sockaddr addr;
@@ -106,14 +142,11 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
             obj.value.as_array.length = 2;
             obj.value.as_array.values = values;
 
-            Dart_PostCObject(outPort, &obj);
+            // Dart_PostCObject(outPort, &obj);
             // Dispatch the fd to the next listener.
-            // auto &ports = socket->sendPorts;
-            // Dart_Port port = ports.at(index++);
-            // if (index >= ports.size())
-            //     index = 0;
-            // Dart_Handle intHandle = Dart_NewInteger(sock);
-            // Dart_Post(port, intHandle);
+            auto port = socket->nextPort();
+            // Dart_PostCObject(port, &obj);
+            Dart_PostCObject(outPort, &obj);
         }
     }
 }

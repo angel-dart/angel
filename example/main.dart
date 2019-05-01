@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_static/angel_static.dart';
 import 'package:angel_wings/angel_wings.dart';
@@ -16,9 +17,13 @@ main() async {
   app.mimeTypeResolver.addExtension('yaml', 'text/x-yaml');
 
   app.get('/', (req, res) => 'WINGS!!!');
+  app.post('/', (req, res) async {
+    await req.parseBody();
+    return req.bodyAsMap;
+  });
   app.fallback(vDir.handleRequest);
   app.fallback((req, res) => throw AngelHttpException.notFound());
 
-  await wings.startServer('127.0.0.1', 3000);
+  await wings.startServer(InternetAddress.loopbackIPv6, 3000);
   print('Listening at ${wings.uri}');
 }

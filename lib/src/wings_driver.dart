@@ -7,13 +7,17 @@ import 'wings_request.dart';
 import 'wings_response.dart';
 import 'wings_socket.dart';
 
+Future<WingsSocket> startSharedWings(dynamic addr, int port) {
+  return WingsSocket.bind(addr, port, shared: true);
+}
+
 class AngelWings extends Driver<WingsClientSocket, int, WingsSocket,
     WingsRequestContext, WingsResponseContext> {
   factory AngelWings(Angel app) {
-    return AngelWings._(app, WingsSocket.bind);
+    return AngelWings.custom(app, WingsSocket.bind);
   }
 
-  AngelWings._(
+  AngelWings.custom(
       Angel app, Future<WingsSocket> Function(dynamic, int) serverGenerator)
       : super(app, serverGenerator);
 
@@ -22,6 +26,12 @@ class AngelWings extends Driver<WingsClientSocket, int, WingsSocket,
     for (var cookie in cookies) {
       setHeader(response, 'set-cookie', cookie.toString());
     }
+  }
+
+  @override
+  Future<WingsSocket> close() async {
+    await server?.close();
+    return super.close();
   }
 
   @override

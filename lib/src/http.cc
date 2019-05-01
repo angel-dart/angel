@@ -12,26 +12,45 @@ void Dart_WingsSocket_parseHttp(Dart_NativeArguments arguments)
     Dart_SetReturnValue(arguments, send_port);
 }
 
+struct wingsHttp
+{
+    Dart_Port port;
+    std::string lastHeader;
+};
+
 void wingsHttpCallback(Dart_Port dest_port_id, Dart_CObject *message)
 {
     int64_t fd = -1;
     Dart_Port outPort = message->value.as_array.values[0]->value.as_send_port.id;
     Dart_CObject *fdArg = message->value.as_array.values[1];
 
-#define thePort (*((Dart_Port *)parser->data))
-#define sendInt(n)                  \
-    Dart_CObject obj;               \
-    obj.type = Dart_CObject_kInt64; \
-    obj.value.as_int64 = (n);       \
-    Dart_PostCObject(thePort, &obj);
-#define sendString()                               \
-    if (length > 0)                                \
-    {                                              \
-        std::string str(at, length);               \
-        Dart_CObject obj;                          \
-        obj.type = Dart_CObject_kString;           \
-        obj.value.as_string = (char *)str.c_str(); \
-        Dart_PostCObject(thePort, &obj);           \
+    wingsHttp httpData = {outPort};
+
+#define theStruct (*((wingsHttp *)parser->data))
+#define thePort theStruct.port
+#define sendInt(n)                       \
+    {                                    \
+        Dart_CObject obj;                \
+        obj.type = Dart_CObject_kInt64;  \
+        obj.value.as_int64 = (n);        \
+        Dart_PostCObject(thePort, &obj); \
+    }
+#define sendString(n)                                  \
+    if (length > 0)                                    \
+    {                                                  \
+        Dart_CObject typeObj;                          \
+        typeObj.type = Dart_CObject_kInt32;            \
+        typeObj.value.as_int32 = (n);                  \
+        std::string str(at, length);                   \
+        Dart_CObject strObj;                           \
+        strObj.type = Dart_CObject_kString;            \
+        strObj.value.as_string = (char *)str.c_str();  \
+        Dart_CObject *values[2] = {&typeObj, &strObj}; \
+        Dart_CObject out;                              \
+        out.type = Dart_CObject_kArray;                \
+        out.value.as_array.length = 2;                 \
+        out.value.as_array.values = values;            \
+        Dart_PostCObject(thePort, &out);               \
     }
 
     if (fdArg->type == Dart_CObject_kInt32)
@@ -52,17 +71,24 @@ void wingsHttpCallback(Dart_Port dest_port_id, Dart_CObject *message)
         };
 
         settings.on_headers_complete = [](http_parser *parser) {
-            {
-                sendInt(0);
-            }
-            {
-            sendInt(parser->method);
-            }
+            Dart_CObject type;
+            type.type = Dart_CObject_kInt32;
+            type.value.as_int32 = 2;
+            Dart_CObject value;
+            value.type = Dart_CObject_kInt32;
+            value.value.as_int32 = parser->method;
+            Dart_CObject *values[2] = {&type, &value};
+            Dart_CObject out;
+            out.type = Dart_CObject_kArray;
+            out.value.as_array.length = 2;
+            out.value.as_array.values = values;
+            Dart_PostCObject(thePort, &out);
+            sendInt(100);
             return 0;
         };
 
         settings.on_message_complete = [](http_parser *parser) {
-            sendInt(1);
+            sendInt(200);
             return 0;
         };
 
@@ -75,22 +101,46 @@ void wingsHttpCallback(Dart_Port dest_port_id, Dart_CObject *message)
         };
 
         settings.on_url = [](http_parser *parser, const char *at, size_t length) {
-            sendString();
+            sendString(0);
             return 0;
         };
 
         settings.on_header_field = [](http_parser *parser, const char *at, size_t length) {
-            sendString();
+            theStruct.lastHeader = std::string(at, length);
             return 0;
         };
 
         settings.on_header_value = [](http_parser *parser, const char *at, size_t length) {
-            sendString();
+            if (!theStruct.lastHeader.empty())
+            {
+                std::string vStr(at, length);
+                Dart_CObject type;
+                type.type = Dart_CObject_kInt32;
+                type.value.as_int32 = 1;
+                Dart_CObject name;
+                name.type = Dart_CObject_kString;
+                name.value.as_string = (char *)theStruct.lastHeader.c_str();
+                Dart_CObject value;
+                value.type = Dart_CObject_kString;
+                value.value.as_string = (char *)vStr.c_str();
+                Dart_CObject *values[3] = {&type, &name, &value};
+                Dart_CObject out;
+                out.type = Dart_CObject_kArray;
+                out.value.as_array.length = 3;
+                out.value.as_array.values = values;
+                Dart_PostCObject(thePort, &out);
+                theStruct.lastHeader.clear();
+            }
             return 0;
         };
 
         settings.on_body = [](http_parser *parser, const char *at, size_t length) {
-            sendString();
+            Dart_CObject obj;
+            obj.type = Dart_CObject_kTypedData;
+            obj.value.as_typed_data.type = Dart_TypedData_kUint8;
+            obj.value.as_typed_data.length = length;
+            obj.value.as_typed_data.values = (uint8_t *)at;
+            Dart_PostCObject(thePort, &obj);
             return 0;
         };
 
@@ -101,7 +151,7 @@ void wingsHttpCallback(Dart_Port dest_port_id, Dart_CObject *message)
         // http_parser parser;
         auto *parser = (http_parser *)malloc(sizeof(http_parser));
         http_parser_init(parser, HTTP_BOTH);
-        parser->data = &outPort;
+        parser->data = &httpData;
 
         while ((recved = recv(fd, buf, len, 0)) >= 0)
         {

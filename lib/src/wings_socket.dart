@@ -18,7 +18,7 @@ int bindWingsIPv6ServerSocket(
     bool shared,
     int backlog,
     bool v6Only,
-    SendPort sendPort) native 'Dart_WingsSocket_bindIPV6';
+    SendPort sendPort) native 'Dart_WingsSocket_bindIPv6';
 
 String getWingsServerSocketAddress(int pointer)
     native 'Dart_WingsSocket_getAddress';
@@ -33,7 +33,8 @@ void closeNativeSocketDescriptor(int fd)
 
 SendPort wingsSocketListen(int pointer) native 'Dart_WingsSocket_listen';
 
-void closeWingsSocket(int pointer) native 'Dart_WingsSocket_close';
+void closeWingsSocket(int pointer, SendPort sendPort)
+    native 'Dart_WingsSocket_close';
 
 SendPort wingsParseHttp() native 'Dart_WingsSocket_parseHttp';
 
@@ -120,7 +121,7 @@ class WingsSocket extends Stream<WingsClientSocket> {
   Future<void> close() async {
     if (_open) {
       _open = false;
-      closeWingsSocket(_pointer);
+      closeWingsSocket(_pointer, _recv.sendPort);
       _recv.close();
       await _ctrl.close();
     }

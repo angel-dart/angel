@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include "angel_wings.h"
 #include "wings_socket.h"
@@ -32,7 +33,7 @@ void Dart_WingsSocket_bindIPv6(Dart_NativeArguments arguments)
 void wingsReturnBound(Dart_NativeArguments arguments, WingsSocket *socket)
 {
     Dart_Port sendPort;
-    HandleError(Dart_SendPortGetId(socket->getInfo().sendPortHandle, &sendPort));
+    HandleError(Dart_SendPortGetId(Dart_GetNativeArgument(arguments, 5), &sendPort));
     socket->incrRef(sendPort);
     auto ptr = (uint64_t)socket;
     Dart_Handle ptrHandle = Dart_NewIntegerFromUint64(ptr);
@@ -44,9 +45,11 @@ WingsSocket *wingsFindSocket(Dart_NativeArguments arguments, const WingsSocketIn
     // Find an existing server, if any.
     if (info.shared)
     {
+        // std::cout << info.address << std::endl;
+        // std::cout << globalSocketList.size() << std::endl;
         for (auto *socket : globalSocketList)
         {
-            if (socket->getInfo() == info)
+            if (info.equals(socket->getInfo()))
             {
                 return socket;
             }

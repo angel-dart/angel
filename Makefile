@@ -16,11 +16,8 @@ clean:
 	find . -type f -name '*.dylib' -delete
 	find . -type f -name '*.dill' -delete
 
-%-run: % example/main.dart
+%-run: % example/main.dill
 	dart example/main.dill
-
-example/main.dill: ./**/*.dart
-	dart --snapshot="$@" example/main.dart
 
 mac: libangel_wings.dylib
 
@@ -42,3 +39,6 @@ lib/src/libangel_wings.dylib: $(objects)
 
 %.o: %.cc lib/src/angel_wings.h %.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.dill: %.dart
+	dart --snapshot="$@" $<
