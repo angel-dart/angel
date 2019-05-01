@@ -9,8 +9,11 @@ Future<void> configureServer(Angel app) async {
   var connection = await connectToPostgres(app.configuration);
   await connection.open();
 
+  var logger = app.environment.isProduction ? null : app.logger;
+  var executor = PostgreSqlExecutor(connection, logger: logger);
+
   app
-    ..container.registerSingleton<QueryExecutor>(PostgreSqlExecutor(connection))
+    ..container.registerSingleton<QueryExecutor>(executor)
     ..shutdownHooks.add((_) => connection.close());
 }
 
