@@ -22,10 +22,10 @@ class HotReloader {
   vm.VmService _client;
   vm.IsolateRef _mainIsolate;
   final StreamController<WatchEvent> _onChange =
-      new StreamController<WatchEvent>.broadcast();
+      StreamController<WatchEvent>.broadcast();
   final List _paths = [];
-  final StringRenderer _renderer = new StringRenderer(pretty: false);
-  final Queue<HttpRequest> _requestQueue = new Queue<HttpRequest>();
+  final StringRenderer _renderer = StringRenderer(pretty: false);
+  final Queue<HttpRequest> _requestQueue = Queue<HttpRequest>();
   HttpServer _io;
   AngelHttp _server;
   Duration _timeout;
@@ -65,16 +65,16 @@ class HotReloader {
   /// URI's can be `package:` URI's as well.
   HotReloader(this.generator, Iterable paths,
       {Duration timeout,
-      this.vmServiceHost: 'localhost',
-      this.vmServicePort: 8181,
-      this.enableHotkeys: true}) {
-    _timeout = timeout ?? new Duration(seconds: 5);
+      this.vmServiceHost = 'localhost',
+      this.vmServicePort = 8181,
+      this.enableHotkeys = true}) {
+    _timeout = timeout ?? Duration(seconds: 5);
     _paths.addAll(paths ?? []);
   }
 
   Future close() async {
-    _onChange.close();
     await _io?.close(force: true);
+    await _onChange.close();
   }
 
   void sendError(HttpRequest request, int status, String title_, e) {
@@ -119,7 +119,7 @@ class HotReloader {
       _requestQueue.add(request);
     else {
       _requestQueue.add(request);
-      new Timer(timeout, () {
+      Timer(timeout, () {
         if (_requestQueue.remove(request)) {
           // Send 502 response
           sendError(request, HttpStatus.badGateway, '502 Bad Gateway',
@@ -133,7 +133,23 @@ class HotReloader {
     var s = await generator();
     await Future.forEach(s.startupHooks, s.configure);
     s.optimizeForProduction();
-    return new AngelHttp.custom(s, startShared);
+    return AngelHttp.custom(s, startShared);
+  }
+
+  void _logWarning(String msg) {
+    if (_server?.app?.logger != null) {
+      _server.app.logger.warning(msg);
+    } else {
+      print(yellow.wrap('WARNING: $msg'));
+    }
+  }
+
+  void _logInfo(String msg) {
+    if (_server?.app?.logger != null) {
+      _server.app.logger.info(msg);
+    } else {
+      print(lightGray.wrap(msg));
+    }
   }
 
   /// Starts listening to requests and filesystem events.
@@ -142,13 +158,13 @@ class HotReloader {
     _server = await _generateServer();
 
     if (_paths?.isNotEmpty != true)
-      print(yellow.wrap(
-          'WARNING: You have instantiated a HotReloader without providing any filesystem paths to watch.'));
+      _logWarning(
+          'You have instantiated a HotReloader without providing any filesystem paths to watch.');
 
     if (!Platform.executableArguments.contains('--observe') &&
         !Platform.executableArguments.contains('--enable-vm-service')) {
-      stderr.writeln(yellow.wrap(
-          'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.'));
+      _logWarning(
+          'You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.');
       isHot = false;
     } else {
       var info = await dev.Service.getInfo();
@@ -173,14 +189,14 @@ class HotReloader {
         //.transform(new _Debounce(new Duration(seconds: 1)))
         .listen(_handleWatchEvent);
 
-    while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
+    while (_requestQueue.isNotEmpty) await _handle(_requestQueue.removeFirst());
     var server = _io = await HttpServer.bind(address ?? '127.0.0.1', port ?? 0);
     server.listen(handleRequest);
 
     // Print a Flutter-like prompt...
     if (enableHotkeys) {
-      var serverUri = new Uri(
-          scheme: 'http', host: server.address.address, port: server.port);
+      var serverUri =
+          Uri(scheme: 'http', host: server.address.address, port: server.port);
       var observatoryUri = await dev.Service.getInfo().then((i) => i.serverUri);
 
       print(styleBold.wrap(
@@ -215,10 +231,10 @@ class HotReloader {
         sub = stdin.expand((l) => l).listen((ch) async {
           if (ch == $r) {
             _handleWatchEvent(
-                new WatchEvent(ChangeType.MODIFY, '[manual-reload]'), isHot);
+                WatchEvent(ChangeType.MODIFY, '[manual-reload]'), isHot);
           }
           if (ch == $R) {
-            print('Manually restarting server...\n');
+            _logInfo('Manually restarting server...\n');
             await _killServer();
             await _server.close();
             var addr = _io.address.address;
@@ -227,8 +243,8 @@ class HotReloader {
             await startServer(addr, port);
           } else if (ch == $q) {
             stdin.echoMode = stdin.lineMode = true;
-            close();
-            sub.cancel();
+            await close();
+            await sub.cancel();
             exit(0);
           } else if (ch == $h) {
             print(
@@ -266,7 +282,7 @@ class HotReloader {
         } else
           await _listenToStat(path.toFilePath());
       } else {
-        throw new ArgumentError(
+        throw ArgumentError(
             'Hot reload paths must be a FileSystemEntity, a Uri, a String or a Glob. You provided: $path');
       }
     }
@@ -277,22 +293,22 @@ class HotReloader {
       try {
         var stat = await FileStat.stat(path);
         if (stat.type == FileSystemEntityType.link) {
-          var lnk = new Link(path);
+          var lnk = Link(path);
           var p = await lnk.resolveSymbolicLinks();
           return await _listenToStat(p);
         } else if (stat.type == FileSystemEntityType.file) {
-          var file = new File(path);
+          var file = File(path);
           if (!await file.exists()) return null;
         } else if (stat.type == FileSystemEntityType.directory) {
-          var dir = new Directory(path);
+          var dir = Directory(path);
           if (!await dir.exists()) return null;
         } else
           return null;
 
-        var watcher = new Watcher(path);
+        var watcher = Watcher(path);
 
         watcher.events.listen(_onChange.add, onError: (e) {
-          stderr.writeln('Could not listen to file changes at ${path}: $e');
+          _logWarning('Could not listen to file changes at ${path}: $e');
         });
 
         // print('Listening for file changes at ${path}...');
@@ -305,15 +321,15 @@ class HotReloader {
     var r = await _listen();
 
     if (r == null) {
-      print(yellow.wrap(
-          'WARNING: Unable to watch path "$path" from working directory "${Directory.current.path}". Please ensure that it exists.'));
+      _logWarning(
+          'Unable to watch path "$path" from working directory "${Directory.current.path}". Please ensure that it exists.');
     }
   }
 
   Future _killServer() async {
     if (_server != null) {
       // Do this asynchronously, because we really don't care about the old server anymore.
-      new Future(() async {
+      scheduleMicrotask(() async {
         // Disconnect active WebSockets
         try {
           var ws = _server.app.container.make<AngelWebSocket>();
@@ -322,7 +338,7 @@ class HotReloader {
             try {
               await client.close();
             } catch (e) {
-              stderr.writeln(
+              _logWarning(
                   'Couldn\'t close WebSocket from session #${client.request.session.id}: $e');
             }
           }
@@ -339,7 +355,7 @@ class HotReloader {
   }
 
   _handleWatchEvent(WatchEvent e, [bool hot = true]) async {
-    print('${e.path} changed. Reloading server...\n');
+    _logInfo('${e.path} changed. Reloading server...\n');
     await _killServer();
     _server = null;
 
@@ -347,14 +363,14 @@ class HotReloader {
       var report = await _client.reloadSources(_mainIsolate.id);
 
       if (!report.success) {
-        stderr.writeln(
+        _logWarning(
             'Hot reload failed - perhaps some sources have not been generated yet.');
       }
     }
 
     var s = await _generateServer();
     _server = s;
-    while (!_requestQueue.isEmpty) await _handle(_requestQueue.removeFirst());
+    while (_requestQueue.isNotEmpty) await _handle(_requestQueue.removeFirst());
   }
 }
 
@@ -365,10 +381,10 @@ class _Debounce<S> extends StreamTransformerBase<S, S> {
   const _Debounce(this._delay);
 
   Stream<S> bind(Stream<S> stream) {
-    var initial = new DateTime.now();
+    var initial = DateTime.now();
     var next = initial.subtract(this._delay);
     return stream.where((S data) {
-      var now = new DateTime.now();
+      var now = DateTime.now();
       if (now.isAfter(next)) {
         next = now.add(this._delay);
         return true;

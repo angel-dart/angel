@@ -6,21 +6,21 @@ import 'package:logging/logging.dart';
 import 'src/foo.dart';
 
 Future<Angel> createServer() async {
-  var app = new Angel()..serializer = json.encode;
+  var app = Angel()..serializer = json.encode;
   hierarchicalLoggingEnabled = true;
 
   // Edit this line, and then refresh the page in your browser!
   app.get('/', (req, res) => {'hello': 'hot world!'});
-  app.get('/foo', (req, res) => new Foo(bar: 'baz'));
+  app.get('/foo', (req, res) => Foo(bar: 'baz'));
 
-  app.fallback((req, res) => throw new AngelHttpException.notFound());
+  app.fallback((req, res) => throw AngelHttpException.notFound());
 
   app.encoders.addAll({
     'gzip': gzip.encoder,
     'deflate': zlib.encoder,
   });
 
-  app.logger = new Logger.detached('angel')
+  app.logger = Logger.detached('angel')
     ..onRecord.listen((rec) {
       print(rec);
       if (rec.error != null) {

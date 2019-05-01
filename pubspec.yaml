@@ -16,5 +16,6 @@ dependencies:
   vm_service_lib: ^0.3.5
   watcher: ^0.9.0
 dev_dependencies:
-    http: ^0.11.3
-    logging: ^0.11.0
+  http: ^0.11.3
+  logging: ^0.11.0
+  pedantic: ^1.0.0

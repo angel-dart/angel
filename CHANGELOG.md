@@ -1,5 +1,7 @@
 # 2.0.5
 * Use `dart:developer` to find the Observatory URI.
+* Use the app's logger when necessary.
+* Apply `package:pedantic`.
 
 # 2.0.4
 * Forcibly close app loggers on shutdown.
