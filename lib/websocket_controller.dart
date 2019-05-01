@@ -9,19 +9,17 @@ class ExposeWs {
 
 /// A special controller that also supports WebSockets.
 class WebSocketController extends Controller {
+  /// The plug-in instance powering this controller.
   final AngelWebSocket ws;
 
   Map<String, MethodMirror> _handlers = {};
   Map<String, Symbol> _handlerSymbols = {};
 
-  /// The plug-in instance powering this controller.
-  AngelWebSocket plugin;
-
   WebSocketController(this.ws) : super();
 
   /// Sends an event to all clients.
   void broadcast(String eventName, data, {filter(WebSocketContext socket)}) {
-    plugin.batchEvent(new WebSocketEvent(eventName: eventName, data: data),
+    ws.batchEvent(new WebSocketEvent(eventName: eventName, data: data),
         filter: filter);
   }
 
