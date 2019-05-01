@@ -145,8 +145,8 @@ void WingsSocket::threadCallback(Dart_Port dest_port_id,
             // Dart_PostCObject(outPort, &obj);
             // Dispatch the fd to the next listener.
             auto port = socket->nextPort();
-            // Dart_PostCObject(port, &obj);
-            Dart_PostCObject(outPort, &obj);
+            Dart_PostCObject(port, &obj);
+            // Dart_PostCObject(outPort, &obj);
         }
     }
 }
