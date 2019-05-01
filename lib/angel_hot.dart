@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'dart:isolate';
 import 'package:angel_framework/angel_framework.dart';
@@ -11,6 +12,7 @@ import 'package:glob/glob.dart';
 import 'package:html_builder/elements.dart';
 import 'package:html_builder/html_builder.dart';
 import 'package:io/ansi.dart';
+import 'package:path/path.dart' as p;
 import 'package:vm_service_lib/vm_service_lib.dart' as vm;
 import 'package:vm_service_lib/vm_service_lib_io.dart' as vm;
 import 'package:watcher/watcher.dart';
@@ -149,11 +151,21 @@ class HotReloader {
           'WARNING: You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.'));
       isHot = false;
     } else {
-      _client = await vm.vmServiceConnect(
-          vmServiceHost ?? 'localhost', vmServicePort ?? 8181);
+      var info = await dev.Service.getInfo();
+      var uri = info.serverUri;
+      uri = uri.replace(path: p.join(uri.path, 'ws'));
+      if (uri.scheme == 'https')
+        uri = uri.replace(scheme: 'wss');
+      else
+        uri = uri.replace(scheme: 'ws');
+      _client = await vm.vmServiceConnectUri(uri.toString());
       _vmachine ??= await _client.getVM();
       _mainIsolate ??= _vmachine.isolates.first;
-      await _client.setExceptionPauseMode(_mainIsolate.id, 'None');
+
+      for (var isolate in _vmachine.isolates) {
+        await _client.setExceptionPauseMode(isolate.id, 'None');
+      }
+
       await _listenToFilesystem();
     }
 
@@ -169,9 +181,7 @@ class HotReloader {
     if (enableHotkeys) {
       var serverUri = new Uri(
           scheme: 'http', host: server.address.address, port: server.port);
-      var host = vmServiceHost == 'localhost' ? '127.0.0.1' : vmServiceHost;
-      var observatoryUri =
-          new Uri(scheme: 'http', host: host, port: vmServicePort);
+      var observatoryUri = await dev.Service.getInfo().then((i) => i.serverUri);
 
       print(styleBold.wrap(
           '\n🔥  To hot reload changes while running, press "r". To hot restart (and rebuild state), press "R".'));
