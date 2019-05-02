@@ -313,7 +313,7 @@ abstract class AuthorizationServer<Client, User> {
           }).toString();
 
           target = target.replace(fragment: fragment);
-          res.redirect(target.toString());
+          await res.redirect(target.toString());
           return false;
         } on FormatException {
           throw AuthorizationException(

@@ -6,7 +6,7 @@ version: 2.2.0
 environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies: 
-  angel_framework: ^2.0.0-alpha
+  angel_framework: ^2.0.0-rc.0
   angel_http_exception: ^1.0.0
   crypto: ^2.0.0
 dev_dependencies: 
@@ -16,4 +16,4 @@ dev_dependencies:
   oauth2: ^1.0.0
   pedantic: ^1.0.0
   test: ^1.0.0
-  uuid: ^1.0.0
+  uuid: ^2.0.0

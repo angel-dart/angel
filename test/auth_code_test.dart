@@ -143,7 +143,7 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
     if (state == 'hello')
       return 'Hello ${pseudoApplication.id}:${pseudoApplication.secret}';
 
-    var authCode = _uuid.v4() as String;
+    var authCode = _uuid.v4();
     var authCodes = req.container.make<AuthCodes>();
     authCodes[authCode] = state;
 
