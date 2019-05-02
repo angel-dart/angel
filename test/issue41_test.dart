@@ -23,11 +23,11 @@ main() async {
         .readAsString();
 
     // Initialize app
-    var app = new Angel();
-    app.logger = new Logger('angel')..onRecord.listen(print);
+    var app = Angel();
+    app.logger = Logger('angel')..onRecord.listen(print);
 
     app.fallback(
-      new VirtualDirectory(app, const LocalFileSystem(),
+      VirtualDirectory(app, const LocalFileSystem(),
               source: swaggerUiDistDir, publicPath: 'swagger/')
           .handleRequest,
     );

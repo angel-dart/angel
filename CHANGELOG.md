@@ -1,3 +1,8 @@
+# 2.1.3
+* Apply lints.
+* Pin to Dart `>=2.0.0 <3.0.0`.
+* Use at least version `2.0.0-rc.0` of `angel_framework`.
+
 # 2.1.2+1
 * Fix a typo that prevented `Range` requests from working.
 

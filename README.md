@@ -25,20 +25,20 @@ import 'package:angel_static/angel_static.dart';
 import 'package:file/local.dart';
 
 main() async {
-  var app = new Angel();
+  var app = Angel();
   var fs = const LocalFileSystem();
 
   // Normal static server
-  var vDir = new VirtualDirectory(app, fs, source: new Directory('./public'));
+  var vDir = VirtualDirectory(app, fs, source: Directory('./public'));
 
   // Send Cache-Control, ETag, etc. as well
-  var vDir = new CachingVirtualDirectory(app, fs, source: new Directory('./public'));
+  var vDir = CachingVirtualDirectory(app, fs, source: Directory('./public'));
 
   // Mount the VirtualDirectory's request handler
   app.fallback(vDir.handleRequest);
 
   // Start your server!!!
-  await new AngelHttp(app).startServer();
+  await AngelHttp(app).startServer();
 }
 ```
 
@@ -49,7 +49,7 @@ the user is requesting that file. This can be very useful for SPA's.
 
 ```dart
 // Create VirtualDirectory as well
-var vDir = new CachingVirtualDirectory(...);
+var vDir = CachingVirtualDirectory(...);
 
 // Mount it
 app.fallback(vDir.handleRequest);

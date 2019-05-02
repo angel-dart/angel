@@ -12,22 +12,22 @@ main() {
   AngelHttp http;
   Directory testDir = const LocalFileSystem().directory('test');
   String url;
-  Client client = new Client();
+  Client client = Client();
 
   setUp(() async {
-    app = new Angel();
-    http = new AngelHttp(app);
-    app.logger = new Logger('angel')..onRecord.listen(print);
+    app = Angel();
+    http = AngelHttp(app);
+    app.logger = Logger('angel')..onRecord.listen(print);
 
     app.fallback(
-      new VirtualDirectory(app, const LocalFileSystem(),
+      VirtualDirectory(app, const LocalFileSystem(),
           source: testDir,
           publicPath: '/virtual',
           indexFileNames: ['index.txt']).handleRequest,
     );
 
     app.fallback(
-      new VirtualDirectory(app, const LocalFileSystem(),
+      VirtualDirectory(app, const LocalFileSystem(),
           source: testDir,
           useBuffer: true,
           indexFileNames: ['index.php', 'index.txt']).handleRequest,

@@ -5,10 +5,10 @@ import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
 main(List<String> args) async {
-  var app = new Angel();
-  var http = new AngelHttp(app);
+  var app = Angel();
+  var http = AngelHttp(app);
   var fs = const LocalFileSystem();
-  var vDir = new CachingVirtualDirectory(
+  var vDir = CachingVirtualDirectory(
     app,
     fs,
     allowDirectoryListing: true,
@@ -24,7 +24,7 @@ main(List<String> args) async {
     ..addExtension('md', 'text/plain')
     ..addExtension('yaml', 'text/plain');
 
-  app.logger = new Logger('example')
+  app.logger = Logger('example')
     ..onRecord.listen((rec) {
       print(rec);
       if (rec.error != null) print(rec.error);
@@ -32,6 +32,7 @@ main(List<String> args) async {
     });
 
   app.fallback(vDir.handleRequest);
+  app.fallback((req, res) => throw AngelHttpException.notFound());
 
   var server = await http.startServer('127.0.0.1', 3000);
   print('Serving from ${vDir.source.path}');

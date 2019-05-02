@@ -12,7 +12,7 @@ String accessLevelToString(CacheAccessLevel accessLevel) {
     case CacheAccessLevel.PUBLIC:
       return 'public';
     default:
-      throw new ArgumentError('Unrecognized cache access level: $accessLevel');
+      throw ArgumentError('Unrecognized cache access level: $accessLevel');
   }
 }
 
@@ -38,16 +38,16 @@ class CachingVirtualDirectory extends VirtualDirectory {
   final int maxAge;
 
   CachingVirtualDirectory(Angel app, FileSystem fileSystem,
-      {this.accessLevel: CacheAccessLevel.PUBLIC,
+      {this.accessLevel = CacheAccessLevel.PUBLIC,
       Directory source,
       bool debug,
       Iterable<String> indexFileNames,
-      this.maxAge: 0,
-      this.noCache: false,
-      this.onlyInProduction: false,
-      this.useEtags: true,
+      this.maxAge = 0,
+      this.noCache = false,
+      this.onlyInProduction = false,
+      this.useEtags = true,
       bool allowDirectoryListing,
-      bool useBuffer: false,
+      bool useBuffer = false,
       String publicPath,
       callback(File file, RequestContext req, ResponseContext res)})
       : super(app, fileSystem,
@@ -63,7 +63,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
       File file, FileStat stat, RequestContext req, ResponseContext res) {
     res.headers['accept-ranges'] = 'bytes';
 
-    if (onlyInProduction == true && req.app.isProduction != true) {
+    if (onlyInProduction == true && req.app.environment.isProduction != true) {
       return super.serveFile(file, stat, req, res);
     }
 
@@ -105,12 +105,12 @@ class CachingVirtualDirectory extends VirtualDirectory {
               return super.serveFile(file, stat, req, res);
             }
 
-            return new Future.value(false);
+            return Future.value(false);
           } else if (ifRange) {
             return super.serveFile(file, stat, req, res);
           }
         } catch (_) {
-          throw new AngelHttpException.badRequest(
+          throw AngelHttpException.badRequest(
               message:
                   'Invalid date for ${ifRange ? 'if-range' : 'if-not-modified-since'} header.');
         }
@@ -143,7 +143,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
             if (!hasBeenModified) {
               res.statusCode = 304;
               setCachedHeaders(stat.modified, req, res);
-              return new Future.value(false);
+              return Future.value(false);
             }
           } else {
             return super.serveFile(file, stat, req, res);
@@ -172,7 +172,7 @@ class CachingVirtualDirectory extends VirtualDirectory {
       ..['last-modified'] = HttpDate.format(modified);
 
     if (maxAge != null) {
-      var expiry = new DateTime.now().add(new Duration(seconds: maxAge ?? 0));
+      var expiry = DateTime.now().add(Duration(seconds: maxAge ?? 0));
       res.headers['expires'] = HttpDate.format(expiry);
     }
   }

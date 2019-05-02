@@ -5,8 +5,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:range_header/range_header.dart';
 
-final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _param = RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 String _pathify(String path) {
   var p = path.replaceAll(_straySlashes, '');
@@ -54,16 +54,16 @@ class VirtualDirectory {
 
   VirtualDirectory(this.app, this.fileSystem,
       {Directory source,
-      this.indexFileNames: const ['index.html'],
-      this.publicPath: '/',
+      this.indexFileNames = const ['index.html'],
+      this.publicPath = '/',
       this.callback,
-      this.allowDirectoryListing: false,
-      this.useBuffer: false}) {
+      this.allowDirectoryListing = false,
+      this.useBuffer = false}) {
     _prefix = publicPath.replaceAll(_straySlashes, '');
     if (source != null) {
       _source = source;
     } else {
-      String dirPath = app.isProduction ? './build/web' : './web';
+      String dirPath = app.environment.isProduction ? './build/web' : './web';
       _source = fileSystem.directory(dirPath);
     }
   }
@@ -71,11 +71,11 @@ class VirtualDirectory {
   /// Responds to incoming HTTP requests.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) {
     if (req.method != 'GET' && req.method != 'HEAD')
-      return new Future<bool>.value(true);
+      return Future<bool>.value(true);
     var path = req.uri.path.replaceAll(_straySlashes, '');
 
     if (_prefix?.isNotEmpty == true && !path.startsWith(_prefix))
-      return new Future<bool>.value(true);
+      return Future<bool>.value(true);
 
     return servePath(path, req, res);
   }
@@ -91,11 +91,11 @@ class VirtualDirectory {
 
     return (RequestContext req, ResponseContext res) {
       var path = req.path.replaceAll(_straySlashes, '');
-      if (path == vPath) return new Future<bool>.value(true);
+      if (path == vPath) return Future<bool>.value(true);
 
       if (accepts?.isNotEmpty == true) {
         if (!accepts.any((x) => req.accepts(x, strict: true)))
-          return new Future<bool>.value(true);
+          return Future<bool>.value(true);
       }
 
       return servePath(vPath, req, res);
@@ -108,7 +108,7 @@ class VirtualDirectory {
     if (_prefix.isNotEmpty) {
       // Only replace the *first* incidence
       // Resolve: https://github.com/angel-dart/angel/issues/41
-      path = path.replaceFirst(new RegExp('^' + _pathify(_prefix)), '');
+      path = path.replaceFirst(RegExp('^' + _pathify(_prefix)), '');
     }
 
     if (path.isEmpty) path = '.';
@@ -151,7 +151,7 @@ class VirtualDirectory {
     }
 
     if (allowDirectoryListing == true) {
-      res.contentType = new MediaType('text', 'html');
+      res.contentType = MediaType('text', 'html');
       res
         ..write('<!DOCTYPE html>')
         ..write('<html>')
@@ -165,7 +165,7 @@ class VirtualDirectory {
       List<FileSystemEntity> entities = await directory
           .list(followLinks: false)
           .toList()
-          .then((l) => new List.from(l));
+          .then((l) => List.from(l));
       entities.sort((a, b) {
         if (a is Directory) {
           if (b is Directory) return a.path.compareTo(b.path);
@@ -213,8 +213,8 @@ class VirtualDirectory {
         (mimeType?.isNotEmpty == true && value?.contains(mimeType) == true) ||
         value?.contains('*/*') == true;
     if (!acceptable)
-      throw new AngelHttpException(
-          new UnsupportedError(
+      throw AngelHttpException(
+          UnsupportedError(
               'Client requested $value, but server wanted to send $mimeType.'),
           statusCode: 406,
           message: '406 Not Acceptable');
@@ -237,16 +237,16 @@ class VirtualDirectory {
     res.headers['accept-ranges'] = 'bytes';
     _ensureContentTypeAllowed(type, req);
     res.headers['accept-ranges'] = 'bytes';
-    res.contentType = new MediaType.parse(type);
+    res.contentType = MediaType.parse(type);
     if (useBuffer == true) res.useBuffer();
 
     if (req.headers.value('range')?.startsWith('bytes=') != true) {
       await res.streamFile(file);
     } else {
-      var header = new RangeHeader.parse(req.headers.value('range'));
+      var header = RangeHeader.parse(req.headers.value('range'));
       var items = RangeHeader.foldItems(header.items);
       var totalFileSize = await file.length();
-      header = new RangeHeader(items);
+      header = RangeHeader(items);
 
       for (var item in header.items) {
         bool invalid = false;
@@ -257,23 +257,23 @@ class VirtualDirectory {
           invalid = item.end == -1;
 
         if (invalid) {
-          throw new AngelHttpException(
-              new Exception("Semantically invalid, or unbounded range."),
+          throw AngelHttpException(
+              Exception("Semantically invalid, or unbounded range."),
               statusCode: 416,
               message: "Semantically invalid, or unbounded range.");
         }
 
         // Ensure it's within range.
         if (item.start >= totalFileSize || item.end >= totalFileSize) {
-          throw new AngelHttpException(
-              new Exception("Given range $item is out of bounds."),
+          throw AngelHttpException(
+              Exception("Given range $item is out of bounds."),
               statusCode: 416,
               message: "Given range $item is out of bounds.");
         }
       }
 
       if (header.items.isEmpty) {
-        throw new AngelHttpException(null,
+        throw AngelHttpException(null,
             statusCode: 416, message: '`Range` header may not be empty.');
       } else if (header.items.length == 1) {
         var item = header.items[0];
@@ -298,7 +298,7 @@ class VirtualDirectory {
           }
         }
 
-        res.contentType = new MediaType.parse(
+        res.contentType = MediaType.parse(
             app.mimeTypeResolver.lookup(file.path) ??
                 'application/octet-stream');
         res.statusCode = 206;
@@ -307,7 +307,7 @@ class VirtualDirectory {
         await stream.pipe(res);
         return false;
       } else {
-        var transformer = new RangeHeaderTransformer(
+        var transformer = RangeHeaderTransformer(
             header,
             app.mimeTypeResolver.lookup(file.path) ??
                 'application/octet-stream',
@@ -315,7 +315,7 @@ class VirtualDirectory {
         res.statusCode = 206;
         res.headers['content-length'] =
             transformer.computeContentLength(totalFileSize).toString();
-        res.contentType = new MediaType(
+        res.contentType = MediaType(
             'multipart', 'byteranges', {'boundary': transformer.boundary});
         await file.openRead().transform(transformer).pipe(res);
         return false;

@@ -11,7 +11,7 @@ main() {
   TestClient client;
 
   setUp(() async {
-    fileSystem = new MemoryFileSystem();
+    fileSystem = MemoryFileSystem();
 
     var webDir = fileSystem.directory('web');
     await webDir.create(recursive: true);
@@ -19,9 +19,9 @@ main() {
     var indexFile = webDir.childFile('index.html');
     await indexFile.writeAsString('index');
 
-    app = new Angel();
+    app = Angel();
 
-    var vDir = new VirtualDirectory(
+    var vDir = VirtualDirectory(
       app,
       fileSystem,
       source: webDir,
@@ -32,7 +32,7 @@ main() {
       ..fallback(vDir.pushState('index.html'))
       ..fallback((req, res) => 'Fallback');
 
-    app.logger = new Logger('push_state')
+    app.logger = Logger('push_state')
       ..onRecord.listen(
         (rec) {
           print(rec);

@@ -14,14 +14,14 @@ main() {
   AngelHttp http;
   Directory testDir = const LocalFileSystem().directory('test');
   String url;
-  Client client = new Client();
+  Client client = Client();
 
   setUp(() async {
-    app = new Angel();
-    http = new AngelHttp(app);
+    app = Angel();
+    http = AngelHttp(app);
 
     app.fallback(
-      new CachingVirtualDirectory(app, const LocalFileSystem(),
+      CachingVirtualDirectory(app, const LocalFileSystem(),
           source: testDir, maxAge: 350, onlyInProduction: false,
           //publicPath: '/virtual',
           indexFileNames: ['index.txt']).handleRequest,
@@ -31,7 +31,7 @@ main() {
 
     app.dumpTree(showMatchers: true);
 
-    app.logger = new Logger('angel_static')
+    app.logger = Logger('angel_static')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
@@ -63,7 +63,7 @@ main() {
   test('if-modified-since', () async {
     var response = await client.get("$url", headers: {
       'if-modified-since':
-          HttpDate.format(new DateTime.now().add(new Duration(days: 365)))
+          HttpDate.format(DateTime.now().add(Duration(days: 365)))
     });
 
     print('Response status: ${response.statusCode}');
