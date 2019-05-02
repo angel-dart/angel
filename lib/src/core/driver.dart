@@ -280,12 +280,15 @@ abstract class Driver<
   Future sendResponse(Request request, Response response, RequestContext req,
       ResponseContext res,
       {bool ignoreFinalizers = false}) {
-    void _cleanup(_) {
-      if (!app.environment.isProduction && app.logger != null) {
+    Future<void> _cleanup(_) {
+      if (!app.environment.isProduction &&
+          app.logger != null &&
+          req.container.has<Stopwatch>()) {
         var sw = req.container.make<Stopwatch>();
         app.logger.info(
             "${res.statusCode} ${req.method} ${req.uri} (${sw?.elapsedMilliseconds ?? 'unknown'} ms)");
       }
+      return req.close();
     }
 
     if (!res.isBuffered) return res.close().then(_cleanup);

@@ -1,6 +1,10 @@
 # 2.0.1
 * Tracked down a bug in `Driver.runPipeline` that allowed fallback
 handlers to run, even after the response was closed.
+* Add `RequestContext.shutdownHooks`.
+* Call `RequestContext.close` in `Driver.sendResponse`.
+* AngelConfigurer is now `FutureOr<void>`, instead of just `FutureOr`.
+* Use a `Container.has<Stopwatch>` check in `Driver.sendResponse`.
 
 # 2.0.0
 * Angel 2! :angel: :rocket:

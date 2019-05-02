@@ -14,6 +14,7 @@ import 'dart:io'
 import 'package:angel_container/angel_container.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:http_server/http_server.dart';
+import 'package:meta/meta.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 
@@ -26,8 +27,12 @@ part 'injection.dart';
 
 /// A convenience wrapper around an incoming [RawRequest].
 abstract class RequestContext<RawRequest> {
+  /// Similar to [Angel.shutdownHooks], allows for logic to be executed
+  /// when a [RequestContext] is done being processed.
+  final List<FutureOr<void> Function()> shutdownHooks = [];
+
   String _acceptHeaderCache, _extensionCache;
-  bool _acceptsAllCache, _hasParsedBody = false;
+  bool _acceptsAllCache, _hasParsedBody = false, _closed = false;
   Map<String, dynamic> _bodyFields, _queryParameters;
   List _bodyList;
   Object _bodyObject;
@@ -271,12 +276,16 @@ abstract class RequestContext<RawRequest> {
   }
 
   /// Disposes of all resources.
-  Future close() {
-    _acceptsAllCache = null;
-    _acceptHeaderCache = null;
-    serviceParams.clear();
-    params.clear();
-    return new Future.value();
+  @mustCallSuper
+  Future<void> close() async {
+    if (!_closed) {
+      _closed = true;
+      _acceptsAllCache = null;
+      _acceptHeaderCache = null;
+      serviceParams.clear();
+      params.clear();
+      await Future.forEach(shutdownHooks, (hook) => hook());
+    }
   }
 }
 
