@@ -17,11 +17,11 @@ main() {
   TestClient testClient;
 
   setUp(() async {
-    app = new Angel();
+    app = Angel();
     app.configuration['properties'] = app.configuration;
-    app.container.registerSingleton(new AuthCodes());
+    app.container.registerSingleton(AuthCodes());
 
-    var server = new _Server();
+    var server = _Server();
 
     app.group('/oauth2', (router) {
       router
@@ -29,14 +29,14 @@ main() {
         ..post('/token', server.tokenEndpoint);
     });
 
-    app.logger = new Logger('angel')
+    app.logger = Logger('angel')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
         if (rec.stackTrace != null) print(rec.stackTrace);
       });
 
-    var http = new AngelHttp(app);
+    var http = AngelHttp(app);
     var s = await http.startServer();
     var url = 'http://${s.address.address}:${s.port}';
     authorizationEndpoint = Uri.parse('$url/oauth2/authorize');
@@ -52,7 +52,7 @@ main() {
 
   group('auth code', () {
     oauth2.AuthorizationCodeGrant createGrant() =>
-        new oauth2.AuthorizationCodeGrant(
+        oauth2.AuthorizationCodeGrant(
           pseudoApplication.id,
           authorizationEndpoint,
           tokenEndpoint,
@@ -119,7 +119,7 @@ main() {
 }
 
 class _Server extends AuthorizationServer<PseudoApplication, Map> {
-  final Uuid _uuid = new Uuid();
+  final Uuid _uuid = Uuid();
 
   @override
   FutureOr<PseudoApplication> findClient(String clientId) {
@@ -155,6 +155,7 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
 
   @override
   Future<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
+      PseudoApplication client,
       String authCode,
       String redirectUri,
       RequestContext req,
@@ -162,7 +163,7 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
     var authCodes = req.container.make<AuthCodes>();
     var state = authCodes[authCode];
     var refreshToken = state == 'can_refresh' ? '${authCode}_refresh' : null;
-    return new AuthorizationTokenResponse('${authCode}_access',
+    return AuthorizationTokenResponse('${authCode}_access',
         refreshToken: refreshToken);
   }
 }

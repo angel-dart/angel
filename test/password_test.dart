@@ -12,8 +12,8 @@ main() {
   Uri tokenEndpoint;
 
   setUp(() async {
-    app = new Angel();
-    var auth = new _AuthorizationServer();
+    app = Angel();
+    var auth = _AuthorizationServer();
 
     app.group('/oauth2', (router) {
       router
@@ -25,9 +25,9 @@ main() {
       res.json(e.toJson());
     };
 
-    app.logger = new Logger('password_test')..onRecord.listen(print);
+    app.logger = Logger('password_test')..onRecord.listen(print);
 
-    var http = new AngelHttp(app);
+    var http = AngelHttp(app);
     var server = await http.startServer();
     var url = 'http://${server.address.address}:${server.port}';
     tokenEndpoint = Uri.parse('$url/oauth2/token');
@@ -61,7 +61,7 @@ main() {
         secret: 'bar',
       );
 
-      throw new StateError('should fail');
+      throw StateError('should fail');
     } on oauth2.AuthorizationException catch (e) {
       expect(e.error, ErrorResponse.accessDenied);
     } finally {
@@ -105,7 +105,7 @@ class _AuthorizationServer
       Iterable<String> scopes,
       RequestContext req,
       ResponseContext res) async {
-    return new AuthorizationTokenResponse('baz', refreshToken: 'bar');
+    return AuthorizationTokenResponse('baz', refreshToken: 'bar');
   }
 
   @override
@@ -122,8 +122,8 @@ class _AuthorizationServer
 
     if (user == null) {
       var body = await req.parseBody().then((_) => req.bodyAsMap);
-      throw new AuthorizationException(
-        new ErrorResponse(
+      throw AuthorizationException(
+        ErrorResponse(
           ErrorResponse.accessDenied,
           'Invalid username or password.',
           body['state']?.toString() ?? '',
@@ -132,6 +132,6 @@ class _AuthorizationServer
       );
     }
 
-    return new AuthorizationTokenResponse('foo', refreshToken: 'bar');
+    return AuthorizationTokenResponse('foo', refreshToken: 'bar');
   }
 }

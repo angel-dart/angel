@@ -11,8 +11,8 @@ main() {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel();
-    var oauth2 = new _AuthorizationServer();
+    var app = Angel();
+    var oauth2 = _AuthorizationServer();
 
     app.group('/oauth2', (router) {
       router
@@ -47,7 +47,7 @@ main() {
         allOf(
           hasStatus(200),
           hasContentType('application/json'),
-          hasValidBody(new Validator({
+          hasValidBody(Validator({
             'token_type': equals('bearer'),
             'access_token': equals('foo'),
           })),
@@ -101,6 +101,6 @@ class _AuthorizationServer
   @override
   Future<AuthorizationTokenResponse> clientCredentialsGrant(
       PseudoApplication client, RequestContext req, ResponseContext res) async {
-    return new AuthorizationTokenResponse('foo');
+    return AuthorizationTokenResponse('foo');
   }
 }

@@ -39,7 +39,7 @@ but that it can also verify its identity via a `client_secret`.
 
 ```dart
 class _Server extends AuthorizationServer<PseudoApplication, Map> {
-  final Uuid _uuid = new Uuid();
+  final Uuid _uuid = Uuid();
 
   @override
   FutureOr<PseudoApplication> findClient(String clientId) {
@@ -80,7 +80,7 @@ Future<AuthorizationCodeResponse> exchangeAuthCodeForAccessToken(
   String redirectUri,
   RequestContext req,
   ResponseContext res) async {
-    return new AuthorizationCodeResponse('foo', refreshToken: 'bar');
+    return AuthorizationCodeResponse('foo', refreshToken: 'bar');
 }
 ```
 
@@ -137,7 +137,7 @@ Future requestAuthorizationCode(
 
   // At this point, store `pkce.codeChallenge` and `pkce.codeChallengeMethod`,
   // so that when it's time to exchange the auth code for a token, we can
-  // create a new [Pkce] object, and verify the client.
+  // create a [Pkce] object, and verify the client.
   return await getAuthCodeSomehow(client, pkce.codeChallenge, pkce.codeChallengeMethod); 
 }
 
@@ -159,14 +159,14 @@ Future<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
   var codeChallenge = await getTheChallenge();
   var codeChallengeMethod = await getTheChallengeMethod();
 
-  // Make a new [Pkce] object.
-  var pkce = new Pkce(codeChallengeMethod, codeChallenge);
+  // Make a [Pkce] object.
+  var pkce = Pkce(codeChallengeMethod, codeChallenge);
 
   // Call `validate`. If the client is invalid, it throws an OAuth2 exception.
   pkce.validate(codeVerifier);
 
   // If we reach here, we know that the `code_verifier` was valid,
   // so we can return our authorization token as per usual.
-  return new AuthorizationTokenResponse('...');
+  return AuthorizationTokenResponse('...');
 }
 ```

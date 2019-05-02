@@ -4,9 +4,9 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
 
 main() async {
-  var app = new Angel();
-  var oauth2 = new _ExampleAuthorizationServer();
-  var _rgxBearer = new RegExp(r'^[Bb]earer ([^\n\s]+)$');
+  var app = Angel();
+  var oauth2 = _ExampleAuthorizationServer();
+  var _rgxBearer = RegExp(r'^[Bb]earer ([^\n\s]+)$');
 
   app.group('/auth', (router) {
     router
@@ -40,13 +40,13 @@ class _ExampleAuthorizationServer
   @override
   FutureOr<ThirdPartyApp> findClient(String clientId) {
     // TODO: Add your code to find the app associated with a client ID.
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   @override
   FutureOr<bool> verifyClient(ThirdPartyApp client, String clientSecret) {
     // TODO: Add your code to verify a client secret, if given one.
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   @override
@@ -58,17 +58,18 @@ class _ExampleAuthorizationServer
       RequestContext req,
       ResponseContext res) {
     // TODO: In many cases, here you will render a view displaying to the user which scopes are being requested.
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   @override
   FutureOr<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
+      ThirdPartyApp client,
       String authCode,
       String redirectUri,
       RequestContext req,
       ResponseContext res) {
     // TODO: Here, you'll convert the auth code into a full-fledged token.
     // You might have the auth code stored in a database somewhere.
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 }

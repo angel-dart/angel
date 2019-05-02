@@ -11,8 +11,8 @@ main() {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel();
-    var oauth2 = new _AuthorizationServer();
+    var app = Angel();
+    var oauth2 = _AuthorizationServer();
 
     app.group('/oauth2', (router) {
       router
@@ -20,7 +20,7 @@ main() {
         ..post('/token', oauth2.tokenEndpoint);
     });
 
-    app.logger = new Logger('angel_oauth2')
+    app.logger = Logger('angel_oauth2')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
@@ -145,7 +145,7 @@ class _AuthorizationServer
   @override
   FutureOr<DeviceCodeResponse> requestDeviceCode(PseudoApplication client,
       Iterable<String> scopes, RequestContext req, ResponseContext res) {
-    return new DeviceCodeResponse(
+    return DeviceCodeResponse(
         'foo',
         'bar',
         Uri.parse('https://regiostech.com')
@@ -161,12 +161,12 @@ class _AuthorizationServer
       RequestContext req,
       ResponseContext res) {
     if (deviceCode == 'brute') {
-      throw new AuthorizationException(new ErrorResponse(
+      throw AuthorizationException(ErrorResponse(
           ErrorResponse.slowDown,
           "Ho, brother! Ho, whoa, whoa, whoa now! You got too much dip on your chip!",
           state));
     }
 
-    return new AuthorizationTokenResponse('foo');
+    return AuthorizationTokenResponse('foo');
   }
 }

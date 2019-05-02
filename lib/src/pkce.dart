@@ -23,20 +23,20 @@ class Pkce {
         data['code_challenge_method']?.toString() ?? 'plain';
 
     if (codeChallengeMethod != 'plain' && codeChallengeMethod != 's256') {
-      throw new AuthorizationException(new ErrorResponse(
+      throw AuthorizationException(ErrorResponse(
           ErrorResponse.invalidRequest,
           "The `code_challenge_method` parameter must be either 'plain' or 's256'.",
           state,
           uri: uri));
     } else if (codeChallenge?.isNotEmpty != true) {
-      throw new AuthorizationException(new ErrorResponse(
+      throw AuthorizationException(ErrorResponse(
           ErrorResponse.invalidRequest,
           'Missing `code_challenge` parameter.',
           state,
           uri: uri));
     }
 
-    return new Pkce(codeChallengeMethod, codeChallenge);
+    return Pkce(codeChallengeMethod, codeChallenge);
   }
 
   /// Returns [true] if the [codeChallengeMethod] is `plain`.
@@ -57,8 +57,8 @@ class Pkce {
     }
 
     if (foreignChallenge != codeChallenge) {
-      throw new AuthorizationException(
-        new ErrorResponse(ErrorResponse.invalidGrant,
+      throw AuthorizationException(
+        ErrorResponse(ErrorResponse.invalidGrant,
             "The given `code_verifier` parameter is invalid.", state,
             uri: uri),
       );

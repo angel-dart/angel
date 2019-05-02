@@ -10,8 +10,8 @@ main() {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel();
-    var oauth2 = new _AuthorizationServer();
+    var app = Angel();
+    var oauth2 = _AuthorizationServer();
 
     app.group('/oauth2', (router) {
       router
@@ -65,6 +65,6 @@ class _AuthorizationServer
       String state,
       RequestContext req,
       ResponseContext res) async {
-    return new AuthorizationTokenResponse('foo');
+    return AuthorizationTokenResponse('foo');
   }
 }

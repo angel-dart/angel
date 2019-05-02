@@ -1,3 +1,7 @@
+# 2.2.0
+* Pass `client` to `exchangeAuthorizationCodeForToken`.
+* Apply `package:pedantic`.
+
 # 2.1.0
 * Updates
 * Support `device_code` grants.

@@ -52,7 +52,7 @@ class ErrorResponse {
   /// The authorization request is still pending as the end user hasn't
   /// yet completed the user interaction steps (Section 3.3).  The
   /// client SHOULD repeat the Access Token Request to the token
-  /// endpoint (a process known as polling).  Before each new request
+  /// endpoint (a process known as polling).  Before each request
   /// the client MUST wait at least the number of seconds specified by
   /// the "interval" parameter of the Device Authorization Response (see
   /// Section 3.2), or 5 seconds if none was provided, and respect any
@@ -66,7 +66,7 @@ class ErrorResponse {
   static const String slowDown = 'slow_down';
 
   /// The "device_code" has expired and the device flow authorization
-  /// session has concluded.  The client MAY commence a new Device
+  /// session has concluded.  The client MAY commence a Device
   /// Authorization Request but SHOULD wait for user interaction before
   /// restarting to avoid unnecessary polling.
   static const String expiredToken = 'expired_token';

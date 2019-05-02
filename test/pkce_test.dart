@@ -6,21 +6,19 @@ import 'package:angel_framework/http.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
 import 'package:angel_test/angel_test.dart';
 import 'package:logging/logging.dart';
-import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:test/test.dart';
-import 'package:uuid/uuid.dart';
 import 'common.dart';
 
 main() {
   Angel app;
-  Uri authorizationEndpoint, tokenEndpoint, redirectUri;
+  Uri authorizationEndpoint, tokenEndpoint;
   TestClient testClient;
 
   setUp(() async {
-    app = new Angel();
-    app.container.registerSingleton(new AuthCodes());
+    app = Angel();
+    app.container.registerSingleton(AuthCodes());
 
-    var server = new _Server();
+    var server = _Server();
 
     app.group('/oauth2', (router) {
       router
@@ -28,19 +26,18 @@ main() {
         ..post('/token', server.tokenEndpoint);
     });
 
-    app.logger = new Logger('angel')
+    app.logger = Logger('angel')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
         if (rec.stackTrace != null) print(rec.stackTrace);
       });
 
-    var http = new AngelHttp(app);
+    var http = AngelHttp(app);
     var s = await http.startServer();
     var url = 'http://${s.address.address}:${s.port}';
     authorizationEndpoint = Uri.parse('$url/oauth2/authorize');
     tokenEndpoint = Uri.parse('$url/oauth2/token');
-    redirectUri = Uri.parse('http://foo.bar/baz');
 
     testClient = await connectTo(app);
   });
@@ -228,8 +225,6 @@ main() {
 }
 
 class _Server extends AuthorizationServer<PseudoApplication, Map> {
-  final Uuid _uuid = new Uuid();
-
   @override
   FutureOr<PseudoApplication> findClient(String clientId) {
     return pseudoApplication;
@@ -255,14 +250,15 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
 
   @override
   Future<AuthorizationTokenResponse> exchangeAuthorizationCodeForToken(
+      PseudoApplication client,
       String authCode,
       String redirectUri,
       RequestContext req,
       ResponseContext res) async {
     var codeVerifier = await getPkceCodeVerifier(req);
-    var pkce = new Pkce('plain', 'hello');
+    var pkce = Pkce('plain', 'hello');
     pkce.validate(codeVerifier);
-    return new AuthorizationTokenResponse('yes');
+    return AuthorizationTokenResponse('yes');
   }
 }
 
