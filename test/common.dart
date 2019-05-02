@@ -6,7 +6,7 @@ import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
 
 Future<HttpServer> startTestServer() {
-  final app = new Angel();
+  final app = Angel();
 
   app.get('/hello', (req, res) => res.write('world'));
   app.get('/foo/bar', (req, res) => res.write('baz'));
@@ -16,7 +16,7 @@ Future<HttpServer> startTestServer() {
     return body;
   });
 
-  app.logger = new Logger('testApp');
+  app.logger = Logger('testApp');
   var server = AngelHttp(app);
   app.dumpTree();
 

@@ -1,3 +1,6 @@
+# 2.1.2
+* Apply lints.
+
 # 2.1.1
 * Update for framework@2.0.0-alpha.15
 

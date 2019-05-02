@@ -7,7 +7,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 final MediaType _fallbackMediaType = MediaType('application', 'octet-stream');
 
 class Proxy {
@@ -27,18 +27,18 @@ class Proxy {
   Proxy(
     this.httpClient,
     this.baseUrl, {
-    this.publicPath: '/',
-    this.recoverFromDead: true,
-    this.recoverFrom404: true,
+    this.publicPath = '/',
+    this.recoverFromDead = true,
+    this.recoverFrom404 = true,
     this.timeout,
   }) {
     if (!baseUrl.hasScheme || !baseUrl.hasAuthority)
-      throw new ArgumentError(
+      throw ArgumentError(
           'Invalid `baseUrl`. URI must have both a scheme and authority.');
     if (this.recoverFromDead == null)
-      throw new ArgumentError.notNull("recoverFromDead");
+      throw ArgumentError.notNull("recoverFromDead");
     if (this.recoverFrom404 == null)
-      throw new ArgumentError.notNull("recoverFrom404");
+      throw ArgumentError.notNull("recoverFrom404");
 
     _prefix = publicPath?.replaceAll(_straySlashes, '') ?? '';
   }
@@ -51,7 +51,7 @@ class Proxy {
 
     if (_prefix.isNotEmpty) {
       if (!p.isWithin(_prefix, path) && !p.equals(_prefix, path)) {
-        return new Future<bool>.value(true);
+        return Future<bool>.value(true);
       }
 
       path = p.relative(path, from: _prefix);
@@ -77,11 +77,11 @@ class Proxy {
           var local = await WebSocketTransformer.upgrade(req.rawRequest);
           var remote = await WebSocket.connect(uri.toString());
 
-          local.pipe(remote);
-          remote.pipe(local);
+          scheduleMicrotask(() => local.pipe(remote));
+          scheduleMicrotask(() => remote.pipe(local));
           return false;
         } catch (e, st) {
-          throw new AngelHttpException(e,
+          throw AngelHttpException(e,
               message: 'Could not connect WebSocket', stackTrace: st);
         }
       }
@@ -107,14 +107,14 @@ class Proxy {
 
         if (!req.hasParsedBody) {
           body = await req.body
-              .fold<BytesBuilder>(new BytesBuilder(), (bb, buf) => bb..add(buf))
+              .fold<BytesBuilder>(BytesBuilder(), (bb, buf) => bb..add(buf))
               .then((bb) => bb.takeBytes());
         }
 
-        var rq = new http.Request(req.method, uri);
+        var rq = http.Request(req.method, uri);
         rq.headers.addAll(headers);
         rq.headers['host'] = rq.url.host;
-        rq.encoding = new Utf8Codec(allowMalformed: true);
+        rq.encoding = Utf8Codec(allowMalformed: true);
 
         if (body != null) rq.bodyBytes = body;
 
@@ -127,7 +127,7 @@ class Proxy {
     } on TimeoutException catch (e, st) {
       if (recoverFromDead) return true;
 
-      throw new AngelHttpException(
+      throw AngelHttpException(
         e,
         stackTrace: st,
         statusCode: 504,
@@ -145,12 +145,11 @@ class Proxy {
     MediaType mediaType;
     if (rs.headers.containsKey(HttpHeaders.contentTypeHeader)) {
       try {
-        mediaType =
-            new MediaType.parse(rs.headers[HttpHeaders.contentTypeHeader]);
+        mediaType = MediaType.parse(rs.headers[HttpHeaders.contentTypeHeader]);
       } on FormatException catch (e, st) {
         if (recoverFromDead) return true;
 
-        throw new AngelHttpException(
+        throw AngelHttpException(
           e,
           stackTrace: st,
           statusCode: 504,
@@ -168,7 +167,7 @@ class Proxy {
         rs.headers[HttpHeaders.contentEncodingHeader]?.isNotEmpty == true ||
         rs.headers[HttpHeaders.transferEncodingHeader]?.isNotEmpty == true;
 
-    var proxiedHeaders = new Map<String, String>.from(rs.headers)
+    var proxiedHeaders = Map<String, String>.from(rs.headers)
       ..remove(
           HttpHeaders.contentEncodingHeader) // drop, http.Client has decoded
       ..remove(

@@ -15,7 +15,7 @@ main() {
   Proxy layer;
 
   setUp(() async {
-    testApp = new Angel();
+    testApp = Angel();
     testApp.get('/foo', (req, res) async {
       res.useBuffer();
       res.write('pub serve');
@@ -23,25 +23,25 @@ main() {
     testApp.get('/empty', (req, res) => res.close());
 
     testApp.responseFinalizers.add((req, res) async {
-      print('OUTGOING: ' + new String.fromCharCodes(res.buffer.toBytes()));
+      print('OUTGOING: ' + String.fromCharCodes(res.buffer.toBytes()));
     });
 
     testApp.encoders.addAll({'gzip': gzip.encoder});
 
     var server = await AngelHttp(testApp).startServer();
 
-    app = new Angel();
+    app = Angel();
     app.fallback((req, res) {
       res.useBuffer();
       return true;
     });
     app.get('/bar', (req, res) => res.write('normal'));
 
-    var httpClient = new http.IOClient();
+    var httpClient = http.IOClient();
 
-    layer = new Proxy(
+    layer = Proxy(
       httpClient,
-      new Uri(scheme: 'http', host: server.address.address, port: server.port),
+      Uri(scheme: 'http', host: server.address.address, port: server.port),
       publicPath: '/proxy',
     );
 
@@ -49,7 +49,7 @@ main() {
 
     app.responseFinalizers.add((req, res) async {
       print('Normal. Buf: ' +
-          new String.fromCharCodes(res.buffer.toBytes()) +
+          String.fromCharCodes(res.buffer.toBytes()) +
           ', headers: ${res.headers}');
     });
 
@@ -57,7 +57,7 @@ main() {
 
     client = await connectTo(app);
 
-    app.logger = testApp.logger = new Logger('proxy')
+    app.logger = testApp.logger = Logger('proxy')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
@@ -74,7 +74,8 @@ main() {
   });
 
   test('proxied', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/proxy/foo'))..close();
+    var rq = MockHttpRequest('GET', Uri.parse('/proxy/foo'));
+    await rq.close();
     var rqc = await HttpRequestContext.from(rq, app, '/proxy/foo');
     var rsc = HttpResponseContext(rq.response, app);
     await app.executeHandler(layer.handleRequest, rqc, rsc);

@@ -10,27 +10,27 @@ import 'common.dart';
 
 main() {
   Angel app;
-  var client = new http.IOClient();
+  var client = http.IOClient();
   HttpServer server, testServer;
   String url;
 
   setUp(() async {
-    app = new Angel();
+    app = Angel();
     var appHttp = AngelHttp(app);
-    var httpClient = new http.IOClient();
+    var httpClient = http.IOClient();
 
     testServer = await startTestServer();
 
-    var proxy1 = new Proxy(
+    var proxy1 = Proxy(
       httpClient,
-      new Uri(
+      Uri(
           scheme: 'http',
           host: testServer.address.address,
           port: testServer.port),
       publicPath: '/proxy',
     );
 
-    var proxy2 = new Proxy(httpClient, proxy1.baseUrl.replace(path: '/foo'));
+    var proxy2 = Proxy(httpClient, proxy1.baseUrl.replace(path: '/foo'));
     print('Proxy 1 on: ${proxy1.baseUrl}');
     print('Proxy 2 on: ${proxy2.baseUrl}');
 
@@ -46,7 +46,7 @@ main() {
       httpClient.close();
     });
 
-    app.logger = new Logger('angel');
+    app.logger = Logger('angel');
 
     Logger.root.onRecord.listen((rec) {
       print(rec);
