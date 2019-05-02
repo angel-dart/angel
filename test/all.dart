@@ -19,6 +19,7 @@ import 'parse_id_test.dart' as parse_id;
 import 'precontained_test.dart' as precontained;
 import 'primitives_test.dart' as primitives;
 import 'repeat_request_test.dart' as repeat_request;
+import 'req_shutdown_test.dart' as req_shutdown;
 import 'routing_test.dart' as routing;
 import 'serialize_test.dart' as serialize;
 import 'server_test.dart' as server;
@@ -49,7 +50,8 @@ main() {
   group('parse_id', parse_id.main);
   group('precontained', precontained.main);
   group('primitives', primitives.main);
-  group('repeat request', repeat_request.main);
+  group('repeat_request', repeat_request.main);
+  group('req_shutdown', req_shutdown.main);
   group('routing', routing.main);
   group('serialize', serialize.main);
   group('server', server.main);

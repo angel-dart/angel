@@ -74,5 +74,7 @@ Future<void> hello(RequestContext req, ResponseContext res) {
 
 /// 404
 void throw404(RequestContext req, ResponseContext res) {
+  Zone.current
+      .handleUncaughtError('This 404 should not occur.', StackTrace.current);
   throw AngelHttpException.notFound();
 }
