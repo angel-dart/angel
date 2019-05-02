@@ -354,12 +354,16 @@ abstract class Driver<
       RequestContextType req,
       ResponseContextType res,
       Angel app) async {
+    var broken = false;
     while (it.moveNext()) {
       var current = it.current.handlers.iterator;
 
-      while (current.moveNext()) {
+      while (!broken && current.moveNext()) {
         var result = await app.executeHandler(current.current, req, res);
-        if (result != true) break;
+        if (result != true) {
+          broken = true;
+          break;
+        }
       }
     }
   }

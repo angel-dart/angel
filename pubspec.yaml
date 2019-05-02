@@ -29,6 +29,6 @@ dependencies:
   tuple: ^1.0.0
   uuid: ^2.0.0-rc.1
 dev_dependencies:
-  http: ^0.11.3
+  http: ^0.12.0
   io: ^0.3.0
   test: ^1.0.0

@@ -1,3 +1,7 @@
+# 2.0.1
+* Tracked down a bug in `Driver.runPipeline` that allowed fallback
+handlers to run, even after the response was closed.
+
 # 2.0.0
 * Angel 2! :angel: :rocket:
 
