@@ -29,10 +29,8 @@ class Pkce {
           state,
           uri: uri));
     } else if (codeChallenge?.isNotEmpty != true) {
-      throw AuthorizationException(ErrorResponse(
-          ErrorResponse.invalidRequest,
-          'Missing `code_challenge` parameter.',
-          state,
+      throw AuthorizationException(ErrorResponse(ErrorResponse.invalidRequest,
+          'Missing `code_challenge` parameter.', state,
           uri: uri));
     }
 
