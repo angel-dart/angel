@@ -57,7 +57,7 @@ abstract class Driver<
 
   /// Shuts down the underlying server.
   Future<Server> close() {
-    if (_closed) return new Future.value(_server);
+    if (_closed) return Future.value(_server);
     _closed = true;
     _sub?.cancel();
     return app.close().then((_) =>
@@ -102,8 +102,8 @@ abstract class Driver<
             var r = app.optimizedRouter;
             var resolved =
                 r.resolveAbsolute(path, method: req.method, strip: false);
-            var pipeline = new MiddlewarePipeline<RequestHandler>(resolved);
-            return new Tuple4(
+            var pipeline = MiddlewarePipeline<RequestHandler>(resolved);
+            return Tuple4(
               pipeline.handlers,
               resolved.fold<Map<String, dynamic>>(
                   <String, dynamic>{}, (out, r) => out..addAll(r.allParams)),
@@ -132,8 +132,7 @@ abstract class Driver<
             ..registerSingleton<ParseResult>(tuple.item3);
 
           if (!app.environment.isProduction && app.logger != null) {
-            req.container
-                .registerSingleton<Stopwatch>(new Stopwatch()..start());
+            req.container.registerSingleton<Stopwatch>(Stopwatch()..start());
           }
 
           return runPipeline(it, req, res, app)
@@ -151,9 +150,9 @@ abstract class Driver<
 
           return f.catchError((e, StackTrace st) {
             if (e is FormatException)
-              throw new AngelHttpException.badRequest(message: e.message)
+              throw AngelHttpException.badRequest(message: e.message)
                 ..stackTrace = st;
-            throw new AngelHttpException(e,
+            throw AngelHttpException(e,
                 stackTrace: st,
                 statusCode: 500,
                 message: e?.toString() ?? '500 Internal Server Error');
@@ -163,8 +162,7 @@ abstract class Driver<
 
             if (app.logger != null) {
               var error = e.error ?? e;
-              var trace =
-                  new Trace.from(e.stackTrace ?? StackTrace.current).terse;
+              var trace = Trace.from(e.stackTrace ?? StackTrace.current).terse;
               app.logger.severe(e.message ?? e.toString(), error, trace);
             }
 
@@ -172,7 +170,7 @@ abstract class Driver<
                 e, e.stackTrace ?? st, req, res, request, response);
           });
         } else {
-          var zoneSpec = new ZoneSpecification(
+          var zoneSpec = ZoneSpecification(
             print: (self, parent, zone, line) {
               if (app.logger != null)
                 app.logger.info(line);
@@ -180,18 +178,17 @@ abstract class Driver<
                 parent.print(zone, line);
             },
             handleUncaughtError: (self, parent, zone, error, stackTrace) {
-              var trace =
-                  new Trace.from(stackTrace ?? StackTrace.current).terse;
+              var trace = Trace.from(stackTrace ?? StackTrace.current).terse;
 
-              return new Future(() {
+              return Future(() {
                 AngelHttpException e;
 
                 if (error is FormatException) {
-                  e = new AngelHttpException.badRequest(message: error.message);
+                  e = AngelHttpException.badRequest(message: error.message);
                 } else if (error is AngelHttpException) {
                   e = error;
                 } else {
-                  e = new AngelHttpException(error,
+                  e = AngelHttpException(error,
                       stackTrace: stackTrace,
                       message:
                           error?.toString() ?? '500 Internal Server Error');
@@ -204,7 +201,7 @@ abstract class Driver<
                 return handleAngelHttpException(
                     e, trace, req, res, request, response);
               }).catchError((e, StackTrace st) {
-                var trace = new Trace.from(st ?? StackTrace.current).terse;
+                var trace = Trace.from(st ?? StackTrace.current).terse;
                 closeResponse(response);
                 // Ideally, we won't be in a position where an absolutely fatal error occurs,
                 // but if so, we'll need to log it.
@@ -263,11 +260,11 @@ abstract class Driver<
     Future handleError;
 
     if (!res.isOpen)
-      handleError = new Future.value();
+      handleError = Future.value();
     else {
       res.statusCode = e.statusCode;
       handleError =
-          new Future.sync(() => app.errorHandler(e, req, res)).then((result) {
+          Future.sync(() => app.errorHandler(e, req, res)).then((result) {
         return app.executeHandler(result, req, res).then((_) => res.close());
       });
     }
@@ -294,7 +291,7 @@ abstract class Driver<
     if (!res.isBuffered) return res.close().then(_cleanup);
 
     Future finalizers = ignoreFinalizers == true
-        ? new Future.value()
+        ? Future.value()
         : Future.forEach(app.responseFinalizers, (f) => f(req, res));
 
     return finalizers.then((_) {

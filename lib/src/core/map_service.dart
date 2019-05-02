@@ -49,11 +49,11 @@ class MapService extends Service<String, Map<String, dynamic>> {
   @override
   Future<List<Map<String, dynamic>>> index([Map<String, dynamic> params]) {
     if (allowQuery == false || params == null || params['query'] is! Map)
-      return new Future.value(items);
+      return Future.value(items);
     else {
       var query = params['query'] as Map;
 
-      return new Future.value(items.where((item) {
+      return Future.value(items.where((item) {
         for (var key in query.keys) {
           if (!item.containsKey(key))
             return false;
@@ -67,8 +67,8 @@ class MapService extends Service<String, Map<String, dynamic>> {
 
   @override
   Future<Map<String, dynamic>> read(String id, [Map<String, dynamic> params]) {
-    return new Future.value(items.firstWhere(_matchesId(id),
-        orElse: () => throw new AngelHttpException.notFound(
+    return Future.value(items.firstWhere(_matchesId(id),
+        orElse: () => throw AngelHttpException.notFound(
             message: 'No record found for ID $id')));
   }
 
@@ -76,11 +76,11 @@ class MapService extends Service<String, Map<String, dynamic>> {
   Future<Map<String, dynamic>> create(Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
     if (data is! Map)
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
-    var now = new DateTime.now().toIso8601String();
-    var result = new Map<String, dynamic>.from(data);
+    var now = DateTime.now().toIso8601String();
+    var result = Map<String, dynamic>.from(data);
 
     if (autoIdAndDateFields == true) {
       result
@@ -89,14 +89,14 @@ class MapService extends Service<String, Map<String, dynamic>> {
         ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] = now;
     }
     items.add(result);
-    return new Future.value(result);
+    return Future.value(result);
   }
 
   @override
   Future<Map<String, dynamic>> modify(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
     if (data is! Map)
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message:
               'MapService does not support `modify` with ${data.runtimeType}.');
     if (!items.any(_matchesId(id))) return create(data, params);
@@ -104,13 +104,13 @@ class MapService extends Service<String, Map<String, dynamic>> {
     return read(id).then((item) {
       var idx = items.indexOf(item);
       if (idx < 0) return create(data, params);
-      var result = new Map<String, dynamic>.from(item)..addAll(data);
+      var result = Map<String, dynamic>.from(item)..addAll(data);
 
       if (autoIdAndDateFields == true)
         result
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
-              new DateTime.now().toIso8601String();
-      return new Future.value(items[idx] = result);
+              DateTime.now().toIso8601String();
+      return Future.value(items[idx] = result);
     });
   }
 
@@ -118,27 +118,27 @@ class MapService extends Service<String, Map<String, dynamic>> {
   Future<Map<String, dynamic>> update(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
     if (data is! Map)
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message:
               'MapService does not support `update` with ${data.runtimeType}.');
     if (!items.any(_matchesId(id))) return create(data, params);
 
     return read(id).then((old) {
       if (!items.remove(old))
-        throw new AngelHttpException.notFound(
+        throw AngelHttpException.notFound(
             message: 'No record found for ID $id');
 
-      var result = new Map<String, dynamic>.from(data);
+      var result = Map<String, dynamic>.from(data);
       if (autoIdAndDateFields == true) {
         result
           ..['id'] = id?.toString()
           ..[autoSnakeCaseNames == false ? 'createdAt' : 'created_at'] =
               old[autoSnakeCaseNames == false ? 'createdAt' : 'created_at']
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
-              new DateTime.now().toIso8601String();
+              DateTime.now().toIso8601String();
       }
       items.add(result);
-      return new Future.value(result);
+      return Future.value(result);
     });
   }
 
@@ -153,7 +153,7 @@ class MapService extends Service<String, Map<String, dynamic>> {
             message: 'Clients are not allowed to delete all items.');
       } else {
         items.clear();
-        return new Future.value({});
+        return Future.value({});
       }
     }
 
@@ -161,7 +161,7 @@ class MapService extends Service<String, Map<String, dynamic>> {
       if (items.remove(result))
         return result;
       else
-        throw new AngelHttpException.notFound(
+        throw AngelHttpException.notFound(
             message: 'No record found for ID $id');
     });
   }

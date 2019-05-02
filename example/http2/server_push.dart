@@ -6,15 +6,15 @@ import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel();
-  app.logger = new Logger('angel')
+  var app = Angel();
+  app.logger = Logger('angel')
     ..onRecord.listen((rec) {
       print(rec);
       if (rec.error != null) print(rec.error);
       if (rec.stackTrace != null) print(rec.stackTrace);
     });
 
-  var publicDir = new Directory('example/http2/public');
+  var publicDir = Directory('example/http2/public');
   var indexHtml =
       const LocalFileSystem().file(publicDir.uri.resolve('index.html'));
   var styleCss =
@@ -38,7 +38,7 @@ main() async {
     }
   });
 
-  var ctx = new SecurityContext()
+  var ctx = SecurityContext()
     ..useCertificateChain('dev.pem')
     ..usePrivateKey('dev.key', password: 'dartdart');
 
@@ -51,8 +51,8 @@ main() async {
         st);
   }
 
-  var http1 = new AngelHttp(app);
-  var http2 = new AngelHttp2(app, ctx);
+  var http1 = AngelHttp(app);
+  var http2 = AngelHttp2(app, ctx);
 
   // HTTP/1.x requests will fallback to `AngelHttp`
   http2.onHttp1.listen(http1.handleRequest);

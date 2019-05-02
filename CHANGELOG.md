@@ -5,6 +5,7 @@ handlers to run, even after the response was closed.
 * Call `RequestContext.close` in `Driver.sendResponse`.
 * AngelConfigurer is now `FutureOr<void>`, instead of just `FutureOr`.
 * Use a `Container.has<Stopwatch>` check in `Driver.sendResponse`.
+* Remove unnecessary `new` and `const`.
 
 # 2.0.0
 * Angel 2! :angel: :rocket:
@@ -124,7 +125,7 @@ stable, there'll be a conversion, perhaps.
 
 - All calls to `Service.parseId` are now affixed with the `<Id>` argument.
 - Added `uri` getter to `AngelHttp`.
-- The default for `parseQuery` now wraps query parameters in `new Map<String, dynamic>.from`.
+- The default for `parseQuery` now wraps query parameters in `Map<String, dynamic>.from`.
   This resolves a bug in `package:angel_validate`.
 
 # 2.0.0-alpha.9

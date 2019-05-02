@@ -13,9 +13,9 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(reflector: MirrorsReflector())
+    app = Angel(reflector: MirrorsReflector())
       ..configuration['global'] = 305; // Pitbull!
-    http = new AngelHttp(app);
+    http = AngelHttp(app);
 
     app.get('/string/:string', ioc((String string) => string));
 
@@ -39,7 +39,7 @@ main() {
   tearDown(() => app.close());
 
   test('String type annotation', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/string/hello'));
+    var rq = MockHttpRequest('GET', Uri.parse('/string/hello'));
     unawaited(rq.close());
     await http.handleRequest(rq);
     var rs = await rq.response.transform(utf8.decoder).join();
@@ -47,7 +47,7 @@ main() {
   });
 
   test('Primitive after parsed param injection', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/num/parsed/24'));
+    var rq = MockHttpRequest('GET', Uri.parse('/num/parsed/24'));
     unawaited(rq.close());
     await http.handleRequest(rq);
     var rs = await rq.response.transform(utf8.decoder).join();
@@ -55,7 +55,7 @@ main() {
   });
 
   test('globally-injected primitive', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/num/global'));
+    var rq = MockHttpRequest('GET', Uri.parse('/num/global'));
     unawaited(rq.close());
     await http.handleRequest(rq);
     var rs = await rq.response.transform(utf8.decoder).join();
@@ -64,12 +64,12 @@ main() {
 
   test('unparsed primitive throws error', () async {
     try {
-      var rq = new MockHttpRequest('GET', Uri.parse('/num/unparsed/32'));
+      var rq = MockHttpRequest('GET', Uri.parse('/num/unparsed/32'));
       unawaited(rq.close());
       var req = await http.createRequestContext(rq, rq.response);
       var res = await http.createResponseContext(rq, rq.response, req);
       await app.runContained((num unparsed) => unparsed, req, res);
-      throw new StateError(
+      throw StateError(
           'ArgumentError should be thrown if a parameter cannot be resolved.');
     } on ArgumentError {
       // Success

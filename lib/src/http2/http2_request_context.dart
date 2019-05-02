@@ -7,11 +7,11 @@ import 'package:http2/transport.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:uuid/uuid.dart';
 
-final RegExp _comma = new RegExp(r',\s*');
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _comma = RegExp(r',\s*');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 class Http2RequestContext extends RequestContext<ServerTransportStream> {
-  final StreamController<List<int>> _body = new StreamController();
+  final StreamController<List<int>> _body = StreamController();
   final Container container;
   List<Cookie> _cookies;
   HttpHeaders _headers;
@@ -32,13 +32,13 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
       Angel app,
       Map<String, MockHttpSession> sessions,
       Uuid uuid) {
-    var c = new Completer<Http2RequestContext>();
-    var req = new Http2RequestContext._(app.container.createChild())
+    var c = Completer<Http2RequestContext>();
+    var req = Http2RequestContext._(app.container.createChild())
       ..app = app
       .._socket = socket
       .._stream = stream;
 
-    var headers = req._headers = new MockHttpHeaders();
+    var headers = req._headers = MockHttpHeaders();
     // String scheme = 'https', host = socket.address.address, path = '';
     var uri =
         Uri(scheme: 'https', host: socket.address.address, port: socket.port);
@@ -46,7 +46,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
 
     void finalize() {
       req
-        .._cookies = new List.unmodifiable(cookies)
+        .._cookies = List.unmodifiable(cookies)
         .._uri = uri;
       if (!c.isCompleted) c.complete(req);
     }
@@ -97,7 +97,7 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
 
               for (var cookieString in cookieStrings) {
                 try {
-                  cookies.add(new Cookie.fromSetCookieValue(cookieString));
+                  cookies.add(Cookie.fromSetCookieValue(cookieString));
                 } catch (_) {
                   // Ignore malformed cookies, and just don't add them to the container.
                 }
@@ -127,12 +127,12 @@ class Http2RequestContext extends RequestContext<ServerTransportStream> {
         cookies.firstWhere((c) => c.name == 'DARTSESSID', orElse: () => null);
 
     if (dartSessId == null) {
-      dartSessId = new Cookie('DARTSESSID', uuid.v4());
+      dartSessId = Cookie('DARTSESSID', uuid.v4());
     }
 
     req._session = sessions.putIfAbsent(
       dartSessId.value,
-      () => new MockHttpSession(id: dartSessId.value),
+      () => MockHttpSession(id: dartSessId.value),
     );
 
     return c.future;

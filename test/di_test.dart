@@ -21,11 +21,11 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector());
-    client = new http.Client();
+    app = Angel(reflector: MirrorsReflector());
+    client = http.Client();
 
     // Inject some todos
-    app.container.registerSingleton(new Todo(text: TEXT, over: OVER));
+    app.container.registerSingleton(Todo(text: TEXT, over: OVER));
     app.container.registerFactory<Future<Foo>>((container) async {
       var req = container.make<RequestContext>();
       var text = await req.body.transform(utf8.decoder).join();
@@ -38,10 +38,10 @@ main() {
         ioc(({Errand singleton, Todo foo, RequestContext req}) =>
             singleton.text));
     app.post('/async', ioc((Foo foo) => {'baz': foo.bar}));
-    await app.configure(new SingletonController().configureServer);
-    await app.configure(new ErrandController().configureServer);
+    await app.configure(SingletonController().configureServer);
+    await app.configure(ErrandController().configureServer);
 
-    server = await new AngelHttp(app).startServer();
+    server = await AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 
@@ -54,18 +54,18 @@ main() {
   });
 
   test('runContained with custom container', () async {
-    var app = new Angel();
-    var c = new Container(const MirrorsReflector());
-    c.registerSingleton(new Todo(text: 'Hey!'));
+    var app = Angel();
+    var c = Container(const MirrorsReflector());
+    c.registerSingleton(Todo(text: 'Hey!'));
 
     app.get('/', (req, res) async {
       return app.runContained((Todo t) => t.text, req, res, c);
     });
 
-    var rq = new MockHttpRequest('GET', new Uri(path: '/'));
+    var rq = MockHttpRequest('GET', Uri(path: '/'));
     await rq.close();
     var rs = rq.response;
-    await new AngelHttp(app).handleRequest(rq);
+    await AngelHttp(app).handleRequest(rq);
     var text = await rs.transform(utf8.decoder).join();
     expect(text, json.encode('Hey!'));
   });

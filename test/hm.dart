@@ -4,7 +4,7 @@ import 'all.dart' as hm;
 
 main() async {
   var zone = Zone.current.fork(
-    specification: new ZoneSpecification(print: (self, parent, zone, line) {
+    specification: ZoneSpecification(print: (self, parent, zone, line) {
       if (line == 'null') {
         parent.print(zone, cyan.wrap(StackTrace.current.toString()));
       }

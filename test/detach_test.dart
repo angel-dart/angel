@@ -8,8 +8,8 @@ void main() {
   AngelHttp http;
 
   setUp(() async {
-    var app = new Angel();
-    http = new AngelHttp(app);
+    var app = Angel();
+    http = AngelHttp(app);
 
     app.get('/detach', (req, res) async {
       if (res is HttpResponseContext) {
@@ -17,7 +17,7 @@ void main() {
         io..write('Hey!');
         await io.close();
       } else {
-        throw new StateError('This endpoint only supports HTTP/1.1.');
+        throw StateError('This endpoint only supports HTTP/1.1.');
       }
     });
   });
@@ -25,7 +25,7 @@ void main() {
   tearDown(() => http.close());
 
   test('detach response', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/detach'));
+    var rq = MockHttpRequest('GET', Uri.parse('/detach'));
     await rq.close();
     var rs = rq.response;
     await http.handleRequest(rq);

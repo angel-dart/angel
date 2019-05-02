@@ -17,29 +17,29 @@ class Http2Client extends BaseClient {
       supportedProtocols: ['h2'],
     );
 
-    var connection = new ClientTransportConnection.viaSocket(socket);
+    var connection = ClientTransportConnection.viaSocket(socket);
 
     var headers = <Header>[
-      new Header.ascii(':authority', request.url.authority),
-      new Header.ascii(':method', request.method),
-      new Header.ascii(
+      Header.ascii(':authority', request.url.authority),
+      Header.ascii(':method', request.method),
+      Header.ascii(
           ':path',
           request.url.path +
               (request.url.hasQuery ? ('?' + request.url.query) : '')),
-      new Header.ascii(':scheme', request.url.scheme),
+      Header.ascii(':scheme', request.url.scheme),
     ];
 
     var bb = await request
         .finalize()
-        .fold<BytesBuilder>(new BytesBuilder(), (out, list) => out..add(list));
+        .fold<BytesBuilder>(BytesBuilder(), (out, list) => out..add(list));
     var body = bb.takeBytes();
 
     if (body.isNotEmpty) {
-      headers.add(new Header.ascii('content-length', body.length.toString()));
+      headers.add(Header.ascii('content-length', body.length.toString()));
     }
 
     request.headers.forEach((k, v) {
-      headers.add(new Header.ascii(k, v));
+      headers.add(Header.ascii(k, v));
     });
 
     var stream = await connection.makeRequest(headers, endStream: body.isEmpty);
@@ -56,7 +56,7 @@ class Http2Client extends BaseClient {
   /// Returns `true` if the response stream was closed.
   static Future<bool> readResponse(ClientTransportStream stream,
       Map<String, String> headers, BytesBuilder body) {
-    var c = new Completer<bool>();
+    var c = Completer<bool>();
     var closed = false;
 
     stream.incomingMessages.listen(
@@ -86,10 +86,10 @@ class Http2Client extends BaseClient {
   Future<StreamedResponse> send(BaseRequest request) async {
     var stream = await convertRequestToStream(request);
     var headers = <String, String>{};
-    var body = new BytesBuilder();
+    var body = BytesBuilder();
     var closed = await readResponse(stream, headers, body);
-    return new StreamedResponse(
-      new Stream.fromIterable([body.takeBytes()]),
+    return StreamedResponse(
+      Stream.fromIterable([body.takeBytes()]),
       int.parse(headers[':status']),
       headers: headers,
       isRedirect: headers.containsKey('location'),

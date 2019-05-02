@@ -14,15 +14,15 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector())
+    app = Angel(reflector: MirrorsReflector())
       ..get('/foo', ioc(() => {'hello': 'world'}))
       ..get('/bar', (req, res) async {
         await res.serialize({'hello': 'world'},
-            contentType: new MediaType('text', 'html'));
+            contentType: MediaType('text', 'html'));
       });
-    client = new http.Client();
+    client = http.Client();
 
-    server = await new AngelHttp(app).startServer();
+    server = await AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 

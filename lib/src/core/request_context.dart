@@ -76,7 +76,7 @@ abstract class RequestContext<RawRequest> {
 
   /// The content type of an incoming request.
   MediaType get contentType =>
-      _contentType ??= new MediaType.parse(headers.contentType.toString());
+      _contentType ??= MediaType.parse(headers.contentType.toString());
 
   /// The URL parameters extracted from the request URI.
   Map<String, dynamic> params = <String, dynamic>{};
@@ -110,9 +110,9 @@ abstract class RequestContext<RawRequest> {
   /// Note that [parseBody] must be called first.
   Map<String, dynamic> get bodyAsMap {
     if (!hasParsedBody) {
-      throw new StateError('The request body has not been parsed yet.');
+      throw StateError('The request body has not been parsed yet.');
     } else if (_bodyFields == null) {
-      throw new StateError('The request body, $_bodyObject, is not a Map.');
+      throw StateError('The request body, $_bodyObject, is not a Map.');
     }
 
     return _bodyFields;
@@ -128,9 +128,9 @@ abstract class RequestContext<RawRequest> {
   /// Note that [parseBody] must be called first.
   List get bodyAsList {
     if (!hasParsedBody) {
-      throw new StateError('The request body has not been parsed yet.');
+      throw StateError('The request body has not been parsed yet.');
     } else if (_bodyList == null) {
-      throw new StateError('The request body, $_bodyObject, is not a List.');
+      throw StateError('The request body, $_bodyObject, is not a List.');
     }
 
     return _bodyList;
@@ -146,7 +146,7 @@ abstract class RequestContext<RawRequest> {
   /// Note that [parseBody] must be called first.
   Object get bodyAsObject {
     if (!hasParsedBody) {
-      throw new StateError('The request body has not been parsed yet.');
+      throw StateError('The request body has not been parsed yet.');
     }
 
     return _bodyObject;
@@ -172,7 +172,7 @@ abstract class RequestContext<RawRequest> {
   /// Note that [parseBody] must be called first.
   List<UploadedFile> get uploadedFiles {
     if (!hasParsedBody) {
-      throw new StateError('The request body has not been parsed yet.');
+      throw StateError('The request body has not been parsed yet.');
     }
 
     return _uploadedFiles;
@@ -180,7 +180,7 @@ abstract class RequestContext<RawRequest> {
 
   /// Returns a *mutable* map of the fields contained in the query.
   Map<String, dynamic> get queryParameters =>
-      _queryParameters ??= new Map<String, dynamic>.from(uri.queryParameters);
+      _queryParameters ??= Map<String, dynamic>.from(uri.queryParameters);
 
   /// Returns the file extension of the requested path, if any.
   ///
@@ -203,7 +203,7 @@ abstract class RequestContext<RawRequest> {
 
     // Change to assert
     if (contentTypeString == null)
-      throw new ArgumentError(
+      throw ArgumentError(
           'RequestContext.accepts expects the `contentType` parameter to NOT be null.');
 
     _acceptHeaderCache ??= headers.value('accept');
@@ -235,7 +235,7 @@ abstract class RequestContext<RawRequest> {
             await body.transform(encoding.decoder).join().then(json.decode);
 
         if (parsed is Map) {
-          _bodyFields = new Map<String, dynamic>.from(parsed);
+          _bodyFields = Map<String, dynamic>.from(parsed);
         } else if (parsed is List) {
           _bodyList = parsed;
         }
@@ -246,12 +246,12 @@ abstract class RequestContext<RawRequest> {
             .transform(encoding.decoder)
             .join()
             .then((s) => Uri.splitQueryString(s, encoding: encoding));
-        _bodyFields = new Map<String, dynamic>.from(parsed);
+        _bodyFields = Map<String, dynamic>.from(parsed);
       } else if (contentType.type == 'multipart' &&
           contentType.subtype == 'form-data' &&
           contentType.parameters.containsKey('boundary')) {
         var boundary = contentType.parameters['boundary'];
-        var transformer = new MimeMultipartTransformer(boundary);
+        var transformer = MimeMultipartTransformer(boundary);
         var parts = body.transform(transformer).map((part) =>
             HttpMultipartFormData.parse(part, defaultEncoding: encoding));
         _bodyFields = {};
@@ -259,7 +259,7 @@ abstract class RequestContext<RawRequest> {
 
         await for (var part in parts) {
           if (part.isBinary) {
-            _uploadedFiles.add(new UploadedFile(part));
+            _uploadedFiles.add(UploadedFile(part));
           } else if (part.isText &&
               part.contentDisposition.parameters.containsKey('name')) {
             // If there is no name, then don't parse it.
@@ -313,7 +313,7 @@ class UploadedFile {
   /// Returns [:null:] if not present.
   MediaType get contentType => _contentType ??= (formData.contentType == null
       ? null
-      : new MediaType.parse(formData.contentType.toString()));
+      : MediaType.parse(formData.contentType.toString()));
 
   /// The parsed [:Content-Transfer-Encoding:] header of the
   /// [:HttpMultipartFormData:]. This field is used to determine how to decode

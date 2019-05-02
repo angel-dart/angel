@@ -42,12 +42,12 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector());
-    nested = new Angel(reflector: MirrorsReflector());
-    todos = new Angel(reflector: MirrorsReflector());
+    app = Angel(reflector: MirrorsReflector());
+    nested = Angel(reflector: MirrorsReflector());
+    todos = Angel(reflector: MirrorsReflector());
 
     [app, nested, todos].forEach((Angel app) {
-      app.logger = new Logger('routing_test')
+      app.logger = Logger('routing_test')
         ..onRecord.listen((rec) {
           if (rec.error != null) {
             stdout
@@ -95,7 +95,7 @@ main() {
     app.get('/method', (req, res) => 'Only GET');
     app.post('/method', (req, res) => 'Only POST');
 
-    app.use('/query', new QueryService());
+    app.use('/query', QueryService());
 
     RequestHandler write(String message) {
       return (req, res) {
@@ -111,8 +111,8 @@ main() {
 
     //app.dumpTree(header: "DUMPING ROUTES:", showMatchers: true);
 
-    client = new http.Client();
-    var server = await new AngelHttp(app).startServer('127.0.0.1', 0);
+    client = http.Client();
+    var server = await AngelHttp(app).startServer('127.0.0.1', 0);
     url = "http://${server.address.host}:${server.port}";
   });
 

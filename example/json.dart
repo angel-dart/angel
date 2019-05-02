@@ -6,8 +6,8 @@ import 'package:angel_framework/http.dart';
 
 main() async {
   int x = 0;
-  var c = new Completer();
-  var exit = new ReceivePort();
+  var c = Completer();
+  var exit = ReceivePort();
   List<Isolate> isolates = [];
 
   exit.listen((_) {
@@ -31,9 +31,9 @@ main() async {
 }
 
 serverMain(_) async {
-  var app = new Angel();
+  var app = Angel();
   var http =
-      new AngelHttp.custom(app, startShared, useZone: false); // Run a cluster
+      AngelHttp.custom(app, startShared, useZone: false); // Run a cluster
 
   app.get('/', (req, res) {
     return res.serialize({

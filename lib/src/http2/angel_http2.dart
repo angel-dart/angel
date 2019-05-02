@@ -19,9 +19,9 @@ Future<SecureServerSocket> startSharedHttp2(
 class AngelHttp2 extends Driver<Socket, ServerTransportStream,
     SecureServerSocket, Http2RequestContext, Http2ResponseContext> {
   final ServerSettings settings;
-  final StreamController<HttpRequest> _onHttp1 = new StreamController();
+  final StreamController<HttpRequest> _onHttp1 = StreamController();
   final Map<String, MockHttpSession> _sessions = {};
-  final Uuid _uuid = new Uuid();
+  final Uuid _uuid = Uuid();
   _AngelHttp2ServerSocket _artificial;
 
   SecureServerSocket get socket => _artificial;
@@ -39,7 +39,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
 
   factory AngelHttp2(Angel app, SecurityContext securityContext,
       {bool useZone = true, ServerSettings settings}) {
-    return new AngelHttp2.custom(app, securityContext, SecureServerSocket.bind,
+    return AngelHttp2.custom(app, securityContext, SecureServerSocket.bind,
         settings: settings);
   }
 
@@ -50,10 +50,10 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
           address, int port, SecurityContext ctx),
       {bool useZone = true,
       ServerSettings settings}) {
-    return new AngelHttp2._(app, (address, port) {
+    return AngelHttp2._(app, (address, port) {
       var addr = address is InternetAddress
           ? address
-          : new InternetAddress(address.toString());
+          : InternetAddress(address.toString());
       return Future.sync(() => serverGenerator(addr, port, ctx));
     }, useZone, settings);
   }
@@ -64,7 +64,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
   @override
   Future<SecureServerSocket> generateServer([address, int port]) async {
     var s = await serverGenerator(address ?? '127.0.0.1', port ?? 0);
-    return _artificial = new _AngelHttp2ServerSocket(s, this);
+    return _artificial = _AngelHttp2ServerSocket(s, this);
   }
 
   @override
@@ -75,15 +75,15 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
 
   @override
   void addCookies(ServerTransportStream response, Iterable<Cookie> cookies) {
-    var headers = cookies
-        .map((cookie) => new Header.ascii('set-cookie', cookie.toString()));
+    var headers =
+        cookies.map((cookie) => Header.ascii('set-cookie', cookie.toString()));
     response.sendHeaders(headers.toList());
   }
 
   @override
   Future closeResponse(ServerTransportStream response) {
     response.terminate();
-    return new Future.value();
+    return Future.value();
   }
 
   @override
@@ -96,7 +96,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
   Future<Http2ResponseContext> createResponseContext(
       Socket request, ServerTransportStream response,
       [Http2RequestContext correspondingRequest]) async {
-    return new Http2ResponseContext(app, response, correspondingRequest)
+    return Http2ResponseContext(app, response, correspondingRequest)
       ..encoders.addAll(app.encoders);
   }
 
@@ -104,7 +104,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
   Stream<ServerTransportStream> createResponseStreamFromRawRequest(
       Socket request) {
     var connection =
-        new ServerTransportConnection.viaSocket(request, settings: settings);
+        ServerTransportConnection.viaSocket(request, settings: settings);
     return connection.incomingStreams;
   }
 
@@ -120,12 +120,12 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
 
   @override
   void setHeader(ServerTransportStream response, String key, String value) {
-    response.sendHeaders([new Header.ascii(key, value)]);
+    response.sendHeaders([Header.ascii(key, value)]);
   }
 
   @override
   void setStatusCode(ServerTransportStream response, int value) {
-    response.sendHeaders([new Header.ascii(':status', value.toString())]);
+    response.sendHeaders([Header.ascii(':status', value.toString())]);
   }
 
   @override
@@ -147,7 +147,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
 
 class _FakeServerSocket extends Stream<Socket> implements ServerSocket {
   final _AngelHttp2ServerSocket angel;
-  final _ctrl = new StreamController<Socket>();
+  final _ctrl = StreamController<Socket>();
 
   _FakeServerSocket(this.angel);
 
@@ -175,13 +175,13 @@ class _AngelHttp2ServerSocket extends Stream<SecureSocket>
     implements SecureServerSocket {
   final SecureServerSocket socket;
   final AngelHttp2 driver;
-  final _ctrl = new StreamController<SecureSocket>();
+  final _ctrl = StreamController<SecureSocket>();
   _FakeServerSocket _fake;
   StreamSubscription _sub;
 
   _AngelHttp2ServerSocket(this.socket, this.driver) {
-    _fake = new _FakeServerSocket(this);
-    new HttpServer.listenOn(_fake).pipe(driver._onHttp1);
+    _fake = _FakeServerSocket(this);
+    HttpServer.listenOn(_fake).pipe(driver._onHttp1);
     _sub = socket.listen(
       (socket) {
         if (socket.selectedProtocol == null ||
@@ -193,7 +193,7 @@ class _AngelHttp2ServerSocket extends Stream<SecureSocket>
           _ctrl.add(socket);
         } else {
           socket.destroy();
-          throw new Exception(
+          throw Exception(
               'AngelHttp2 does not support ${socket.selectedProtocol} as an ALPN protocol.');
         }
       },

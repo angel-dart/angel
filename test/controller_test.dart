@@ -13,7 +13,7 @@ import 'common.dart';
 
 @Expose("/todos", middleware: [foo])
 class TodoController extends Controller {
-  List<Todo> todos = [new Todo(text: "Hello", over: "world")];
+  List<Todo> todos = [Todo(text: "Hello", over: "world")];
 
   @Expose("/:id", middleware: [bar])
   Future<Todo> fetchTodo(
@@ -34,7 +34,7 @@ class NoExposeController extends Controller {}
 
 @Expose('/named', as: 'foo')
 class NamedController extends Controller {
-  @Expose('/optional/:arg?', allowNull: const ['arg'])
+  @Expose('/optional/:arg?', allowNull: ['arg'])
   optional() => 2;
 }
 
@@ -52,11 +52,11 @@ main() {
   Angel app;
   TodoController ctrl;
   HttpServer server;
-  http.Client client = new http.Client();
+  http.Client client = http.Client();
   String url;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector());
+    app = Angel(reflector: MirrorsReflector());
     app.get(
         "/redirect",
         (req, res) async =>
@@ -64,7 +64,7 @@ main() {
 
     // Register as a singleton, just for the purpose of this test
     if (!app.container.has<TodoController>())
-      app.container.registerSingleton(ctrl = new TodoController());
+      app.container.registerSingleton(ctrl = TodoController());
 
     // Using mountController<T>();
     await app.mountController<TodoController>();
@@ -72,7 +72,7 @@ main() {
     print(app.controllers);
     app.dumpTree();
 
-    server = await new AngelHttp(app).startServer();
+    server = await AngelHttp(app).startServer();
     url = 'http://${server.address.address}:${server.port}';
   });
 
@@ -88,8 +88,8 @@ main() {
 
   test('require expose', () async {
     try {
-      var app = new Angel(reflector: MirrorsReflector());
-      await app.configure(new NoExposeController().configureServer);
+      var app = Angel(reflector: MirrorsReflector());
+      await app.configure(NoExposeController().configureServer);
       throw 'Should require @Expose';
     } on Exception {
       // :)
@@ -97,26 +97,26 @@ main() {
   });
 
   test('create dynamic handler', () async {
-    var app = new Angel(reflector: MirrorsReflector());
+    var app = Angel(reflector: MirrorsReflector());
     app.get(
         '/foo',
         ioc(({String bar}) {
           return 2;
         }, optional: ['bar']));
-    var rq = new MockHttpRequest('GET', new Uri(path: 'foo'));
-    await new AngelHttp(app).handleRequest(rq);
+    var rq = MockHttpRequest('GET', Uri(path: 'foo'));
+    await AngelHttp(app).handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
     expect(json.decode(body), 2);
   });
 
   test('optional name', () async {
-    var app = new Angel(reflector: MirrorsReflector());
-    await app.configure(new NamedController().configureServer);
+    var app = Angel(reflector: MirrorsReflector());
+    await app.configure(NamedController().configureServer);
     expect(app.controllers['foo'], const IsInstanceOf<NamedController>());
   });
 
   test("middleware", () async {
-    var rgx = new RegExp("^Hello, world!");
+    var rgx = RegExp("^Hello, world!");
     var response = await client.get("$url/todos/0");
     print('Response: ${response.body}');
 

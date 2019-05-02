@@ -6,8 +6,8 @@ import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel(reflector: MirrorsReflector())
-    ..logger = (new Logger('angel')
+  var app = Angel(reflector: MirrorsReflector())
+    ..logger = (Logger('angel')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
@@ -16,9 +16,9 @@ main() async {
     ..encoders.addAll({'gzip': gzip.encoder});
 
   app.fallback(
-      (req, res) => new Future.error('Throwing just because I feel like!'));
+      (req, res) => Future.error('Throwing just because I feel like!'));
 
-  var http = new AngelHttp(app);
+  var http = AngelHttp(app);
   var server = await http.startServer('127.0.0.1', 3000);
   var url = 'http://${server.address.address}:${server.port}';
   print('Listening at $url');

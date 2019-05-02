@@ -6,18 +6,18 @@ void main() {
   Service<String, Todo> mapped;
 
   setUp(() {
-    inner = new MapService();
+    inner = MapService();
     mapped = inner.map<Todo>(Todo.fromMap, Todo.toMap);
   });
 
   test('create', () async {
     var result = await mapped.create(
-      new Todo(text: 'hello', complete: false),
+      Todo(text: 'hello', complete: false),
     );
     print(result);
     expect(
       result,
-      new Todo(text: 'hello', complete: false),
+      Todo(text: 'hello', complete: false),
     );
   });
 
@@ -26,7 +26,7 @@ void main() {
     String id;
 
     setUp(() async {
-      result = await mapped.create(new Todo(text: 'hello', complete: false));
+      result = await mapped.create(Todo(text: 'hello', complete: false));
       id = result.id;
     });
 
@@ -35,12 +35,12 @@ void main() {
     });
 
     test('modify', () async {
-      var newTodo = new Todo(text: 'yes', complete: true);
+      var newTodo = Todo(text: 'yes', complete: true);
       expect(await mapped.update(id, newTodo), newTodo);
     });
 
     test('update', () async {
-      var newTodo = new Todo(id: 'hmmm', text: 'yes', complete: true);
+      var newTodo = Todo(id: 'hmmm', text: 'yes', complete: true);
       expect(await mapped.update(id, newTodo), newTodo);
     });
 
@@ -61,7 +61,7 @@ class Todo {
   Todo({this.id, this.text, this.complete});
 
   static Todo fromMap(Map<String, dynamic> json) {
-    return new Todo(
+    return Todo(
         id: json['id'] as String,
         text: json['text'] as String,
         complete: json['complete'] as bool);

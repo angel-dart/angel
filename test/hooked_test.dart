@@ -20,10 +20,10 @@ main() {
   HookedService todoService;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector());
-    client = new http.Client();
-    app.use('/todos', new MapService());
-    app.use('/books', new BookService());
+    app = Angel(reflector: MirrorsReflector());
+    client = http.Client();
+    app.use('/todos', MapService());
+    app.use('/books', BookService());
 
     todoService = app.findHookedService<MapService>('todos');
 
@@ -35,7 +35,7 @@ main() {
       throw e.error;
     };
 
-    server = await new AngelHttp(app).startServer();
+    server = await AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 
@@ -106,7 +106,7 @@ main() {
   });
 
   test('metadata', () async {
-    final service = new HookedService(new IncrementService())..addHooks(app);
+    final service = HookedService(IncrementService())..addHooks(app);
     expect(service.inner, isNot(const IsInstanceOf<MapService>()));
     IncrementService.TIMES = 0;
     await service.index();
@@ -131,7 +131,7 @@ main() {
   });
 
   test('contains provider in before and after', () async {
-    var svc = new HookedService(new AnonymousService(index: ([p]) async => []));
+    var svc = HookedService(AnonymousService(index: ([p]) async => []));
 
     ensureProviderIsPresent(HookedServiceEvent e) {
       var type = e.isBefore ? 'before' : 'after';

@@ -1,6 +1,6 @@
 import 'package:angel_container/angel_container.dart';
 
-final RegExp straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp straySlashes = RegExp(r'(^/+)|(/+$)');
 
 T matchingAnnotation<T>(List<ReflectedInstance> metadata) {
   for (ReflectedInstance metaDatum in metadata) {

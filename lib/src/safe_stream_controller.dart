@@ -4,9 +4,9 @@ typedef void _InitCallback();
 
 /// A [StreamController] boilerplate that prevents memory leaks.
 abstract class SafeCtrl<T> {
-  factory SafeCtrl() => new _SingleSafeCtrl();
+  factory SafeCtrl() => _SingleSafeCtrl();
 
-  factory SafeCtrl.broadcast() => new _BroadcastSafeCtrl();
+  factory SafeCtrl.broadcast() => _BroadcastSafeCtrl();
 
   Stream<T> get stream;
 
@@ -25,7 +25,7 @@ class _SingleSafeCtrl<T> implements SafeCtrl<T> {
   _InitCallback _initializer;
 
   _SingleSafeCtrl() {
-    _stream = new StreamController<T>(onListen: () {
+    _stream = StreamController<T>(onListen: () {
       _hasListener = true;
 
       if (!_initialized && _initializer != null) {
@@ -79,7 +79,7 @@ class _BroadcastSafeCtrl<T> implements SafeCtrl<T> {
   _InitCallback _initializer;
 
   _BroadcastSafeCtrl() {
-    _stream = new StreamController<T>.broadcast(onListen: () {
+    _stream = StreamController<T>.broadcast(onListen: () {
       _listeners++;
 
       if (!_initialized && _initializer != null) {

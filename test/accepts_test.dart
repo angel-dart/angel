@@ -59,10 +59,10 @@ main() {
 Future<RequestContext> acceptContentTypes(
     [Iterable<String> contentTypes = const []]) {
   var headerString = contentTypes.isEmpty ? null : contentTypes.join(',');
-  var rq = new MockHttpRequest('GET', ENDPOINT);
+  var rq = MockHttpRequest('GET', ENDPOINT);
   rq.headers.set('accept', headerString);
   rq.close();
-  var app = new Angel(reflector: MirrorsReflector());
-  var http = new AngelHttp(app);
+  var app = Angel(reflector: MirrorsReflector());
+  var http = AngelHttp(app);
   return http.createRequestContext(rq, rq.response);
 }

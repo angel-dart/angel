@@ -13,12 +13,12 @@ main() {
   String url;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector())
+    app = Angel(reflector: MirrorsReflector())
       ..post('/foo', (req, res) => res.serialize({'hello': 'world'}))
-      ..all('*', (req, res) => throw new AngelHttpException.notFound());
-    client = new http.Client();
+      ..all('*', (req, res) => throw AngelHttpException.notFound());
+    client = http.Client();
 
-    server = await new AngelHttp(app).startServer();
+    server = await AngelHttp(app).startServer();
     url = "http://${server.address.host}:${server.port}";
   });
 

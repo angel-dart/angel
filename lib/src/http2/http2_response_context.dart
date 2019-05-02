@@ -34,7 +34,7 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
   bool get canPush => stream.canPush;
 
   /// Returns a [List] of all resources that have [push]ed to the client.
-  List<Http2ResponseContext> get pushes => new List.unmodifiable(_pushes);
+  List<Http2ResponseContext> get pushes => List.unmodifiable(_pushes);
 
   @override
   ServerTransportStream detach() {
@@ -65,7 +65,7 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
 
   @override
   void useBuffer() {
-    _buffer = new LockableBytesBuilder();
+    _buffer = LockableBytesBuilder();
   }
 
   /// Write headers, status, etc. to the underlying [stream].
@@ -73,7 +73,7 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
     if (_isPush || _streamInitialized) return false;
 
     var headers = <Header>[
-      new Header.ascii(':status', statusCode.toString()),
+      Header.ascii(':status', statusCode.toString()),
     ];
 
     if (encoders.isNotEmpty && correspondingRequest != null) {
@@ -98,15 +98,15 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
 
     // Add all normal headers
     for (var key in this.headers.keys) {
-      headers.add(new Header.ascii(key.toLowerCase(), this.headers[key]));
+      headers.add(Header.ascii(key.toLowerCase(), this.headers[key]));
     }
 
     // Persist session ID
-    cookies.add(new Cookie('DARTSESSID', _req.session.id));
+    cookies.add(Cookie('DARTSESSID', _req.session.id));
 
     // Send all cookies
     for (var cookie in cookies) {
-      headers.add(new Header.ascii('set-cookie', cookie.toString()));
+      headers.add(Header.ascii('set-cookie', cookie.toString()));
     }
 
     stream.sendHeaders(headers);
@@ -210,18 +210,18 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
     var targetUri = _req.uri.replace(path: path);
 
     var h = <Header>[
-      new Header.ascii(':authority', targetUri.authority),
-      new Header.ascii(':method', method),
-      new Header.ascii(':path', targetUri.path),
-      new Header.ascii(':scheme', targetUri.scheme),
+      Header.ascii(':authority', targetUri.authority),
+      Header.ascii(':method', method),
+      Header.ascii(':path', targetUri.path),
+      Header.ascii(':scheme', targetUri.scheme),
     ];
 
     for (var key in headers.keys) {
-      h.add(new Header.ascii(key, headers[key]));
+      h.add(Header.ascii(key, headers[key]));
     }
 
     var s = stream.push(h);
-    var r = new Http2ResponseContext(app, s, _req)
+    var r = Http2ResponseContext(app, s, _req)
       .._isPush = true
       .._targetUri = targetUri;
     _pushes.add(r);

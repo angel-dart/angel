@@ -18,10 +18,10 @@ main() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(reflector: MirrorsReflector());
-    http = new AngelHttp(app, useZone: true);
+    app = Angel(reflector: MirrorsReflector());
+    http = AngelHttp(app, useZone: true);
 
-    app.logger = new Logger('streaming_test')
+    app.logger = Logger('streaming_test')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.stackTrace != null) print(rec.stackTrace);
@@ -35,31 +35,30 @@ main() {
     );
 
     app.get('/hello', (req, res) {
-      return new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
+      return Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res);
     });
 
     app.get('/write', (req, res) async {
       await res.addStream(
-          new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
+          Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
       res.write('bye');
       await res.close();
     });
 
     app.get('/multiple', (req, res) async {
       await res.addStream(
-          new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
-      await res
-          .addStream(new Stream<List<int>>.fromIterable(['bye'.codeUnits]));
+          Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits]));
+      await res.addStream(Stream<List<int>>.fromIterable(['bye'.codeUnits]));
       await res.close();
     });
 
     app.get('/overwrite', (req, res) async {
       res.statusCode = 32;
-      await new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
+      await Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res);
 
-      var f = new Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
+      var f = Stream<List<int>>.fromIterable(['Hello, world!'.codeUnits])
           .pipe(res)
           .then((_) => false)
           .catchError((_) => true);
@@ -67,7 +66,7 @@ main() {
       expect(f, completion(true));
     });
 
-    app.get('/error', (req, res) => res.addError(new StateError('wtf')));
+    app.get('/error', (req, res) => res.addError(StateError('wtf')));
 
     app.errorHandler = (e, req, res) async {
       stderr..writeln(e.error)..writeln(e.stackTrace);
@@ -77,7 +76,7 @@ main() {
   tearDown(() => http.close());
 
   _expectHelloBye(String path) async {
-    var rq = new MockHttpRequest('GET', Uri.parse(path));
+    var rq = MockHttpRequest('GET', Uri.parse(path));
     unawaited(rq.close());
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
@@ -90,7 +89,7 @@ main() {
 
   test('cannot write after close', () async {
     try {
-      var rq = new MockHttpRequest('GET', Uri.parse('/overwrite'));
+      var rq = MockHttpRequest('GET', Uri.parse('/overwrite'));
       unawaited(rq.close());
       await http.handleRequest(rq);
       var body = await rq.response.transform(utf8.decoder).join();
@@ -104,7 +103,7 @@ main() {
 
   test('res => addError', () async {
     try {
-      var rq = new MockHttpRequest('GET', Uri.parse('/error'));
+      var rq = MockHttpRequest('GET', Uri.parse('/error'));
       unawaited(rq.close());
       await http.handleRequest(rq);
       var body = await rq.response.transform(utf8.decoder).join();

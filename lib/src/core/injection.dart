@@ -48,7 +48,7 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     else if (injection.optional.contains(requirement))
       return null;
     else if (throwOnUnresolved) {
-      throw new ArgumentError(
+      throw ArgumentError(
           "Cannot resolve parameter '$requirement' within handler.");
     }
   } else if (requirement is List &&
@@ -76,7 +76,7 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
 
     return await container.make(requirement);
   } else if (throwOnUnresolved) {
-    throw new ArgumentError(
+    throw ArgumentError(
         '$requirement cannot be injected into a request handler.');
   }
 }
@@ -97,8 +97,7 @@ RequestHandler handleContained(Function handler, InjectionRequest injection,
   return (RequestContext req, ResponseContext res) async {
     if (injection.parameters.isNotEmpty &&
         injection.parameters.values.any((p) => p.match != null) &&
-        !suitableForInjection(req, res, injection))
-      return new Future.value(true);
+        !suitableForInjection(req, res, injection)) return Future.value(true);
 
     List args = [];
 
@@ -109,7 +108,7 @@ RequestHandler handleContained(Function handler, InjectionRequest injection,
     }
 
     for (var entry in injection.named.entries) {
-      var name = new Symbol(entry.key);
+      var name = Symbol(entry.key);
       named[name] = await resolveInjection(
           [entry.key, entry.value], injection, req, res, false, container);
     }
@@ -153,7 +152,7 @@ class InjectionRequest {
 
 /// Predetermines what needs to be injected for a handler to run.
 InjectionRequest preInject(Function handler, Reflector reflector) {
-  var injection = new InjectionRequest();
+  var injection = InjectionRequest();
 
   var closureMirror = reflector.reflectFunction(handler);
 
@@ -172,7 +171,7 @@ InjectionRequest preInject(Function handler, Reflector reflector) {
         ?.reflectee as Parameter;
     //print(p);
     if (p != null) {
-      injection.parameters[name] = new Parameter(
+      injection.parameters[name] = Parameter(
         cookie: p.cookie,
         header: p.header,
         query: p.query,

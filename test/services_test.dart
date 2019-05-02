@@ -22,15 +22,15 @@ main() {
   http.Client client;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector())
-      ..use('/todos', service = new MapService())
+    app = Angel(reflector: MirrorsReflector())
+      ..use('/todos', service = MapService())
       ..errorHandler = (e, req, res) {
         if (e.error != null) print('Whoops: ${e.error}');
-        if (e.stackTrace != null) print(new Chain.forTrace(e.stackTrace).terse);
+        if (e.stackTrace != null) print(Chain.forTrace(e.stackTrace).terse);
       };
 
-    var server = await new AngelHttp(app).startServer();
-    client = new http.Client();
+    var server = await AngelHttp(app).startServer();
+    client = http.Client();
     url = "http://${server.address.host}:${server.port}";
   });
 

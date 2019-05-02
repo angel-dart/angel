@@ -51,7 +51,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   void useBuffer() {
-    _buffer = new LockableBytesBuilder();
+    _buffer = LockableBytesBuilder();
   }
 
   Iterable<String> __allowedEncodings;
@@ -92,7 +92,7 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
             rawResponse.contentLength;
       }
 
-      rawResponse.headers.contentType = new ContentType(
+      rawResponse.headers.contentType = ContentType(
           contentType.type, contentType.subtype,
           charset: contentType.parameters['charset'],
           parameters: contentType.parameters);
@@ -209,6 +209,6 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
       super.close();
     }
-    return new Future.value();
+    return Future.value();
   }
 }

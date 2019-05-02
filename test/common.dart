@@ -32,12 +32,12 @@ incrementTodoTimes(e) {
   IncrementService.TIMES++;
 }
 
-@Hooks(before: const [incrementTodoTimes])
+@Hooks(before: [incrementTodoTimes])
 class IncrementService extends Service {
   static int TIMES = 0;
 
   @override
-  @Hooks(after: const [incrementTodoTimes])
+  @Hooks(after: [incrementTodoTimes])
   index([params]) async => [];
 }
 

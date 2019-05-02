@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 main() {
   test('custom methods', () async {
-    var svc = new AnonymousService<String, String>(
+    var svc = AnonymousService<String, String>(
         index: ([p]) async => ['index'],
         read: (id, [p]) async => 'read',
         create: (data, [p]) async => 'create',
@@ -20,21 +20,21 @@ main() {
 
   test('defaults to throwing', () async {
     try {
-      var svc = new AnonymousService();
+      var svc = AnonymousService();
       await svc.read(1);
       throw 'Should have thrown 405!';
     } on AngelHttpException {
       // print('Ok!');
     }
     try {
-      var svc = new AnonymousService();
+      var svc = AnonymousService();
       await svc.modify(2, null);
       throw 'Should have thrown 405!';
     } on AngelHttpException {
       // print('Ok!');
     }
     try {
-      var svc = new AnonymousService();
+      var svc = AnonymousService();
       await svc.update(3, null);
       throw 'Should have thrown 405!';
     } on AngelHttpException {

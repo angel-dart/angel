@@ -40,11 +40,10 @@ class Controller {
     Expose exposeDecl = findExpose(app.container.reflector);
 
     if (exposeDecl == null) {
-      throw new Exception(
-          "All controllers must carry an @Expose() declaration.");
+      throw Exception("All controllers must carry an @Expose() declaration.");
     }
 
-    var routable = new Routable();
+    var routable = Routable();
     app.mount(exposeDecl.path, routable);
     var typeMirror = app.container.reflector.reflectType(this.runtimeType);
     String name =
@@ -60,7 +59,7 @@ class Controller {
     final routeBuilder = _routeBuilder(instanceMirror, routable, handlers);
     classMirror.declarations.forEach(routeBuilder);
     configureRoutes(routable);
-    return new Future.value();
+    return Future.value();
   }
 
   void Function(ReflectedDeclaration) _routeBuilder(

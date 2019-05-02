@@ -6,19 +6,19 @@ import 'package:logging/logging.dart';
 import 'common.dart';
 
 main() async {
-  var app = new Angel()
+  var app = Angel()
     ..encoders.addAll({
       'gzip': gzip.encoder,
       'deflate': zlib.encoder,
     });
-  app.logger = new Logger('angel')..onRecord.listen(dumpError);
+  app.logger = Logger('angel')..onRecord.listen(dumpError);
 
   app.get('/', (req, res) => 'Hello HTTP/2!!!');
 
-  app.fallback((req, res) => throw new AngelHttpException.notFound(
+  app.fallback((req, res) => throw AngelHttpException.notFound(
       message: 'No file exists at ${req.uri}'));
 
-  var ctx = new SecurityContext()
+  var ctx = SecurityContext()
     ..useCertificateChain('dev.pem')
     ..usePrivateKey('dev.key', password: 'dartdart');
 
@@ -32,8 +32,8 @@ main() async {
     );
   }
 
-  var http1 = new AngelHttp(app);
-  var http2 = new AngelHttp2(app, ctx);
+  var http1 = AngelHttp(app);
+  var http2 = AngelHttp2(app, ctx);
 
   // HTTP/1.x requests will fallback to `AngelHttp`
   http2.onHttp1.listen(http1.handleRequest);

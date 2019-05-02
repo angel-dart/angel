@@ -2,8 +2,8 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 
 main() async {
-  var app = new Angel();
-  var http = new AngelHttp(app);
+  var app = Angel();
+  var http = AngelHttp(app);
 
   app.fallback((req, res) {
     res.statusCode = 304;

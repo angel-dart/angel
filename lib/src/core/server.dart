@@ -19,7 +19,7 @@ import 'response_context.dart';
 import 'routable.dart';
 import 'service.dart';
 
-//final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+//final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// A function that configures an [Angel] server in some way.
 typedef FutureOr<void> AngelConfigurer(Angel app);
@@ -37,7 +37,7 @@ class Angel extends Routable {
   final Map<
       String,
       Tuple4<List, Map<String, dynamic>, ParseResult<RouteResult>,
-          MiddlewarePipeline>> handlerCache = new HashMap();
+          MiddlewarePipeline>> handlerCache = HashMap();
 
   Router<RequestHandler> _flattened;
   Angel _parent;
@@ -48,7 +48,7 @@ class Angel extends Routable {
   final Map<dynamic, InjectionRequest> _preContained = {};
 
   /// A [MimeTypeResolver] that can be used to specify the MIME types of files not known by `package:mime`.
-  final MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
+  final MimeTypeResolver mimeTypeResolver = MimeTypeResolver();
 
   /// A middleware to inject a serialize on every request.
   FutureOr<String> Function(dynamic) serializer;
@@ -65,7 +65,7 @@ class Angel extends Routable {
   bool allowMethodOverrides = true;
 
   /// All child application mounted on this instance.
-  List<Angel> get children => new List<Angel>.unmodifiable(_children);
+  List<Angel> get children => List<Angel>.unmodifiable(_children);
 
   final Map<Pattern, Controller> _controllers = {};
 
@@ -134,7 +134,7 @@ class Angel extends Routable {
       return;
     }
 
-    res.contentType = new MediaType('text', 'html', {'charset': 'utf8'});
+    res.contentType = MediaType('text', 'html', {'charset': 'utf8'});
     res.statusCode = e.statusCode;
     res.write("<!DOCTYPE html><html><head><title>${e.message}</title>");
     res.write("</head><body><h1>${e.message}</h1><ul>");
@@ -211,7 +211,7 @@ class Angel extends Routable {
     shutdownHooks.clear();
     responseFinalizers.clear();
     _flattened = null;
-    return new Future.value();
+    return Future.value();
   }
 
   @override
@@ -262,7 +262,7 @@ class Angel extends Routable {
       return getHandlerResult(handler.toList(), req, res);
     }
 
-    return new Future.value(handler);
+    return Future.value(handler);
   }
 
   /// Runs some [handler]. Returns `true` if request execution should continue.
@@ -305,7 +305,7 @@ class Angel extends Routable {
   /// the execution will be faster, as the injection requirements were stored beforehand.
   Future runContained(Function handler, RequestContext req, ResponseContext res,
       [Container container]) {
-    return new Future.sync(() {
+    return Future.sync(() {
       if (_preContained.containsKey(handler)) {
         return handleContained(handler, _preContained[handler], container)(
             req, res);
@@ -323,13 +323,13 @@ class Angel extends Routable {
         handler,
         _preContained[handler] = preInject(handler, container.reflector),
         container);
-    return new Future.sync(() => h(req, res));
+    return Future.sync(() => h(req, res));
     // return   closureMirror.apply(args).reflectee;
   }
 
   /// Applies an [AngelConfigurer] to this instance.
   Future configure(AngelConfigurer configurer) {
-    return new Future.sync(() => configurer(this));
+    return Future.sync(() => configurer(this));
   }
 
   /// Shorthand for using the [container] to instantiate, and then mount a [Controller].

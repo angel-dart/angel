@@ -27,8 +27,8 @@ parameterMetaTests() {
   AngelHttp http;
 
   setUp(() {
-    app = new Angel(reflector: MirrorsReflector());
-    http = new AngelHttp(app);
+    app = Angel(reflector: MirrorsReflector());
+    http = AngelHttp(app);
 
     app.get('/cookie', ioc((@CookieValue('token') String jwt) {
       return jwt;
@@ -58,7 +58,7 @@ parameterMetaTests() {
       return 'DEFAULT $mode';
     }));
 
-    /*app.logger = new Logger('parameter_meta_test')
+    /*app.logger = Logger('parameter_meta_test')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
@@ -69,7 +69,7 @@ parameterMetaTests() {
 
   test('injects header or throws', () async {
     // Invalid request
-    var rq = new MockHttpRequest('GET', Uri.parse('/header'));
+    var rq = MockHttpRequest('GET', Uri.parse('/header'));
     unawaited(rq.close());
     var rs = rq.response;
     unawaited(http.handleRequest(rq));
@@ -78,7 +78,7 @@ parameterMetaTests() {
     expect(rs.statusCode, 400);
 
     // Valid request
-    rq = new MockHttpRequest('GET', Uri.parse('/header'))
+    rq = MockHttpRequest('GET', Uri.parse('/header'))
       ..headers.add('x-foo', 'bar');
     unawaited(rq.close());
     rs = rq.response;
@@ -92,7 +92,7 @@ parameterMetaTests() {
 
   test('injects session or throws', () async {
     // Invalid request
-    var rq = new MockHttpRequest('GET', Uri.parse('/session'));
+    var rq = MockHttpRequest('GET', Uri.parse('/session'));
     unawaited(rq.close());
     var rs = rq.response;
     unawaited(http
@@ -103,7 +103,7 @@ parameterMetaTests() {
     await printResponse(rs);
     expect(rs.statusCode, 500);
 
-    rq = new MockHttpRequest('GET', Uri.parse('/session'));
+    rq = MockHttpRequest('GET', Uri.parse('/session'));
     rq.session['foo'] = 'bar';
     unawaited(rq.close());
     rs = rq.response;
@@ -118,7 +118,7 @@ parameterMetaTests() {
   // they will all function the same way.
 
   test('pattern matching', () async {
-    var rq = new MockHttpRequest('GET', Uri.parse('/match?mode=pos'));
+    var rq = MockHttpRequest('GET', Uri.parse('/match?mode=pos'));
     unawaited(rq.close());
     var rs = rq.response;
     unawaited(http.handleRequest(rq));
@@ -127,7 +127,7 @@ parameterMetaTests() {
     expect(rs.statusCode, 200);
     expect(body, json.encode('YES pos'));
 
-    rq = new MockHttpRequest('GET', Uri.parse('/match?mode=neg'));
+    rq = MockHttpRequest('GET', Uri.parse('/match?mode=neg'));
     unawaited(rq.close());
     rs = rq.response;
     unawaited(http.handleRequest(rq));
@@ -137,7 +137,7 @@ parameterMetaTests() {
     expect(body, json.encode('NO neg'));
 
     // Fallback
-    rq = new MockHttpRequest('GET', Uri.parse('/match?mode=ambi'));
+    rq = MockHttpRequest('GET', Uri.parse('/match?mode=ambi'));
     unawaited(rq.close());
     rs = rq.response;
     unawaited(http.handleRequest(rq));

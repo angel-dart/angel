@@ -30,30 +30,30 @@ class AnonymousService<Id, Data> extends Service<Id, Data> {
   }
 
   @override
-  index([Map<String, dynamic> params]) => new Future.sync(
-      () => _index != null ? _index(params) : super.index(params));
+  index([Map<String, dynamic> params]) =>
+      Future.sync(() => _index != null ? _index(params) : super.index(params));
 
   @override
-  read(Id id, [Map<String, dynamic> params]) => new Future.sync(
+  read(Id id, [Map<String, dynamic> params]) => Future.sync(
       () => _read != null ? _read(id, params) : super.read(id, params));
 
   @override
-  create(Data data, [Map<String, dynamic> params]) => new Future.sync(() =>
+  create(Data data, [Map<String, dynamic> params]) => Future.sync(() =>
       _create != null ? _create(data, params) : super.create(data, params));
 
   @override
   modify(Id id, Data data, [Map<String, dynamic> params]) =>
-      new Future.sync(() => _modify != null
+      Future.sync(() => _modify != null
           ? _modify(id, data, params)
           : super.modify(id, data, params));
 
   @override
   update(Id id, Data data, [Map<String, dynamic> params]) =>
-      new Future.sync(() => _update != null
+      Future.sync(() => _update != null
           ? _update(id, data, params)
           : super.update(id, data, params));
 
   @override
-  remove(Id id, [Map<String, dynamic> params]) => new Future.sync(
+  remove(Id id, [Map<String, dynamic> params]) => Future.sync(
       () => _remove != null ? _remove(id, params) : super.remove(id, params));
 }

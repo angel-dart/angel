@@ -107,10 +107,10 @@ class Service<Id, Data> extends Routable {
       String errorMessage = 'No record was found matching the given query.']) {
     return index(params).then((result) {
       if (result == null) {
-        throw new AngelHttpException.notFound(message: errorMessage);
+        throw AngelHttpException.notFound(message: errorMessage);
       } else {
         if (result.isEmpty) {
-          throw new AngelHttpException.notFound(message: errorMessage);
+          throw AngelHttpException.notFound(message: errorMessage);
         } else {
           return result.first;
         }
@@ -120,12 +120,12 @@ class Service<Id, Data> extends Routable {
 
   /// Retrieves all resources.
   Future<List<Data>> index([Map<String, dynamic> params]) {
-    throw new AngelHttpException.methodNotAllowed();
+    throw AngelHttpException.methodNotAllowed();
   }
 
   /// Retrieves the desired resource.
   Future<Data> read(Id id, [Map<String, dynamic> params]) {
-    throw new AngelHttpException.methodNotAllowed();
+    throw AngelHttpException.methodNotAllowed();
   }
 
   /// Reads multiple resources at once.
@@ -138,22 +138,22 @@ class Service<Id, Data> extends Routable {
 
   /// Creates a resource.
   Future<Data> create(Data data, [Map<String, dynamic> params]) {
-    throw new AngelHttpException.methodNotAllowed();
+    throw AngelHttpException.methodNotAllowed();
   }
 
   /// Modifies a resource.
   Future<Data> modify(Id id, Data data, [Map<String, dynamic> params]) {
-    throw new AngelHttpException.methodNotAllowed();
+    throw AngelHttpException.methodNotAllowed();
   }
 
   /// Overwrites a resource.
   Future<Data> update(Id id, Data data, [Map<String, dynamic> params]) {
-    throw new AngelHttpException.methodNotAllowed();
+    throw AngelHttpException.methodNotAllowed();
   }
 
   /// Removes the given resource.
   Future<Data> remove(Id id, [Map<String, dynamic> params]) {
-    throw new AngelHttpException.methodNotAllowed();
+    throw AngelHttpException.methodNotAllowed();
   }
 
   /// Creates an [AnonymousService] that wraps over this one, and maps input and output
@@ -167,7 +167,7 @@ class Service<Id, Data> extends Routable {
       return encoder(inner);
     };
 
-    return new AnonymousService<Id, U>(
+    return AnonymousService<Id, U>(
       readData: readData,
       index: ([params]) {
         return index(params).then((it) => it.map(encoder).toList());
@@ -219,7 +219,7 @@ class Service<Id, Data> extends Routable {
 
   void _addRoutesInner(Service service, Iterable<RequestHandler> handlerss) {
     var restProvider = {'provider': Providers.rest};
-    var handlers = new List<RequestHandler>.from(handlerss);
+    var handlers = List<RequestHandler>.from(handlerss);
 
     // Add global middleware if declared on the instance itself
     Middleware before =
@@ -363,8 +363,8 @@ class Service<Id, Data> extends Routable {
               (removeMiddleware == null) ? [] : removeMiddleware.handlers));
 
     // REST compliance
-    put('/', (req, res) => throw new AngelHttpException.notFound());
-    patch('/', (req, res) => throw new AngelHttpException.notFound());
+    put('/', (req, res) => throw AngelHttpException.notFound());
+    patch('/', (req, res) => throw AngelHttpException.notFound());
   }
 
   /// Invoked when this service is wrapped within a [HookedService].

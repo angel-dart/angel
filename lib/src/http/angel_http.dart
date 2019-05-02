@@ -13,33 +13,33 @@ import '../core/core.dart';
 import 'http_request_context.dart';
 import 'http_response_context.dart';
 
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// Adapts `dart:io`'s [HttpServer] to serve Angel.
 class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
     HttpRequestContext, HttpResponseContext> {
   @override
   Uri get uri =>
-      new Uri(scheme: 'http', host: server.address.address, port: server.port);
+      Uri(scheme: 'http', host: server.address.address, port: server.port);
 
   AngelHttp._(Angel app,
       Future<HttpServer> Function(dynamic, int) serverGenerator, bool useZone)
       : super(app, serverGenerator, useZone: useZone);
 
   factory AngelHttp(Angel app, {bool useZone = true}) {
-    return new AngelHttp._(app, HttpServer.bind, useZone);
+    return AngelHttp._(app, HttpServer.bind, useZone);
   }
 
   /// An instance mounted on a server started by the [serverGenerator].
   factory AngelHttp.custom(
       Angel app, Future<HttpServer> Function(dynamic, int) serverGenerator,
       {bool useZone = true}) {
-    return new AngelHttp._(app, serverGenerator, useZone);
+    return AngelHttp._(app, serverGenerator, useZone);
   }
 
   factory AngelHttp.fromSecurityContext(Angel app, SecurityContext context,
       {bool useZone = true}) {
-    return new AngelHttp._(app, (address, int port) {
+    return AngelHttp._(app, (address, int port) {
       return HttpServer.bindSecure(address, port, context);
     }, useZone);
   }
@@ -55,11 +55,10 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
     var certificateChain =
         Platform.script.resolve(certificateChainPath).toFilePath();
     var serverKey = Platform.script.resolve(serverKeyPath).toFilePath();
-    var serverContext = new SecurityContext();
+    var serverContext = SecurityContext();
     serverContext.useCertificateChain(certificateChain, password: password);
     serverContext.usePrivateKey(serverKey, password: password);
-    return new AngelHttp.fromSecurityContext(app, serverContext,
-        useZone: useZone);
+    return AngelHttp.fromSecurityContext(app, serverContext, useZone: useZone);
   }
 
   /// Use [server] instead.
@@ -94,8 +93,8 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
   Future<HttpResponseContext> createResponseContext(
       HttpRequest request, HttpResponse response,
       [HttpRequestContext correspondingRequest]) {
-    return new Future<HttpResponseContext>.value(
-        new HttpResponseContext(response, app, correspondingRequest)
+    return Future<HttpResponseContext>.value(
+        HttpResponseContext(response, app, correspondingRequest)
           ..serializer = (app.serializer ?? json.encode)
           ..encoders.addAll(app.encoders ?? {}));
   }
@@ -103,7 +102,7 @@ class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
   @override
   Stream<HttpResponse> createResponseStreamFromRawRequest(
           HttpRequest request) =>
-      new Stream.fromIterable([request.response]);
+      Stream.fromIterable([request.response]);
 
   @override
   void setChunkedEncoding(HttpResponse response, bool value) =>

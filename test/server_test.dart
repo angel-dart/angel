@@ -15,9 +15,8 @@ final Uri $foo = Uri.parse('http://localhost:3000/foo');
 /// Additional tests to improve coverage of server.dart
 main() {
   group('scoping', () {
-    var parent = new Angel(reflector: MirrorsReflector())
-      ..configuration['two'] = 2;
-    var child = new Angel(reflector: MirrorsReflector());
+    var parent = Angel(reflector: MirrorsReflector())..configuration['two'] = 2;
+    var child = Angel(reflector: MirrorsReflector());
     parent.mount('/child', child);
 
     test('sets children', () {
@@ -34,20 +33,20 @@ main() {
   });
 
   test('custom server generator', () {
-    var app = new Angel(reflector: MirrorsReflector());
-    var http = new AngelHttp.custom(app, HttpServer.bind);
+    var app = Angel(reflector: MirrorsReflector());
+    var http = AngelHttp.custom(app, HttpServer.bind);
     expect(http.serverGenerator, HttpServer.bind);
   });
 
   test('default error handler', () async {
-    var app = new Angel(reflector: MirrorsReflector());
-    var http = new AngelHttp(app);
-    var rq = new MockHttpRequest('GET', $foo);
+    var app = Angel(reflector: MirrorsReflector());
+    var http = AngelHttp(app);
+    var rq = MockHttpRequest('GET', $foo);
     unawaited(rq.close());
     var rs = rq.response;
     var req = await http.createRequestContext(rq, rs);
     var res = await http.createResponseContext(rq, rs);
-    var e = new AngelHttpException(null,
+    var e = AngelHttpException(null,
         statusCode: 321, message: 'Hello', errors: ['foo', 'bar']);
     await app.errorHandler(e, req, res);
     await http.sendResponse(rq, rs, req, res);
@@ -63,10 +62,10 @@ main() {
   });
 
   test('plug-ins run on startup', () async {
-    var app = new Angel(reflector: MirrorsReflector());
+    var app = Angel(reflector: MirrorsReflector());
     app.startupHooks.add((app) => app.configuration['two'] = 2);
 
-    var http = new AngelHttp(app);
+    var http = AngelHttp(app);
     await http.startServer();
     expect(app.configuration['two'], 2);
     await app.close();
@@ -74,16 +73,16 @@ main() {
   });
 
   test('warning when adding routes to flattened router', () {
-    var app = new Angel(reflector: MirrorsReflector())
+    var app = Angel(reflector: MirrorsReflector())
       ..optimizeForProduction(force: true);
     app.dumpTree();
     app.get('/', (req, res) => 2);
-    app.mount('/foo', new Router()..get('/', (req, res) => 3));
+    app.mount('/foo', Router()..get('/', (req, res) => 3));
   });
 
   test('services close on close call', () async {
-    var app = new Angel(reflector: MirrorsReflector());
-    var svc = new CustomCloseService();
+    var app = Angel(reflector: MirrorsReflector());
+    var svc = CustomCloseService();
     expect(svc.value, 2);
     app.use('/', svc);
     await app.close();
@@ -91,11 +90,10 @@ main() {
   });
 
   test('global injection added to injection map', () async {
-    var app = new Angel(reflector: MirrorsReflector())
-      ..configuration['a'] = 'b';
-    var http = new AngelHttp(app);
+    var app = Angel(reflector: MirrorsReflector())..configuration['a'] = 'b';
+    var http = AngelHttp(app);
     app.get('/', ioc((String a) => a));
-    var rq = new MockHttpRequest('GET', Uri.parse('/'));
+    var rq = MockHttpRequest('GET', Uri.parse('/'));
     unawaited(rq.close());
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
@@ -103,10 +101,10 @@ main() {
   });
 
   test('global injected serializer', () async {
-    var app = new Angel(reflector: MirrorsReflector())..serializer = (_) => 'x';
-    var http = new AngelHttp(app);
+    var app = Angel(reflector: MirrorsReflector())..serializer = (_) => 'x';
+    var http = AngelHttp(app);
     app.get($foo.path, (req, ResponseContext res) => res.serialize(null));
-    var rq = new MockHttpRequest('GET', $foo);
+    var rq = MockHttpRequest('GET', $foo);
     unawaited(rq.close());
     await http.handleRequest(rq);
     var body = await rq.response.transform(utf8.decoder).join();
@@ -114,15 +112,15 @@ main() {
   });
 
   group('handler results', () {
-    var app = new Angel(reflector: MirrorsReflector());
-    var http = new AngelHttp(app);
+    var app = Angel(reflector: MirrorsReflector());
+    var http = AngelHttp(app);
     app.responseFinalizers
-        .add((req, res) => throw new AngelHttpException.forbidden());
+        .add((req, res) => throw AngelHttpException.forbidden());
     RequestContext req;
     ResponseContext res;
 
     setUp(() async {
-      var rq = new MockHttpRequest('GET', $foo);
+      var rq = MockHttpRequest('GET', $foo);
       unawaited(rq.close());
       req = await http.createRequestContext(rq, rq.response);
       res = await http.createResponseContext(rq, rq.response);
@@ -138,14 +136,14 @@ main() {
       });
 
       test('return future', () async {
-        var handler = new Future.value(2);
+        var handler = Future.value(2);
         expect(await app.getHandlerResult(handler, req, res), 2);
       });
     });
 
     group('executeHandler', () {
       test('return Stream', () async {
-        var handler = (req, res) => new Stream.fromIterable([2, 3]);
+        var handler = (req, res) => Stream.fromIterable([2, 3]);
         expect(await app.executeHandler(handler, req, res), isFalse);
       });
 
@@ -161,10 +159,10 @@ main() {
     AngelHttp http;
 
     setUp(() async {
-      app = new Angel(reflector: MirrorsReflector());
-      app.get('/wtf', (req, res) => throw new AngelHttpException.forbidden());
-      app.get('/wtf2', (req, res) => throw new AngelHttpException.forbidden());
-      http = new AngelHttp(app);
+      app = Angel(reflector: MirrorsReflector());
+      app.get('/wtf', (req, res) => throw AngelHttpException.forbidden());
+      app.get('/wtf2', (req, res) => throw AngelHttpException.forbidden());
+      http = AngelHttp(app);
       await http.startServer('127.0.0.1', 0);
 
       var oldHandler = app.errorHandler;
@@ -178,7 +176,7 @@ main() {
     tearDown(() => app.close());
 
     test('can send json', () async {
-      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
+      var rq = MockHttpRequest('GET', Uri(path: 'wtf'))
         ..headers.set('accept', 'application/json');
       unawaited(rq.close());
       unawaited(http.handleRequest(rq));
@@ -188,7 +186,7 @@ main() {
     });
 
     test('can throw in finalizer', () async {
-      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf'))
+      var rq = MockHttpRequest('GET', Uri(path: 'wtf'))
         ..headers.set('accept', 'application/json');
       unawaited(rq.close());
       unawaited(http.handleRequest(rq));
@@ -198,7 +196,7 @@ main() {
     });
 
     test('can send html', () async {
-      var rq = new MockHttpRequest('GET', new Uri(path: 'wtf2'));
+      var rq = MockHttpRequest('GET', Uri(path: 'wtf2'));
       rq.headers.set('accept', 'text/html');
       unawaited(rq.close());
       unawaited(http.handleRequest(rq));

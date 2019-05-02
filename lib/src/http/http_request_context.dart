@@ -75,7 +75,7 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
   /// Magically transforms an [HttpRequest] into a [RequestContext].
   static Future<HttpRequestContext> from(
       HttpRequest request, Angel app, String path) {
-    HttpRequestContext ctx = new HttpRequestContext()
+    HttpRequestContext ctx = HttpRequestContext()
       .._container = app.container.createChild();
 
     String override = request.method;
@@ -114,15 +114,15 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
     }
 
     if (lastSlash > -1)
-      ctx._path = new String.fromCharCodes(_path.take(lastSlash));
+      ctx._path = String.fromCharCodes(_path.take(lastSlash));
     else
-      ctx._path = new String.fromCharCodes(_path);
+      ctx._path = String.fromCharCodes(_path);
       */
 
     ctx._path = path;
     ctx._io = request;
 
-    return new Future.value(ctx);
+    return Future.value(ctx);
   }
 
   @override

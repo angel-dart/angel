@@ -71,17 +71,16 @@ class Parameter {
   /// Returns an error that can be thrown when the parameter is not present.
   get error {
     if (cookie?.isNotEmpty == true)
-      return new AngelHttpException.badRequest(
+      return AngelHttpException.badRequest(
           message: 'Missing required cookie "$cookie".');
     if (header?.isNotEmpty == true)
-      return new AngelHttpException.badRequest(
+      return AngelHttpException.badRequest(
           message: 'Missing required header "$header".');
     if (query?.isNotEmpty == true)
-      return new AngelHttpException.badRequest(
+      return AngelHttpException.badRequest(
           message: 'Missing required query parameter "$query".');
     if (session?.isNotEmpty == true)
-      return new StateError(
-          'Session does not contain required key "$session".');
+      return StateError('Session does not contain required key "$session".');
   }
 
   /// Obtains a value for this parameter from a [RequestContext].

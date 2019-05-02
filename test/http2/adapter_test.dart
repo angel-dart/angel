@@ -17,18 +17,17 @@ const String jfk =
     'Ask not what your country can do for you, but what you can do for your country.';
 
 Stream<List<int>> jfkStream() {
-  return new Stream.fromIterable([utf8.encode(jfk)]);
+  return Stream.fromIterable([utf8.encode(jfk)]);
 }
 
 void main() {
-  var client = new Http2Client();
+  var client = Http2Client();
   Angel app;
   AngelHttp2 http2;
   Uri serverRoot;
 
   setUp(() async {
-    app = new Angel(reflector: MirrorsReflector())
-      ..encoders['gzip'] = gzip.encoder;
+    app = Angel(reflector: MirrorsReflector())..encoders['gzip'] = gzip.encoder;
     hierarchicalLoggingEnabled = true;
     app.logger = Logger.detached('angel.http2')
       ..onRecord.listen((rec) {
@@ -93,12 +92,12 @@ void main() {
       return req.queryParameters;
     });
 
-    var ctx = new SecurityContext()
+    var ctx = SecurityContext()
       ..useCertificateChain('dev.pem')
       ..usePrivateKey('dev.key', password: 'dartdart')
       ..setAlpnProtocols(['h2'], true);
 
-    http2 = new AngelHttp2(app, ctx);
+    http2 = AngelHttp2(app, ctx);
 
     var server = await http2.startServer();
     serverRoot = Uri.parse('https://127.0.0.1:${server.port}');
@@ -181,16 +180,16 @@ void main() {
       supportedProtocols: ['h2'],
     );
 
-    var connection = new ClientTransportConnection.viaSocket(
+    var connection = ClientTransportConnection.viaSocket(
       socket,
-      settings: new ClientSettings(allowServerPushes: true),
+      settings: ClientSettings(allowServerPushes: true),
     );
 
     var headers = <Header>[
-      new Header.ascii(':authority', serverRoot.authority),
-      new Header.ascii(':method', 'GET'),
-      new Header.ascii(':path', serverRoot.replace(path: '/push').path),
-      new Header.ascii(':scheme', serverRoot.scheme),
+      Header.ascii(':authority', serverRoot.authority),
+      Header.ascii(':method', 'GET'),
+      Header.ascii(':path', serverRoot.replace(path: '/push').path),
+      Header.ascii(':scheme', serverRoot.scheme),
     ];
 
     var stream = await connection.makeRequest(headers, endStream: true);
@@ -198,8 +197,7 @@ void main() {
     var bb = await stream.incomingMessages
         .where((s) => s is DataStreamMessage)
         .cast<DataStreamMessage>()
-        .fold<BytesBuilder>(
-            new BytesBuilder(), (out, msg) => out..add(msg.bytes));
+        .fold<BytesBuilder>(BytesBuilder(), (out, msg) => out..add(msg.bytes));
 
     // Check that main body was sent
     expect(utf8.decode(bb.takeBytes()), 'ok');
@@ -231,7 +229,7 @@ void main() {
           .where((s) => s is DataStreamMessage)
           .cast<DataStreamMessage>()
           .fold<BytesBuilder>(
-              new BytesBuilder(), (out, msg) => out..add(msg.bytes));
+              BytesBuilder(), (out, msg) => out..add(msg.bytes));
       return UTF8.decode(bb.takeBytes());
     }
     */
@@ -268,14 +266,14 @@ void main() {
     });
 
     test('multipart body parsed', () async {
-      var rq = new http.MultipartRequest(
-          'POST', serverRoot.replace(path: '/upload'));
+      var rq =
+          http.MultipartRequest('POST', serverRoot.replace(path: '/upload'));
       rq.headers.addAll({'accept': 'application/json'});
 
       rq.fields['foo'] = 'bar';
-      rq.files.add(new http.MultipartFile(
-          'file', new Stream.fromIterable([utf8.encode('hello world')]), 11,
-          contentType: new MediaType('angel', 'framework')));
+      rq.files.add(http.MultipartFile(
+          'file', Stream.fromIterable([utf8.encode('hello world')]), 11,
+          contentType: MediaType('angel', 'framework')));
 
       var response = await client.send(rq);
       var responseBody = await response.stream.transform(utf8.decoder).join();

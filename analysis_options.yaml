@@ -5,3 +5,5 @@ analyzer:
 linter:
   rules:
     - avoid_slow_async_io
+    - unnecessary_const
+    - unnecessary_new

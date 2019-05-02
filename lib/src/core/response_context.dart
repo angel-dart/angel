@@ -14,14 +14,13 @@ import 'controller.dart';
 import 'request_context.dart';
 import 'server.dart' show Angel;
 
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// A convenience wrapper around an outgoing HTTP request.
 abstract class ResponseContext<RawResponse>
     implements StreamSink<List<int>>, StringSink {
   final Map properties = {};
-  final CaseInsensitiveMap<String> _headers =
-      new CaseInsensitiveMap<String>.from({
+  final CaseInsensitiveMap<String> _headers = CaseInsensitiveMap<String>.from({
     'content-type': 'text/plain',
     'server': 'angel',
   });
@@ -52,7 +51,7 @@ abstract class ResponseContext<RawResponse>
   RequestContext get correspondingRequest;
 
   @override
-  Future get done => (_done ?? new Completer()).future;
+  Future get done => (_done ?? Completer()).future;
 
   /// Headers that will be sent to the user.
   ///
@@ -124,9 +123,9 @@ abstract class ResponseContext<RawResponse>
   /// Gets or sets the content type to send back to a client.
   MediaType get contentType {
     try {
-      return new MediaType.parse(headers['content-type']);
+      return MediaType.parse(headers['content-type']);
     } catch (_) {
-      return new MediaType('text', 'plain');
+      return MediaType('text', 'plain');
     }
   }
 
@@ -135,8 +134,7 @@ abstract class ResponseContext<RawResponse>
     headers['content-type'] = value.toString();
   }
 
-  static StateError closed() =>
-      new StateError('Cannot modify a closed response.');
+  static StateError closed() => StateError('Cannot modify a closed response.');
 
   /// Sends a download as a response.
   Future<void> download(File file, {String filename}) async {
@@ -162,7 +160,7 @@ abstract class ResponseContext<RawResponse>
     }
 
     if (_done?.isCompleted == false) _done.complete();
-    return new Future.value();
+    return Future.value();
   }
 
   /// Serializes JSON to the response.
@@ -176,8 +174,7 @@ abstract class ResponseContext<RawResponse>
   Future<void> jsonp(value,
       {String callbackName = "callback", MediaType contentType}) {
     if (!isOpen) throw closed();
-    this.contentType =
-        contentType ?? new MediaType('application', 'javascript');
+    this.contentType = contentType ?? MediaType('application', 'javascript');
     write("$callbackName(${serializer(value)})");
     return close();
   }
@@ -185,10 +182,10 @@ abstract class ResponseContext<RawResponse>
   /// Renders a view to the response stream, and closes the response.
   Future<void> render(String view, [Map<String, dynamic> data]) {
     if (!isOpen) throw closed();
-    contentType = new MediaType('text', 'html', {'charset': 'utf-8'});
+    contentType = MediaType('text', 'html', {'charset': 'utf-8'});
     return Future<String>.sync(() => app.viewGenerator(
         view,
-        new Map<String, dynamic>.from(renderParams)
+        Map<String, dynamic>.from(renderParams)
           ..addAll(data ?? <String, dynamic>{}))).then((content) {
       write(content);
       return close();
@@ -256,7 +253,7 @@ abstract class ResponseContext<RawResponse>
       return;
     }
 
-    throw new ArgumentError.notNull('Route to redirect to ($name)');
+    throw ArgumentError.notNull('Route to redirect to ($name)');
   }
 
   /// Redirects to the given [Controller] action.
@@ -266,19 +263,19 @@ abstract class ResponseContext<RawResponse>
     List<String> split = action.split("@");
 
     if (split.length < 2)
-      throw new Exception(
+      throw Exception(
           "Controller redirects must take the form of 'Controller@action'. You gave: $action");
 
     Controller controller =
         app.controllers[split[0].replaceAll(_straySlashes, '')];
 
     if (controller == null)
-      throw new Exception("Could not find a controller named '${split[0]}'");
+      throw Exception("Could not find a controller named '${split[0]}'");
 
     Route matched = controller.routeMappings[split[1]];
 
     if (matched == null)
-      throw new Exception(
+      throw Exception(
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
 
     final head = controller
@@ -298,7 +295,7 @@ abstract class ResponseContext<RawResponse>
   /// Serializes data to the response.
   Future<bool> serialize(value, {MediaType contentType}) async {
     if (!isOpen) throw closed();
-    this.contentType = contentType ?? new MediaType('application', 'json');
+    this.contentType = contentType ?? MediaType('application', 'json');
     var text = await serializer(value);
     if (text.isEmpty) return true;
     write(text);
@@ -314,7 +311,7 @@ abstract class ResponseContext<RawResponse>
     var mimeType = app.mimeTypeResolver.lookup(file.path);
     contentLength = await file.length();
     contentType = mimeType == null
-        ? new MediaType('application', 'octet-stream')
+        ? MediaType('application', 'octet-stream')
         : MediaType.parse(mimeType);
 
     if (correspondingRequest.method != 'HEAD')
@@ -375,18 +372,18 @@ abstract class ResponseContext<RawResponse>
 
 abstract class LockableBytesBuilder extends BytesBuilder {
   factory LockableBytesBuilder() {
-    return new _LockableBytesBuilderImpl();
+    return _LockableBytesBuilderImpl();
   }
 
   void lock();
 }
 
 class _LockableBytesBuilderImpl implements LockableBytesBuilder {
-  final BytesBuilder _buf = new BytesBuilder(copy: false);
+  final BytesBuilder _buf = BytesBuilder(copy: false);
   bool _closed = false;
 
   StateError _deny() =>
-      new StateError('Cannot modified a closed response\'s buffer.');
+      StateError('Cannot modified a closed response\'s buffer.');
 
   @override
   void lock() {

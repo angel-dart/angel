@@ -1,7 +1,7 @@
 import 'dart:io';
 
 /// A constant instance of [AngelEnv].
-const AngelEnvironment angelEnv = const AngelEnvironment();
+const AngelEnvironment angelEnv = AngelEnvironment();
 
 /// Queries the environment's `ANGEL_ENV` value.
 class AngelEnvironment {

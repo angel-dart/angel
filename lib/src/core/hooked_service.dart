@@ -19,29 +19,29 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   final T inner;
 
   final HookedServiceEventDispatcher<Id, Data, T> beforeIndexed =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> beforeRead =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> beforeCreated =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> beforeModified =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> beforeUpdated =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> beforeRemoved =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> afterIndexed =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> afterRead =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> afterCreated =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> afterModified =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> afterUpdated =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
   final HookedServiceEventDispatcher<Id, Data, T> afterRemoved =
-      new HookedServiceEventDispatcher<Id, Data, T>();
+      HookedServiceEventDispatcher<Id, Data, T>();
 
   HookedService(this.inner) {
     // Clone app instance
@@ -89,7 +89,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
     afterUpdated._close();
     afterRemoved._close();
     inner.close();
-    return new Future.value();
+    return Future.value();
   }
 
   /// Adds hooks to this instance.
@@ -130,7 +130,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   List<RequestHandler> get bootstrappers =>
-      new List<RequestHandler>.from(super.bootstrappers)
+      List<RequestHandler>.from(super.bootstrappers)
         ..add((RequestContext req, ResponseContext res) {
           req.serviceParams
             ..['__requestctx'] = req
@@ -160,7 +160,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
         case HookedServiceEvent.removed:
           return beforeRemoved;
         default:
-          throw new ArgumentError('Invalid service method: ${name}');
+          throw ArgumentError('Invalid service method: ${name}');
       }
     }).forEach((HookedServiceEventDispatcher<Id, Data, T> dispatcher) =>
         dispatcher.listen(listener));
@@ -184,7 +184,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
         case HookedServiceEvent.removed:
           return afterRemoved;
         default:
-          throw new ArgumentError('Invalid service method: ${name}');
+          throw ArgumentError('Invalid service method: ${name}');
       }
     }).forEach((HookedServiceEventDispatcher<Id, Data, T> dispatcher) =>
         dispatcher.listen(listener));
@@ -216,7 +216,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   /// that events coming out of this [Stream] will see changes you make within the [Stream]
   /// callback.
   Stream<HookedServiceEvent<Id, Data, T>> beforeAllStream() {
-    var ctrl = new StreamController<HookedServiceEvent<Id, Data, T>>();
+    var ctrl = StreamController<HookedServiceEvent<Id, Data, T>>();
     _ctrl.add(ctrl);
     before(HookedServiceEvent.all, ctrl.add);
     return ctrl.stream;
@@ -228,7 +228,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   /// that events coming out of this [Stream] will see changes you make within the [Stream]
   /// callback.
   Stream<HookedServiceEvent<Id, Data, T>> afterAllStream() {
-    var ctrl = new StreamController<HookedServiceEvent<Id, Data, T>>();
+    var ctrl = StreamController<HookedServiceEvent<Id, Data, T>>();
     _ctrl.add(ctrl);
     before(HookedServiceEvent.all, ctrl.add);
     return ctrl.stream;
@@ -241,7 +241,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   /// callback.
   Stream<HookedServiceEvent<Id, Data, T>> beforeStream(
       Iterable<String> eventNames) {
-    var ctrl = new StreamController<HookedServiceEvent<Id, Data, T>>();
+    var ctrl = StreamController<HookedServiceEvent<Id, Data, T>>();
     _ctrl.add(ctrl);
     before(eventNames, ctrl.add);
     return ctrl.stream;
@@ -254,7 +254,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   /// callback.
   Stream<HookedServiceEvent<Id, Data, T>> afterStream(
       Iterable<String> eventNames) {
-    var ctrl = new StreamController<HookedServiceEvent<Id, Data, T>>();
+    var ctrl = StreamController<HookedServiceEvent<Id, Data, T>>();
     _ctrl.add(ctrl);
     after(eventNames, ctrl.add);
     return ctrl.stream;
@@ -271,13 +271,13 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   Future<List<Data>> index([Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeIndexed
-        ._emit(new HookedServiceEvent(false, _getRequest(_params),
+        ._emit(HookedServiceEvent(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.indexed,
             params: params))
         .then((before) {
       if (before._canceled) {
         return afterIndexed
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.indexed,
                 params: params, result: before.result))
             .then((after) => after.result as List<Data>);
@@ -285,7 +285,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
       return inner.index(params).then((result) {
         return afterIndexed
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.indexed,
                 params: params, result: result))
             .then((after) => after.result as List<Data>);
@@ -297,13 +297,13 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   Future<Data> read(Id id, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeRead
-        ._emit(new HookedServiceEvent(false, _getRequest(_params),
+        ._emit(HookedServiceEvent(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.read,
             id: id, params: params))
         .then((before) {
       if (before._canceled) {
         return afterRead
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.read,
                 id: id, params: params, result: before.result))
             .then((after) => after.result as Data);
@@ -311,7 +311,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
       return inner.read(id, params).then((result) {
         return afterRead
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.read,
                 id: id, params: params, result: result))
             .then((after) => after.result as Data);
@@ -323,13 +323,13 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   Future<Data> create(Data data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeCreated
-        ._emit(new HookedServiceEvent(false, _getRequest(_params),
+        ._emit(HookedServiceEvent(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.created,
             data: data, params: params))
         .then((before) {
       if (before._canceled) {
         return afterCreated
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.created,
                 data: before.data, params: params, result: before.result))
             .then((after) => after.result as Data);
@@ -337,7 +337,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
       return inner.create(before.data, params).then((result) {
         return afterCreated
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.created,
                 data: before.data, params: params, result: result))
             .then((after) => after.result as Data);
@@ -349,13 +349,13 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   Future<Data> modify(Id id, Data data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeModified
-        ._emit(new HookedServiceEvent(false, _getRequest(_params),
+        ._emit(HookedServiceEvent(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.modified,
             id: id, data: data, params: params))
         .then((before) {
       if (before._canceled) {
         return afterModified
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.modified,
                 id: id,
                 data: before.data,
@@ -366,7 +366,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
       return inner.modify(id, before.data, params).then((result) {
         return afterModified
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.created,
                 id: id, data: before.data, params: params, result: result))
             .then((after) => after.result as Data);
@@ -378,13 +378,13 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   Future<Data> update(Id id, Data data, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeUpdated
-        ._emit(new HookedServiceEvent(false, _getRequest(_params),
+        ._emit(HookedServiceEvent(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.updated,
             id: id, data: data, params: params))
         .then((before) {
       if (before._canceled) {
         return afterUpdated
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.updated,
                 id: id,
                 data: before.data,
@@ -395,7 +395,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
       return inner.update(id, before.data, params).then((result) {
         return afterUpdated
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.updated,
                 id: id, data: before.data, params: params, result: result))
             .then((after) => after.result as Data);
@@ -407,13 +407,13 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   Future<Data> remove(Id id, [Map<String, dynamic> _params]) {
     var params = _stripReq(_params);
     return beforeRemoved
-        ._emit(new HookedServiceEvent(false, _getRequest(_params),
+        ._emit(HookedServiceEvent(false, _getRequest(_params),
             _getResponse(_params), inner, HookedServiceEvent.removed,
             id: id, params: params))
         .then((before) {
       if (before._canceled) {
         return afterRemoved
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.removed,
                 id: id, params: params, result: before.result))
             .then((after) => after.result) as Data;
@@ -421,7 +421,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
       return inner.remove(id, params).then((result) {
         return afterRemoved
-            ._emit(new HookedServiceEvent(true, _getRequest(_params),
+            ._emit(HookedServiceEvent(true, _getRequest(_params),
                 _getResponse(_params), inner, HookedServiceEvent.removed,
                 id: id, params: params, result: result))
             .then((after) => after.result as Data);
@@ -455,11 +455,11 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
         dispatcher = afterRemoved;
         break;
       default:
-        throw new ArgumentError("Invalid service event name: '$eventName'");
+        throw ArgumentError("Invalid service event name: '$eventName'");
     }
 
     var ev =
-        new HookedServiceEvent<Id, Data, T>(true, null, null, inner, eventName);
+        HookedServiceEvent<Id, Data, T>(true, null, null, inner, eventName);
     return fireEvent(dispatcher, ev, callback);
   }
 
@@ -470,8 +470,8 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
       [HookedServiceEventListener<Id, Data, T> callback]) {
     Future f;
     if (callback != null && event?._canceled != true)
-      f = new Future.sync(() => callback(event));
-    f ??= new Future.value();
+      f = Future.sync(() => callback(event));
+    f ??= Future.value();
     return f.then((_) => dispatcher._emit(event));
   }
 }
@@ -485,7 +485,7 @@ class HookedServiceEvent<Id, Data, T extends Service<Id, Data>> {
   static const String updated = 'updated';
   static const String removed = 'removed';
 
-  static const List<String> all = const [
+  static const List<String> all = [
     indexed,
     read,
     created,
@@ -558,14 +558,14 @@ class HookedServiceEventDispatcher<Id, Data, T extends Service<Id, Data>> {
   Future<HookedServiceEvent<Id, Data, T>> _emit(
       HookedServiceEvent<Id, Data, T> event) {
     if (event?._canceled == true || event == null || listeners.isEmpty)
-      return new Future.value(event);
+      return Future.value(event);
 
-    var f = new Future<HookedServiceEvent<Id, Data, T>>.value(event);
+    var f = Future<HookedServiceEvent<Id, Data, T>>.value(event);
 
     for (var listener in listeners) {
       f = f.then((event) {
         if (event._canceled) return event;
-        return new Future.sync(() => listener(event)).then((_) => event);
+        return Future.sync(() => listener(event)).then((_) => event);
       });
     }
 
@@ -577,7 +577,7 @@ class HookedServiceEventDispatcher<Id, Data, T extends Service<Id, Data>> {
   /// *NOTE*: Callbacks on the returned [Stream] cannot be guaranteed to run before other [listeners].
   /// Use this only if you need a read-only stream of events.
   Stream<HookedServiceEvent<Id, Data, T>> asStream() {
-    var ctrl = new StreamController<HookedServiceEvent<Id, Data, T>>();
+    var ctrl = StreamController<HookedServiceEvent<Id, Data, T>>();
     _ctrl.add(ctrl);
     listen(ctrl.add);
     return ctrl.stream;

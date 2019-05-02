@@ -7,17 +7,17 @@ void main() {
       throwsA(const IsInstanceOf<AngelHttpException>());
 
   test('throw 404 on null', () {
-    var service = new AnonymousService(index: ([p]) => null);
+    var service = AnonymousService(index: ([p]) => null);
     expect(() => service.findOne(), throwsAnAngelHttpException);
   });
 
   test('throw 404 on empty iterable', () {
-    var service = new AnonymousService(index: ([p]) => []);
+    var service = AnonymousService(index: ([p]) => []);
     expect(() => service.findOne(), throwsAnAngelHttpException);
   });
 
   test('return first element of iterable', () async {
-    var service = new AnonymousService(index: ([p]) => [2]);
+    var service = AnonymousService(index: ([p]) => [2]);
     expect(await service.findOne(), 2);
   });
 }

@@ -12,7 +12,7 @@ import 'request_context.dart';
 import 'response_context.dart';
 import 'service.dart';
 
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// A function that receives an incoming [RequestContext] and responds to it.
 typedef FutureOr RequestHandler(RequestContext req, ResponseContext res);
@@ -31,12 +31,12 @@ RequestHandler chain(Iterable<RequestHandler> handlers) {
       else {
         var current = runPipeline;
         runPipeline = () => current().then((result) => !res.isOpen
-            ? new Future.value(result)
+            ? Future.value(result)
             : req.app.executeHandler(handler, req, res));
       }
     }
 
-    runPipeline ??= () => new Future.value();
+    runPipeline ??= () => Future.value();
     return runPipeline();
   };
 }
@@ -50,7 +50,7 @@ class Routable extends Router<RequestHandler> {
   final Container _container;
 
   Routable([Reflector reflector])
-      : _container = reflector == null ? null : new Container(reflector),
+      : _container = reflector == null ? null : Container(reflector),
         super();
 
   /// A [Container] used to inject dependencies.
@@ -65,8 +65,7 @@ class Routable extends Router<RequestHandler> {
   /// A set of [Service] objects that have been mapped into routes.
   Map<Pattern, Service> get services => _services;
 
-  StreamController<Service> _onService =
-      new StreamController<Service>.broadcast();
+  StreamController<Service> _onService = StreamController<Service>.broadcast();
 
   /// Fired whenever a service is added to this instance.
   ///
@@ -119,11 +118,9 @@ class Routable extends Router<RequestHandler> {
   /// events dispatched by this service.
   HookedService<Id, Data, T> use<Id, Data, T extends Service<Id, Data>>(
       String path, T service) {
-    var hooked = new HookedService<Id, Data, T>(service);
-    _services[path
-        .toString()
-        .trim()
-        .replaceAll(new RegExp(r'(^/+)|(/+$)'), '')] = hooked;
+    var hooked = HookedService<Id, Data, T>(service);
+    _services[path.toString().trim().replaceAll(RegExp(r'(^/+)|(/+$)'), '')] =
+        hooked;
     hooked.addRoutes();
     mount(path.toString(), hooked);
     service.onHooked(hooked);
