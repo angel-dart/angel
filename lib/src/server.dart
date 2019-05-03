@@ -371,8 +371,7 @@ abstract class AuthorizationServer<Client, User> {
       var grantType = await _getParam(req, 'grant_type', state,
           body: true, throwIfEmpty: false);
 
-      if (grantType != 'authorization_code' &&
-          grantType != 'urn:ietf:params:oauth:grant-type:device_code' &&
+      if (grantType != 'urn:ietf:params:oauth:grant-type:device_code' &&
           grantType != null) {
         var match =
             _rgxBasic.firstMatch(req.headers.value('authorization') ?? '');

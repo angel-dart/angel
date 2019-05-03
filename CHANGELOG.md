@@ -1,3 +1,6 @@
+# 2.2.0+1
+* Parse+verify client for `authorization_code`.
+
 # 2.2.0
 * Pass `client` to `exchangeAuthorizationCodeForToken`.
 * Apply `package:pedantic`.
