@@ -243,7 +243,8 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
       Iterable<String> scopes,
       String state,
       RequestContext req,
-      ResponseContext res) async {
+      ResponseContext res,
+      bool implicit) async {
     req.container.make<Pkce>();
     return {'code': 'ok'};
   }

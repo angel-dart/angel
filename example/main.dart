@@ -56,7 +56,8 @@ class _ExampleAuthorizationServer
       Iterable<String> scopes,
       String state,
       RequestContext req,
-      ResponseContext res) {
+      ResponseContext res,
+      bool implicit) {
     // TODO: In many cases, here you will render a view displaying to the user which scopes are being requested.
     throw UnimplementedError();
   }

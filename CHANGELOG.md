@@ -1,3 +1,6 @@
+# 2.3.0
+* Remove `implicitGrant`, and inline it into `requestAuthorizationCode`.
+
 # 2.2.0+1
 * Parse+verify client for `authorization_code`.
 

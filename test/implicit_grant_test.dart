@@ -58,13 +58,16 @@ class _AuthorizationServer
   }
 
   @override
-  Future<AuthorizationTokenResponse> implicitGrant(
+  Future<void> requestAuthorizationCode(
       PseudoApplication client,
       String redirectUri,
       Iterable<String> scopes,
       String state,
       RequestContext req,
-      ResponseContext res) async {
-    return AuthorizationTokenResponse('foo');
+      ResponseContext res,
+      bool implicit) async {
+    var tok = AuthorizationTokenResponse('foo');
+    var uri = completeImplicitGrant(tok, Uri.parse(redirectUri), state: state);
+    return res.redirect(uri);
   }
 }

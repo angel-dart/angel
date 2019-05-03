@@ -89,34 +89,18 @@ abstract class AuthorizationServer<Client, User> {
   /// Prompt the currently logged-in user to grant or deny access to the [client].
   ///
   /// In many applications, this will entail showing a dialog to the user in question.
-  FutureOr requestAuthorizationCode(
-      Client client,
-      String redirectUri,
-      Iterable<String> scopes,
-      String state,
-      RequestContext req,
-      ResponseContext res) {
-    throw AuthorizationException(
-      ErrorResponse(
-        ErrorResponse.unsupportedResponseType,
-        'Authorization code grants are not supported.',
-        state,
-      ),
-      statusCode: 400,
-    );
-  }
-
-  /// Create an implicit authorization token.
   ///
-  /// Note that in cases where this is called, there is no guarantee
-  /// that the user agent has not been compromised.
-  FutureOr<AuthorizationTokenResponse> implicitGrant(
+  /// If [implicit] is `true`, then the client is requesting an *implicit grant*.
+  /// Be aware of the security implications of this - do not handle them exactly
+  /// the same.
+  FutureOr<void> requestAuthorizationCode(
       Client client,
       String redirectUri,
       Iterable<String> scopes,
       String state,
       RequestContext req,
-      ResponseContext res) {
+      ResponseContext res,
+      bool implicit) {
     throw AuthorizationException(
       ErrorResponse(
         ErrorResponse.unsupportedResponseType,
@@ -227,9 +211,39 @@ abstract class AuthorizationServer<Client, User> {
     );
   }
 
+  /// Returns the [Uri] that a client can be redirected to in the case of an implicit grant.
+  Uri completeImplicitGrant(AuthorizationTokenResponse token, Uri redirectUri,
+      {String state}) {
+    var queryParameters = <String, String>{};
+
+    queryParameters.addAll({
+      'access_token': token.accessToken,
+      'token_type': 'bearer',
+    });
+
+    if (state != null) queryParameters['state'] = state;
+
+    if (token.expiresIn != null)
+      queryParameters['expires_in'] = token.expiresIn.toString();
+
+    if (token.scope != null) queryParameters['scope'] = token.scope.join(' ');
+
+    var fragment =
+        queryParameters.keys.fold<StringBuffer>(StringBuffer(), (buf, k) {
+      if (buf.isNotEmpty) buf.write('&');
+      return buf
+        ..write(
+          '$k=' + Uri.encodeComponent(queryParameters[k]),
+        );
+    }).toString();
+
+    return redirectUri.replace(fragment: fragment);
+  }
+
   /// A request handler that invokes the correct logic, depending on which type
   /// of grant the client is requesting.
-  Future authorizationEndpoint(RequestContext req, ResponseContext res) async {
+  Future<void> authorizationEndpoint(
+      RequestContext req, ResponseContext res) async {
     String state = '';
 
     try {
@@ -241,7 +255,7 @@ abstract class AuthorizationServer<Client, User> {
         return Pkce.fromJson(req.queryParameters, state: state);
       });
 
-      if (responseType == 'code') {
+      if (responseType == 'code' || responseType == 'token') {
         // Ensure client ID
         var clientId = await _getParam(req, 'client_id', state);
 
@@ -262,68 +276,8 @@ abstract class AuthorizationServer<Client, User> {
         // Grab scopes
         var scopes = await _getScopes(req);
 
-        return await requestAuthorizationCode(
-            client, redirectUri, scopes, state, req, res);
-      }
-
-      if (responseType == 'token') {
-        var clientId = await _getParam(req, 'client_id', state);
-        var client = await findClient(clientId);
-
-        if (client == null) {
-          throw AuthorizationException(ErrorResponse(
-            ErrorResponse.unauthorizedClient,
-            'Unknown client "$clientId".',
-            state,
-          ));
-        }
-
-        var redirectUri = await _getParam(req, 'redirect_uri', state);
-
-        // Grab scopes
-        var scopes = await _getScopes(req);
-        var token =
-            await implicitGrant(client, redirectUri, scopes, state, req, res);
-
-        Uri target;
-
-        try {
-          target = Uri.parse(redirectUri);
-          var queryParameters = <String, String>{};
-
-          queryParameters.addAll({
-            'access_token': token.accessToken,
-            'token_type': 'bearer',
-            'state': state,
-          });
-
-          if (token.expiresIn != null)
-            queryParameters['expires_in'] = token.expiresIn.toString();
-
-          if (token.scope != null)
-            queryParameters['scope'] = token.scope.join(' ');
-
-          var fragment =
-              queryParameters.keys.fold<StringBuffer>(StringBuffer(), (buf, k) {
-            if (buf.isNotEmpty) buf.write('&');
-            return buf
-              ..write(
-                '$k=' + Uri.encodeComponent(queryParameters[k]),
-              );
-          }).toString();
-
-          target = target.replace(fragment: fragment);
-          await res.redirect(target.toString());
-          return false;
-        } on FormatException {
-          throw AuthorizationException(
-              ErrorResponse(
-                ErrorResponse.invalidRequest,
-                'Invalid URI provided as "redirect_uri" parameter',
-                state,
-              ),
-              statusCode: 400);
-        }
+        return await requestAuthorizationCode(client, redirectUri, scopes,
+            state, req, res, responseType == 'token');
       }
 
       throw AuthorizationException(

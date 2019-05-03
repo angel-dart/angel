@@ -139,7 +139,14 @@ class _Server extends AuthorizationServer<PseudoApplication, Map> {
       Iterable<String> scopes,
       String state,
       RequestContext req,
-      ResponseContext res) async {
+      ResponseContext res,
+      bool implicit) async {
+    if (implicit) {
+      // Throw the default error on an implicit grant attempt.
+      return super.requestAuthorizationCode(
+          client, redirectUri, scopes, state, req, res, implicit);
+    }
+
     if (state == 'hello')
       return 'Hello ${pseudoApplication.id}:${pseudoApplication.secret}';
 
