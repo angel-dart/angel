@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_oauth2/angel_oauth2.dart';
@@ -153,7 +152,7 @@ main() {
           userInfo: '${pseudoApplication.id}:${pseudoApplication.secret}');
       var response = await testClient.post(url.toString(), headers: {
         'accept': 'application/json',
-        'authorization': 'Basic ' + base64Url.encode(ascii.encode(url.userInfo))
+        // 'authorization': 'Basic ' + base64Url.encode(ascii.encode(url.userInfo))
       }, body: {
         'grant_type': 'authorization_code',
         'client_id': 'freddie mercury',
@@ -175,7 +174,7 @@ main() {
           userInfo: '${pseudoApplication.id}:${pseudoApplication.secret}');
       var response = await testClient.post(url.toString(), headers: {
         'accept': 'application/json',
-        'authorization': 'Basic ' + base64Url.encode(ascii.encode(url.userInfo))
+        // 'authorization': 'Basic ' + base64Url.encode(ascii.encode(url.userInfo))
       }, body: {
         'grant_type': 'authorization_code',
         'client_id': 'freddie mercury',
@@ -202,7 +201,7 @@ main() {
           userInfo: '${pseudoApplication.id}:${pseudoApplication.secret}');
       var response = await testClient.post(url.toString(), headers: {
         'accept': 'application/json',
-        'authorization': 'Basic ' + base64Url.encode(ascii.encode(url.userInfo))
+        // 'authorization': 'Basic ' + base64Url.encode(ascii.encode(url.userInfo))
       }, body: {
         'grant_type': 'authorization_code',
         'client_id': 'freddie mercury',
