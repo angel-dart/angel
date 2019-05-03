@@ -18,7 +18,7 @@ AngelAuthCallback confirmPopupAuthentication({String eventName = 'token'}) {
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <title>Authentication Success</title>
           <script>
-            var ev = CustomEvent($evt, $detail);
+            var ev = new CustomEvent($evt, $detail);
             window.opener.dispatchEvent(ev);
             window.close();
           </script>

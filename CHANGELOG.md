@@ -1,3 +1,6 @@
+# 2.1.5+1
+* Fix error in popup page.
+
 # 2.1.5
 * Modify `_apply` to honor an existing `User` over `Future<User>`.
 
