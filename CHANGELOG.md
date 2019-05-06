@@ -1,3 +1,6 @@
+# 2.0.6
+* Support `--observe=*`, `--enable-vm-service=*` (`startsWith`, instead of `==`).
+
 # 2.0.5
 * Use `dart:developer` to find the Observatory URI.
 * Use the app's logger when necessary.

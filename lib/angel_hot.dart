@@ -161,8 +161,11 @@ class HotReloader {
       _logWarning(
           'You have instantiated a HotReloader without providing any filesystem paths to watch.');
 
-    if (!Platform.executableArguments.contains('--observe') &&
-        !Platform.executableArguments.contains('--enable-vm-service')) {
+    bool _sw(String s) {
+      return Platform.executableArguments.any((ss) => ss.startsWith(s));
+    }
+
+    if (!_sw('--observe') && !_sw('--enable-vm-service')) {
       _logWarning(
           'You have instantiated a HotReloader without passing `--enable-vm-service` or `--observe` to the Dart VM. Hot reloading will be disabled.');
       isHot = false;
