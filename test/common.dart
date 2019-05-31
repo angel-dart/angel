@@ -7,7 +7,7 @@ class Todo extends Model {
   String text;
   String over;
 
-  Todo({String this.text, String this.over});
+  Todo({this.text, this.over});
 
   Map<String, dynamic> toJson() {
     return {

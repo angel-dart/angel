@@ -21,7 +21,7 @@ class Providers {
   /// The transport through which the client is accessing this service.
   final String via;
 
-  const Providers(String this.via);
+  const Providers(this.via);
 
   static const String viaRest = "rest";
   static const String viaWebsocket = "websocket";
@@ -206,10 +206,11 @@ class Service<Id, Data> extends Routable {
       return (id == true || id?.toString() == 'true') as T;
     else if (T == double)
       return double.parse(id.toString()) as T;
-    else if (T == num)
+    else if (T == num) {
       return num.parse(id.toString()) as T;
-    else
+    } else {
       return id as T;
+    }
   }
 
   /// Generates RESTful routes pointing to this class's methods.

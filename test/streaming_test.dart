@@ -94,8 +94,9 @@ main() {
       await http.handleRequest(rq);
       var body = await rq.response.transform(utf8.decoder).join();
 
-      if (rq.response.statusCode != 32)
+      if (rq.response.statusCode != 32) {
         throw 'overwrite should throw error; response: $body';
+      }
     } on StateError {
       // Success
     }

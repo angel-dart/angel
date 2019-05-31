@@ -39,8 +39,9 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     if (value == null && param.required != false) throw param.error;
     return value;
   } else if (requirement is String) {
-    if (req.container.hasNamed(requirement))
+    if (req.container.hasNamed(requirement)) {
       return req.container.findByName(requirement);
+    }
     if (req.params.containsKey(requirement)) {
       return req.params[requirement];
     } else if ((propFromApp = req.app.findProperty(requirement)) != null)
@@ -62,14 +63,16 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
         _primitiveTypes.contains(type)) {
       return await resolveInjection(
           key, injection, req, res, throwOnUnresolved, container);
-    } else
+    } else {
       return await resolveInjection(
           type, injection, req, res, throwOnUnresolved, container);
+    }
   } else if (requirement is Type && requirement != dynamic) {
     try {
       var futureType = container.reflector.reflectFutureOf(requirement);
-      if (container.has(futureType.reflectedType))
+      if (container.has(futureType.reflectedType)) {
         return await container.make(futureType.reflectedType);
+      }
     } on UnsupportedError {
       // Ignore.
     }

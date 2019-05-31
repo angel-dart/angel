@@ -73,9 +73,10 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
   @override
   set contentType(MediaType value) {
     super.contentType = value;
-    if (!_streamInitialized)
+    if (!_streamInitialized) {
       rawResponse.headers.contentType =
           ContentType(value.type, value.subtype, parameters: value.parameters);
+    }
   }
 
   bool _openStream() {
@@ -184,8 +185,9 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
         rawResponse.add(data);
       }
-    } else
+    } else {
       buffer.add(data);
+    }
   }
 
   @override

@@ -39,18 +39,19 @@ class MapService extends Service<String, Map<String, dynamic>> {
     return (Map<String, dynamic> item) {
       if (item['id'] == null)
         return false;
-      else if (autoIdAndDateFields != false)
+      else if (autoIdAndDateFields != false) {
         return item['id'] == id?.toString();
-      else
+      } else {
         return item['id'] == id;
+      }
     };
   }
 
   @override
   Future<List<Map<String, dynamic>>> index([Map<String, dynamic> params]) {
-    if (allowQuery == false || params == null || params['query'] is! Map)
+    if (allowQuery == false || params == null || params['query'] is! Map) {
       return Future.value(items);
-    else {
+    } else {
       var query = params['query'] as Map;
 
       return Future.value(items.where((item) {
@@ -75,10 +76,11 @@ class MapService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> create(Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
-    if (data is! Map)
+    if (data is! Map) {
       throw AngelHttpException.badRequest(
           message:
               'MapService does not support `create` with ${data.runtimeType}.');
+    }
     var now = DateTime.now().toIso8601String();
     var result = Map<String, dynamic>.from(data);
 
@@ -95,10 +97,11 @@ class MapService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> modify(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
-    if (data is! Map)
+    if (data is! Map) {
       throw AngelHttpException.badRequest(
           message:
               'MapService does not support `modify` with ${data.runtimeType}.');
+    }
     if (!items.any(_matchesId(id))) return create(data, params);
 
     return read(id).then((item) {
@@ -106,10 +109,11 @@ class MapService extends Service<String, Map<String, dynamic>> {
       if (idx < 0) return create(data, params);
       var result = Map<String, dynamic>.from(item)..addAll(data);
 
-      if (autoIdAndDateFields == true)
+      if (autoIdAndDateFields == true) {
         result
           ..[autoSnakeCaseNames == false ? 'updatedAt' : 'updated_at'] =
               DateTime.now().toIso8601String();
+      }
       return Future.value(items[idx] = result);
     });
   }
@@ -117,16 +121,18 @@ class MapService extends Service<String, Map<String, dynamic>> {
   @override
   Future<Map<String, dynamic>> update(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) {
-    if (data is! Map)
+    if (data is! Map) {
       throw AngelHttpException.badRequest(
           message:
               'MapService does not support `update` with ${data.runtimeType}.');
+    }
     if (!items.any(_matchesId(id))) return create(data, params);
 
     return read(id).then((old) {
-      if (!items.remove(old))
+      if (!items.remove(old)) {
         throw AngelHttpException.notFound(
             message: 'No record found for ID $id');
+      }
 
       var result = Map<String, dynamic>.from(data);
       if (autoIdAndDateFields == true) {
@@ -158,11 +164,12 @@ class MapService extends Service<String, Map<String, dynamic>> {
     }
 
     return read(id, params).then((result) {
-      if (items.remove(result))
+      if (items.remove(result)) {
         return result;
-      else
+      } else {
         throw AngelHttpException.notFound(
             message: 'No record found for ID $id');
+      }
     });
   }
 }

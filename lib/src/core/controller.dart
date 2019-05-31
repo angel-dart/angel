@@ -105,8 +105,8 @@ class Controller {
 
         var injection = preInject(reflectedMethod, app.container.reflector);
 
-        if (exposeDecl?.allowNull?.isNotEmpty == true)
-          injection.optional?.addAll(exposeDecl.allowNull);
+        if (exposeDecl?.allowNull?.isNotEmpty == true) {
+          injection.optional?.addAll(exposeDecl.allowNull);}
 
         routeMappings[name] = routable.addRoute(exposeDecl.method,
             exposeDecl.path, handleContained(reflectedMethod, injection),

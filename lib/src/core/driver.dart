@@ -149,9 +149,10 @@ abstract class Driver<
           }
 
           return f.catchError((e, StackTrace st) {
-            if (e is FormatException)
+            if (e is FormatException) {
               throw AngelHttpException.badRequest(message: e.message)
                 ..stackTrace = st;
+            }
             throw AngelHttpException(e,
                 stackTrace: st,
                 statusCode: 500,
@@ -172,10 +173,11 @@ abstract class Driver<
         } else {
           var zoneSpec = ZoneSpecification(
             print: (self, parent, zone, line) {
-              if (app.logger != null)
+              if (app.logger != null) {
                 app.logger.info(line);
-              else
+              } else {
                 parent.print(zone, line);
+              }
             },
             handleUncaughtError: (self, parent, zone, error, stackTrace) {
               var trace = Trace.from(stackTrace ?? StackTrace.current).terse;
@@ -259,9 +261,9 @@ abstract class Driver<
 
     Future handleError;
 
-    if (!res.isOpen)
+    if (!res.isOpen) {
       handleError = Future.value();
-    else {
+    } else {
       res.statusCode = e.statusCode;
       handleError =
           Future.sync(() => app.errorHandler(e, req, res)).then((result) {

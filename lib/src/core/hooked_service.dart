@@ -63,13 +63,14 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
   }
 
   Map<String, dynamic> _stripReq(Map<String, dynamic> params) {
-    if (params == null)
+    if (params == null) {
       return params;
-    else
+    } else {
       return params.keys
           .where((key) => key != '__requestctx' && key != '__responsectx')
           .fold<Map<String, dynamic>>(
               {}, (map, key) => map..[key] = params[key]);
+    }
   }
 
   /// Closes any open [StreamController]s on this instance. **Internal use only**.
@@ -109,8 +110,9 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
       final listeners = <HookedServiceEventListener<Id, Data, T>>[]
         ..addAll(isAfter == true ? after : before);
 
-      if (hooks != null)
+      if (hooks != null) {
         listeners.addAll(isAfter == true ? hooks.after : hooks.before);
+      }
 
       listeners.forEach(dispatcher.listen);
     }
@@ -469,8 +471,9 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
       HookedServiceEvent<Id, Data, T> event,
       [HookedServiceEventListener<Id, Data, T> callback]) {
     Future f;
-    if (callback != null && event?._canceled != true)
+    if (callback != null && event?._canceled != true) {
       f = Future.sync(() => callback(event));
+    }
     f ??= Future.value();
     return f.then((_) => dispatcher._emit(event));
   }
@@ -533,7 +536,7 @@ class HookedServiceEvent<Id, Data, T extends Service<Id, Data>> {
   T service;
 
   HookedServiceEvent(this._isAfter, this._request, this._response, this.service,
-      String this._eventName,
+      this._eventName,
       {Id id, this.data, Map<String, dynamic> params, this.result}) {
     _id = id;
     _params = params ?? {};
@@ -557,8 +560,9 @@ class HookedServiceEventDispatcher<Id, Data, T extends Service<Id, Data>> {
   /// Fires an event, and returns it once it is either canceled, or all listeners have run.
   Future<HookedServiceEvent<Id, Data, T>> _emit(
       HookedServiceEvent<Id, Data, T> event) {
-    if (event?._canceled == true || event == null || listeners.isEmpty)
+    if (event?._canceled == true || event == null || listeners.isEmpty) {
       return Future.value(event);
+    }
 
     var f = Future<HookedServiceEvent<Id, Data, T>>.value(event);
 

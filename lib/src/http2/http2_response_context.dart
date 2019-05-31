@@ -189,8 +189,9 @@ class Http2ResponseContext extends ResponseContext<ServerTransportStream> {
 
         stream.sendData(data);
       }
-    } else
+    } else {
       buffer.add(data);
+    }
   }
 
   @override

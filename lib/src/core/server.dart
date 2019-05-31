@@ -275,8 +275,9 @@ class Angel extends Routable {
         return result;
       } else if (result != null) {
         return res.serialize(result);
-      } else
+      } else {
         return res.isOpen;
+      }
     });
   }
 

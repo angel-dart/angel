@@ -26,9 +26,9 @@ RequestHandler chain(Iterable<RequestHandler> handlers) {
     for (var handler in handlers) {
       if (handler == null) break;
 
-      if (runPipeline == null)
+      if (runPipeline == null) {
         runPipeline = () => Future.sync(() => handler(req, res));
-      else {
+      } else {
         var current = runPipeline;
         runPipeline = () => current().then((result) => !res.isOpen
             ? Future.value(result)

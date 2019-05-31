@@ -202,18 +202,20 @@ abstract class RequestContext<RawRequest> {
         : contentType?.toString();
 
     // Change to assert
-    if (contentTypeString == null)
+    if (contentTypeString == null) {
       throw ArgumentError(
           'RequestContext.accepts expects the `contentType` parameter to NOT be null.');
+    }
 
     _acceptHeaderCache ??= headers.value('accept');
 
     if (_acceptHeaderCache == null)
       return false;
-    else if (strict != true && _acceptHeaderCache.contains('*/*'))
+    else if (strict != true && _acceptHeaderCache.contains('*/*')) {
       return true;
-    else
+    } else {
       return _acceptHeaderCache.contains(contentTypeString);
+    }
   }
 
   /// Returns as `true` if the client's `Accept` header indicates that it will accept any response content type.

@@ -80,10 +80,11 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
 
     String override = request.method;
 
-    if (app.allowMethodOverrides == true)
+    if (app.allowMethodOverrides == true) {
       override =
           request.headers.value('x-http-method-override')?.toUpperCase() ??
               request.method;
+    }
 
     ctx.app = app;
     ctx._contentType = request.headers.contentType == null

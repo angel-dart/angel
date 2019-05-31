@@ -70,30 +70,38 @@ class Parameter {
 
   /// Returns an error that can be thrown when the parameter is not present.
   get error {
-    if (cookie?.isNotEmpty == true)
+    if (cookie?.isNotEmpty == true) {
       return AngelHttpException.badRequest(
           message: 'Missing required cookie "$cookie".');
-    if (header?.isNotEmpty == true)
+    }
+    if (header?.isNotEmpty == true) {
       return AngelHttpException.badRequest(
           message: 'Missing required header "$header".');
-    if (query?.isNotEmpty == true)
+    }
+    if (query?.isNotEmpty == true) {
       return AngelHttpException.badRequest(
           message: 'Missing required query parameter "$query".');
-    if (session?.isNotEmpty == true)
+    }
+    if (session?.isNotEmpty == true) {
       return StateError('Session does not contain required key "$session".');
+    }
   }
 
   /// Obtains a value for this parameter from a [RequestContext].
   getValue(RequestContext req) {
-    if (cookie?.isNotEmpty == true)
+    if (cookie?.isNotEmpty == true) {
       return req.cookies.firstWhere((c) => c.name == cookie)?.value ??
           defaultValue;
-    if (header?.isNotEmpty == true)
+    }
+    if (header?.isNotEmpty == true) {
       return req.headers.value(header) ?? defaultValue;
-    if (session?.isNotEmpty == true)
+    }
+    if (session?.isNotEmpty == true) {
       return req.session[session] ?? defaultValue;
-    if (query?.isNotEmpty == true)
+    }
+    if (query?.isNotEmpty == true) {
       return req.uri.queryParameters[query] ?? defaultValue;
+    }
     return defaultValue;
   }
 }

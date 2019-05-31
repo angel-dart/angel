@@ -62,9 +62,9 @@ class _SingleSafeCtrl<T> implements SafeCtrl<T> {
   @override
   void whenInitialized(void callback()) {
     if (!_initialized) {
-      if (!_hasListener)
+      if (!_hasListener) {
         _initializer = callback;
-      else {
+      } else {
         _initializer();
         _initialized = true;
       }
@@ -112,9 +112,9 @@ class _BroadcastSafeCtrl<T> implements SafeCtrl<T> {
   @override
   void whenInitialized(void callback()) {
     if (!_initialized) {
-      if (_listeners <= 0)
+      if (_listeners <= 0) {
         _initializer = callback;
-      else {
+      } else {
         _initializer();
         _initialized = true;
       }

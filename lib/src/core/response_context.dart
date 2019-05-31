@@ -76,10 +76,11 @@ abstract class ResponseContext<RawResponse>
   int get statusCode => _statusCode;
 
   set statusCode(int value) {
-    if (!isOpen)
+    if (!isOpen) {
       throw closed();
-    else
+    } else {
       _statusCode = value ?? 200;
+    }
   }
 
   /// Returns `true` if the response is still available for processing by Angel.
@@ -114,10 +115,11 @@ abstract class ResponseContext<RawResponse>
   ///
   /// If [value] is `null`, then the header will be removed.
   set contentLength(int value) {
-    if (value == null)
+    if (value == null) {
       headers.remove('content-length');
-    else
+    } else {
       headers['content-length'] = value.toString();
+    }
   }
 
   /// Gets or sets the content type to send back to a client.
@@ -262,21 +264,24 @@ abstract class ResponseContext<RawResponse>
     // UserController@show
     List<String> split = action.split("@");
 
-    if (split.length < 2)
+    if (split.length < 2) {
       throw Exception(
           "Controller redirects must take the form of 'Controller@action'. You gave: $action");
+    }
 
     Controller controller =
         app.controllers[split[0].replaceAll(_straySlashes, '')];
 
-    if (controller == null)
+    if (controller == null) {
       throw Exception("Could not find a controller named '${split[0]}'");
+    }
 
     Route matched = controller.routeMappings[split[1]];
 
-    if (matched == null)
+    if (matched == null) {
       throw Exception(
           "Controller '${split[0]}' does not contain any action named '${split[1]}'");
+    }
 
     final head = controller
         .findExpose(app.container.reflector)
@@ -314,8 +319,9 @@ abstract class ResponseContext<RawResponse>
         ? MediaType('application', 'octet-stream')
         : MediaType.parse(mimeType);
 
-    if (correspondingRequest.method != 'HEAD')
+    if (correspondingRequest.method != 'HEAD') {
       return file.openRead().pipe(this);
+    }
   }
 
   /// Configure the response to write to an intermediate response buffer, rather than to the stream directly.
@@ -352,10 +358,11 @@ abstract class ResponseContext<RawResponse>
   void writeCharCode(int charCode) {
     if (!isOpen && isBuffered)
       throw closed();
-    else if (!isBuffered)
+    else if (!isBuffered) {
       add([charCode]);
-    else
+    } else {
       buffer.addByte(charCode);
+    }
   }
 
   @override
@@ -392,18 +399,20 @@ class _LockableBytesBuilderImpl implements LockableBytesBuilder {
 
   @override
   void add(List<int> bytes) {
-    if (_closed)
+    if (_closed) {
       throw _deny();
-    else
+    } else {
       _buf.add(bytes);
+    }
   }
 
   @override
   void addByte(int byte) {
-    if (_closed)
+    if (_closed) {
       throw _deny();
-    else
+    } else {
       _buf.addByte(byte);
+    }
   }
 
   @override

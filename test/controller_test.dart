@@ -63,8 +63,9 @@ main() {
             res.redirectToAction("TodoController@foo", {"foo": "world"}));
 
     // Register as a singleton, just for the purpose of this test
-    if (!app.container.has<TodoController>())
+    if (!app.container.has<TodoController>()) {
       app.container.registerSingleton(ctrl = TodoController());
+    }
 
     // Using mountController<T>();
     await app.mountController<TodoController>();
