@@ -18,7 +18,7 @@ final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// A convenience wrapper around an outgoing HTTP request.
 abstract class ResponseContext<RawResponse>
-    implements StreamSink<List<int>>, StringSink {
+    implements StreamConsumer<List<int>>, StreamSink<List<int>>, StringSink {
   final Map properties = {};
   final CaseInsensitiveMap<String> _headers = CaseInsensitiveMap<String>.from({
     'content-type': 'text/plain',

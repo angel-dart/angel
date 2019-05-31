@@ -1,3 +1,6 @@
+# 2.0.2
+* Make `ResponseContext` *explicitly* implement `StreamConsumer` (though technically it already did???)
+
 # 2.0.1
 * Tracked down a bug in `Driver.runPipeline` that allowed fallback
 handlers to run, even after the response was closed.
