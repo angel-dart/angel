@@ -25,8 +25,9 @@ class Controller {
 
   Controller({this.injectSingleton = true});
 
+  /// Applies routes, DI, and other configuration to an [app].
   @mustCallSuper
-  Future configureServer(Angel app) {
+  FutureOr<void> configureServer(Angel app) {
     _app = app;
 
     if (injectSingleton != false) {
@@ -35,13 +36,13 @@ class Controller {
       }
     }
 
-    return applyRoutes(app, app.container.reflector).then((name) {
-      app.controllers[name] = this;
-    });
+    var name = applyRoutes(app, app.container.reflector);
+    app.controllers[name] = this;
+    return null;
   }
 
   /// Applies the routes from this [Controller] to some [router].
-  Future<String> applyRoutes(Router router, Reflector reflector) {
+  String applyRoutes(Router router, Reflector reflector) {
     // Load global expose decl
     var classMirror = reflector.reflectClass(this.runtimeType);
     Expose exposeDecl = findExpose(reflector);
@@ -59,16 +60,17 @@ class Controller {
     final handlers = <RequestHandler>[]
       ..addAll(exposeDecl.middleware)
       ..addAll(middleware);
-    final routeBuilder = _routeBuilder(instanceMirror, routable, handlers);
+    final routeBuilder =
+        _routeBuilder(reflector, instanceMirror, routable, handlers);
     classMirror.declarations.forEach(routeBuilder);
     configureRoutes(routable);
 
     // Return the name.
-    return Future.value(
-        exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : typeMirror.name);
+    return exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : typeMirror.name;
   }
 
   void Function(ReflectedDeclaration) _routeBuilder(
+      Reflector reflector,
       ReflectedInstance instanceMirror,
       Routable routable,
       Iterable<RequestHandler> handlers) {
@@ -109,7 +111,7 @@ class Controller {
           return;
         }
 
-        var injection = preInject(reflectedMethod, app.container.reflector);
+        var injection = preInject(reflectedMethod, reflector);
 
         if (exposeDecl?.allowNull?.isNotEmpty == true) {
           injection.optional?.addAll(exposeDecl.allowNull);

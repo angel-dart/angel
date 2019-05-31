@@ -1,3 +1,6 @@
+# 2.0.2+1
+* Fix a bug in the implementation of `Controller.applyRoutes`.
+
 # 2.0.2
 * Make `ResponseContext` *explicitly* implement `StreamConsumer` (though technically it already did???)
 * Split `Controller.configureServer` to create `Controller.applyRoutes`.

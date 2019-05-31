@@ -70,6 +70,13 @@ main() {
     // Using mountController<T>();
     await app.mountController<TodoController>();
 
+    // Place controller in group...
+    app.group('/ctrl_group', (router) {
+      app.container
+          .make<TodoController>()
+          .applyRoutes(router, app.container.reflector);
+    });
+
     print(app.controllers);
     app.dumpTree();
 
@@ -119,6 +126,19 @@ main() {
   test("middleware", () async {
     var rgx = RegExp("^Hello, world!");
     var response = await client.get("$url/todos/0");
+    print('Response: ${response.body}');
+
+    expect(rgx.firstMatch(response.body)?.start, equals(0));
+
+    var todo = json.decode(response.body.replaceAll(rgx, "")) as Map;
+    print("Todo: $todo");
+    expect(todo['text'], equals("Hello"));
+    expect(todo['over'], equals("world"));
+  });
+
+  test("controller in group", () async {
+    var rgx = RegExp("^Hello, world!");
+    var response = await client.get("$url/ctrl_group/todos/0");
     print('Response: ${response.body}');
 
     expect(rgx.firstMatch(response.body)?.start, equals(0));
