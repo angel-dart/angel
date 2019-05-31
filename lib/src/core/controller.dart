@@ -35,31 +35,37 @@ class Controller {
       }
     }
 
+    return applyRoutes(app, app.container.reflector).then((name) {
+      app.controllers[name] = this;
+    });
+  }
+
+  /// Applies the routes from this [Controller] to some [router].
+  Future<String> applyRoutes(Router router, Reflector reflector) {
     // Load global expose decl
-    var classMirror = app.container.reflector.reflectClass(this.runtimeType);
-    Expose exposeDecl = findExpose(app.container.reflector);
+    var classMirror = reflector.reflectClass(this.runtimeType);
+    Expose exposeDecl = findExpose(reflector);
 
     if (exposeDecl == null) {
       throw Exception("All controllers must carry an @Expose() declaration.");
     }
 
     var routable = Routable();
-    app.mount(exposeDecl.path, routable);
-    var typeMirror = app.container.reflector.reflectType(this.runtimeType);
-    String name =
-        exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : typeMirror.name;
-
-    app.controllers[name] = this;
+    router.mount(exposeDecl.path, routable);
+    var typeMirror = reflector.reflectType(this.runtimeType);
 
     // Pre-reflect methods
-    var instanceMirror = app.container.reflector.reflectInstance(this);
+    var instanceMirror = reflector.reflectInstance(this);
     final handlers = <RequestHandler>[]
       ..addAll(exposeDecl.middleware)
       ..addAll(middleware);
     final routeBuilder = _routeBuilder(instanceMirror, routable, handlers);
     classMirror.declarations.forEach(routeBuilder);
     configureRoutes(routable);
-    return Future.value();
+
+    // Return the name.
+    return Future.value(
+        exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : typeMirror.name);
   }
 
   void Function(ReflectedDeclaration) _routeBuilder(
@@ -106,7 +112,8 @@ class Controller {
         var injection = preInject(reflectedMethod, app.container.reflector);
 
         if (exposeDecl?.allowNull?.isNotEmpty == true) {
-          injection.optional?.addAll(exposeDecl.allowNull);}
+          injection.optional?.addAll(exposeDecl.allowNull);
+        }
 
         routeMappings[name] = routable.addRoute(exposeDecl.method,
             exposeDecl.path, handleContained(reflectedMethod, injection),
