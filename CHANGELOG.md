@@ -1,3 +1,7 @@
+# 2.0.3
+* Patch up a bug caused by an upstream change to Dart's stream semantics.
+See more: https://github.com/angel-dart/angel/issues/106#issuecomment-499564485
+
 # 2.0.2+1
 * Fix a bug in the implementation of `Controller.applyRoutes`.
 

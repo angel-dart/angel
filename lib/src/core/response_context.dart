@@ -320,7 +320,7 @@ abstract class ResponseContext<RawResponse>
         : MediaType.parse(mimeType);
 
     if (correspondingRequest.method != 'HEAD') {
-      return file.openRead().pipe(this);
+      return this.addStream(file.openRead()).then((_) => this.close());
     }
   }
 
