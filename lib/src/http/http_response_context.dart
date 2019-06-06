@@ -104,9 +104,9 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
             Converter<List<int>, List<int>> encoder;
             String key = encodingName;
 
-            if (encoders.containsKey(encodingName))
+            if (encoders.containsKey(encodingName)) {
               encoder = encoders[encodingName];
-            else if (encodingName == '*') {
+            } else if (encodingName == '*') {
               encoder = encoders[key = encoders.keys.first];
             }
 
@@ -138,9 +138,9 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
           Converter<List<int>, List<int>> encoder;
           String key = encodingName;
 
-          if (encoders.containsKey(encodingName))
+          if (encoders.containsKey(encodingName)) {
             encoder = encoders[encodingName];
-          else if (encodingName == '*') {
+          } else if (encodingName == '*') {
             encoder = encoders[key = encoders.keys.first];
           }
 
@@ -157,9 +157,9 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
 
   @override
   void add(List<int> data) {
-    if (_isClosed && isBuffered)
+    if (_isClosed && isBuffered) {
       throw ResponseContext.closed();
-    else if (!isBuffered) {
+    } else if (!isBuffered) {
       if (!_isClosed) {
         _openStream();
 
@@ -169,9 +169,9 @@ class HttpResponseContext extends ResponseContext<HttpResponse> {
               Converter<List<int>, List<int>> encoder;
               String key = encodingName;
 
-              if (encoders.containsKey(encodingName))
+              if (encoders.containsKey(encodingName)) {
                 encoder = encoders[encodingName];
-              else if (encodingName == '*') {
+              } else if (encodingName == '*') {
                 encoder = encoders[key = encoders.keys.first];
               }
 

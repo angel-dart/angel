@@ -209,9 +209,9 @@ abstract class RequestContext<RawRequest> {
 
     _acceptHeaderCache ??= headers.value('accept');
 
-    if (_acceptHeaderCache == null)
+    if (_acceptHeaderCache == null) {
       return false;
-    else if (strict != true && _acceptHeaderCache.contains('*/*')) {
+    } else if (strict != true && _acceptHeaderCache.contains('*/*')) {
       return true;
     } else {
       return _acceptHeaderCache.contains(contentTypeString);

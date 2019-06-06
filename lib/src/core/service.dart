@@ -196,17 +196,17 @@ class Service<Id, Data> extends Routable {
   ///
   /// For example, `parseId<bool>` attempts to parse the value as a [bool].
   static T parseId<T>(id) {
-    if (id == 'null' || id == null)
+    if (id == 'null' || id == null) {
       return null;
-    else if (T == String)
+    } else if (T == String) {
       return id.toString() as T;
-    else if (T == int)
+    } else if (T == int) {
       return int.parse(id.toString()) as T;
-    else if (T == bool)
+    } else if (T == bool) {
       return (id == true || id?.toString() == 'true') as T;
-    else if (T == double)
+    } else if (T == double) {
       return double.parse(id.toString()) as T;
-    else if (T == num) {
+    } else if (T == num) {
       return num.parse(id.toString()) as T;
     } else {
       return id as T;

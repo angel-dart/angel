@@ -326,9 +326,9 @@ abstract class Driver<
             Converter<List<int>, List<int>> encoder;
             String key = encodingName;
 
-            if (res.encoders.containsKey(encodingName))
+            if (res.encoders.containsKey(encodingName)) {
               encoder = res.encoders[encodingName];
-            else if (encodingName == '*') {
+            } else if (encodingName == '*') {
               encoder = res.encoders[key = res.encoders.keys.first];
             }
 

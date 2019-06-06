@@ -44,11 +44,11 @@ resolveInjection(requirement, InjectionRequest injection, RequestContext req,
     }
     if (req.params.containsKey(requirement)) {
       return req.params[requirement];
-    } else if ((propFromApp = req.app.findProperty(requirement)) != null)
+    } else if ((propFromApp = req.app.findProperty(requirement)) != null) {
       return propFromApp;
-    else if (injection.optional.contains(requirement))
+    } else if (injection.optional.contains(requirement)) {
       return null;
-    else if (throwOnUnresolved) {
+    } else if (throwOnUnresolved) {
       throw ArgumentError(
           "Cannot resolve parameter '$requirement' within handler.");
     }

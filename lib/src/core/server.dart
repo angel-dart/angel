@@ -269,9 +269,9 @@ class Angel extends Routable {
   Future<bool> executeHandler(
       handler, RequestContext req, ResponseContext res) {
     return getHandlerResult(handler, req, res).then((result) {
-      if (result == null)
+      if (result == null) {
         return false;
-      else if (result is bool) {
+      } else if (result is bool) {
         return result;
       } else if (result != null) {
         return res.serialize(result);

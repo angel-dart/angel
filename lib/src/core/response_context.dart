@@ -336,18 +336,20 @@ abstract class ResponseContext<RawResponse>
 
   @override
   void addError(Object error, [StackTrace stackTrace]) {
-    if (_done?.isCompleted == false)
+    if (_done?.isCompleted == false) {
       _done.completeError(error, stackTrace);
-    else if (_done == null) Zone.current.handleUncaughtError(error, stackTrace);
+    } else if (_done == null) {
+      Zone.current.handleUncaughtError(error, stackTrace);
+    }
   }
 
   /// Writes data to the response.
   void write(value, {Encoding encoding}) {
     encoding ??= utf8;
 
-    if (!isOpen && isBuffered)
+    if (!isOpen && isBuffered) {
       throw closed();
-    else if (!isBuffered) {
+    } else if (!isBuffered) {
       add(encoding.encode(value.toString()));
     } else {
       buffer.add(encoding.encode(value.toString()));
@@ -356,9 +358,9 @@ abstract class ResponseContext<RawResponse>
 
   @override
   void writeCharCode(int charCode) {
-    if (!isOpen && isBuffered)
+    if (!isOpen && isBuffered) {
       throw closed();
-    else if (!isBuffered) {
+    } else if (!isBuffered) {
       add([charCode]);
     } else {
       buffer.addByte(charCode);

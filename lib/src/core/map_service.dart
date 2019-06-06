@@ -37,9 +37,9 @@ class MapService extends Service<String, Map<String, dynamic>> {
 
   bool Function(Map<String, dynamic>) _matchesId(id) {
     return (Map<String, dynamic> item) {
-      if (item['id'] == null)
+      if (item['id'] == null) {
         return false;
-      else if (autoIdAndDateFields != false) {
+      } else if (autoIdAndDateFields != false) {
         return item['id'] == id?.toString();
       } else {
         return item['id'] == id;
@@ -56,9 +56,9 @@ class MapService extends Service<String, Map<String, dynamic>> {
 
       return Future.value(items.where((item) {
         for (var key in query.keys) {
-          if (!item.containsKey(key))
+          if (!item.containsKey(key)) {
             return false;
-          else if (item[key] != query[key]) return false;
+          } else if (item[key] != query[key]) return false;
         }
 
         return true;
