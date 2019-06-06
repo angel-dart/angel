@@ -1,3 +1,6 @@
+# 2.1.3+1
+* Apply control flow lints.
+
 # 2.1.3
 * Apply lints.
 * Pin to Dart `>=2.0.0 <3.0.0`.
