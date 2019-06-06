@@ -96,8 +96,9 @@ class CachingVirtualDirectory extends VirtualDirectory {
             res.statusCode = 304;
             setCachedHeaders(stat.modified, req, res);
 
-            if (useEtags && _etags.containsKey(file.absolute.path))
+            if (useEtags && _etags.containsKey(file.absolute.path)) {
               res.headers['ETag'] = _etags[file.absolute.path];
+            }
 
             if (ifRange) {
               // Send the 206 like normal
@@ -131,9 +132,9 @@ class CachingVirtualDirectory extends VirtualDirectory {
           bool hasBeenModified = false;
 
           for (var etag in etagsToMatchAgainst) {
-            if (etag == '*')
+            if (etag == '*') {
               hasBeenModified = true;
-            else {
+            } else {
               hasBeenModified = !_etags.containsKey(file.absolute.path) ||
                   _etags[file.absolute.path] != etag;
             }

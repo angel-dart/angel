@@ -70,12 +70,14 @@ class VirtualDirectory {
 
   /// Responds to incoming HTTP requests.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) {
-    if (req.method != 'GET' && req.method != 'HEAD')
+    if (req.method != 'GET' && req.method != 'HEAD') {
       return Future<bool>.value(true);
+    }
     var path = req.uri.path.replaceAll(_straySlashes, '');
 
-    if (_prefix?.isNotEmpty == true && !path.startsWith(_prefix))
+    if (_prefix?.isNotEmpty == true && !path.startsWith(_prefix)) {
       return Future<bool>.value(true);
+    }
 
     return servePath(path, req, res);
   }
@@ -94,8 +96,9 @@ class VirtualDirectory {
       if (path == vPath) return Future<bool>.value(true);
 
       if (accepts?.isNotEmpty == true) {
-        if (!accepts.any((x) => req.accepts(x, strict: true)))
+        if (!accepts.any((x) => req.accepts(x, strict: true))) {
           return Future<bool>.value(true);
+        }
       }
 
       return servePath(vPath, req, res);
@@ -117,8 +120,9 @@ class VirtualDirectory {
     var absolute = source.absolute.uri.resolve(path).toFilePath();
     var parent = source.absolute.uri.toFilePath();
 
-    if (!p.isWithin(parent, absolute) && !p.equals(parent, absolute))
+    if (!p.isWithin(parent, absolute) && !p.equals(parent, absolute)) {
       return true;
+    }
 
     var stat = await fileSystem.stat(absolute);
     return await serveStat(absolute, path, stat, req, res);
@@ -127,16 +131,17 @@ class VirtualDirectory {
   /// Writes the file at the path given by the [stat] to a response.
   Future<bool> serveStat(String absolute, String relative, FileStat stat,
       RequestContext req, ResponseContext res) async {
-    if (stat.type == FileSystemEntityType.directory)
+    if (stat.type == FileSystemEntityType.directory) {
       return await serveDirectory(
           fileSystem.directory(absolute), relative, stat, req, res);
-    else if (stat.type == FileSystemEntityType.file)
+    } else if (stat.type == FileSystemEntityType.file) {
       return await serveFile(fileSystem.file(absolute), stat, req, res);
-    else if (stat.type == FileSystemEntityType.link) {
+    } else if (stat.type == FileSystemEntityType.link) {
       var link = fileSystem.link(absolute);
       return await servePath(await link.resolveSymbolicLinks(), req, res);
-    } else
+    } else {
       return true;
+    }
   }
 
   /// Serves the index file of a [directory], if it exists.
@@ -171,9 +176,9 @@ class VirtualDirectory {
           if (b is Directory) return a.path.compareTo(b.path);
           return -1;
         } else if (a is File) {
-          if (b is Directory)
+          if (b is Directory) {
             return 1;
-          else if (b is File) return a.path.compareTo(b.path);
+          } else if (b is File) return a.path.compareTo(b.path);
           return -1;
         } else if (b is Link) return a.path.compareTo(b.path);
 
@@ -185,11 +190,11 @@ class VirtualDirectory {
         var href = stub;
         String type;
 
-        if (entity is File)
+        if (entity is File) {
           type = '[File]';
-        else if (entity is Directory)
+        } else if (entity is Directory) {
           type = '[Directory]';
-        else if (entity is Link) type = '[Link]';
+        } else if (entity is Link) type = '[Link]';
 
         if (relative.isNotEmpty) href = '/' + relative + '/' + stub;
 
@@ -212,12 +217,13 @@ class VirtualDirectory {
         value?.isNotEmpty != true ||
         (mimeType?.isNotEmpty == true && value?.contains(mimeType) == true) ||
         value?.contains('*/*') == true;
-    if (!acceptable)
+    if (!acceptable) {
       throw AngelHttpException(
           UnsupportedError(
               'Client requested $value, but server wanted to send $mimeType.'),
           statusCode: 406,
           message: '406 Not Acceptable');
+    }
   }
 
   /// Writes the contents of a file to a response.
@@ -253,8 +259,9 @@ class VirtualDirectory {
 
         if (item.start != -1) {
           invalid = item.end != -1 && item.end < item.start;
-        } else
+        } else {
           invalid = item.end == -1;
+        }
 
         if (invalid) {
           throw AngelHttpException(
