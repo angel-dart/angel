@@ -4,7 +4,7 @@ environment:
   sdk: ">=2.0.0 <3.0.0"
 homepage: https://github.com/angel-dart/static
 author: Tobe O <thosakwe@gmail.com>
-version: 2.1.3
+version: 2.1.3+1
 dependencies:
   angel_framework: ^2.0.0-rc.0
   convert: ^2.0.0
