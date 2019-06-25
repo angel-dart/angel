@@ -1,3 +1,7 @@
+# 2.0.4
+* Prepare for Dart SDK change to `Stream<List<int>>` that are now
+  `Stream<Uint8List>`.
+
 # 2.0.3
 * Patch up a bug caused by an upstream change to Dart's stream semantics.
 See more: https://github.com/angel-dart/angel/issues/106#issuecomment-499564485
