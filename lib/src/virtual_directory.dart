@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:file/file.dart';
 import 'package:http_parser/http_parser.dart';
@@ -284,7 +285,7 @@ class VirtualDirectory {
             statusCode: 416, message: '`Range` header may not be empty.');
       } else if (header.items.length == 1) {
         var item = header.items[0];
-        Stream<List<int>> stream;
+        Stream<Uint8List> stream;
         int len = 0, total = totalFileSize;
 
         if (item.start == -1) {
@@ -311,7 +312,7 @@ class VirtualDirectory {
         res.statusCode = 206;
         res.headers['content-length'] = len.toString();
         res.headers['content-range'] = 'bytes ' + item.toContentRange(total);
-        await stream.pipe(res);
+        await stream.cast<List<int>>().pipe(res);
         return false;
       } else {
         var transformer = RangeHeaderTransformer(
@@ -324,7 +325,11 @@ class VirtualDirectory {
             transformer.computeContentLength(totalFileSize).toString();
         res.contentType = MediaType(
             'multipart', 'byteranges', {'boundary': transformer.boundary});
-        await file.openRead().transform(transformer).pipe(res);
+        await file
+            .openRead()
+            .cast<List<int>>()
+            .transform(transformer)
+            .pipe(res);
         return false;
       }
     }
