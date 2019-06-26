@@ -79,7 +79,7 @@ main() {
       var client = new HttpClient();
       var rq = await client.openUrl('GET', Uri.parse('$url/hijack'));
       var rs = await rq.close();
-      var body = await rs.transform(utf8.decoder).join();
+      var body = await rs.cast<List<int>>().transform(utf8.decoder).join();
       print('Response: $body');
       expect(json.decode(body), {'error': 'crime'});
     } on HttpException catch (e, st) {
