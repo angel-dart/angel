@@ -117,14 +117,18 @@ class House {
 
   House(this.id, this.ownerId, this.address);
 
-  static House fromMap(Map map) => House(
-      map['id'] as String, map['owner_id'] as String, map['address'] as String);
+  static House fromMap(Map map) {
+    print('In $map');
+    return House(map['id'] as String, map['owner_id'] as String,
+        map['address'] as String);
+  }
 
   House withOwner(String newOwnerId) {
     return House(id, newOwnerId, address);
   }
 
   Map<String, dynamic> toJson() {
+    print('Out ${{'id': id, 'owner_id': ownerId, 'address': address}}');
     return {'id': id, 'owner_id': ownerId, 'address': address};
   }
 }
