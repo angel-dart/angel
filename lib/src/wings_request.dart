@@ -32,6 +32,7 @@ class WingsRequestContext extends RequestContext<WingsClientSocket> {
   Future<void> close() async {
     await _body.close();
     _recv.close();
+    await super.close();
   }
 
   static const int DELETE = 0,
