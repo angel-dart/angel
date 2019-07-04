@@ -43,7 +43,7 @@ class UserMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('users', (table) {
-      table.declare('email', ColumnType('varchar'))..primaryKey();
+      table.varChar('email')..primaryKey();
       table.varChar('name');
       table.varChar('password');
     });

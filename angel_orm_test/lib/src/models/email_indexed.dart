@@ -29,8 +29,9 @@ abstract class _RoleUser {
 @serializable
 @orm
 abstract class _User {
-  @PrimaryKey(columnType: ColumnType.varChar)
-  String get email;  
+  // @PrimaryKey(columnType: ColumnType.varChar)
+  @primaryKey
+  String get email;
   String get name;
   String get password;
 
