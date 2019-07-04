@@ -1,6 +1,7 @@
 # 2.0.5
 * Remove `ShimFieldImpl` check, which broke relations.
-* 
+* Fix bug where primary key type would not be emitted in migrations.
+* Fix `ManyToMany` ignoring primary key types.
 
 # 2.0.4
 * Fix `reviveColumn` and element finding to properly detect all annotations now.
