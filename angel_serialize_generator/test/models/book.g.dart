@@ -479,10 +479,8 @@ class AuthorSerializer extends Codec<Author, Map> {
         name: map['name'] as String,
         age: map['age'] as int,
         books: map['books'] is Iterable
-            ? List.unmodifiable(
-                ((map['books'] as Iterable).where((x) => x is Map))
-                    .cast<Map>()
-                    .map(BookSerializer.fromMap))
+            ? List.unmodifiable(((map['books'] as Iterable).whereType<Map>())
+                .map(BookSerializer.fromMap))
             : null,
         newestBook: map['newest_book'] != null
             ? BookSerializer.fromMap(map['newest_book'] as Map)

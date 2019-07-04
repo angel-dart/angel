@@ -282,8 +282,7 @@ class ${pascal}Decoder extends Converter<Map, ${pascal}> {
             var rc = ReCase(type.typeArguments[0].name);
             deserializedRepresentation = "map['$alias'] is Iterable"
                 " ? List.unmodifiable(((map['$alias'] as Iterable)"
-                ".where((x) => x is Map))"
-                ".cast<Map>()"
+                ".whereType<Map>())"
                 ".map(${rc.pascalCase}Serializer.fromMap))"
                 " : $defaultValue";
           } else if (isMapToModelType(type)) {

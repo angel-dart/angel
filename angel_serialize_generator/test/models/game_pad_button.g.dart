@@ -160,10 +160,8 @@ class GamepadSerializer extends Codec<Gamepad, Map> {
   static Gamepad fromMap(Map map) {
     return Gamepad(
         buttons: map['buttons'] is Iterable
-            ? List.unmodifiable(
-                ((map['buttons'] as Iterable).where((x) => x is Map))
-                    .cast<Map>()
-                    .map(GamepadButtonSerializer.fromMap))
+            ? List.unmodifiable(((map['buttons'] as Iterable).whereType<Map>())
+                .map(GamepadButtonSerializer.fromMap))
             : null,
         dynamicMap: map['dynamic_map'] is Map
             ? (map['dynamic_map'] as Map).cast<String, dynamic>()

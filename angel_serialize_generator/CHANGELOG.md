@@ -1,3 +1,7 @@
+# 2.5.0
+* Support mutable models (again).
+* Use `whereType()` instead of chaining `where()` and `cast()`.
+
 # 2.4.4
 * Remove unnecessary `new` and `const`.
 
