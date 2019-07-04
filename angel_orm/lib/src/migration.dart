@@ -35,9 +35,7 @@ class Column {
 
 class PrimaryKey extends Column {
   const PrimaryKey({ColumnType columnType})
-      : super(
-            type: columnType ?? ColumnType.serial,
-            indexType: IndexType.primaryKey);
+      : super(type: columnType, indexType: IndexType.primaryKey);
 }
 
 const Column primaryKey = PrimaryKey();
