@@ -141,7 +141,7 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
           if (!isListOrMapType(field.type)) {
             b.toThis = true;
-          } else {
+          } else if (!b.toThis) {
             b.type = convertTypeReference(field.type);
           }
 

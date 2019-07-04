@@ -8,7 +8,7 @@ part of 'has_map.dart';
 
 @generatedSerializable
 class HasMap implements _HasMap {
-  const HasMap({@required Map<dynamic, dynamic> this.value});
+  const HasMap({@required this.value});
 
   @override
   final Map<dynamic, dynamic> value;

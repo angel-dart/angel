@@ -8,8 +8,7 @@ part of 'with_enum.dart';
 
 @generatedSerializable
 class WithEnum implements _WithEnum {
-  const WithEnum(
-      {this.type = WithEnumType.b, List<int> this.finalList, this.imageBytes});
+  const WithEnum({this.type = WithEnumType.b, this.finalList, this.imageBytes});
 
   @override
   final WithEnumType type;

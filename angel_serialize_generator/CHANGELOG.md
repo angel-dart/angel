@@ -4,6 +4,7 @@
 * Support pulling fields from parent classes and interfaces.
 * Only generate `const` constructors if *all*
 fields lack a setter.
+* Don't type-annotate initializing formals.
 
 # 2.4.4
 * Remove unnecessary `new` and `const`.

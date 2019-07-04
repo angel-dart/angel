@@ -8,7 +8,7 @@ part of 'goat.dart';
 
 @generatedSerializable
 class Goat implements _Goat {
-  const Goat({this.integer = 34, List<int> this.list = const [34, 35]});
+  const Goat({this.integer = 34, this.list = const [34, 35]});
 
   @override
   final int integer;
