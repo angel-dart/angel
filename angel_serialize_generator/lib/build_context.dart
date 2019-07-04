@@ -53,10 +53,22 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
     includeAnnotations:
         annotation.peek('includeAnnotations')?.listValue ?? <DartObject>[],
   );
-  var lib = await resolver.libraryFor(buildStep.inputId);
+  // var lib = await resolver.libraryFor(buildStep.inputId);
   List<String> fieldNames = [];
+  var fields = <FieldElement>[];
 
-  for (var field in clazz.fields) {
+  // Crawl for classes from parent classes.
+  void crawlClass(InterfaceType t) {
+    while (t != null) {
+      fields.insertAll(0, t.element.fields);
+      t.interfaces.forEach(crawlClass);
+      t = t.superclass;
+    }
+  }
+
+  crawlClass(clazz.type);
+
+  for (var field in fields) {
     // Skip private fields
     if (field.name.startsWith('_')) {
       continue;
@@ -196,30 +208,31 @@ Future<BuildContext> buildContext(ClassElement clazz, ConstantReader annotation,
     }
   }
 
-  if (const TypeChecker.fromRuntime(Model).isAssignableFromType(clazz.type)) {
-    if (!fieldNames.contains('id')) {
-      var idField = ShimFieldImpl('id', lib.context.typeProvider.stringType);
-      ctx.fields.insert(0, idField);
-      ctx.shimmed['id'] = true;
-    }
+  // ShimFields are no longer used.
+  // if (const TypeChecker.fromRuntime(Model).isAssignableFromType(clazz.type)) {
+  //   if (!fieldNames.contains('id')) {
+  //     var idField = ShimFieldImpl('id', lib.context.typeProvider.stringType);
+  //     ctx.fields.insert(0, idField);
+  //     ctx.shimmed['id'] = true;
+  //   }
 
-    DartType dateTime;
-    for (var key in ['createdAt', 'updatedAt']) {
-      if (!fieldNames.contains(key)) {
-        if (dateTime == null) {
-          var coreLib =
-              await resolver.libraries.singleWhere((lib) => lib.isDartCore);
-          var dt = coreLib.getType('DateTime');
-          dateTime = dt.type;
-        }
+  //   DartType dateTime;
+  //   for (var key in ['createdAt', 'updatedAt']) {
+  //     if (!fieldNames.contains(key)) {
+  //       if (dateTime == null) {
+  //         var coreLib =
+  //             await resolver.libraries.singleWhere((lib) => lib.isDartCore);
+  //         var dt = coreLib.getType('DateTime');
+  //         dateTime = dt.type;
+  //       }
 
-        var field = ShimFieldImpl(key, dateTime);
-        ctx.aliases[key] = ReCase(key).snakeCase;
-        ctx.fields.add(field);
-        ctx.shimmed[key] = true;
-      }
-    }
-  }
+  //       var field = ShimFieldImpl(key, dateTime);
+  //       ctx.aliases[key] = ReCase(key).snakeCase;
+  //       ctx.fields.add(field);
+  //       ctx.shimmed[key] = true;
+  //     }
+  //   }
+  // }
 
   // Get constructor params, if any
   ctx.constructorParameters.addAll(clazz.unnamedConstructor.parameters);

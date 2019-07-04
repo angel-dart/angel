@@ -9,6 +9,7 @@ the time you spend writing boilerplate serialization code for your models.
 
 - [Usage](#usage)
   - [Models](#models)
+    - [Subclasses](#subclasses)
     - [Field Aliases](#aliases)
     - [Excluding Keys](#excluding-keys)
     - [Required Fields](#required-fields)
@@ -156,6 +157,36 @@ You can customize these by means of `serializers`:
 ```dart
 @Serializable(serializers: const [Serializers.map, Serializers.json])
 class _MyClass extends Model {}
+```
+
+## Subclasses
+`angel_serialize` pulls in fields from parent classes, as well as
+implemented interfaces, so it is extremely easy to share attributes among
+model classes:
+
+```dart
+import 'package:angel_serialize/angel_serialize.dart';
+part 'subclass.g.dart';
+
+@serializable
+class _Animal {
+  @notNull
+  String genus;
+  @notNull
+  String species;
+}
+
+@serializable
+class _Bird extends _Animal {
+  @DefaultsTo(false)
+  bool isSparrow;
+}
+
+var saxaulSparrow = Bird(
+  genus: 'Passer',
+  species: 'ammodendri',
+  isSparrow: true,
+);
 ```
 
 ## Aliases

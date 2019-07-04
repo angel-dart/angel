@@ -94,8 +94,11 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
       BuildContext ctx, ClassBuilder clazz, LibraryBuilder file) {
     clazz.constructors.add(Constructor((constructor) {
       // Add all `super` params
-      constructor.constant = ctx.clazz.unnamedConstructor?.isConst == true ||
-          shouldBeConstant(ctx);
+      constructor.constant = (ctx.clazz.unnamedConstructor?.isConst == true ||
+              shouldBeConstant(ctx)) &&
+          ctx.fields.every((f) {
+            return f.setter == null && f is! ShimFieldImpl;
+          });
 
       for (var param in ctx.constructorParameters) {
         constructor.requiredParameters.add(Parameter((b) => b
