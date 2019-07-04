@@ -259,8 +259,8 @@ abstract class _Foo extends Model {}
 `package:angel_serialize` does not cover every known Dart data type; you can add support for your own.
 Provide `serializer` and `deserializer` arguments to `@SerializableField()` as you see fit.
 
-They are typically used together. Note that the argument to `serializer` will always be
-`dynamic`.
+They are typically used together. Note that the argument to `deserializer` will always be
+`dynamic`, while `serializer` can receive the data type in question.
 
 In such a case, you might want to also provide a `serializesTo` argument.
 This lets the generator, as well as the ORM, apply the correct (de)serialization rules
@@ -268,7 +268,7 @@ and validations.
 
 ```dart
 DateTime _dateFromString(s) => s is String ? HttpDate.parse(s) : null;
-String _dateToString(v) => v == null ? null : HttpDate.format(v);
+String _dateToString(DateTime v) => v == null ? null : HttpDate.format(v);
 
 @serializable
 abstract class _HttpRequest {
