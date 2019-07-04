@@ -11,10 +11,10 @@ class Todo extends _Todo {
   Todo({this.text, this.completed});
 
   @override
-  final String text;
+  String text;
 
   @override
-  final bool completed;
+  bool completed;
 
   Todo copyWith({String text, bool completed}) {
     return Todo(

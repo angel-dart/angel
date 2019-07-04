@@ -41,6 +41,13 @@ main() {
           deathlyHallows.updatedAt.toIso8601String());
     });
 
+    test('can be mutated', () {
+      var b = deathlyHallows.copyWith();
+      b.author = 'Hey';
+      expect(b.author, 'Hey');
+      expect(b.toJson()[BookFields.author], 'Hey');
+    });
+
     test('heeds @Alias', () {
       expect(serializedDeathlyHallows['page_count'], deathlyHallows.pageCount);
       expect(serializedDeathlyHallows.keys, isNot(contains('pageCount')));

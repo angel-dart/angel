@@ -23,32 +23,32 @@ class Book extends _Book {
       : this.notModels = List.unmodifiable(notModels ?? []);
 
   @override
-  final String id;
+  String id;
 
   @override
-  final String author;
+  String author;
 
   @override
-  final String title;
+  String title;
 
   @override
-  final String description;
+  String description;
 
   /// The number of pages the book has.
   @override
-  final int pageCount;
+  int pageCount;
 
   @override
-  final List<double> notModels;
+  List<double> notModels;
 
   @override
-  final String camelCaseString;
+  String camelCaseString;
 
   @override
-  final DateTime createdAt;
+  DateTime createdAt;
 
   @override
-  final DateTime updatedAt;
+  DateTime updatedAt;
 
   Book copyWith(
       {String id,
@@ -126,7 +126,7 @@ class Author extends _Author {
       : this.books = List.unmodifiable(books ?? []);
 
   @override
-  final String id;
+  String id;
 
   @override
   final String name;
@@ -148,10 +148,10 @@ class Author extends _Author {
   final String obscured;
 
   @override
-  final DateTime createdAt;
+  DateTime createdAt;
 
   @override
-  final DateTime updatedAt;
+  DateTime updatedAt;
 
   Author copyWith(
       {String id,
@@ -221,16 +221,16 @@ class Library extends _Library {
       : this.collection = Map.unmodifiable(collection ?? {});
 
   @override
-  final String id;
+  String id;
 
   @override
   final Map<String, _Book> collection;
 
   @override
-  final DateTime createdAt;
+  DateTime createdAt;
 
   @override
-  final DateTime updatedAt;
+  DateTime updatedAt;
 
   Library copyWith(
       {String id,
@@ -283,7 +283,7 @@ class Bookmark extends _Bookmark {
         super(book);
 
   @override
-  final String id;
+  String id;
 
   @override
   final List<int> history;
@@ -295,10 +295,10 @@ class Bookmark extends _Bookmark {
   final String comment;
 
   @override
-  final DateTime createdAt;
+  DateTime createdAt;
 
   @override
-  final DateTime updatedAt;
+  DateTime updatedAt;
 
   Bookmark copyWith(_Book book,
       {String id,

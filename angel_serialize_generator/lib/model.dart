@@ -45,9 +45,14 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         clazz.fields.add(Field((b) {
           b
             ..name = field.name
-            ..modifier = FieldModifier.final$
+            // ..modifier = FieldModifier.final$
             ..annotations.add(CodeExpression(Code('override')))
             ..type = convertTypeReference(field.type);
+
+          // Fields should only be forced-final if the original field has no setter.
+          if (field.setter == null && field is! ShimFieldImpl) {
+            b.modifier = FieldModifier.final$;
+          }
 
           for (var el in [field.getter, field]) {
             if (el?.documentationComment != null) {

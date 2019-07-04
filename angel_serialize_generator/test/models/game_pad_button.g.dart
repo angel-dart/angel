@@ -49,10 +49,10 @@ class Gamepad extends _Gamepad {
         this.dynamicMap = Map.unmodifiable(dynamicMap ?? {});
 
   @override
-  final List<_GamepadButton> buttons;
+  List<_GamepadButton> buttons;
 
   @override
-  final Map<String, dynamic> dynamicMap;
+  Map<String, dynamic> dynamicMap;
 
   Gamepad copyWith(
       {List<_GamepadButton> buttons, Map<String, dynamic> dynamicMap}) {
