@@ -86,7 +86,17 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
               if (dup.contains(key))
                 return;
               else {
-                if (key != 'id' || autoIdAndDateFields == false) {
+                // if (key != 'id' || autoIdAndDateFields == false) {
+                //   // Check for relationships that might duplicate
+                //   for (var rName in ctx.relations.keys) {
+                //     var relationship = ctx.relations[rName];
+                //     if (relationship.localKey == key) return;
+                //   }
+                // }
+
+                // Fix from: https://github.com/angel-dart/angel/issues/114#issuecomment-505525729
+                if (!(col.indexType == IndexType.primaryKey ||
+                    (autoIdAndDateFields != false && name == 'id'))) {
                   // Check for relationships that might duplicate
                   for (var rName in ctx.relations.keys) {
                     var relationship = ctx.relations[rName];
@@ -225,10 +235,23 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
               var relationship = r;
 
               if (relationship.type == RelationshipType.belongsTo) {
-                var key = relationship.localKey;
+                // Fix from https://github.com/angel-dart/angel/issues/116#issuecomment-505546479
+                // var key = relationship.localKey;
 
-                var field = table.property('integer').call([literal(key)]);
-                // .references('user', 'id').onDeleteCascade()
+                // var field = table.property('integer').call([literal(key)]);
+                // // .references('user', 'id').onDeleteCascade()
+                var columnTypeType = refer('ColumnType');
+                var key = relationship.localKey;
+                var keyType = relationship
+                    .foreign.columns[relationship.foreignKey].type.name;
+
+                var field = table.property('declare').call([
+                  literal(key),
+                  columnTypeType.newInstance([
+                    literal(keyType),
+                  ])
+                ]);
+
                 var ref = field.property('references').call([
                   literal(relationship.foreignTable),
                   literal(relationship.foreignKey),

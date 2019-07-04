@@ -14,8 +14,12 @@ class BookMigration extends Migration {
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
       table.varChar('name');
-      table.integer('author_id').references('authors', 'id');
-      table.integer('partner_author_id').references('authors', 'id');
+      table
+          .declare('author_id', ColumnType('serial'))
+          .references('authors', 'id');
+      table
+          .declare('partner_author_id', ColumnType('serial'))
+          .references('authors', 'id');
     });
   }
 

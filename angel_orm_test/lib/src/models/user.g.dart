@@ -29,8 +29,8 @@ class RoleUserMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('role_users', (table) {
-      table.integer('role_id').references('roles', 'id');
-      table.integer('user_id').references('users', 'id');
+      table.declare('role_id', ColumnType('serial')).references('roles', 'id');
+      table.declare('user_id', ColumnType('serial')).references('users', 'id');
     });
   }
 

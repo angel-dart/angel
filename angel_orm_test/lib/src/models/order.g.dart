@@ -16,7 +16,9 @@ class OrderMigration extends Migration {
       table.integer('employee_id');
       table.timeStamp('order_date');
       table.integer('shipper_id');
-      table.integer('customer_id').references('customers', 'id');
+      table
+          .declare('customer_id', ColumnType('serial'))
+          .references('customers', 'id');
     });
   }
 

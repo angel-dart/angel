@@ -24,7 +24,10 @@ class WeirdJoinMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('weird_joins', (table) {
-      table.integer('join_name').references('unorthodoxes', 'name');
+      table.declare('id', ColumnType('serial'))..primaryKey();
+      table
+          .declare('join_name', ColumnType('varchar'))
+          .references('unorthodoxes', 'name');
     });
   }
 
@@ -70,7 +73,9 @@ class NumbaMigration extends Migration {
 class FooMigration extends Migration {
   @override
   up(Schema schema) {
-    schema.create('foos', (table) {});
+    schema.create('foos', (table) {
+      table.declare('bar', ColumnType('serial'))..primaryKey();
+    });
   }
 
   @override
@@ -83,8 +88,10 @@ class FooPivotMigration extends Migration {
   @override
   up(Schema schema) {
     schema.create('foo_pivots', (table) {
-      table.integer('weird_join_id').references('weird_joins', 'id');
-      table.integer('foo_bar').references('foos', 'bar');
+      table
+          .declare('weird_join_id', ColumnType('serial'))
+          .references('weird_joins', 'id');
+      table.declare('foo_bar', ColumnType('serial')).references('foos', 'bar');
     });
   }
 

@@ -153,9 +153,10 @@ Future<OrmBuildContext> buildOrmContext(
         // if (!isModelClass(field.type) &&
         //     !(field.type is InterfaceType &&
         //         isListOfModelType(field.type as InterfaceType))) {
-        if (!(field.type is InterfaceType &&
-                isListOfModelType(field.type as InterfaceType)) &&
-            !isModelClass(field.type)) {
+        var canUse = (field.type is InterfaceType &&
+                isListOfModelType(field.type as InterfaceType)) ||
+            isModelClass(field.type);
+        if (!canUse) {
           throw new UnsupportedError(
               'Cannot apply relationship to field "${field.name}" - ${field.type} is not assignable to Model.');
         } else {
