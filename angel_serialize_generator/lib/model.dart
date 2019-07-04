@@ -6,8 +6,9 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
-    if (element.kind != ElementKind.CLASS)
+    if (element.kind != ElementKind.CLASS) {
       throw 'Only classes can be annotated with a @Serializable() annotation.';
+    }
 
     var ctx = await buildContext(element as ClassElement, annotation, buildStep,
         await buildStep.resolver, true);
@@ -138,9 +139,9 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
             b.defaultTo = Code(dartObjectToString(existingDefault));
           }
 
-          if (!isListOrMapType(field.type))
+          if (!isListOrMapType(field.type)) {
             b.toThis = true;
-          else {
+          } else {
             b.type = convertTypeReference(field.type);
           }
 
@@ -153,9 +154,10 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
 
       if (ctx.constructorParameters.isNotEmpty) {
         if (!shouldBeConstant(ctx) ||
-            ctx.clazz.unnamedConstructor?.isConst == true)
+            ctx.clazz.unnamedConstructor?.isConst == true) {
           constructor.initializers.add(Code(
               'super(${ctx.constructorParameters.map((p) => p.name).join(',')})'));
+        }
       }
     }));
   }
@@ -209,16 +211,18 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
         if (type.typeParameters.length == 1) {
           var eq = generateEquality(type.typeArguments[0]);
           return 'ListEquality<${type.typeArguments[0].name}>($eq)';
-        } else
+        } else {
           return 'ListEquality()';
+        }
       } else if (const TypeChecker.fromRuntime(Map)
           .isAssignableFromType(type)) {
         if (type.typeParameters.length == 2) {
           var keq = generateEquality(type.typeArguments[0]),
               veq = generateEquality(type.typeArguments[1]);
           return 'MapEquality<${type.typeArguments[0].name}, ${type.typeArguments[1].name}>(keys: $keq, values: $veq)';
-        } else
+        } else {
           return 'MapEquality()';
+        }
       }
 
       return nullable ? null : 'DefaultEquality<${type.name}>()';
@@ -228,8 +232,9 @@ class JsonModelGenerator extends GeneratorForAnnotation<Serializable> {
   }
 
   static String Function(String, String) generateComparator(DartType type) {
-    if (type is! InterfaceType || type.name == 'dynamic')
+    if (type is! InterfaceType || type.name == 'dynamic') {
       return (a, b) => '$a == $b';
+    }
     var eq = generateEquality(type, true);
     if (eq == null) return (a, b) => '$a == $b';
     return (a, b) => '$eq.equals($a, $b)';

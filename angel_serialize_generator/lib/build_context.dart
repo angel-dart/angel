@@ -3,7 +3,6 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/src/dart/element/element.dart';
-import 'package:angel_model/angel_model.dart';
 import 'package:angel_serialize/angel_serialize.dart';
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';

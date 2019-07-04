@@ -29,8 +29,9 @@ class TypeScriptDefinitionBuilder implements Builder {
     };
 
     types.forEach((t, tsType) {
-      if (TypeChecker.fromRuntime(t).isAssignableFromType(type))
+      if (TypeChecker.fromRuntime(t).isAssignableFromType(type)) {
         typeScriptType = tsType;
+      }
     });
 
     if (type is InterfaceType) {
@@ -67,9 +68,9 @@ class TypeScriptDefinitionBuilder implements Builder {
           ..writeln('}'));
       } else if (const TypeChecker.fromRuntime(List)
           .isAssignableFromType(type)) {
-        if (type.typeArguments.isEmpty)
+        if (type.typeArguments.isEmpty) {
           typeScriptType = 'any[]';
-        else {
+        } else {
           var arg = await compileToTypeScriptType(
               ctx, fieldName, type.typeArguments[0], refs, ext, buildStep);
           typeScriptType = '$arg[]';
@@ -139,8 +140,9 @@ class TypeScriptDefinitionBuilder implements Builder {
     }
 
     for (var element in elements) {
-      if (element.element.kind != ElementKind.CLASS)
+      if (element.element.kind != ElementKind.CLASS) {
         throw 'Only classes can be annotated with a @Serializable() annotation.';
+      }
 
       var annotation = element.annotation;
 

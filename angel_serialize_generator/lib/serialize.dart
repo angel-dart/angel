@@ -8,8 +8,9 @@ class SerializerGenerator extends GeneratorForAnnotation<Serializable> {
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
-    if (element.kind != ElementKind.CLASS)
+    if (element.kind != ElementKind.CLASS) {
       throw 'Only classes can be annotated with a @Serializable() annotation.';
+    }
 
     var ctx = await buildContext(element as ClassElement, annotation, buildStep,
         await buildStep.resolver, autoSnakeCaseNames != false);
@@ -147,8 +148,9 @@ class ${pascal}Decoder extends Converter<Map, ${pascal}> {
         }
 
         // Serialize dates
-        else if (dateTimeTypeChecker.isAssignableFromType(type))
+        else if (dateTimeTypeChecker.isAssignableFromType(type)) {
           serializedRepresentation = 'model.${field.name}?.toIso8601String()';
+        }
 
         // Serialize model classes via `XSerializer.toMap`
         else if (isModelClass(type)) {
@@ -266,10 +268,11 @@ class ${pascal}Decoder extends Converter<Map, ${pascal}> {
           var name =
               MirrorSystem.getName(ctx.fieldInfo[field.name].deserializer);
           deserializedRepresentation = "$name(map['$alias'])";
-        } else if (dateTimeTypeChecker.isAssignableFromType(type))
+        } else if (dateTimeTypeChecker.isAssignableFromType(type)) {
           deserializedRepresentation = "map['$alias'] != null ? "
               "(map['$alias'] is DateTime ? (map['$alias'] as DateTime) : DateTime.parse(map['$alias'].toString()))"
               " : $defaultValue";
+        }
 
         // Serialize model classes via `XSerializer.toMap`
         else if (isModelClass(type)) {

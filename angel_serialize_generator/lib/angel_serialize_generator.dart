@@ -53,12 +53,14 @@ Expression convertObject(DartObject o) {
   if (o.toBoolValue() != null) return literalBool(o.toBoolValue());
   if (o.toIntValue() != null) return literalNum(o.toIntValue());
   if (o.toDoubleValue() != null) return literalNum(o.toDoubleValue());
-  if (o.toSymbolValue() != null)
+  if (o.toSymbolValue() != null) {
     return CodeExpression(Code('#' + o.toSymbolValue()));
+  }
   if (o.toStringValue() != null) return literalString(o.toStringValue());
   if (o.toTypeValue() != null) return convertTypeReference(o.toTypeValue());
-  if (o.toListValue() != null)
+  if (o.toListValue() != null) {
     return literalList(o.toListValue().map(convertObject));
+  }
   if (o.toMapValue() != null) {
     return literalMap(o
         .toMapValue()
@@ -80,8 +82,9 @@ String dartObjectToString(DartObject v) {
   if (v.toDoubleValue() != null) return v.toDoubleValue().toString();
   if (v.toSymbolValue() != null) return '#' + v.toSymbolValue();
   if (v.toTypeValue() != null) return v.toTypeValue().name;
-  if (v.toListValue() != null)
+  if (v.toListValue() != null) {
     return 'const [' + v.toListValue().map(dartObjectToString).join(', ') + ']';
+  }
   if (v.toMapValue() != null) {
     return 'const {' +
         v.toMapValue().entries.map((entry) {
