@@ -1,4 +1,4 @@
-const List<String> SQL_RESERVED_WORDS = const [
+const List<String> SQL_RESERVED_WORDS = [
   'SELECT',
   'UPDATE',
   'INSERT',
@@ -40,7 +40,7 @@ class PrimaryKey extends Column {
             indexType: IndexType.primaryKey);
 }
 
-const Column primaryKey = const PrimaryKey();
+const Column primaryKey = PrimaryKey();
 
 /// Maps to SQL index types.
 enum IndexType {
@@ -65,61 +65,60 @@ class ColumnType {
 
   const ColumnType(this.name);
 
-  static const ColumnType boolean = const ColumnType('boolean');
+  static const ColumnType boolean = ColumnType('boolean');
 
-  static const ColumnType smallSerial = const ColumnType('smallserial');
-  static const ColumnType serial = const ColumnType('serial');
-  static const ColumnType bigSerial = const ColumnType('bigserial');
+  static const ColumnType smallSerial = ColumnType('smallserial');
+  static const ColumnType serial = ColumnType('serial');
+  static const ColumnType bigSerial = ColumnType('bigserial');
 
   // Numbers
-  static const ColumnType bigInt = const ColumnType('bigint');
-  static const ColumnType int = const ColumnType('int');
-  static const ColumnType smallInt = const ColumnType('smallint');
-  static const ColumnType tinyInt = const ColumnType('tinyint');
-  static const ColumnType bit = const ColumnType('bit');
-  static const ColumnType decimal = const ColumnType('decimal');
-  static const ColumnType numeric = const ColumnType('numeric');
-  static const ColumnType money = const ColumnType('money');
-  static const ColumnType smallMoney = const ColumnType('smallmoney');
-  static const ColumnType float = const ColumnType('float');
-  static const ColumnType real = const ColumnType('real');
+  static const ColumnType bigInt = ColumnType('bigint');
+  static const ColumnType int = ColumnType('int');
+  static const ColumnType smallInt = ColumnType('smallint');
+  static const ColumnType tinyInt = ColumnType('tinyint');
+  static const ColumnType bit = ColumnType('bit');
+  static const ColumnType decimal = ColumnType('decimal');
+  static const ColumnType numeric = ColumnType('numeric');
+  static const ColumnType money = ColumnType('money');
+  static const ColumnType smallMoney = ColumnType('smallmoney');
+  static const ColumnType float = ColumnType('float');
+  static const ColumnType real = ColumnType('real');
 
   // Dates and times
-  static const ColumnType dateTime = const ColumnType('datetime');
-  static const ColumnType smallDateTime = const ColumnType('smalldatetime');
-  static const ColumnType date = const ColumnType('date');
-  static const ColumnType time = const ColumnType('time');
-  static const ColumnType timeStamp = const ColumnType('timestamp');
+  static const ColumnType dateTime = ColumnType('datetime');
+  static const ColumnType smallDateTime = ColumnType('smalldatetime');
+  static const ColumnType date = ColumnType('date');
+  static const ColumnType time = ColumnType('time');
+  static const ColumnType timeStamp = ColumnType('timestamp');
   static const ColumnType timeStampWithTimeZone =
-      const ColumnType('timestamp with time zone');
+      ColumnType('timestamp with time zone');
 
   // Strings
-  static const ColumnType char = const ColumnType('char');
-  static const ColumnType varChar = const ColumnType('varchar');
-  static const ColumnType varCharMax = const ColumnType('varchar(max)');
-  static const ColumnType text = const ColumnType('text');
+  static const ColumnType char = ColumnType('char');
+  static const ColumnType varChar = ColumnType('varchar');
+  static const ColumnType varCharMax = ColumnType('varchar(max)');
+  static const ColumnType text = ColumnType('text');
 
   // Unicode strings
-  static const ColumnType nChar = const ColumnType('nchar');
-  static const ColumnType nVarChar = const ColumnType('nvarchar');
-  static const ColumnType nVarCharMax = const ColumnType('nvarchar(max)');
-  static const ColumnType nText = const ColumnType('ntext');
+  static const ColumnType nChar = ColumnType('nchar');
+  static const ColumnType nVarChar = ColumnType('nvarchar');
+  static const ColumnType nVarCharMax = ColumnType('nvarchar(max)');
+  static const ColumnType nText = ColumnType('ntext');
 
   // Binary
-  static const ColumnType binary = const ColumnType('binary');
-  static const ColumnType varBinary = const ColumnType('varbinary');
-  static const ColumnType varBinaryMax = const ColumnType('varbinary(max)');
-  static const ColumnType image = const ColumnType('image');
+  static const ColumnType binary = ColumnType('binary');
+  static const ColumnType varBinary = ColumnType('varbinary');
+  static const ColumnType varBinaryMax = ColumnType('varbinary(max)');
+  static const ColumnType image = ColumnType('image');
 
   // JSON.
-  static const ColumnType json = const ColumnType('json');
-  static const ColumnType jsonb = const ColumnType('jsonb');
+  static const ColumnType json = ColumnType('json');
+  static const ColumnType jsonb = ColumnType('jsonb');
 
   // Misc.
-  static const ColumnType sqlVariant = const ColumnType('sql_variant');
-  static const ColumnType uniqueIdentifier =
-      const ColumnType('uniqueidentifier');
-  static const ColumnType xml = const ColumnType('xml');
-  static const ColumnType cursor = const ColumnType('cursor');
-  static const ColumnType table = const ColumnType('table');
+  static const ColumnType sqlVariant = ColumnType('sql_variant');
+  static const ColumnType uniqueIdentifier = ColumnType('uniqueidentifier');
+  static const ColumnType xml = ColumnType('xml');
+  static const ColumnType cursor = ColumnType('cursor');
+  static const ColumnType table = ColumnType('table');
 }

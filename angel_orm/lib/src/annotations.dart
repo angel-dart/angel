@@ -1,6 +1,6 @@
 /// A raw SQL statement that specifies a date/time default to the
 /// current time.
-const RawSql currentTimestamp = const RawSql('CURRENT_TIMESTAMP');
+const RawSql currentTimestamp = RawSql('CURRENT_TIMESTAMP');
 
 /// Can passed to a [MigrationColumn] to default to a raw SQL expression.
 class RawSql {
@@ -11,7 +11,7 @@ class RawSql {
 }
 
 /// Canonical instance of [ORM]. Implies all defaults.
-const Orm orm = const Orm();
+const Orm orm = Orm();
 
 class Orm {
   /// The name of the table to query.

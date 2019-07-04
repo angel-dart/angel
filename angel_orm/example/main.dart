@@ -8,13 +8,13 @@ part 'main.g.dart';
 part 'main.serializer.g.dart';
 
 main() async {
-  var query = new EmployeeQuery()
+  var query = EmployeeQuery()
     ..where.firstName.equals('Rich')
     ..where.lastName.equals('Person')
     ..orWhere((w) => w.salary.greaterThanOrEqualTo(75000))
     ..join('companies', 'company_id', 'id');
 
-  var richPerson = await query.getOne(new _FakeExecutor());
+  var richPerson = await query.getOne(_FakeExecutor());
   print(richPerson.toJson());
 }
 
@@ -25,7 +25,7 @@ class _FakeExecutor extends QueryExecutor {
   Future<List<List>> query(
       String tableName, String query, Map<String, dynamic> substitutionValues,
       [returningFields]) async {
-    var now = new DateTime.now();
+    var now = DateTime.now();
     print(
         '_FakeExecutor received query: $query and values: $substitutionValues');
     return [
@@ -35,7 +35,7 @@ class _FakeExecutor extends QueryExecutor {
 
   @override
   Future<T> transaction<T>(FutureOr<T> Function() f) {
-    throw new UnsupportedError('Transactions are not supported.');
+    throw UnsupportedError('Transactions are not supported.');
   }
 }
 
@@ -51,12 +51,12 @@ abstract class _Employee extends Model {
 
 class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   @override
-  final QueryValues values = new MapQueryValues();
+  final QueryValues values = MapQueryValues();
 
   EmployeeQueryWhere _where;
 
   EmployeeQuery() {
-    _where = new EmployeeQueryWhere(this);
+    _where = EmployeeQueryWhere(this);
   }
 
   @override
@@ -70,11 +70,11 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
       ['id', 'first_name', 'last_name', 'salary', 'created_at', 'updated_at'];
 
   @override
-  EmployeeQueryWhere newWhereClause() => new EmployeeQueryWhere(this);
+  EmployeeQueryWhere newWhereClause() => EmployeeQueryWhere(this);
 
   @override
   Employee deserialize(List row) {
-    return new Employee(
+    return Employee(
         id: row[0].toString(),
         firstName: row[1] as String,
         lastName: row[2] as String,
@@ -86,12 +86,12 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 
 class EmployeeQueryWhere extends QueryWhere {
   EmployeeQueryWhere(EmployeeQuery query)
-      : id = new NumericSqlExpressionBuilder(query, 'id'),
-        firstName = new StringSqlExpressionBuilder(query, 'first_name'),
-        lastName = new StringSqlExpressionBuilder(query, 'last_name'),
-        salary = new NumericSqlExpressionBuilder(query, 'salary'),
-        createdAt = new DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = new DateTimeSqlExpressionBuilder(query, 'updated_at');
+      : id = NumericSqlExpressionBuilder(query, 'id'),
+        firstName = StringSqlExpressionBuilder(query, 'first_name'),
+        lastName = StringSqlExpressionBuilder(query, 'last_name'),
+        salary = NumericSqlExpressionBuilder(query, 'salary'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
 
   @override
   Iterable<SqlExpressionBuilder> get expressionBuilders {

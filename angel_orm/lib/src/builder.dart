@@ -5,29 +5,32 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:string_scanner/string_scanner.dart';
 import 'query.dart';
 
-final DateFormat dateYmd = new DateFormat('yyyy-MM-dd');
-final DateFormat dateYmdHms = new DateFormat('yyyy-MM-dd HH:mm:ss');
+final DateFormat dateYmd = DateFormat('yyyy-MM-dd');
+final DateFormat dateYmdHms = DateFormat('yyyy-MM-dd HH:mm:ss');
 
 /// The ORM prefers using substitution values, which allow for prepared queries,
 /// and prevent SQL injection attacks.
 @deprecated
 String sanitizeExpression(String unsafe) {
-  var buf = new StringBuffer();
-  var scanner = new StringScanner(unsafe);
+  var buf = StringBuffer();
+  var scanner = StringScanner(unsafe);
   int ch;
 
   while (!scanner.isDone) {
     // Ignore comment starts
-    if (scanner.scan('--') || scanner.scan('/*'))
+    if (scanner.scan('--') || scanner.scan('/*')) {
       continue;
+    }
 
     // Ignore all single quotes and attempted escape sequences
-    else if (scanner.scan("'") || scanner.scan('\\'))
+    else if (scanner.scan("'") || scanner.scan('\\')) {
       continue;
+    }
 
     // Otherwise, add the next char, unless it's a null byte.
-    else if ((ch = scanner.readChar()) != $nul && ch != null)
+    else if ((ch = scanner.readChar()) != $nul && ch != null) {
       buf.writeCharCode(ch);
+    }
   }
 
   return toSql(buf.toString(), withQuotes: false);
@@ -372,17 +375,17 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
       : super(query, columnName);
 
   NumericSqlExpressionBuilder<int> get year =>
-      _year ??= new NumericSqlExpressionBuilder(query, 'year');
+      _year ??= NumericSqlExpressionBuilder(query, 'year');
   NumericSqlExpressionBuilder<int> get month =>
-      _month ??= new NumericSqlExpressionBuilder(query, 'month');
+      _month ??= NumericSqlExpressionBuilder(query, 'month');
   NumericSqlExpressionBuilder<int> get day =>
-      _day ??= new NumericSqlExpressionBuilder(query, 'day');
+      _day ??= NumericSqlExpressionBuilder(query, 'day');
   NumericSqlExpressionBuilder<int> get hour =>
-      _hour ??= new NumericSqlExpressionBuilder(query, 'hour');
+      _hour ??= NumericSqlExpressionBuilder(query, 'hour');
   NumericSqlExpressionBuilder<int> get minute =>
-      _minute ??= new NumericSqlExpressionBuilder(query, 'minute');
+      _minute ??= NumericSqlExpressionBuilder(query, 'minute');
   NumericSqlExpressionBuilder<int> get second =>
-      _second ??= new NumericSqlExpressionBuilder(query, 'second');
+      _second ??= NumericSqlExpressionBuilder(query, 'second');
 
   @override
   bool get hasValue =>
@@ -462,17 +465,24 @@ class DateTimeSqlExpressionBuilder extends SqlExpressionBuilder<DateTime> {
   String compile() {
     if (_raw?.isNotEmpty == true) return _raw;
     List<String> parts = [];
-    if (year?.hasValue == true)
+    if (year?.hasValue == true) {
       parts.add('YEAR($columnName) ${year.compile()}');
-    if (month?.hasValue == true)
+    }
+    if (month?.hasValue == true) {
       parts.add('MONTH($columnName) ${month.compile()}');
-    if (day?.hasValue == true) parts.add('DAY($columnName) ${day.compile()}');
-    if (hour?.hasValue == true)
+    }
+    if (day?.hasValue == true) {
+      parts.add('DAY($columnName) ${day.compile()}');
+    }
+    if (hour?.hasValue == true) {
       parts.add('HOUR($columnName) ${hour.compile()}');
-    if (minute?.hasValue == true)
+    }
+    if (minute?.hasValue == true) {
       parts.add('MINUTE($columnName) ${minute.compile()}');
-    if (second?.hasValue == true)
+    }
+    if (second?.hasValue == true) {
       parts.add('SECOND($columnName) ${second.compile()}');
+    }
 
     return parts.isEmpty ? null : parts.join(' AND ');
   }

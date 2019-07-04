@@ -32,7 +32,7 @@ class HasMany extends Relationship {
             cascadeOnDelete: cascadeOnDelete == true);
 }
 
-const HasMany hasMany = const HasMany();
+const HasMany hasMany = HasMany();
 
 class HasOne extends Relationship {
   const HasOne(
@@ -47,7 +47,7 @@ class HasOne extends Relationship {
             cascadeOnDelete: cascadeOnDelete == true);
 }
 
-const HasOne hasOne = const HasOne();
+const HasOne hasOne = HasOne();
 
 class BelongsTo extends Relationship {
   const BelongsTo({String localKey, String foreignKey, String foreignTable})
@@ -57,7 +57,7 @@ class BelongsTo extends Relationship {
             foreignTable: foreignTable);
 }
 
-const BelongsTo belongsTo = const BelongsTo();
+const BelongsTo belongsTo = BelongsTo();
 
 class ManyToMany extends Relationship {
   final Type through;

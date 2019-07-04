@@ -41,7 +41,7 @@ class Employee extends _Employee {
       double salary,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Employee(
+    return Employee(
         id: id ?? this.id,
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,

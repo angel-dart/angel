@@ -44,11 +44,11 @@ abstract class QueryBase<T> {
   }
 
   Union<T> union(QueryBase<T> other) {
-    return new Union(this, other);
+    return Union(this, other);
   }
 
   Union<T> unionAll(QueryBase<T> other) {
-    return new Union(this, other, all: true);
+    return Union(this, other, all: true);
   }
 }
 
@@ -72,14 +72,14 @@ String toSql(Object obj, {bool withQuotes = true}) {
   } else if (obj == null) {
     return 'NULL';
   } else if (obj is String) {
-    var b = new StringBuffer();
+    var b = StringBuffer();
     var escaped = false;
     var it = obj.runes.iterator;
 
     while (it.moveNext()) {
-      if (it.current == $nul)
+      if (it.current == $nul) {
         continue; // Skip null byte
-      else if (it.current == $single_quote) {
+      } else if (it.current == $single_quote) {
         escaped = true;
         b.write('\\x');
         b.write(it.current.toRadixString(16).padLeft(2, '0'));
@@ -94,17 +94,18 @@ String toSql(Object obj, {bool withQuotes = true}) {
         b.write('\\U');
         b.write(it.current.toRadixString(16).padLeft(8, '0'));
       } else {
-        throw new UnsupportedError(
+        throw UnsupportedError(
             'toSql() cannot encode a rune of size (${it.currentSize})');
       }
     }
 
-    if (!withQuotes)
+    if (!withQuotes) {
       return b.toString();
-    else if (escaped)
+    } else if (escaped) {
       return "E'$b'";
-    else
+    } else {
       return "'$b'";
+    }
   } else {
     return obj.toString();
   }
@@ -140,10 +141,10 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     return n == 0 ? name : '${name}$n';
   }
 
-  /// Makes a new [Where] clause.
+  /// Makes a [Where] clause.
   Where newWhereClause() {
-    throw new UnsupportedError(
-        'This instance does not support creating new WHERE clauses.');
+    throw UnsupportedError(
+        'This instance does not support creating WHERE clauses.');
   }
 
   /// Determines whether this query can be compiled.
@@ -151,21 +152,21 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// Used to prevent ambiguities in joins.
   bool canCompile(Set<String> trampoline) => true;
 
-  /// Shorthand for calling [where].or with a new [Where] clause.
+  /// Shorthand for calling [where].or with a [Where] clause.
   void andWhere(void Function(Where) f) {
     var w = newWhereClause();
     f(w);
     where.and(w);
   }
 
-  /// Shorthand for calling [where].or with a new [Where] clause.
+  /// Shorthand for calling [where].or with a [Where] clause.
   void notWhere(void Function(Where) f) {
     var w = newWhereClause();
     f(w);
     where.not(w);
   }
 
-  /// Shorthand for calling [where].or with a new [Where] clause.
+  /// Shorthand for calling [where].or with a [Where] clause.
   void orWhere(void Function(Where) f) {
     var w = newWhereClause();
     f(w);
@@ -189,7 +190,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   /// Sorts the results by a key.
   void orderBy(String key, {bool descending = false}) {
-    _orderBy.add(new OrderBy(key, descending: descending));
+    _orderBy.add(OrderBy(key, descending: descending));
   }
 
   /// Execute a `CROSS JOIN` (Cartesian product) against another table.
@@ -204,15 +205,16 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       var a = 'a$i';
       if (trampoline.add(a)) {
         return a;
-      } else
+      } else {
         i++;
+      }
     }
   }
 
   String _compileJoin(tableName, Set<String> trampoline) {
-    if (tableName is String)
+    if (tableName is String) {
       return tableName;
-    else if (tableName is Query) {
+    } else if (tableName is Query) {
       var c = tableName.compile(trampoline);
       if (c == null) return c;
       return '($c)';
@@ -241,7 +243,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
     var to = _compileJoin(tableName, trampoline);
     if (to != null) {
-      _joins.add(new JoinBuilder(type, this, to, localKey, foreignKey,
+      _joins.add(JoinBuilder(type, this, to, localKey, foreignKey,
           op: op,
           alias: _joinAlias(trampoline),
           additionalFields: additionalFields));
@@ -305,14 +307,14 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     }
 
     includeTableName = includeTableName || _joins.isNotEmpty;
-    var b = new StringBuffer(preamble ?? 'SELECT');
+    var b = StringBuffer(preamble ?? 'SELECT');
     b.write(' ');
     List<String> f;
 
     if (fields == null) {
       f = ['*'];
     } else {
-      f = new List<String>.from(fields.map((s) {
+      f = List<String>.from(fields.map((s) {
         var ss = includeTableName ? '$tableName.$s' : s;
         var cast = casts[s];
         if (cast != null) ss = 'CAST ($ss AS $cast)';
@@ -344,7 +346,9 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (_limit != null) b.write(' LIMIT $_limit');
     if (_offset != null) b.write(' OFFSET $_offset');
     if (_groupBy != null) b.write(' GROUP BY $_groupBy');
-    for (var item in _orderBy) b.write(' ORDER BY ${item.compile()}');
+    for (var item in _orderBy) {
+      b.write(' ORDER BY ${item.compile()}');
+    }
     return b.toString();
   }
 
@@ -382,7 +386,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     var insertion = values.compileInsert(this, tableName);
 
     if (insertion == null) {
-      throw new StateError('No values have been specified for update.');
+      throw StateError('No values have been specified for update.');
     } else {
       // TODO: How to do this in a non-Postgres DB?
       var returning = fields.map(adornWithTableName).join(', ');
@@ -395,11 +399,11 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   Future<List<T>> update(QueryExecutor executor) async {
-    var updateSql = new StringBuffer('UPDATE $tableName ');
+    var updateSql = StringBuffer('UPDATE $tableName ');
     var valuesClause = values.compileForUpdate(this);
 
     if (valuesClause == null) {
-      throw new StateError('No values have been specified for update.');
+      throw StateError('No values have been specified for update.');
     } else {
       updateSql.write(' $valuesClause');
       var whereClause = where.compile();
@@ -442,7 +446,7 @@ abstract class QueryValues {
     if (data.isEmpty) return null;
 
     var fieldSet = data.keys.join(', ');
-    var b = new StringBuffer('INSERT INTO $tableName ($fieldSet) VALUES (');
+    var b = StringBuffer('INSERT INTO $tableName ($fieldSet) VALUES (');
     int i = 0;
 
     for (var entry in data.entries) {
@@ -461,7 +465,7 @@ abstract class QueryValues {
   String compileForUpdate(Query query) {
     var data = toMap();
     if (data.isEmpty) return null;
-    var b = new StringBuffer('SET');
+    var b = StringBuffer('SET');
     int i = 0;
 
     for (var entry in data.entries) {
@@ -489,9 +493,9 @@ class MapQueryValues extends QueryValues {
 
 /// Builds a SQL `WHERE` clause.
 abstract class QueryWhere {
-  final Set<QueryWhere> _and = new Set();
-  final Set<QueryWhere> _not = new Set();
-  final Set<QueryWhere> _or = new Set();
+  final Set<QueryWhere> _and = Set();
+  final Set<QueryWhere> _not = Set();
+  final Set<QueryWhere> _or = Set();
 
   Iterable<SqlExpressionBuilder> get expressionBuilders;
 
@@ -508,7 +512,7 @@ abstract class QueryWhere {
   }
 
   String compile({String tableName}) {
-    var b = new StringBuffer();
+    var b = StringBuffer();
     int i = 0;
 
     for (var builder in expressionBuilders) {
@@ -608,7 +612,7 @@ class JoinBuilder {
 
   String compile(Set<String> trampoline) {
     if (to == null) return null;
-    var b = new StringBuffer();
+    var b = StringBuffer();
     var left = '${from.tableName}.$key';
     var right = fieldName;
 

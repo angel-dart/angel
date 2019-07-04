@@ -8,7 +8,7 @@ part of 'main.dart';
 
 abstract class EmployeeSerializer {
   static Employee fromMap(Map map) {
-    return new Employee(
+    return Employee(
         id: map['id'] as String,
         firstName: map['first_name'] as String,
         lastName: map['last_name'] as String,
@@ -41,7 +41,7 @@ abstract class EmployeeSerializer {
 }
 
 abstract class EmployeeFields {
-  static const List<String> allFields = const <String>[
+  static const List<String> allFields = <String>[
     id,
     firstName,
     lastName,
