@@ -1,3 +1,8 @@
+# 2.0.1
+* Apply `package:pedantic` fixes.
+* `@PrimaryKey()` no longer defaults to `serial`, allowing its type to be
+inferenced.
+
 # 2.0.0
 * Add `isNull`, `isNotNull` getters to builders.
 
