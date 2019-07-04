@@ -39,10 +39,10 @@ class SongMigration extends Migration {
   up(Schema schema) {
     schema.create('songs', (table) {
       table.serial('id')..primaryKey();
-      table.integer('weird_join_id');
-      table.varChar('title');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
+      table.integer('weird_join_id');
+      table.varChar('title');
     });
   }
 
@@ -185,10 +185,10 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
     leftJoin('songs', 'id', 'weird_join_id',
         additionalFields: const [
           'id',
-          'weird_join_id',
-          'title',
           'created_at',
-          'updated_at'
+          'updated_at',
+          'weird_join_id',
+          'title'
         ],
         trampoline: trampoline);
     leftJoin(NumbaQuery(trampoline: trampoline), 'id', 'parent',
@@ -388,7 +388,7 @@ class SongQuery extends Query<Song, SongQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'weird_join_id', 'title', 'created_at', 'updated_at'];
+    return const ['id', 'created_at', 'updated_at', 'weird_join_id', 'title'];
   }
 
   @override
@@ -405,10 +405,10 @@ class SongQuery extends Query<Song, SongQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = Song(
         id: row[0].toString(),
-        weirdJoinId: (row[1] as int),
-        title: (row[2] as String),
-        createdAt: (row[3] as DateTime),
-        updatedAt: (row[4] as DateTime));
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime),
+        weirdJoinId: (row[3] as int),
+        title: (row[4] as String));
     return model;
   }
 
@@ -421,24 +421,24 @@ class SongQuery extends Query<Song, SongQueryWhere> {
 class SongQueryWhere extends QueryWhere {
   SongQueryWhere(SongQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
-        weirdJoinId = NumericSqlExpressionBuilder<int>(query, 'weird_join_id'),
-        title = StringSqlExpressionBuilder(query, 'title'),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
+        weirdJoinId = NumericSqlExpressionBuilder<int>(query, 'weird_join_id'),
+        title = StringSqlExpressionBuilder(query, 'title');
 
   final NumericSqlExpressionBuilder<int> id;
-
-  final NumericSqlExpressionBuilder<int> weirdJoinId;
-
-  final StringSqlExpressionBuilder title;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
   final DateTimeSqlExpressionBuilder updatedAt;
 
+  final NumericSqlExpressionBuilder<int> weirdJoinId;
+
+  final StringSqlExpressionBuilder title;
+
   @override
   get expressionBuilders {
-    return [id, weirdJoinId, title, createdAt, updatedAt];
+    return [id, createdAt, updatedAt, weirdJoinId, title];
   }
 }
 
@@ -453,16 +453,6 @@ class SongQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
-  int get weirdJoinId {
-    return (values['weird_join_id'] as int);
-  }
-
-  set weirdJoinId(int value) => values['weird_join_id'] = value;
-  String get title {
-    return (values['title'] as String);
-  }
-
-  set title(String value) => values['title'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
@@ -473,11 +463,21 @@ class SongQueryValues extends MapQueryValues {
   }
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
+  int get weirdJoinId {
+    return (values['weird_join_id'] as int);
+  }
+
+  set weirdJoinId(int value) => values['weird_join_id'] = value;
+  String get title {
+    return (values['title'] as String);
+  }
+
+  set title(String value) => values['title'] = value;
   void copyFrom(Song model) {
-    weirdJoinId = model.weirdJoinId;
-    title = model.title;
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
+    weirdJoinId = model.weirdJoinId;
+    title = model.title;
   }
 }
 
@@ -829,7 +829,7 @@ class Unorthodox implements _Unorthodox {
   final String name;
 
   Unorthodox copyWith({String name}) {
-    return new Unorthodox(name: name ?? this.name);
+    return Unorthodox(name: name ?? this.name);
   }
 
   bool operator ==(other) {
@@ -854,11 +854,7 @@ class Unorthodox implements _Unorthodox {
 @generatedSerializable
 class WeirdJoin implements _WeirdJoin {
   const WeirdJoin(
-      {this.id,
-      this.unorthodox,
-      this.song,
-      List<_Numba> this.numbas,
-      List<_Foo> this.foos});
+      {this.id, this.unorthodox, this.song, this.numbas, this.foos});
 
   @override
   final int id;
@@ -881,7 +877,7 @@ class WeirdJoin implements _WeirdJoin {
       _Song song,
       List<_Numba> numbas,
       List<_Foo> foos}) {
-    return new WeirdJoin(
+    return WeirdJoin(
         id: id ?? this.id,
         unorthodox: unorthodox ?? this.unorthodox,
         song: song ?? this.song,
@@ -894,10 +890,9 @@ class WeirdJoin implements _WeirdJoin {
         other.id == id &&
         other.unorthodox == unorthodox &&
         other.song == song &&
-        const ListEquality<_Numba>(const DefaultEquality<_Numba>())
+        ListEquality<_Numba>(DefaultEquality<_Numba>())
             .equals(other.numbas, numbas) &&
-        const ListEquality<_Foo>(const DefaultEquality<_Foo>())
-            .equals(other.foos, foos);
+        ListEquality<_Foo>(DefaultEquality<_Foo>()).equals(other.foos, foos);
   }
 
   @override
@@ -917,10 +912,19 @@ class WeirdJoin implements _WeirdJoin {
 
 @generatedSerializable
 class Song extends _Song {
-  Song({this.id, this.weirdJoinId, this.title, this.createdAt, this.updatedAt});
+  Song({this.id, this.createdAt, this.updatedAt, this.weirdJoinId, this.title});
 
+  /// A unique identifier corresponding to this item.
   @override
-  final String id;
+  String id;
+
+  /// The time at which this item was created.
+  @override
+  DateTime createdAt;
+
+  /// The last time at which this item was updated.
+  @override
+  DateTime updatedAt;
 
   @override
   final int weirdJoinId;
@@ -928,43 +932,37 @@ class Song extends _Song {
   @override
   final String title;
 
-  @override
-  final DateTime createdAt;
-
-  @override
-  final DateTime updatedAt;
-
   Song copyWith(
       {String id,
-      int weirdJoinId,
-      String title,
       DateTime createdAt,
-      DateTime updatedAt}) {
-    return new Song(
+      DateTime updatedAt,
+      int weirdJoinId,
+      String title}) {
+    return Song(
         id: id ?? this.id,
-        weirdJoinId: weirdJoinId ?? this.weirdJoinId,
-        title: title ?? this.title,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        updatedAt: updatedAt ?? this.updatedAt,
+        weirdJoinId: weirdJoinId ?? this.weirdJoinId,
+        title: title ?? this.title);
   }
 
   bool operator ==(other) {
     return other is _Song &&
         other.id == id &&
-        other.weirdJoinId == weirdJoinId &&
-        other.title == title &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.weirdJoinId == weirdJoinId &&
+        other.title == title;
   }
 
   @override
   int get hashCode {
-    return hashObjects([id, weirdJoinId, title, createdAt, updatedAt]);
+    return hashObjects([id, createdAt, updatedAt, weirdJoinId, title]);
   }
 
   @override
   String toString() {
-    return "Song(id=$id, weirdJoinId=$weirdJoinId, title=$title, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "Song(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, weirdJoinId=$weirdJoinId, title=$title)";
   }
 
   Map<String, dynamic> toJson() {
@@ -977,13 +975,13 @@ class Numba extends _Numba {
   Numba({this.i, this.parent});
 
   @override
-  final int i;
+  int i;
 
   @override
-  final int parent;
+  int parent;
 
   Numba copyWith({int i, int parent}) {
-    return new Numba(i: i ?? this.i, parent: parent ?? this.parent);
+    return Numba(i: i ?? this.i, parent: parent ?? this.parent);
   }
 
   bool operator ==(other) {
@@ -1007,7 +1005,7 @@ class Numba extends _Numba {
 
 @generatedSerializable
 class Foo implements _Foo {
-  const Foo({this.bar, List<_WeirdJoin> this.weirdJoins});
+  const Foo({this.bar, this.weirdJoins});
 
   @override
   final String bar;
@@ -1016,14 +1014,13 @@ class Foo implements _Foo {
   final List<_WeirdJoin> weirdJoins;
 
   Foo copyWith({String bar, List<_WeirdJoin> weirdJoins}) {
-    return new Foo(
-        bar: bar ?? this.bar, weirdJoins: weirdJoins ?? this.weirdJoins);
+    return Foo(bar: bar ?? this.bar, weirdJoins: weirdJoins ?? this.weirdJoins);
   }
 
   bool operator ==(other) {
     return other is _Foo &&
         other.bar == bar &&
-        const ListEquality<_WeirdJoin>(const DefaultEquality<_WeirdJoin>())
+        ListEquality<_WeirdJoin>(DefaultEquality<_WeirdJoin>())
             .equals(other.weirdJoins, weirdJoins);
   }
 
@@ -1053,7 +1050,7 @@ class FooPivot implements _FooPivot {
   final _Foo foo;
 
   FooPivot copyWith({_WeirdJoin weirdJoin, _Foo foo}) {
-    return new FooPivot(
+    return FooPivot(
         weirdJoin: weirdJoin ?? this.weirdJoin, foo: foo ?? this.foo);
   }
 
@@ -1082,7 +1079,7 @@ class FooPivot implements _FooPivot {
 // SerializerGenerator
 // **************************************************************************
 
-const UnorthodoxSerializer unorthodoxSerializer = const UnorthodoxSerializer();
+const UnorthodoxSerializer unorthodoxSerializer = UnorthodoxSerializer();
 
 class UnorthodoxEncoder extends Converter<Unorthodox, Map> {
   const UnorthodoxEncoder();
@@ -1106,7 +1103,7 @@ class UnorthodoxSerializer extends Codec<Unorthodox, Map> {
   @override
   get decoder => const UnorthodoxDecoder();
   static Unorthodox fromMap(Map map) {
-    return new Unorthodox(name: map['name'] as String);
+    return Unorthodox(name: map['name'] as String);
   }
 
   static Map<String, dynamic> toMap(_Unorthodox model) {
@@ -1123,7 +1120,7 @@ abstract class UnorthodoxFields {
   static const String name = 'name';
 }
 
-const WeirdJoinSerializer weirdJoinSerializer = const WeirdJoinSerializer();
+const WeirdJoinSerializer weirdJoinSerializer = WeirdJoinSerializer();
 
 class WeirdJoinEncoder extends Converter<WeirdJoin, Map> {
   const WeirdJoinEncoder();
@@ -1147,7 +1144,7 @@ class WeirdJoinSerializer extends Codec<WeirdJoin, Map> {
   @override
   get decoder => const WeirdJoinDecoder();
   static WeirdJoin fromMap(Map map) {
-    return new WeirdJoin(
+    return WeirdJoin(
         id: map['id'] as int,
         unorthodox: map['unorthodox'] != null
             ? UnorthodoxSerializer.fromMap(map['unorthodox'] as Map)
@@ -1156,16 +1153,12 @@ class WeirdJoinSerializer extends Codec<WeirdJoin, Map> {
             ? SongSerializer.fromMap(map['song'] as Map)
             : null,
         numbas: map['numbas'] is Iterable
-            ? new List.unmodifiable(
-                ((map['numbas'] as Iterable).where((x) => x is Map))
-                    .cast<Map>()
-                    .map(NumbaSerializer.fromMap))
+            ? List.unmodifiable(((map['numbas'] as Iterable).whereType<Map>())
+                .map(NumbaSerializer.fromMap))
             : null,
         foos: map['foos'] is Iterable
-            ? new List.unmodifiable(
-                ((map['foos'] as Iterable).where((x) => x is Map))
-                    .cast<Map>()
-                    .map(FooSerializer.fromMap))
+            ? List.unmodifiable(((map['foos'] as Iterable).whereType<Map>())
+                .map(FooSerializer.fromMap))
             : null);
   }
 
@@ -1203,7 +1196,7 @@ abstract class WeirdJoinFields {
   static const String foos = 'foos';
 }
 
-const SongSerializer songSerializer = const SongSerializer();
+const SongSerializer songSerializer = SongSerializer();
 
 class SongEncoder extends Converter<Song, Map> {
   const SongEncoder();
@@ -1227,10 +1220,8 @@ class SongSerializer extends Codec<Song, Map> {
   @override
   get decoder => const SongDecoder();
   static Song fromMap(Map map) {
-    return new Song(
+    return Song(
         id: map['id'] as String,
-        weirdJoinId: map['weird_join_id'] as int,
-        title: map['title'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -1240,7 +1231,9 @@ class SongSerializer extends Codec<Song, Map> {
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at'].toString()))
-            : null);
+            : null,
+        weirdJoinId: map['weird_join_id'] as int,
+        title: map['title'] as String);
   }
 
   static Map<String, dynamic> toMap(_Song model) {
@@ -1249,10 +1242,10 @@ class SongSerializer extends Codec<Song, Map> {
     }
     return {
       'id': model.id,
-      'weird_join_id': model.weirdJoinId,
-      'title': model.title,
       'created_at': model.createdAt?.toIso8601String(),
-      'updated_at': model.updatedAt?.toIso8601String()
+      'updated_at': model.updatedAt?.toIso8601String(),
+      'weird_join_id': model.weirdJoinId,
+      'title': model.title
     };
   }
 }
@@ -1260,24 +1253,24 @@ class SongSerializer extends Codec<Song, Map> {
 abstract class SongFields {
   static const List<String> allFields = <String>[
     id,
-    weirdJoinId,
-    title,
     createdAt,
-    updatedAt
+    updatedAt,
+    weirdJoinId,
+    title
   ];
 
   static const String id = 'id';
 
-  static const String weirdJoinId = 'weird_join_id';
-
-  static const String title = 'title';
-
   static const String createdAt = 'created_at';
 
   static const String updatedAt = 'updated_at';
+
+  static const String weirdJoinId = 'weird_join_id';
+
+  static const String title = 'title';
 }
 
-const NumbaSerializer numbaSerializer = const NumbaSerializer();
+const NumbaSerializer numbaSerializer = NumbaSerializer();
 
 class NumbaEncoder extends Converter<Numba, Map> {
   const NumbaEncoder();
@@ -1301,7 +1294,7 @@ class NumbaSerializer extends Codec<Numba, Map> {
   @override
   get decoder => const NumbaDecoder();
   static Numba fromMap(Map map) {
-    return new Numba(i: map['i'] as int, parent: map['parent'] as int);
+    return Numba(i: map['i'] as int, parent: map['parent'] as int);
   }
 
   static Map<String, dynamic> toMap(_Numba model) {
@@ -1320,7 +1313,7 @@ abstract class NumbaFields {
   static const String parent = 'parent';
 }
 
-const FooSerializer fooSerializer = const FooSerializer();
+const FooSerializer fooSerializer = FooSerializer();
 
 class FooEncoder extends Converter<Foo, Map> {
   const FooEncoder();
@@ -1344,12 +1337,11 @@ class FooSerializer extends Codec<Foo, Map> {
   @override
   get decoder => const FooDecoder();
   static Foo fromMap(Map map) {
-    return new Foo(
+    return Foo(
         bar: map['bar'] as String,
         weirdJoins: map['weird_joins'] is Iterable
-            ? new List.unmodifiable(
-                ((map['weird_joins'] as Iterable).where((x) => x is Map))
-                    .cast<Map>()
+            ? List.unmodifiable(
+                ((map['weird_joins'] as Iterable).whereType<Map>())
                     .map(WeirdJoinSerializer.fromMap))
             : null);
   }
@@ -1374,7 +1366,7 @@ abstract class FooFields {
   static const String weirdJoins = 'weird_joins';
 }
 
-const FooPivotSerializer fooPivotSerializer = const FooPivotSerializer();
+const FooPivotSerializer fooPivotSerializer = FooPivotSerializer();
 
 class FooPivotEncoder extends Converter<FooPivot, Map> {
   const FooPivotEncoder();
@@ -1398,7 +1390,7 @@ class FooPivotSerializer extends Codec<FooPivot, Map> {
   @override
   get decoder => const FooPivotDecoder();
   static FooPivot fromMap(Map map) {
-    return new FooPivot(
+    return FooPivot(
         weirdJoin: map['weird_join'] != null
             ? WeirdJoinSerializer.fromMap(map['weird_join'] as Map)
             : null,

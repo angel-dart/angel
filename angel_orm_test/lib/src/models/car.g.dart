@@ -11,12 +11,12 @@ class CarMigration extends Migration {
   up(Schema schema) {
     schema.create('cars', (table) {
       table.serial('id')..primaryKey();
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
       table.varChar('make');
       table.varChar('description');
       table.boolean('family_friendly');
       table.timeStamp('recalled_at');
-      table.timeStamp('created_at');
-      table.timeStamp('updated_at');
     });
   }
 
@@ -56,12 +56,12 @@ class CarQuery extends Query<Car, CarQueryWhere> {
   get fields {
     return const [
       'id',
+      'created_at',
+      'updated_at',
       'make',
       'description',
       'family_friendly',
-      'recalled_at',
-      'created_at',
-      'updated_at'
+      'recalled_at'
     ];
   }
 
@@ -79,12 +79,12 @@ class CarQuery extends Query<Car, CarQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = Car(
         id: row[0].toString(),
-        make: (row[1] as String),
-        description: (row[2] as String),
-        familyFriendly: (row[3] as bool),
-        recalledAt: (row[4] as DateTime),
-        createdAt: (row[5] as DateTime),
-        updatedAt: (row[6] as DateTime));
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime),
+        make: (row[3] as String),
+        description: (row[4] as String),
+        familyFriendly: (row[5] as bool),
+        recalledAt: (row[6] as DateTime));
     return model;
   }
 
@@ -97,14 +97,18 @@ class CarQuery extends Query<Car, CarQueryWhere> {
 class CarQueryWhere extends QueryWhere {
   CarQueryWhere(CarQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
         make = StringSqlExpressionBuilder(query, 'make'),
         description = StringSqlExpressionBuilder(query, 'description'),
         familyFriendly = BooleanSqlExpressionBuilder(query, 'family_friendly'),
-        recalledAt = DateTimeSqlExpressionBuilder(query, 'recalled_at'),
-        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
+        recalledAt = DateTimeSqlExpressionBuilder(query, 'recalled_at');
 
   final NumericSqlExpressionBuilder<int> id;
+
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   final StringSqlExpressionBuilder make;
 
@@ -114,20 +118,16 @@ class CarQueryWhere extends QueryWhere {
 
   final DateTimeSqlExpressionBuilder recalledAt;
 
-  final DateTimeSqlExpressionBuilder createdAt;
-
-  final DateTimeSqlExpressionBuilder updatedAt;
-
   @override
   get expressionBuilders {
     return [
       id,
+      createdAt,
+      updatedAt,
       make,
       description,
       familyFriendly,
-      recalledAt,
-      createdAt,
-      updatedAt
+      recalledAt
     ];
   }
 }
@@ -143,6 +143,16 @@ class CarQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   String get make {
     return (values['make'] as String);
   }
@@ -163,23 +173,13 @@ class CarQueryValues extends MapQueryValues {
   }
 
   set recalledAt(DateTime value) => values['recalled_at'] = value;
-  DateTime get createdAt {
-    return (values['created_at'] as DateTime);
-  }
-
-  set createdAt(DateTime value) => values['created_at'] = value;
-  DateTime get updatedAt {
-    return (values['updated_at'] as DateTime);
-  }
-
-  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Car model) {
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
     make = model.make;
     description = model.description;
     familyFriendly = model.familyFriendly;
     recalledAt = model.recalledAt;
-    createdAt = model.createdAt;
-    updatedAt = model.updatedAt;
   }
 }
 
@@ -191,79 +191,82 @@ class CarQueryValues extends MapQueryValues {
 class Car extends _Car {
   Car(
       {this.id,
+      this.createdAt,
+      this.updatedAt,
       this.make,
       this.description,
       this.familyFriendly,
-      this.recalledAt,
-      this.createdAt,
-      this.updatedAt});
+      this.recalledAt});
+
+  /// A unique identifier corresponding to this item.
+  @override
+  String id;
+
+  /// The time at which this item was created.
+  @override
+  DateTime createdAt;
+
+  /// The last time at which this item was updated.
+  @override
+  DateTime updatedAt;
 
   @override
-  final String id;
+  String make;
 
   @override
-  final String make;
+  String description;
 
   @override
-  final String description;
+  bool familyFriendly;
 
   @override
-  final bool familyFriendly;
-
-  @override
-  final DateTime recalledAt;
-
-  @override
-  final DateTime createdAt;
-
-  @override
-  final DateTime updatedAt;
+  DateTime recalledAt;
 
   Car copyWith(
       {String id,
+      DateTime createdAt,
+      DateTime updatedAt,
       String make,
       String description,
       bool familyFriendly,
-      DateTime recalledAt,
-      DateTime createdAt,
-      DateTime updatedAt}) {
-    return new Car(
+      DateTime recalledAt}) {
+    return Car(
         id: id ?? this.id,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         make: make ?? this.make,
         description: description ?? this.description,
         familyFriendly: familyFriendly ?? this.familyFriendly,
-        recalledAt: recalledAt ?? this.recalledAt,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        recalledAt: recalledAt ?? this.recalledAt);
   }
 
   bool operator ==(other) {
     return other is _Car &&
         other.id == id &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt &&
         other.make == make &&
         other.description == description &&
         other.familyFriendly == familyFriendly &&
-        other.recalledAt == recalledAt &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.recalledAt == recalledAt;
   }
 
   @override
   int get hashCode {
     return hashObjects([
       id,
+      createdAt,
+      updatedAt,
       make,
       description,
       familyFriendly,
-      recalledAt,
-      createdAt,
-      updatedAt
+      recalledAt
     ]);
   }
 
   @override
   String toString() {
-    return "Car(id=$id, make=$make, description=$description, familyFriendly=$familyFriendly, recalledAt=$recalledAt, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "Car(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, make=$make, description=$description, familyFriendly=$familyFriendly, recalledAt=$recalledAt)";
   }
 
   Map<String, dynamic> toJson() {
@@ -275,7 +278,7 @@ class Car extends _Car {
 // SerializerGenerator
 // **************************************************************************
 
-const CarSerializer carSerializer = const CarSerializer();
+const CarSerializer carSerializer = CarSerializer();
 
 class CarEncoder extends Converter<Car, Map> {
   const CarEncoder();
@@ -299,16 +302,8 @@ class CarSerializer extends Codec<Car, Map> {
   @override
   get decoder => const CarDecoder();
   static Car fromMap(Map map) {
-    return new Car(
+    return Car(
         id: map['id'] as String,
-        make: map['make'] as String,
-        description: map['description'] as String,
-        familyFriendly: map['family_friendly'] as bool,
-        recalledAt: map['recalled_at'] != null
-            ? (map['recalled_at'] is DateTime
-                ? (map['recalled_at'] as DateTime)
-                : DateTime.parse(map['recalled_at'].toString()))
-            : null,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -318,6 +313,14 @@ class CarSerializer extends Codec<Car, Map> {
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at'].toString()))
+            : null,
+        make: map['make'] as String,
+        description: map['description'] as String,
+        familyFriendly: map['family_friendly'] as bool,
+        recalledAt: map['recalled_at'] != null
+            ? (map['recalled_at'] is DateTime
+                ? (map['recalled_at'] as DateTime)
+                : DateTime.parse(map['recalled_at'].toString()))
             : null);
   }
 
@@ -327,12 +330,12 @@ class CarSerializer extends Codec<Car, Map> {
     }
     return {
       'id': model.id,
+      'created_at': model.createdAt?.toIso8601String(),
+      'updated_at': model.updatedAt?.toIso8601String(),
       'make': model.make,
       'description': model.description,
       'family_friendly': model.familyFriendly,
-      'recalled_at': model.recalledAt?.toIso8601String(),
-      'created_at': model.createdAt?.toIso8601String(),
-      'updated_at': model.updatedAt?.toIso8601String()
+      'recalled_at': model.recalledAt?.toIso8601String()
     };
   }
 }
@@ -340,15 +343,19 @@ class CarSerializer extends Codec<Car, Map> {
 abstract class CarFields {
   static const List<String> allFields = <String>[
     id,
+    createdAt,
+    updatedAt,
     make,
     description,
     familyFriendly,
-    recalledAt,
-    createdAt,
-    updatedAt
+    recalledAt
   ];
 
   static const String id = 'id';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
 
   static const String make = 'make';
 
@@ -357,8 +364,4 @@ abstract class CarFields {
   static const String familyFriendly = 'family_friendly';
 
   static const String recalledAt = 'recalled_at';
-
-  static const String createdAt = 'created_at';
-
-  static const String updatedAt = 'updated_at';
 }

@@ -11,9 +11,9 @@ class LegMigration extends Migration {
   up(Schema schema) {
     schema.create('legs', (table) {
       table.serial('id')..primaryKey();
-      table.varChar('name');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
+      table.varChar('name');
     });
   }
 
@@ -28,10 +28,10 @@ class FootMigration extends Migration {
   up(Schema schema) {
     schema.create('feet', (table) {
       table.serial('id')..primaryKey();
-      table.integer('leg_id');
-      table.declare('n_toes', ColumnType('decimal'));
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
+      table.integer('leg_id');
+      table.declare('n_toes', ColumnType('decimal'));
     });
   }
 
@@ -53,10 +53,10 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
     leftJoin('feet', 'id', 'leg_id',
         additionalFields: const [
           'id',
-          'leg_id',
-          'n_toes',
           'created_at',
-          'updated_at'
+          'updated_at',
+          'leg_id',
+          'n_toes'
         ],
         trampoline: trampoline);
   }
@@ -78,7 +78,7 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'name', 'created_at', 'updated_at'];
+    return const ['id', 'created_at', 'updated_at', 'name'];
   }
 
   @override
@@ -95,9 +95,9 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = Leg(
         id: row[0].toString(),
-        name: (row[1] as String),
-        createdAt: (row[2] as DateTime),
-        updatedAt: (row[3] as DateTime));
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime),
+        name: (row[3] as String));
     if (row.length > 4) {
       model = model.copyWith(
           foot: FootQuery.parseRow(row.skip(4).take(5).toList()));
@@ -114,21 +114,21 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
 class LegQueryWhere extends QueryWhere {
   LegQueryWhere(LegQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
-        name = StringSqlExpressionBuilder(query, 'name'),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
+        name = StringSqlExpressionBuilder(query, 'name');
 
   final NumericSqlExpressionBuilder<int> id;
-
-  final StringSqlExpressionBuilder name;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
   final DateTimeSqlExpressionBuilder updatedAt;
 
+  final StringSqlExpressionBuilder name;
+
   @override
   get expressionBuilders {
-    return [id, name, createdAt, updatedAt];
+    return [id, createdAt, updatedAt, name];
   }
 }
 
@@ -143,11 +143,6 @@ class LegQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
-  String get name {
-    return (values['name'] as String);
-  }
-
-  set name(String value) => values['name'] = value;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
@@ -158,10 +153,15 @@ class LegQueryValues extends MapQueryValues {
   }
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
+  String get name {
+    return (values['name'] as String);
+  }
+
+  set name(String value) => values['name'] = value;
   void copyFrom(Leg model) {
-    name = model.name;
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
+    name = model.name;
   }
 }
 
@@ -189,7 +189,7 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'leg_id', 'n_toes', 'created_at', 'updated_at'];
+    return const ['id', 'created_at', 'updated_at', 'leg_id', 'n_toes'];
   }
 
   @override
@@ -206,10 +206,10 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = Foot(
         id: row[0].toString(),
-        legId: (row[1] as int),
-        nToes: double.tryParse(row[2].toString()),
-        createdAt: (row[3] as DateTime),
-        updatedAt: (row[4] as DateTime));
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime),
+        legId: (row[3] as int),
+        nToes: double.tryParse(row[4].toString()));
     return model;
   }
 
@@ -222,24 +222,24 @@ class FootQuery extends Query<Foot, FootQueryWhere> {
 class FootQueryWhere extends QueryWhere {
   FootQueryWhere(FootQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
-        legId = NumericSqlExpressionBuilder<int>(query, 'leg_id'),
-        nToes = NumericSqlExpressionBuilder<double>(query, 'n_toes'),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
+        legId = NumericSqlExpressionBuilder<int>(query, 'leg_id'),
+        nToes = NumericSqlExpressionBuilder<double>(query, 'n_toes');
 
   final NumericSqlExpressionBuilder<int> id;
-
-  final NumericSqlExpressionBuilder<int> legId;
-
-  final NumericSqlExpressionBuilder<double> nToes;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
   final DateTimeSqlExpressionBuilder updatedAt;
 
+  final NumericSqlExpressionBuilder<int> legId;
+
+  final NumericSqlExpressionBuilder<double> nToes;
+
   @override
   get expressionBuilders {
-    return [id, legId, nToes, createdAt, updatedAt];
+    return [id, createdAt, updatedAt, legId, nToes];
   }
 }
 
@@ -254,16 +254,6 @@ class FootQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
-  int get legId {
-    return (values['leg_id'] as int);
-  }
-
-  set legId(int value) => values['leg_id'] = value;
-  double get nToes {
-    return double.tryParse((values['n_toes'] as String));
-  }
-
-  set nToes(double value) => values['n_toes'] = value.toString();
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
@@ -274,11 +264,21 @@ class FootQueryValues extends MapQueryValues {
   }
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
+  int get legId {
+    return (values['leg_id'] as int);
+  }
+
+  set legId(int value) => values['leg_id'] = value;
+  double get nToes {
+    return double.tryParse((values['n_toes'] as String));
+  }
+
+  set nToes(double value) => values['n_toes'] = value.toString();
   void copyFrom(Foot model) {
-    legId = model.legId;
-    nToes = model.nToes;
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
+    legId = model.legId;
+    nToes = model.nToes;
   }
 }
 
@@ -288,54 +288,57 @@ class FootQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class Leg extends _Leg {
-  Leg({this.id, this.foot, this.name, this.createdAt, this.updatedAt});
+  Leg({this.id, this.createdAt, this.updatedAt, this.foot, this.name});
+
+  /// A unique identifier corresponding to this item.
+  @override
+  String id;
+
+  /// The time at which this item was created.
+  @override
+  DateTime createdAt;
+
+  /// The last time at which this item was updated.
+  @override
+  DateTime updatedAt;
 
   @override
-  final String id;
+  _Foot foot;
 
   @override
-  final _Foot foot;
-
-  @override
-  final String name;
-
-  @override
-  final DateTime createdAt;
-
-  @override
-  final DateTime updatedAt;
+  String name;
 
   Leg copyWith(
       {String id,
-      _Foot foot,
-      String name,
       DateTime createdAt,
-      DateTime updatedAt}) {
-    return new Leg(
+      DateTime updatedAt,
+      _Foot foot,
+      String name}) {
+    return Leg(
         id: id ?? this.id,
-        foot: foot ?? this.foot,
-        name: name ?? this.name,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        updatedAt: updatedAt ?? this.updatedAt,
+        foot: foot ?? this.foot,
+        name: name ?? this.name);
   }
 
   bool operator ==(other) {
     return other is _Leg &&
         other.id == id &&
-        other.foot == foot &&
-        other.name == name &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.foot == foot &&
+        other.name == name;
   }
 
   @override
   int get hashCode {
-    return hashObjects([id, foot, name, createdAt, updatedAt]);
+    return hashObjects([id, createdAt, updatedAt, foot, name]);
   }
 
   @override
   String toString() {
-    return "Leg(id=$id, foot=$foot, name=$name, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "Leg(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, foot=$foot, name=$name)";
   }
 
   Map<String, dynamic> toJson() {
@@ -345,54 +348,57 @@ class Leg extends _Leg {
 
 @generatedSerializable
 class Foot extends _Foot {
-  Foot({this.id, this.legId, this.nToes, this.createdAt, this.updatedAt});
+  Foot({this.id, this.createdAt, this.updatedAt, this.legId, this.nToes});
+
+  /// A unique identifier corresponding to this item.
+  @override
+  String id;
+
+  /// The time at which this item was created.
+  @override
+  DateTime createdAt;
+
+  /// The last time at which this item was updated.
+  @override
+  DateTime updatedAt;
 
   @override
-  final String id;
+  int legId;
 
   @override
-  final int legId;
-
-  @override
-  final double nToes;
-
-  @override
-  final DateTime createdAt;
-
-  @override
-  final DateTime updatedAt;
+  double nToes;
 
   Foot copyWith(
       {String id,
-      int legId,
-      double nToes,
       DateTime createdAt,
-      DateTime updatedAt}) {
-    return new Foot(
+      DateTime updatedAt,
+      int legId,
+      double nToes}) {
+    return Foot(
         id: id ?? this.id,
-        legId: legId ?? this.legId,
-        nToes: nToes ?? this.nToes,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        updatedAt: updatedAt ?? this.updatedAt,
+        legId: legId ?? this.legId,
+        nToes: nToes ?? this.nToes);
   }
 
   bool operator ==(other) {
     return other is _Foot &&
         other.id == id &&
-        other.legId == legId &&
-        other.nToes == nToes &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.legId == legId &&
+        other.nToes == nToes;
   }
 
   @override
   int get hashCode {
-    return hashObjects([id, legId, nToes, createdAt, updatedAt]);
+    return hashObjects([id, createdAt, updatedAt, legId, nToes]);
   }
 
   @override
   String toString() {
-    return "Foot(id=$id, legId=$legId, nToes=$nToes, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "Foot(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, legId=$legId, nToes=$nToes)";
   }
 
   Map<String, dynamic> toJson() {
@@ -404,7 +410,7 @@ class Foot extends _Foot {
 // SerializerGenerator
 // **************************************************************************
 
-const LegSerializer legSerializer = const LegSerializer();
+const LegSerializer legSerializer = LegSerializer();
 
 class LegEncoder extends Converter<Leg, Map> {
   const LegEncoder();
@@ -428,12 +434,8 @@ class LegSerializer extends Codec<Leg, Map> {
   @override
   get decoder => const LegDecoder();
   static Leg fromMap(Map map) {
-    return new Leg(
+    return Leg(
         id: map['id'] as String,
-        foot: map['foot'] != null
-            ? FootSerializer.fromMap(map['foot'] as Map)
-            : null,
-        name: map['name'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -443,7 +445,11 @@ class LegSerializer extends Codec<Leg, Map> {
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at'].toString()))
-            : null);
+            : null,
+        foot: map['foot'] != null
+            ? FootSerializer.fromMap(map['foot'] as Map)
+            : null,
+        name: map['name'] as String);
   }
 
   static Map<String, dynamic> toMap(_Leg model) {
@@ -452,10 +458,10 @@ class LegSerializer extends Codec<Leg, Map> {
     }
     return {
       'id': model.id,
-      'foot': FootSerializer.toMap(model.foot),
-      'name': model.name,
       'created_at': model.createdAt?.toIso8601String(),
-      'updated_at': model.updatedAt?.toIso8601String()
+      'updated_at': model.updatedAt?.toIso8601String(),
+      'foot': FootSerializer.toMap(model.foot),
+      'name': model.name
     };
   }
 }
@@ -463,24 +469,24 @@ class LegSerializer extends Codec<Leg, Map> {
 abstract class LegFields {
   static const List<String> allFields = <String>[
     id,
-    foot,
-    name,
     createdAt,
-    updatedAt
+    updatedAt,
+    foot,
+    name
   ];
 
   static const String id = 'id';
 
-  static const String foot = 'foot';
-
-  static const String name = 'name';
-
   static const String createdAt = 'created_at';
 
   static const String updatedAt = 'updated_at';
+
+  static const String foot = 'foot';
+
+  static const String name = 'name';
 }
 
-const FootSerializer footSerializer = const FootSerializer();
+const FootSerializer footSerializer = FootSerializer();
 
 class FootEncoder extends Converter<Foot, Map> {
   const FootEncoder();
@@ -504,10 +510,8 @@ class FootSerializer extends Codec<Foot, Map> {
   @override
   get decoder => const FootDecoder();
   static Foot fromMap(Map map) {
-    return new Foot(
+    return Foot(
         id: map['id'] as String,
-        legId: map['leg_id'] as int,
-        nToes: map['n_toes'] as double,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -517,7 +521,9 @@ class FootSerializer extends Codec<Foot, Map> {
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at'].toString()))
-            : null);
+            : null,
+        legId: map['leg_id'] as int,
+        nToes: map['n_toes'] as double);
   }
 
   static Map<String, dynamic> toMap(_Foot model) {
@@ -526,10 +532,10 @@ class FootSerializer extends Codec<Foot, Map> {
     }
     return {
       'id': model.id,
-      'leg_id': model.legId,
-      'n_toes': model.nToes,
       'created_at': model.createdAt?.toIso8601String(),
-      'updated_at': model.updatedAt?.toIso8601String()
+      'updated_at': model.updatedAt?.toIso8601String(),
+      'leg_id': model.legId,
+      'n_toes': model.nToes
     };
   }
 }
@@ -537,19 +543,19 @@ class FootSerializer extends Codec<Foot, Map> {
 abstract class FootFields {
   static const List<String> allFields = <String>[
     id,
-    legId,
-    nToes,
     createdAt,
-    updatedAt
+    updatedAt,
+    legId,
+    nToes
   ];
 
   static const String id = 'id';
 
-  static const String legId = 'leg_id';
-
-  static const String nToes = 'n_toes';
-
   static const String createdAt = 'created_at';
 
   static const String updatedAt = 'updated_at';
+
+  static const String legId = 'leg_id';
+
+  static const String nToes = 'n_toes';
 }

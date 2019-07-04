@@ -11,12 +11,12 @@ class EmployeeMigration extends Migration {
   up(Schema schema) {
     schema.create('employees', (table) {
       table.serial('id')..primaryKey();
-      table.varChar('unique_id')..unique();
+      table.timeStamp('created_at');
+      table.timeStamp('updated_at');
+      table.varChar('unique_id');
       table.varChar('first_name');
       table.varChar('last_name');
       table.declare('salary', ColumnType('decimal'));
-      table.timeStamp('created_at');
-      table.timeStamp('updated_at');
     });
   }
 
@@ -56,12 +56,12 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   get fields {
     return const [
       'id',
+      'created_at',
+      'updated_at',
       'unique_id',
       'first_name',
       'last_name',
-      'salary',
-      'created_at',
-      'updated_at'
+      'salary'
     ];
   }
 
@@ -78,13 +78,13 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   static Employee parseRow(List row) {
     if (row.every((x) => x == null)) return null;
     var model = Employee(
-        id: row[0].toString(),
-        uniqueId: (row[1] as String),
-        firstName: (row[2] as String),
-        lastName: (row[3] as String),
-        salary: double.tryParse(row[4].toString()),
-        createdAt: (row[5] as DateTime),
-        updatedAt: (row[6] as DateTime));
+        id: (row[0] as String),
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime),
+        uniqueId: (row[3] as String),
+        firstName: (row[4] as String),
+        lastName: (row[5] as String),
+        salary: double.tryParse(row[6].toString()));
     return model;
   }
 
@@ -96,15 +96,19 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 
 class EmployeeQueryWhere extends QueryWhere {
   EmployeeQueryWhere(EmployeeQuery query)
-      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
+      : id = StringSqlExpressionBuilder(query, 'id'),
+        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
         uniqueId = StringSqlExpressionBuilder(query, 'unique_id'),
         firstName = StringSqlExpressionBuilder(query, 'first_name'),
         lastName = StringSqlExpressionBuilder(query, 'last_name'),
-        salary = NumericSqlExpressionBuilder<double>(query, 'salary'),
-        createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
+        salary = NumericSqlExpressionBuilder<double>(query, 'salary');
 
-  final NumericSqlExpressionBuilder<int> id;
+  final StringSqlExpressionBuilder id;
+
+  final DateTimeSqlExpressionBuilder createdAt;
+
+  final DateTimeSqlExpressionBuilder updatedAt;
 
   final StringSqlExpressionBuilder uniqueId;
 
@@ -114,13 +118,9 @@ class EmployeeQueryWhere extends QueryWhere {
 
   final NumericSqlExpressionBuilder<double> salary;
 
-  final DateTimeSqlExpressionBuilder createdAt;
-
-  final DateTimeSqlExpressionBuilder updatedAt;
-
   @override
   get expressionBuilders {
-    return [id, uniqueId, firstName, lastName, salary, createdAt, updatedAt];
+    return [id, createdAt, updatedAt, uniqueId, firstName, lastName, salary];
   }
 }
 
@@ -135,6 +135,16 @@ class EmployeeQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
+  DateTime get createdAt {
+    return (values['created_at'] as DateTime);
+  }
+
+  set createdAt(DateTime value) => values['created_at'] = value;
+  DateTime get updatedAt {
+    return (values['updated_at'] as DateTime);
+  }
+
+  set updatedAt(DateTime value) => values['updated_at'] = value;
   String get uniqueId {
     return (values['unique_id'] as String);
   }
@@ -155,23 +165,14 @@ class EmployeeQueryValues extends MapQueryValues {
   }
 
   set salary(double value) => values['salary'] = value.toString();
-  DateTime get createdAt {
-    return (values['created_at'] as DateTime);
-  }
-
-  set createdAt(DateTime value) => values['created_at'] = value;
-  DateTime get updatedAt {
-    return (values['updated_at'] as DateTime);
-  }
-
-  set updatedAt(DateTime value) => values['updated_at'] = value;
   void copyFrom(Employee model) {
+    id = model.id;
+    createdAt = model.createdAt;
+    updatedAt = model.updatedAt;
     uniqueId = model.uniqueId;
     firstName = model.firstName;
     lastName = model.lastName;
     salary = model.salary;
-    createdAt = model.createdAt;
-    updatedAt = model.updatedAt;
   }
 }
 
@@ -183,18 +184,27 @@ class EmployeeQueryValues extends MapQueryValues {
 class Employee extends _Employee {
   Employee(
       {this.id,
+      this.createdAt,
+      this.updatedAt,
       this.uniqueId,
       this.firstName,
       this.lastName,
-      this.salary,
-      this.createdAt,
-      this.updatedAt});
+      this.salary});
+
+  /// A unique identifier corresponding to this item.
+  @override
+  String id;
+
+  /// The time at which this item was created.
+  @override
+  DateTime createdAt;
+
+  /// The last time at which this item was updated.
+  @override
+  DateTime updatedAt;
 
   @override
-  final String id;
-
-  @override
-  final String uniqueId;
+  String uniqueId;
 
   @override
   final String firstName;
@@ -205,50 +215,44 @@ class Employee extends _Employee {
   @override
   final double salary;
 
-  @override
-  final DateTime createdAt;
-
-  @override
-  final DateTime updatedAt;
-
   Employee copyWith(
       {String id,
+      DateTime createdAt,
+      DateTime updatedAt,
       String uniqueId,
       String firstName,
       String lastName,
-      double salary,
-      DateTime createdAt,
-      DateTime updatedAt}) {
-    return new Employee(
+      double salary}) {
+    return Employee(
         id: id ?? this.id,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         uniqueId: uniqueId ?? this.uniqueId,
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,
-        salary: salary ?? this.salary,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        salary: salary ?? this.salary);
   }
 
   bool operator ==(other) {
     return other is _Employee &&
         other.id == id &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt &&
         other.uniqueId == uniqueId &&
         other.firstName == firstName &&
         other.lastName == lastName &&
-        other.salary == salary &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.salary == salary;
   }
 
   @override
   int get hashCode {
     return hashObjects(
-        [id, uniqueId, firstName, lastName, salary, createdAt, updatedAt]);
+        [id, createdAt, updatedAt, uniqueId, firstName, lastName, salary]);
   }
 
   @override
   String toString() {
-    return "Employee(id=$id, uniqueId=$uniqueId, firstName=$firstName, lastName=$lastName, salary=$salary, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "Employee(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, uniqueId=$uniqueId, firstName=$firstName, lastName=$lastName, salary=$salary)";
   }
 
   Map<String, dynamic> toJson() {
@@ -260,7 +264,7 @@ class Employee extends _Employee {
 // SerializerGenerator
 // **************************************************************************
 
-const EmployeeSerializer employeeSerializer = const EmployeeSerializer();
+const EmployeeSerializer employeeSerializer = EmployeeSerializer();
 
 class EmployeeEncoder extends Converter<Employee, Map> {
   const EmployeeEncoder();
@@ -284,12 +288,8 @@ class EmployeeSerializer extends Codec<Employee, Map> {
   @override
   get decoder => const EmployeeDecoder();
   static Employee fromMap(Map map) {
-    return new Employee(
+    return Employee(
         id: map['id'] as String,
-        uniqueId: map['unique_id'] as String,
-        firstName: map['first_name'] as String,
-        lastName: map['last_name'] as String,
-        salary: map['salary'] as double,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -299,7 +299,11 @@ class EmployeeSerializer extends Codec<Employee, Map> {
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at'].toString()))
-            : null);
+            : null,
+        uniqueId: map['unique_id'] as String,
+        firstName: map['first_name'] as String,
+        lastName: map['last_name'] as String,
+        salary: map['salary'] as double);
   }
 
   static Map<String, dynamic> toMap(_Employee model) {
@@ -308,12 +312,12 @@ class EmployeeSerializer extends Codec<Employee, Map> {
     }
     return {
       'id': model.id,
+      'created_at': model.createdAt?.toIso8601String(),
+      'updated_at': model.updatedAt?.toIso8601String(),
       'unique_id': model.uniqueId,
       'first_name': model.firstName,
       'last_name': model.lastName,
-      'salary': model.salary,
-      'created_at': model.createdAt?.toIso8601String(),
-      'updated_at': model.updatedAt?.toIso8601String()
+      'salary': model.salary
     };
   }
 }
@@ -321,15 +325,19 @@ class EmployeeSerializer extends Codec<Employee, Map> {
 abstract class EmployeeFields {
   static const List<String> allFields = <String>[
     id,
+    createdAt,
+    updatedAt,
     uniqueId,
     firstName,
     lastName,
-    salary,
-    createdAt,
-    updatedAt
+    salary
   ];
 
   static const String id = 'id';
+
+  static const String createdAt = 'created_at';
+
+  static const String updatedAt = 'updated_at';
 
   static const String uniqueId = 'unique_id';
 
@@ -338,8 +346,4 @@ abstract class EmployeeFields {
   static const String lastName = 'last_name';
 
   static const String salary = 'salary';
-
-  static const String createdAt = 'created_at';
-
-  static const String updatedAt = 'updated_at';
 }

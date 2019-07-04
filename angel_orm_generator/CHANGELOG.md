@@ -1,3 +1,7 @@
+# 2.0.5
+* Remove `ShimFieldImpl` check, which broke relations.
+* 
+
 # 2.0.4
 * Fix `reviveColumn` and element finding to properly detect all annotations now.
 

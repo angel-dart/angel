@@ -20,11 +20,12 @@ bool isHasRelation(Relationship r) =>
     r.type == RelationshipType.hasOne || r.type == RelationshipType.hasMany;
 
 bool isSpecialId(OrmBuildContext ctx, FieldElement field) {
-  return field is ShimFieldImpl &&
+  return
+      // field is ShimFieldImpl &&
       field is! RelationFieldImpl &&
-      (field.name == 'id' &&
-          const TypeChecker.fromRuntime(Model)
-              .isAssignableFromType(ctx.buildContext.clazz.type));
+          (field.name == 'id' &&
+              const TypeChecker.fromRuntime(Model)
+                  .isAssignableFromType(ctx.buildContext.clazz.type));
 }
 
 Element _findElement(FieldElement field) {

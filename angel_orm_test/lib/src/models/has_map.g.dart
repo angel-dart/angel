@@ -119,7 +119,7 @@ class HasMapQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class HasMap implements _HasMap {
-  const HasMap({Map<dynamic, dynamic> this.value, List<dynamic> this.list});
+  const HasMap({this.value, this.list});
 
   @override
   final Map<dynamic, dynamic> value;
@@ -128,16 +128,15 @@ class HasMap implements _HasMap {
   final List<dynamic> list;
 
   HasMap copyWith({Map<dynamic, dynamic> value, List<dynamic> list}) {
-    return new HasMap(value: value ?? this.value, list: list ?? this.list);
+    return HasMap(value: value ?? this.value, list: list ?? this.list);
   }
 
   bool operator ==(other) {
     return other is _HasMap &&
-        const MapEquality<dynamic, dynamic>(
-                keys: const DefaultEquality(), values: const DefaultEquality())
+        MapEquality<dynamic, dynamic>(
+                keys: DefaultEquality(), values: DefaultEquality())
             .equals(other.value, value) &&
-        const ListEquality<dynamic>(const DefaultEquality())
-            .equals(other.list, list);
+        ListEquality<dynamic>(DefaultEquality()).equals(other.list, list);
   }
 
   @override
@@ -159,7 +158,7 @@ class HasMap implements _HasMap {
 // SerializerGenerator
 // **************************************************************************
 
-const HasMapSerializer hasMapSerializer = const HasMapSerializer();
+const HasMapSerializer hasMapSerializer = HasMapSerializer();
 
 class HasMapEncoder extends Converter<HasMap, Map> {
   const HasMapEncoder();
@@ -183,7 +182,7 @@ class HasMapSerializer extends Codec<HasMap, Map> {
   @override
   get decoder => const HasMapDecoder();
   static HasMap fromMap(Map map) {
-    return new HasMap(
+    return HasMap(
         value: map['value'] is Map
             ? (map['value'] as Map).cast<dynamic, dynamic>()
             : null,

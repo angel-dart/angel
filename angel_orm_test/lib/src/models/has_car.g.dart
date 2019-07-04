@@ -11,9 +11,9 @@ class HasCarMigration extends Migration {
   up(Schema schema) {
     schema.create('has_cars', (table) {
       table.serial('id')..primaryKey();
-      table.integer('type');
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
+      table.integer('type');
     });
   }
 
@@ -51,7 +51,7 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
 
   @override
   get fields {
-    return const ['id', 'type', 'created_at', 'updated_at'];
+    return const ['id', 'created_at', 'updated_at', 'type'];
   }
 
   @override
@@ -68,9 +68,9 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
     if (row.every((x) => x == null)) return null;
     var model = HasCar(
         id: row[0].toString(),
-        type: row[1] == null ? null : CarType.values[(row[1] as int)],
-        createdAt: (row[2] as DateTime),
-        updatedAt: (row[3] as DateTime));
+        createdAt: (row[1] as DateTime),
+        updatedAt: (row[2] as DateTime),
+        type: row[3] == null ? null : CarType.values[(row[3] as int)]);
     return model;
   }
 
@@ -83,21 +83,21 @@ class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
 class HasCarQueryWhere extends QueryWhere {
   HasCarQueryWhere(HasCarQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
-        type = EnumSqlExpressionBuilder<CarType>(query, 'type', (v) => v.index),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
-        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at');
+        updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
+        type = EnumSqlExpressionBuilder<CarType>(query, 'type', (v) => v.index);
 
   final NumericSqlExpressionBuilder<int> id;
-
-  final EnumSqlExpressionBuilder<CarType> type;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
   final DateTimeSqlExpressionBuilder updatedAt;
 
+  final EnumSqlExpressionBuilder<CarType> type;
+
   @override
   get expressionBuilders {
-    return [id, type, createdAt, updatedAt];
+    return [id, createdAt, updatedAt, type];
   }
 }
 
@@ -112,11 +112,6 @@ class HasCarQueryValues extends MapQueryValues {
   }
 
   set id(String value) => values['id'] = value;
-  CarType get type {
-    return CarType.values[(values['type'] as int)];
-  }
-
-  set type(CarType value) => values['type'] = value?.index;
   DateTime get createdAt {
     return (values['created_at'] as DateTime);
   }
@@ -127,10 +122,15 @@ class HasCarQueryValues extends MapQueryValues {
   }
 
   set updatedAt(DateTime value) => values['updated_at'] = value;
+  CarType get type {
+    return CarType.values[(values['type'] as int)];
+  }
+
+  set type(CarType value) => values['type'] = value?.index;
   void copyFrom(HasCar model) {
-    type = model.type;
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
+    type = model.type;
   }
 }
 
@@ -140,45 +140,48 @@ class HasCarQueryValues extends MapQueryValues {
 
 @generatedSerializable
 class HasCar extends _HasCar {
-  HasCar({this.id, this.type = CarType.sedan, this.createdAt, this.updatedAt});
+  HasCar({this.id, this.createdAt, this.updatedAt, this.type = CarType.sedan});
 
+  /// A unique identifier corresponding to this item.
   @override
-  final String id;
+  String id;
+
+  /// The time at which this item was created.
+  @override
+  DateTime createdAt;
+
+  /// The last time at which this item was updated.
+  @override
+  DateTime updatedAt;
 
   @override
   final CarType type;
 
-  @override
-  final DateTime createdAt;
-
-  @override
-  final DateTime updatedAt;
-
   HasCar copyWith(
-      {String id, CarType type, DateTime createdAt, DateTime updatedAt}) {
-    return new HasCar(
+      {String id, DateTime createdAt, DateTime updatedAt, CarType type}) {
+    return HasCar(
         id: id ?? this.id,
-        type: type ?? this.type,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        updatedAt: updatedAt ?? this.updatedAt,
+        type: type ?? this.type);
   }
 
   bool operator ==(other) {
     return other is _HasCar &&
         other.id == id &&
-        other.type == type &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.type == type;
   }
 
   @override
   int get hashCode {
-    return hashObjects([id, type, createdAt, updatedAt]);
+    return hashObjects([id, createdAt, updatedAt, type]);
   }
 
   @override
   String toString() {
-    return "HasCar(id=$id, type=$type, createdAt=$createdAt, updatedAt=$updatedAt)";
+    return "HasCar(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, type=$type)";
   }
 
   Map<String, dynamic> toJson() {
@@ -190,7 +193,7 @@ class HasCar extends _HasCar {
 // SerializerGenerator
 // **************************************************************************
 
-const HasCarSerializer hasCarSerializer = const HasCarSerializer();
+const HasCarSerializer hasCarSerializer = HasCarSerializer();
 
 class HasCarEncoder extends Converter<HasCar, Map> {
   const HasCarEncoder();
@@ -215,16 +218,11 @@ class HasCarSerializer extends Codec<HasCar, Map> {
   get decoder => const HasCarDecoder();
   static HasCar fromMap(Map map) {
     if (map['type'] == null) {
-      throw new FormatException("Missing required field 'type' on HasCar.");
+      throw FormatException("Missing required field 'type' on HasCar.");
     }
 
-    return new HasCar(
+    return HasCar(
         id: map['id'] as String,
-        type: map['type'] is CarType
-            ? (map['type'] as CarType)
-            : (map['type'] is int
-                ? CarType.values[map['type'] as int]
-                : CarType.sedan),
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
                 ? (map['created_at'] as DateTime)
@@ -234,7 +232,12 @@ class HasCarSerializer extends Codec<HasCar, Map> {
             ? (map['updated_at'] is DateTime
                 ? (map['updated_at'] as DateTime)
                 : DateTime.parse(map['updated_at'].toString()))
-            : null);
+            : null,
+        type: map['type'] is CarType
+            ? (map['type'] as CarType)
+            : (map['type'] is int
+                ? CarType.values[map['type'] as int]
+                : CarType.sedan));
   }
 
   static Map<String, dynamic> toMap(_HasCar model) {
@@ -242,14 +245,14 @@ class HasCarSerializer extends Codec<HasCar, Map> {
       return null;
     }
     if (model.type == null) {
-      throw new FormatException("Missing required field 'type' on HasCar.");
+      throw FormatException("Missing required field 'type' on HasCar.");
     }
 
     return {
       'id': model.id,
-      'type': model.type == null ? null : CarType.values.indexOf(model.type),
       'created_at': model.createdAt?.toIso8601String(),
-      'updated_at': model.updatedAt?.toIso8601String()
+      'updated_at': model.updatedAt?.toIso8601String(),
+      'type': model.type == null ? null : CarType.values.indexOf(model.type)
     };
   }
 }
@@ -257,16 +260,16 @@ class HasCarSerializer extends Codec<HasCar, Map> {
 abstract class HasCarFields {
   static const List<String> allFields = <String>[
     id,
-    type,
     createdAt,
-    updatedAt
+    updatedAt,
+    type
   ];
 
   static const String id = 'id';
 
-  static const String type = 'type';
-
   static const String createdAt = 'created_at';
 
   static const String updatedAt = 'updated_at';
+
+  static const String type = 'type';
 }
