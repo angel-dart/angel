@@ -20,7 +20,9 @@ standaloneTests(FutureOr<QueryExecutor> Function() createExecutor,
   });
 
   test('parseRow', () {
-    var row = [0, 'Mazda', 'CX9', true, y2k, y2k, y2k];
+    // 'id', 'created_at',  'updated_at', 'make', 'description', 'family_friendly', 'recalled_at'
+    // var row = [0, 'Mazda', 'CX9', true, y2k, y2k, y2k];
+    var row = [0, y2k, y2k, 'Mazda', 'CX9', true, y2k];
     print(row);
     var car = new CarQuery().deserialize(row);
     print(car.toJson());
