@@ -154,15 +154,15 @@ with custom parameters (ex. `@HasOne(foreignKey: 'foreign_id')`).
 @orm
 abstract class _Author extends Model {
   @hasMany // Use the defaults, and auto-compute `foreignKey`
-  List<Book> books;
+  List<_Book> books;
   
   // Also supports parameters...
   @HasMany(localKey: 'id', foreignKey: 'author_id', cascadeOnDelete: true)
-  List<Book> books;
+  List<_Book> books;
   
   @SerializableField(alias: 'writing_utensil')
   @hasOne
-  Pen pen;
+  _Pen pen;
 }
 ```
 
