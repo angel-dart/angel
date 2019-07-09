@@ -1,3 +1,6 @@
+# 2.1.3+2
+* Prepare for upcoming change to File.openRead()
+
 # 2.1.3+1
 * Apply control flow lints.
 
