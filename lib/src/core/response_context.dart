@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:convert' as c show json;
 import 'dart:io' show BytesBuilder, Cookie;
+import 'dart:typed_data';
 
 import 'package:angel_route/angel_route.dart';
 import 'package:file/file.dart';
@@ -148,7 +149,7 @@ abstract class ResponseContext<RawResponse>
     headers['content-length'] = file.lengthSync().toString();
 
     if (!isBuffered) {
-      await file.openRead().pipe(this);
+      await file.openRead().cast<List<int>>().pipe(this);
     } else {
       buffer.add(file.readAsBytesSync());
       await close();
@@ -320,7 +321,9 @@ abstract class ResponseContext<RawResponse>
         : MediaType.parse(mimeType);
 
     if (correspondingRequest.method != 'HEAD') {
-      return this.addStream(file.openRead()).then((_) => this.close());
+      return this
+          .addStream(file.openRead().cast<List<int>>())
+          .then((_) => this.close());
     }
   }
 
@@ -432,12 +435,12 @@ class _LockableBytesBuilderImpl implements LockableBytesBuilder {
   int get length => _buf.length;
 
   @override
-  List<int> takeBytes() {
+  Uint8List takeBytes() {
     return _buf.takeBytes();
   }
 
   @override
-  List<int> toBytes() {
+  Uint8List toBytes() {
     return _buf.toBytes();
   }
 }

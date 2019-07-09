@@ -234,7 +234,7 @@ abstract class RequestContext<RawRequest> {
         _uploadedFiles = [];
 
         var parsed = _bodyObject =
-            await body.transform(encoding.decoder).join().then(json.decode);
+            await encoding.decoder.bind(body).join().then(json.decode);
 
         if (parsed is Map) {
           _bodyFields = Map<String, dynamic>.from(parsed);
@@ -244,8 +244,8 @@ abstract class RequestContext<RawRequest> {
       } else if (contentType.type == 'application' &&
           contentType.subtype == 'x-www-form-urlencoded') {
         _uploadedFiles = [];
-        var parsed = await body
-            .transform(encoding.decoder)
+        var parsed = await encoding.decoder
+            .bind(body)
             .join()
             .then((s) => Uri.splitQueryString(s, encoding: encoding));
         _bodyFields = Map<String, dynamic>.from(parsed);
@@ -254,7 +254,7 @@ abstract class RequestContext<RawRequest> {
           contentType.parameters.containsKey('boundary')) {
         var boundary = contentType.parameters['boundary'];
         var transformer = MimeMultipartTransformer(boundary);
-        var parts = body.transform(transformer).map((part) =>
+        var parts = transformer.bind(body).map((part) =>
             HttpMultipartFormData.parse(part, defaultEncoding: encoding));
         _bodyFields = {};
         _uploadedFiles = [];
@@ -334,6 +334,6 @@ class UploadedFile {
 
   /// Reads the contents of the file as [String], using the given [encoding].
   Future<String> readAsString({Encoding encoding = utf8}) {
-    return data.transform(encoding.decoder).join();
+    return encoding.decoder.bind(data).join();
   }
 }
