@@ -1,6 +1,8 @@
 # 2.0.4
 * Prepare for Dart SDK change to `Stream<List<int>>` that are now
   `Stream<Uint8List>`.
+* Accept any content type if accept header is missing. See
+[this PR](https://github.com/angel-dart/framework/pull/239).
 
 # 2.0.3
 * Patch up a bug caused by an upstream change to Dart's stream semantics.
