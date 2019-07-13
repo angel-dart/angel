@@ -110,16 +110,18 @@ class CarController extends Controller {
   @Expose('/recalled_since_2008')
   carsRecalledSince2008(QueryExecutor executor) {
     // Instantiate a Car query, which is auto-generated. This class helps us build fluent queries easily.
-    var cars = new CarQuery();
-    cars.where
+    var query = new CarQuery();
+    query.where
       ..familyFriendly.equals(false)
       ..recalledAt.year.greaterThanOrEqualTo(2008);
     
     // Shorter syntax we could use instead...
-    cars.where.recalledAt.year <= 2008;
+    query.where.recalledAt.year <= 2008;
     
     // `get()` returns a Future<List<Car>>.
-    return await cars.get(executor);
+    var cars = await query.get(executor);
+    
+    return cars;
   }
   
   @Expose('/create', method: 'POST')
