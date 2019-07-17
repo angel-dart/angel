@@ -22,6 +22,7 @@ Stream<List<int>> jfkStream() {
 
 void main() {
   var client = Http2Client();
+  var h1c = http.Client();
   Angel app;
   AngelHttp2 http2;
   Uri serverRoot;
@@ -97,7 +98,7 @@ void main() {
       ..usePrivateKey('dev.key', password: 'dartdart')
       ..setAlpnProtocols(['h2'], true);
 
-    http2 = AngelHttp2(app, ctx);
+    http2 = AngelHttp2(app, ctx, allowHttp1: true);
 
     var server = await http2.startServer();
     serverRoot = Uri.parse('https://127.0.0.1:${server.port}');
@@ -105,10 +106,16 @@ void main() {
 
   tearDown(() async {
     await http2.close();
+    await h1c.close();
   });
 
   test('buffered response', () async {
     var response = await client.get(serverRoot);
+    expect(response.body, 'Hello world');
+  });
+
+  test('allowHttp1', () async {
+    var response = await h1c.get(serverRoot);
     expect(response.body, 'Hello world');
   });
 
