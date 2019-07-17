@@ -4,7 +4,7 @@ import 'package:io/ansi.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 //import 'package:yamlicious/yamlicious.dart';
 
-final String checkmark = ansiOutputEnabled ? '\u2713' : '[Success]';
+final String checkmark = ansiOutputEnabled ? '\u2714' : '[Success]';
 
 final String ballot = ansiOutputEnabled ? '\u2717' : '[Failure]';
 
