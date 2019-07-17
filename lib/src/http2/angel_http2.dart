@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart' hide Header;
+import 'package:angel_framework/http.dart';
 import 'package:http2/transport.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:pedantic/pedantic.dart';
@@ -19,6 +20,7 @@ Future<SecureServerSocket> startSharedHttp2(
 class AngelHttp2 extends Driver<Socket, ServerTransportStream,
     SecureServerSocket, Http2RequestContext, Http2ResponseContext> {
   final ServerSettings settings;
+  AngelHttp _http;
   final StreamController<HttpRequest> _onHttp1 = StreamController();
   final Map<String, MockHttpSession> _sessions = {};
   final Uuid _uuid = Uuid();
@@ -30,17 +32,23 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
       Angel app,
       Future<SecureServerSocket> Function(dynamic, int) serverGenerator,
       bool useZone,
+      bool allowHttp1,
       this.settings)
       : super(
           app,
           serverGenerator,
           useZone: useZone,
-        );
+        ) {
+    if (allowHttp1) {
+      _http = AngelHttp(app, useZone: useZone);
+      onHttp1.listen(_http.handleRequest);
+    }
+  }
 
   factory AngelHttp2(Angel app, SecurityContext securityContext,
-      {bool useZone = true, ServerSettings settings}) {
+      {bool useZone = true, bool allowHttp1 = false, ServerSettings settings}) {
     return AngelHttp2.custom(app, securityContext, SecureServerSocket.bind,
-        settings: settings);
+        allowHttp1: allowHttp1, settings: settings);
   }
 
   factory AngelHttp2.custom(
@@ -49,13 +57,14 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
       Future<SecureServerSocket> serverGenerator(
           address, int port, SecurityContext ctx),
       {bool useZone = true,
+      bool allowHttp1 = false,
       ServerSettings settings}) {
     return AngelHttp2._(app, (address, port) {
       var addr = address is InternetAddress
           ? address
           : InternetAddress(address.toString());
       return Future.sync(() => serverGenerator(addr, port, ctx));
-    }, useZone, settings);
+    }, useZone, allowHttp1, settings);
   }
 
   /// Fires when an HTTP/1.x request is received.
@@ -70,6 +79,7 @@ class AngelHttp2 extends Driver<Socket, ServerTransportStream,
   @override
   Future<SecureServerSocket> close() async {
     await _artificial.close();
+    await _http?.close();
     return await super.close();
   }
 
