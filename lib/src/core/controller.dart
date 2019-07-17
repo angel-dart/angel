@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:angel_container/angel_container.dart';
 import 'package:angel_route/angel_route.dart';
 import 'package:meta/meta.dart';
-
+import 'package:recase/recase.dart';
 import '../core/core.dart';
 
 /// Supports grouping routes with shared functionality.
@@ -86,7 +86,15 @@ class Controller {
             .map((m) => m.reflectee)
             .firstWhere((r) => r is Expose, orElse: () => null) as Expose;
 
-        if (exposeDecl == null) return;
+        if (exposeDecl == null) {
+          // If this has a @noExpose, return null.
+          if (decl.function.annotations.any((m) => m.reflectee is NoExpose)) {
+            return;
+          } else {
+            // Otherwise, create an @Expose.
+            exposeDecl = Expose(null);
+          }
+        }
 
         var reflectedMethod =
             instanceMirror.getField(methodName).reflectee as Function;
@@ -117,6 +125,30 @@ class Controller {
           injection.optional?.addAll(exposeDecl.allowNull);
         }
 
+        // If there is no path, reverse-engineer one.
+        var path = exposeDecl.path;
+        if (path == null) {
+          var parts = <String>[];
+          parts.add(ReCase(method.name).snakeCase.replaceAll(_multiScore, '_'));
+
+          // Try to infer String, int, or double.
+          for (var p in injection.required) {
+            if (p is List && p.length == 2 && p[0] is String && p[1] is Type) {
+              var name = p[0] as String;
+              var type = p[1] as Type;
+              if (type == String) {
+                parts.add(':$name');
+              } else if (type == int) {
+                parts.add('int:$name');
+              } else if (type == double) {
+                parts.add('double:$name');
+              }
+            }
+          }
+
+          path = parts.join('/');
+        }
+
         routeMappings[name] = routable.addRoute(exposeDecl.method,
             exposeDecl.path, handleContained(reflectedMethod, injection),
             middleware: middleware);
@@ -127,10 +159,22 @@ class Controller {
   /// Used to add additional routes to the router from within a [Controller].
   void configureRoutes(Routable routable) {}
 
+  static final RegExp _multiScore = RegExp(r'__+');
+
   /// Finds the [Expose] declaration for this class.
-  Expose findExpose(Reflector reflector) => reflector
-      .reflectClass(runtimeType)
-      .annotations
-      .map((m) => m.reflectee)
-      .firstWhere((r) => r is Expose, orElse: () => null) as Expose;
+  Expose findExpose(Reflector reflector, {bool concreteOnly = false}) {
+    var existing = reflector
+        .reflectClass(runtimeType)
+        .annotations
+        .map((m) => m.reflectee)
+        .firstWhere((r) => r is Expose, orElse: () => null) as Expose;
+    return existing ??
+        (concreteOnly
+            ? null
+            : Expose(ReCase(runtimeType.toString())
+                .snakeCase
+                .replaceAll('_controller', '')
+                .replaceAll('_ctrl', '')
+                .replaceAll(_multiScore, '_')));
+  }
 }

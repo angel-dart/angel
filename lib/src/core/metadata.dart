@@ -21,7 +21,14 @@ class Hooks {
   const Hooks({this.before = const [], this.after = const []});
 }
 
-/// Exposes a [Controller] to the Internet.
+/// Specifies to NOT expose a method to the Internet.
+class NoExpose {
+  const NoExpose();
+}
+
+const NoExpose noExpose = NoExpose();
+
+/// Exposes a [Controller] or method to the Internet.
 class Expose {
   final String method;
   final String path;
@@ -29,11 +36,22 @@ class Expose {
   final String as;
   final List<String> allowNull;
 
+  static const Expose get = Expose(null, method: 'GET'),
+      post = Expose(null, method: 'POST'),
+      patch = Expose(null, method: 'PATCH'),
+      put = Expose(null, method: 'PUT'),
+      delete = Expose(null, method: 'DELETE'),
+      head = Expose(null, method: 'HEAD');
+
   const Expose(this.path,
       {this.method = "GET",
       this.middleware = const [],
       this.as,
       this.allowNull = const []});
+
+  const Expose.method(this.method,
+      {this.middleware, this.as, this.allowNull = const []})
+      : path = null;
 }
 
 /// Used to apply special dependency injections or functionality to a function parameter.
