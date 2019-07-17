@@ -3,6 +3,8 @@ export 'controller.dart';
 export 'driver.dart';
 export 'env.dart';
 export 'hooked_service.dart';
+export 'hostname_parser.dart';
+export 'hostname_router.dart';
 export 'map_service.dart';
 export 'metadata.dart';
 export 'request_context.dart';

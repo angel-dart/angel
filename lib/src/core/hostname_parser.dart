@@ -4,9 +4,16 @@ import 'package:string_scanner/string_scanner.dart';
 /// Parses a string into a [RegExp] that is matched against hostnames.
 class HostnameSyntaxParser {
   final SpanScanner _scanner;
-  var _safe = RegExp(r"[0-9a-zA-Z-_]+");
+  var _safe = RegExp(r"[0-9a-zA-Z-_:]+");
 
-  HostnameSyntaxParser(String hostname) : _scanner = SpanScanner(hostname);
+  HostnameSyntaxParser(String hostname)
+      : _scanner = SpanScanner(hostname, sourceUrl: hostname);
+
+  FormatException _formatExc(String message) {
+    var span = _scanner.lastSpan ?? _scanner.emptySpan;
+    return FormatException(
+        '${span.start.toolString}: $message\n' + span.highlight(color: true));
+  }
 
   RegExp parse() {
     var b = StringBuffer();
@@ -15,13 +22,11 @@ class HostnameSyntaxParser {
     while (!_scanner.isDone) {
       if (_scanner.scan('|')) {
         if (parts.isEmpty) {
-          throw FormatException(
-              '${_scanner.emptySpan.end.toolString}: No hostname parts found before "|".');
+          throw _formatExc('No hostname parts found before "|".');
         } else {
           var next = _parseHostnamePart();
           if (next == null) {
-            throw FormatException(
-                '${_scanner.emptySpan.end.toolString}: No hostname parts found after "|".');
+            throw _formatExc('No hostname parts found after "|".');
           } else {
             var prev = parts.removeLast();
             parts.addLast('(($prev)|($next))');
@@ -30,6 +35,18 @@ class HostnameSyntaxParser {
       } else {
         var part = _parseHostnamePart();
         if (part != null) {
+          if (_scanner.scan('.')) {
+            var subPart = _parseHostnamePart(shouldThrow: false);
+            while (subPart != null) {
+              part += '\\.' + subPart;
+              if (_scanner.scan('.')) {
+                subPart = _parseHostnamePart(shouldThrow: false);
+              } else {
+                break;
+              }
+            }
+          }
+
           parts.add(part);
         }
       }
@@ -40,23 +57,24 @@ class HostnameSyntaxParser {
     }
 
     if (b.isEmpty) {
-      throw FormatException('Invalid or empty hostname.');
+      throw _formatExc('Invalid or empty hostname.');
     } else {
-      return RegExp(b.toString(), caseSensitive: false);
+      return RegExp('^$b\$', caseSensitive: false);
     }
   }
 
-  String _parseHostnamePart() {
+  String _parseHostnamePart({bool shouldThrow = true}) {
     if (_scanner.scan('*.')) {
-      return r'([^$]+\.)?';
+      return r'([^$.]+\.)?';
     } else if (_scanner.scan('*')) {
       return r'[^$]*';
+    } else if (_scanner.scan('+')) {
+      return r'[^$]+';
     } else if (_scanner.scan(_safe)) {
       return _scanner.lastMatch[0];
-    } else if (!_scanner.isDone) {
+    } else if (!_scanner.isDone && shouldThrow) {
       var s = String.fromCharCode(_scanner.peekChar());
-      throw FormatException(
-          '${_scanner.emptySpan.end.toolString}: Unexpected character "$s".');
+      throw _formatExc('Unexpected character "$s".');
     } else {
       return null;
     }
