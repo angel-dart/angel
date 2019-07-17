@@ -221,6 +221,17 @@ abstract class RequestContext<RawRequest> {
   /// Returns as `true` if the client's `Accept` header indicates that it will accept any response content type.
   bool get acceptsAll => _acceptsAllCache ??= accepts('*/*');
 
+  /// Shorthand for deserializing a body.
+  Future<T> deserializeBody<T>(FutureOr<T> Function(Map) f,
+      {Encoding encoding = utf8}) async {
+    await parseBody(encoding: encoding);
+    return await f(bodyAsMap);
+  }
+
+  /// Shorthand for decoding a body.
+  Future<T> decodeBody<T>(Codec<T, Map> codec, {Encoding encoding = utf8}) =>
+      deserializeBody(codec.decode, encoding: encoding);
+
   /// Manually parses the request body, if it has not already been parsed.
   Future<void> parseBody({Encoding encoding = utf8}) async {
     if (contentType == null) {
