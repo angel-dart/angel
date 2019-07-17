@@ -1,5 +1,6 @@
 # 2.0.5
-* Add `allowHttp1` to `AngelHttp2` constructors.
+* Add `allowHttp1` to `AngelHttp2` constructors. https://github.com/angel-dart/angel/issues/108
+* 
 
 # 2.0.4
 * Prepare for Dart SDK change to `Stream<List<int>>` that are now
