@@ -127,9 +127,31 @@ class Controller {
 
         // If there is no path, reverse-engineer one.
         var path = exposeDecl.path;
+        var httpMethod = exposeDecl.method ?? 'GET';
         if (path == null) {
           var parts = <String>[];
-          parts.add(ReCase(method.name).snakeCase.replaceAll(_multiScore, '_'));
+          var methodMatch = _methods.firstMatch(method.name);
+
+          if (methodMatch != null) {
+            var rest = method.name.replaceAll(_methods, '');
+            var restPath = ReCase(rest.isEmpty ? 'index' : rest)
+                .snakeCase
+                .replaceAll(_multiScore, '_');
+            httpMethod = methodMatch[1].toUpperCase();
+
+            if (['index', 'by_id'].contains(restPath)) {
+              parts.add('/');
+            } else {
+              parts.add(restPath);
+            }
+          } else {
+            if (method.name == 'index') {
+              parts.add('/');
+            } else {
+              parts.add(
+                  ReCase(method.name).snakeCase.replaceAll(_multiScore, '_'));
+            }
+          }
 
           // Try to infer String, int, or double.
           for (var p in injection.required) {
@@ -149,8 +171,8 @@ class Controller {
           path = parts.join('/');
         }
 
-        routeMappings[name] = routable.addRoute(exposeDecl.method,
-            exposeDecl.path, handleContained(reflectedMethod, injection),
+        routeMappings[name] = routable.addRoute(
+            httpMethod, path, handleContained(reflectedMethod, injection),
             middleware: middleware);
       }
     };
@@ -159,6 +181,7 @@ class Controller {
   /// Used to add additional routes to the router from within a [Controller].
   void configureRoutes(Routable routable) {}
 
+  static final RegExp _methods = RegExp(r'^(get|post|patch|delete)');
   static final RegExp _multiScore = RegExp(r'__+');
 
   /// Finds the [Expose] declaration for this class.
