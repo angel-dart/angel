@@ -23,6 +23,10 @@ class InitCommand extends Command {
 
   InitCommand() {
     argParser
+      ..addFlag('offline',
+          help:
+              'Disable online fetching of boilerplates. Also disables `pub-get`.',
+          negatable: false)
       ..addFlag('pub-get', defaultsTo: true)
       ..addOption('project-name',
           abbr: 'n', help: 'The name for this project.');
@@ -57,7 +61,7 @@ class InitCommand extends Command {
     await renamePubspec(projectDir, 'angel', name);
     await renameDartFiles(projectDir, 'angel', name);
 
-    if (argResults['pub-get'] != false) {
+    if (argResults['pub-get'] != false && argResults['offline'] == false) {
       print('Now running pub get...');
       await _pubGet(projectDir);
     }
@@ -116,6 +120,8 @@ class InitCommand extends Command {
   }
 
   _cloneRepo(Directory projectDir) async {
+    Directory boilerplateDir;
+
     try {
       if (await projectDir.exists()) {
         var shouldDelete = prompts.getBool(
@@ -138,15 +144,29 @@ class InitCommand extends Command {
 
       // Ultimately, we want a clone of every boilerplate locally on the system.
       var boilerplateRootDir = Directory(p.join(angelDir.path, 'boilerplates'));
-      var boilerplateDir = Directory(p.join(boilerplateRootDir.path,
-          p.basenameWithoutExtension(boilerplate.url)));
+      var boilerplateBasename = p.basenameWithoutExtension(boilerplate.url);
+      if (boilerplate.ref != null) boilerplateBasename += '.${boilerplate.ref}';
+      boilerplateDir =
+          Directory(p.join(boilerplateRootDir.path, boilerplateBasename));
       await boilerplateRootDir.create(recursive: true);
+
+      var branch = boilerplate.ref ?? 'master';
 
       // If there is no clone existing, clone it.
       if (!await boilerplateDir.exists()) {
+        if (argResults['offline'] as bool) {
+          throw Exception(
+              '--offline was selected, but the "${boilerplate.name}" boilerplate has not yet been downloaded.');
+        }
+
         print(
             'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
-        var git = await Process.start(
+        Process git;
+
+        if (boilerplate.ref == null) {
+          print(darkGray.wrap(
+              '\$ git clone --depth 1 ${boilerplate.url} ${boilerplateDir.absolute.path}'));
+          git = await Process.start(
             "git",
             [
               "clone",
@@ -155,28 +175,46 @@ class InitCommand extends Command {
               boilerplate.url,
               boilerplateDir.absolute.path
             ],
-            mode: ProcessStartMode.inheritStdio);
+            mode: ProcessStartMode.inheritStdio,
+          );
+        } else {
+          // git clone --single-branch -b branch host:/dir.git
+          print(darkGray.wrap(
+              '\$ git clone --depth 1 --single-branch -b ${boilerplate.ref} ${boilerplate.url} ${boilerplateDir.absolute.path}'));
+          git = await Process.start(
+            "git",
+            [
+              "clone",
+              "--depth",
+              "1",
+              "--single-branch",
+              "-b",
+              boilerplate.ref,
+              boilerplate.url,
+              boilerplateDir.absolute.path
+            ],
+            mode: ProcessStartMode.inheritStdio,
+          );
+        }
+
         if (await git.exitCode != 0) {
           throw new Exception("Could not clone repo.");
         }
       }
 
-      // Next, check out the given branch.
-      var branch = boilerplate.ref ?? 'master';
-      var git = await Process.start("git", ["checkout", 'origin/$branch'],
-          mode: ProcessStartMode.inheritStdio,
-          workingDirectory: boilerplateDir.absolute.path);
-      if (await git.exitCode != 0) {
-        throw new Exception("Could not checkout branch $branch.");
-      }
-
-      // Next, pull from git.
-      git = await Process.start("git", ["pull", 'origin/$branch'],
-          mode: ProcessStartMode.inheritStdio,
-          workingDirectory: boilerplateDir.absolute.path);
-      if (await git.exitCode != 0) {
-        throw new Exception(
-            "Update of $branch failed. Attempting to continue with existing contents.");
+      // Otherwise, pull from git.
+      else if (!(argResults['offline'] as bool)) {
+        print(darkGray.wrap('\$ git pull origin $branch'));
+        var git = await Process.start("git", ['pull', 'origin', '$branch'],
+            mode: ProcessStartMode.inheritStdio,
+            workingDirectory: boilerplateDir.absolute.path);
+        if (await git.exitCode != 0) {
+          print(yellow.wrap(
+              "Update of $branch failed. Attempting to continue with existing contents."));
+        }
+      } else {
+        print(darkGray.wrap(
+            'Using existing contents of "${boilerplate.name}" boilerplate.'));
       }
 
       // Next, just copy everything into the given directory.
@@ -189,6 +227,8 @@ class InitCommand extends Command {
       var gitDir = new Directory.fromUri(projectDir.uri.resolve(".git"));
       if (await gitDir.exists()) await gitDir.delete(recursive: true);
     } catch (e) {
+      await boilerplateDir.delete(recursive: true).catchError((_) => null);
+
       if (e is! String) {
         print(red.wrap("$ballot Could not initialize Angel project."));
       }
@@ -198,7 +238,8 @@ class InitCommand extends Command {
 
   _pubGet(Directory projectDir) async {
     var pubPath = resolvePub();
-    print('Running pub at "$pubPath"...');
+    print(darkGray.wrap('Running pub at "$pubPath"...'));
+    print(darkGray.wrap('\$ $pubPath get'));
     var pub = await Process.start(pubPath, ["get"],
         workingDirectory: projectDir.absolute.path,
         mode: ProcessStartMode.inheritStdio);
@@ -209,9 +250,11 @@ class InitCommand extends Command {
 
 Future preBuild(Directory projectDir) async {
   // Run build
-  print('Running `pub run build_runner build`...');
+  // print('Running `pub run build_runner build`...');
+  print(darkGray.wrap('\$ pub run build_runner build'));
 
-  var build = await Process.start(resolvePub(), ['run', 'build'],
+  var build = await Process.start(
+      resolvePub(), ['run', 'build_runner', 'build'],
       workingDirectory: projectDir.absolute.path,
       mode: ProcessStartMode.inheritStdio);
 

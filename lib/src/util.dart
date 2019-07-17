@@ -26,19 +26,25 @@ Future<Pubspec> loadPubspec([Directory directory]) {
 
 // From: https://gist.github.com/tobischw/98dcd2563eec9a2a87bda8299055358a
 Future<void> copyDirectory(Directory source, Directory destination) async {
+  // if (!topLevel) stdout.write('\r');
+  // print(darkGray
+  //     .wrap('Copying dir "${source.path}" -> "${destination.path}..."'));
+
   await for (var entity in source.list(recursive: false)) {
+    if (p.basename(entity.path) == '.git') continue;
     if (entity is Directory) {
       var newDirectory =
           Directory(p.join(destination.absolute.path, p.basename(entity.path)));
-      print('Copying dir "${entity.path}" -> "${newDirectory.path}..."');
       await newDirectory.create();
       await copyDirectory(entity.absolute, newDirectory);
     } else if (entity is File) {
       var newPath = p.join(destination.path, p.basename(entity.path));
-      print('Copying file "${entity.path}" -> "$newPath"');
+      // print(darkGray.wrap('\rCopying file "${entity.path}" -> "$newPath"'));
       await entity.copy(newPath);
     }
   }
+
+  // print('\rCopied "${source.path}" -> "${destination.path}.');
 }
 
 Future savePubspec(Pubspec pubspec) async {
