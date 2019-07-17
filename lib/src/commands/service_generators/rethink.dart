@@ -8,7 +8,7 @@ class RethinkServiceGenerator extends ServiceGenerator {
 
   @override
   List<MakerDependency> get dependencies =>
-      const [const MakerDependency('angel_rethink', '^1.0.0')];
+      const [const MakerDependency('angel_rethink', '^2.0.0')];
 
   @override
   bool get createsModel => false;

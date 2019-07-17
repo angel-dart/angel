@@ -35,7 +35,7 @@ class MigrationCommand extends Command {
       name = prompts.get('Name of model class');
     }
 
-    var deps = [const MakerDependency('angel_migration', '^1.0.0-alpha')];
+    var deps = [const MakerDependency('angel_migration', '^2.0.0')];
     var rc = new ReCase(name);
 
     var migrationLib = new Library((migrationLib) {

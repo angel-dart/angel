@@ -31,7 +31,7 @@ class InitCommand extends Command {
   @override
   run() async {
     Directory projectDir = new Directory(
-        argResults.arguments.isEmpty ? "." : argResults.arguments[0]);
+        argResults.rest.isEmpty ? "." : argResults.rest[0]);
     print("Creating new Angel project in ${projectDir.absolute.path}...");
     await _cloneRepo(projectDir);
     // await preBuild(projectDir);

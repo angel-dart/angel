@@ -1,3 +1,11 @@
+# 2.1.7
+* Fix a bug where `ArgResults.arguments` was used in `init` instead of the
+intended `ArgResults.rest`.
+* Stop including `package:angel_model` imports in `make model`.
+* Update dependencies in `make` commands.
+* Fix `make model` to generate ORM + migration by default.
+* Fix `MakerDependency` logic to print missing dependencies.
+
 # 2.1.6
 * Fix a bug where models always defaulted to ORM.
 * Add GraphQL boilerplate.

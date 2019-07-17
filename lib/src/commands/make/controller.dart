@@ -40,7 +40,7 @@ class ControllerCommand extends Command {
     }
 
     List<MakerDependency> deps = [
-      const MakerDependency('angel_framework', '^1.0.0')
+      const MakerDependency('angel_framework', '^2.0.0')
     ];
 
     // ${pubspec.name}.src.models.${rc.snakeCase}
@@ -48,7 +48,7 @@ class ControllerCommand extends Command {
     var rc = new ReCase(name);
     var controllerLib = new Library((controllerLib) {
       if (argResults['websocket'] as bool) {
-        deps.add(const MakerDependency('angel_websocket', '^1.0.0'));
+        deps.add(const MakerDependency('angel_websocket', '^2.0.0'));
         controllerLib.directives
             .add(new Directive.import('package:angel_websocket/server.dart'));
       } else {

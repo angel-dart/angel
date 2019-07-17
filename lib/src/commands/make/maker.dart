@@ -2,11 +2,14 @@ import 'dart:async';
 import 'package:io/ansi.dart';
 import '../../util.dart';
 
-class MakerDependency {
+class MakerDependency implements Comparable<MakerDependency> {
   final String name, version;
   final bool dev;
 
   const MakerDependency(this.name, this.version, {this.dev: false});
+
+  @override
+  int compareTo(MakerDependency other) => name.compareTo(other.name);
 }
 
 Future depend(Iterable<MakerDependency> deps) async {
@@ -21,6 +24,7 @@ Future depend(Iterable<MakerDependency> deps) async {
       isPresent = pubspec.dependencies.containsKey(dep.name);
 
     if (!isPresent) {
+      missing.add(dep);
 //      TODO: https://github.com/dart-lang/pubspec_parse/issues/17:
 //      print('Installing ${dep.name}@${dep.version}...');
 //
@@ -36,33 +40,28 @@ Future depend(Iterable<MakerDependency> deps) async {
     }
   }
 
-  missing.sort((a, b) {
-    if (!a.dev) {
-      if (b.dev) {
-        return -1;
-      } else {
-        return 0;
-      }
-    } else {
-      if (b.dev) {
-        return 0;
-      } else {
-        return 1;
+  var missingDeps = deps.where((d) => !d.dev).toList()..sort();
+  var missingDevDeps = deps.where((d) => d.dev).toList()..sort();
+
+  if (missingDeps.isNotEmpty || missingDevDeps.isNotEmpty) {
+    var totalCount = missingDeps.length + missingDevDeps.length;
+    print(yellow.wrap(totalCount == 1
+        ? 'You are missing one dependency.'
+        : 'You are missing ${missing.length} dependencies.'));
+    print(yellow.wrap(
+        'Update your `pubspec.yaml` to add the following dependencies:\n'));
+
+    void printMissing(String type, Iterable<MakerDependency> deps) {
+      if (deps.isNotEmpty) {
+        print(yellow.wrap('  $type:'));
+        for (var dep in deps) {
+          print(yellow.wrap('    ${dep.name}: ${dep.version}'));
+        }
       }
     }
-  });
 
-  if (missing.isNotEmpty) {
-    print(yellow.wrap(missing.length == 1
-        ? 'You are missing one dependency:'
-        : 'You are missing ${missing.length} dependencies:'));
-    print('\n');
-
-    for (var dep in missing) {
-      var m = '  * ${dep.name}@${dep.version}';
-      if (dep.dev) m += ' (dev dependency)';
-      print(yellow.wrap(m));
-    }
+    printMissing('dependencies', missingDeps);
+    printMissing('dev_dependencies', missingDevDeps);
   }
 
 //  if (isPresent) {

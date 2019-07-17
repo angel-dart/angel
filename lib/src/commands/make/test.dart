@@ -38,9 +38,9 @@ class TestCommand extends Command {
     }
 
     List<MakerDependency> deps = [
-      const MakerDependency('angel_framework', '^1.0.0'),
-      const MakerDependency('angel_test', '^1.0.0', dev: true),
-      const MakerDependency('test', '^0.12.0', dev: true),
+      const MakerDependency('angel_framework', '^2.0.0'),
+      const MakerDependency('angel_test', '^2.0.0', dev: true),
+      const MakerDependency('test', '^1.0.0', dev: true),
     ];
 
     var rc = new ReCase(name);

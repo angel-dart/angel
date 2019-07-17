@@ -20,7 +20,7 @@ class ModelCommand extends Command {
       ..addFlag('migration',
           abbr: 'm',
           help: 'Generate migrations when running `build_runner`.',
-          negatable: false)
+          defaultsTo: true)
       ..addFlag('orm', help: 'Generate angel_orm code.', negatable: false)
       ..addFlag('serializable',
           help: 'Generate angel_serialize annotations.', defaultsTo: true)
@@ -47,33 +47,35 @@ class ModelCommand extends Command {
     var rc = new ReCase(name);
 
     var modelLib = new Library((modelLib) {
-      if (argResults['migration'] as bool) {
+      if (argResults['orm'] as bool && argResults['migration'] as bool) {
         modelLib.directives.addAll([
           new Directive.import('package:angel_migration/angel_migration.dart'),
         ]);
       }
 
-      var needsSerialize = argResults['serializable'] as bool ||
-          argResults['orm'] as bool ||
-          argResults['migration'] as bool;
+      var needsSerialize =
+          argResults['serializable'] as bool || argResults['orm'] as bool;
+      // argResults['migration'] as bool;
 
       if (needsSerialize) {
         modelLib.directives.add(new Directive.import(
             'package:angel_serialize/angel_serialize.dart'));
         deps.add(const MakerDependency('angel_serialize', '^2.0.0'));
         deps.add(const MakerDependency('angel_serialize_generator', '^2.0.0'));
-        deps.add(const MakerDependency('build_runner', '">=0.7.0 <0.10.0"'));
-      } else {
-        modelLib.directives
-            .add(new Directive.import('package:angel_model/angel_model.dart'));
-        deps.add(const MakerDependency('angel_model', '^1.0.0'));
+        deps.add(const MakerDependency('build_runner', '^1.0.0'));
       }
 
-      if (argResults['orm'] as bool || argResults['migration'] as bool) {
+      // else {
+      //   modelLib.directives
+      //       .add(new Directive.import('package:angel_model/angel_model.dart'));
+      //   deps.add(const MakerDependency('angel_model', '^1.0.0'));
+      // }
+
+      if (argResults['orm'] as bool) {
         modelLib.directives.addAll([
           new Directive.import('package:angel_orm/angel_orm.dart'),
         ]);
-        deps.add(const MakerDependency('angel_orm', '^1.0.0-alpha'));
+        deps.add(const MakerDependency('angel_orm', '^2.0.0'));
       }
 
       modelLib.body.addAll([
@@ -91,7 +93,7 @@ class ModelCommand extends Command {
           modelClazz.annotations.add(refer('serializable'));
         }
 
-        if (argResults['orm'] as bool || argResults['migration'] as bool) {
+        if (argResults['orm'] as bool) {
           if (argResults['migration'] as bool) {
             modelClazz.annotations.add(refer('orm'));
           } else {
