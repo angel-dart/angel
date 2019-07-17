@@ -40,14 +40,14 @@ Future depend(Iterable<MakerDependency> deps) async {
     }
   }
 
-  var missingDeps = deps.where((d) => !d.dev).toList()..sort();
-  var missingDevDeps = deps.where((d) => d.dev).toList()..sort();
+  var missingDeps = missing.where((d) => !d.dev).toList()..sort();
+  var missingDevDeps = missing.where((d) => d.dev).toList()..sort();
+  var totalCount = missingDeps.length + missingDevDeps.length;
 
-  if (missingDeps.isNotEmpty || missingDevDeps.isNotEmpty) {
-    var totalCount = missingDeps.length + missingDevDeps.length;
+  if (totalCount > 0) {
     print(yellow.wrap(totalCount == 1
         ? 'You are missing one dependency.'
-        : 'You are missing ${missing.length} dependencies.'));
+        : 'You are missing $totalCount dependencies.'));
     print(yellow.wrap(
         'Update your `pubspec.yaml` to add the following dependencies:\n'));
 
@@ -62,6 +62,7 @@ Future depend(Iterable<MakerDependency> deps) async {
 
     printMissing('dependencies', missingDeps);
     printMissing('dev_dependencies', missingDevDeps);
+    print('\n');
   }
 
 //  if (isPresent) {

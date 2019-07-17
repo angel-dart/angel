@@ -30,8 +30,8 @@ class InitCommand extends Command {
 
   @override
   run() async {
-    Directory projectDir = new Directory(
-        argResults.rest.isEmpty ? "." : argResults.rest[0]);
+    Directory projectDir =
+        new Directory(argResults.rest.isEmpty ? "." : argResults.rest[0]);
     print("Creating new Angel project in ${projectDir.absolute.path}...");
     await _cloneRepo(projectDir);
     // await preBuild(projectDir);
@@ -136,52 +136,51 @@ class InitCommand extends Command {
       var boilerplate = prompts.choose(
           'Choose a project type before continuing', boilerplates);
 
-      print(
-          'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
+      // Ultimately, we want a clone of every boilerplate locally on the system.
+      var boilerplateRootDir = Directory(p.join(angelDir.path, 'boilerplates'));
+      var boilerplateDir = Directory(p.join(boilerplateRootDir.path,
+          p.basenameWithoutExtension(boilerplate.url)));
+      await boilerplateRootDir.create(recursive: true);
 
-      Process git;
-
-      if (boilerplate.ref == null) {
-        git = await Process.start(
-          "git",
-          ["clone", "--depth", "1", boilerplate.url, projectDir.absolute.path],
-          mode: ProcessStartMode.inheritStdio,
-        );
-      } else {
-        // git clone --single-branch -b branch host:/dir.git
-        git = await Process.start(
-          "git",
-          [
-            "clone",
-            "--depth",
-            "1",
-            "--single-branch",
-            "-b",
-            boilerplate.ref,
-            boilerplate.url,
-            projectDir.absolute.path
-          ],
-          mode: ProcessStartMode.inheritStdio,
-        );
-      }
-
-      if (await git.exitCode != 0) {
-        throw new Exception("Could not clone repo.");
-      }
-
-      /*
-      if (boilerplate.ref != null) {
-        git = await Process
-            .start("git", ["checkout", 'origin/${boilerplate.ref}']);
-
-        stdout.addStream(git.stdout);
-        stderr.addStream(git.stderr);
-
+      // If there is no clone existing, clone it.
+      if (!await boilerplateDir.exists()) {
+        print(
+            'Cloning "${boilerplate.name}" boilerplate from "${boilerplate.url}"...');
+        var git = await Process.start(
+            "git",
+            [
+              "clone",
+              "--depth",
+              "1",
+              boilerplate.url,
+              boilerplateDir.absolute.path
+            ],
+            mode: ProcessStartMode.inheritStdio);
         if (await git.exitCode != 0) {
-          throw new Exception("Could not checkout branch ${boilerplate.ref}.");
+          throw new Exception("Could not clone repo.");
         }
       }
-      */
+
+      // Next, check out the given branch.
+      var branch = boilerplate.ref ?? 'master';
+      var git = await Process.start("git", ["checkout", 'origin/$branch'],
+          mode: ProcessStartMode.inheritStdio,
+          workingDirectory: boilerplateDir.absolute.path);
+      if (await git.exitCode != 0) {
+        throw new Exception("Could not checkout branch $branch.");
+      }
+
+      // Next, pull from git.
+      git = await Process.start("git", ["pull", 'origin/$branch'],
+          mode: ProcessStartMode.inheritStdio,
+          workingDirectory: boilerplateDir.absolute.path);
+      if (await git.exitCode != 0) {
+        throw new Exception(
+            "Update of $branch failed. Attempting to continue with existing contents.");
+      }
+
+      // Next, just copy everything into the given directory.
+      await copyDirectory(boilerplateDir, projectDir);
 
       if (boilerplate.needsPrebuild) {
         await preBuild(projectDir).catchError((_) => null);

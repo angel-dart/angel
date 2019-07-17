@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:io/ansi.dart';
+import 'package:path/path.dart' as p;
 import 'package:pubspec_parse/pubspec_parse.dart';
 //import 'package:yamlicious/yamlicious.dart';
 
@@ -13,12 +14,31 @@ String get homeDirPath =>
 
 Directory get homeDir => new Directory(homeDirPath);
 
+Directory get angelDir => Directory(p.join(homeDir.path, '.angel'));
+
 Future<Pubspec> loadPubspec([Directory directory]) {
   directory ??= Directory.current;
   var file = new File.fromUri(directory.uri.resolve('pubspec.yaml'));
   return file
       .readAsString()
       .then((yaml) => new Pubspec.parse(yaml, sourceUrl: file.uri));
+}
+
+// From: https://gist.github.com/tobischw/98dcd2563eec9a2a87bda8299055358a
+Future<void> copyDirectory(Directory source, Directory destination) async {
+  await for (var entity in source.list(recursive: false)) {
+    if (entity is Directory) {
+      var newDirectory =
+          Directory(p.join(destination.absolute.path, p.basename(entity.path)));
+      print('Copying dir "${entity.path}" -> "${newDirectory.path}..."');
+      await newDirectory.create();
+      await copyDirectory(entity.absolute, newDirectory);
+    } else if (entity is File) {
+      var newPath = p.join(destination.path, p.basename(entity.path));
+      print('Copying file "${entity.path}" -> "$newPath"');
+      await entity.copy(newPath);
+    }
+  }
 }
 
 Future savePubspec(Pubspec pubspec) async {
