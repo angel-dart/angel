@@ -12,7 +12,7 @@ main() async {
 
   setUp(() async {
     database = await memoryDatabaseFactory.openDatabase('test.db');
-    service = new SembastService(database);
+    service = SembastService(database);
   });
 
   tearDown(() => database.close());
@@ -37,7 +37,7 @@ main() async {
   });
 
   test('read', () async {
-    var name = 'poobah${new DateTime.now().millisecondsSinceEpoch}';
+    var name = 'poobah${DateTime.now().millisecondsSinceEpoch}';
     var input = await service.create({'name': name, 'bar': 'baz'});
     print(input);
     expect(await service.read(input['id'] as String), input);
@@ -47,8 +47,8 @@ main() async {
     var input = await service.create({'bar': 'baz', 'yes': 'no'});
     var id = input['id'] as String;
     var output = await service.modify(id, {'bar': 'quux'});
-    expect(new SplayTreeMap.from(output),
-        new SplayTreeMap.from({'id': id, 'bar': 'quux', 'yes': 'no'}));
+    expect(SplayTreeMap.from(output),
+        SplayTreeMap.from({'id': id, 'bar': 'quux', 'yes': 'no'}));
     expect(await service.read(id), output);
   });
 
@@ -64,7 +64,7 @@ main() async {
     var input = await service.create({'bar': 'baz'});
     var id = input['id'] as String;
     expect(await service.remove(id), input);
-    expect(await database.get(id), isNull);
+    expect(await StoreRef.main().record(id).get(database), isNull);
   });
 
   test('remove', () async {

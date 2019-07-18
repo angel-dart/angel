@@ -4,7 +4,7 @@ import 'package:sembast/sembast.dart';
 
 class SembastService extends Service<String, Map<String, dynamic>> {
   final Database database;
-  final Store store;
+  final StoreRef<int, Map<String, dynamic>> store;
 
   /// If set to `true`, clients can remove all items by passing a `null` `id` to `remove`.
   ///
@@ -16,12 +16,11 @@ class SembastService extends Service<String, Map<String, dynamic>> {
 
   SembastService(this.database,
       {String store, this.allowRemoveAll = false, this.allowQuery = true})
-      : this.store =
-            (store == null ? database.mainStore : database.getStore(store)),
+      : this.store = intMapStoreFactory.store(store),
         super();
 
   Finder _makeQuery([Map<String, dynamic> params]) {
-    params = new Map<String, dynamic>.from(params ?? {});
+    params = Map<String, dynamic>.from(params ?? {});
     Filter out;
     var sort = <SortOrder>[];
 
@@ -36,16 +35,16 @@ class SembastService extends Service<String, Map<String, dynamic>> {
         var v = params[key];
 
         if (v is! Map) {
-          sort.add(new SortOrder(v.toString(), true));
+          sort.add(SortOrder(v.toString(), true));
         } else {
           var m = v as Map;
           m.forEach((k, sorter) {
             if (sorter is SortOrder) {
               sort.add(sorter);
             } else if (sorter is String) {
-              sort.add(new SortOrder(k.toString(), sorter == "-1"));
+              sort.add(SortOrder(k.toString(), sorter == "-1"));
             } else if (sorter is num) {
-              sort.add(new SortOrder(k.toString(), sorter == -1));
+              sort.add(SortOrder(k.toString(), sorter == -1));
             }
           });
         }
@@ -57,94 +56,81 @@ class SembastService extends Service<String, Map<String, dynamic>> {
           queryObj.forEach((k, v) {
             if (k != 'provider' &&
                 !const ['__requestctx', '__responsectx'].contains(k)) {
-              var filter = new Filter.equal(k.toString(), v);
-              if (out == null)
+              var filter = Filter.equals(k.toString(), v);
+              if (out == null) {
                 out = filter;
-              else
-                out = new Filter.or([out, filter]);
+              } else {
+                out = Filter.or([out, filter]);
+              }
             }
           });
         }
       }
     }
 
-    return new Finder(filter: out, sortOrders: sort);
+    return Finder(filter: out, sortOrders: sort);
   }
 
-  Map<String, dynamic> _jsonify(Record record) {
-    return new Map<String, dynamic>.from(record.value as Map)
-      ..['id'] = record.key.toString();
-  }
+  Map<String, dynamic> _withId(Map<String, dynamic> data, String id) =>
+      Map<String, dynamic>.from(data ?? {})..['id'] = id;
 
   @override
   Future<Map<String, dynamic>> findOne(
       [Map<String, dynamic> params,
-      String errorMessage = 'No record was found matching the given query.']) {
-    return store.findRecord(_makeQuery(params)).then(_jsonify);
+      String errorMessage =
+          'No record was found matching the given query.']) async {
+    return (await store.findFirst(database, finder: _makeQuery(params)))?.value;
   }
 
   @override
   Future<List<Map<String, dynamic>>> index(
       [Map<String, dynamic> params]) async {
-    var records = await store.findRecords(_makeQuery(params));
-    return records.where((r) => r.value != null).map(_jsonify).toList();
+    var records = await store.find(database, finder: _makeQuery(params));
+    return records
+        .where((r) => r.value != null)
+        .map((r) => _withId(r.value, r.key.toString()))
+        .toList();
   }
 
   @override
   Future<Map<String, dynamic>> read(String id,
       [Map<String, dynamic> params]) async {
-    var record = await store.get(int.parse(id));
+    var record = await store.record(int.parse(id)).getSnapshot(database);
 
     if (record == null) {
-      throw new AngelHttpException.notFound(
-          message: 'No record found for ID $id');
+      throw AngelHttpException.notFound(message: 'No record found for ID $id');
     }
 
-    return (record as Map<String, dynamic>)..['id'] = id;
+    return _withId(record.value, id);
   }
 
   @override
   Future<Map<String, dynamic>> create(Map<String, dynamic> data,
       [Map<String, dynamic> params]) async {
     return await database.transaction((txn) async {
-      var store = txn.getStore(this.store.name);
-      var key = await store.put(data) as int;
+      var key = await store.add(txn, data);
       var id = key.toString();
-      data = new Map<String, dynamic>.from(data)..['id'] = id;
-      return data;
+      return _withId(data, id);
     });
   }
 
   @override
   Future<Map<String, dynamic>> modify(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) async {
-    data = new Map<String, dynamic>.from(data)..['id'] = id;
-
     return await database.transaction((txn) async {
-      var store = txn.getStore(this.store.name);
-      var existing = await store.get(int.parse(id));
-
-      data =
-          new Map<String, dynamic>.from(existing as Map<String, dynamic> ?? {})
-            ..addAll(data)
-            ..['id'] = id;
-
-      await store.put(data, int.parse(id));
-      return (await store.get(int.parse(id)) as Map<String, dynamic>)
-        ..['id'] = id;
+      var record = store.record(int.parse(id));
+      data = await record.put(txn, data, merge: true);
+      return _withId(data, id);
     });
   }
 
   @override
   Future<Map<String, dynamic>> update(String id, Map<String, dynamic> data,
       [Map<String, dynamic> params]) async {
-    data = new Map<String, dynamic>.from(data)..['id'] = id;
-
     return await database.transaction((txn) async {
-      var store = txn.getStore(this.store.name);
-      await store.put(data, int.parse(id));
-      return (await store.get(int.parse(id)) as Map<String, dynamic>)
-        ..['id'] = id;
+      var record = store.record(int.parse(id));
+      data = await record.put(txn, data);
+      return _withId(data, id);
     });
   }
 
@@ -158,23 +144,23 @@ class SembastService extends Service<String, Map<String, dynamic>> {
         throw AngelHttpException.forbidden(
             message: 'Clients are not allowed to delete all items.');
       } else {
-        await store.deleteAll(await store.findKeys(new Finder()));
+        await store.delete(database);
         return {};
       }
     }
 
     return database.transaction((txn) async {
-      var store = txn.getStore(this.store.name);
-      var record = await store.get(int.parse(id)) as Map<String, dynamic>;
+      var record = store.record(int.parse(id));
+      var snapshot = await record.getSnapshot(txn);
 
-      if (record == null) {
-        throw new AngelHttpException.notFound(
+      if (snapshot == null) {
+        throw AngelHttpException.notFound(
             message: 'No record found for ID $id');
       } else {
-        await store.delete(id);
+        await record.delete(txn);
       }
 
-      return record..['id'] = id;
+      return _withId(snapshot.value, id);
     });
   }
 }
