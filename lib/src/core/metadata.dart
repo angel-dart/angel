@@ -21,7 +21,20 @@ class Hooks {
   const Hooks({this.before = const [], this.after = const []});
 }
 
-/// Exposes a [Controller] to the Internet.
+/// Exposes a [Controller] or a [Controller] method to the Internet.
+///
+/// ```dart
+/// @Expose('/elements')
+/// class ElementController extends Controller {
+///
+///   @Expose('')
+///   getList(){}
+///
+///   @Expose('/:elementId')
+///   getElement(int elementId){}
+///
+/// }
+/// ```
 class Expose {
   final String method;
   final String path;
