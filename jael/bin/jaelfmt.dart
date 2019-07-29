@@ -15,6 +15,11 @@ var argParser = ArgParser()
   ..addOption('tab-size',
       help: 'The number of spaces to output where a TAB would be inserted.',
       defaultsTo: '2')
+  ..addFlag('dry-run',
+      abbr: 'n',
+      help:
+          'Print the names of files that would be changed, without actually overwriting them.',
+      negatable: false)
   ..addFlag('help',
       abbr: 'h', help: 'Print this usage information.', negatable: false)
   ..addFlag('insert-spaces',
@@ -89,7 +94,16 @@ Future<void> formatFile(File file, ArgResults argResults) async {
   var formatted = await format(file.path, content, argResults);
   if (formatted == null) return;
   if (argResults['overwrite'] as bool) {
-    await file.writeAsStringSync(formatted);
+    if (formatted != content) {
+      if (argResults['dry-run'] as bool) {
+        print('Would have formatted ${file.path}');
+      } else {
+        await file.writeAsStringSync(formatted);
+        print('Formatted ${file.path}');
+      }
+    } else {
+      print('Unchanged ${file.path}');
+    }
   } else {
     print(formatted);
   }
