@@ -4,7 +4,7 @@
 
 A simple server-side HTML templating engine for Dart.
 
-[See documentation.](https://angel-dart.gitbook.io/angel/front-end/jael)
+[See documentation.](https://docs.angel-dart.dev/packages/front-end/jael)
 
 # Installation
 In your `pubspec.yaml`:
@@ -34,7 +34,7 @@ void myFunction() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl', asDSX: false);
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael', asDSX: false);
     var scope = new SymbolTable(values: {
       'profile': {
         'avatar': 'thosakwe.png',

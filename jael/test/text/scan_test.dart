@@ -5,7 +5,7 @@ import 'common.dart';
 
 main() {
   test('plain html', () {
-    var tokens = scan('<img src="foo.png" />', sourceUrl: 'test.jl').tokens;
+    var tokens = scan('<img src="foo.png" />', sourceUrl: 'test.jael').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(7));
@@ -19,7 +19,7 @@ main() {
   });
 
   test('single quotes', () {
-    var tokens = scan('<p>It\'s lit</p>', sourceUrl: 'test.jl').tokens;
+    var tokens = scan('<p>It\'s lit</p>', sourceUrl: 'test.jael').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(8));
@@ -34,7 +34,7 @@ main() {
   });
 
   test('text node', () {
-    var tokens = scan('<p>Hello\nworld</p>', sourceUrl: 'test.jl').tokens;
+    var tokens = scan('<p>Hello\nworld</p>', sourceUrl: 'test.jael').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(8));
@@ -50,7 +50,7 @@ main() {
 
   test('mixed', () {
     var tokens = scan('<ul number=1 + 2>three{{four > five.six}}</ul>',
-            sourceUrl: 'test.jl')
+            sourceUrl: 'test.jael')
         .tokens;
     tokens.forEach(print);
 
@@ -85,7 +85,7 @@ main() {
 </script>
 '''
           .trim(),
-      sourceUrl: 'test.jl',
+      sourceUrl: 'test.jael',
     ).tokens;
     tokens.forEach(print);
 

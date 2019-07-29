@@ -17,7 +17,7 @@ class Call extends Expression {
   @override
   FileSpan get span {
     return arguments
-        .fold<FileSpan>(lParen.span, (out, a) => out.expand(a.span))
+        .fold<FileSpan>(target.span, (out, a) => out.expand(a.span))
         .expand(namedArguments.fold<FileSpan>(
             lParen.span, (out, a) => out.expand(a.span)))
         .expand(rParen.span);

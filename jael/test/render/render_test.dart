@@ -20,7 +20,7 @@ main() {
     SymbolTable scope;
 
     try {
-      document = jael.parseDocument(template, sourceUrl: 'test.jl');
+      document = jael.parseDocument(template, sourceUrl: 'test.jael');
       scope = new SymbolTable<dynamic>(values: {
         'csrf_token': 'foo',
         'profile': {
@@ -65,8 +65,8 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    //jael.scan(template, sourceUrl: 'test.jl').tokens.forEach(print);
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    //jael.scan(template, sourceUrl: 'test.jael').tokens.forEach(print);
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable<dynamic>(values: {
       'pokemon': const _Pokemon('Darkrai', 'Dark'),
     });
@@ -106,7 +106,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable<dynamic>(values: {
       'starters': starters,
     });
@@ -151,7 +151,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable<dynamic>(values: {
       'starters': starters,
     });
@@ -197,7 +197,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable();
 
     const jael.Renderer().render(document, buf, scope);
@@ -243,7 +243,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable();
 
     const jael.Renderer().render(document, buf, scope);
@@ -268,7 +268,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable();
 
     const jael.Renderer().render(document, buf, scope);
@@ -299,7 +299,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable<dynamic>(values: {
       'account': new _Account(isDisabled: true),
     });
@@ -326,7 +326,7 @@ main() {
 ''';
 
     var buf = new CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jl');
+    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
     var scope = new SymbolTable<dynamic>(values: {
       'account': new _Account(isDisabled: null),
     });

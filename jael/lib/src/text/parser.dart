@@ -232,7 +232,8 @@ class Parser {
     var child = parseElementChild();
 
     while (child != null) {
-      if (child is! HtmlComment) children.add(child);
+      // if (child is! HtmlComment) children.add(child);
+      children.add(child);
       child = parseElementChild();
     }
 

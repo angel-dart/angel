@@ -1,11 +1,12 @@
 name: jael
-version: 2.0.1+2
+version: 2.0.2
 description:  A simple server-side HTML templating engine for Dart. Comparable to Blade or Liquid.
 author: Tobe O <thosakwe@gmail.com>
-homepage: https://angel-dart.gitbook.io/angel/front-end/jael
+homepage: https://docs.angel-dart.dev/packages/front-end/jael
 environment:
-  sdk: ">=2.0.0-dev <=3.0.0"
+  sdk: ">=2.0.0 <3.0.0"
 dependencies:
+  args: ^1.0.0
   charcode: ^1.0.0
   code_buffer: ^1.0.0
   source_span: ^1.0.0
@@ -13,3 +14,5 @@ dependencies:
   symbol_table: ^2.0.0
 dev_dependencies:
   test: ^1.0.0
+executables:
+  jaelfmt: jaelfmt

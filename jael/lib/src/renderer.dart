@@ -263,10 +263,11 @@ class Renderer {
         ?.value
         ?.compute(scope);
 
-    var cases =
-        element.children.where((c) => c is Element && c.tagName.name == 'case');
+    var cases = element.children
+        .whereType<Element>()
+        .where((c) => c.tagName.name == 'case');
 
-    for (Element child in cases) {
+    for (var child in cases) {
       var comparison = child.attributes
           .firstWhere((a) => a.name == 'value', orElse: () => null)
           ?.value
@@ -282,9 +283,9 @@ class Renderer {
       }
     }
 
-    Element defaultCase = element.children.firstWhere(
+    var defaultCase = element.children.firstWhere(
         (c) => c is Element && c.tagName.name == 'default',
-        orElse: () => null);
+        orElse: () => null) as Element;
     if (defaultCase != null) {
       for (int i = 0; i < defaultCase.children.length; i++) {
         var child = defaultCase.children.elementAt(i);

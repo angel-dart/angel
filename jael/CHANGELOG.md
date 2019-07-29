@@ -1,6 +1,6 @@
-# 2.1.0
+# 2.0.2
 * Fixed handling of `if` in non-strict mode.
-* 
+* Roll `JaelFormatter` and `jaelfmt`.
 
 # 2.0.1
 * Fixed bug where the `textarea` name check would never return `true`.
