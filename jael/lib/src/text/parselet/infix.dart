@@ -1,24 +1,24 @@
 part of jael.src.text.parselet;
 
-const Map<TokenType, InfixParselet> infixParselets = const {
-  TokenType.lParen: const CallParselet(),
-  TokenType.elvis_dot: const MemberParselet(),
-  TokenType.dot: const MemberParselet(),
-  TokenType.lBracket: const IndexerParselet(),
-  TokenType.asterisk: const BinaryParselet(14),
-  TokenType.slash: const BinaryParselet(14),
-  TokenType.percent: const BinaryParselet(14),
-  TokenType.plus: const BinaryParselet(13),
-  TokenType.minus: const BinaryParselet(13),
-  TokenType.lt: const BinaryParselet(11),
-  TokenType.lte: const BinaryParselet(11),
-  TokenType.gt: const BinaryParselet(11),
-  TokenType.gte: const BinaryParselet(11),
-  TokenType.equ: const BinaryParselet(10),
-  TokenType.nequ: const BinaryParselet(10),
-  TokenType.question: const ConditionalParselet(),
-  TokenType.equals: const BinaryParselet(3),
-  TokenType.elvis: const BinaryParselet(3),
+const Map<TokenType, InfixParselet> infixParselets = {
+  TokenType.lParen: CallParselet(),
+  TokenType.elvis_dot: MemberParselet(),
+  TokenType.dot: MemberParselet(),
+  TokenType.lBracket: IndexerParselet(),
+  TokenType.asterisk: BinaryParselet(14),
+  TokenType.slash: BinaryParselet(14),
+  TokenType.percent: BinaryParselet(14),
+  TokenType.plus: BinaryParselet(13),
+  TokenType.minus: BinaryParselet(13),
+  TokenType.lt: BinaryParselet(11),
+  TokenType.lte: BinaryParselet(11),
+  TokenType.gt: BinaryParselet(11),
+  TokenType.gte: BinaryParselet(11),
+  TokenType.equ: BinaryParselet(10),
+  TokenType.nequ: BinaryParselet(10),
+  TokenType.question: ConditionalParselet(),
+  TokenType.equals: BinaryParselet(3),
+  TokenType.elvis: BinaryParselet(3),
 };
 
 class ConditionalParselet implements InfixParselet {
@@ -32,13 +32,13 @@ class ConditionalParselet implements InfixParselet {
     var ifTrue = parser.parseExpression(0);
 
     if (ifTrue == null) {
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression in conditional expression.', token.span));
       return null;
     }
 
     if (!parser.next(TokenType.colon)) {
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing ":" in conditional expression.', ifTrue.span));
       return null;
     }
@@ -47,12 +47,12 @@ class ConditionalParselet implements InfixParselet {
     var ifFalse = parser.parseExpression(0);
 
     if (ifFalse == null) {
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression in conditional expression.', colon.span));
       return null;
     }
 
-    return new Conditional(left, token, ifTrue, colon, ifFalse);
+    return Conditional(left, token, ifTrue, colon, ifFalse);
   }
 }
 
@@ -66,15 +66,16 @@ class BinaryParselet implements InfixParselet {
     var right = parser.parseExpression(precedence);
 
     if (right == null) {
-      if (token.type != TokenType.gt)
-        parser.errors.add(new JaelError(
+      if (token.type != TokenType.gt) {
+        parser.errors.add(JaelError(
             JaelErrorSeverity.error,
             'Missing expression after operator "${token.span.text}", following expression ${left.span.text}.',
             token.span));
+      }
       return null;
     }
 
-    return new BinaryExpression(left, token, right);
+    return BinaryExpression(left, token, right);
   }
 }
 
@@ -109,12 +110,12 @@ class CallParselet implements InfixParselet {
     if (!parser.next(TokenType.rParen)) {
       var lastSpan = arguments.isEmpty ? null : arguments.last.span;
       lastSpan ??= token.span;
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing ")" after argument list.', lastSpan));
       return null;
     }
 
-    return new Call(left, token, parser.current, arguments, namedArguments);
+    return Call(left, token, parser.current, arguments, namedArguments);
   }
 }
 
@@ -129,18 +130,18 @@ class IndexerParselet implements InfixParselet {
     var indexer = parser.parseExpression(0);
 
     if (indexer == null) {
-      parser.errors.add(new JaelError(
+      parser.errors.add(JaelError(
           JaelErrorSeverity.error, 'Missing expression after "[".', left.span));
       return null;
     }
 
     if (!parser.next(TokenType.rBracket)) {
       parser.errors.add(
-          new JaelError(JaelErrorSeverity.error, 'Missing "]".', indexer.span));
+          JaelError(JaelErrorSeverity.error, 'Missing "]".', indexer.span));
       return null;
     }
 
-    return new IndexerExpression(left, token, indexer, parser.current);
+    return IndexerExpression(left, token, indexer, parser.current);
   }
 }
 
@@ -155,11 +156,11 @@ class MemberParselet implements InfixParselet {
     var name = parser.parseIdentifier();
 
     if (name == null) {
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Expected the name of a property following "."', token.span));
       return null;
     }
 
-    return new MemberExpression(left, token, name);
+    return MemberExpression(left, token, name);
   }
 }

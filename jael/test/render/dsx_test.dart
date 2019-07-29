@@ -18,7 +18,7 @@ void main() {
         foo
             .getAttribute('yes')
             .value
-            .compute(new SymbolTable(values: {'no': 'maybe'})),
+            .compute(SymbolTable(values: {'no': 'maybe'})),
         'maybe');
   });
 

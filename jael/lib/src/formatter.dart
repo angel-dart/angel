@@ -5,12 +5,12 @@ class JaelFormatter {
   final num tabSize;
   final bool insertSpaces;
   final int maxLineLength;
-  var _buffer = new StringBuffer();
+  var _buffer = StringBuffer();
   int _level = 0;
   String _spaces;
 
   static String _spaceString(int tabSize) {
-    var b = new StringBuffer();
+    var b = StringBuffer();
     for (int i = 0; i < tabSize; i++) {
       b.write(' ');
     }
@@ -30,7 +30,9 @@ class JaelFormatter {
   }
 
   void _applySpacing() {
-    for (int i = 0; i < _level; i++) _buffer.write(_spaces);
+    for (int i = 0; i < _level; i++) {
+      _buffer.write(_spaces);
+    }
   }
 
   int get _spaceLength {
@@ -62,9 +64,9 @@ class JaelFormatter {
 
   int _formatChild(ElementChild child, int lineLength,
       {bool isFirst = false, bool isLast = false}) {
-    if (child == null)
+    if (child == null) {
       return lineLength;
-    else if (child is Element) return _formatElement(child, lineLength);
+    } else if (child is Element) return _formatElement(child, lineLength);
     String s;
     if (child is Interpolation) {
       var b = StringBuffer('{{');

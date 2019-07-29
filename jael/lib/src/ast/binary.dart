@@ -37,7 +37,7 @@ class BinaryExpression extends Expression {
       case TokenType.elvis:
         return l ?? r;
       default:
-        throw new UnsupportedError(
+        throw UnsupportedError(
             'Unsupported binary operator: "${operator?.span?.text ?? "<null>"}".');
     }
   }

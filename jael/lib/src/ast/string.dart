@@ -14,7 +14,7 @@ class StringLiteral extends Literal {
   static String parseValue(Token string) {
     var text = string.span.text.substring(1, string.span.text.length - 1);
     var codeUnits = text.codeUnits;
-    var buf = new StringBuffer();
+    var buf = StringBuffer();
 
     for (int i = 0; i < codeUnits.length; i++) {
       var ch = codeUnits[i];
@@ -25,9 +25,9 @@ class StringLiteral extends Literal {
               c2 = codeUnits[++i],
               c3 = codeUnits[++i],
               c4 = codeUnits[++i];
-          var hexString = new String.fromCharCodes([c1, c2, c3, c4]);
+          var hexString = String.fromCharCodes([c1, c2, c3, c4]);
           var hexNumber = int.parse(hexString, radix: 16);
-          buf.write(new String.fromCharCode(hexNumber));
+          buf.write(String.fromCharCode(hexNumber));
           continue;
         }
 
@@ -53,9 +53,10 @@ class StringLiteral extends Literal {
             default:
               buf.writeCharCode(next);
           }
-        } else
-          throw new JaelError(JaelErrorSeverity.error,
+        } else {
+          throw JaelError(JaelErrorSeverity.error,
               'Unexpected "\\" in string literal.', string.span);
+        }
       } else {
         buf.writeCharCode(ch);
       }

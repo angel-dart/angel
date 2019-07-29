@@ -107,7 +107,7 @@ void main() {
 
 String render(String template, [Map<String, dynamic> values]) {
   var doc = jael.parseDocument(template, onError: (e) => throw e);
-  var buffer = new CodeBuffer();
-  const jael.Renderer().render(doc, buffer, new SymbolTable(values: values));
+  var buffer = CodeBuffer();
+  const jael.Renderer().render(doc, buffer, SymbolTable(values: values));
   return buffer.toString();
 }

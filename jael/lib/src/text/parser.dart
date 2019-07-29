@@ -10,7 +10,7 @@ class Parser {
   Token _current;
   int _index = -1;
 
-  Parser(this.scanner, {this.asDSX: false});
+  Parser(this.scanner, {this.asDSX = false});
 
   Token get current => _current;
 
@@ -52,18 +52,18 @@ class Parser {
     if (doctype == null) {
       var root = parseElement();
       if (root == null) return null;
-      return new Document(null, root);
+      return Document(null, root);
     }
 
     var root = parseElement();
 
     if (root == null) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing root element after !DOCTYPE declaration.', doctype.span));
       return null;
     }
 
-    return new Document(doctype, root);
+    return Document(doctype, root);
   }
 
   StringLiteral implicitString() {
@@ -88,7 +88,7 @@ class Parser {
     }
     var doctype = _current, html = parseIdentifier();
     if (html?.span?.text?.toLowerCase() != 'html') {
-      errors.add(new JaelError(
+      errors.add(JaelError(
           JaelErrorSeverity.error,
           'Expected "html" in doctype declaration.',
           html?.span ?? doctype.span));
@@ -98,16 +98,16 @@ class Parser {
     var public = parseIdentifier();
     if (public == null) {
       if (!next(TokenType.gt)) {
-        errors.add(new JaelError(JaelErrorSeverity.error,
+        errors.add(JaelError(JaelErrorSeverity.error,
             'Expected ">" in doctype declaration.', html.span));
         return null;
       }
 
-      return new Doctype(lt, doctype, html, null, null, null, _current);
+      return Doctype(lt, doctype, html, null, null, null, _current);
     }
 
     if (public?.span?.text?.toLowerCase() != 'public') {
-      errors.add(new JaelError(
+      errors.add(JaelError(
           JaelErrorSeverity.error,
           'Expected "public" in doctype declaration.',
           public?.span ?? html.span));
@@ -117,7 +117,7 @@ class Parser {
     var stringParser = prefixParselets[TokenType.string];
 
     if (!next(TokenType.string)) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Expected string in doctype declaration.', public.span));
       return null;
     }
@@ -125,7 +125,7 @@ class Parser {
     var name = stringParser.parse(this, _current) as StringLiteral;
 
     if (!next(TokenType.string)) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Expected string in doctype declaration.', name.span));
       return null;
     }
@@ -133,12 +133,12 @@ class Parser {
     var url = stringParser.parse(this, _current) as StringLiteral;
 
     if (!next(TokenType.gt)) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Expected ">" in doctype declaration.', url.span));
       return null;
     }
 
-    return new Doctype(lt, doctype, html, public, name, url, _current);
+    return Doctype(lt, doctype, html, public, name, url, _current);
   }
 
   ElementChild parseElementChild() =>
@@ -148,9 +148,9 @@ class Parser {
       parseElement();
 
   HtmlComment parseHtmlComment() =>
-      next(TokenType.htmlComment) ? new HtmlComment(_current) : null;
+      next(TokenType.htmlComment) ? HtmlComment(_current) : null;
 
-  Text parseText() => next(TokenType.text) ? new Text(_current) : null;
+  Text parseText() => next(TokenType.text) ? Text(_current) : null;
 
   Interpolation parseInterpolation() {
     if (!next(asDSX ? TokenType.lCurly : TokenType.lDoubleCurly)) return null;
@@ -159,19 +159,19 @@ class Parser {
     var expression = parseExpression(0);
 
     if (expression == null) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression in interpolation.', doubleCurlyL.span));
       return null;
     }
 
     if (!next(asDSX ? TokenType.rCurly : TokenType.rDoubleCurly)) {
       var expected = asDSX ? '}' : '}}';
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing closing "$expected" in interpolation.', expression.span));
       return null;
     }
 
-    return new Interpolation(doubleCurlyL, expression, _current);
+    return Interpolation(doubleCurlyL, expression, _current);
   }
 
   Element parseElement() {
@@ -188,7 +188,7 @@ class Parser {
 
     if (tagName == null) {
       errors.add(
-          new JaelError(JaelErrorSeverity.error, 'Missing tag name.', lt.span));
+          JaelError(JaelErrorSeverity.error, 'Missing tag name.', lt.span));
       return null;
     }
 
@@ -205,16 +205,16 @@ class Parser {
       var slash = _current;
 
       if (!next(TokenType.gt)) {
-        errors.add(new JaelError(JaelErrorSeverity.error,
+        errors.add(JaelError(JaelErrorSeverity.error,
             'Missing ">" in self-closing "${tagName.name}" tag.', slash.span));
         return null;
       }
 
-      return new SelfClosingElement(lt, tagName, attributes, slash, _current);
+      return SelfClosingElement(lt, tagName, attributes, slash, _current);
     }
 
     if (!next(TokenType.gt)) {
-      errors.add(new JaelError(
+      errors.add(JaelError(
           JaelErrorSeverity.error,
           'Missing ">" in "${tagName.name}" tag.',
           attributes.isEmpty ? tagName.span : attributes.last.span));
@@ -225,7 +225,7 @@ class Parser {
 
     // Implicit self-closing
     if (Element.selfClosing.contains(tagName.name)) {
-      return new SelfClosingElement(lt, tagName, attributes, null, gt);
+      return SelfClosingElement(lt, tagName, attributes, null, gt);
     }
 
     List<ElementChild> children = [];
@@ -239,7 +239,7 @@ class Parser {
 
     // Parse closing tag
     if (!next(TokenType.lt)) {
-      errors.add(new JaelError(
+      errors.add(JaelError(
           JaelErrorSeverity.error,
           'Missing closing tag for "${tagName.name}" tag.',
           children.isEmpty ? tagName.span : children.last.span));
@@ -249,7 +249,7 @@ class Parser {
     var lt2 = _current;
 
     if (!next(TokenType.slash)) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing "/" in "${tagName.name}" closing tag.', lt2.span));
       return null;
     }
@@ -257,7 +257,7 @@ class Parser {
     var slash = _current, tagName2 = parseIdentifier();
 
     if (tagName2 == null) {
-      errors.add(new JaelError(
+      errors.add(JaelError(
           JaelErrorSeverity.error,
           'Missing "${tagName.name}" in "${tagName.name}" closing tag.',
           slash.span));
@@ -265,7 +265,7 @@ class Parser {
     }
 
     if (tagName2.name != tagName.name) {
-      errors.add(new JaelError(
+      errors.add(JaelError(
           JaelErrorSeverity.error,
           'Mismatched closing tags. Expected "${tagName.span.text}"; got "${tagName2.name}" instead.',
           lt2.span));
@@ -273,12 +273,12 @@ class Parser {
     }
 
     if (!next(TokenType.gt)) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing ">" in "${tagName.name}" closing tag.', tagName2.span));
       return null;
     }
 
-    return new RegularElement(
+    return RegularElement(
         lt, tagName, attributes, gt, children, lt2, slash, tagName2, _current);
   }
 
@@ -289,7 +289,7 @@ class Parser {
     if ((id = parseIdentifier()) != null) {
       // Nothing
     } else if (next(TokenType.string)) {
-      string = new StringLiteral(_current, StringLiteral.parseValue(_current));
+      string = StringLiteral(_current, StringLiteral.parseValue(_current));
     } else {
       return null;
     }
@@ -301,35 +301,34 @@ class Parser {
     } else if (!asDSX && next(TokenType.nequ)) {
       nequ = _current;
     } else {
-      return new Attribute(id, string, null, null, null);
+      return Attribute(id, string, null, null, null);
     }
 
     if (!asDSX) {
       var value = parseExpression(0);
 
       if (value == null) {
-        errors.add(new JaelError(JaelErrorSeverity.error,
+        errors.add(JaelError(JaelErrorSeverity.error,
             'Missing expression in attribute.', equals?.span ?? nequ.span));
         return null;
       }
 
-      return new Attribute(id, string, equals, nequ, value);
+      return Attribute(id, string, equals, nequ, value);
     } else {
       // Find either a string, or an interpolation.
       var value = implicitString();
 
       if (value != null) {
-        return new Attribute(id, string, equals, nequ, value);
+        return Attribute(id, string, equals, nequ, value);
       }
 
       var interpolation = parseInterpolation();
 
       if (interpolation != null) {
-        return new Attribute(
-            id, string, equals, nequ, interpolation.expression);
+        return Attribute(id, string, equals, nequ, interpolation.expression);
       }
 
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression in attribute.', equals?.span ?? nequ.span));
       return null;
     }
@@ -374,23 +373,23 @@ class Parser {
   }
 
   Identifier parseIdentifier() =>
-      next(TokenType.id) ? new Identifier(_current) : null;
+      next(TokenType.id) ? Identifier(_current) : null;
 
   KeyValuePair parseKeyValuePair() {
     var key = parseExpression(0);
     if (key == null) return null;
 
-    if (!next(TokenType.colon)) return new KeyValuePair(key, null, null);
+    if (!next(TokenType.colon)) return KeyValuePair(key, null, null);
 
     var colon = _current, value = parseExpression(0);
 
     if (value == null) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression in key-value pair.', colon.span));
       return null;
     }
 
-    return new KeyValuePair(key, colon, value);
+    return KeyValuePair(key, colon, value);
   }
 
   NamedArgument parseNamedArgument() {
@@ -398,7 +397,7 @@ class Parser {
     if (name == null) return null;
 
     if (!next(TokenType.colon)) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing ":" in named argument.', name.span));
       return null;
     }
@@ -406,11 +405,11 @@ class Parser {
     var colon = _current, value = parseExpression(0);
 
     if (value == null) {
-      errors.add(new JaelError(JaelErrorSeverity.error,
+      errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression in named argument.', colon.span));
       return null;
     }
 
-    return new NamedArgument(name, colon, value);
+    return NamedArgument(name, colon, value);
   }
 }

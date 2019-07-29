@@ -19,7 +19,7 @@ class StatefulApp extends Component<_AppState> with _StatefulAppJaelTemplate {
   Timer _timer;
 
   StatefulApp() {
-    state =_AppState(ticks: 0);
+    state = _AppState(ticks: 0);
     _timer = Timer.periodic(Duration(seconds: 1), (t) {
       setState(state.copyWith(ticks: t.tick));
     });

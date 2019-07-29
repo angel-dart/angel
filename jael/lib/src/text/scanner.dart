@@ -3,17 +3,17 @@ import 'package:charcode/ascii.dart';
 import 'package:string_scanner/string_scanner.dart';
 import '../ast/ast.dart';
 
-final RegExp _whitespace = new RegExp(r'[ \n\r\t]+');
+final RegExp _whitespace = RegExp(r'[ \n\r\t]+');
 
 final RegExp _id =
-    new RegExp(r'@?(([A-Za-z][A-Za-z0-9_]*-)*([A-Za-z][A-Za-z0-9_]*))');
-final RegExp _string1 = new RegExp(
+    RegExp(r'@?(([A-Za-z][A-Za-z0-9_]*-)*([A-Za-z][A-Za-z0-9_]*))');
+final RegExp _string1 = RegExp(
     r"'((\\(['\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^'\\]))*'");
-final RegExp _string2 = new RegExp(
+final RegExp _string2 = RegExp(
     r'"((\\(["\\/bfnrt]|(u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))|([^"\\]))*"');
 
-Scanner scan(String text, {sourceUrl, bool asDSX: false}) =>
-    new _Scanner(text, sourceUrl)..scan(asDSX: asDSX);
+Scanner scan(String text, {sourceUrl, bool asDSX = false}) =>
+    _Scanner(text, sourceUrl)..scan(asDSX: asDSX);
 
 abstract class Scanner {
   List<JaelError> get errors;
@@ -21,7 +21,7 @@ abstract class Scanner {
   List<Token> get tokens;
 }
 
-final RegExp _htmlComment = new RegExp(r'<!--[^$]*-->');
+final RegExp _htmlComment = RegExp(r'<!--[^$]*-->');
 
 final Map<Pattern, TokenType> _expressionPatterns = {
 //final Map<Pattern, TokenType> _htmlPatterns = {
@@ -74,8 +74,8 @@ final Map<Pattern, TokenType> _expressionPatterns = {
   '==': TokenType.equ,
   '!=': TokenType.nequ,
   '=': TokenType.equals,
-  new RegExp(r'-?[0-9]+(\.[0-9]+)?([Ee][0-9]+)?'): TokenType.number,
-  new RegExp(r'0x[A-Fa-f0-9]+'): TokenType.hex,
+  RegExp(r'-?[0-9]+(\.[0-9]+)?([Ee][0-9]+)?'): TokenType.number,
+  RegExp(r'0x[A-Fa-f0-9]+'): TokenType.hex,
   _string1: TokenType.string,
   _string2: TokenType.string,
   _id: TokenType.id,
@@ -85,15 +85,15 @@ class _Scanner implements Scanner {
   final List<JaelError> errors = [];
   final List<Token> tokens = [];
   _ScannerState state = _ScannerState.html;
-  final Queue<String> openTags = new Queue();
+  final Queue<String> openTags = Queue();
 
   SpanScanner _scanner;
 
   _Scanner(String text, sourceUrl) {
-    _scanner = new SpanScanner(text, sourceUrl: sourceUrl);
+    _scanner = SpanScanner(text, sourceUrl: sourceUrl);
   }
 
-  void scan({bool asDSX: false}) {
+  void scan({bool asDSX = false}) {
     while (!_scanner.isDone) {
       if (state == _ScannerState.html) {
         scanHtml(asDSX);
@@ -164,14 +164,15 @@ class _Scanner implements Scanner {
 
         var span = _scanner.spanFrom(start, end);
 
-        if (span.text.isNotEmpty)
-          tokens.add(new Token(TokenType.text, span, null));
+        if (span.text.isNotEmpty) {
+          tokens.add(Token(TokenType.text, span, null));
+        }
       }
     }
   }
 
   void scanHtml(bool asDSX) {
-    var brackets = new Queue<Token>();
+    var brackets = Queue<Token>();
 
     do {
       // Only continue if we find a left bracket
@@ -184,9 +185,9 @@ class _Scanner implements Scanner {
           _scanner.scan(_whitespace);
 
           _expressionPatterns.forEach((pattern, type) {
-            if (_scanner.matches(pattern))
-              potential
-                  .add(new Token(type, _scanner.lastSpan, _scanner.lastMatch));
+            if (_scanner.matches(pattern)) {
+              potential.add(Token(type, _scanner.lastSpan, _scanner.lastMatch));
+            }
           });
 
           potential.sort((a, b) => b.span.length.compareTo(a.span.length));

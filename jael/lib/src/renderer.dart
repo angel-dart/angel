@@ -7,21 +7,21 @@ import 'text/scanner.dart';
 
 /// Parses a Jael document.
 Document parseDocument(String text,
-    {sourceUrl, bool asDSX: false, void onError(JaelError error)}) {
+    {sourceUrl, bool asDSX = false, void onError(JaelError error)}) {
   var scanner = scan(text, sourceUrl: sourceUrl, asDSX: asDSX);
 
   //scanner.tokens.forEach(print);
 
-  if (scanner.errors.isNotEmpty && onError != null)
+  if (scanner.errors.isNotEmpty && onError != null) {
     scanner.errors.forEach(onError);
-  else if (scanner.errors.isNotEmpty) throw scanner.errors.first;
+  } else if (scanner.errors.isNotEmpty) throw scanner.errors.first;
 
-  var parser = new Parser(scanner, asDSX: asDSX);
+  var parser = Parser(scanner, asDSX: asDSX);
   var doc = parser.parseDocument();
 
-  if (parser.errors.isNotEmpty && onError != null)
+  if (parser.errors.isNotEmpty && onError != null) {
     parser.errors.forEach(onError);
-  else if (parser.errors.isNotEmpty) throw parser.errors.first;
+  } else if (parser.errors.isNotEmpty) throw parser.errors.first;
 
   return doc;
 }
@@ -80,7 +80,7 @@ class Renderer {
   /// If [strictResolution] is `false` (default: `true`), then undefined identifiers will return `null`
   /// instead of throwing.
   void render(Document document, CodeBuffer buffer, SymbolTable scope,
-      {bool strictResolution: true}) {
+      {bool strictResolution = true}) {
     scope.create('!strict!', value: strictResolution != false);
 
     if (document.doctype != null) buffer.writeln(document.doctype.span.text);
@@ -126,17 +126,18 @@ class Renderer {
 
       buffer.write(' ${attribute.name}');
 
-      if (value == true)
+      if (value == true) {
         continue;
-      else
+      } else {
         buffer.write('="');
+      }
 
       String msg;
 
       if (value is Iterable) {
         msg = value.join(' ');
       } else if (value is Map) {
-        msg = value.keys.fold<StringBuffer>(new StringBuffer(), (buf, k) {
+        msg = value.keys.fold<StringBuffer>(StringBuffer(), (buf, k) {
           var v = value[k];
           if (v == null) return buf;
           return buf..write('$k: $v;');
@@ -150,10 +151,11 @@ class Renderer {
     }
 
     if (element is SelfClosingElement) {
-      if (html5)
+      if (html5) {
         buffer.writeln('>');
-      else
+      } else {
         buffer.writeln('/>');
+      }
     } else {
       buffer.writeln('>');
       buffer.indent();
@@ -185,11 +187,11 @@ class Renderer {
         (a) => a.name != 'for-each' && a.name != 'as' && a.name != 'index-as');
     Element strippedElement;
 
-    if (element is SelfClosingElement)
-      strippedElement = new SelfClosingElement(element.lt, element.tagName,
+    if (element is SelfClosingElement) {
+      strippedElement = SelfClosingElement(element.lt, element.tagName,
           otherAttributes, element.slash, element.gt);
-    else if (element is RegularElement)
-      strippedElement = new RegularElement(
+    } else if (element is RegularElement) {
+      strippedElement = RegularElement(
           element.lt,
           element.tagName,
           otherAttributes,
@@ -199,6 +201,7 @@ class Renderer {
           element.slash,
           element.tagName2,
           element.gt2);
+    }
 
     int i = 0;
     for (var item in attribute.value.compute(scope)) {
@@ -224,11 +227,11 @@ class Renderer {
     var otherAttributes = element.attributes.where((a) => a.name != 'if');
     Element strippedElement;
 
-    if (element is SelfClosingElement)
-      strippedElement = new SelfClosingElement(element.lt, element.tagName,
+    if (element is SelfClosingElement) {
+      strippedElement = SelfClosingElement(element.lt, element.tagName,
           otherAttributes, element.slash, element.gt);
-    else if (element is RegularElement)
-      strippedElement = new RegularElement(
+    } else if (element is RegularElement) {
+      strippedElement = RegularElement(
           element.lt,
           element.tagName,
           otherAttributes,
@@ -238,6 +241,7 @@ class Renderer {
           element.slash,
           element.tagName2,
           element.gt2);
+    }
 
     renderElement(strippedElement, buffer, scope, html5);
   }
@@ -298,20 +302,22 @@ class Renderer {
   void renderElementChild(Element parent, ElementChild child, CodeBuffer buffer,
       SymbolTable scope, bool html5, int index, int total) {
     if (child is Text && parent?.tagName?.name != 'textarea') {
-      if (index == 0)
+      if (index == 0) {
         buffer.write(child.span.text.trimLeft());
-      else if (index == total - 1)
+      } else if (index == total - 1) {
         buffer.write(child.span.text.trimRight());
-      else
+      } else {
         buffer.write(child.span.text);
+      }
     } else if (child is Interpolation) {
       var value = child.expression.compute(scope);
 
       if (value != null) {
-        if (child.isRaw)
+        if (child.isRaw) {
           buffer.write(value);
-        else
+        } else {
           buffer.write(htmlEscape.convert(value.toString()));
+        }
       }
     } else if (child is Element) {
       if (buffer?.lastLine?.text?.isNotEmpty == true) buffer.writeln();
@@ -324,14 +330,14 @@ class Renderer {
   void registerCustomElement(
       Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     if (element is! RegularElement) {
-      throw new JaelError(JaelErrorSeverity.error,
+      throw JaelError(JaelErrorSeverity.error,
           "Custom elements cannot be self-closing.", element.span);
     }
 
     var name = element.getAttribute('name')?.value?.compute(scope)?.toString();
 
     if (name == null) {
-      throw new JaelError(
+      throw JaelError(
           JaelErrorSeverity.error,
           "Attribute 'name' is required when registering a custom element.",
           element.tagName.span);
@@ -341,7 +347,7 @@ class Renderer {
       var p = scope.isRoot ? scope : scope.parent;
       p.create(customElementName(name), value: element, constant: true);
     } on StateError {
-      throw new JaelError(
+      throw JaelError(
           JaelErrorSeverity.error,
           "Cannot re-define element '$name' in this scope.",
           element.getAttribute('name').span);
@@ -371,16 +377,16 @@ class Renderer {
     } else {
       var tagName = renderAs?.toString() ?? 'div';
 
-      var syntheticElement = new RegularElement(
+      var syntheticElement = RegularElement(
           template.lt,
-          new SyntheticIdentifier(tagName),
+          SyntheticIdentifier(tagName),
           element.attributes
               .where((a) => a.name != 'as' && !a.name.startsWith('@')),
           template.gt,
           template.children,
           template.lt2,
           template.slash,
-          new SyntheticIdentifier(tagName),
+          SyntheticIdentifier(tagName),
           template.gt2);
 
       renderElement(syntheticElement, buffer, scope, html5);

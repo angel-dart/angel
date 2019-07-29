@@ -16,7 +16,7 @@ class MemberExpression extends Expression {
   compute(SymbolTable scope) {
     var target = expression.compute(scope);
     if (op.span.text == '?.' && target == null) return null;
-    return reflect(target).getField(new Symbol(name.name)).reflectee;
+    return reflect(target).getField(Symbol(name.name)).reflectee;
   }
 
   @override

@@ -28,7 +28,7 @@ class Call extends Expression {
 
   Map<Symbol, dynamic> computeNamed(SymbolTable scope) {
     return namedArguments.fold<Map<Symbol, dynamic>>({}, (out, a) {
-      return out..[new Symbol(a.name.name)] = a.value.compute(scope);
+      return out..[Symbol(a.name.name)] = a.value.compute(scope);
     });
   }
 

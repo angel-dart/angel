@@ -21,11 +21,12 @@ class NewExpression extends Expression {
     var named = call.computeNamed(scope);
     var name = '';
 
-    if (call.target is MemberExpression)
+    if (call.target is MemberExpression) {
       name = (call.target as MemberExpression).name.name;
+    }
 
     return reflectClass(targetType as Type)
-        .newInstance(new Symbol(name), positional, named)
+        .newInstance(Symbol(name), positional, named)
         .reflectee;
   }
 }

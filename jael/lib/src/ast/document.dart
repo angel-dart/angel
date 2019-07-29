@@ -46,8 +46,9 @@ class Doctype extends AstNode {
 
   @override
   FileSpan get span {
-    if (public == null)
+    if (public == null) {
       return lt.span.expand(doctype.span).expand(html.span).expand(gt.span);
+    }
     return lt.span
         .expand(doctype.span)
         .expand(html.span)

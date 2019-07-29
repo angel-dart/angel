@@ -1,4 +1,4 @@
-// TODO: Lambda/anonymous component 
+// TODO: Lambda/anonymous component
 //
 // import 'component.dart';
 // import 'dom_node.dart';

@@ -33,9 +33,9 @@ void myFunction() {
 </html>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael', asDSX: false);
-    var scope = new SymbolTable(values: {
+    var scope = SymbolTable(values: {
       'profile': {
         'avatar': 'thosakwe.png',
       }

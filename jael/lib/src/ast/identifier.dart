@@ -21,8 +21,7 @@ class Identifier extends Expression {
         var symbol = scope.resolve(name);
         if (symbol == null) {
           if (scope.resolve('!strict!')?.value == false) return null;
-          throw new ArgumentError(
-              'The name "$name" does not exist in this scope.');
+          throw ArgumentError('The name "$name" does not exist in this scope.');
         }
         return scope.resolve(name).value;
     }
@@ -43,6 +42,6 @@ class SyntheticIdentifier extends Identifier {
   @override
   FileSpan get span {
     if (id != null) return id.span;
-    throw new UnsupportedError('Cannot get the span of a SyntheticIdentifier.');
+    throw UnsupportedError('Cannot get the span of a SyntheticIdentifier.');
   }
 }

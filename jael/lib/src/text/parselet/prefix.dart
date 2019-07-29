@@ -1,15 +1,15 @@
 part of jael.src.text.parselet;
 
-const Map<TokenType, PrefixParselet> prefixParselets = const {
-  TokenType.exclamation: const NotParselet(),
-  TokenType.$new: const NewParselet(),
-  TokenType.number: const NumberParselet(),
-  TokenType.hex: const HexParselet(),
-  TokenType.string: const StringParselet(),
-  TokenType.lCurly: const MapParselet(),
-  TokenType.lBracket: const ArrayParselet(),
-  TokenType.id: const IdentifierParselet(),
-  TokenType.lParen: const ParenthesisParselet(),
+const Map<TokenType, PrefixParselet> prefixParselets = {
+  TokenType.exclamation: NotParselet(),
+  TokenType.$new: NewParselet(),
+  TokenType.number: NumberParselet(),
+  TokenType.hex: HexParselet(),
+  TokenType.string: StringParselet(),
+  TokenType.lCurly: MapParselet(),
+  TokenType.lBracket: ArrayParselet(),
+  TokenType.id: IdentifierParselet(),
+  TokenType.lParen: ParenthesisParselet(),
 };
 
 class NotParselet implements PrefixParselet {
@@ -20,11 +20,11 @@ class NotParselet implements PrefixParselet {
     var expression = parser.parseExpression(0);
 
     if (expression == null) {
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression after "!" in negation expression.', token.span));
     }
 
-    return new Negation(token, expression);
+    return Negation(token, expression);
   }
 }
 
@@ -36,15 +36,15 @@ class NewParselet implements PrefixParselet {
     var call = parser.parseExpression(0);
 
     if (call == null) {
-      parser.errors.add(new JaelError(
+      parser.errors.add(JaelError(
           JaelErrorSeverity.error,
           '"new" must precede a call expression. Nothing was found.',
           call.span));
       return null;
     } else if (call is Call) {
-      return new NewExpression(token, call);
+      return NewExpression(token, call);
     } else {
-      parser.errors.add(new JaelError(
+      parser.errors.add(JaelError(
           JaelErrorSeverity.error,
           '"new" must precede a call expression, not a(n) ${call.runtimeType}.',
           call.span));
@@ -57,14 +57,14 @@ class NumberParselet implements PrefixParselet {
   const NumberParselet();
 
   @override
-  Expression parse(Parser parser, Token token) => new NumberLiteral(token);
+  Expression parse(Parser parser, Token token) => NumberLiteral(token);
 }
 
 class HexParselet implements PrefixParselet {
   const HexParselet();
 
   @override
-  Expression parse(Parser parser, Token token) => new HexLiteral(token);
+  Expression parse(Parser parser, Token token) => HexLiteral(token);
 }
 
 class StringParselet implements PrefixParselet {
@@ -72,7 +72,7 @@ class StringParselet implements PrefixParselet {
 
   @override
   Expression parse(Parser parser, Token token) =>
-      new StringLiteral(token, StringLiteral.parseValue(token));
+      StringLiteral(token, StringLiteral.parseValue(token));
 }
 
 class ArrayParselet implements PrefixParselet {
@@ -93,12 +93,12 @@ class ArrayParselet implements PrefixParselet {
     if (!parser.next(TokenType.rBracket)) {
       var lastSpan = items.isEmpty ? null : items.last.span;
       lastSpan ??= token.span;
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing "]" to terminate array literal.', lastSpan));
       return null;
     }
 
-    return new Array(token, parser.current, items);
+    return Array(token, parser.current, items);
   }
 }
 
@@ -119,12 +119,12 @@ class MapParselet implements PrefixParselet {
 
     if (!parser.next(TokenType.rCurly)) {
       var lastSpan = pairs.isEmpty ? token.span : pairs.last.span;
-      parser.errors.add(new JaelError(
+      parser.errors.add(JaelError(
           JaelErrorSeverity.error, 'Missing "}" in map literal.', lastSpan));
       return null;
     }
 
-    return new MapLiteral(token, pairs, parser.current);
+    return MapLiteral(token, pairs, parser.current);
   }
 }
 
@@ -132,7 +132,7 @@ class IdentifierParselet implements PrefixParselet {
   const IdentifierParselet();
 
   @override
-  Expression parse(Parser parser, Token token) => new Identifier(token);
+  Expression parse(Parser parser, Token token) => Identifier(token);
 }
 
 class ParenthesisParselet implements PrefixParselet {
@@ -143,14 +143,14 @@ class ParenthesisParselet implements PrefixParselet {
     var expression = parser.parseExpression(0);
 
     if (expression == null) {
-      parser.errors.add(new JaelError(JaelErrorSeverity.error,
+      parser.errors.add(JaelError(JaelErrorSeverity.error,
           'Missing expression after "(".', token.span));
       return null;
     }
 
     if (!parser.next(TokenType.rParen)) {
-      parser.errors.add(new JaelError(
-          JaelErrorSeverity.error, 'Missing ")".', expression.span));
+      parser.errors.add(
+          JaelError(JaelErrorSeverity.error, 'Missing ")".', expression.span));
       return null;
     }
 

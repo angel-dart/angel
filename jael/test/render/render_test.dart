@@ -15,13 +15,13 @@ main() {
 </html>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     jael.Document document;
     SymbolTable scope;
 
     try {
       document = jael.parseDocument(template, sourceUrl: 'test.jael');
-      scope = new SymbolTable<dynamic>(values: {
+      scope = SymbolTable<dynamic>(values: {
         'csrf_token': 'foo',
         'profile': {
           'avatar': 'thosakwe.png',
@@ -64,10 +64,10 @@ main() {
 </html>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     //jael.scan(template, sourceUrl: 'test.jael').tokens.forEach(print);
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable<dynamic>(values: {
+    var scope = SymbolTable<dynamic>(values: {
       'pokemon': const _Pokemon('Darkrai', 'Dark'),
     });
 
@@ -105,9 +105,9 @@ main() {
 </html>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable<dynamic>(values: {
+    var scope = SymbolTable<dynamic>(values: {
       'starters': starters,
     });
 
@@ -150,9 +150,9 @@ main() {
 </html>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable<dynamic>(values: {
+    var scope = SymbolTable<dynamic>(values: {
       'starters': starters,
     });
 
@@ -196,9 +196,9 @@ main() {
 </div>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable();
+    var scope = SymbolTable();
 
     const jael.Renderer().render(document, buf, scope);
     print(buf);
@@ -242,9 +242,9 @@ main() {
 </div>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable();
+    var scope = SymbolTable();
 
     const jael.Renderer().render(document, buf, scope);
     print(buf);
@@ -267,9 +267,9 @@ main() {
 <button '(click)'="myEventHandler(\$event)"></button>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable();
+    var scope = SymbolTable();
 
     const jael.Renderer().render(document, buf, scope);
     print(buf);
@@ -298,10 +298,10 @@ main() {
 </switch>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable<dynamic>(values: {
-      'account': new _Account(isDisabled: true),
+    var scope = SymbolTable<dynamic>(values: {
+      'account': _Account(isDisabled: true),
     });
 
     const jael.Renderer().render(document, buf, scope);
@@ -325,10 +325,10 @@ main() {
 </switch>
 ''';
 
-    var buf = new CodeBuffer();
+    var buf = CodeBuffer();
     var document = jael.parseDocument(template, sourceUrl: 'test.jael');
-    var scope = new SymbolTable<dynamic>(values: {
-      'account': new _Account(isDisabled: null),
+    var scope = SymbolTable<dynamic>(values: {
+      'account': _Account(isDisabled: null),
     });
 
     const jael.Renderer().render(document, buf, scope);
@@ -338,10 +338,10 @@ main() {
   });
 }
 
-const List<_Pokemon> starters = const [
-  const _Pokemon('Bulbasaur', 'Grass'),
-  const _Pokemon('Charmander', 'Fire'),
-  const _Pokemon('Squirtle', 'Water'),
+const List<_Pokemon> starters = [
+  _Pokemon('Bulbasaur', 'Grass'),
+  _Pokemon('Charmander', 'Fire'),
+  _Pokemon('Squirtle', 'Water'),
 ];
 
 class _Pokemon {

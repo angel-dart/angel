@@ -6,7 +6,7 @@ import 'package:symbol_table/symbol_table.dart';
 
 main() {
   while (true) {
-    var buf = new StringBuffer();
+    var buf = StringBuffer();
     int ch;
     print('Enter lines of Jael text, terminated by CTRL^D.');
     print('All environment variables are injected into the template scope.');
@@ -24,11 +24,11 @@ main() {
     if (document == null) {
       stderr.writeln('Could not parse the given text.');
     } else {
-      var output = new CodeBuffer();
+      var output = CodeBuffer();
       const jael.Renderer().render(
         document,
         output,
-        new SymbolTable(values: Platform.environment),
+        SymbolTable(values: Platform.environment),
         strictResolution: false,
       );
       print('GENERATED HTML:\n$output');
