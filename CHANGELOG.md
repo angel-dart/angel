@@ -1,3 +1,7 @@
+# 2.1.7+1
+* Fix a bug where new directories were not being created in
+`init`.
+
 # 2.1.7
 * Fix a bug where `ArgResults.arguments` was used in `init` instead of the
 intended `ArgResults.rest`.
