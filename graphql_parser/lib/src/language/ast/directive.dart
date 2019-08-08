@@ -28,19 +28,19 @@ class DirectiveContext extends Node {
   @deprecated
   Token get ARROBA => arrobaToken;
 
-/// Use [nameToken] instead.
+  /// Use [nameToken] instead.
   @deprecated
   Token get NAME => nameToken;
 
-/// Use [colonToken] instead.
+  /// Use [colonToken] instead.
   @deprecated
   Token get COLON => colonToken;
 
-/// Use [lParenToken] instead.
+  /// Use [lParenToken] instead.
   @deprecated
   Token get LPAREN => lParenToken;
 
-/// Use [rParenToken] instead.
+  /// Use [rParenToken] instead.
   @deprecated
   Token get RPAREN => rParenToken;
 
