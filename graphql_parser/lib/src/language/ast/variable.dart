@@ -1,8 +1,8 @@
-import '../token.dart';
-import 'node.dart';
 import 'package:source_span/source_span.dart';
+import '../token.dart';
+import 'input_value.dart';
 
-class VariableContext extends Node {
+class VariableContext extends InputValueContext<Object> {
   final Token DOLLAR, NAME;
 
   VariableContext(this.DOLLAR, this.NAME);
@@ -12,6 +12,7 @@ class VariableContext extends Node {
   @override
   FileSpan get span => DOLLAR.span.expand(NAME.span);
 
+  @override
   Object computeValue(Map<String, dynamic> variables) => variables[name];
   // new FileSpan(DOLLAR?.span?.start, NAME?.span?.end, toSource());
 }
