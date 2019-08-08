@@ -6,6 +6,7 @@ export 'argument.dart';
 export 'boolean_value.dart';
 export 'default_value.dart';
 export 'definition.dart';
+export 'deprecated_value.dart';
 export 'directive.dart';
 export 'document.dart';
 export 'field.dart';
