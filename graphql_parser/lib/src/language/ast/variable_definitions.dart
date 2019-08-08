@@ -3,16 +3,27 @@ import 'node.dart';
 import 'package:source_span/source_span.dart';
 import 'variable_definition.dart';
 
+/// A set of variable definitions in a GraphQL operation.
 class VariableDefinitionsContext extends Node {
-  final Token LPAREN, RPAREN;
+  final Token lParenToken, rParenToken;
+
+  /// The variables defined in this node.
   final List<VariableDefinitionContext> variableDefinitions = [];
 
-  VariableDefinitionsContext(this.LPAREN, this.RPAREN);
+  VariableDefinitionsContext(this.lParenToken, this.rParenToken);
+
+  /// Use [lParenToken] instead.
+  @deprecated
+  Token get LPAREN => lParenToken;
+
+  /// Use [rParenToken] instead.
+  @deprecated
+  Token get RPAREN => rParenToken;
 
   @override
   FileSpan get span {
     var out = variableDefinitions.fold<FileSpan>(
-        LPAREN.span, (o, v) => o.expand(v.span));
-    return out.expand(RPAREN.span);
+        lParenToken.span, (o, v) => o.expand(v.span));
+    return out.expand(rParenToken.span);
   }
 }
