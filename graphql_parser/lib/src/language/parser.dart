@@ -494,7 +494,8 @@ class Parser {
   InputValueContext parseValue() => parseInputValue();
 
   InputValueContext parseInputValue() {
-    return (parseNumberValue() ??
+    return (parseVariable() ??
+        parseNumberValue() ??
         parseStringValue() ??
         parseBooleanValue() ??
         parseNullValue() ??
