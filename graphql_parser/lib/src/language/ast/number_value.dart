@@ -3,13 +3,16 @@ import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'input_value.dart';
 
+/// A GraphQL number literal.
 class NumberValueContext extends InputValueContext<num> {
-  final Token NUMBER;
+  /// The source token.
+  final Token numberToken;
 
-  NumberValueContext(this.NUMBER);
+  NumberValueContext(this.numberToken);
 
+  /// The [num] value of the [numberToken].
   num get numberValue {
-    var text = NUMBER.text;
+    var text = numberToken.text;
     if (!text.contains('E') && !text.contains('e')) {
       return num.parse(text);
     } else {
@@ -20,8 +23,12 @@ class NumberValueContext extends InputValueContext<num> {
     }
   }
 
+  /// Use [numberToken] instead.
+  @deprecated
+  Token get NUMBER => numberToken;
+
   @override
-  FileSpan get span => NUMBER.span;
+  FileSpan get span => numberToken.span;
 
   @override
   num computeValue(Map<String, dynamic> variables) => numberValue;
