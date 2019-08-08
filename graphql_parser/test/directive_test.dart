@@ -67,13 +67,17 @@ class _IsDirective extends Matcher {
         item is DirectiveContext ? item : parseDirective(item.toString());
     if (directive == null) return false;
     if (valueOrVariable != null) {
-      if (directive.valueOrVariable == null)
+      if (directive.value == null)
         return false;
-      else
-        return valueOrVariable.matches(
-            directive.valueOrVariable.value?.value ??
-                directive.valueOrVariable.variable?.name,
-            matchState);
+      else {
+        var v = directive.value;
+        if (v is VariableContext) {
+          return valueOrVariable.matches(v.name, matchState);
+        } else {
+          return valueOrVariable.matches(
+              directive.value.computeValue({}), matchState);
+        }
+      }
     } else if (argument != null) {
       if (directive.argument == null)
         return false;
