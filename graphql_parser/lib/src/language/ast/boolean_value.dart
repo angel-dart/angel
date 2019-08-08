@@ -1,8 +1,8 @@
-import '../token.dart';
 import 'package:source_span/source_span.dart';
-import 'value.dart';
+import 'input_value.dart';
+import '../token.dart';
 
-class BooleanValueContext extends ValueContext<bool> {
+class BooleanValueContext extends InputValueContext<bool> {
   bool _valueCache;
   final Token BOOLEAN;
 
@@ -13,8 +13,8 @@ class BooleanValueContext extends ValueContext<bool> {
   bool get booleanValue => _valueCache ??= BOOLEAN.text == 'true';
 
   @override
-  bool get value => booleanValue;
+  FileSpan get span => BOOLEAN.span;
 
   @override
-  FileSpan get span => BOOLEAN.span;
+  bool computeValue(Map<String, dynamic> variables) => booleanValue;
 }
