@@ -10,9 +10,9 @@ class NumberValueContext extends InputValueContext<num> {
 
   num get numberValue {
     var text = NUMBER.text;
-    if (!text.contains('E') && !text.contains('e'))
+    if (!text.contains('E') && !text.contains('e')) {
       return num.parse(text);
-    else {
+    } else {
       var split = text.split(text.contains('E') ? 'E' : 'e');
       var base = num.parse(split[0]);
       var exp = num.parse(split[1]);

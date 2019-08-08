@@ -88,8 +88,7 @@ Matcher isField(
         Matcher selectionSet}) =>
     _IsField(fieldName, arguments, directives, selectionSet);
 
-Matcher isFieldName(String name, {String alias}) =>
-    _IsFieldName(name, alias);
+Matcher isFieldName(String name, {String alias}) => _IsFieldName(name, alias);
 
 class _IsField extends Matcher {
   final Matcher fieldName, arguments, directives, selectionSet;
@@ -106,10 +105,12 @@ class _IsField extends Matcher {
   bool matches(item, Map matchState) {
     var field = item is FieldContext ? item : parseField(item.toString());
     if (field == null) return false;
-    if (fieldName != null && !fieldName.matches(field.fieldName, matchState))
+    if (fieldName != null && !fieldName.matches(field.fieldName, matchState)) {
       return false;
-    if (arguments != null && !arguments.matches(field.arguments, matchState))
+    }
+    if (arguments != null && !arguments.matches(field.arguments, matchState)) {
       return false;
+    }
     return true;
   }
 }
@@ -121,9 +122,10 @@ class _IsFieldName extends Matcher {
 
   @override
   Description describe(Description description) {
-    if (realName != null)
+    if (realName != null) {
       return description
           .add('is field with name "$name" and alias "$realName"');
+    }
     return description.add('is field with name "$name"');
   }
 
@@ -131,10 +133,11 @@ class _IsFieldName extends Matcher {
   bool matches(item, Map matchState) {
     var fieldName =
         item is FieldNameContext ? item : parseFieldName(item.toString());
-    if (realName != null)
+    if (realName != null) {
       return fieldName.alias?.alias == name &&
           fieldName.alias?.name == realName;
-    else
+    } else {
       return fieldName.name == name;
+    }
   }
 }

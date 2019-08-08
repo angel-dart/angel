@@ -84,10 +84,11 @@ class _IsType extends Matcher {
 
   @override
   Description describe(Description description) {
-    if (nonNull == true)
+    if (nonNull == true) {
       return description.add('is non-null type named "$name"');
-    else
+    } else {
       return description.add('is nullable type named "$name"');
+    }
   }
 
   @override

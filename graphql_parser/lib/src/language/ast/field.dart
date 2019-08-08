@@ -15,15 +15,17 @@ class FieldContext extends Node {
 
   @override
   FileSpan get span {
-    if (selectionSet != null)
+    if (selectionSet != null) {
       return fieldName.span.expand(selectionSet.span);
-    else if (directives.isNotEmpty)
+    } else if (directives.isNotEmpty) {
       return directives.fold<FileSpan>(
           fieldName.span, (out, d) => out.expand(d.span));
-    if (arguments.isNotEmpty)
+    }
+    if (arguments.isNotEmpty) {
       return arguments.fold<FileSpan>(
           fieldName.span, (out, a) => out.expand(a.span));
-    else
+    } else {
       return fieldName.span;
+    }
   }
 }

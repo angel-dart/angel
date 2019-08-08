@@ -63,8 +63,9 @@ class StringValueContext extends InputValueContext<String> {
             default:
               buf.writeCharCode(next);
           }
-        } else
+        } else {
           throw SyntaxError('Unexpected "\\" in string literal.', span);
+        }
       } else {
         buf.writeCharCode(ch);
       }

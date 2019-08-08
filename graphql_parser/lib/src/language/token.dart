@@ -10,9 +10,10 @@ class Token {
 
   @override
   String toString() {
-    if (span == null)
+    if (span == null) {
       return "'$text' -> $type";
-    else
+    } else {
       return "(${span.start.line}:${span.start.column}) '$text' -> $type";
+    }
   }
 }

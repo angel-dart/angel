@@ -55,8 +55,7 @@ main() {
 SelectionSetContext parseSelectionSet(String text) =>
     parse(text).parseSelectionSet();
 
-Matcher isSelectionSet(List<Matcher> selections) =>
-    _IsSelectionSet(selections);
+Matcher isSelectionSet(List<Matcher> selections) => _IsSelectionSet(selections);
 
 class _IsSelectionSet extends Matcher {
   final List<Matcher> selections;
@@ -87,8 +86,9 @@ class _IsSelectionSet extends Matcher {
     for (int i = 0; i < set.selections.length; i++) {
       var sel = set.selections[i];
       if (!selections[i].matches(
-          sel.field ?? sel.fragmentSpread ?? sel.inlineFragment, matchState))
+          sel.field ?? sel.fragmentSpread ?? sel.inlineFragment, matchState)) {
         return false;
+      }
     }
 
     return true;
