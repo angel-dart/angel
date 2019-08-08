@@ -54,8 +54,8 @@ List<Token> scan(String text, {sourceUrl}) {
 
     for (var pattern in _patterns.keys) {
       if (scanner.matches(pattern)) {
-        potential.add(Token(
-            _patterns[pattern], scanner.lastMatch[0], scanner.lastSpan));
+        potential.add(
+            Token(_patterns[pattern], scanner.lastMatch[0], scanner.lastSpan));
       }
     }
 

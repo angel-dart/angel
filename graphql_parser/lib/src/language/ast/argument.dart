@@ -29,5 +29,6 @@ class ArgumentContext extends Node {
   String get name => nameToken.text;
 
   @override
-  FileSpan get span => nameToken.span.expand(colonToken.span).expand(value.span);
+  FileSpan get span =>
+      nameToken.span.expand(colonToken.span).expand(value.span);
 }

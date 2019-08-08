@@ -34,8 +34,7 @@ List<ArgumentContext> parseArgumentList(String text) =>
 
 Matcher isArgument(String name, value) => _IsArgument(name, value);
 
-Matcher isArgumentList(List<Matcher> arguments) =>
-    _IsArgumentList(arguments);
+Matcher isArgumentList(List<Matcher> arguments) => _IsArgumentList(arguments);
 
 class _IsArgument extends Matcher {
   final String name;
