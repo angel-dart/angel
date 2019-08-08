@@ -375,8 +375,7 @@ class Parser {
               return new DirectiveContext(
                   ARROBA, NAME, null, LPAREN, current, arg, null);
             } else {
-              errors.add(
-                  new SyntaxError('Missing \')\'', arg.value.span));
+              errors.add(new SyntaxError('Missing \')\'', arg.value.span));
               return null;
             }
           } else {
