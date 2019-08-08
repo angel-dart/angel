@@ -1,10 +1,9 @@
 import 'package:source_span/source_span.dart';
-
 import '../token.dart';
+import 'input_value.dart';
 import 'node.dart';
-import 'value.dart';
 
-class NullValueContext extends ValueContext<Null> {
+class NullValueContext extends InputValueContext<Null> {
   final Token NULL;
 
   NullValueContext(this.NULL);
@@ -13,10 +12,10 @@ class NullValueContext extends ValueContext<Null> {
   FileSpan get span => NULL.span;
 
   @override
-  Null get value => null;
+  Null computeValue(Map<String, dynamic> variables) => null;
 }
 
-class EnumValueContext extends ValueContext<String> {
+class EnumValueContext extends InputValueContext<String> {
   final Token NAME;
 
   EnumValueContext(this.NAME);
@@ -25,10 +24,10 @@ class EnumValueContext extends ValueContext<String> {
   FileSpan get span => NAME.span;
 
   @override
-  String get value => NAME.span.text;
+  String computeValue(Map<String, dynamic> variables) => NAME.span.text;
 }
 
-class ObjectValueContext extends ValueContext<Map<String, dynamic>> {
+class ObjectValueContext extends InputValueContext<Map<String, dynamic>> {
   final Token LBRACE;
   final List<ObjectFieldContext> fields;
   final Token RBRACE;
@@ -47,13 +46,13 @@ class ObjectValueContext extends ValueContext<Map<String, dynamic>> {
   }
 
   @override
-  Map<String, dynamic> get value {
+  Map<String, dynamic> computeValue(Map<String, dynamic> variables) {
     if (fields.isEmpty) {
       return <String, dynamic>{};
     } else {
       return fields.fold<Map<String, dynamic>>(<String, dynamic>{},
           (map, field) {
-        return map..[field.NAME.text] = field.value.value;
+        return map..[field.NAME.text] = field.value.computeValue(variables);
       });
     }
   }
@@ -62,7 +61,7 @@ class ObjectValueContext extends ValueContext<Map<String, dynamic>> {
 class ObjectFieldContext extends Node {
   final Token NAME;
   final Token COLON;
-  final ValueContext value;
+  final InputValueContext value;
 
   ObjectFieldContext(this.NAME, this.COLON, this.value);
 
