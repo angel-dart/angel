@@ -19,7 +19,7 @@ main() {
   var projectField = operation.selectionSet.selections.first.field;
   print(projectField.fieldName.name); // project
   print(projectField.arguments.first.name); // name
-  print(projectField.arguments.first.valueOrVariable.value.value); // GraphQL
+  print(projectField.arguments.first.value); // GraphQL
 
   var taglineField = projectField.selectionSet.selections.first.field;
   print(taglineField.fieldName.name); // tagline

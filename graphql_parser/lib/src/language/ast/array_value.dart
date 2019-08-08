@@ -1,6 +1,7 @@
 import 'package:source_span/source_span.dart';
 import '../token.dart';
-import 'value.dart';
+import 'constant.dart';
+import 'input_value.dart';
 
 class ListValueContext extends ValueContext {
   final Token LBRACKET, RBRACKET;
