@@ -2,17 +2,27 @@ import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'input_value.dart';
 
+/// A variable reference in GraphQL.
 class VariableContext extends InputValueContext<Object> {
-  final Token DOLLAR, NAME;
+  /// The source tokens.
+  final Token dollarToken, nameToken;
 
-  VariableContext(this.DOLLAR, this.NAME);
+  VariableContext(this.dollarToken, this.nameToken);
 
-  String get name => NAME.text;
+  /// The [String] value of the [nameToken].
+  String get name => nameToken.text;
+
+  /// Use [dollarToken] instead.
+  @deprecated
+  Token get DOLLAR => dollarToken;
+
+  /// Use [nameToken] instead.
+  @deprecated
+  Token get NAME => nameToken;
 
   @override
-  FileSpan get span => DOLLAR.span.expand(NAME.span);
+  FileSpan get span => dollarToken.span.expand(nameToken.span);
 
   @override
   Object computeValue(Map<String, dynamic> variables) => variables[name];
-  // FileSpan(DOLLAR?.span?.start, NAME?.span?.end, toSource());
 }
