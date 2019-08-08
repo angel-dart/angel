@@ -64,7 +64,7 @@ main() {
 
   test('exceptions', () {
     var throwsSyntaxError = predicate((x) {
-      var parser = parse(x.toString())..parseValue();
+      var parser = parse(x.toString())..parseInputValue();
       return parser.errors.isNotEmpty;
     }, 'fails to parse value');
 
