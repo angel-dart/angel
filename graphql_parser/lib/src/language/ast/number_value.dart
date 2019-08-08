@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'package:source_span/source_span.dart';
 import '../token.dart';
-import 'value.dart';
+import 'input_value.dart';
 
-class NumberValueContext extends ValueContext<num> {
+class NumberValueContext extends InputValueContext<num> {
   final Token NUMBER;
 
   NumberValueContext(this.NUMBER);
@@ -21,8 +21,8 @@ class NumberValueContext extends ValueContext<num> {
   }
 
   @override
-  num get value => numberValue;
+  FileSpan get span => NUMBER.span;
 
   @override
-  FileSpan get span => NUMBER.span;
+  num computeValue(Map<String, dynamic> variables) => numberValue;
 }
