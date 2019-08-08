@@ -4,20 +4,33 @@ import '../token.dart';
 import 'node.dart';
 import 'selection.dart';
 
+/// A set of GraphQL selections - fields, fragments, or inline fragments.
 class SelectionSetContext extends Node {
-  final Token LBRACE, RBRACE;
+  /// The source tokens.
+  final Token lBraceToken, rBraceToken;
+
+  /// The selections to be applied.
   final List<SelectionContext> selections = [];
 
-  SelectionSetContext(this.LBRACE, this.RBRACE);
+  SelectionSetContext(this.lBraceToken, this.rBraceToken);
 
+  /// A synthetic [SelectionSetContext] produced from a set of [selections].
   factory SelectionSetContext.merged(List<SelectionContext> selections) =
       _MergedSelectionSetContext;
 
+  /// Use [lBraceToken] instead.
+  @deprecated
+  Token get LBRACE => lBraceToken;
+
+  /// Use [rBraceToken] instead.
+  @deprecated
+  Token get RBRACE => rBraceToken;
+
   @override
   FileSpan get span {
-    var out =
-        selections.fold<FileSpan>(LBRACE.span, (out, s) => out.expand(s.span));
-    return out.expand(RBRACE.span);
+    var out = selections.fold<FileSpan>(
+        lBraceToken.span, (out, s) => out.expand(s.span));
+    return out.expand(rBraceToken.span);
   }
 }
 
