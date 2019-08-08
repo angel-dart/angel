@@ -9,7 +9,7 @@ class StringValueContext extends InputValueContext<String> {
   final Token STRING;
   final bool isBlockString;
 
-  StringValueContext(this.STRING, {this.isBlockString: false});
+  StringValueContext(this.STRING, {this.isBlockString = false});
 
   @override
   FileSpan get span => STRING.span;
