@@ -56,7 +56,7 @@ SelectionSetContext parseSelectionSet(String text) =>
     parse(text).parseSelectionSet();
 
 Matcher isSelectionSet(List<Matcher> selections) =>
-    new _IsSelectionSet(selections);
+    _IsSelectionSet(selections);
 
 class _IsSelectionSet extends Matcher {
   final List<Matcher> selections;

@@ -74,7 +74,7 @@ main() {
 
 InputValueContext parseValue(String text) => parse(text).parseInputValue();
 
-Matcher isValue(value) => new _IsValue(value);
+Matcher isValue(value) => _IsValue(value);
 
 class _IsValue extends Matcher {
   final value;

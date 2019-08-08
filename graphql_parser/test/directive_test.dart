@@ -37,11 +37,11 @@ main() {
 DirectiveContext parseDirective(String text) => parse(text).parseDirective();
 
 Matcher isDirective(String name, {Matcher valueOrVariable, Matcher argument}) =>
-    new _IsDirective(name,
+    _IsDirective(name,
         valueOrVariable: valueOrVariable, argument: argument);
 
 Matcher isDirectiveList(List<Matcher> directives) =>
-    new _IsDirectiveList(directives);
+    _IsDirectiveList(directives);
 
 class _IsDirective extends Matcher {
   final String name;

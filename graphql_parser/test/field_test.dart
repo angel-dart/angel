@@ -86,10 +86,10 @@ Matcher isField(
         Matcher arguments,
         Matcher directives,
         Matcher selectionSet}) =>
-    new _IsField(fieldName, arguments, directives, selectionSet);
+    _IsField(fieldName, arguments, directives, selectionSet);
 
 Matcher isFieldName(String name, {String alias}) =>
-    new _IsFieldName(name, alias);
+    _IsFieldName(name, alias);
 
 class _IsField extends Matcher {
   final Matcher fieldName, arguments, directives, selectionSet;

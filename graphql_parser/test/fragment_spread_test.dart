@@ -25,7 +25,7 @@ FragmentSpreadContext parseFragmentSpread(String text) =>
     parse(text).parseFragmentSpread();
 
 Matcher isFragmentSpread(String name, {Matcher directives}) =>
-    new _IsFragmentSpread(name, directives);
+    _IsFragmentSpread(name, directives);
 
 class _IsFragmentSpread extends Matcher {
   final String name;

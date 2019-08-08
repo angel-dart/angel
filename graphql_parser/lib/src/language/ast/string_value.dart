@@ -24,7 +24,7 @@ class StringValueContext extends InputValueContext<String> {
     }
 
     var codeUnits = text.codeUnits;
-    var buf = new StringBuffer();
+    var buf = StringBuffer();
 
     for (int i = 0; i < codeUnits.length; i++) {
       var ch = codeUnits[i];
@@ -35,9 +35,9 @@ class StringValueContext extends InputValueContext<String> {
               c2 = codeUnits[++i],
               c3 = codeUnits[++i],
               c4 = codeUnits[++i];
-          var hexString = new String.fromCharCodes([c1, c2, c3, c4]);
+          var hexString = String.fromCharCodes([c1, c2, c3, c4]);
           var hexNumber = int.parse(hexString, radix: 16);
-          buf.write(new String.fromCharCode(hexNumber));
+          buf.write(String.fromCharCode(hexNumber));
           continue;
         }
 
@@ -64,7 +64,7 @@ class StringValueContext extends InputValueContext<String> {
               buf.writeCharCode(next);
           }
         } else
-          throw new SyntaxError('Unexpected "\\" in string literal.', span);
+          throw SyntaxError('Unexpected "\\" in string literal.', span);
       } else {
         buf.writeCharCode(ch);
       }

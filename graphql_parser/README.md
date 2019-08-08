@@ -33,7 +33,7 @@ import 'package:graphql_parser/graphql_parser.dart';
 
 doSomething(String text) {
   var tokens = scan(text);
-  var parser = new Parser(tokens);
+  var parser = Parser(tokens);
   
   if (parser.errors.isNotEmpty) {
     // Handle errors...

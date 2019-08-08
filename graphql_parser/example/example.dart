@@ -11,7 +11,7 @@ final String text = '''
 
 main() {
   var tokens = scan(text);
-  var parser = new Parser(tokens);
+  var parser = Parser(tokens);
   var doc = parser.parseDocument();
 
   var operation = doc.definitions.first as OperationDefinitionContext;

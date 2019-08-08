@@ -32,10 +32,10 @@ ArgumentContext parseArgument(String text) => parse(text).parseArgument();
 List<ArgumentContext> parseArgumentList(String text) =>
     parse(text).parseArguments();
 
-Matcher isArgument(String name, value) => new _IsArgument(name, value);
+Matcher isArgument(String name, value) => _IsArgument(name, value);
 
 Matcher isArgumentList(List<Matcher> arguments) =>
-    new _IsArgumentList(arguments);
+    _IsArgumentList(arguments);
 
 class _IsArgument extends Matcher {
   final String name;

@@ -14,5 +14,5 @@ class VariableContext extends InputValueContext<Object> {
 
   @override
   Object computeValue(Map<String, dynamic> variables) => variables[name];
-  // new FileSpan(DOLLAR?.span?.start, NAME?.span?.end, toSource());
+  // FileSpan(DOLLAR?.span?.start, NAME?.span?.end, toSource());
 }

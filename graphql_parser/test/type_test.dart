@@ -49,10 +49,10 @@ main() {
 TypeContext parseType(String text) => parse(text).parseType();
 
 Matcher isListType(Matcher innerType, {bool isNullable}) =>
-    new _IsListType(innerType, isNullable: isNullable != false);
+    _IsListType(innerType, isNullable: isNullable != false);
 
 Matcher isType(String name, {bool isNullable}) =>
-    new _IsType(name, nonNull: isNullable != true);
+    _IsType(name, nonNull: isNullable != true);
 
 class _IsListType extends Matcher {
   final Matcher innerType;

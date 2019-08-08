@@ -22,7 +22,7 @@ main() {
   });
 }
 
-Matcher isVariable(String name) => new _IsVariable(name);
+Matcher isVariable(String name) => _IsVariable(name);
 
 class _IsVariable extends Matcher {
   final String name;
