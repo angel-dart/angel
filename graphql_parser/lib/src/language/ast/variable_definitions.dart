@@ -5,6 +5,7 @@ import 'variable_definition.dart';
 
 /// A set of variable definitions in a GraphQL operation.
 class VariableDefinitionsContext extends Node {
+  /// The source tokens.
   final Token lParenToken, rParenToken;
 
   /// The variables defined in this node.
