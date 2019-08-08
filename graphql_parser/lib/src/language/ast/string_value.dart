@@ -3,9 +3,9 @@ import 'package:source_span/source_span.dart';
 
 import '../syntax_error.dart';
 import '../token.dart';
-import 'value.dart';
+import 'input_value.dart';
 
-class StringValueContext extends ValueContext {
+class StringValueContext extends InputValueContext<String> {
   final Token STRING;
   final bool isBlockString;
 
@@ -74,5 +74,5 @@ class StringValueContext extends ValueContext {
   }
 
   @override
-  get value => stringValue;
+  String computeValue(Map<String, dynamic> variables) => stringValue;
 }
