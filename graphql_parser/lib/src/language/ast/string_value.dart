@@ -5,22 +5,31 @@ import '../syntax_error.dart';
 import '../token.dart';
 import 'input_value.dart';
 
+/// A GraphQL string value literal.
 class StringValueContext extends InputValueContext<String> {
-  final Token STRING;
+  /// The source token.
+  final Token stringToken;
+
+  /// Whether this is a block string.
   final bool isBlockString;
 
-  StringValueContext(this.STRING, {this.isBlockString = false});
+  StringValueContext(this.stringToken, {this.isBlockString = false});
 
   @override
-  FileSpan get span => STRING.span;
+  FileSpan get span => stringToken.span;
 
+  /// Use [stringToken] instead.
+  @deprecated
+  Token get STRING => stringToken;
+
+  /// The [String] value of the [stringToken].
   String get stringValue {
     String text;
 
     if (!isBlockString) {
-      text = STRING.text.substring(1, STRING.text.length - 1);
+      text = stringToken.text.substring(1, stringToken.text.length - 1);
     } else {
-      text = STRING.text.substring(3, STRING.text.length - 3).trim();
+      text = stringToken.text.substring(3, stringToken.text.length - 3).trim();
     }
 
     var codeUnits = text.codeUnits;
