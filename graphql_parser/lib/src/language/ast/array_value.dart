@@ -2,16 +2,28 @@ import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'input_value.dart';
 
+/// A GraphQL list value literal.
 class ListValueContext extends InputValueContext {
-  final Token LBRACKET, RBRACKET;
+  /// The source tokens.
+  final Token lBracket, rBracket;
+
+  /// The child values.
   final List<InputValueContext> values = [];
 
-  ListValueContext(this.LBRACKET, this.RBRACKET);
+  ListValueContext(this.lBracket, this.rBracket);
+
+  /// Use [lBracket] instead.
+  @deprecated
+  Token get LBRACKET => lBracket;
+
+  /// Use [rBracket] instead.
+  @deprecated
+  Token get RBRACKET => rBracket;
 
   @override
   FileSpan get span {
-    var out = values.fold<FileSpan>(LBRACKET.span, (o, v) => o.expand(v.span));
-    return out.expand(RBRACKET.span);
+    var out = values.fold<FileSpan>(lBracket.span, (o, v) => o.expand(v.span));
+    return out.expand(rBracket.span);
   }
 
   @override
