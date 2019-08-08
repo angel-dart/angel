@@ -5,10 +5,18 @@ import 'field_name.dart';
 import 'node.dart';
 import 'selection_set.dart';
 
+/// A field in a GraphQL [SelectionSet].
 class FieldContext extends Node {
+  /// The name of this field.
   final FieldNameContext fieldName;
+
+  /// Any arguments this field expects.
   final List<ArgumentContext> arguments = [];
+
+  /// Any directives affixed to this field.
   final List<DirectiveContext> directives = [];
+
+  /// The list of selections to resolve on an object.
   final SelectionSetContext selectionSet;
 
   FieldContext(this.fieldName, [this.selectionSet]);
