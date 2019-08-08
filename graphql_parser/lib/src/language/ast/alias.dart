@@ -5,28 +5,29 @@ import 'node.dart';
 /// An alternate name for a field within a [SelectionSet].
 class AliasContext extends Node {
   /// The source tokens.
-  final Token name1, colon, name2;
+  final Token nameToken1, colonToken, nameToken2;
 
-  AliasContext(this.name1, this.colon, this.name2);
+  AliasContext(this.nameToken1, this.colonToken, this.nameToken2);
 
-  /// Use [name1] instead.
+  /// Use [nameToken1] instead.
   @deprecated
-  Token get NAME1 => name1;
+  Token get NAME1 => nameToken1;
 
-  /// Use [colon] instead.
+  /// Use [colonToken] instead.
   @deprecated
-  Token get COLON => colon;
+  Token get COLON => colonToken;
 
-  /// Use [name2] instead.
+  /// Use [nameToken2] instead.
   @deprecated
-  Token get NAME2 => name2;
+  Token get NAME2 => nameToken2;
 
   /// The aliased name of the value.
-  String get alias => name1.text;
+  String get alias => nameToken1.text;
 
   /// The actual name of the value.
-  String get name => name2.text;
+  String get name => nameToken2.text;
 
   @override
-  FileSpan get span => name1.span.expand(colon.span).expand(name2.span);
+  FileSpan get span =>
+      nameToken1.span.expand(colonToken.span).expand(nameToken2.span);
 }

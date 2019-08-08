@@ -7,15 +7,17 @@ import 'node.dart';
 /// A GraphQL directive, which may or may not have runtime semantics.
 class DirectiveContext extends Node {
   /// The source tokens.
-  final Token arroba, name, colon, lParen, rParen;
+  final Token arrobaToken, nameToken, colonToken, lParenToken, rParenToken;
+
   /// The argument being passed as the directive.
   final ArgumentContext argument;
+
   /// The (optional) value being passed with the directive.
   final InputValueContext value;
 
-  DirectiveContext(this.arroba, this.name, this.colon, this.lParen, this.rParen,
-      this.argument, this.value) {
-    assert(name != null);
+  DirectiveContext(this.arrobaToken, this.nameToken, this.colonToken,
+      this.lParenToken, this.rParenToken, this.argument, this.value) {
+    assert(nameToken != null);
   }
 
   /// Use [value] instead.
@@ -23,28 +25,31 @@ class DirectiveContext extends Node {
   InputValueContext get valueOrVariable => value;
 
   @deprecated
-  Token get ARROBA => arroba;
+  Token get ARROBA => arrobaToken;
 
   @deprecated
-  Token get NAME => name;
+  Token get NAME => nameToken;
 
   @deprecated
-  Token get COLON => colon;
+  Token get COLON => colonToken;
 
   @deprecated
-  Token get LPAREN => lParen;
+  Token get LPAREN => lParenToken;
 
   @deprecated
-  Token get RPAREN => rParen;
+  Token get RPAREN => rParenToken;
 
   @override
   FileSpan get span {
-    var out = arroba.span.expand(name.span);
+    var out = arrobaToken.span.expand(nameToken.span);
 
-    if (colon != null) {
-      out = out.expand(colon.span).expand(value.span);
-    } else if (lParen != null) {
-      out = out.expand(lParen.span).expand(argument.span).expand(rParen.span);
+    if (colonToken != null) {
+      out = out.expand(colonToken.span).expand(value.span);
+    } else if (lParenToken != null) {
+      out = out
+          .expand(lParenToken.span)
+          .expand(argument.span)
+          .expand(rParenToken.span);
     }
 
     return out;

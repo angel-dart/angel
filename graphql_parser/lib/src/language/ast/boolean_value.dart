@@ -7,21 +7,21 @@ class BooleanValueContext extends InputValueContext<bool> {
   bool _valueCache;
 
   /// The source token.
-  final Token boolean;
+  final Token booleanToken;
 
-  BooleanValueContext(this.boolean) {
-    assert(boolean?.text == 'true' || boolean?.text == 'false');
+  BooleanValueContext(this.booleanToken) {
+    assert(booleanToken?.text == 'true' || booleanToken?.text == 'false');
   }
 
   /// The [bool] value of this literal.
-  bool get booleanValue => _valueCache ??= boolean.text == 'true';
+  bool get booleanValue => _valueCache ??= booleanToken.text == 'true';
 
-  /// Use [boolean] instead.
+  /// Use [booleanToken] instead.
   @deprecated
-  Token get BOOLEAN => boolean;
+  Token get BOOLEAN => booleanToken;
 
   @override
-  FileSpan get span => boolean.span;
+  FileSpan get span => booleanToken.span;
 
   @override
   bool computeValue(Map<String, dynamic> variables) => booleanValue;

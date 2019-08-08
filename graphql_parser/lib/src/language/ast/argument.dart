@@ -6,12 +6,12 @@ import 'input_value.dart';
 /// An argument passed to a [FieldContext].
 class ArgumentContext extends Node {
   /// The source tokens.
-  final Token nameToken, colon;
+  final Token nameToken, colonToken;
 
   /// The value of the argument.
   final InputValueContext value;
 
-  ArgumentContext(this.nameToken, this.colon, this.value);
+  ArgumentContext(this.nameToken, this.colonToken, this.value);
 
   /// Use [value] instead.
   @deprecated
@@ -21,13 +21,13 @@ class ArgumentContext extends Node {
   @deprecated
   Token get NAME => nameToken;
 
-  /// Use [colon] instead.
+  /// Use [colonToken] instead.
   @deprecated
-  Token get COLON => colon;
+  Token get COLON => colonToken;
 
   /// The name of the argument, as a [String].
   String get name => nameToken.text;
 
   @override
-  FileSpan get span => nameToken.span.expand(colon.span).expand(value.span);
+  FileSpan get span => nameToken.span.expand(colonToken.span).expand(value.span);
 }
