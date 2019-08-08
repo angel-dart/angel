@@ -11,5 +11,7 @@ class VariableContext extends Node {
 
   @override
   FileSpan get span => DOLLAR.span.expand(NAME.span);
+
+  Object computeValue(Map<String, dynamic> variables) => variables[name];
   // new FileSpan(DOLLAR?.span?.start, NAME?.span?.end, toSource());
 }

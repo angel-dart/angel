@@ -13,4 +13,7 @@ class InputValueContext extends Node {
 
   @override
   FileSpan get span => constant?.span ?? variable.span;
+
+  Object computeValue(Map<String, dynamic> variables) =>
+      constant?.computeValue(variables) ?? variable?.computeValue(variables);
 }
