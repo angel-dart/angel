@@ -54,10 +54,9 @@ class _IsArgument extends Matcher {
     if (arg == null) return false;
     print(arg.span.highlight());
     return equals(name).matches(arg.name, matchState) &&
-        equals(value).matches(
-            arg.valueOrVariable.value?.value ??
-                arg.valueOrVariable.variable?.name,
-            matchState);
+        ((arg is VariableContext &&
+                equals(value).matches(arg.name, matchState)) ||
+            equals(value).matches(arg.value.computeValue({}), matchState));
   }
 }
 

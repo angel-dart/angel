@@ -440,18 +440,9 @@ class Parser {
       return null;
   }
 
-  ValueOrVariableContext parseValueOrVariable() {
-    var value = parseValue();
-    if (value != null)
-      return new ValueOrVariableContext(value, null);
-    else {
-      var variable = parseVariable();
-      if (variable != null)
-        return new ValueOrVariableContext(null, variable);
-      else
-        return null;
-    }
-  }
+  /// Use [parseInputValue] instead.
+  @deprecated
+  InputValueContext parseValueOrVariable() => parseInputValue();
 
   VariableContext parseVariable() {
     if (next(TokenType.DOLLAR)) {
@@ -498,14 +489,18 @@ class Parser {
       return null;
   }
 
-  ValueContext parseValue() {
+  /// Use [parseInputValue] instead.
+  @deprecated
+  InputValueContext parseValue() => parseInputValue();
+
+  InputValueContext parseInputValue() {
     return (parseNumberValue() ??
         parseStringValue() ??
         parseBooleanValue() ??
         parseNullValue() ??
         parseEnumValue() ??
         parseListValue() ??
-        parseObjectValue()) as ValueContext;
+        parseObjectValue()) as InputValueContext;
   }
 
   StringValueContext parseStringValue() => next(TokenType.STRING)
@@ -532,14 +527,14 @@ class Parser {
     if (next(TokenType.LBRACKET)) {
       var LBRACKET = current;
       var lastSpan = LBRACKET.span;
-      List<ValueContext> values = [];
-      ValueContext value = parseValue();
+      List<InputValueContext> values = [];
+      var value = parseInputValue();
 
       while (value != null) {
         lastSpan = value.span;
         values.add(value);
         eatCommas();
-        value = parseValue();
+        value = parseInputValue();
       }
 
       eatCommas();
