@@ -24,18 +24,23 @@ class DirectiveContext extends Node {
   @deprecated
   InputValueContext get valueOrVariable => value;
 
+  /// Use [arrobaToken] instead.
   @deprecated
   Token get ARROBA => arrobaToken;
 
+/// Use [nameToken] instead.
   @deprecated
   Token get NAME => nameToken;
 
+/// Use [colonToken] instead.
   @deprecated
   Token get COLON => colonToken;
 
+/// Use [lParenToken] instead.
   @deprecated
   Token get LPAREN => lParenToken;
 
+/// Use [rParenToken] instead.
   @deprecated
   Token get RPAREN => rParenToken;
 
