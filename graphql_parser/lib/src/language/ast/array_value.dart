@@ -1,11 +1,10 @@
 import 'package:source_span/source_span.dart';
 import '../token.dart';
-import 'constant.dart';
 import 'input_value.dart';
 
-class ListValueContext extends ValueContext {
+class ListValueContext extends InputValueContext {
   final Token LBRACKET, RBRACKET;
-  final List<ValueContext> values = [];
+  final List<InputValueContext> values = [];
 
   ListValueContext(this.LBRACKET, this.RBRACKET);
 
@@ -16,5 +15,7 @@ class ListValueContext extends ValueContext {
   }
 
   @override
-  List get value => values.map((v) => v.value).toList();
+  computeValue(Map<String, dynamic> variables) {
+    return values.map((v) => v.computeValue(variables)).toList();
+  }
 }
