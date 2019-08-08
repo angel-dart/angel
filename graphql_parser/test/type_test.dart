@@ -72,7 +72,7 @@ class _IsListType extends Matcher {
     var type = item is TypeContext ? item : parseType(item.toString());
     if (type.listType == null) return false;
     if (type.isNullable != (isNullable != false)) return false;
-    return innerType.matches(type.listType.type, matchState);
+    return innerType.matches(type.listType.innerType, matchState);
   }
 }
 
