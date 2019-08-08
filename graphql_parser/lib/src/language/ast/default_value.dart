@@ -1,11 +1,11 @@
-import '../token.dart';
-import 'node.dart';
 import 'package:source_span/source_span.dart';
-import 'value.dart';
+import '../token.dart';
+import 'input_value.dart';
+import 'node.dart';
 
 class DefaultValueContext extends Node {
   final Token EQUALS;
-  final ValueContext value;
+  final InputValueContext value;
 
   DefaultValueContext(this.EQUALS, this.value);
 
