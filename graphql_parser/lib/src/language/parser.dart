@@ -357,7 +357,7 @@ class Parser {
 
         if (next(TokenType.COLON)) {
           var COLON = current;
-          var val = parseValueOrVariable();
+          var val = parseInputValue();
           if (val != null)
             return new DirectiveContext(
                 ARROBA, NAME, COLON, null, null, null, val);
@@ -376,7 +376,7 @@ class Parser {
                   ARROBA, NAME, null, LPAREN, current, arg, null);
             } else {
               errors.add(
-                  new SyntaxError('Missing \')\'', arg.valueOrVariable.span));
+                  new SyntaxError('Missing \')\'', arg.value.span));
               return null;
             }
           } else {
@@ -423,7 +423,7 @@ class Parser {
       var NAME = current;
       if (next(TokenType.COLON)) {
         var COLON = current;
-        var val = parseValueOrVariable();
+        var val = parseInputValue();
         if (val != null)
           return new ArgumentContext(NAME, COLON, val);
         else {
@@ -462,7 +462,7 @@ class Parser {
   DefaultValueContext parseDefaultValue() {
     if (next(TokenType.EQUALS)) {
       var EQUALS = current;
-      var value = parseValue();
+      var value = parseInputValue();
       if (value != null) {
         return new DefaultValueContext(EQUALS, value);
       } else {
@@ -582,7 +582,7 @@ class Parser {
 
       if (next(TokenType.COLON)) {
         var COLON = current;
-        var value = parseValue();
+        var value = parseInputValue();
 
         if (value != null) {
           return new ObjectFieldContext(NAME, COLON, value);
