@@ -5,7 +5,6 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_wings/angel_wings.dart';
 import 'package:io/ansi.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:tuple/tuple.dart';
 
 Future<Process> _runWrk(
@@ -89,10 +88,11 @@ void _angelIsolate(Tuple2<AngelBenchmark, String> args) {
     var app = Angel();
     Driver driver;
 
-    if (args.item2 == 'angel_http')
+    if (args.item2 == 'angel_http') {
       driver = AngelHttp.custom(app, startShared);
-    else if (args.item2 == 'angel_wings')
+    } else if (args.item2 == 'angel_wings') {
       driver = AngelWings.custom(app, startSharedWings);
+    }
 
     await app.configure(args.item1.setupAngel);
     await driver.startServer(InternetAddress.loopbackIPv4, testPort);

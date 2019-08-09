@@ -57,8 +57,9 @@ class WingsResponseContext extends ResponseContext<int> {
         }
       }
 
-      if (contentType != null)
+      if (contentType != null) {
         outHeaders['content-type'] = contentType.toString();
+      }
 
       if (encoders.isNotEmpty && correspondingRequest != null) {
         if (_allowedEncodings != null) {
@@ -66,9 +67,9 @@ class WingsResponseContext extends ResponseContext<int> {
             Converter<List<int>, List<int>> encoder;
             String key = encodingName;
 
-            if (encoders.containsKey(encodingName))
+            if (encoders.containsKey(encodingName)) {
               encoder = encoders[encodingName];
-            else if (encodingName == '*') {
+            } else if (encodingName == '*') {
               encoder = encoders[key = encoders.keys.first];
             }
 
@@ -116,9 +117,9 @@ class WingsResponseContext extends ResponseContext<int> {
           Converter<List<int>, List<int>> encoder;
           String key = encodingName;
 
-          if (encoders.containsKey(encodingName))
+          if (encoders.containsKey(encodingName)) {
             encoder = encoders[encodingName];
-          else if (encodingName == '*') {
+          } else if (encodingName == '*') {
             encoder = encoders[key = encoders.keys.first];
           }
 
@@ -131,17 +132,18 @@ class WingsResponseContext extends ResponseContext<int> {
     }
 
     return output.forEach((buf) {
-      if (!_isClosed)
+      if (!_isClosed) {
         writeToNativeSocket(
             rawResponse, buf is Uint8List ? buf : Uint8List.fromList(buf));
+      }
     });
   }
 
   @override
   void add(List<int> data) {
-    if (_isClosed && isBuffered)
+    if (_isClosed && isBuffered) {
       throw ResponseContext.closed();
-    else if (!isBuffered) {
+    } else if (!isBuffered) {
       if (!_isClosed) {
         _openStream();
 
@@ -151,9 +153,9 @@ class WingsResponseContext extends ResponseContext<int> {
               Converter<List<int>, List<int>> encoder;
               String key = encodingName;
 
-              if (encoders.containsKey(encodingName))
+              if (encoders.containsKey(encodingName)) {
                 encoder = encoders[encodingName];
-              else if (encodingName == '*') {
+              } else if (encodingName == '*') {
                 encoder = encoders[key = encoders.keys.first];
               }
 
@@ -168,8 +170,9 @@ class WingsResponseContext extends ResponseContext<int> {
         writeToNativeSocket(
             rawResponse, data is Uint8List ? data : Uint8List.fromList(data));
       }
-    } else
+    } else {
       buffer.add(data);
+    }
   }
 
   @override

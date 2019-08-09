@@ -9,7 +9,7 @@ import 'wings_socket.dart';
 
 enum _ParseState { method, url, headerField, headerValue, body }
 
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 class WingsRequestContext extends RequestContext<WingsClientSocket> {
   final WingsClientSocket rawRequest;
@@ -91,7 +91,7 @@ class WingsRequestContext extends RequestContext<WingsClientSocket> {
       case PURGE:
         return 'PURGE';
       default:
-        throw new ArgumentError('Unknown method $method.');
+        throw ArgumentError('Unknown method $method.');
     }
   }
 

@@ -22,14 +22,14 @@ void prettyLog(LogRecord record) {
 
 /// Chooses a color based on the logger [level].
 AnsiCode chooseLogColor(Level level) {
-  if (level == Level.SHOUT)
+  if (level == Level.SHOUT) {
     return backgroundRed;
-  else if (level == Level.SEVERE)
+  } else if (level == Level.SEVERE) {
     return red;
-  else if (level == Level.WARNING)
+  } else if (level == Level.WARNING) {
     return yellow;
-  else if (level == Level.INFO)
+  } else if (level == Level.INFO) {
     return cyan;
-  else if (level == Level.FINER || level == Level.FINEST) return lightGray;
+  } else if (level == Level.FINER || level == Level.FINEST) return lightGray;
   return resetAll;
 }
