@@ -1,4 +1,6 @@
 # pretty\_logging
+[![Pub](https://img.shields.io/pub/v/pretty_logging.svg)](https://pub.dartlang.org/packages/pretty_logging)
+
 Standalone helper for colorful logging output, using pkg:io AnsiCode.
 
 # Installation
