@@ -1,3 +1,6 @@
+# 2.0.1+1
+* Fix bug in the implementation of `maxLength`.
+
 # 2.0.1
 * Patch for updated body parsing.
 

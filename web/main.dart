@@ -1,9 +1,9 @@
 import 'dart:html';
 import 'package:angel_validate/angel_validate.dart';
 
-final UListElement $errors = querySelector('#errors');
-final FormElement $form = querySelector('#form');
-final InputElement $blank = querySelector('[name="blank"]');
+final $errors = querySelector('#errors') as UListElement;
+final $form = querySelector('#form') as FormElement;
+final $blank = querySelector('[name="blank"]') as InputElement;
 
 final Validator formSchema = new Validator({
   'firstName*': [isString, isNotEmpty],

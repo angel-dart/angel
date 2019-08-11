@@ -78,7 +78,7 @@ Matcher minLength(int length) => predicate(
 
 /// Limits the maximum length of a string.
 Matcher maxLength(int length) => predicate(
-    (value) => value is String && value.length >= length,
+    (value) => value is String && value.length <= length,
     'a string no longer than $length character(s) long');
 
 /// Asserts that for a key `x`, the context contains an identical item `x_confirmed`.

@@ -79,7 +79,7 @@ class Validator extends Matcher {
           requiredFields.add(fieldName);
         }
 
-        Iterable _iterable =
+        var _iterable =
             schema[keys] is Iterable ? schema[keys] : [schema[keys]];
         var iterable = [];
 
