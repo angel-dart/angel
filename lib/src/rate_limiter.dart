@@ -81,5 +81,9 @@ abstract class RateLimiter<User> {
   ///
   /// Whatever is returned here will be returned in [handleRequest].
   FutureOr<Object> denyRequest(RequestContext req, ResponseContext res,
-      RateLimitingWindow<User> window) {}
+      RateLimitingWindow<User> window, DateTime currentTime) {
+    var retryAfter = window.resetsAt.difference(currentTime);
+    res.headers['retry-after'] = retryAfter.inSeconds.toString();
+    throw AngelHttpException(null, message: errorMessage, statusCode: 429);
+  }
 }
