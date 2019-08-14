@@ -34,12 +34,12 @@ abstract class RateLimiter<User> {
   /// then you would return a window containing the current hour,
   /// and the number of requests the user has sent in the past hour.
   FutureOr<RateLimitingWindow<User>> getCurrentWindow(
-      RequestContext req, ResponseContext res);
+      RequestContext req, ResponseContext res, DateTime currentTime);
 
   /// Updates the underlying store with information about the new
   /// [window] that the user is operating in.
-  FutureOr<void> updateCurrentWindow(
-      RequestContext req, ResponseContext res, RateLimitingWindow<User> window);
+  FutureOr<void> updateCurrentWindow(RequestContext req, ResponseContext res,
+      RateLimitingWindow<User> window, DateTime currentTime);
 
   /// Computes the amount of points that a given request will cost. This amount
   /// is then added to the amount of points that the user has already consumed
@@ -96,11 +96,11 @@ abstract class RateLimiter<User> {
   /// [maxPointsPerWindow].
   Future handleRequest(RequestContext req, ResponseContext res) async {
     // Obtain information about the current window.
-    var currentWindow = await getCurrentWindow(req, res);
+    var now = DateTime.now().toUtc();
+    var currentWindow = await getCurrentWindow(req, res, now);
     // Check if the rate limit has been exceeded. If so, reject the request.
     // To perform this check, we must first determine whether a new window
     // has begun since the previous request.
-    var now = DateTime.now().toUtc();
     var currentWindowEnd = currentWindow.startTime.toUtc().add(windowDuration);
     // We must also compute the missing information about the current window,
     // so that we can relay that information to the client.
@@ -119,7 +119,7 @@ abstract class RateLimiter<User> {
         ..pointLimit = maxPointsPerWindow
         ..remainingPoints = remainingPoints < 0 ? 0 : remainingPoints
         ..resetTime = now.add(windowDuration);
-      await updateCurrentWindow(req, res, newWindow);
+      await updateCurrentWindow(req, res, newWindow, now);
       await sendWindowInformation(req, res, newWindow);
     }
 
@@ -143,7 +143,7 @@ abstract class RateLimiter<User> {
       if (currentWindow.remainingPoints < 0) {
         currentWindow.remainingPoints = 0;
       }
-      await updateCurrentWindow(req, res, currentWindow);
+      await updateCurrentWindow(req, res, currentWindow, now);
       await sendWindowInformation(req, res, currentWindow);
     }
 
