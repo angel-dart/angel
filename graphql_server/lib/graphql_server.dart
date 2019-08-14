@@ -374,7 +374,10 @@ class GraphQL {
     var argumentValues =
         coerceArgumentValues(objectType, field, variableValues);
     var resolvedValue = await resolveFieldValue(
-        objectType, objectValue, fieldName, argumentValues);
+        objectType,
+        objectValue,
+        fieldName,
+        Map<String, dynamic>.from(globalVariables)..addAll(argumentValues));
     return completeValue(document, fieldName, fieldType, fields, resolvedValue,
         variableValues, globalVariables);
   }
