@@ -30,8 +30,19 @@ abstract class RateLimiter<User> {
 
   /// Updates the underlying store with information about the new
   /// [window] that the user is operating in.
-  FutureOr<void> updateCurrentWindow(RequestContext req, ResponseContext res,
-      RateLimitingWindow<User> window);
+  FutureOr<void> updateCurrentWindow(
+      RequestContext req, ResponseContext res, RateLimitingWindow<User> window);
+
+  /// Computes the amount of points that a given request will cost. This amount
+  /// is then added to the amount of points that the user has already consumed
+  /// in the current [window].
+  ///
+  /// The default behavior is to return `1`, which signifies that all requests
+  /// carry the same weight.
+  FutureOr<int> getEndpointCost(RequestContext req, ResponseContext res,
+      RateLimitingWindow<User> window) {
+    return Future<int>.value(1);
+  }
 
   FutureOr<Object> denyRequest(RequestContext req, ResponseContext res,
       RateLimitingWindow<User> window) {}
