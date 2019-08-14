@@ -377,7 +377,8 @@ class GraphQL {
         objectType,
         objectValue,
         fieldName,
-        Map<String, dynamic>.from(globalVariables)..addAll(argumentValues));
+        Map<String, dynamic>.from(globalVariables ?? {})
+          ..addAll(argumentValues ?? {}));
     return completeValue(document, fieldName, fieldType, fields, resolvedValue,
         variableValues, globalVariables);
   }
