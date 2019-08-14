@@ -86,4 +86,13 @@ abstract class RateLimiter<User> {
     res.headers['retry-after'] = retryAfter.inSeconds.toString();
     throw AngelHttpException(null, message: errorMessage, statusCode: 429);
   }
+
+  /// A request middleware that returns `true` if the user has not yet
+  /// exceeded the [maxPointsPerWindow].
+  ///
+  /// Because this handler is typically called *before* business logic is
+  /// executed, it technically checks whether the *previous* call raised the
+  /// number of consumed points to greater than, or equal to, the
+  /// [maxPointsPerWindow].
+  Future handleRequest(RequestContext req, ResponseContext res) async {}
 }
