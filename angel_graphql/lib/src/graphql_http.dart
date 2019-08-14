@@ -16,6 +16,8 @@ final Validator graphQlPostBody = new Validator({
   'variables': predicate((v) => v == null || v is String || v is Map),
 });
 
+final RegExp _num = RegExp(r'^[0-9]+$');
+
 /// A [RequestHandler] that serves a spec-compliant GraphQL backend.
 ///
 /// Follows the guidelines listed here:
@@ -80,6 +82,35 @@ RequestHandler graphQLHttp(GraphQL graphQL,
           if (await validate(graphQlPostBody)(req, res) as bool) {
             return await executeMap(req.bodyAsMap);
           }
+        } else if (req.headers.contentType?.mimeType == 'multipart/form-data') {
+          // TODO: Support file uploads in batch requests.
+          var fields = await req.parseBody().then((_) => req.bodyAsMap);
+          var operations = fields['operations'] as String;
+          var map = fields.containsKey('map')
+              ? json.decode(fields['map'] as String)
+              : null;
+          var variables = Map<String, dynamic>.from(globalVariables);
+          for (var entry in (map as Map).entries) {
+            var key = int.parse(entry.key as String);
+            var objectPaths = entry.value as List;
+            for (var objectPath in objectPaths) {
+              var subPaths = (objectPath as String).split('.');
+              if (subPaths[0] == 'variables') {
+                var current = variables;
+                for (int i = 0; i < subPaths.length; i++) {
+                  var name = subPaths[0];
+                  if (_num.hasMatch(name)) {
+                    (current as List)[int.parse(name)] = req.uploadedFiles[key];
+                  }
+                }
+              }
+            }
+          }
+          return await sendGraphQLResponse(await graphQL.parseAndExecute(
+            operations,
+            sourceUrl: 'input',
+            globalVariables: variables,
+          ));
         } else {
           throw new AngelHttpException.badRequest();
         }
