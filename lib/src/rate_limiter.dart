@@ -18,7 +18,15 @@ abstract class RateLimiter<User> {
   /// more than [maxPointsPerWindow].
   final Duration windowDuration;
 
-  RateLimiter(this.maxPointsPerWindow, this.windowDuration);
+  /// The error message to send to a [User] who has exceeded the
+  /// rate limit during the current window.
+  ///
+  /// This only applies to the default implementation of
+  /// [denyRequest].
+  final String errorMessage;
+
+  RateLimiter(this.maxPointsPerWindow, this.windowDuration,
+      {this.errorMessage});
 
   /// Computes the current window in which the user is acting.
   ///
