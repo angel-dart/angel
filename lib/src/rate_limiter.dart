@@ -10,29 +10,29 @@ import 'rate_limiting_window.dart';
 /// can be computed from each request, as well as information about
 /// the current rate-limiting window.
 abstract class RateLimiter<User> {
-  /// The maximum number of requests allowed within the given [window].
-  final int maxRequestsPerWindow;
+  /// The maximum number of points that may be consumed
+  /// within the given [windowDuration].
+  final int maxPointsPerWindow;
 
-  /// The amount of time, during which, a user is not allowed to send
-  /// more than [maxRequestsPerWindow].
-  final Duration window;
+  /// The amount of time, during which, a user is not allowed to consume
+  /// more than [maxPointsPerWindow].
+  final Duration windowDuration;
 
-  RateLimiter(this.maxRequestsPerWindow, this.window);
+  RateLimiter(this.maxPointsPerWindow, this.windowDuration);
 
   /// Computes the current window in which the user is acting.
-  /// 
+  ///
   /// For example, if your API was limited to 1000 requests/hour,
   /// then you would return a window containing the current hour,
   /// and the number of requests the user has sent in the past hour.
   FutureOr<RateLimitingWindow<User>> getCurrentWindow(
       RequestContext req, ResponseContext res);
 
-  /// Updates the underlying store with information about the
-  /// [newWindow] that the user is operating in.
+  /// Updates the underlying store with information about the new
+  /// [window] that the user is operating in.
   FutureOr<void> updateCurrentWindow(RequestContext req, ResponseContext res,
-      RateLimitingWindow<User> newWindow);
+      RateLimitingWindow<User> window);
 
-  FutureOr<Object> denyRequest(RequestContext req, ResponseContext res) {
-    
-  }
+  FutureOr<Object> denyRequest(RequestContext req, ResponseContext res,
+      RateLimitingWindow<User> window) {}
 }
