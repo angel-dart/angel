@@ -42,10 +42,10 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
   } else if (type == double) {
     return graphQLFloat;
   } else if (type == num) {
-    throw new UnsupportedError(
+    throw UnsupportedError(
         'Cannot convert `num` to a GraphQL type. Choose `int` or `float` instead.');
   } else if (type == Null) {
-    throw new UnsupportedError('Cannot convert `Null` to a GraphQL type.');
+    throw UnsupportedError('Cannot convert `Null` to a GraphQL type.');
   } else if (type == String) {
     return graphQLString;
   } else if (type == DateTime) {
@@ -56,7 +56,7 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
       type, typeArguments?.isNotEmpty == true ? typeArguments : null);
 
   if (mirror is! ClassMirror) {
-    throw new StateError(
+    throw StateError(
         '$type is not a class, and therefore cannot be converted into a GraphQL object type.');
   }
 
@@ -69,7 +69,7 @@ GraphQLType _objectTypeFromDartType(Type type, [List<Type> typeArguments]) {
       return listOf(inner.nonNullable());
     }
 
-    throw new ArgumentError(
+    throw ArgumentError(
         'Cannot convert ${clazz.reflectedType}, an iterable WITHOUT a type argument, into a GraphQL type.');
   }
 
@@ -213,7 +213,7 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
     if (name != #values) {
       var methodMirror = mirror.staticMembers[name];
       values.add(
-        new GraphQLEnumValue(
+        GraphQLEnumValue(
           MirrorSystem.getName(name),
           mirror.getField(name).reflectee,
           description: _getDescription(methodMirror.metadata),
@@ -223,7 +223,7 @@ GraphQLEnumType enumTypeFromClassMirror(ClassMirror mirror) {
     }
   }
 
-  return new GraphQLEnumType(
+  return GraphQLEnumType(
     MirrorSystem.getName(mirror.simpleName),
     values,
     description: _getDescription(mirror.metadata),
@@ -294,7 +294,7 @@ String _getSerializedName(Symbol name, MethodMirror mirror, ClassMirror clazz) {
       var ann = obj.reflectee as Serializable;
 
       if (ann.autoSnakeCaseNames != false) {
-        return new ReCase(MirrorSystem.getName(name)).snakeCase;
+        return ReCase(MirrorSystem.getName(name)).snakeCase;
       }
     }
   }

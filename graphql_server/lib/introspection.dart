@@ -1,7 +1,7 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
-/// Performs introspection over a GraphQL [schema], and returns a new one, containing
+/// Performs introspection over a GraphQL [schema], and returns a one, containing
 /// introspective information.
 ///
 /// [allTypes] should contain all types, not directly defined in the schema, that you
@@ -79,11 +79,11 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     field(
       '__type',
       typeType,
-      inputs: [new GraphQLFieldInput('name', graphQLString.nonNullable())],
+      inputs: [GraphQLFieldInput('name', graphQLString.nonNullable())],
       resolve: (_, args) {
         var name = args['name'] as String;
         return allTypes.firstWhere((t) => t.name == name,
-            orElse: () => throw new GraphQLException.fromMessage(
+            orElse: () => throw GraphQLException.fromMessage(
                 'No type named "$name" exists.'));
       },
     ),
@@ -91,7 +91,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
 
   fields.addAll(schema.queryType.fields);
 
-  return new GraphQLSchema(
+  return GraphQLSchema(
     queryType: objectType(schema.queryType.name, fields: fields),
     mutationType: schema.mutationType,
     subscriptionType: schema.subscriptionType,
@@ -228,14 +228,14 @@ GraphQLObjectType _createTypeType() {
         else if (t is GraphQLUnionType)
           return 'UNION';
         else
-          throw new UnsupportedError('Cannot get the kind of $t.');
+          throw UnsupportedError('Cannot get the kind of $t.');
       },
     ),
     field(
       'fields',
       listOf(fieldType),
       inputs: [
-        new GraphQLFieldInput(
+        GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
@@ -252,7 +252,7 @@ GraphQLObjectType _createTypeType() {
       'enumValues',
       listOf(enumValueType.nonNullable()),
       inputs: [
-        new GraphQLFieldInput(
+        GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
