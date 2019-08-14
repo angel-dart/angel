@@ -1,3 +1,9 @@
+# 1.1.0
+* Updates for `package:graphql_parser@1.2.0`.
+* Now that variables are `InputValueContext` descendants, handle them the
+same way as other values in `coerceArgumentValues`. TLDR - Removed
+now-obsolete, variable-specific logic in `coerceArgumentValues`.
+
 # 1.0.1
 * Fix a bug where `globalVariables` were not being properly passed
 to field resolvers.

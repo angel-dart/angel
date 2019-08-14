@@ -404,22 +404,7 @@ class GraphQL {
       var argumentValue = argumentValues
           .firstWhere((a) => a.name == argumentName, orElse: () => null);
 
-      if (argumentValue?.value is VariableContext) {
-        var variableName = (argumentValue.value as VariableContext).name;
-        var variableValue = variableValues[variableName];
-
-        if (variableValues.containsKey(variableName)) {
-          coercedValues[argumentName] = variableValue;
-        } else if (defaultValue != null || argumentDefinition.defaultsToNull) {
-          coercedValues[argumentName] = defaultValue;
-        } else if (argumentType is GraphQLNonNullableType) {
-          throw GraphQLException.fromSourceSpan(
-              'Missing value for argument "$argumentName" of field "$fieldName".',
-              argumentValue.value.span);
-        } else {
-          continue;
-        }
-      } else if (argumentValue == null) {
+      if (argumentValue == null) {
         if (defaultValue != null || argumentDefinition.defaultsToNull) {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
