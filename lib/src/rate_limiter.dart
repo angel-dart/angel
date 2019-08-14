@@ -52,6 +52,25 @@ abstract class RateLimiter<User> {
     return Future<int>.value(1);
   }
 
+  /// Alerts the user of information pertinent to the current [window].
+  ///
+  /// The default implementation is to send the following headers, akin to
+  /// Github's v4 Graph API:
+  /// * `X-RateLimit-Limit`: The maximum number of points consumed per window.
+  /// * `X-RateLimit-Remaining`: The remaining number of points that may be consumed
+  /// before the rate limit is reached for the current window.
+  /// * `X-RateLimit-Reset`: The Unix timestamp, at which the window will
+  /// reset.
+  FutureOr<void> sendWindowInformation(RequestContext req, ResponseContext res,
+      RateLimitingWindow<User> window) {
+    res.headers.addAll({
+      'x-ratelimit-limit': window.pointLimit.toString(),
+      'x-ratelimit-remaining': window.remainingPoints.toString(),
+      'x-ratelimit-reset':
+          (window.resetsAt.millisecondsSinceEpoch ~/ 1000).toString(),
+    });
+  }
+
   /// Signals to a user that they have exceeded the rate limit for the
   /// current window.
   ///
