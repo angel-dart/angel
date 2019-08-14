@@ -129,10 +129,10 @@ abstract class RateLimiter<User> {
     //
     // Otherwise, update the current window.
     //
-    // We only use `>` (not `>=`), because at this point in the computation,
+    // At this point in the computation,
     // we are still only considering whether the *previous* request took the
     // user over the rate limit.
-    else if (currentWindow.pointsConsumed > maxPointsPerWindow) {
+    else if (currentWindow.pointsConsumed >= maxPointsPerWindow) {
       await sendWindowInformation(req, res, currentWindow);
       var result = await rejectRequest(req, res, currentWindow, now);
       if (result != null) return result;
