@@ -3,6 +3,7 @@
 * Now that variables are `InputValueContext` descendants, handle them the
 same way as other values in `coerceArgumentValues`. TLDR - Removed
 now-obsolete, variable-specific logic in `coerceArgumentValues`.
+* Pass `argumentName`, not `fieldName`, to type validations.
 
 # 1.0.1
 * Fix a bug where `globalVariables` were not being properly passed
