@@ -7,9 +7,9 @@ class RateLimitingWindow<User> {
   /// The time at which the user's current window began.
   final DateTime start;
 
-  /// The number of requests the user has already sent within
+  /// The number of points the user has already consumed within
   /// the current window.
-  final int requestCount;
+  final int pointsConsumed;
 
   /// The maximum amount of points allowed within a single window.
   final int pointLimit;
@@ -21,6 +21,6 @@ class RateLimitingWindow<User> {
   /// The time at which the window will reset.
   final DateTime resetsAt;
 
-  RateLimitingWindow(this.user, this.start, this.requestCount,
+  RateLimitingWindow(this.user, this.start, this.pointsConsumed,
       {this.pointLimit, this.remainingPoints, this.resetsAt});
 }
