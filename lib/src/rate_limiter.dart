@@ -52,6 +52,15 @@ abstract class RateLimiter<User> {
     return Future<int>.value(1);
   }
 
+  /// Signals to a user that they have exceeded the rate limit for the
+  /// current window.
+  ///
+  /// The default implementation is throw an [AngelHttpException] with
+  /// status code `429` and the given `errorMessage`, as well as sending
+  /// a [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429)
+  /// header, and then returning `false`.
+  ///
+  /// Whatever is returned here will be returned in [handleRequest].
   FutureOr<Object> denyRequest(RequestContext req, ResponseContext res,
       RateLimitingWindow<User> window) {}
 }
