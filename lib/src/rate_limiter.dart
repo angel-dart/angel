@@ -26,7 +26,8 @@ abstract class RateLimiter<User> {
   final String errorMessage;
 
   RateLimiter(this.maxPointsPerWindow, this.windowDuration,
-      {this.errorMessage = 'Rate limit exceeded.'});
+      {String errorMessage})
+      : this.errorMessage = errorMessage ?? 'Rate limit exceeded.';
 
   /// Computes the current window in which the user is acting.
   ///
