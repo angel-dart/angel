@@ -67,12 +67,12 @@ abstract class RateLimiter<User> {
       'x-ratelimit-limit': window.pointLimit.toString(),
       'x-ratelimit-remaining': window.remainingPoints.toString(),
       'x-ratelimit-reset':
-          (window.resetsAt.millisecondsSinceEpoch ~/ 1000).toString(),
+          (window.resetTime.millisecondsSinceEpoch ~/ 1000).toString(),
     });
   }
 
   /// Signals to a user that they have exceeded the rate limit for the
-  /// current window.
+  /// current window, and terminates execution of the current [RequestContext].
   ///
   /// The default implementation is throw an [AngelHttpException] with
   /// status code `429` and the given `errorMessage`, as well as sending
@@ -82,7 +82,7 @@ abstract class RateLimiter<User> {
   /// Whatever is returned here will be returned in [handleRequest].
   FutureOr<Object> rejectRequest(RequestContext req, ResponseContext res,
       RateLimitingWindow<User> window, DateTime currentTime) {
-    var retryAfter = window.resetsAt.difference(currentTime);
+    var retryAfter = window.resetTime.difference(currentTime);
     res.headers['retry-after'] = retryAfter.inSeconds.toString();
     throw AngelHttpException(null, message: errorMessage, statusCode: 429);
   }
@@ -98,5 +98,56 @@ abstract class RateLimiter<User> {
     // Obtain information about the current window.
     var currentWindow = await getCurrentWindow(req, res);
     // Check if the rate limit has been exceeded. If so, reject the request.
+    // To perform this check, we must first determine whether a new window
+    // has begun since the previous request.
+    var now = DateTime.now().toUtc();
+    var currentWindowEnd = currentWindow.startTime.toUtc().add(windowDuration);
+    // We must also compute the missing information about the current window,
+    // so that we can relay that information to the client.
+    var remainingPoints = maxPointsPerWindow - currentWindow.pointsConsumed;
+    currentWindow
+      ..pointLimit = maxPointsPerWindow
+      ..remainingPoints = remainingPoints < 0 ? 0 : remainingPoints
+      ..resetTime = currentWindow.startTime.add(windowDuration);
+
+    // If the previous window ended in the past, begin a new window.
+    if (now.compareTo(currentWindowEnd) >= 0) {
+      // Create a new window.
+      var cost = await getEndpointCost(req, res, currentWindow);
+      var remainingPoints = maxPointsPerWindow - cost;
+      var newWindow = RateLimitingWindow(currentWindow.user, now, cost)
+        ..pointLimit = maxPointsPerWindow
+        ..remainingPoints = remainingPoints < 0 ? 0 : remainingPoints
+        ..resetTime = now.add(windowDuration);
+      await updateCurrentWindow(req, res, newWindow);
+      await sendWindowInformation(req, res, newWindow);
+    }
+
+    // If we are still within the previous window, check if the user has
+    // exceeded the rate limit.
+    //
+    // Otherwise, update the current window.
+    //
+    // We only use `>` (not `>=`), because at this point in the computation,
+    // we are still only considering whether the *previous* request took the
+    // user over the rate limit.
+    else if (currentWindow.pointsConsumed > maxPointsPerWindow) {
+      await sendWindowInformation(req, res, currentWindow);
+      return await rejectRequest(req, res, currentWindow, now);
+    } else {
+      // Add the cost of the current endpoint, and update the window.
+      var cost = await getEndpointCost(req, res, currentWindow);
+      currentWindow
+        ..pointsConsumed += cost
+        ..remainingPoints -= cost;
+      if (currentWindow.remainingPoints < 0) {
+        currentWindow.remainingPoints = 0;
+      }
+      await updateCurrentWindow(req, res, currentWindow);
+      await sendWindowInformation(req, res, currentWindow);
+    }
+
+    // Pass through, so other handlers can be executed.
+    return true;
   }
 }
