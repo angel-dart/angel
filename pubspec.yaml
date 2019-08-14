@@ -6,7 +6,7 @@ homepage: https://github.com/angel-dart/security
 environment: 
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies: 
-  angel_framework: ^2.0.0-alpha
+  angel_framework: ^2.0.0
 dev_dependencies: 
   angel_auth: ^2.0.0
   angel_test: ^2.0.0
@@ -14,6 +14,3 @@ dev_dependencies:
   console: ^3.0.0
   pedantic: ^1.0.0
   test: ^1.0.0
-dependency_overrides:
-  angel_framework:
-    path: ../framework
