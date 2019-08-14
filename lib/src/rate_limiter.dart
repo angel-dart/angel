@@ -22,7 +22,7 @@ abstract class RateLimiter<User> {
   /// rate limit during the current window.
   ///
   /// This only applies to the default implementation of
-  /// [denyRequest].
+  /// [rejectRequest].
   final String errorMessage;
 
   RateLimiter(this.maxPointsPerWindow, this.windowDuration,
@@ -80,7 +80,7 @@ abstract class RateLimiter<User> {
   /// header, and then returning `false`.
   ///
   /// Whatever is returned here will be returned in [handleRequest].
-  FutureOr<Object> denyRequest(RequestContext req, ResponseContext res,
+  FutureOr<Object> rejectRequest(RequestContext req, ResponseContext res,
       RateLimitingWindow<User> window, DateTime currentTime) {
     var retryAfter = window.resetsAt.difference(currentTime);
     res.headers['retry-after'] = retryAfter.inSeconds.toString();
@@ -94,5 +94,9 @@ abstract class RateLimiter<User> {
   /// executed, it technically checks whether the *previous* call raised the
   /// number of consumed points to greater than, or equal to, the
   /// [maxPointsPerWindow].
-  Future handleRequest(RequestContext req, ResponseContext res) async {}
+  Future handleRequest(RequestContext req, ResponseContext res) async {
+    // Obtain information about the current window.
+    var currentWindow = await getCurrentWindow(req, res);
+    // Check if the rate limit has been exceeded. If so, reject the request.
+  }
 }
