@@ -70,6 +70,7 @@ class _GraphQLWSServer extends stw.Server {
         operationName: operationName,
         sourceUrl: 'input',
         globalVariables: globalVariables,
+        variableValues: variables,
       );
       return stw.GraphQLResult(data);
     } on GraphQLException catch (e) {
