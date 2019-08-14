@@ -1,10 +1,15 @@
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_security/angel_security.dart';
+import 'package:logging/logging.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 
 main() async {
+  // Logging boilerplate.
+  Logger.root.onRecord.listen(prettyLog);
+
   // Create an app, and HTTP driver.
-  var app = Angel(), http = AngelHttp(app);
+  var app = Angel(logger: Logger('rate_limit')), http = AngelHttp(app);
 
   // Create a simple in-memory rate limiter that limits users to 5
   // queries per hour.
