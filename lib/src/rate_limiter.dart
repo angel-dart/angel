@@ -133,7 +133,9 @@ abstract class RateLimiter<User> {
     // user over the rate limit.
     else if (currentWindow.pointsConsumed > maxPointsPerWindow) {
       await sendWindowInformation(req, res, currentWindow);
-      return await rejectRequest(req, res, currentWindow, now);
+      var result = await rejectRequest(req, res, currentWindow, now);
+      if (result != null) return result;
+      return false;
     } else {
       // Add the cost of the current endpoint, and update the window.
       var cost = await getEndpointCost(req, res, currentWindow);
