@@ -16,6 +16,8 @@ final Validator graphQlPostBody = new Validator({
   'variables': predicate((v) => v == null || v is String || v is Map),
 });
 
+final RegExp _num = RegExp(r'^[0-9]+$');
+
 /// A [RequestHandler] that serves a spec-compliant GraphQL backend.
 ///
 /// Follows the guidelines listed here:
@@ -80,6 +82,74 @@ RequestHandler graphQLHttp(GraphQL graphQL,
           if (await validate(graphQlPostBody)(req, res) as bool) {
             return await executeMap(req.bodyAsMap);
           }
+        } else if (req.headers.contentType?.mimeType == 'multipart/form-data') {
+          // TODO: Support file uploads in batch requests.
+          var fields = await req.parseBody().then((_) => req.bodyAsMap);
+          var operations = fields['operations'] as String;
+          if (operations == null) {
+            throw AngelHttpException.badRequest(
+                message: 'Missing "operations" field.');
+          }
+          var map = fields.containsKey('map')
+              ? json.decode(fields['map'] as String)
+              : null;
+          if (map is! Map) {
+            throw AngelHttpException.badRequest(
+                message: '"map" field must decode to a JSON object.');
+          }
+          var variables = Map<String, dynamic>.from(globalVariables);
+          for (var entry in (map as Map).entries) {
+            var file = req.uploadedFiles
+                .firstWhere((f) => f.name == entry.key, orElse: () => null);
+            if (file == null) {
+              throw AngelHttpException.badRequest(
+                  message:
+                      '"map" contained key "${entry.key}", but no uploaded file '
+                      'has that name.');
+            }
+            if (entry.value is! List) {
+              throw AngelHttpException.badRequest(
+                  message:
+                      'The value for "${entry.key}" in the "map" field was not a JSON array.');
+            }
+            var objectPaths = entry.value as List;
+            for (var objectPath in objectPaths) {
+              var subPaths = (objectPath as String).split('.');
+              if (subPaths[0] == 'variables') {
+                Object current = variables;
+                for (int i = 0; i < subPaths.length; i++) {
+                  var name = subPaths[0];
+                  var parent = subPaths.take(i).join('.');
+                  if (_num.hasMatch(name)) {
+                    if (current is! List) {
+                      throw AngelHttpException.badRequest(
+                          message:
+                              'Object "$parent" is not a JSON array, but the '
+                              '"map" field contained a mapping to $parent.$name.');
+                    }
+                    (current as List)[int.parse(name)] = file;
+                  } else {
+                    if (current is! Map) {
+                      throw AngelHttpException.badRequest(
+                          message:
+                              'Object "$parent" is not a JSON object, but the '
+                              '"map" field contained a mapping to $parent.$name.');
+                    }
+                    (current as Map)[name] = file;
+                  }
+                }
+              } else {
+                throw AngelHttpException.badRequest(
+                    message:
+                        'All array values in the "map" field must begin with "variables.".');
+              }
+            }
+          }
+          return await sendGraphQLResponse(await graphQL.parseAndExecute(
+            operations,
+            sourceUrl: 'input',
+            globalVariables: variables,
+          ));
         } else {
           throw new AngelHttpException.badRequest();
         }
