@@ -7,10 +7,9 @@ import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 import 'package:graphql_server/graphql_server.dart';
 
-final ContentType graphQlContentType =
-    new ContentType('application', 'graphql');
+final ContentType graphQlContentType = ContentType('application', 'graphql');
 
-final Validator graphQlPostBody = new Validator({
+final Validator graphQlPostBody = Validator({
   'query*': isNonEmptyString,
   'operation_name': isNonEmptyString,
   'variables': predicate((v) => v == null || v is String || v is Map),
@@ -151,29 +150,23 @@ RequestHandler graphQLHttp(GraphQL graphQL,
             globalVariables: variables,
           ));
         } else {
-          throw new AngelHttpException.badRequest();
+          throw AngelHttpException.badRequest();
         }
       } else {
-        throw new AngelHttpException.badRequest();
+        throw AngelHttpException.badRequest();
       }
     } on ValidationException catch (e) {
-      var errors = <GraphQLExceptionError>[
-        new GraphQLExceptionError(e.message)
-      ];
+      var errors = <GraphQLExceptionError>[GraphQLExceptionError(e.message)];
 
-      errors
-          .addAll(e.errors.map((ee) => new GraphQLExceptionError(ee)).toList());
-      return new GraphQLException(errors).toJson();
+      errors.addAll(e.errors.map((ee) => GraphQLExceptionError(ee)).toList());
+      return GraphQLException(errors).toJson();
     } on AngelHttpException catch (e) {
-      var errors = <GraphQLExceptionError>[
-        new GraphQLExceptionError(e.message)
-      ];
+      var errors = <GraphQLExceptionError>[GraphQLExceptionError(e.message)];
 
-      errors
-          .addAll(e.errors.map((ee) => new GraphQLExceptionError(ee)).toList());
-      return new GraphQLException(errors).toJson();
+      errors.addAll(e.errors.map((ee) => GraphQLExceptionError(ee)).toList());
+      return GraphQLException(errors).toJson();
     } on SyntaxError catch (e) {
-      return new GraphQLException.fromSourceSpan(e.message, e.span);
+      return GraphQLException.fromSourceSpan(e.message, e.span);
     } on GraphQLException catch (e) {
       return e.toJson();
     } catch (e, st) {
@@ -184,7 +177,7 @@ RequestHandler graphQLHttp(GraphQL graphQL,
             st);
       }
 
-      return new GraphQLException.fromMessage(e.toString()).toJson();
+      return GraphQLException.fromMessage(e.toString()).toJson();
     }
   };
 }
