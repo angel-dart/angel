@@ -404,7 +404,7 @@ class GraphQL {
       var argumentValue = argumentValues
           .firstWhere((a) => a.name == argumentName, orElse: () => null);
 
-      if (argumentValue.value is VariableContext) {
+      if (argumentValue?.value is VariableContext) {
         var variableName = (argumentValue.value as VariableContext).name;
         var variableValue = variableValues[variableName];
 
