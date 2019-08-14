@@ -382,7 +382,7 @@ GraphQLObjectType _reflectDirectiveType() {
     field(
       'name',
       graphQLString.nonNullable(),
-      resolve: (obj, _) => (obj as DirectiveContext).NAME.span.text,
+      resolve: (obj, _) => (obj as DirectiveContext).nameToken.span.text,
     ),
     field(
       'description',
