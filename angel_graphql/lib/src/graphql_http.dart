@@ -116,8 +116,8 @@ RequestHandler graphQLHttp(GraphQL graphQL,
               var subPaths = (objectPath as String).split('.');
               if (subPaths[0] == 'variables') {
                 Object current = variables;
-                for (int i = 0; i < subPaths.length; i++) {
-                  var name = subPaths[0];
+                for (int i = 1; i < subPaths.length; i++) {
+                  var name = subPaths[i];
                   var parent = subPaths.take(i).join('.');
                   if (_num.hasMatch(name)) {
                     if (current is! List) {
