@@ -86,23 +86,60 @@ RequestHandler graphQLHttp(GraphQL graphQL,
           // TODO: Support file uploads in batch requests.
           var fields = await req.parseBody().then((_) => req.bodyAsMap);
           var operations = fields['operations'] as String;
+          if (operations == null) {
+            throw AngelHttpException.badRequest(
+                message: 'Missing "operations" field.');
+          }
           var map = fields.containsKey('map')
               ? json.decode(fields['map'] as String)
               : null;
+          if (map is! Map) {
+            throw AngelHttpException.badRequest(
+                message: '"map" field must decode to a JSON object.');
+          }
           var variables = Map<String, dynamic>.from(globalVariables);
           for (var entry in (map as Map).entries) {
             var key = int.parse(entry.key as String);
+            if (req.uploadedFiles.length < key) {
+              throw AngelHttpException.badRequest(
+                  message:
+                      '"map" contained key "$key", but the number of uploaded files was ${req.uploadedFiles.length}.');
+            }
+            if (entry.value is! List) {
+              throw AngelHttpException.badRequest(
+                  message:
+                      'The value for "$key" in the "map" field was not a JSON array.');
+            }
             var objectPaths = entry.value as List;
             for (var objectPath in objectPaths) {
               var subPaths = (objectPath as String).split('.');
               if (subPaths[0] == 'variables') {
-                var current = variables;
+                Object current = variables;
                 for (int i = 0; i < subPaths.length; i++) {
                   var name = subPaths[0];
+                  var parent = subPaths.take(i).join('.');
                   if (_num.hasMatch(name)) {
+                    if (current is! List) {
+                      throw AngelHttpException.badRequest(
+                          message:
+                              'Object "$parent" is not a JSON array, but the '
+                              '"map" field contained a mapping to $parent.$name.');
+                    }
                     (current as List)[int.parse(name)] = req.uploadedFiles[key];
+                  } else {
+                    if (current is! Map) {
+                      throw AngelHttpException.badRequest(
+                          message:
+                              'Object "$parent" is not a JSON object, but the '
+                              '"map" field contained a mapping to $parent.$name.');
+                    }
+                    (current as Map)[name] = req.uploadedFiles[key];
                   }
                 }
+              } else {
+                throw AngelHttpException.badRequest(
+                    message:
+                        'All array values in the "map" field must begin with "variables.".');
               }
             }
           }
