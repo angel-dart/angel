@@ -12,13 +12,22 @@ class RateLimitingWindow<User> {
   final int pointsConsumed;
 
   /// The maximum amount of points allowed within a single window.
+  ///
+  /// This field is typically only set by the [RateLimiter] middleware,
+  /// and is therefore optional in the constructor.
   final int pointLimit;
 
   /// The amount of points the user can consume before hitting the
   /// rate limit for the current window.
+  ///
+  /// This field is typically only set by the [RateLimiter] middleware,
+  /// and is therefore optional in the constructor.
   final int remainingPoints;
 
   /// The time at which the window will reset.
+  ///
+  /// This field is typically only set by the [RateLimiter] middleware,
+  /// and is therefore optional in the constructor.
   final DateTime resetsAt;
 
   RateLimitingWindow(this.user, this.start, this.pointsConsumed,
