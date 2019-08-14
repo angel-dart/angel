@@ -99,16 +99,18 @@ RequestHandler graphQLHttp(GraphQL graphQL,
           }
           var variables = Map<String, dynamic>.from(globalVariables);
           for (var entry in (map as Map).entries) {
-            var key = int.parse(entry.key as String);
-            if (req.uploadedFiles.length < key) {
+            var file = req.uploadedFiles
+                .firstWhere((f) => f.name == entry.key, orElse: () => null);
+            if (file == null) {
               throw AngelHttpException.badRequest(
                   message:
-                      '"map" contained key "$key", but the number of uploaded files was ${req.uploadedFiles.length}.');
+                      '"map" contained key "${entry.key}", but no uploaded file '
+                      'has that name.');
             }
             if (entry.value is! List) {
               throw AngelHttpException.badRequest(
                   message:
-                      'The value for "$key" in the "map" field was not a JSON array.');
+                      'The value for "${entry.key}" in the "map" field was not a JSON array.');
             }
             var objectPaths = entry.value as List;
             for (var objectPath in objectPaths) {
@@ -125,7 +127,7 @@ RequestHandler graphQLHttp(GraphQL graphQL,
                               'Object "$parent" is not a JSON array, but the '
                               '"map" field contained a mapping to $parent.$name.');
                     }
-                    (current as List)[int.parse(name)] = req.uploadedFiles[key];
+                    (current as List)[int.parse(name)] = file;
                   } else {
                     if (current is! Map) {
                       throw AngelHttpException.badRequest(
@@ -133,7 +135,7 @@ RequestHandler graphQLHttp(GraphQL graphQL,
                               'Object "$parent" is not a JSON object, but the '
                               '"map" field contained a mapping to $parent.$name.');
                     }
-                    (current as Map)[name] = req.uploadedFiles[key];
+                    (current as Map)[name] = file;
                   }
                 }
               } else {
