@@ -1,7 +1,7 @@
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
 
-/// Performs introspection over a GraphQL [schema], and returns a new one, containing
+/// Performs introspection over a GraphQL [schema], and returns a one, containing
 /// introspective information.
 ///
 /// [allTypes] should contain all types, not directly defined in the schema, that you
@@ -79,11 +79,11 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     field(
       '__type',
       typeType,
-      inputs: [new GraphQLFieldInput('name', graphQLString.nonNullable())],
+      inputs: [GraphQLFieldInput('name', graphQLString.nonNullable())],
       resolve: (_, args) {
         var name = args['name'] as String;
         return allTypes.firstWhere((t) => t.name == name,
-            orElse: () => throw new GraphQLException.fromMessage(
+            orElse: () => throw GraphQLException.fromMessage(
                 'No type named "$name" exists.'));
       },
     ),
@@ -91,7 +91,7 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
 
   fields.addAll(schema.queryType.fields);
 
-  return new GraphQLSchema(
+  return GraphQLSchema(
     queryType: objectType(schema.queryType.name, fields: fields),
     mutationType: schema.mutationType,
     subscriptionType: schema.subscriptionType,
@@ -108,9 +108,9 @@ GraphQLObjectType _reflectSchemaTypes() {
         'ofType',
         _reflectSchemaTypes(),
         resolve: (type, _) {
-          if (type is GraphQLListType)
+          if (type is GraphQLListType) {
             return type.ofType;
-          else if (type is GraphQLNonNullableType) return type.ofType;
+          } else if (type is GraphQLNonNullableType) return type.ofType;
           return null;
         },
       ),
@@ -213,29 +213,30 @@ GraphQLObjectType _createTypeType() {
       resolve: (type, _) {
         var t = type as GraphQLType;
 
-        if (t is GraphQLEnumType)
+        if (t is GraphQLEnumType) {
           return 'ENUM';
-        else if (t is GraphQLScalarType)
+        } else if (t is GraphQLScalarType) {
           return 'SCALAR';
-        else if (t is GraphQLInputObjectType)
+        } else if (t is GraphQLInputObjectType) {
           return 'INPUT_OBJECT';
-        else if (t is GraphQLObjectType)
+        } else if (t is GraphQLObjectType) {
           return t.isInterface ? 'INTERFACE' : 'OBJECT';
-        else if (t is GraphQLListType)
+        } else if (t is GraphQLListType) {
           return 'LIST';
-        else if (t is GraphQLNonNullableType)
+        } else if (t is GraphQLNonNullableType) {
           return 'NON_NULL';
-        else if (t is GraphQLUnionType)
+        } else if (t is GraphQLUnionType) {
           return 'UNION';
-        else
-          throw new UnsupportedError('Cannot get the kind of $t.');
+        } else {
+          throw UnsupportedError('Cannot get the kind of $t.');
+        }
       },
     ),
     field(
       'fields',
       listOf(fieldType),
       inputs: [
-        new GraphQLFieldInput(
+        GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
@@ -252,7 +253,7 @@ GraphQLObjectType _createTypeType() {
       'enumValues',
       listOf(enumValueType.nonNullable()),
       inputs: [
-        new GraphQLFieldInput(
+        GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,

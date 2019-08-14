@@ -1,3 +1,7 @@
+# 1.0.1
+* Fix a bug where `globalVariables` were not being properly passed
+to field resolvers.
+
 # 1.0.0
 * Finish testing.
 * Add `package:pedantic` fixes.

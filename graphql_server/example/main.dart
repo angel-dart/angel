@@ -23,16 +23,16 @@ void main() {
           'todos',
           listOf(todoType),
           resolve: (_, __) => [
-                new Todo(
-                  text: 'Clean your room!',
-                  completed: false,
-                )
-              ],
+            Todo(
+              text: 'Clean your room!',
+              completed: false,
+            )
+          ],
         ),
       ]),
     );
 
-    var graphql = new GraphQL(schema);
+    var graphql = GraphQL(schema);
     var result = await graphql.parseAndExecute('{ todos { text } }');
 
     print(result);
