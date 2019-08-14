@@ -108,9 +108,9 @@ GraphQLObjectType _reflectSchemaTypes() {
         'ofType',
         _reflectSchemaTypes(),
         resolve: (type, _) {
-          if (type is GraphQLListType)
+          if (type is GraphQLListType) {
             return type.ofType;
-          else if (type is GraphQLNonNullableType) return type.ofType;
+          } else if (type is GraphQLNonNullableType) return type.ofType;
           return null;
         },
       ),
@@ -213,22 +213,23 @@ GraphQLObjectType _createTypeType() {
       resolve: (type, _) {
         var t = type as GraphQLType;
 
-        if (t is GraphQLEnumType)
+        if (t is GraphQLEnumType) {
           return 'ENUM';
-        else if (t is GraphQLScalarType)
+        } else if (t is GraphQLScalarType) {
           return 'SCALAR';
-        else if (t is GraphQLInputObjectType)
+        } else if (t is GraphQLInputObjectType) {
           return 'INPUT_OBJECT';
-        else if (t is GraphQLObjectType)
+        } else if (t is GraphQLObjectType) {
           return t.isInterface ? 'INTERFACE' : 'OBJECT';
-        else if (t is GraphQLListType)
+        } else if (t is GraphQLListType) {
           return 'LIST';
-        else if (t is GraphQLNonNullableType)
+        } else if (t is GraphQLNonNullableType) {
           return 'NON_NULL';
-        else if (t is GraphQLUnionType)
+        } else if (t is GraphQLUnionType) {
           return 'UNION';
-        else
+        } else {
           throw UnsupportedError('Cannot get the kind of $t.');
+        }
       },
     ),
     field(

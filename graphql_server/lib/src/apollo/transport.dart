@@ -44,14 +44,15 @@ class OperationMessage {
     var payload = map['payload'];
     var id = map['id'];
 
-    if (type == null)
+    if (type == null) {
       throw ArgumentError.notNull('type');
-    else if (type is! String)
+    } else if (type is! String) {
       throw ArgumentError.value(type, 'type', 'must be a string');
-    else if (id is num)
+    } else if (id is num) {
       id = id.toString();
-    else if (id != null && id is! String)
+    } else if (id != null && id is! String) {
       throw ArgumentError.value(id, 'id', 'must be a string or number');
+    }
 
     // TODO: This is technically a violation of the spec.
     // https://github.com/apollographql/subscriptions-transport-ws/issues/551

@@ -18,11 +18,12 @@ abstract class Server {
           if ((msg.type == OperationMessage.gqlConnectionInit) && !_init) {
             try {
               Map connectionParams;
-              if (msg.payload is Map)
+              if (msg.payload is Map) {
                 connectionParams = msg.payload as Map;
-              else if (msg.payload != null)
+              } else if (msg.payload != null) {
                 throw FormatException(
                     '${msg.type} payload must be a map (object).');
+              }
 
               var connect = await onConnect(client, connectionParams);
               if (!connect) throw false;
@@ -39,33 +40,39 @@ abstract class Server {
                 });
               }
             } catch (e) {
-              if (e == false)
+              if (e == false) {
                 _reportError('The connection was rejected.');
-              else
+              } else {
                 _reportError(e.toString());
+              }
             }
           } else if (_init) {
             if (msg.type == OperationMessage.gqlStart) {
-              if (msg.id == null)
+              if (msg.id == null) {
                 throw FormatException('${msg.type} id is required.');
-              if (msg.payload == null)
+              }
+              if (msg.payload == null) {
                 throw FormatException('${msg.type} payload is required.');
-              else if (msg.payload is! Map)
+              } else if (msg.payload is! Map) {
                 throw FormatException(
                     '${msg.type} payload must be a map (object).');
+              }
               var payload = msg.payload as Map;
               var query = payload['query'];
               var variables = payload['variables'];
               var operationName = payload['operationName'];
-              if (query == null || query is! String)
+              if (query == null || query is! String) {
                 throw FormatException(
                     '${msg.type} payload must contain a string named "query".');
-              if (variables != null && variables is! Map)
+              }
+              if (variables != null && variables is! Map) {
                 throw FormatException(
                     '${msg.type} payload\'s "variables" field must be a map (object).');
-              if (operationName != null && operationName is! String)
+              }
+              if (operationName != null && operationName is! String) {
                 throw FormatException(
                     '${msg.type} payload\'s "operationName" field must be a string.');
+              }
               var result = await onOperation(
                   msg.id,
                   query as String,

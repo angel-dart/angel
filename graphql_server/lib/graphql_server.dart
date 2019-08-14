@@ -45,10 +45,12 @@ class GraphQL {
     }
 
     if (_schema.queryType != null) this.customTypes.add(_schema.queryType);
-    if (_schema.mutationType != null)
+    if (_schema.mutationType != null) {
       this.customTypes.add(_schema.mutationType);
-    if (_schema.subscriptionType != null)
+    }
+    if (_schema.subscriptionType != null) {
       this.customTypes.add(_schema.subscriptionType);
+    }
   }
 
   GraphQLType convertType(TypeContext ctx) {
@@ -115,10 +117,10 @@ class GraphQL {
     var operation = getOperation(document, operationName);
     var coercedVariableValues = coerceVariableValues(
         schema, operation, variableValues ?? <String, dynamic>{});
-    if (operation.isQuery)
+    if (operation.isQuery) {
       return await executeQuery(document, operation, schema,
           coercedVariableValues, initialValue, globalVariables);
-    else if (operation.isSubscription) {
+    } else if (operation.isSubscription) {
       return await subscribe(document, operation, schema, coercedVariableValues,
           globalVariables, initialValue);
     } else {
@@ -129,20 +131,17 @@ class GraphQL {
 
   OperationDefinitionContext getOperation(
       DocumentContext document, String operationName) {
-    var ops =
-        document.definitions.where((d) => d is OperationDefinitionContext);
+    var ops = document.definitions.whereType<OperationDefinitionContext>();
 
     if (operationName == null) {
       return ops.length == 1
-          ? ops.first as OperationDefinitionContext
+          ? ops.first
           : throw GraphQLException.fromMessage(
               'This document does not define any operations.');
     } else {
-      return ops.firstWhere(
-              (d) => (d as OperationDefinitionContext).name == operationName,
-              orElse: () => throw GraphQLException.fromMessage(
-                  'Missing required operation "$operationName".'))
-          as OperationDefinitionContext;
+      return ops.firstWhere((d) => d.name == operationName,
+          orElse: () => throw GraphQLException.fromMessage(
+              'Missing required operation "$operationName".'));
     }
   }
 
@@ -241,15 +240,17 @@ class GraphQL {
       initialValue) {
     var selectionSet = subscription.selectionSet;
     var subscriptionType = schema.subscriptionType;
-    if (subscriptionType == null)
+    if (subscriptionType == null) {
       throw GraphQLException.fromSourceSpan(
           'The schema does not define a subscription type.', subscription.span);
+    }
     var groupedFieldSet =
         collectFields(document, subscriptionType, selectionSet, variableValues);
-    if (groupedFieldSet.length != 1)
+    if (groupedFieldSet.length != 1) {
       throw GraphQLException.fromSourceSpan(
           'The grouped field set from this query must have exactly one entry.',
           selectionSet.span);
+    }
     var fields = groupedFieldSet.entries.first.value;
     var fieldName = fields.first.field.fieldName.alias?.name ??
         fields.first.field.fieldName.name;
@@ -284,10 +285,10 @@ class GraphQL {
       Map<String, dynamic> globalVariables) async {
     var selectionSet = subscription.selectionSet;
     var subscriptionType = schema.subscriptionType;
-    if (subscriptionType == null)
+    if (subscriptionType == null) {
       throw GraphQLException.fromSourceSpan(
           'The schema does not define a subscription type.', subscription.span);
-
+    }
     try {
       var data = await executeSelectionSet(document, selectionSet,
           subscriptionType, initialValue, variableValues, globalVariables);
@@ -309,10 +310,11 @@ class GraphQL {
     });
     var resolver = field.resolve;
     var result = await resolver(rootValue, argumentValues);
-    if (result is Stream)
+    if (result is Stream) {
       return result;
-    else
+    } else {
       return Stream.fromIterable([result]);
+    }
   }
 
   Future<Map<String, dynamic>> executeSelectionSet(
@@ -348,8 +350,7 @@ class GraphQL {
               objectValue,
               fields,
               fieldType,
-              Map<String, dynamic>.from(
-                  globalVariables ?? <String, dynamic>{})
+              Map<String, dynamic>.from(globalVariables ?? <String, dynamic>{})
                 ..addAll(variableValues),
               globalVariables);
         }
@@ -490,9 +491,10 @@ class GraphQL {
     if (objectValue is Map) {
       return objectValue[fieldName] as T;
     } else if (field.resolve == null) {
-      if (defaultFieldResolver != null)
+      if (defaultFieldResolver != null) {
         return await defaultFieldResolver(
             objectValue, fieldName, argumentValues);
+      }
 
       return null;
     } else {
@@ -601,17 +603,14 @@ class GraphQL {
           return t;
         }
 
-        errors
-            .addAll(validation.errors.map((m) => GraphQLExceptionError(m)));
+        errors.addAll(validation.errors.map((m) => GraphQLExceptionError(m)));
       } on GraphQLException catch (e) {
         errors.addAll(e.errors);
       }
     }
 
-    errors.insert(
-        0,
-        GraphQLExceptionError(
-            'Cannot convert value $result to type $type.'));
+    errors.insert(0,
+        GraphQLExceptionError('Cannot convert value $result to type $type.'));
 
     throw GraphQLException(errors);
   }
@@ -640,10 +639,13 @@ class GraphQL {
     visitedFragments ??= [];
 
     for (var selection in selectionSet.selections) {
-      if (getDirectiveValue('skip', 'if', selection, variableValues) == true)
+      if (getDirectiveValue('skip', 'if', selection, variableValues) == true) {
         continue;
+      }
       if (getDirectiveValue('include', 'if', selection, variableValues) ==
-          false) continue;
+          false) {
+        continue;
+      }
 
       if (selection.field != null) {
         var responseKey = selection.field.fieldName.alias?.alias ??
@@ -656,11 +658,9 @@ class GraphQL {
         if (visitedFragments.contains(fragmentSpreadName)) continue;
         visitedFragments.add(fragmentSpreadName);
         var fragment = document.definitions
-            .where((d) => d is FragmentDefinitionContext)
-            .firstWhere(
-                (f) =>
-                    (f as FragmentDefinitionContext).name == fragmentSpreadName,
-                orElse: () => null) as FragmentDefinitionContext;
+            .whereType<FragmentDefinitionContext>()
+            .firstWhere((f) => f.name == fragmentSpreadName,
+                orElse: () => null);
 
         if (fragment == null) continue;
         var fragmentType = fragment.typeCondition;
@@ -712,9 +712,10 @@ class GraphQL {
     if (vv.value != null) return vv.value.value;
 
     var vname = vv.variable.name;
-    if (!variableValues.containsKey(vname))
+    if (!variableValues.containsKey(vname)) {
       throw GraphQLException.fromSourceSpan(
           'Unknown variable: "$vname"', vv.span);
+    }
 
     return variableValues[vname];
   }
@@ -723,8 +724,9 @@ class GraphQL {
       GraphQLObjectType objectType, TypeConditionContext fragmentType) {
     var type = convertType(TypeContext(fragmentType.typeName, null));
     if (type is GraphQLObjectType && !type.isInterface) {
-      for (var field in type.fields)
+      for (var field in type.fields) {
         if (!objectType.fields.any((f) => f.name == field.name)) return false;
+      }
       return true;
     } else if (type is GraphQLObjectType && type.isInterface) {
       return objectType.isImplementationOf(type);

@@ -23,11 +23,11 @@ void main() {
           'todos',
           listOf(todoType),
           resolve: (_, __) => [
-                Todo(
-                  text: 'Clean your room!',
-                  completed: false,
-                )
-              ],
+            Todo(
+              text: 'Clean your room!',
+              completed: false,
+            )
+          ],
         ),
       ]),
     );
