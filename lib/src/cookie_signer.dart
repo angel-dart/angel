@@ -3,23 +3,38 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:crypto/crypto.dart';
 
+/// A utility that signs, and verifies, cookies using an [Hmac].
+///
+/// It aims to mitigate so-called "cookie poisoning" attacks by
+/// ensuring that clients cannot tamper with the cookies they have been
+/// sent.
 class CookieSigner {
+  /// The [Hmac] used to sign and verify cookies.
   final Hmac hmac;
 
+  /// Creates an [hmac] from an array of [keyBytes] and a
+  /// [hash] (defaults to [sha256]).
   CookieSigner(List<int> keyBytes, {Hash hash})
       : hmac = Hmac(hash ?? sha256, keyBytes);
 
   CookieSigner.fromHmac(this.hmac);
 
+  /// Creates an [hmac] from a string [key] and a
+  /// [hash] (defaults to [sha256]).
   factory CookieSigner.fromStringKey(String key, {Hash hash}) {
-    if (key.length != 32) {
-      throw ArgumentError.value(key, 'key', 'must have a length of 32');
-    }
     return CookieSigner(utf8.encode(key), hash: hash);
   }
 
+  /// Returns a set of all the incoming cookies that had a
+  /// valid signature attached. Any cookies without a
+  /// signature, or with a signature that does not match the
+  /// provided data, are not included in the output.
   Iterable<Cookie> readCookies(RequestContext req) {}
 
+  /// Signs a set of [cookies], and adds them to an outgoing
+  /// [res]ponse.
+  ///
+  /// See [signCookie].
   void writeCookies(ResponseContext res, Iterable<Cookie> cookies) {
     for (var cookie in cookies) {
       signCookie(cookie);
