@@ -26,9 +26,7 @@ main() async {
   app.get('/getid', (req, res) {
     // Write the uniqid cookie.
     var uniqid = rnd.nextInt(65536);
-    signer.writeCookies(res, [
-      Cookie('uniqid', uniqid.toString()),
-    ]);
+    signer.writeCookie(res, Cookie('uniqid', uniqid.toString()));
 
     // Send a response.
     res.write('uniqid=$uniqid');

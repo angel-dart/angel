@@ -79,12 +79,20 @@ class CookieSigner {
     }
   }
 
+  /// Signs a single [cookie], and adds it to an outgoing
+  /// [res]ponse. The input [cookie] is not modified.
+  ///
+  /// See [createSignedCookie].
+  void writeCookie(ResponseContext res, Cookie cookie) {
+    res.cookies.add(createSignedCookie(cookie));
+  }
+
   /// Signs a set of [cookies], and adds them to an outgoing
   /// [res]ponse. The input [cookies] are not modified.
   ///
   /// See [createSignedCookie].
   void writeCookies(ResponseContext res, Iterable<Cookie> cookies) {
-    res.cookies.addAll(cookies.map(createSignedCookie));
+    cookies.forEach((c) => writeCookie(res, c));
   }
 
   /// Returns a new cookie, replacing the value of an input
