@@ -124,7 +124,15 @@ class Controller {
     };
   }
 
-  /// Used to add additional routes to the router from within a [Controller].
+  /// Used to add additional routes or middlewares to the router from within
+  /// a [Controller].
+  ///
+  /// ```dart
+  /// @override
+  /// FutureOr<void> configureRoutes(Routable routable) {
+  ///   routable.all('*', myMiddleware);
+  /// }
+  /// ```
   FutureOr<void> configureRoutes(Routable routable) {}
 
   /// Finds the [Expose] declaration for this class.
