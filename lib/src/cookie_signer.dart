@@ -90,12 +90,13 @@ class CookieSigner {
   /// Returns a new cookie, replacing the value of an input
   /// [cookie] with one that is signed with the [hmac].
   ///
-  /// The signature is:
-  /// `base64Url(cookie.value) + "." + base64Url(sig)`
+  /// The new value is:
+  /// `cookie.value + "." + base64Url(sig)`
   ///
   /// Where `sig` is the cookie's value, signed with the [hmac].
   Cookie createSignedCookie(Cookie cookie) {
-    return cookieWithNewValue(cookie, computeCookieSignature(cookie.value));
+    return cookieWithNewValue(
+        cookie, cookie.value + '.' + computeCookieSignature(cookie.value));
   }
 
   /// Returns a new [Cookie] that is the same as the input
@@ -110,13 +111,14 @@ class CookieSigner {
       ..secure = cookie.secure;
   }
 
-  /// Computes the signature of a [cookieValue], either for
+  /// Computes the *signature* of a [cookieValue], either for
   /// signing an outgoing cookie, or verifying an incoming cookie.
   String computeCookieSignature(String cookieValue) {
     // base64Url(cookie) + "." + base64Url(sig)
-    var encodedCookie = base64Url.encode(cookieValue.codeUnits);
+    // var encodedCookie = base64Url.encode(cookieValue.codeUnits);
     var sigBytes = hmac.convert(cookieValue.codeUnits).bytes;
-    var sig = base64Url.encode(sigBytes);
-    return encodedCookie + '.' + sig;
+    return base64Url.encode(sigBytes);
+    // var sig = base64Url.encode(sigBytes);
+    // return encodedCookie + '.' + sig;
   }
 }
