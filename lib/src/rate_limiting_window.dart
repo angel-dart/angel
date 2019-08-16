@@ -32,4 +32,19 @@ class RateLimitingWindow<User> {
 
   RateLimitingWindow(this.user, this.startTime, this.pointsConsumed,
       {this.pointLimit, this.remainingPoints, this.resetTime});
+
+  factory RateLimitingWindow.fromJson(Map<String, dynamic> map) {
+    return RateLimitingWindow(
+        map['user'] as User,
+        DateTime.parse(map['start_time'] as String),
+        int.parse(map['points_consumed'] as String));
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user': user,
+      'start_time': startTime.toIso8601String(),
+      'points_consumed': pointsConsumed.toString(),
+    };
+  }
 }
