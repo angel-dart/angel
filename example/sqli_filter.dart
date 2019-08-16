@@ -21,4 +21,9 @@ main() async {
   // Start the server.
   await http.startServer('127.0.0.1', 3000);
   print('SQLi filtering example listening at ${http.uri}');
+
+  var exampleUri = http.uri.replace(queryParameters: {
+    'id': "-1' and 1=1 union/* foo */select load_file('/etc/passwd')--"
+  });
+  print('Example URI: $exampleUri');
 }
