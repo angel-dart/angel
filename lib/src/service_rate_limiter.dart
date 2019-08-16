@@ -21,7 +21,8 @@ class ServiceRateLimiter<Id> extends RateLimiter<Id> {
   FutureOr<RateLimitingWindow<Id>> getCurrentWindow(
       RequestContext req, ResponseContext res, DateTime currentTime) async {
     var id = await getId(req, res);
-    var existing = await service.read(id);
+    var existing = await service.read(id).catchError((_) => null,
+        test: (e) => e is AngelHttpException && e.statusCode == 404);
     if (existing != null) {
       return RateLimitingWindow.fromJson(existing);
     }
