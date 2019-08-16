@@ -1,0 +1,6 @@
+name: example
+publish_to: none
+dependencies:
+  angel_security:
+    path: ../
+  pretty_logging: ^1.0.0
