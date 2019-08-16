@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_security/angel_security.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
 import 'package:pretty_logging/pretty_logging.dart';
 

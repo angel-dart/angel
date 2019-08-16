@@ -15,6 +15,10 @@
     <list default="true" id="196df338-9e5c-49f9-ba32-c75ccea34c48" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/cmake_dart_utils" beforeDir="false" afterPath="$PROJECT_DIR$/cmake_dart_utils" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake_dart_utils/example/lib/sample_extension.dart" beforeDir="false" afterPath="$PROJECT_DIR$/cmake_dart_utils/example/lib/sample_extension.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/native/angel_security.c" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/native/angel_security.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/native/libangel_security_native.dylib" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/native/libangel_security_native.dylib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/native/native.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/native/native.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/libinjection/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/libinjection/src/CMakeLists.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,11 +30,11 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/src/native/angel_security.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="207">
-              <caret line="44" column="45" selection-start-line="44" selection-start-column="45" selection-end-line="44" selection-end-column="45" />
+            <state relative-caret-position="252">
+              <caret line="46" column="44" selection-start-line="46" selection-start-column="44" selection-end-line="46" selection-end-column="44" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -56,7 +60,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="170">
@@ -75,8 +79,8 @@
       <list>
         <option value="$PROJECT_DIR$/lib/src/native/angel_security.cc" />
         <option value="$PROJECT_DIR$/libinjection/src/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/lib/src/native/angel_security.c" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/lib/src/native/angel_security.c" />
       </list>
     </option>
   </component>
@@ -168,12 +172,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1565965399486</updated>
-      <workItem from="1565965401738" duration="1352000" />
+      <workItem from="1565965401738" duration="1678000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1352000" />
+    <option name="totallyTimeSpent" value="1678000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="180" y="23" width="1155" height="766" extended-state="0" />
@@ -287,16 +291,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/native/angel_security.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="44" column="45" selection-start-line="44" selection-start-column="45" selection-end-line="44" selection-end-column="45" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/libinjection/src/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -308,6 +302,16 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/native/angel_security.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="46" column="44" selection-start-line="46" selection-start-column="44" selection-end-line="46" selection-end-column="44" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

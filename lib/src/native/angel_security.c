@@ -44,6 +44,7 @@ void Angel_Security_IsSqli(Dart_NativeArguments arguments) {
     HandleError(Dart_ListSetAt(outHandle, 0, Dart_NewBoolean(false)));
     HandleError(Dart_ListSetAt(outHandle, 1, Dart_Null()));
   }
+  Dart_SetReturnValue(arguments, outHandle);
 }
 
 Dart_NativeFunction ResolveName(Dart_Handle name, int argc,
