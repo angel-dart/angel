@@ -9,6 +9,8 @@ class CookieSigner {
   CookieSigner(List<int> keyBytes, {Hash hash})
       : hmac = Hmac(hash ?? sha256, keyBytes);
 
+  CookieSigner.fromHmac(this.hmac);
+
   factory CookieSigner.fromStringKey(String key, {Hash hash}) {
     if (key.length != 32) {
       throw ArgumentError.value(key, 'key', 'must have a length of 32');
@@ -16,5 +18,14 @@ class CookieSigner {
     return CookieSigner(utf8.encode(key), hash: hash);
   }
 
-  CookieSigner.fromHmac(this.hmac);
+  Iterable<Cookie> readCookies(RequestContext req) {}
+
+  void writeCookies(ResponseContext res, Iterable<Cookie> cookies) {
+    for (var cookie in cookies) {
+      signCookie(cookie);
+      res.cookies.add(cookie);
+    }
+  }
+
+  void signCookie(Cookie cookie) {}
 }
