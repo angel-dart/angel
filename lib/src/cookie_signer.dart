@@ -29,17 +29,62 @@ class CookieSigner {
   /// valid signature attached. Any cookies without a
   /// signature, or with a signature that does not match the
   /// provided data, are not included in the output.
-  Iterable<Cookie> readCookies(RequestContext req) {}
+  ///
+  /// If an [onInvalidCookie] callback is passed, then it will
+  /// be invoked for each unsigned or improperly-signed cookie.
+  List<Cookie> readCookies(RequestContext req,
+      {void Function(Cookie) onInvalidCookie}) {
+    return req.cookies.fold([], (out, cookie) {
+      var data = getCookiePayloadAndSignature(cookie.value);
+      if (data == null || (data[1] != computeCookieSignature(data[0]))) {
+        if (onInvalidCookie != null) {
+          onInvalidCookie(cookie);
+        }
+        return out;
+      } else {
+        return out..add(cookieWithNewValue(cookie, data[0]));
+      }
+    });
+  }
+
+  /// Determines whether a cookie is properly signed,
+  /// if it is signed at all.
+  ///
+  /// If there is no signature, returns `false`.
+  /// If the provided signature does not match the payload
+  /// provided, returns `false`.
+  /// Otherwise, returns true.
+  bool verify(Cookie cookie) {
+    var data = getCookiePayloadAndSignature(cookie.value);
+    return (data != null && (data[1] == computeCookieSignature(data[0])));
+  }
+
+  /// Gets the payload and signature of a given [cookie], WITHOUT
+  /// verifying its integrity.
+  ///
+  /// Returns `null` if no payload can be found.
+  /// Otherwise, returns a list with a length of 2, where
+  /// the item at index `0` is the payload, and the item at
+  /// index `1` is the signature.
+  List<String> getCookiePayloadAndSignature(String cookieValue) {
+    var dot = cookieValue.indexOf('.');
+    if (dot <= 0) {
+      return null;
+    } else if (dot >= cookieValue.length - 1) {
+      return null;
+    } else {
+      var payload = cookieValue.substring(0, dot);
+      var sig = cookieValue.substring(dot + 1);
+      return [payload, sig];
+    }
+  }
 
   /// Signs a set of [cookies], and adds them to an outgoing
-  /// [res]ponse.
+  /// [res]ponse. The input [cookies] are not modified.
   ///
-  /// See [signCookie].
+  /// See [createSignedCookie].
   void writeCookies(ResponseContext res, Iterable<Cookie> cookies) {
-    for (var cookie in cookies) {
-      signCookie(cookie);
-      res.cookies.add(cookie);
-    }
+    res.cookies.addAll(cookies.map(createSignedCookie));
   }
 
   /// Returns a new cookie, replacing the value of an input
@@ -49,8 +94,14 @@ class CookieSigner {
   /// `base64Url(cookie.value) + "." + base64Url(sig)`
   ///
   /// Where `sig` is the cookie's value, signed with the [hmac].
-  Cookie signCookie(Cookie cookie) {
-    return Cookie(cookie.name, computeCookieSignature(cookie.value))
+  Cookie createSignedCookie(Cookie cookie) {
+    return cookieWithNewValue(cookie, computeCookieSignature(cookie.value));
+  }
+
+  /// Returns a new [Cookie] that is the same as the input
+  /// [cookie], but with a [newValue].
+  Cookie cookieWithNewValue(Cookie cookie, String newValue) {
+    return Cookie(cookie.name, newValue)
       ..domain = cookie.domain
       ..expires = cookie.expires
       ..httpOnly = cookie.httpOnly
