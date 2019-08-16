@@ -12,11 +12,11 @@ main() async {
   var app = Angel(logger: Logger('rate_limit')), http = AngelHttp(app);
 
   // Create a simple in-memory rate limiter that limits users to 5
-  // queries per hour.
+  // queries per 30 seconds.
   //
   // In this case, we rate limit users by IP address.
   var rateLimiter =
-      InMemoryRateLimiter(5, Duration(hours: 1), (req, res) => req.ip);
+      InMemoryRateLimiter(5, Duration(seconds: 30), (req, res) => req.ip);
 
   // `RateLimiter.handleRequest` is a middleware, and can be used anywhere
   // a middleware can be used. In this case, we apply the rate limiter to
