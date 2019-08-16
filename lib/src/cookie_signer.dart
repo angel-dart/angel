@@ -42,18 +42,30 @@ class CookieSigner {
     }
   }
 
-  /// **Overwrites** the value of a [cookie] with one that is signed
-  /// with the [hmac].
+  /// Returns a new cookie, replacing the value of an input
+  /// [cookie] with one that is signed with the [hmac].
   ///
   /// The signature is:
   /// `base64Url(cookie.value) + "." + base64Url(sig)`
   ///
   /// Where `sig` is the cookie's value, signed with the [hmac].
-  void signCookie(Cookie cookie) {
+  Cookie signCookie(Cookie cookie) {
+    return Cookie(cookie.name, computeCookieSignature(cookie.value))
+      ..domain = cookie.domain
+      ..expires = cookie.expires
+      ..httpOnly = cookie.httpOnly
+      ..maxAge = cookie.maxAge
+      ..path = cookie.path
+      ..secure = cookie.secure;
+  }
+
+  /// Computes the signature of a [cookieValue], either for
+  /// signing an outgoing cookie, or verifying an incoming cookie.
+  String computeCookieSignature(String cookieValue) {
     // base64Url(cookie) + "." + base64Url(sig)
-    var encodedCookie = base64Url.encode(cookie.value.codeUnits);
-    var sigBytes = hmac.convert(cookie.value.codeUnits).bytes;
+    var encodedCookie = base64Url.encode(cookieValue.codeUnits);
+    var sigBytes = hmac.convert(cookieValue.codeUnits).bytes;
     var sig = base64Url.encode(sigBytes);
-    cookie.value = encodedCookie + '.' + sig;
+    return encodedCookie + '.' + sig;
   }
 }
