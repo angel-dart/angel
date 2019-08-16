@@ -13,7 +13,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="196df338-9e5c-49f9-ba32-c75ccea34c48" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake_dart_utils" beforeDir="false" afterPath="$PROJECT_DIR$/cmake_dart_utils" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake_dart_utils/example/lib/sample_extension.dart" beforeDir="false" afterPath="$PROJECT_DIR$/cmake_dart_utils/example/lib/sample_extension.dart" afterDir="false" />
     </list>
@@ -42,7 +41,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file:///usr/local/Cellar/dart/2.5.0-dev.1.0/libexec/include/dart_api.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="142">
+            <state relative-caret-position="-7">
               <caret line="2046" column="24" selection-start-line="2046" selection-start-column="24" selection-end-line="2046" selection-end-column="24" />
             </state>
           </provider>
@@ -60,8 +59,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="9" column="47" selection-start-line="9" selection-start-column="47" selection-end-line="9" selection-end-column="47" />
+            <state relative-caret-position="170">
+              <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
             </state>
           </provider>
         </entry>
@@ -104,6 +103,11 @@
             <path>
               <item name="angel_security" type="b2602c69:ProjectViewProjectNode" />
               <item name="security" type="462c0819:PsiDirectoryNode" />
+              <item name="cmake-build-debug" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="angel_security" type="b2602c69:ProjectViewProjectNode" />
+              <item name="security" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -111,13 +115,6 @@
               <item name="security" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="angel_security" type="b2602c69:ProjectViewProjectNode" />
-              <item name="security" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="native" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -171,25 +168,25 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1565965399486</updated>
-      <workItem from="1565965401738" duration="1009000" />
+      <workItem from="1565965401738" duration="1352000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1009000" />
+    <option name="totallyTimeSpent" value="1352000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="180" y="23" width="1155" height="766" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="0" weight="0.2884097" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2884097" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Tool Output" />
       <window_info anchor="bottom" id="Database Changes" />
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Terminal" />
-      <window_info active="true" anchor="bottom" id="Messages" visible="true" weight="0.32937685" />
+      <window_info anchor="bottom" id="Messages" visible="true" weight="0.32937685" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
       <window_info anchor="bottom" id="ANTLR Preview" />
       <window_info anchor="bottom" id="CMake" weight="0.32937685" />
@@ -285,7 +282,7 @@
     </entry>
     <entry file="file:///usr/local/Cellar/dart/2.5.0-dev.1.0/libexec/include/dart_api.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="142">
+        <state relative-caret-position="-7">
           <caret line="2046" column="24" selection-start-line="2046" selection-start-column="24" selection-end-line="2046" selection-end-column="24" />
         </state>
       </provider>
@@ -309,8 +306,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="47" selection-start-line="9" selection-start-column="47" selection-end-line="9" selection-end-column="47" />
+        <state relative-caret-position="170">
+          <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
         </state>
       </provider>
     </entry>
