@@ -27,5 +27,18 @@ class CookieSigner {
     }
   }
 
-  void signCookie(Cookie cookie) {}
+  /// **Overwrites** the value of a [cookie] with one that is signed
+  /// with the [hmac].
+  ///
+  /// The signature is:
+  /// `base64Url(cookie.value) + "." + base64Url(sig)`
+  ///
+  /// Where `sig` is the cookie's value, signed with the [hmac].
+  void signCookie(Cookie cookie) {
+    // base64Url(cookie) + "." + base64Url(sig)
+    var encodedCookie = base64Url.encode(cookie.value.codeUnits);
+    var sigBytes = hmac.convert(cookie.value.codeUnits).bytes;
+    var sig = base64Url.encode(sigBytes);
+    cookie.value = encodedCookie + '.' + sig;
+  }
 }
