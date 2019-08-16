@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+project(angel_security)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_dart_utils/cmake")
+find_package(Dart REQUIRED)
+add_dart_native_extension(angel_security_native lib/src/native/angel_security.cc)
