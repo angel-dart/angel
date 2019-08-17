@@ -107,13 +107,15 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     }
   }
 
-  String _compileJoin(tableName, Set<String> trampoline) {
+  String Function() _compileJoin(tableName, Set<String> trampoline) {
     if (tableName is String) {
-      return tableName;
+      return () => tableName;
     } else if (tableName is Query) {
-      var c = tableName.compile(trampoline);
-      if (c == null) return c;
-      return '($c)';
+      return () {
+        var c = tableName.compile(trampoline);
+        if (c == null) return c;
+        return '($c)';
+      };
     } else {
       throw ArgumentError.value(
           tableName, 'tableName', 'must be a String or Query');

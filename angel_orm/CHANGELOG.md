@@ -3,6 +3,8 @@
 separate files.
 * **BREAKING**: Add a required `QueryExecutor` argument to `transaction`
 callbacks.
+* Make `JoinBuilder` take `to` as a `String Function()`. This will allow
+ORM queries to reference their joined subqueries.
 
 # 2.0.1
 * Apply `package:pedantic` fixes.

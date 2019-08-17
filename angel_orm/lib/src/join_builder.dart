@@ -5,7 +5,11 @@ import 'query.dart';
 class JoinBuilder {
   final JoinType type;
   final Query from;
-  final String to, key, value, op, alias;
+  final String key, value, op, alias;
+
+  /// A callback to produces the expression to join against, i.e.
+  /// a table name, or the result of compiling a query.
+  final String Function() to;
   final List<String> additionalFields;
 
   JoinBuilder(this.type, this.from, this.to, this.key, this.value,
