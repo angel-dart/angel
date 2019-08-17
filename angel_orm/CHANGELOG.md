@@ -5,6 +5,7 @@ separate files.
 callbacks.
 * Make `JoinBuilder` take `to` as a `String Function()`. This will allow
 ORM queries to reference their joined subqueries.
+* Removed deprecated `Join`, `toSql`, `sanitizeExpression`, `isAscii`.
 
 # 2.0.1
 * Apply `package:pedantic` fixes.
