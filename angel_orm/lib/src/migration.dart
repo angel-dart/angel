@@ -26,11 +26,18 @@ class Column {
   /// Specifies what kind of index this column is, if any.
   final IndexType indexType;
 
+  /// A custom SQL expression to execute, instead of a named column.
+  final String expression;
+
   const Column(
       {this.isNullable = true,
       this.length,
       this.type,
-      this.indexType = IndexType.none});
+      this.indexType = IndexType.none,
+      this.expression});
+
+  /// Returns `true` if [expression] is not `null`.
+  bool get hasExpression => expression != null;
 }
 
 class PrimaryKey extends Column {
