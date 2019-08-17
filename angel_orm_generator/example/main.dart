@@ -33,7 +33,7 @@ class _FakeExecutor extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function() f) {
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
     throw new UnsupportedError('Transactions are not supported.');
   }
 }
