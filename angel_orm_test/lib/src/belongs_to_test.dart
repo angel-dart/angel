@@ -146,4 +146,19 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     expect(book.author, isNotNull);
     expect(book.author.name, jkRowling.name);
   });
+
+  group('joined subquery', () async {
+    // To verify that the joined subquery is correct,
+    // we test both a query that return empty, and one
+    // that should return correctly.
+    test('returns empty on false subquery', () async {
+      var query = BookQuery()..author.where.name.equals('Billie Jean');
+      expect(await query.get(executor), isEmpty);
+    });
+
+    test('returns values on true subquery', () async {
+      var query = BookQuery()..author.where.name.like('%Rowling%');
+      expect(await query.get(executor), [deathlyHallows]);
+    });
+  });
 }
