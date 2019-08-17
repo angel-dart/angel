@@ -241,12 +241,12 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     var whereClause =
         where.compile(tableName: includeTableName ? tableName : null);
     if (whereClause.isNotEmpty) b.write(' WHERE $whereClause');
-    if (_limit != null) b.write(' LIMIT $_limit');
-    if (_offset != null) b.write(' OFFSET $_offset');
     if (_groupBy != null) b.write(' GROUP BY $_groupBy');
     for (var item in _orderBy) {
       b.write(' ORDER BY ${item.compile()}');
     }
+    if (_limit != null) b.write(' LIMIT $_limit');
+    if (_offset != null) b.write(' OFFSET $_offset');
     return b.toString();
   }
 
