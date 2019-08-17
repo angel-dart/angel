@@ -293,18 +293,32 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     .map(literalString)
                     .toList();
 
-                // Instead of passing the table as-is, we'll compile a subquery.
-                if (relation.type == RelationshipType.hasMany) {
-                  var foreignQueryType =
-                      foreign.buildContext.modelClassNameRecase.pascalCase +
-                          'Query';
-                  joinArgs.insert(
-                      0,
-                      refer(foreignQueryType).newInstance(
-                          [], {'trampoline': refer('trampoline')}));
-                } else {
-                  joinArgs.insert(0, literalString(foreign.tableName));
-                }
+                // In the past, we would either do a join on the table name
+                // itself, or create an instance of a query.
+                //
+                // From this point on, however, we will create a field for each
+                // join, so that users can customize the generated query.
+                //
+                // There'll be a private `_field`, and then a getter, named `field`,
+                // that returns the subqueryb object.
+                var foreignQueryType = refer(
+                    foreign.buildContext.modelClassNameRecase.pascalCase +
+                        'Query');
+                clazz
+                  ..fields.add(Field((b) => b
+                    ..name = '_$fieldName'
+                    ..type = foreignQueryType))
+                  ..methods.add(Method((b) => b
+                    ..name = fieldName
+                    ..type = MethodType.getter
+                    ..returns = foreignQueryType
+                    ..body = refer('_$fieldName').returned.statement));
+
+                // Assign a value to `_field`.
+                var queryInstantiation = foreignQueryType
+                    .newInstance([], {'trampoline': refer('trampoline')});
+                joinArgs.insert(
+                    0, queryInstantiation.assign(refer('_$fieldName')));
 
                 b.addExpression(refer('leftJoin').call(joinArgs, {
                   'additionalFields':
