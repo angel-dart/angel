@@ -55,10 +55,11 @@ class BookQuery extends Query<Book, BookQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = BookQueryWhere(this);
-    leftJoin('authors', 'author_id', 'id',
+    leftJoin(_author = AuthorQuery(trampoline: trampoline), 'author_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
-    leftJoin('authors', 'partner_author_id', 'id',
+    leftJoin(_partnerAuthor = AuthorQuery(trampoline: trampoline),
+        'partner_author_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
   }
@@ -67,6 +68,10 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   final BookQueryValues values = BookQueryValues();
 
   BookQueryWhere _where;
+
+  AuthorQuery _author;
+
+  AuthorQuery _partnerAuthor;
 
   @override
   get casts {
@@ -121,6 +126,14 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  AuthorQuery get author {
+    return _author;
+  }
+
+  AuthorQuery get partnerAuthor {
+    return _partnerAuthor;
   }
 }
 

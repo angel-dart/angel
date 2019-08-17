@@ -318,7 +318,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var queryInstantiation = foreignQueryType
                     .newInstance([], {'trampoline': refer('trampoline')});
                 joinArgs.insert(
-                    0, queryInstantiation.assign(refer('_$fieldName')));
+                    0, refer('_$fieldName').assign(queryInstantiation));
 
                 b.addExpression(refer('leftJoin').call(joinArgs, {
                   'additionalFields':

@@ -50,7 +50,7 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = TreeQueryWhere(this);
-    leftJoin(FruitQuery(trampoline: trampoline), 'id', 'tree_id',
+    leftJoin(_fruits = FruitQuery(trampoline: trampoline), 'id', 'tree_id',
         additionalFields: const [
           'id',
           'created_at',
@@ -65,6 +65,8 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   final TreeQueryValues values = TreeQueryValues();
 
   TreeQueryWhere _where;
+
+  FruitQuery _fruits;
 
   @override
   get casts {
@@ -110,6 +112,10 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  FruitQuery get fruits {
+    return _fruits;
   }
 
   @override

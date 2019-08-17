@@ -53,7 +53,8 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = OrderQueryWhere(this);
-    leftJoin('customers', 'customer_id', 'id',
+    leftJoin(
+        _customer = CustomerQuery(trampoline: trampoline), 'customer_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at'],
         trampoline: trampoline);
   }
@@ -62,6 +63,8 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
   final OrderQueryValues values = OrderQueryValues();
 
   OrderQueryWhere _where;
+
+  CustomerQuery _customer;
 
   @override
   get casts {
@@ -115,6 +118,10 @@ class OrderQuery extends Query<Order, OrderQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  CustomerQuery get customer {
+    return _customer;
   }
 }
 

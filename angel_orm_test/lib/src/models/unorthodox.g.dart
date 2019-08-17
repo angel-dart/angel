@@ -187,9 +187,10 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = WeirdJoinQueryWhere(this);
-    leftJoin('unorthodoxes', 'join_name', 'name',
+    leftJoin(_unorthodox = UnorthodoxQuery(trampoline: trampoline), 'join_name',
+        'name',
         additionalFields: const ['name'], trampoline: trampoline);
-    leftJoin('songs', 'id', 'weird_join_id',
+    leftJoin(_song = SongQuery(trampoline: trampoline), 'id', 'weird_join_id',
         additionalFields: const [
           'id',
           'created_at',
@@ -198,9 +199,10 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
           'title'
         ],
         trampoline: trampoline);
-    leftJoin(NumbaQuery(trampoline: trampoline), 'id', 'parent',
+    leftJoin(_numbas = NumbaQuery(trampoline: trampoline), 'id', 'parent',
         additionalFields: const ['i', 'parent'], trampoline: trampoline);
-    leftJoin(FooPivotQuery(trampoline: trampoline), 'id', 'weird_join_id',
+    leftJoin(
+        _foos = FooPivotQuery(trampoline: trampoline), 'id', 'weird_join_id',
         additionalFields: const ['bar'], trampoline: trampoline);
   }
 
@@ -208,6 +210,14 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
   final WeirdJoinQueryValues values = WeirdJoinQueryValues();
 
   WeirdJoinQueryWhere _where;
+
+  UnorthodoxQuery _unorthodox;
+
+  SongQuery _song;
+
+  NumbaQuery _numbas;
+
+  FooPivotQuery _foos;
 
   @override
   get casts {
@@ -263,6 +273,22 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  UnorthodoxQuery get unorthodox {
+    return _unorthodox;
+  }
+
+  SongQuery get song {
+    return _song;
+  }
+
+  NumbaQuery get numbas {
+    return _numbas;
+  }
+
+  FooPivotQuery get foos {
+    return _foos;
   }
 
   @override
@@ -579,7 +605,8 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = FooQueryWhere(this);
-    leftJoin(FooPivotQuery(trampoline: trampoline), 'bar', 'foo_bar',
+    leftJoin(
+        _weirdJoins = FooPivotQuery(trampoline: trampoline), 'bar', 'foo_bar',
         additionalFields: const ['id', 'join_name'], trampoline: trampoline);
   }
 
@@ -587,6 +614,8 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
   final FooQueryValues values = FooQueryValues();
 
   FooQueryWhere _where;
+
+  FooPivotQuery _weirdJoins;
 
   @override
   get casts {
@@ -628,6 +657,10 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  FooPivotQuery get weirdJoins {
+    return _weirdJoins;
   }
 
   @override
@@ -727,9 +760,10 @@ class FooPivotQuery extends Query<FooPivot, FooPivotQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = FooPivotQueryWhere(this);
-    leftJoin('weird_joins', 'weird_join_id', 'id',
+    leftJoin(_weirdJoin = WeirdJoinQuery(trampoline: trampoline),
+        'weird_join_id', 'id',
         additionalFields: const ['id', 'join_name'], trampoline: trampoline);
-    leftJoin('foos', 'foo_bar', 'bar',
+    leftJoin(_foo = FooQuery(trampoline: trampoline), 'foo_bar', 'bar',
         additionalFields: const ['bar'], trampoline: trampoline);
   }
 
@@ -737,6 +771,10 @@ class FooPivotQuery extends Query<FooPivot, FooPivotQueryWhere> {
   final FooPivotQueryValues values = FooPivotQueryValues();
 
   FooPivotQueryWhere _where;
+
+  WeirdJoinQuery _weirdJoin;
+
+  FooQuery _foo;
 
   @override
   get casts {
@@ -780,6 +818,14 @@ class FooPivotQuery extends Query<FooPivot, FooPivotQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  WeirdJoinQuery get weirdJoin {
+    return _weirdJoin;
+  }
+
+  FooQuery get foo {
+    return _foo;
   }
 }
 

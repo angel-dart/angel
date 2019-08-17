@@ -50,7 +50,7 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = LegQueryWhere(this);
-    leftJoin('feet', 'id', 'leg_id',
+    leftJoin(_foot = FootQuery(trampoline: trampoline), 'id', 'leg_id',
         additionalFields: const [
           'id',
           'created_at',
@@ -65,6 +65,8 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   final LegQueryValues values = LegQueryValues();
 
   LegQueryWhere _where;
+
+  FootQuery _foot;
 
   @override
   get casts {
@@ -108,6 +110,10 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  FootQuery get foot {
+    return _foot;
   }
 }
 
