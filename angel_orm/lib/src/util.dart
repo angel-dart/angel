@@ -1,8 +1,5 @@
-import 'dart:async';
 import 'package:charcode/ascii.dart';
-import 'annotations.dart';
 import 'builder.dart';
-import 'query_base.dart';
 
 bool isAscii(int ch) => ch >= $nul && ch <= $del;
 
