@@ -7,6 +7,7 @@ callbacks.
 ORM queries to reference their joined subqueries.
 * Removed deprecated `Join`, `toSql`, `sanitizeExpression`, `isAscii`.
 * Always put `ORDER BY` before `LIMIT`.
+* `and`, `or`, `not` in `QueryWhere` include parentheses.
 
 # 2.0.1
 * Apply `package:pedantic` fixes.

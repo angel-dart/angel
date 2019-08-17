@@ -41,17 +41,17 @@ abstract class QueryWhere {
 
     for (var other in _and) {
       var sql = other.compile();
-      if (sql.isNotEmpty) b.write(' AND $sql');
+      if (sql.isNotEmpty) b.write(' AND ($sql)');
     }
 
     for (var other in _not) {
       var sql = other.compile();
-      if (sql.isNotEmpty) b.write(' NOT $sql');
+      if (sql.isNotEmpty) b.write(' NOT ($sql)');
     }
 
     for (var other in _or) {
       var sql = other.compile();
-      if (sql.isNotEmpty) b.write(' OR $sql');
+      if (sql.isNotEmpty) b.write(' OR ($sql)');
     }
 
     return b.toString();
