@@ -263,9 +263,9 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
               fields.map(adornWithTableName).toList())
           .then((it) => it.map(deserialize).toList());
     } else {
-      return executor.transaction(() async {
+      return executor.transaction((tx) async {
         // TODO: Can this be done with just *one* query?
-        var existing = await get(executor);
+        var existing = await get(tx);
         //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
         return executor
             .query(tableName, sql, substitutionValues)
