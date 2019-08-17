@@ -1,3 +1,7 @@
+# 2.1.0
+* Split the formerly 600+ line `src/query.dart` up into
+separate files.
+
 # 2.0.1
 * Apply `package:pedantic` fixes.
 * `@PrimaryKey()` no longer defaults to `serial`, allowing its type to be
