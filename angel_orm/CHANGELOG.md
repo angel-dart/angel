@@ -1,3 +1,6 @@
+# 2.0.2
+* Place `LIMIT` and `OFFSET` after `ORDER BY`.
+
 # 2.0.1
 * Apply `package:pedantic` fixes.
 * `@PrimaryKey()` no longer defaults to `serial`, allowing its type to be
