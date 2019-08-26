@@ -59,7 +59,7 @@ class GraphQL {
     } else if (ctx.typeName != null) {
       switch (ctx.typeName.name) {
         case 'Int':
-          return graphQLString;
+          return graphQLInt;
         case 'Float':
           return graphQLFloat;
         case 'String':
