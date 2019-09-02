@@ -1,3 +1,6 @@
+# 1.1.4
+* Fix broken int variable parsing - https://github.com/angel-dart/graphql/pull/32
+
 # 1.1.3
 * Add `Parser.nextName`, and remove all formerly-reserved words from the lexer.
 Resolves [#19](https://github.com/angel-dart/graphql/issues/19).
