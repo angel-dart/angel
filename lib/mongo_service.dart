@@ -54,7 +54,7 @@ class MongoService extends Service<String, Map<String, dynamic>> {
       } else if (key == 'query' &&
           (allowQuery == true || !params.containsKey('provider'))) {
         var query = params[key] as Map;
-        query.forEach((key, v) {
+        query?.forEach((key, v) {
           var value = v is Map<String, dynamic> ? _filterNoQuery(v) : v;
 
           if (!_NO_QUERY.contains(key) &&
