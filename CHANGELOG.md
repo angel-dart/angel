@@ -1,3 +1,6 @@
+# 2.0.3
+* Add null-coalescing check when processing queries: https://github.com/angel-dart/mongo/pull/12
+
 # 2.0.2
 * Fix flaw where clients could remove all records, even if `allowRemoveAll` were `false`.
 
