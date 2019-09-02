@@ -1,5 +1,5 @@
 name: angel_mongo
-version: 2.0.2
+version: 2.0.3
 description: MongoDB-enabled services for the Angel framework. Well-tested.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_mongo
