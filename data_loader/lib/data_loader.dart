@@ -25,13 +25,22 @@ class DataLoader<Id, Data> {
       var current = _queue.toList();
       _queue.clear();
 
-      var data = await loadMany(current.map((i) => i.id));
+      List<Id> loadIds =
+          current.map((i) => i.id).toSet().toList(growable: false);
 
-      for (int i = 0; i < current.length; i++) {
-        var item = current[i];
+      var data = await loadMany(
+        loadIds,
+      );
+
+      for (int i = 0; i < loadIds.length; i++) {
+        var id = loadIds[i];
         var value = data.elementAt(i);
-        if (cache) _cache[item.id] = value;
-        item.completer.complete(value);
+
+        if (cache) _cache[id] = value;
+
+        current
+            .where((item) => item.id == id)
+            .forEach((item) => item.completer.complete(value));
       }
     }
 
