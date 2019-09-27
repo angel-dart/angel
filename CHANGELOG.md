@@ -1,3 +1,6 @@
+# 2.0.2
+* Deduplicate error messages.
+
 # 2.0.1+1
 * Fix bug in the implementation of `maxLength`.
 
