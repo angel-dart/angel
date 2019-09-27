@@ -382,10 +382,10 @@ class ValidationException extends AngelHttpException {
   /// A descriptive message describing the error.
   final String message;
 
-  ValidationException(this.message, {List<String> errors = const []})
+  ValidationException(this.message, {Iterable<String> errors = const []})
       : super(FormatException(message),
             statusCode: 400,
-            errors: errors ?? [],
+            errors: (errors ?? <String>[]).toSet().toList(),
             stackTrace: StackTrace.current) {
     if (errors != null) this.errors.addAll(errors);
   }
