@@ -36,7 +36,7 @@ For convenience's sake, this library also exports `matcher`.
 import 'package:angel_validate/angel_validate.dart';
 
 main() {
-    var validator = new Validator({
+    var validator = Validator({
         'username': isAlphaNum,
         'multiple,keys,with,same,rules': [isString, isNotEmpty],
         'balance': [
@@ -91,7 +91,7 @@ to throw an error if it is not present.
 
 ```dart
 main() {
-    var validator = new Validator({
+    var validator = Validator({
         'googleId*': isString,
         
         // You can also use `requireField`
@@ -111,7 +111,7 @@ If not present, default values will be filled in *before* validation.
 This means that they can still be used with required fields.
 
 ```dart
-final Validator todo = new Validator({
+final Validator todo = Validator({
     'text*': isString,
     'completed*': isBool
 }, defaultValues: {
@@ -134,9 +134,9 @@ The function must *synchronously* return a `bool`.
 
 ```dart
 main() {
-    var validator = new Validator({
+    var validator = Validator({
         'key*': (key) {
-            var file = new File('whitelist.txt');
+            var file = File('whitelist.txt');
             return file.readFileSync().contains(key);
         }
     });
@@ -148,7 +148,7 @@ If these are not present, `angel_validate` will *attempt* to generate
 a coherent error message on its own.
 
 ```dart
-new Validator({
+Validator({
     'age': [greaterThanOrEqualTo(18)]
 }, customErrorMessages: {
     'age': 'You must be an adult to see this page.'
@@ -189,7 +189,7 @@ You can also use `extend` to mark fields as required or forbidden that originall
 were not. Default value and custom error message extension is also supported.
 
 ```dart
-final Validator userValidator = new Validator({
+final Validator userValidator = Validator({
     'username': isString,
     'age': [
         isNum,
@@ -210,7 +210,7 @@ var ageIsOptional = userValidator.extend({
 });
 ```
 
-Note that by default, new validation rules are simply appended to
+Note that by default, validation rules are simply appended to
 the existing list. To completely overwrite existing rules, set the
 `overwrite` flag to `true`.
 
@@ -246,23 +246,23 @@ a `Validator` instance to the constructor, because it extends the
 
 ```dart
 main() {
-    var bio = new Validator({
+    var bio = Validator({
         'age*': [isInt, greaterThanOrEqualTo(0)],
         'birthYear*': isInt,
         'countryOfOrigin': isString
     });
 
-    var book = new Validator({
+    var book = Validator({
         'title*': isString,
         'year*': [
             isNum,
             (year) {
-                return year <= new DateTime.now().year;
+                return year <= DateTime.now().year;
             }
         ]
     });
 
-    var author = new Validator({
+    var author = Validator({
         'bio*': bio,
         'books*': [
             isList,
@@ -289,11 +289,11 @@ main() {
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_validate/server.dart';
 
-final Validator echo = new Validator({
+final Validator echo = Validator({
     'message*': (String message) => message.length >= 5
 });
 
-final Validator todo = new Validator({
+final Validator todo = Validator({
     'text*': isString,
     'completed*': isBool
 }, defaultValues: {
@@ -301,7 +301,7 @@ final Validator todo = new Validator({
 });
 
 main() async {
-    var app = new Angel();
+    var app = Angel();
 
     app.chain([validate(echo)]).post('/echo', (req, res) async {
         res.write('You said: "${req.bodyAsMap["message"]}"');

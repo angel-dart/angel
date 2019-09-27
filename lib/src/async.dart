@@ -11,7 +11,7 @@ import 'context_aware.dart';
 AngelMatcher predicateWithAngel(
         FutureOr<bool> Function(String, Object, Angel) f,
         [String description = 'satisfies function']) =>
-    new _PredicateWithAngel(f, description);
+    _PredicateWithAngel(f, description);
 
 /// Returns an [AngelMatcher] that applies an asynchronously-created [Matcher]
 /// to the input.
@@ -19,7 +19,7 @@ AngelMatcher predicateWithAngel(
 /// Use this to match values against configuration, injections, etc.
 AngelMatcher matchWithAngel(FutureOr<Matcher> Function(Object, Map, Angel) f,
         [String description = 'satisfies asynchronously created matcher']) =>
-    new _MatchWithAngel(f, description);
+    _MatchWithAngel(f, description);
 
 /// Calls [matchWithAngel] without the initial parameter.
 AngelMatcher matchWithAngelBinary(
@@ -42,7 +42,7 @@ AngelMatcher matchWithAngelNullary(FutureOr<Matcher> Function() f,
 /// If [x] is an [AngelMatcher], then it is returned, unmodified.
 AngelMatcher wrapAngelMatcher(x) {
   if (x is AngelMatcher) return x;
-  if (x is ContextAwareMatcher) return new _WrappedAngelMatcher(x);
+  if (x is ContextAwareMatcher) return _WrappedAngelMatcher(x);
   return wrapAngelMatcher(wrapContextAwareMatcher(x));
 }
 
@@ -50,13 +50,13 @@ AngelMatcher wrapAngelMatcher(x) {
 AngelMatcher matchAsync(FutureOr<Matcher> Function(String, Object) matcher,
     FutureOr Function() feature,
     [String description = 'satisfies asynchronously created matcher']) {
-  return new _MatchAsync(matcher, feature, description);
+  return _MatchAsync(matcher, feature, description);
 }
 
 /// Returns an [AngelMatcher] that verifies that an item with the given [idField]
 /// exists in the service at [servicePath], without throwing a `404` or returning `null`.
 AngelMatcher idExistsInService(String servicePath,
-    {String idField: 'id', String description}) {
+    {String idField = 'id', String description}) {
   return predicateWithAngel(
     (key, item, app) async {
       try {
@@ -115,7 +115,7 @@ class _MatchWithAngel extends AngelMatcher {
   @override
   Future<bool> matchesWithAngel(
       item, String key, Map context, Map matchState, Angel app) {
-    return new Future.sync(() => f(item, context, app)).then((result) {
+    return Future.sync(() => f(item, context, app)).then((result) {
       return result.matches(item, matchState);
     });
   }
@@ -135,7 +135,7 @@ class _PredicateWithAngel extends AngelMatcher {
   @override
   Future<bool> matchesWithAngel(
       item, String key, Map context, Map matchState, Angel app) {
-    return new Future<bool>.sync(() => predicate(key, item, app));
+    return Future<bool>.sync(() => predicate(key, item, app));
   }
 }
 

@@ -1,24 +1,24 @@
 import 'package:angel_validate/angel_validate.dart';
 
 main() {
-  var bio = new Validator({
+  var bio = Validator({
     'age*': [isInt, greaterThanOrEqualTo(0)],
     'birthYear*': isInt,
     'countryOfOrigin': isString
   });
 
-  var book = new Validator({
+  var book = Validator({
     'title*': isString,
     'year*': [
       isNum,
       (year) {
-        return year <= new DateTime.now().year;
+        return year <= DateTime.now().year;
       }
     ]
   });
 
   // ignore: unused_local_variable
-  var author = new Validator({
+  var author = Validator({
     'bio*': bio,
     'books*': [isList, everyElement(book)]
   }, defaultValues: {

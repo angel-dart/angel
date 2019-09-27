@@ -1,10 +1,10 @@
 import 'package:angel_validate/angel_validate.dart';
 import 'package:test/test.dart';
 
-final Validator emailSchema = new Validator({'to': isEmail},
-    customErrorMessages: {'to': 'Hello, world!'});
+final Validator emailSchema =
+    Validator({'to': isEmail}, customErrorMessages: {'to': 'Hello, world!'});
 
-final Validator todoSchema = new Validator({
+final Validator todoSchema = Validator({
   'id': [isInt, isPositive],
   'text*': isString,
   'completed*': isBool,
@@ -32,7 +32,7 @@ main() {
       todoSchema
           .enforce({'id': 'fool', 'text': 'Hello, world!', 'completed': 4});
       // ignore: deprecated_member_use
-    }, throwsA(new isInstanceOf<ValidationException>()));
+    }, throwsA(isInstanceOf<ValidationException>()));
   });
 
   test('filter', () {

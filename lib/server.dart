@@ -52,13 +52,13 @@ RequestHandler filterQuery(Iterable<String> only) {
 /// Validates the data in `req.bodyAsMap`, and sets the body to
 /// filtered data before continuing the response.
 RequestHandler validate(Validator validator,
-    {String errorMessage: 'Invalid data.'}) {
+    {String errorMessage = 'Invalid data.'}) {
   return (RequestContext req, res) async {
     await req.parseBody();
     var result = await asyncApplyValidator(validator, req.bodyAsMap, req.app);
 
     if (result.errors.isNotEmpty) {
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
@@ -73,13 +73,13 @@ RequestHandler validate(Validator validator,
 /// Validates the data in `req.queryParameters`, and sets the query to
 /// filtered data before continuing the response.
 RequestHandler validateQuery(Validator validator,
-    {String errorMessage: 'Invalid data.'}) {
+    {String errorMessage = 'Invalid data.'}) {
   return (RequestContext req, res) async {
     var result =
         await asyncApplyValidator(validator, req.queryParameters, req.app);
 
     if (result.errors.isNotEmpty) {
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
@@ -94,13 +94,13 @@ RequestHandler validateQuery(Validator validator,
 /// Validates the data in `e.data`, and sets the data to
 /// filtered data before continuing the service event.
 HookedServiceEventListener validateEvent(Validator validator,
-    {String errorMessage: 'Invalid data.'}) {
+    {String errorMessage = 'Invalid data.'}) {
   return (HookedServiceEvent e) async {
     var result = await asyncApplyValidator(
         validator, e.data as Map, (e.request?.app ?? e.service.app));
 
     if (result.errors.isNotEmpty) {
-      throw new AngelHttpException.badRequest(
+      throw AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors);
     }
 
@@ -120,7 +120,7 @@ Future<ValidationResult> asyncApplyValidator(
 
   for (var key in result.data.keys) {
     var value = result.data[key];
-    var description = new StringDescription("'$key': expected ");
+    var description = StringDescription("'$key': expected ");
 
     for (var rule in validator.rules[key]) {
       if (rule is AngelMatcher) {
@@ -135,7 +135,7 @@ Future<ValidationResult> asyncApplyValidator(
     }
   }
 
-  var m = new Map<String, dynamic>.from(result.data);
+  var m = Map<String, dynamic>.from(result.data);
   for (var key in errantKeys) {
     m.remove(key);
   }

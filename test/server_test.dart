@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
@@ -7,7 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
 
-final Validator echoSchema = new Validator({'message*': isString});
+final Validator echoSchema = Validator({'message*': isString});
 
 void printRecord(LogRecord rec) {
   print(rec);
@@ -21,8 +22,8 @@ main() {
   TestClient client;
 
   setUp(() async {
-    app = new Angel();
-    http = new AngelHttp(app, useZone: false);
+    app = Angel();
+    http = AngelHttp(app, useZone: false);
 
     app.chain([validate(echoSchema)]).post('/echo',
         (RequestContext req, res) async {
@@ -30,7 +31,7 @@ main() {
       res.write('Hello, ${req.bodyAsMap['message']}!');
     });
 
-    app.logger = new Logger('angel')..onRecord.listen(printRecord);
+    app.logger = Logger('angel')..onRecord.listen(printRecord);
     client = await connectTo(app);
   });
 
@@ -51,12 +52,15 @@ main() {
     });
 
     test('enforce', () async {
-      var rq = new MockHttpRequest('POST', new Uri(path: '/echo'))
+      var rq = MockHttpRequest('POST', Uri(path: '/echo'))
         ..headers.add('accept', '*/*')
         ..headers.add('content-type', 'application/json')
-        ..write(json.encode({'foo': 'bar'}))
-        ..close();
-      http.handleRequest(rq);
+        ..write(json.encode({'foo': 'bar'}));
+
+      scheduleMicrotask(() async {
+        await rq.close();
+        await http.handleRequest(rq);
+      });
 
       var responseBody = await rq.response.transform(utf8.decoder).join();
       print('Response: ${responseBody}');

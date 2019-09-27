@@ -2,11 +2,11 @@ import 'package:matcher/matcher.dart';
 import 'context_aware.dart';
 import 'context_validator.dart';
 
-final RegExp _alphaDash = new RegExp(r'^[A-Za-z0-9_-]+$');
-final RegExp _alphaNum = new RegExp(r'^[A-Za-z0-9]+$');
-final RegExp _email = new RegExp(
+final RegExp _alphaDash = RegExp(r'^[A-Za-z0-9_-]+$');
+final RegExp _alphaNum = RegExp(r'^[A-Za-z0-9]+$');
+final RegExp _email = RegExp(
     r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$");
-final RegExp _url = new RegExp(
+final RegExp _url = RegExp(
     r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)');
 
 /// Asserts that a `String` is alphanumeric, but also lets it contain dashes or underscores.
@@ -126,8 +126,8 @@ ContextValidator requiredWithoutAll(Iterable<String> keys) =>
     _require((ctx) => !keys.any(ctx.containsKey));
 
 ContextValidator _require(bool Function(Map) f) {
-  return new ContextValidator(
+  return ContextValidator(
     (key, context) => f(context) && context.containsKey(key),
-    (desc, key, _) => new StringDescription('Missing required field "$key".'),
+    (desc, key, _) => StringDescription('Missing required field "$key".'),
   );
 }

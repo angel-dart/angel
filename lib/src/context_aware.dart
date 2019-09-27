@@ -4,14 +4,14 @@ import 'package:matcher/matcher.dart';
 ContextAwareMatcher predicateWithContext(
     bool Function(Object, String, Map, Map) f,
     [String description = 'satisfies function']) {
-  return new _PredicateWithContext(f, description);
+  return _PredicateWithContext(f, description);
 }
 
 /// Wraps [x] in a [ContextAwareMatcher].
 ContextAwareMatcher wrapContextAwareMatcher(x) {
-  if (x is ContextAwareMatcher)
+  if (x is ContextAwareMatcher) {
     return x;
-  else if (x is Matcher) return new _WrappedContextAwareMatcher(x);
+  } else if (x is Matcher) return _WrappedContextAwareMatcher(x);
   return wrapContextAwareMatcher(wrapMatcher(x));
 }
 

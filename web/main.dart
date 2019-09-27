@@ -5,7 +5,7 @@ final $errors = querySelector('#errors') as UListElement;
 final $form = querySelector('#form') as FormElement;
 final $blank = querySelector('[name="blank"]') as InputElement;
 
-final Validator formSchema = new Validator({
+final Validator formSchema = Validator({
   'firstName*': [isString, isNotEmpty],
   'lastName*': [isString, isNotEmpty],
   'age*': [isInt, greaterThanOrEqualTo(18)],
@@ -15,12 +15,13 @@ final Validator formSchema = new Validator({
   'familySize': 1
 }, customErrorMessages: {
   'age': (age) {
-    if (age is int && age < 18)
+    if (age is int && age < 18) {
       return 'Only adults can register for passports. Sorry, kid!';
-    else if (age == null || (age is String && age.trim().isEmpty))
+    } else if (age == null || (age is String && age.trim().isEmpty)) {
       return 'Age is required.';
-    else
+    } else {
       return 'Age must be a positive integer. Unless you are a monster...';
+    }
   },
   'blank':
       "I told you to leave that field blank, but instead you typed '{{value}}'..."
@@ -54,12 +55,12 @@ main() {
             'Number of People in Family: ${passportInfo["familySize"]}'));
     } on ValidationException catch (e) {
       $errors.children.addAll(e.errors.map((error) {
-        return new LIElement()..text = error;
+        return LIElement()..text = error;
       }));
     }
   });
 }
 
-LIElement success(String str) => new LIElement()
+LIElement success(String str) => LIElement()
   ..classes.add('success')
   ..text = str;
