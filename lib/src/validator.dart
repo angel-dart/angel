@@ -387,7 +387,7 @@ class ValidationException extends AngelHttpException {
             statusCode: 400,
             errors: (errors ?? <String>[]).toSet().toList(),
             stackTrace: StackTrace.current) {
-    if (errors != null) this.errors.addAll(errors);
+    if (errors != null) this.errors.addAll(errors.toSet());
   }
 
   @override
