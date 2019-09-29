@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-HTTP_PARSER_DIR=.dart_tool/http-parser
-
-if [ ! -d "$HTTP_PARSER_DIR" ]
-then
-    git clone --depth 1 https://github.com/nodejs/http-parser.git "$HTTP_PARSER_DIR"
-    exit $?
-fi
-
