@@ -1,3 +1,6 @@
+# 1.0.2
+* https://github.com/angel-dart/graphql/pull/32
+
 # 1.0.1
 * Fix a bug where `globalVariables` were not being properly passed
 to field resolvers.
