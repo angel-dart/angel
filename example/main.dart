@@ -7,13 +7,17 @@ import 'package:logging/logging.dart';
 import 'package:pretty_logging/pretty_logging.dart';
 
 main() async {
-  var app = Angel();
+  hierarchicalLoggingEnabled = true;
+
+  var logger = Logger.detached('wings')
+    ..level = Level.ALL
+    ..onRecord.listen(prettyLog);
+  var app = Angel(logger: logger);
   var wings = AngelWings(app);
   var fs = LocalFileSystem();
   var vDir = CachingVirtualDirectory(app, fs,
       source: fs.currentDirectory, allowDirectoryListing: true);
 
-  app.logger = Logger('wings')..onRecord.listen(prettyLog);
   app.mimeTypeResolver.addExtension('yaml', 'text/x-yaml');
 
   app.get('/', (req, res) => 'WINGS!!!');
@@ -21,9 +25,10 @@ main() async {
     await req.parseBody();
     return req.bodyAsMap;
   });
+  
   app.fallback(vDir.handleRequest);
   app.fallback((req, res) => throw AngelHttpException.notFound());
 
-  await wings.startServer(InternetAddress.loopbackIPv6, 3000);
+  await wings.startServer(InternetAddress.loopbackIPv4, 3000);
   print('Listening at ${wings.uri}');
 }
