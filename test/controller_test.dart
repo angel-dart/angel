@@ -113,7 +113,7 @@ main() {
         }, optional: ['bar']));
     var rq = MockHttpRequest('GET', Uri(path: 'foo'));
     await AngelHttp(app).handleRequest(rq);
-    var body = await rq.response.transform(utf8.decoder).join();
+    var body = await utf8.decoder.bind(rq.response).join();
     expect(json.decode(body), 2);
   });
 
