@@ -5,3 +5,4 @@ add_dart_native_extension(angel_wings
 	bind.cc http.cc wings_socket.cc
 	util.cc)
 install(TARGETS angel_wings LIBRARY DESTINATION "${CMAKE_CURRENT_LIST_DIR}")
+install(TARGETS angel_wings LIBRARY DESTINATION "${CMAKE_CURRENT_LIST_DIR}/../..")

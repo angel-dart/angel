@@ -1,13 +1,12 @@
+#include "angel_wings.h"
 #include <cstdlib>
+#include <dart_api.h>
 #include <iostream>
 #include <string.h>
-#include <dart_api.h>
-#include "angel_wings.h"
 
 // The name of the initialization function is the extension name followed
 // by _Init.
-DART_EXPORT Dart_Handle angel_wings_Init(Dart_Handle parent_library)
-{
+DART_EXPORT Dart_Handle angel_wings_Init(Dart_Handle parent_library) {
   if (Dart_IsError(parent_library))
     return parent_library;
 
@@ -19,15 +18,14 @@ DART_EXPORT Dart_Handle angel_wings_Init(Dart_Handle parent_library)
   return Dart_Null();
 }
 
-Dart_Handle HandleError(Dart_Handle handle)
-{
+Dart_Handle HandleError(Dart_Handle handle) {
   if (Dart_IsError(handle))
     Dart_PropagateError(handle);
   return handle;
 }
 
-Dart_NativeFunction ResolveName(Dart_Handle name, int argc, bool *auto_setup_scope)
-{
+Dart_NativeFunction ResolveName(Dart_Handle name, int argc,
+                                bool *auto_setup_scope) {
   // If we fail, we return NULL, and Dart throws an exception.
   if (!Dart_IsString(name))
     return NULL;

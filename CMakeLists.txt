@@ -4,4 +4,3 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_dart_utils/cmake"
 find_package(Dart REQUIRED)
 set(CMAKE_CXX_STANDARD 11)
 add_subdirectory(lib/src)
-install(TARGETS angel_wings LIBRARY DESTINATION "${CMAKE_CURRENT_LIST_DIR}")

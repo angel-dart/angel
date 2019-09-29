@@ -118,12 +118,13 @@ class WingsSocket extends Stream<WingsClientSocket> {
         .listen(onData, onError: onError, cancelOnError: cancelOnError);
   }
 
-  Future<void> close() async {
+  Future<void> close(){
     if (_open) {
       _open = false;
       closeWingsSocket(_pointer, _recv.sendPort);
       _recv.close();
-      await _ctrl.close();
+     _ctrl.close();
     }
+    return Future.value();
   }
 }
