@@ -1,4 +1,4 @@
-include_directories(http-parser)
+include_directories("${CMAKE_CURRENT_LIST_DIR}")
 add_dart_native_extension(angel_wings
 	http-parser/http_parser.c
 	angel_wings.h angel_wings.cc

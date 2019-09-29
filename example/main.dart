@@ -4,7 +4,7 @@ import 'package:angel_static/angel_static.dart';
 import 'package:angel_wings/angel_wings.dart';
 import 'package:file/local.dart';
 import 'package:logging/logging.dart';
-import 'pretty_log.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 
 main() async {
   var app = Angel();
