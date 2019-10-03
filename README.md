@@ -12,6 +12,8 @@
 Angel is a full-stack Web framework in Dart. It aims to
 streamline development by providing many common features
 out-of-the-box in a consistent manner.
+We are an application boilerplate and not the underlying framework library.
+
 
 With features like the following, Angel is the all-in-one framework you should choose to build your next project:
 * [GraphQL Support](https://github.com/angel-dart/graphql)
