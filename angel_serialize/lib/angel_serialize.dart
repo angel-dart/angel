@@ -6,7 +6,7 @@ export 'package:quiver_hashcode/hashcode.dart' show hashObjects;
 
 /// Excludes a field from being excluded.
 class Exclude extends SerializableField {
-  const Exclude({bool canDeserialize: false, bool canSerialize: false})
+  const Exclude({bool canDeserialize = false, bool canSerialize = false})
       : super(
             exclude: true,
             canDeserialize: canDeserialize,
@@ -15,12 +15,12 @@ class Exclude extends SerializableField {
 
 /// No longer necessary, as this is the default.
 @deprecated
-const SerializableField nullable = const SerializableField(isNullable: true);
+const SerializableField nullable = SerializableField(isNullable: true);
 
 /// Marks a field as not accepting `null` values.
-const SerializableField notNull = const SerializableField(isNullable: false);
+const SerializableField notNull = SerializableField(isNullable: false);
 
-const Exclude exclude = const Exclude();
+const Exclude exclude = Exclude();
 
 /// Shorthand for [SerializableField].
 class DefaultsTo extends SerializableField {
@@ -75,21 +75,21 @@ class SerializableField {
       this.serializer,
       this.deserializer,
       this.errorMessage,
-      this.isNullable: true,
-      this.exclude: false,
-      this.canDeserialize: false,
-      this.canSerialize: false,
+      this.isNullable = true,
+      this.exclude = false,
+      this.canDeserialize = false,
+      this.canSerialize = false,
       this.serializesTo});
 }
 
 /// Marks a class as eligible for serialization.
 class Serializable {
   const Serializable(
-      {this.serializers: const [Serializers.map, Serializers.json],
-      this.autoSnakeCaseNames: true,
+      {this.serializers = const [Serializers.map, Serializers.json],
+      this.autoSnakeCaseNames = true,
       // ignore: deprecated_member_use_from_same_package
       @deprecated this.autoIdAndDateFields = true,
-      this.includeAnnotations: const []});
+      this.includeAnnotations = const []});
 
   /// A list of enabled serialization modes.
   ///
@@ -107,20 +107,19 @@ class Serializable {
   final List includeAnnotations;
 }
 
-const Serializable serializable = const Serializable();
+const Serializable serializable = Serializable();
 
 /// Used by `package:angel_serialize_generator` to reliably identify generated models.
 class GeneratedSerializable {
   const GeneratedSerializable();
 }
 
-const GeneratedSerializable generatedSerializable =
-    const GeneratedSerializable();
+const GeneratedSerializable generatedSerializable = GeneratedSerializable();
 
 /// The supported serialization types.
 abstract class Serializers {
   /// All supported serialization types.
-  static const List<int> all = const [map, json, typescript];
+  static const List<int> all = [map, json, typescript];
 
   /// Enable `fromMap` and `toMap` methods on the model class.
   static const int map = 0;

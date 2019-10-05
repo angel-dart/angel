@@ -1,5 +1,8 @@
-# 2.2.3+2
+# 2.2.3+3
 * Add `exclude: true` to `super` call in `Exclude` constructor.
+
+# 2.2.3+2
+* Apply `package:pedantic`.
 
 # 2.2.3+1
 * Export `json`, `Codec`, and `Converter` from `dart:convert`.
