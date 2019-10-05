@@ -7,7 +7,10 @@ export 'package:quiver_hashcode/hashcode.dart' show hashObjects;
 /// Excludes a field from being excluded.
 class Exclude extends SerializableField {
   const Exclude({bool canDeserialize: false, bool canSerialize: false})
-      : super(canDeserialize: canDeserialize, canSerialize: canSerialize);
+      : super(
+            exclude: true,
+            canDeserialize: canDeserialize,
+            canSerialize: canSerialize);
 }
 
 /// No longer necessary, as this is the default.
