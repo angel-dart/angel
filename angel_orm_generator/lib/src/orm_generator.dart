@@ -268,6 +268,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             ..type = TypeReference((b) => b
               ..symbol = 'Set'
               ..types.add(refer('String')))))
+          ..initializers.add(Code('super(parent: parent)'))
           ..body = Block((b) {
             b.statements.addAll([
               Code('trampoline ??= Set();'),
