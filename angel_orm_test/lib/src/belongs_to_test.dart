@@ -147,7 +147,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     expect(book.author.name, jkRowling.name);
   });
 
-  group('joined subquery', () async {
+  group('joined subquery', () {
     // To verify that the joined subquery is correct,
     // we test both a query that return empty, and one
     // that should return correctly.
