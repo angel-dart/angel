@@ -260,6 +260,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         b
           ..optionalParameters.add(Parameter((b) => b
             ..named = true
+            ..name = 'parent'
+            ..type = refer('Query')))
+          ..optionalParameters.add(Parameter((b) => b
+            ..named = true
             ..name = 'trampoline'
             ..type = TypeReference((b) => b
               ..symbol = 'Set'
@@ -315,8 +319,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     ..body = refer('_$fieldName').returned.statement));
 
                 // Assign a value to `_field`.
-                var queryInstantiation = foreignQueryType
-                    .newInstance([], {'trampoline': refer('trampoline')});
+                var queryInstantiation = foreignQueryType.newInstance([], {
+                  'trampoline': refer('trampoline'),
+                  'parent': refer('this')
+                });
                 joinArgs.insert(
                     0, refer('_$fieldName').assign(queryInstantiation));
 
