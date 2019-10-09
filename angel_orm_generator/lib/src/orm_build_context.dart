@@ -236,6 +236,16 @@ Future<OrmBuildContext> buildOrmContext(
         localKey ??= '${rcc.snakeCase}_$foreignKey';
       }
 
+      // Figure out the join type.
+      var joinType = JoinType.left;
+      var joinTypeRdr = cr.peek('joinType')?.objectValue;
+      if (joinTypeRdr != null) {
+        var idx = joinTypeRdr.getField('index')?.toIntValue();
+        if (idx != null) {
+          joinType = JoinType.values[idx];
+        }
+      }
+
       var relation = RelationshipReader(
         type,
         localKey: localKey,
@@ -245,6 +255,7 @@ Future<OrmBuildContext> buildOrmContext(
         through: through,
         foreign: foreign,
         throughContext: throughContext,
+        joinType: joinType ?? JoinType.left,
       );
 
       // print('Relation on ${buildCtx.originalClassName}.${field.name} => '

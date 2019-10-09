@@ -34,6 +34,7 @@ class RelationshipReader {
   final DartType through;
   final OrmBuildContext foreign;
   final OrmBuildContext throughContext;
+  final JoinType joinType;
 
   const RelationshipReader(this.type,
       {this.localKey,
@@ -42,10 +43,13 @@ class RelationshipReader {
       this.cascadeOnDelete,
       this.through,
       this.foreign,
-      this.throughContext});
+      this.throughContext,
+      this.joinType = JoinType.left});
 
   bool get isManyToMany =>
       type == RelationshipType.hasMany && throughContext != null;
+
+  String get joinTypeString => joinType.toString().replaceAll('JoinType.', '');
 
   FieldElement findLocalField(OrmBuildContext ctx) {
     return ctx.effectiveFields.firstWhere(
