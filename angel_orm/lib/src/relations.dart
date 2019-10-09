@@ -29,7 +29,7 @@ class HasMany extends Relationship {
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete = false,
-      JoinType joinType = JoinType.left})
+      JoinType joinType})
       : super(RelationshipType.hasMany,
             localKey: localKey,
             foreignKey: foreignKey,
@@ -46,7 +46,7 @@ class HasOne extends Relationship {
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete = false,
-      JoinType joinType = JoinType.left})
+      JoinType joinType})
       : super(RelationshipType.hasOne,
             localKey: localKey,
             foreignKey: foreignKey,
@@ -62,7 +62,7 @@ class BelongsTo extends Relationship {
       {String localKey,
       String foreignKey,
       String foreignTable,
-      JoinType joinType = JoinType.left})
+      JoinType joinType})
       : super(RelationshipType.belongsTo,
             localKey: localKey,
             foreignKey: foreignKey,
@@ -80,7 +80,7 @@ class ManyToMany extends Relationship {
       String foreignKey,
       String foreignTable,
       bool cascadeOnDelete = false,
-      JoinType joinType = JoinType.left})
+      JoinType joinType})
       : super(
             RelationshipType.hasMany, // Many-to-Many is actually just a hasMany
             localKey: localKey,

@@ -55,11 +55,11 @@ class BookQuery extends Query<Book, BookQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = BookQueryWhere(this);
-    leftJoin(_author = AuthorQuery(trampoline: trampoline, parent: this),
+    join(_author = AuthorQuery(trampoline: trampoline, parent: this),
         'author_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
-    leftJoin(_partnerAuthor = AuthorQuery(trampoline: trampoline, parent: this),
+    join(_partnerAuthor = AuthorQuery(trampoline: trampoline, parent: this),
         'partner_author_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);

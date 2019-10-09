@@ -1,3 +1,8 @@
+# 2.1.0
+* Relationships have always generated subqueries; now these subqueries are
+available as `Query` objects on generated classes.
+* Support explicitly-defined join types for relations.
+
 # 2.0.5
 * Remove `ShimFieldImpl` check, which broke relations.
 * Fix bug where primary key type would not be emitted in migrations.

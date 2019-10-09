@@ -44,12 +44,27 @@ class RelationshipReader {
       this.through,
       this.foreign,
       this.throughContext,
-      this.joinType = JoinType.left});
+      this.joinType});
 
   bool get isManyToMany =>
       type == RelationshipType.hasMany && throughContext != null;
 
-  String get joinTypeString => joinType.toString().replaceAll('JoinType.', '');
+  String get joinTypeString {
+    switch (joinType ?? JoinType.left) {
+      case JoinType.inner:
+        return 'join';
+      case JoinType.left:
+        return 'leftJoin';
+      case JoinType.right:
+        return 'rightJoin';
+      case JoinType.full:
+        return 'fullOuterJoin';
+      case JoinType.self:
+        return 'selfJoin';
+      default:
+        return 'join';
+    }
+  }
 
   FieldElement findLocalField(OrmBuildContext ctx) {
     return ctx.effectiveFields.firstWhere(

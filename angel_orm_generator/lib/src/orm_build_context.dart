@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/src/dart/constant/value.dart';
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize/angel_serialize.dart';
@@ -240,9 +241,17 @@ Future<OrmBuildContext> buildOrmContext(
       var joinType = JoinType.left;
       var joinTypeRdr = cr.peek('joinType')?.objectValue;
       if (joinTypeRdr != null) {
-        var idx = joinTypeRdr.getField('index')?.toIntValue();
-        if (idx != null) {
-          joinType = JoinType.values[idx];
+        // Unfortunately, the analyzer library provides little to nothing
+        // in the way of reading enums from source, so here's a hack.
+        var joinTypeType = (joinTypeRdr.type as InterfaceType);
+        var enumFields =
+            joinTypeType.element.fields.where((f) => f.isEnumConstant).toList();
+
+        for (int i = 0; i < enumFields.length; i++) {
+          if (enumFields[i].constantValue == joinTypeRdr) {
+            joinType = JoinType.values[i];
+            break;
+          }
         }
       }
 
@@ -255,7 +264,7 @@ Future<OrmBuildContext> buildOrmContext(
         through: through,
         foreign: foreign,
         throughContext: throughContext,
-        joinType: joinType ?? JoinType.left,
+        joinType: joinType,
       );
 
       // print('Relation on ${buildCtx.originalClassName}.${field.name} => '
