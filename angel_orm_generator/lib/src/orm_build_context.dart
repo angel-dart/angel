@@ -58,9 +58,8 @@ FieldElement findPrimaryFieldInList(
   return specialId;
 }
 
-final Map<String, OrmBuildContext> _cache = {};
-
 Future<OrmBuildContext> buildOrmContext(
+    Map<String, OrmBuildContext> cache,
     ClassElement clazz,
     ConstantReader annotation,
     BuildStep buildStep,
@@ -79,8 +78,8 @@ Future<OrmBuildContext> buildOrmContext(
   }
 
   var id = clazz.location.components.join('-');
-  if (_cache.containsKey(id)) {
-    return _cache[id];
+  if (cache.containsKey(id)) {
+    return cache[id];
   }
   var buildCtx = await buildContext(
       clazz, annotation, buildStep, resolver, autoSnakeCaseNames,
@@ -94,7 +93,7 @@ Future<OrmBuildContext> buildOrmContext(
       (ormAnnotation.tableName?.isNotEmpty == true)
           ? ormAnnotation.tableName
           : pluralize(ReCase(clazz.name).snakeCase));
-  _cache[id] = ctx;
+  cache[id] = ctx;
 
   // Read all fields
   for (var field in buildCtx.fields) {
@@ -173,6 +172,7 @@ Future<OrmBuildContext> buildOrmContext(
             var modelType = firstModelAncestor(refType) ?? refType;
 
             foreign = await buildOrmContext(
+                cache,
                 modelType.element as ClassElement,
                 ConstantReader(const TypeChecker.fromRuntime(Orm)
                     .firstAnnotationOf(modelType.element)),
@@ -183,6 +183,7 @@ Future<OrmBuildContext> buildOrmContext(
             // Resolve throughType as well
             if (through != null && through is InterfaceType) {
               throughContext = await buildOrmContext(
+                  cache,
                   through.element,
                   ConstantReader(const TypeChecker.fromRuntime(Serializable)
                       .firstAnnotationOf(modelType.element)),

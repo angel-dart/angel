@@ -39,7 +39,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
     if (element is ClassElement) {
-      var ctx = await buildOrmContext(element, annotation, buildStep,
+      var ctx = await buildOrmContext({}, element, annotation, buildStep,
           buildStep.resolver, autoSnakeCaseNames);
       var lib = buildOrmLibrary(buildStep.inputId, ctx);
       return lib.accept(DartEmitter()).toString();

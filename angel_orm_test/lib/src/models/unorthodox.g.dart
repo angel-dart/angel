@@ -209,7 +209,7 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
         'parent',
         additionalFields: const ['i', 'parent'], trampoline: trampoline);
     leftJoin(
-        '(SELECT foo_pivots.weird_join_id , foos.bar FROM foos LEFT JOIN foo_pivots ON foo_pivots.foo_bar=foos.bar)',
+        '(SELECT foo_pivots.weird_join_id, foos.bar FROM foos LEFT JOIN foo_pivots ON foo_pivots.foo_bar=foos.bar)',
         'id',
         'weird_join_id',
         additionalFields: const ['bar'],
@@ -610,7 +610,7 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
     trampoline.add(tableName);
     _where = FooQueryWhere(this);
     leftJoin(
-        '(SELECT foo_pivots.foo_bar , weird_joins.id, weird_joins.join_name FROM weird_joins LEFT JOIN foo_pivots ON foo_pivots.weird_join_id=weird_joins.id)',
+        '(SELECT foo_pivots.foo_bar, weird_joins.id, weird_joins.join_name FROM weird_joins LEFT JOIN foo_pivots ON foo_pivots.weird_join_id=weird_joins.id)',
         'bar',
         'foo_bar',
         additionalFields: const ['id', 'join_name'],

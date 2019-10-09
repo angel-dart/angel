@@ -43,7 +43,7 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
     }
 
     var resolver = await buildStep.resolver;
-    var ctx = await buildOrmContext(element as ClassElement, annotation,
+    var ctx = await buildOrmContext({}, element as ClassElement, annotation,
         buildStep, resolver, autoSnakeCaseNames != false);
     var lib = generateMigrationLibrary(
         ctx, element as ClassElement, resolver, buildStep);

@@ -65,7 +65,7 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
     trampoline.add(tableName);
     _where = RoleQueryWhere(this);
     leftJoin(
-        '(SELECT role_users.role_role , users.email, users.name, users.password FROM users LEFT JOIN role_users ON role_users.user_email=users.email)',
+        '(SELECT role_users.role_role, users.email, users.name, users.password FROM users LEFT JOIN role_users ON role_users.user_email=users.email)',
         'role',
         'role_role',
         additionalFields: const ['email', 'name', 'password'],
@@ -335,7 +335,7 @@ class UserQuery extends Query<User, UserQueryWhere> {
     trampoline.add(tableName);
     _where = UserQueryWhere(this);
     leftJoin(
-        '(SELECT role_users.user_email , roles.role FROM roles LEFT JOIN role_users ON role_users.role_role=roles.role)',
+        '(SELECT role_users.user_email, roles.role FROM roles LEFT JOIN role_users ON role_users.role_role=roles.role)',
         'email',
         'user_email',
         additionalFields: const ['role'],

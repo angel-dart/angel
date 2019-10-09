@@ -1,3 +1,8 @@
+# 2.1.0-beta.1
+* `OrmBuildContext` caching is now local to a `Builder`, so `watch`
+*should* finally always run when required. Should resolve
+[#85](https://github.com/angel-dart/orm/issues/85).
+
 # 2.1.0-beta
 * Relationships have always generated subqueries; now these subqueries are
 available as `Query` objects on generated classes.
