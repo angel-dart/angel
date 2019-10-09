@@ -54,7 +54,7 @@ class JoinBuilder {
         break;
     }
 
-    b.write(' $to');
+    b.write(' ${to()}');
     if (alias != null) b.write(' $alias');
     b.write(' ON $left$op$right');
     return b.toString();
