@@ -7,6 +7,8 @@
 
 **A polished, production-ready backend framework in Dart.**
 
+*Note: This repo is an application boilerplate ,and not the underlying framework library.*
+
 -----
 ## About
 Angel is a full-stack Web framework in Dart. It aims to
