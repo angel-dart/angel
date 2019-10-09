@@ -61,7 +61,7 @@ abstract class ResponseContext<RawResponse>
 
   /// Serializes response data into a String.
   ///
-  /// The default is conversion into JSON via `package:json_god`.
+  /// The default is conversion into JSON via `json.encode`.
   ///
   /// If you are 100% sure that your response handlers will only
   /// be JSON-encodable objects (i.e. primitives, `List`s and `Map`s),
