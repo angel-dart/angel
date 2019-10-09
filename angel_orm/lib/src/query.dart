@@ -279,7 +279,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
         // TODO: Can this be done with just *one* query?
         var existing = await get(tx);
         //var sql = compile(preamble: 'SELECT $tableName.id', withFields: false);
-        return executor
+        return tx
             .query(tableName, sql, substitutionValues)
             .then((_) => existing);
       });

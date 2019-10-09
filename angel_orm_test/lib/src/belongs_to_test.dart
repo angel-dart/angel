@@ -125,8 +125,9 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
   });
 
   test('delete stream', () async {
+    printSeparator('Delete stream test');
     var query = new BookQuery()..where.name.equals(deathlyHallows.name);
-    print(query.compile(Set()));
+    print(query.compile(Set(), preamble: 'DELETE', withFields: false));
     var books = await query.delete(executor);
     expect(books, hasLength(1));
 
