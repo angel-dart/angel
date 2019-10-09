@@ -159,6 +159,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     });
 
     test('returns values on true subquery', () async {
+      printSeparator('True subquery test');
       var query = BookQuery()..author.where.name.like('%Rowling%');
       expect(await query.get(executor), [deathlyHallows]);
     });
