@@ -1,4 +1,4 @@
-# 2.1.0
+# 2.1.0-beta
 * Split the formerly 600+ line `src/query.dart` up into
 separate files.
 * **BREAKING**: Add a required `QueryExecutor` argument to `transaction`
