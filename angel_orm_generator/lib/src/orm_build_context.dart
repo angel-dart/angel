@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/src/dart/constant/value.dart';
 import 'package:angel_model/angel_model.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize/angel_serialize.dart';

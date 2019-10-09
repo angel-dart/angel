@@ -31,7 +31,12 @@ class JoinBuilder {
   }
 
   String compile(Set<String> trampoline) {
-    if (to == null) return null;
+    var compiledTo = to();
+    if (compiledTo == null) {
+      print(
+          'NULLLLL $to; from $from; key: $key, value: $value, addl: $additionalFields');
+    }
+    if (compiledTo == null) return null;
     var b = StringBuffer();
     var left = '${from.tableName}.$key';
     var right = fieldName;
@@ -54,7 +59,7 @@ class JoinBuilder {
         break;
     }
 
-    b.write(' ${to()}');
+    b.write(' $compiledTo');
     if (alias != null) b.write(' $alias');
     b.write(' ON $left$op$right');
     return b.toString();

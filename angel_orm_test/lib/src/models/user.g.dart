@@ -66,7 +66,9 @@ class UserQuery extends Query<User, UserQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = UserQueryWhere(this);
-    leftJoin(_roles = RoleUserQuery(trampoline: trampoline, parent: this), 'id',
+    leftJoin(
+        '(SELECT role_users.user_id , roles.id, roles.created_at, roles.updated_at, roles.name FROM roles LEFT JOIN role_users ON role_users.role_id=roles.id)',
+        'id',
         'user_id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
@@ -76,8 +78,6 @@ class UserQuery extends Query<User, UserQueryWhere> {
   final UserQueryValues values = UserQueryValues();
 
   UserQueryWhere _where;
-
-  RoleUserQuery _roles;
 
   @override
   get casts {
@@ -132,10 +132,6 @@ class UserQuery extends Query<User, UserQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
-  }
-
-  RoleUserQuery get roles {
-    return _roles;
   }
 
   @override
@@ -405,7 +401,9 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = RoleQueryWhere(this);
-    leftJoin(_users = RoleUserQuery(trampoline: trampoline, parent: this), 'id',
+    leftJoin(
+        '(SELECT role_users.role_id , users.id, users.created_at, users.updated_at, users.username, users.password, users.email FROM users LEFT JOIN role_users ON role_users.user_id=users.id)',
+        'id',
         'role_id',
         additionalFields: const [
           'id',
@@ -422,8 +420,6 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   final RoleQueryValues values = RoleQueryValues();
 
   RoleQueryWhere _where;
-
-  RoleUserQuery _users;
 
   @override
   get casts {
@@ -469,10 +465,6 @@ class RoleQuery extends Query<Role, RoleQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
-  }
-
-  RoleUserQuery get users {
-    return _users;
   }
 
   @override

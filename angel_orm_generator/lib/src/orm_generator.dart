@@ -281,6 +281,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   .assign(queryWhereType.newInstance([refer('this')])),
             );
 
+            // Note: this is where subquery fields for relations are added.
             ctx.relations.forEach((fieldName, relation) {
               //var name = ctx.buildContext.resolveFieldName(fieldName);
               if (relation.type == RelationshipType.belongsTo ||
@@ -289,43 +290,103 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var foreign = relation.throughContext ?? relation.foreign;
 
                 // If this is a many-to-many, add the fields from the other object.
-                var additionalFields = relation.foreign.effectiveFields
-                    // .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
-                    .map((f) => literalString(relation.foreign.buildContext
-                        .resolveFieldName(f.name)));
+
+                var additionalStrs = relation.foreign.effectiveFields.map((f) =>
+                    relation.foreign.buildContext.resolveFieldName(f.name));
+                var additionalFields = additionalStrs.map(literalString);
 
                 var joinArgs = [relation.localKey, relation.foreignKey]
                     .map(literalString)
                     .toList();
 
-                // In the past, we would either do a join on the table name
-                // itself, or create an instance of a query.
-                //
-                // From this point on, however, we will create a field for each
-                // join, so that users can customize the generated query.
-                //
-                // There'll be a private `_field`, and then a getter, named `field`,
-                // that returns the subqueryb object.
-                var foreignQueryType = refer(
-                    foreign.buildContext.modelClassNameRecase.pascalCase +
-                        'Query');
-                clazz
-                  ..fields.add(Field((b) => b
-                    ..name = '_$fieldName'
-                    ..type = foreignQueryType))
-                  ..methods.add(Method((b) => b
-                    ..name = fieldName
-                    ..type = MethodType.getter
-                    ..returns = foreignQueryType
-                    ..body = refer('_$fieldName').returned.statement));
+                // In the case of a many-to-many, we don't generate a subquery field,
+                // as it easily leads to stack overflows.
+                if (relation.isManyToMany) {
+                  // We can't simply join against the "through" table; this itself must
+                  // be a join.
+                  // (SELECT role_users.role_id, <user_fields>
+                  // FROM users
+                  // LEFT JOIN role_users ON role_users.user_id=users.id)
+                  var foreignFields = additionalStrs
+                      .map((f) => '${relation.foreign.tableName}.$f');
+                  var b = StringBuffer('(SELECT ');
+                  // role_users.role_id
+                  b.write('${relation.throughContext.tableName}');
+                  b.write('.${relation.foreignKey}');
+                  // , <user_fields>
+                  b.write(foreignFields.isEmpty
+                      ? ''
+                      : ', ' + foreignFields.join(', '));
+                  // FROM users
+                  b.write(' FROM ');
+                  b.write(relation.foreign.tableName);
+                  // LEFT JOIN role_users
+                  b.write(' LEFT JOIN ${relation.throughContext.tableName}');
+                  // Figure out which field on the "through" table points to users (foreign).
+                  var throughRelation =
+                      relation.throughContext.relations.values.firstWhere((e) {
+                    return e.foreignTable == relation.foreign.tableName;
+                  }, orElse: () {
+                    // _Role has a many-to-many to _User through _RoleUser, but
+                    // _RoleUser has no relation pointing to _User.
+                    var b = StringBuffer();
+                    b.write(ctx.buildContext.modelClassName);
+                    b.write('has a many-to-many relationship to ');
+                    b.write(relation.foreign.buildContext.modelClassName);
+                    b.write(' through ');
+                    b.write(
+                        relation.throughContext.buildContext.modelClassName);
+                    b.write(', but ');
+                    b.write(
+                        relation.throughContext.buildContext.modelClassName);
+                    b.write('has no relation pointing to ');
+                    b.write(relation.foreign.buildContext.modelClassName);
+                    b.write('.');
+                    throw b.toString();
+                  });
 
-                // Assign a value to `_field`.
-                var queryInstantiation = foreignQueryType.newInstance([], {
-                  'trampoline': refer('trampoline'),
-                  'parent': refer('this')
-                });
-                joinArgs.insert(
-                    0, refer('_$fieldName').assign(queryInstantiation));
+                  // ON role_users.user_id=users.id)
+                  b.write(' ON ');
+                  b.write('${relation.throughContext.tableName}');
+                  b.write('.');
+                  b.write(throughRelation.localKey);
+                  b.write('=');
+                  b.write(relation.foreign.tableName);
+                  b.write('.');
+                  b.write(throughRelation.foreignKey);
+                  b.write(')');
+
+                  joinArgs.insert(0, literalString(b.toString()));
+                } else {
+                  // In the past, we would either do a join on the table name
+                  // itself, or create an instance of a query.
+                  //
+                  // From this point on, however, we will create a field for each
+                  // join, so that users can customize the generated query.
+                  //
+                  // There'll be a private `_field`, and then a getter, named `field`,
+                  // that returns the subquery object.
+                  var foreignQueryType = refer(
+                      foreign.buildContext.modelClassNameRecase.pascalCase +
+                          'Query');
+                  clazz
+                    ..fields.add(Field((b) => b
+                      ..name = '_$fieldName'
+                      ..type = foreignQueryType))
+                    ..methods.add(Method((b) => b
+                      ..name = fieldName
+                      ..type = MethodType.getter
+                      ..returns = foreignQueryType
+                      ..body = refer('_$fieldName').returned.statement));
+
+                  // Assign a value to `_field`.
+                  var queryInstantiation = foreignQueryType.newInstance([], {
+                    'trampoline': refer('trampoline'),
+                    'parent': refer('this')
+                  });
+                  joinArgs.insert(
+                      0, refer('_$fieldName').assign(queryInstantiation));
+                }
 
                 var joinType = relation.joinTypeString;
                 b.addExpression(refer(joinType).call(joinArgs, {

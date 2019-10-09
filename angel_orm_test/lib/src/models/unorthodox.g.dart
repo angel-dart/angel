@@ -208,9 +208,12 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
     leftJoin(_numbas = NumbaQuery(trampoline: trampoline, parent: this), 'id',
         'parent',
         additionalFields: const ['i', 'parent'], trampoline: trampoline);
-    leftJoin(_foos = FooPivotQuery(trampoline: trampoline, parent: this), 'id',
+    leftJoin(
+        '(SELECT foo_pivots.weird_join_id , foos.bar FROM foos LEFT JOIN foo_pivots ON foo_pivots.foo_bar=foos.bar)',
+        'id',
         'weird_join_id',
-        additionalFields: const ['bar'], trampoline: trampoline);
+        additionalFields: const ['bar'],
+        trampoline: trampoline);
   }
 
   @override
@@ -223,8 +226,6 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
   SongQuery _song;
 
   NumbaQuery _numbas;
-
-  FooPivotQuery _foos;
 
   @override
   get casts {
@@ -292,10 +293,6 @@ class WeirdJoinQuery extends Query<WeirdJoin, WeirdJoinQueryWhere> {
 
   NumbaQuery get numbas {
     return _numbas;
-  }
-
-  FooPivotQuery get foos {
-    return _foos;
   }
 
   @override
@@ -612,17 +609,18 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = FooQueryWhere(this);
-    leftJoin(_weirdJoins = FooPivotQuery(trampoline: trampoline, parent: this),
-        'bar', 'foo_bar',
-        additionalFields: const ['id', 'join_name'], trampoline: trampoline);
+    leftJoin(
+        '(SELECT foo_pivots.foo_bar , weird_joins.id, weird_joins.join_name FROM weird_joins LEFT JOIN foo_pivots ON foo_pivots.weird_join_id=weird_joins.id)',
+        'bar',
+        'foo_bar',
+        additionalFields: const ['id', 'join_name'],
+        trampoline: trampoline);
   }
 
   @override
   final FooQueryValues values = FooQueryValues();
 
   FooQueryWhere _where;
-
-  FooPivotQuery _weirdJoins;
 
   @override
   get casts {
@@ -664,10 +662,6 @@ class FooQuery extends Query<Foo, FooQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
-  }
-
-  FooPivotQuery get weirdJoins {
-    return _weirdJoins;
   }
 
   @override

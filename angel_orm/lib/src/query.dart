@@ -219,6 +219,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     b.write(' ');
     List<String> f;
 
+    var compiledJoins = <JoinBuilder, String>{};
+
     if (fields == null) {
       f = ['*'];
     } else {
@@ -229,10 +231,16 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
         return ss;
       }));
       _joins.forEach((j) {
-        var additional = j.additionalFields.map(j.nameFor).toList();
-        // if (!additional.contains(j.fieldName))
-        //   additional.insert(0, j.fieldName);
-        f.addAll(additional);
+        var c = compiledJoins[j] = j.compile(trampoline);
+        if (c != null) {
+          var additional = j.additionalFields.map(j.nameFor).toList();
+          f.addAll(additional);
+        } else {
+          // If compilation failed, fill in NULL placeholders.
+          for (var i = 0; i < j.additionalFields.length; i++) {
+            f.add('NULL');
+          }
+        }
       });
     }
     if (withFields) b.write(f.join(', '));
@@ -243,7 +251,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     if (preamble == null) {
       if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
       for (var join in _joins) {
-        var c = join.compile(trampoline);
+        var c = compiledJoins[join];
         if (c != null) b.write(' $c');
       }
     }
