@@ -13,4 +13,5 @@ dependencies:
 dev_dependencies:
   angel_orm_test:
     path: ../angel_orm_test
+  pretty_logging: ^1.0.0
   test: ^1.0.0

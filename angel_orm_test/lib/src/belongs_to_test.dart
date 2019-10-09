@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/book.dart';
+import 'util.dart';
 
 belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     {FutureOr<void> Function(QueryExecutor) close}) {
@@ -152,6 +153,7 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     // we test both a query that return empty, and one
     // that should return correctly.
     test('returns empty on false subquery', () async {
+      printSeparator('False subquery test');
       var query = BookQuery()..author.where.name.equals('Billie Jean');
       expect(await query.get(executor), isEmpty);
     });
