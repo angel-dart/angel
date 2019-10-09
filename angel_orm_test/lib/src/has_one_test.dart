@@ -85,4 +85,12 @@ hasOneTests(FutureOr<QueryExecutor> Function() createExecutor,
     expect(leg.foot.id, foot.id);
     expect(leg.foot.nToes, foot.nToes);
   });
+
+  test('sets null on false subquery', () async {
+    var legQuery = new LegQuery()
+      ..where.id.equals(originalLeg.idAsInt)
+      ..foot.where.legId.equals(originalLeg.idAsInt + 1024);
+    var leg = await legQuery.getOne(executor);
+    expect(leg.foot, isNull);
+  });
 }
