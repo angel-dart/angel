@@ -1,4 +1,4 @@
-# 2.1.0
+# 2.1.0-beta
 * Relationships have always generated subqueries; now these subqueries are
 available as `Query` objects on generated classes.
 * Support explicitly-defined join types for relations.
