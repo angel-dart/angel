@@ -1,5 +1,5 @@
 name: angel_orm
-version: 2.1.0
+version: 2.1.0-beta
 description: Runtime support for Angel's ORM. Includes base classes for queries.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/orm
