@@ -22,6 +22,9 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
   Query({this.parent});
 
+  Map<String, dynamic> get substitutionValues =>
+      parent?.substitutionValues ?? super.substitutionValues;
+
   /// A reference to an abstract query builder.
   ///
   /// This is usually a generated class.
