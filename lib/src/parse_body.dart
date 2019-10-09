@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dart2_constant/convert.dart';
 import 'package:http_parser/http_parser.dart';
@@ -32,11 +33,11 @@ Future<BodyParseResult> parseBody(HttpRequest request,
 ///
 /// Use [storeOriginalBuffer] to add  the original request bytes to the result.
 Future<BodyParseResult> parseBodyFromStream(
-    Stream<List<int>> data, MediaType contentType, Uri requestUri,
+    Stream<Uint8List> data, MediaType contentType, Uri requestUri,
     {bool storeOriginalBuffer: false}) async {
   var result = new _BodyParseResultImpl();
 
-  Future<List<int>> getBytes() {
+  Future<Uint8List> getBytes() {
     return data
         .fold<BytesBuilder>(new BytesBuilder(copy: false), (a, b) => a..add(b))
         .then((b) => b.takeBytes());
@@ -48,19 +49,20 @@ Future<BodyParseResult> parseBodyFromStream(
         result.originalBuffer = bytes;
         return utf8.decode(bytes);
       });
-    } else
-      return data.transform(utf8.decoder).join();
+    } else {
+      return utf8.decoder.bind(data).join();
+    }
   }
 
   try {
     if (contentType != null) {
       if (contentType.type == 'multipart' &&
           contentType.parameters.containsKey('boundary')) {
-        Stream<List<int>> stream;
+        Stream<Uint8List> stream;
 
         if (storeOriginalBuffer) {
           var bytes = result.originalBuffer = await getBytes();
-          var ctrl = new StreamController<List<int>>()
+          var ctrl = new StreamController<Uint8List>()
             ..add(bytes)
             ..close();
           stream = ctrl.stream;
@@ -68,9 +70,8 @@ Future<BodyParseResult> parseBodyFromStream(
           stream = data;
         }
 
-        var parts = stream
-            .transform(new MimeMultipartTransformer(
-                contentType.parameters['boundary']))
+        var parts = MimeMultipartTransformer(
+            contentType.parameters['boundary']).bind(stream)
             .map((part) =>
                 HttpMultipartFormData.parse(part, defaultEncoding: utf8));
 

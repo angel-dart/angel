@@ -25,7 +25,7 @@ buildMapFromUri(Map map, String body) {
         // i.e. map.foo.bar => [map, foo, bar]
         List<String> keys = key.split('.');
 
-        Map targetMap = map[keys[0]] ?? {};
+        Map targetMap = map[keys[0]] != null ? map[keys[0]] as Map : {};
         map[keys[0]] = targetMap;
         for (int i = 1; i < keys.length; i++) {
           if (i < keys.length - 1) {
