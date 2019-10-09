@@ -68,5 +68,13 @@ hasManyTests(FutureOr<QueryExecutor> Function() createExecutor,
       var tree = await tq.deleteOne(executor);
       verify(tree);
     });
+
+    test('returns empty on false subquery', () async {
+      var tq = new TreeQuery()
+        ..where.id.equals(treeId)
+        ..fruits.where.commonName.equals('Kiwi');
+      var tree = await tq.getOne(executor);
+      expect(tree.fruits, isEmpty);
+    });
   });
 }
