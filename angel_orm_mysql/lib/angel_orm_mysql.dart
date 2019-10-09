@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_orm/src/query.dart';
 import 'package:logging/logging.dart';
-import 'package:pool/pool.dart';
+// import 'package:pool/pool.dart';
 import 'package:sqljocky5/connection/connection.dart';
 import 'package:sqljocky5/sqljocky.dart';
 

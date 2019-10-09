@@ -16,7 +16,7 @@ abstract class QueryExecutor {
   ///
   /// If [f] fails, the transaction will be rolled back, and the
   /// responsible exception will be re-thrown.
-  /// 
+  ///
   /// Whether nested transactions are supported depends on the
   /// underlying driver.
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f);

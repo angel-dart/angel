@@ -153,7 +153,7 @@ class TodoQueryValues extends MapQueryValues {
 class Todo extends _Todo {
   Todo(
       {this.id,
-      @required this.isComplete = false,
+      this.isComplete = false,
       this.text,
       this.createdAt,
       this.updatedAt});

@@ -67,9 +67,9 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
             if (v is Map) {
               v.forEach((key, value) {
                 var descending = false;
-                if (value is String)
+                if (value is String) {
                   descending = value == '-1';
-                else if (value is num) descending = value.toInt() == -1;
+                } else if (value is num) descending = value.toInt() == -1;
                 query.orderBy(key.toString(), descending: descending);
               });
             } else if (v is String) {
@@ -120,8 +120,7 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
     await _applyQuery(query, params);
     var result = await query.getOne(executor);
     if (result != null) return result;
-    throw new AngelHttpException.notFound(
-        message: 'No record found for ID $id');
+    throw AngelHttpException.notFound(message: 'No record found for ID $id');
   }
 
   @override
@@ -133,7 +132,7 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
     await _applyQuery(query, params);
     var result = await query.getOne(executor);
     if (result != null) return result;
-    throw new AngelHttpException.notFound(message: errorMessage);
+    throw AngelHttpException.notFound(message: errorMessage);
   }
 
   @override
@@ -170,8 +169,7 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
 
     var result = await query.updateOne(executor);
     if (result != null) return result;
-    throw new AngelHttpException.notFound(
-        message: 'No record found for ID $id');
+    throw AngelHttpException.notFound(message: 'No record found for ID $id');
   }
 
   @override
@@ -192,7 +190,6 @@ class OrmService<Id, Data, TQuery extends Query<Data, QueryWhere>>
 
     var result = await query.deleteOne(executor);
     if (result != null) return result;
-    throw new AngelHttpException.notFound(
-        message: 'No record found for ID $id');
+    throw AngelHttpException.notFound(message: 'No record found for ID $id');
   }
 }

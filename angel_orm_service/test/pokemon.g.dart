@@ -238,7 +238,7 @@ class Pokemon extends _Pokemon {
       PokemonType type2,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Pokemon(
+    return Pokemon(
         id: id ?? this.id,
         species: species ?? this.species,
         name: name ?? this.name,
@@ -281,7 +281,7 @@ class Pokemon extends _Pokemon {
 // SerializerGenerator
 // **************************************************************************
 
-const PokemonSerializer pokemonSerializer = const PokemonSerializer();
+const PokemonSerializer pokemonSerializer = PokemonSerializer();
 
 class PokemonEncoder extends Converter<Pokemon, Map> {
   const PokemonEncoder();
@@ -306,18 +306,18 @@ class PokemonSerializer extends Codec<Pokemon, Map> {
   get decoder => const PokemonDecoder();
   static Pokemon fromMap(Map map) {
     if (map['species'] == null) {
-      throw new FormatException("Missing required field 'species' on Pokemon.");
+      throw FormatException("Missing required field 'species' on Pokemon.");
     }
 
     if (map['level'] == null) {
-      throw new FormatException("Missing required field 'level' on Pokemon.");
+      throw FormatException("Missing required field 'level' on Pokemon.");
     }
 
     if (map['type1'] == null) {
-      throw new FormatException("Missing required field 'type1' on Pokemon.");
+      throw FormatException("Missing required field 'type1' on Pokemon.");
     }
 
-    return new Pokemon(
+    return Pokemon(
         id: map['id'] as String,
         species: map['species'] as String,
         name: map['name'] as String,
@@ -349,15 +349,15 @@ class PokemonSerializer extends Codec<Pokemon, Map> {
       return null;
     }
     if (model.species == null) {
-      throw new FormatException("Missing required field 'species' on Pokemon.");
+      throw FormatException("Missing required field 'species' on Pokemon.");
     }
 
     if (model.level == null) {
-      throw new FormatException("Missing required field 'level' on Pokemon.");
+      throw FormatException("Missing required field 'level' on Pokemon.");
     }
 
     if (model.type1 == null) {
-      throw new FormatException("Missing required field 'type1' on Pokemon.");
+      throw FormatException("Missing required field 'type1' on Pokemon.");
     }
 
     return {
