@@ -13,8 +13,14 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   final Map<String, int> _names = {};
   final List<OrderBy> _orderBy = [];
 
+  // An optional "parent query". If provided, [reserveName] will operate in
+  // the parent's context.
+  final Query parent;
+
   String _crossJoin, _groupBy;
   int _limit, _offset;
+
+  Query({this.parent});
 
   /// A reference to an abstract query builder.
   ///
@@ -32,6 +38,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// Returns a unique version of [name], which will not produce a collision within
   /// the context of this [query].
   String reserveName(String name) {
+    if (parent != null) return parent.reserveName(name);
     var n = _names[name] ??= 0;
     _names[name]++;
     return n == 0 ? name : '${name}$n';
