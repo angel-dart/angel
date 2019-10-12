@@ -6,7 +6,7 @@ import 'package:angel_framework/angel_framework.dart' hide Header;
 import 'package:angel_framework/http2.dart';
 import 'package:http/src/multipart_file.dart' as http;
 import 'package:http/src/multipart_request.dart' as http;
-import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 import 'package:http2/transport.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
@@ -22,7 +22,7 @@ Stream<List<int>> jfkStream() {
 
 void main() {
   var client = Http2Client();
-  var h1c = http.Client();
+  IOClient h1c;
   Angel app;
   AngelHttp2 http2;
   Uri serverRoot;
@@ -97,6 +97,9 @@ void main() {
       ..useCertificateChain('dev.pem')
       ..usePrivateKey('dev.key', password: 'dartdart')
       ..setAlpnProtocols(['h2'], true);
+
+    // Create an HTTP client that trusts our server.
+    h1c = IOClient(HttpClient()..badCertificateCallback = (_, __, ___) => true);
 
     http2 = AngelHttp2(app, ctx, allowHttp1: true);
 
