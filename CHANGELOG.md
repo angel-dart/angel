@@ -5,6 +5,7 @@
 * Add `HostnameRouter`, which allows for routing based on hostname. https://github.com/angel-dart/angel/issues/110
 * Default to using `ThrowingReflector`, instead of `EmptyReflector`. This will give a more descriptive
 error when trying to use controllers, etc. without reflection enabled.
+* `mountController` returns the mounted controller.
 
 # 2.0.4+1
 * Run `Controller.configureRoutes` before mounting `@Expose` routes.

@@ -30,7 +30,28 @@ class TodoController extends Controller {
   }
 }
 
-class NoExposeController extends Controller {}
+class NoExposeController extends Controller {
+  String getIndex() => 'Hey!';
+
+  int timesTwo(int n) => n * 2;
+
+  String repeatName(String name, int times) {
+    var b = StringBuffer();
+    for (int i = 0; i < times; i++) {
+      b.writeln(name);
+    }
+    return b.toString();
+  }
+
+  @Expose('/yellow', method: 'POST')
+  String someColor() => 'yellow';
+
+  @Expose.patch
+  int three() => 333;
+
+  @noExpose
+  String hideThis() => 'Should not be exposed';
+}
 
 @Expose('/named', as: 'foo')
 class NamedController extends Controller {
@@ -51,6 +72,7 @@ bool bar(RequestContext req, ResponseContext res) {
 main() {
   Angel app;
   TodoController ctrl;
+  NoExposeController noExposeCtrl;
   HttpServer server;
   http.Client client = http.Client();
   String url;
@@ -69,6 +91,8 @@ main() {
 
     // Using mountController<T>();
     await app.mountController<TodoController>();
+
+    noExposeCtrl = await app.mountController<NoExposeController>();
 
     // Place controller in group...
     app.group('/ctrl_group', (router) {
@@ -92,16 +116,6 @@ main() {
 
   test('basic', () {
     expect(ctrl.app, app);
-  });
-
-  test('require expose', () async {
-    try {
-      var app = Angel(reflector: MirrorsReflector());
-      await app.configure(NoExposeController().configureServer);
-      throw 'Should require @Expose';
-    } on Exception {
-      // :)
-    }
   });
 
   test('create dynamic handler', () async {
@@ -153,5 +167,41 @@ main() {
     var response = await client.get("$url/redirect");
     print('Response: ${response.body}');
     expect(response.body, equals("Hello, \"world!\""));
+  });
+
+  group('optional expose', () {
+    test('removes suffixes from controller names', () {
+      expect(noExposeCtrl.mountPoint.path, 'no_expose');
+    });
+
+    test('mounts correct routes', () {
+      print(noExposeCtrl.routeMappings.keys);
+      expect(noExposeCtrl.routeMappings.keys.toList(),
+          ['getIndex', 'timesTwo', 'repeatName', 'someColor', 'three']);
+    });
+
+    test('mounts correct methods', () {
+      void expectMethod(String name, String method) {
+        expect(noExposeCtrl.routeMappings[name].method, method);
+      }
+
+      expectMethod('getIndex', 'GET');
+      expectMethod('timesTwo', 'GET');
+      expectMethod('repeatName', 'GET');
+      expectMethod('someColor', 'POST');
+      expectMethod('three', 'PATCH');
+    });
+
+    test('mounts correct paths', () {
+      void expectPath(String name, String path) {
+        expect(noExposeCtrl.routeMappings[name].path, path);
+      }
+
+      expectPath('getIndex', '/');
+      expectPath('timesTwo', '/times_two/int:n');
+      expectPath('repeatName', '/repeat_name/:name/int:times');
+      expectPath('someColor', '/yellow');
+      expectPath('three', '/three');
+    });
   });
 }

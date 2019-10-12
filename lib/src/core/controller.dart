@@ -23,6 +23,11 @@ class Controller {
   /// A mapping of route paths to routes, produced from the [Expose] annotations on this class.
   Map<String, Route> routeMappings = {};
 
+  SymlinkRoute<RequestHandler> _mountPoint;
+
+  /// The route at which this controller is mounted on the server.
+  SymlinkRoute<RequestHandler> get mountPoint => _mountPoint;
+
   Controller({this.injectSingleton = true});
 
   /// Applies routes, DI, and other configuration to an [app].
@@ -42,7 +47,7 @@ class Controller {
   }
 
   /// Applies the routes from this [Controller] to some [router].
-  Future<String> applyRoutes(Router router, Reflector reflector) async {
+  Future<String> applyRoutes(Router<RequestHandler> router, Reflector reflector) async {
     // Load global expose decl
     var classMirror = reflector.reflectClass(this.runtimeType);
     Expose exposeDecl = findExpose(reflector);
@@ -52,7 +57,7 @@ class Controller {
     }
 
     var routable = Routable();
-    router.mount(exposeDecl.path, routable);
+    _mountPoint = router.mount(exposeDecl.path, routable);
     var typeMirror = reflector.reflectType(this.runtimeType);
 
     // Pre-reflect methods
@@ -77,6 +82,7 @@ class Controller {
     return (ReflectedDeclaration decl) {
       var methodName = decl.name;
 
+      // Ignore built-in methods.
       if (methodName != 'toString' &&
           methodName != 'noSuchMethod' &&
           methodName != 'call' &&
@@ -129,14 +135,18 @@ class Controller {
         var path = exposeDecl.path;
         var httpMethod = exposeDecl.method ?? 'GET';
         if (path == null) {
+          // Try to build a route path by finding all potential
+          // path segments, and then joining them.
           var parts = <String>[];
-          var methodMatch = _methods.firstMatch(method.name);
 
+          // If the name starts with get/post/patch, etc., then that
+          // should be the path.
+          var methodMatch = _methods.firstMatch(method.name);
           if (methodMatch != null) {
             var rest = method.name.replaceAll(_methods, '');
             var restPath = ReCase(rest.isEmpty ? 'index' : rest)
                 .snakeCase
-                .replaceAll(_multiScore, '_');
+                .replaceAll(_rgxMultipleUnderscores, '_');
             httpMethod = methodMatch[1].toUpperCase();
 
             if (['index', 'by_id'].contains(restPath)) {
@@ -144,16 +154,23 @@ class Controller {
             } else {
               parts.add(restPath);
             }
-          } else {
+          }
+          // If the name does NOT start with get/post/patch, etc. then
+          // snake_case-ify the name, and add it to the list of segments.
+          // If the name is index, though, add "/".
+          else {
             if (method.name == 'index') {
               parts.add('/');
             } else {
-              parts.add(
-                  ReCase(method.name).snakeCase.replaceAll(_multiScore, '_'));
+              parts.add(ReCase(method.name)
+                  .snakeCase
+                  .replaceAll(_rgxMultipleUnderscores, '_'));
             }
           }
 
-          // Try to infer String, int, or double.
+          // Try to infer String, int, or double. We called
+          // preInject() earlier, so we can figure out the types
+          // of required parameters, and add those to the path.
           for (var p in injection.required) {
             if (p is List && p.length == 2 && p[0] is String && p[1] is Type) {
               var name = p[0] as String;
@@ -169,6 +186,7 @@ class Controller {
           }
 
           path = parts.join('/');
+          if (!path.startsWith('/')) path = '/$path';
         }
 
         routeMappings[name] = routable.addRoute(
@@ -190,9 +208,12 @@ class Controller {
   FutureOr<void> configureRoutes(Routable routable) {}
 
   static final RegExp _methods = RegExp(r'^(get|post|patch|delete)');
-  static final RegExp _multiScore = RegExp(r'__+');
+  static final RegExp _rgxMultipleUnderscores = RegExp(r'__+');
 
   /// Finds the [Expose] declaration for this class.
+  ///
+  /// If [concreteOnly] is `false`, then if there is no actual
+  /// [Expose], one will be automatically created.
   Expose findExpose(Reflector reflector, {bool concreteOnly = false}) {
     var existing = reflector
         .reflectClass(runtimeType)
@@ -206,6 +227,6 @@ class Controller {
                 .snakeCase
                 .replaceAll('_controller', '')
                 .replaceAll('_ctrl', '')
-                .replaceAll(_multiScore, '_')));
+                .replaceAll(_rgxMultipleUnderscores, '_')));
   }
 }
