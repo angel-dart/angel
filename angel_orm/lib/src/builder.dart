@@ -1,40 +1,9 @@
 import 'dart:convert';
-
-import 'package:charcode/ascii.dart';
 import 'package:intl/intl.dart' show DateFormat;
-import 'package:string_scanner/string_scanner.dart';
 import 'query.dart';
 
 final DateFormat dateYmd = DateFormat('yyyy-MM-dd');
 final DateFormat dateYmdHms = DateFormat('yyyy-MM-dd HH:mm:ss');
-
-/// The ORM prefers using substitution values, which allow for prepared queries,
-/// and prevent SQL injection attacks.
-@deprecated
-String sanitizeExpression(String unsafe) {
-  var buf = StringBuffer();
-  var scanner = StringScanner(unsafe);
-  int ch;
-
-  while (!scanner.isDone) {
-    // Ignore comment starts
-    if (scanner.scan('--') || scanner.scan('/*')) {
-      continue;
-    }
-
-    // Ignore all single quotes and attempted escape sequences
-    else if (scanner.scan("'") || scanner.scan('\\')) {
-      continue;
-    }
-
-    // Otherwise, add the next char, unless it's a null byte.
-    else if ((ch = scanner.readChar()) != $nul && ch != null) {
-      buf.writeCharCode(ch);
-    }
-  }
-
-  return toSql(buf.toString(), withQuotes: false);
-}
 
 abstract class SqlExpressionBuilder<T> {
   final Query query;

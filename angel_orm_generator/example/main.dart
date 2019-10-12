@@ -7,13 +7,13 @@ import 'package:angel_serialize/angel_serialize.dart';
 part 'main.g.dart';
 
 main() async {
-  var query = new EmployeeQuery()
+  var query = EmployeeQuery()
     ..where.firstName.equals('Rich')
     ..where.lastName.equals('Person')
     ..orWhere((w) => w.salary.greaterThanOrEqualTo(75000))
     ..join('companies', 'company_id', 'id');
 
-  var richPerson = await query.getOne(new _FakeExecutor());
+  var richPerson = await query.getOne(_FakeExecutor());
   print(richPerson.toJson());
 }
 
@@ -24,7 +24,7 @@ class _FakeExecutor extends QueryExecutor {
   Future<List<List>> query(
       String tableName, String query, Map<String, dynamic> substitutionValues,
       [returningFields]) async {
-    var now = new DateTime.now();
+    var now = DateTime.now();
     print(
         '_FakeExecutor received query: $query and values: $substitutionValues');
     return [
@@ -33,8 +33,8 @@ class _FakeExecutor extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function() f) {
-    throw new UnsupportedError('Transactions are not supported.');
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
+    throw UnsupportedError('Transactions are not supported.');
   }
 }
 

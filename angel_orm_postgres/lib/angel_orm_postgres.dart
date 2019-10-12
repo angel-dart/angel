@@ -24,7 +24,13 @@ class PostgreSqlExecutor extends QueryExecutor {
   PostgreSQLExecutionContext get connection => _connection;
 
   /// Closes the connection.
-  Future close() => (_connection as PostgreSQLConnection).close();
+  Future close() {
+    if (_connection is PostgreSQLConnection) {
+      return (_connection as PostgreSQLConnection).close();
+    } else {
+      return Future.value();
+    }
+  }
 
   @override
   Future<List<List>> query(
@@ -42,18 +48,16 @@ class PostgreSqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function() f) async {
-    if (_connection is! PostgreSQLConnection) return await f();
-    var old = _connection;
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
+    if (_connection is! PostgreSQLConnection) return await f(this);
     T result;
     try {
       logger?.fine('Entering transaction');
       await (_connection as PostgreSQLConnection).transaction((ctx) async {
-        _connection = ctx;
-        result = await f();
+        var tx = PostgreSqlExecutor(ctx, logger: logger);
+        result = await f(tx);
       });
     } finally {
-      _connection = old;
       logger?.fine('Exiting transaction');
       return result;
     }
@@ -130,7 +134,7 @@ class PostgreSqlExecutorPool extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function() f) {
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
     return _pool.withResource(() async {
       var executor = await _next();
       return executor.transaction(f);

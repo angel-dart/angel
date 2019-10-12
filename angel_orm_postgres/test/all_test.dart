@@ -1,14 +1,13 @@
 import 'package:angel_orm_test/angel_orm_test.dart';
 import 'package:logging/logging.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 import 'package:test/test.dart';
 import 'common.dart';
 
 void main() {
-  Logger.root.onRecord.listen((rec) {
-    print(rec);
-    if (rec.error != null) print(rec.error);
-    if (rec.stackTrace != null) print(rec.stackTrace);
-  });
+  Logger.root
+    ..level = Level.ALL
+    ..onRecord.listen(prettyLog);
 
   group('postgresql', () {
     group('belongsTo',

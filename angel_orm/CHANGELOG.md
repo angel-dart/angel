@@ -1,3 +1,15 @@
+# 2.1.0-beta
+* Split the formerly 600+ line `src/query.dart` up into
+separate files.
+* **BREAKING**: Add a required `QueryExecutor` argument to `transaction`
+callbacks.
+* Make `JoinBuilder` take `to` as a `String Function()`. This will allow
+ORM queries to reference their joined subqueries.
+* Removed deprecated `Join`, `toSql`, `sanitizeExpression`, `isAscii`.
+* Always put `ORDER BY` before `LIMIT`.
+* `and`, `or`, `not` in `QueryWhere` include parentheses.
+* Add `joinType` to `Relationship` class.
+
 # 2.0.2
 * Place `LIMIT` and `OFFSET` after `ORDER BY`.
 

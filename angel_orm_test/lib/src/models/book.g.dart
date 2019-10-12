@@ -51,14 +51,16 @@ class AuthorMigration extends Migration {
 // **************************************************************************
 
 class BookQuery extends Query<Book, BookQueryWhere> {
-  BookQuery({Set<String> trampoline}) {
+  BookQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = BookQueryWhere(this);
-    leftJoin('authors', 'author_id', 'id',
+    join(_author = AuthorQuery(trampoline: trampoline, parent: this),
+        'author_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
-    leftJoin('authors', 'partner_author_id', 'id',
+    join(_partnerAuthor = AuthorQuery(trampoline: trampoline, parent: this),
+        'partner_author_id', 'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
   }
@@ -67,6 +69,10 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   final BookQueryValues values = BookQueryValues();
 
   BookQueryWhere _where;
+
+  AuthorQuery _author;
+
+  AuthorQuery _partnerAuthor;
 
   @override
   get casts {
@@ -121,6 +127,14 @@ class BookQuery extends Query<Book, BookQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  AuthorQuery get author {
+    return _author;
+  }
+
+  AuthorQuery get partnerAuthor {
+    return _partnerAuthor;
   }
 }
 
@@ -202,7 +216,7 @@ class BookQueryValues extends MapQueryValues {
 }
 
 class AuthorQuery extends Query<Author, AuthorQueryWhere> {
-  AuthorQuery({Set<String> trampoline}) {
+  AuthorQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = AuthorQueryWhere(this);

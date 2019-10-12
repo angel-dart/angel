@@ -5,8 +5,8 @@ import 'package:angel_serialize/angel_serialize.dart';
 import 'package:collection/collection.dart';
 part 'has_map.g.dart';
 
-String _boolToCustom(bool v) => v ? 'yes' : 'no';
-bool _customToBool(v) => v == 'yes';
+// String _boolToCustom(bool v) => v ? 'yes' : 'no';
+// bool _customToBool(v) => v == 'yes';
 
 @orm
 @serializable

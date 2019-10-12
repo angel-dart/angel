@@ -179,7 +179,7 @@ class Todo extends _Todo {
       String text,
       DateTime createdAt,
       DateTime updatedAt}) {
-    return new Todo(
+    return Todo(
         id: id ?? this.id,
         isComplete: isComplete ?? this.isComplete,
         text: text ?? this.text,
@@ -215,7 +215,7 @@ class Todo extends _Todo {
 // SerializerGenerator
 // **************************************************************************
 
-const TodoSerializer todoSerializer = const TodoSerializer();
+const TodoSerializer todoSerializer = TodoSerializer();
 
 class TodoEncoder extends Converter<Todo, Map> {
   const TodoEncoder();
@@ -240,10 +240,10 @@ class TodoSerializer extends Codec<Todo, Map> {
   get decoder => const TodoDecoder();
   static Todo fromMap(Map map) {
     if (map['text'] == null) {
-      throw new FormatException("Missing required field 'text' on Todo.");
+      throw FormatException("Missing required field 'text' on Todo.");
     }
 
-    return new Todo(
+    return Todo(
         id: map['id'] as String,
         isComplete: map['is_complete'] as bool ?? false,
         text: map['text'] as String,
@@ -264,7 +264,7 @@ class TodoSerializer extends Codec<Todo, Map> {
       return null;
     }
     if (model.text == null) {
-      throw new FormatException("Missing required field 'text' on Todo.");
+      throw FormatException("Missing required field 'text' on Todo.");
     }
 
     return {

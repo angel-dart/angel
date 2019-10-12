@@ -17,14 +17,14 @@ var floatTypes = [
 ];
 
 Builder ormBuilder(BuilderOptions options) {
-  return new SharedPartBuilder([
-    new OrmGenerator(
+  return SharedPartBuilder([
+    OrmGenerator(
         autoSnakeCaseNames: options.config['auto_snake_case_names'] != false)
   ], 'angel_orm');
 }
 
 TypeReference futureOf(String type) {
-  return new TypeReference((b) => b
+  return TypeReference((b) => b
     ..symbol = 'Future'
     ..types.add(refer(type)));
 }
@@ -39,17 +39,17 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
     if (element is ClassElement) {
-      var ctx = await buildOrmContext(element, annotation, buildStep,
+      var ctx = await buildOrmContext({}, element, annotation, buildStep,
           buildStep.resolver, autoSnakeCaseNames);
       var lib = buildOrmLibrary(buildStep.inputId, ctx);
-      return lib.accept(new DartEmitter()).toString();
+      return lib.accept(DartEmitter()).toString();
     } else {
       throw 'The @Orm() annotation can only be applied to classes.';
     }
   }
 
   Library buildOrmLibrary(AssetId inputId, OrmBuildContext ctx) {
-    return new Library((lib) {
+    return Library((lib) {
       // Create `FooQuery` class
       // Create `FooQueryWhere` class
       lib.body.add(buildQueryClass(ctx));
@@ -59,12 +59,12 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   Class buildQueryClass(OrmBuildContext ctx) {
-    return new Class((clazz) {
+    return Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
       var queryWhereType = refer('${rc.pascalCase}QueryWhere');
       clazz
         ..name = '${rc.pascalCase}Query'
-        ..extend = new TypeReference((b) {
+        ..extend = TypeReference((b) {
           b
             ..symbol = 'Query'
             ..types.addAll([
@@ -96,7 +96,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }));
 
       // Add values
-      clazz.fields.add(new Field((b) {
+      clazz.fields.add(Field((b) {
         var type = refer('${rc.pascalCase}QueryValues');
         b
           ..name = 'values'
@@ -107,23 +107,23 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }));
 
       // Add tableName
-      clazz.methods.add(new Method((m) {
+      clazz.methods.add(Method((m) {
         m
           ..name = 'tableName'
           ..annotations.add(refer('override'))
           ..type = MethodType.getter
-          ..body = new Block((b) {
+          ..body = Block((b) {
             b.addExpression(literalString(ctx.tableName).returned);
           });
       }));
 
       // Add fields getter
-      clazz.methods.add(new Method((m) {
+      clazz.methods.add(Method((m) {
         m
           ..name = 'fields'
           ..annotations.add(refer('override'))
           ..type = MethodType.getter
-          ..body = new Block((b) {
+          ..body = Block((b) {
             var names = ctx.effectiveFields
                 .map((f) =>
                     literalString(ctx.buildContext.resolveFieldName(f.name)))
@@ -133,41 +133,41 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }));
 
       // Add _where member
-      clazz.fields.add(new Field((b) {
+      clazz.fields.add(Field((b) {
         b
           ..name = '_where'
           ..type = queryWhereType;
       }));
 
       // Add where getter
-      clazz.methods.add(new Method((b) {
+      clazz.methods.add(Method((b) {
         b
           ..name = 'where'
           ..type = MethodType.getter
           ..returns = queryWhereType
           ..annotations.add(refer('override'))
-          ..body = new Block((b) => b.addExpression(refer('_where').returned));
+          ..body = Block((b) => b.addExpression(refer('_where').returned));
       }));
       // newWhereClause()
-      clazz.methods.add(new Method((b) {
+      clazz.methods.add(Method((b) {
         b
           ..name = 'newWhereClause'
           ..annotations.add(refer('override'))
           ..returns = queryWhereType
-          ..body = new Block((b) => b.addExpression(
+          ..body = Block((b) => b.addExpression(
               queryWhereType.newInstance([refer('this')]).returned));
       }));
 
       // Add deserialize()
-      clazz.methods.add(new Method((m) {
+      clazz.methods.add(Method((m) {
         m
           ..name = 'parseRow'
           ..static = true
           ..returns = ctx.buildContext.modelClassType
-          ..requiredParameters.add(new Parameter((b) => b
+          ..requiredParameters.add(Parameter((b) => b
             ..name = 'row'
             ..type = refer('List')))
-          ..body = new Block((b) {
+          ..body = Block((b) {
             int i = 0;
             var args = <String, Expression>{};
 
@@ -177,11 +177,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               if (isSpecialId(ctx, field)) type = refer('int');
 
               var expr = (refer('row').index(literalNum(i++)));
-              if (isSpecialId(ctx, field))
+              if (isSpecialId(ctx, field)) {
                 expr = expr.property('toString').call([]);
-              else if (field is RelationFieldImpl)
+              } else if (field is RelationFieldImpl) {
                 continue;
-              else if (ctx.columns[field.name]?.type == ColumnType.json) {
+              } else if (ctx.columns[field.name]?.type == ColumnType.json) {
                 expr = refer('json')
                     .property('decode')
                     .call([expr.asA(refer('String'))]).asA(type);
@@ -193,14 +193,15 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var isNull = expr.equalTo(literalNull);
                 expr = isNull.conditional(literalNull,
                     type.property('values').index(expr.asA(refer('int'))));
-              } else
+              } else {
                 expr = expr.asA(type);
+              }
 
               args[field.name] = expr;
             }
 
             b.statements
-                .add(new Code('if (row.every((x) => x == null)) return null;'));
+                .add(Code('if (row.every((x) => x == null)) return null;'));
             b.addExpression(ctx.buildContext.modelClassType
                 .newInstance([], args).assignVar('model'));
 
@@ -230,11 +231,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               }
               var expr =
                   refer('model').property('copyWith').call([], {name: parsed});
-              var block = new Block(
-                  (b) => b.addExpression(refer('model').assign(expr)));
-              var blockStr = block.accept(new DartEmitter());
+              var block =
+                  Block((b) => b.addExpression(refer('model').assign(expr)));
+              var blockStr = block.accept(DartEmitter());
               var ifStr = 'if (row.length > $i) { $blockStr }';
-              b.statements.add(new Code(ifStr));
+              b.statements.add(Code(ifStr));
               i += relation.foreign.effectiveFields.length;
             });
 
@@ -242,28 +243,33 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           });
       }));
 
-      clazz.methods.add(new Method((m) {
+      clazz.methods.add(Method((m) {
         m
           ..name = 'deserialize'
           ..annotations.add(refer('override'))
-          ..requiredParameters.add(new Parameter((b) => b
+          ..requiredParameters.add(Parameter((b) => b
             ..name = 'row'
             ..type = refer('List')))
-          ..body = new Block((b) {
+          ..body = Block((b) {
             b.addExpression(refer('parseRow').call([refer('row')]).returned);
           });
       }));
 
       // If there are any relations, we need some overrides.
-      clazz.constructors.add(new Constructor((b) {
+      clazz.constructors.add(Constructor((b) {
         b
+          ..optionalParameters.add(Parameter((b) => b
+            ..named = true
+            ..name = 'parent'
+            ..type = refer('Query')))
           ..optionalParameters.add(Parameter((b) => b
             ..named = true
             ..name = 'trampoline'
             ..type = TypeReference((b) => b
               ..symbol = 'Set'
               ..types.add(refer('String')))))
-          ..body = new Block((b) {
+          ..initializers.add(Code('super(parent: parent)'))
+          ..body = Block((b) {
             b.statements.addAll([
               Code('trampoline ??= Set();'),
               Code('trampoline.add(tableName);'),
@@ -275,6 +281,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   .assign(queryWhereType.newInstance([refer('this')])),
             );
 
+            // Note: this is where subquery fields for relations are added.
             ctx.relations.forEach((fieldName, relation) {
               //var name = ctx.buildContext.resolveFieldName(fieldName);
               if (relation.type == RelationshipType.belongsTo ||
@@ -283,29 +290,106 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var foreign = relation.throughContext ?? relation.foreign;
 
                 // If this is a many-to-many, add the fields from the other object.
-                var additionalFields = relation.foreign.effectiveFields
-                    // .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
-                    .map((f) => literalString(relation.foreign.buildContext
-                        .resolveFieldName(f.name)));
+
+                var additionalStrs = relation.foreign.effectiveFields.map((f) =>
+                    relation.foreign.buildContext.resolveFieldName(f.name));
+                var additionalFields = additionalStrs.map(literalString);
 
                 var joinArgs = [relation.localKey, relation.foreignKey]
                     .map(literalString)
                     .toList();
 
-                // Instead of passing the table as-is, we'll compile a subquery.
-                if (relation.type == RelationshipType.hasMany) {
-                  var foreignQueryType =
-                      foreign.buildContext.modelClassNameRecase.pascalCase +
-                          'Query';
-                  joinArgs.insert(
-                      0,
-                      refer(foreignQueryType).newInstance(
-                          [], {'trampoline': refer('trampoline')}));
+                // In the case of a many-to-many, we don't generate a subquery field,
+                // as it easily leads to stack overflows.
+                if (relation.isManyToMany) {
+                  // We can't simply join against the "through" table; this itself must
+                  // be a join.
+                  // (SELECT role_users.role_id, <user_fields>
+                  // FROM users
+                  // LEFT JOIN role_users ON role_users.user_id=users.id)
+                  var foreignFields = additionalStrs
+                      .map((f) => '${relation.foreign.tableName}.$f');
+                  var b = StringBuffer('(SELECT ');
+                  // role_users.role_id
+                  b.write('${relation.throughContext.tableName}');
+                  b.write('.${relation.foreignKey}');
+                  // , <user_fields>
+                  b.write(foreignFields.isEmpty
+                      ? ''
+                      : ', ' + foreignFields.join(', '));
+                  // FROM users
+                  b.write(' FROM ');
+                  b.write(relation.foreign.tableName);
+                  // LEFT JOIN role_users
+                  b.write(' LEFT JOIN ${relation.throughContext.tableName}');
+                  // Figure out which field on the "through" table points to users (foreign).
+                  var throughRelation =
+                      relation.throughContext.relations.values.firstWhere((e) {
+                    return e.foreignTable == relation.foreign.tableName;
+                  }, orElse: () {
+                    // _Role has a many-to-many to _User through _RoleUser, but
+                    // _RoleUser has no relation pointing to _User.
+                    var b = StringBuffer();
+                    b.write(ctx.buildContext.modelClassName);
+                    b.write('has a many-to-many relationship to ');
+                    b.write(relation.foreign.buildContext.modelClassName);
+                    b.write(' through ');
+                    b.write(
+                        relation.throughContext.buildContext.modelClassName);
+                    b.write(', but ');
+                    b.write(
+                        relation.throughContext.buildContext.modelClassName);
+                    b.write('has no relation pointing to ');
+                    b.write(relation.foreign.buildContext.modelClassName);
+                    b.write('.');
+                    throw b.toString();
+                  });
+
+                  // ON role_users.user_id=users.id)
+                  b.write(' ON ');
+                  b.write('${relation.throughContext.tableName}');
+                  b.write('.');
+                  b.write(throughRelation.localKey);
+                  b.write('=');
+                  b.write(relation.foreign.tableName);
+                  b.write('.');
+                  b.write(throughRelation.foreignKey);
+                  b.write(')');
+
+                  joinArgs.insert(0, literalString(b.toString()));
                 } else {
-                  joinArgs.insert(0, literalString(foreign.tableName));
+                  // In the past, we would either do a join on the table name
+                  // itself, or create an instance of a query.
+                  //
+                  // From this point on, however, we will create a field for each
+                  // join, so that users can customize the generated query.
+                  //
+                  // There'll be a private `_field`, and then a getter, named `field`,
+                  // that returns the subquery object.
+                  var foreignQueryType = refer(
+                      foreign.buildContext.modelClassNameRecase.pascalCase +
+                          'Query');
+                  clazz
+                    ..fields.add(Field((b) => b
+                      ..name = '_$fieldName'
+                      ..type = foreignQueryType))
+                    ..methods.add(Method((b) => b
+                      ..name = fieldName
+                      ..type = MethodType.getter
+                      ..returns = foreignQueryType
+                      ..body = refer('_$fieldName').returned.statement));
+
+                  // Assign a value to `_field`.
+                  var queryInstantiation = foreignQueryType.newInstance([], {
+                    'trampoline': refer('trampoline'),
+                    'parent': refer('this')
+                  });
+                  joinArgs.insert(
+                      0, refer('_$fieldName').assign(queryInstantiation));
                 }
 
-                b.addExpression(refer('leftJoin').call(joinArgs, {
+                var joinType = relation.joinTypeString;
+                b.addExpression(refer(joinType).call(joinArgs, {
                   'additionalFields':
                       literalConstList(additionalFields.toList()),
                   'trampoline': refer('trampoline'),
@@ -331,133 +415,14 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         });
         var out = outExprs.reduce((a, b) => a.and(b));
 
-        clazz.methods.add(new Method((b) {
+        clazz.methods.add(Method((b) {
           b
             ..name = 'canCompile'
             ..annotations.add(refer('override'))
-            ..requiredParameters
-                .add(new Parameter((b) => b..name = 'trampoline'))
+            ..requiredParameters.add(Parameter((b) => b..name = 'trampoline'))
             ..returns = refer('bool')
             ..body = Block((b) {
               b.addExpression(out.returned);
-            });
-        }));
-      }
-
-      // TODO: Ultimately remove the insert override
-      if (false && ctx.relations.isNotEmpty) {
-        clazz.methods.add(new Method((b) {
-          b
-            ..name = 'insert'
-            ..annotations.add(refer('override'))
-            ..requiredParameters.add(new Parameter((b) => b..name = 'executor'))
-            ..body = new Block((b) {
-              var inTransaction = new Method((b) {
-                b
-                  ..modifier = MethodModifier.async
-                  ..body = new Block((b) {
-                    b.addExpression(refer('super')
-                        .property('insert')
-                        .call([refer('executor')])
-                        .awaited
-                        .assignVar('result'));
-
-                    // Just call getOne() again
-                    if (ctx.effectiveFields.any((f) =>
-                        isSpecialId(ctx, f) ||
-                        (ctx.columns[f.name]?.indexType ==
-                            IndexType.primaryKey))) {
-                      b.addExpression(refer('where')
-                          .property('id')
-                          .property('equals')
-                          .call([
-                        (refer('int')
-                            .property('tryParse')
-                            .call([refer('result').property('id')]))
-                      ]));
-
-                      b.addExpression(refer('result').assign(
-                          refer('getOne').call([refer('executor')]).awaited));
-                    }
-
-                    // TODO: Remove - Fetch the results of @hasMany
-                    // ctx.relations.forEach((name, relation) {
-                    //   if (relation.type == RelationshipType.hasMany) {
-                    //     // Call fetchLinked();
-                    //     var fetchLinked = refer('fetchLinked')
-                    //         .call([refer('result'), refer('executor')]).awaited;
-                    //     b.addExpression(refer('result').assign(fetchLinked));
-                    //   }
-                    // });
-
-                    b.addExpression(refer('result').returned);
-                  });
-              });
-
-              b.addExpression(refer('executor')
-                  .property('transaction')
-                  .call([inTransaction.closure]).returned);
-            });
-        }));
-      }
-
-      // Create a Future<T> fetchLinked(T model, QueryExecutor), if necessary.
-      if (false &&
-          ctx.relations.values.any((r) => r.type == RelationshipType.hasMany)) {
-        clazz.methods.add(new Method((b) {
-          b
-            ..name = 'fetchLinked'
-            ..modifier = MethodModifier.async
-            ..returns = new TypeReference((b) {
-              b
-                ..symbol = 'Future'
-                ..types.add(ctx.buildContext.modelClassType);
-            })
-            ..requiredParameters.addAll([
-              new Parameter((b) => b
-                ..name = 'model'
-                ..type = ctx.buildContext.modelClassType),
-              new Parameter((b) => b
-                ..name = 'executor'
-                ..type = refer('QueryExecutor')),
-            ])
-            ..body = new Block((b) {
-              var args = <String, Expression>{};
-
-              ctx.relations.forEach((name, relation) {
-                // TODO: Should this be entirely removed?
-                if (relation.type == RelationshipType.hasMany) {
-                  // For each hasMany, we need to create a query of
-                  // the corresponding type.
-                  var foreign = relation.foreign;
-                  var queryType = refer(
-                      '${foreign.buildContext.modelClassNameRecase.pascalCase}Query');
-                  var queryInstance = queryType.newInstance([]);
-
-                  // Next, we need to apply a cascade that sets the correct query value.
-                  var localField = relation.findLocalField(ctx);
-                  var foreignField = relation.findForeignField(ctx);
-
-                  var queryValue = (isSpecialId(ctx, localField))
-                      ? 'int.parse(model.id)'
-                      : 'model.${localField.name}';
-                  var cascadeText =
-                      '..where.${foreignField.name}.equals($queryValue)';
-                  var queryText = queryInstance.accept(new DartEmitter());
-                  var combinedExpr =
-                      new CodeExpression(new Code('($queryText$cascadeText)'));
-
-                  // Finally, just call get and await it.
-                  var expr = combinedExpr
-                      .property('get')
-                      .call([refer('executor')]).awaited;
-                  args[name] = expr;
-                }
-              });
-
-              // Just return a copyWith
-              b.addExpression(
-                  refer('model').property('copyWith').call([], args).returned);
             });
         }));
       }
@@ -466,12 +431,12 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       // execute in a transaction, and invoke fetchLinked.
       if (ctx.relations.values.any((r) => r.type == RelationshipType.hasMany)) {
         for (var methodName in const ['get', 'update', 'delete']) {
-          clazz.methods.add(new Method((b) {
+          clazz.methods.add(Method((b) {
             var type = ctx.buildContext.modelClassType.accept(DartEmitter());
             b
               ..name = methodName
               ..annotations.add(refer('override'))
-              ..requiredParameters.add(new Parameter((b) => b
+              ..requiredParameters.add(Parameter((b) => b
                 ..name = 'executor'
                 ..type = refer('QueryExecutor')));
 
@@ -500,7 +465,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   '@HasMany and @ManyToMany relations require a primary key to be defined on the model.';
             }
 
-            b.body = new Code('''
+            b.body = Code('''
                     return super.$methodName(executor).then((result) {
                       return result.fold<List<$type>>([], (out, model) {
                         var idx = out.indexWhere((m) => m.$keyName == model.$keyName);
@@ -521,19 +486,19 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   Class buildWhereClass(OrmBuildContext ctx) {
-    return new Class((clazz) {
+    return Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
       clazz
         ..name = '${rc.pascalCase}QueryWhere'
         ..extend = refer('QueryWhere');
 
       // Build expressionBuilders getter
-      clazz.methods.add(new Method((m) {
+      clazz.methods.add(Method((m) {
         m
           ..name = 'expressionBuilders'
           ..annotations.add(refer('override'))
           ..type = MethodType.getter
-          ..body = new Block((b) {
+          ..body = Block((b) {
             var references = ctx.effectiveFields.map((f) => refer(f.name));
             b.addExpression(literalList(references).returned);
           });
@@ -557,11 +522,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         if (const TypeChecker.fromRuntime(int).isExactlyType(type) ||
             const TypeChecker.fromRuntime(double).isExactlyType(type) ||
             isSpecialId(ctx, field)) {
-          builderType = new TypeReference((b) => b
+          builderType = TypeReference((b) => b
             ..symbol = 'NumericSqlExpressionBuilder'
             ..types.add(refer(isSpecialId(ctx, field) ? 'int' : type.name)));
         } else if (type is InterfaceType && type.element.isEnum) {
-          builderType = new TypeReference((b) => b
+          builderType = TypeReference((b) => b
             ..symbol = 'EnumSqlExpressionBuilder'
             ..types.add(convertTypeReference(type)));
           args.add(CodeExpression(Code('(v) => v.index')));
@@ -580,20 +545,20 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           builderType = refer('ListSqlExpressionBuilder');
         } else if (ctx.relations.containsKey(field.name)) {
           var relation = ctx.relations[field.name];
-          if (relation.type != RelationshipType.belongsTo)
+          if (relation.type != RelationshipType.belongsTo) {
             continue;
-          else {
-            builderType = new TypeReference((b) => b
+          } else {
+            builderType = TypeReference((b) => b
               ..symbol = 'NumericSqlExpressionBuilder'
               ..types.add(refer('int')));
             name = relation.localKey;
           }
         } else {
-          throw new UnsupportedError(
+          throw UnsupportedError(
               'Cannot generate ORM code for field of type ${field.type.name}.');
         }
 
-        clazz.fields.add(new Field((b) {
+        clazz.fields.add(Field((b) {
           b
             ..name = name
             ..modifier = FieldModifier.final$
@@ -611,9 +576,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }
 
       // Now, just add a constructor that initializes each builder.
-      clazz.constructors.add(new Constructor((b) {
+      clazz.constructors.add(Constructor((b) {
         b
-          ..requiredParameters.add(new Parameter((b) => b
+          ..requiredParameters.add(Parameter((b) => b
             ..name = 'query'
             ..type = refer('${rc.pascalCase}Query')))
           ..initializers.addAll(initializers);
@@ -622,7 +587,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   Class buildValuesClass(OrmBuildContext ctx) {
-    return new Class((clazz) {
+    return Class((clazz) {
       var rc = ctx.buildContext.modelClassNameRecase;
       clazz
         ..name = '${rc.pascalCase}QueryValues'
@@ -660,7 +625,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         var name = ctx.buildContext.resolveFieldName(field.name);
         var type = convertTypeReference(field.type);
 
-        clazz.methods.add(new Method((b) {
+        clazz.methods.add(Method((b) {
           var value = refer('values').index(literalString(name));
 
           if (fType is InterfaceType && fType.element.isEnum) {
@@ -684,10 +649,10 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             ..name = field.name
             ..type = MethodType.getter
             ..returns = type
-            ..body = new Block((b) => b.addExpression(value.returned));
+            ..body = Block((b) => b.addExpression(value.returned));
         }));
 
-        clazz.methods.add(new Method((b) {
+        clazz.methods.add(Method((b) {
           Expression value = refer('value');
 
           if (fType is InterfaceType && fType.element.isEnum) {
@@ -702,7 +667,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           b
             ..name = field.name
             ..type = MethodType.setter
-            ..requiredParameters.add(new Parameter((b) => b
+            ..requiredParameters.add(Parameter((b) => b
               ..name = 'value'
               ..type = type))
             ..body =
@@ -711,17 +676,18 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }
 
       // Add an copyFrom(model)
-      clazz.methods.add(new Method((b) {
+      clazz.methods.add(Method((b) {
         b
           ..name = 'copyFrom'
           ..returns = refer('void')
-          ..requiredParameters.add(new Parameter((b) => b
+          ..requiredParameters.add(Parameter((b) => b
             ..name = 'model'
             ..type = ctx.buildContext.modelClassType))
-          ..body = new Block((b) {
+          ..body = Block((b) {
             for (var field in ctx.effectiveFields) {
-              if (isSpecialId(ctx, field) || field is RelationFieldImpl)
+              if (isSpecialId(ctx, field) || field is RelationFieldImpl) {
                 continue;
+              }
               b.addExpression(refer(field.name)
                   .assign(refer('model').property(field.name)));
             }
@@ -744,11 +710,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 }
 
                 var cond = prop.notEqualTo(literalNull);
-                var condStr = cond.accept(new DartEmitter());
+                var condStr = cond.accept(DartEmitter());
                 var blkStr =
-                    new Block((b) => b.addExpression(target.assign(parsedId)))
-                        .accept(new DartEmitter());
-                var ifStmt = new Code('if ($condStr) { $blkStr }');
+                    Block((b) => b.addExpression(target.assign(parsedId)))
+                        .accept(DartEmitter());
+                var ifStmt = Code('if ($condStr) { $blkStr }');
                 b.statements.add(ifStmt);
               }
             }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/user.dart';
+import 'util.dart';
 
 manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
     {FutureOr<void> Function(QueryExecutor) close}) {
@@ -61,6 +62,7 @@ manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
     print('=== THOSAKWE: ${thosakwe?.toJson()}');
 
     // Allow thosakwe to publish...
+    printSeparator('Allow thosakwe to publish');
     var thosakwePubQuery = RoleUserQuery();
     thosakwePubQuery.values
       ..userId = int.parse(thosakwe.id)
@@ -68,6 +70,7 @@ manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
     await thosakwePubQuery.insert(executor);
 
     // Allow thosakwe to subscribe...
+    printSeparator('Allow thosakwe to subscribe');
     var thosakweSubQuery = RoleUserQuery();
     thosakweSubQuery.values
       ..userId = int.parse(thosakwe.id)
@@ -78,8 +81,8 @@ manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
     // await dumpQuery('select * from users;');
     // await dumpQuery('select * from roles;');
     // await dumpQuery('select * from role_users;');
-    var query = RoleQuery()..where.id.equals(canPub.idAsInt);
-    await dumpQuery(query.compile(Set()));
+    // var query = RoleQuery()..where.id.equals(canPub.idAsInt);
+    // await dumpQuery(query.compile(Set()));
 
     print('\n');
     print('==================================================');
@@ -95,6 +98,7 @@ manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
   }
 
   test('fetch roles for user', () async {
+    printSeparator('Fetch roles for user test');
     var user = await fetchThosakwe();
     expect(user.roles, hasLength(2));
     expect(user.roles, contains(canPub));
@@ -107,5 +111,22 @@ manyToManyTests(FutureOr<QueryExecutor> Function() createExecutor,
       var r = await query.getOne(executor);
       expect(r.users.toList(), [thosakwe]);
     }
+  });
+
+  test('only fetches linked', () async {
+    // Create a new user. The roles list should be empty,
+    // be there are no related rules.
+    var userQuery = UserQuery();
+    userQuery.values
+      ..username = 'Prince'
+      ..password = 'Rogers'
+      ..email = 'Nelson';
+    var user = await userQuery.insert(executor);
+    expect(user.roles, isEmpty);
+
+    // Fetch again, just to be doubly sure.
+    var query = UserQuery()..where.id.equals(user.idAsInt);
+    var fetched = await query.getOne(executor);
+    expect(fetched.roles, isEmpty);
   });
 }

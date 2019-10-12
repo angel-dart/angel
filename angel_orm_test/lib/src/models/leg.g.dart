@@ -46,11 +46,12 @@ class FootMigration extends Migration {
 // **************************************************************************
 
 class LegQuery extends Query<Leg, LegQueryWhere> {
-  LegQuery({Set<String> trampoline}) {
+  LegQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = LegQueryWhere(this);
-    leftJoin('feet', 'id', 'leg_id',
+    leftJoin(
+        _foot = FootQuery(trampoline: trampoline, parent: this), 'id', 'leg_id',
         additionalFields: const [
           'id',
           'created_at',
@@ -65,6 +66,8 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   final LegQueryValues values = LegQueryValues();
 
   LegQueryWhere _where;
+
+  FootQuery _foot;
 
   @override
   get casts {
@@ -108,6 +111,10 @@ class LegQuery extends Query<Leg, LegQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  FootQuery get foot {
+    return _foot;
   }
 }
 
@@ -166,7 +173,7 @@ class LegQueryValues extends MapQueryValues {
 }
 
 class FootQuery extends Query<Foot, FootQueryWhere> {
-  FootQuery({Set<String> trampoline}) {
+  FootQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = FootQueryWhere(this);

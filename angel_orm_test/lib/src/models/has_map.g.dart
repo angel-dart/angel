@@ -26,7 +26,7 @@ class HasMapMigration extends Migration {
 // **************************************************************************
 
 class HasMapQuery extends Query<HasMap, HasMapQueryWhere> {
-  HasMapQuery({Set<String> trampoline}) {
+  HasMapQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = HasMapQueryWhere(this);

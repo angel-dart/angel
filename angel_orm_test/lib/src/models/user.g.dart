@@ -62,11 +62,14 @@ class RoleMigration extends Migration {
 // **************************************************************************
 
 class UserQuery extends Query<User, UserQueryWhere> {
-  UserQuery({Set<String> trampoline}) {
+  UserQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = UserQueryWhere(this);
-    leftJoin(RoleUserQuery(trampoline: trampoline), 'id', 'user_id',
+    leftJoin(
+        '(SELECT role_users.user_id, roles.id, roles.created_at, roles.updated_at, roles.name FROM roles LEFT JOIN role_users ON role_users.role_id=roles.id)',
+        'id',
+        'user_id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
   }
@@ -268,14 +271,17 @@ class UserQueryValues extends MapQueryValues {
 }
 
 class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
-  RoleUserQuery({Set<String> trampoline}) {
+  RoleUserQuery({Query parent, Set<String> trampoline})
+      : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = RoleUserQueryWhere(this);
-    leftJoin('roles', 'role_id', 'id',
+    leftJoin(_role = RoleQuery(trampoline: trampoline, parent: this), 'role_id',
+        'id',
         additionalFields: const ['id', 'created_at', 'updated_at', 'name'],
         trampoline: trampoline);
-    leftJoin('users', 'user_id', 'id',
+    leftJoin(_user = UserQuery(trampoline: trampoline, parent: this), 'user_id',
+        'id',
         additionalFields: const [
           'id',
           'created_at',
@@ -291,6 +297,10 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
   final RoleUserQueryValues values = RoleUserQueryValues();
 
   RoleUserQueryWhere _where;
+
+  RoleQuery _role;
+
+  UserQuery _user;
 
   @override
   get casts {
@@ -334,6 +344,14 @@ class RoleUserQuery extends Query<RoleUser, RoleUserQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  RoleQuery get role {
+    return _role;
+  }
+
+  UserQuery get user {
+    return _user;
   }
 }
 
@@ -379,11 +397,14 @@ class RoleUserQueryValues extends MapQueryValues {
 }
 
 class RoleQuery extends Query<Role, RoleQueryWhere> {
-  RoleQuery({Set<String> trampoline}) {
+  RoleQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = RoleQueryWhere(this);
-    leftJoin(RoleUserQuery(trampoline: trampoline), 'id', 'role_id',
+    leftJoin(
+        '(SELECT role_users.role_id, users.id, users.created_at, users.updated_at, users.username, users.password, users.email FROM users LEFT JOIN role_users ON role_users.user_id=users.id)',
+        'id',
+        'role_id',
         additionalFields: const [
           'id',
           'created_at',

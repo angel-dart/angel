@@ -28,7 +28,7 @@ class HasCarMigration extends Migration {
 // **************************************************************************
 
 class HasCarQuery extends Query<HasCar, HasCarQueryWhere> {
-  HasCarQuery({Set<String> trampoline}) {
+  HasCarQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = HasCarQueryWhere(this);

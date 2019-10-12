@@ -31,7 +31,7 @@ class CarMigration extends Migration {
 // **************************************************************************
 
 class CarQuery extends Query<Car, CarQueryWhere> {
-  CarQuery({Set<String> trampoline}) {
+  CarQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = CarQueryWhere(this);

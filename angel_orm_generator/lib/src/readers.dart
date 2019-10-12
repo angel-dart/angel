@@ -5,7 +5,7 @@ import 'package:angel_orm/angel_orm.dart';
 import 'package:source_gen/source_gen.dart';
 import 'orm_build_context.dart';
 
-const TypeChecker columnTypeChecker = const TypeChecker.fromRuntime(Column);
+const TypeChecker columnTypeChecker = TypeChecker.fromRuntime(Column);
 
 Orm reviveORMAnnotation(ConstantReader reader) {
   return Orm(
@@ -34,6 +34,7 @@ class RelationshipReader {
   final DartType through;
   final OrmBuildContext foreign;
   final OrmBuildContext throughContext;
+  final JoinType joinType;
 
   const RelationshipReader(this.type,
       {this.localKey,
@@ -42,10 +43,28 @@ class RelationshipReader {
       this.cascadeOnDelete,
       this.through,
       this.foreign,
-      this.throughContext});
+      this.throughContext,
+      this.joinType});
 
   bool get isManyToMany =>
       type == RelationshipType.hasMany && throughContext != null;
+
+  String get joinTypeString {
+    switch (joinType ?? JoinType.left) {
+      case JoinType.inner:
+        return 'join';
+      case JoinType.left:
+        return 'leftJoin';
+      case JoinType.right:
+        return 'rightJoin';
+      case JoinType.full:
+        return 'fullOuterJoin';
+      case JoinType.self:
+        return 'selfJoin';
+      default:
+        return 'join';
+    }
+  }
 
   FieldElement findLocalField(OrmBuildContext ctx) {
     return ctx.effectiveFields.firstWhere(

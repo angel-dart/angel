@@ -1,3 +1,5 @@
+import 'annotations.dart';
+
 abstract class RelationshipType {
   static const int hasMany = 0;
   static const int hasOne = 1;
@@ -11,12 +13,14 @@ class Relationship {
   final String foreignKey;
   final String foreignTable;
   final bool cascadeOnDelete;
+  final JoinType joinType;
 
   const Relationship(this.type,
       {this.localKey,
       this.foreignKey,
       this.foreignTable,
-      this.cascadeOnDelete});
+      this.cascadeOnDelete,
+      this.joinType});
 }
 
 class HasMany extends Relationship {
@@ -24,12 +28,14 @@ class HasMany extends Relationship {
       {String localKey,
       String foreignKey,
       String foreignTable,
-      bool cascadeOnDelete = false})
+      bool cascadeOnDelete = false,
+      JoinType joinType})
       : super(RelationshipType.hasMany,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
-            cascadeOnDelete: cascadeOnDelete == true);
+            cascadeOnDelete: cascadeOnDelete == true,
+            joinType: joinType);
 }
 
 const HasMany hasMany = HasMany();
@@ -39,22 +45,29 @@ class HasOne extends Relationship {
       {String localKey,
       String foreignKey,
       String foreignTable,
-      bool cascadeOnDelete = false})
+      bool cascadeOnDelete = false,
+      JoinType joinType})
       : super(RelationshipType.hasOne,
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
-            cascadeOnDelete: cascadeOnDelete == true);
+            cascadeOnDelete: cascadeOnDelete == true,
+            joinType: joinType);
 }
 
 const HasOne hasOne = HasOne();
 
 class BelongsTo extends Relationship {
-  const BelongsTo({String localKey, String foreignKey, String foreignTable})
+  const BelongsTo(
+      {String localKey,
+      String foreignKey,
+      String foreignTable,
+      JoinType joinType})
       : super(RelationshipType.belongsTo,
             localKey: localKey,
             foreignKey: foreignKey,
-            foreignTable: foreignTable);
+            foreignTable: foreignTable,
+            joinType: joinType);
 }
 
 const BelongsTo belongsTo = BelongsTo();
@@ -66,11 +79,13 @@ class ManyToMany extends Relationship {
       {String localKey,
       String foreignKey,
       String foreignTable,
-      bool cascadeOnDelete = false})
+      bool cascadeOnDelete = false,
+      JoinType joinType})
       : super(
             RelationshipType.hasMany, // Many-to-Many is actually just a hasMany
             localKey: localKey,
             foreignKey: foreignKey,
             foreignTable: foreignTable,
-            cascadeOnDelete: cascadeOnDelete == true);
+            cascadeOnDelete: cascadeOnDelete == true,
+            joinType: joinType);
 }

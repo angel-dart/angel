@@ -46,11 +46,12 @@ class FruitMigration extends Migration {
 // **************************************************************************
 
 class TreeQuery extends Query<Tree, TreeQueryWhere> {
-  TreeQuery({Set<String> trampoline}) {
+  TreeQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = TreeQueryWhere(this);
-    leftJoin(FruitQuery(trampoline: trampoline), 'id', 'tree_id',
+    leftJoin(_fruits = FruitQuery(trampoline: trampoline, parent: this), 'id',
+        'tree_id',
         additionalFields: const [
           'id',
           'created_at',
@@ -65,6 +66,8 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   final TreeQueryValues values = TreeQueryValues();
 
   TreeQueryWhere _where;
+
+  FruitQuery _fruits;
 
   @override
   get casts {
@@ -110,6 +113,10 @@ class TreeQuery extends Query<Tree, TreeQueryWhere> {
   @override
   deserialize(List row) {
     return parseRow(row);
+  }
+
+  FruitQuery get fruits {
+    return _fruits;
   }
 
   @override
@@ -225,7 +232,7 @@ class TreeQueryValues extends MapQueryValues {
 }
 
 class FruitQuery extends Query<Fruit, FruitQueryWhere> {
-  FruitQuery({Set<String> trampoline}) {
+  FruitQuery({Query parent, Set<String> trampoline}) : super(parent: parent) {
     trampoline ??= Set();
     trampoline.add(tableName);
     _where = FruitQueryWhere(this);

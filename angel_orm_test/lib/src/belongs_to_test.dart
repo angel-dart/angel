@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:test/test.dart';
 import 'models/book.dart';
+import 'util.dart';
 
 belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     {FutureOr<void> Function(QueryExecutor) close}) {
@@ -124,8 +125,9 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
   });
 
   test('delete stream', () async {
+    printSeparator('Delete stream test');
     var query = new BookQuery()..where.name.equals(deathlyHallows.name);
-    print(query.compile(Set()));
+    print(query.compile(Set(), preamble: 'DELETE', withFields: false));
     var books = await query.delete(executor);
     expect(books, hasLength(1));
 
@@ -145,5 +147,22 @@ belongsToTests(FutureOr<QueryExecutor> Function() createExecutor,
     expect(book.name, cloned.name);
     expect(book.author, isNotNull);
     expect(book.author.name, jkRowling.name);
+  });
+
+  group('joined subquery', () {
+    // To verify that the joined subquery is correct,
+    // we test both a query that return empty, and one
+    // that should return correctly.
+    test('returns empty on false subquery', () async {
+      printSeparator('False subquery test');
+      var query = BookQuery()..author.where.name.equals('Billie Jean');
+      expect(await query.get(executor), isEmpty);
+    });
+
+    test('returns values on true subquery', () async {
+      printSeparator('True subquery test');
+      var query = BookQuery()..author.where.name.like('%Rowling%');
+      expect(await query.get(executor), [deathlyHallows]);
+    });
   });
 }
