@@ -141,8 +141,11 @@ class Container {
   /// Shorthand for registering a factory that injects a singleton when it runs.
   ///
   /// In many cases, you might prefer this to [registerFactory].
-  void registerLazySingleton<T>(T Function(Container) f, {Type as}) {
-    registerFactory<T>(
+  /// 
+  /// Returns [f].
+  T Function(Container) registerLazySingleton<T>(T Function(Container) f,
+      {Type as}) {
+    return registerFactory<T>(
       (container) {
         var r = f(container);
         container.registerSingleton<T>(r, as: as);
@@ -152,7 +155,11 @@ class Container {
     );
   }
 
-  void registerFactory<T>(T Function(Container) f, {Type as}) {
+  /// Registers a factory. Any attempt to resolve the
+  /// type within *this* container will return the result of [f].
+  /// 
+  /// Returns [f].
+  T Function(Container) registerFactory<T>(T Function(Container) f, {Type as}) {
     as ??= T;
 
     if (_factories.containsKey(as)) {
@@ -160,9 +167,14 @@ class Container {
     }
 
     _factories[as] = f;
+    return f;
   }
 
-  void registerSingleton<T>(T object, {Type as}) {
+  /// Registers a singleton. Any attempt to resolve the
+  /// type within *this* container will return [object].
+  /// 
+  /// Returns [object].
+  T registerSingleton<T>(T object, {Type as}) {
     as ??= T == dynamic ? as : T;
 
     if (_singletons.containsKey(as ?? object.runtimeType)) {
@@ -171,6 +183,7 @@ class Container {
     }
 
     _singletons[as ?? object.runtimeType] = object;
+    return object;
   }
 
   /// Finds a named singleton.
@@ -194,11 +207,12 @@ class Container {
   ///
   /// Note that this is not related to type-based injections, and exists as a mechanism
   /// to enable injecting multiple instances of a type within the same container hierarchy.
-  void registerNamedSingleton<T>(String name, T object) {
+  T registerNamedSingleton<T>(String name, T object) {
     if (_namedSingletons.containsKey(name)) {
       throw StateError('This container already has a singleton named "$name".');
     }
 
     _namedSingletons[name] = object;
+    return object;
   }
 }
