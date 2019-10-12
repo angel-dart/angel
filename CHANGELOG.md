@@ -6,6 +6,10 @@
 * Default to using `ThrowingReflector`, instead of `EmptyReflector`. This will give a more descriptive
 error when trying to use controllers, etc. without reflection enabled.
 
+# 2.0.4+1
+* Run `Controller.configureRoutes` before mounting `@Expose` routes.
+* Make `Controller.configureServer` always return a `Future`.
+
 # 2.0.4
 * Prepare for Dart SDK change to `Stream<List<int>>` that are now
   `Stream<Uint8List>`.

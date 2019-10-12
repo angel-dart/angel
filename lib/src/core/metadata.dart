@@ -28,7 +28,21 @@ class NoExpose {
 
 const NoExpose noExpose = NoExpose();
 
-/// Exposes a [Controller] or method to the Internet.
+/// Exposes a [Controller] or a [Controller] method to the Internet.
+/// Example:
+///
+/// ```dart
+/// @Expose('/elements')
+/// class ElementController extends Controller {
+///
+///   @Expose('/')
+///   List<Element> getList() => someComputationHere();
+///
+///   @Expose('/int:elementId')
+///   getElement(int elementId) => someOtherComputation();
+///
+/// }
+/// ```
 class Expose {
   final String method;
   final String path;

@@ -27,7 +27,7 @@ class Controller {
 
   /// Applies routes, DI, and other configuration to an [app].
   @mustCallSuper
-  FutureOr<void> configureServer(Angel app) {
+  Future<void> configureServer(Angel app) async {
     _app = app;
 
     if (injectSingleton != false) {
@@ -36,13 +36,13 @@ class Controller {
       }
     }
 
-    var name = applyRoutes(app, app.container.reflector);
+    var name = await applyRoutes(app, app.container.reflector);
     app.controllers[name] = this;
     return null;
   }
 
   /// Applies the routes from this [Controller] to some [router].
-  String applyRoutes(Router router, Reflector reflector) {
+  Future<String> applyRoutes(Router router, Reflector reflector) async {
     // Load global expose decl
     var classMirror = reflector.reflectClass(this.runtimeType);
     Expose exposeDecl = findExpose(reflector);
@@ -62,8 +62,8 @@ class Controller {
       ..addAll(middleware);
     final routeBuilder =
         _routeBuilder(reflector, instanceMirror, routable, handlers);
+    await configureRoutes(routable);
     classMirror.declarations.forEach(routeBuilder);
-    configureRoutes(routable);
 
     // Return the name.
     return exposeDecl.as?.isNotEmpty == true ? exposeDecl.as : typeMirror.name;
@@ -178,8 +178,16 @@ class Controller {
     };
   }
 
-  /// Used to add additional routes to the router from within a [Controller].
-  void configureRoutes(Routable routable) {}
+  /// Used to add additional routes or middlewares to the router from within
+  /// a [Controller].
+  ///
+  /// ```dart
+  /// @override
+  /// FutureOr<void> configureRoutes(Routable routable) {
+  ///   routable.all('*', myMiddleware);
+  /// }
+  /// ```
+  FutureOr<void> configureRoutes(Routable routable) {}
 
   static final RegExp _methods = RegExp(r'^(get|post|patch|delete)');
   static final RegExp _multiScore = RegExp(r'__+');
