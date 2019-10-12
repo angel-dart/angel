@@ -2,10 +2,11 @@ import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 
 main() async {
   // Logging set up/boilerplate
-  Logger.root.onRecord.listen(print);
+  Logger.root.onRecord.listen(prettyLog);
 
   // Create our server.
   var app = Angel(

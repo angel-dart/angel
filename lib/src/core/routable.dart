@@ -98,10 +98,13 @@ class Routable extends Router<RequestHandler> {
     middleware ??= [];
     final handlers = <RequestHandler>[];
     // Merge @Middleware declaration, if any
-    Middleware middlewareDeclaration =
-        getAnnotation<Middleware>(handler, _container?.reflector);
-    if (middlewareDeclaration != null) {
-      handlers.addAll(middlewareDeclaration.handlers);
+    var reflector = _container?.reflector;
+    if (reflector != null && reflector is! ThrowingReflector) {
+      Middleware middlewareDeclaration =
+          getAnnotation<Middleware>(handler, _container?.reflector);
+      if (middlewareDeclaration != null) {
+        handlers.addAll(middlewareDeclaration.handlers);
+      }
     }
 
     final handlerSequence = <RequestHandler>[];
