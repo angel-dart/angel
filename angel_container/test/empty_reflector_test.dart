@@ -32,8 +32,8 @@ void main() {
       expect(mirror.constructors, isEmpty);
     });
 
-    test('reflectedType returns dynamic', () {
-      expect(mirror.reflectedType, dynamic);
+    test('reflectedType returns Object', () {
+      expect(mirror.reflectedType, Object);
     });
 
     test('cannot call newInstance', () {
@@ -56,8 +56,8 @@ void main() {
       expect(mirror.typeParameters, isEmpty);
     });
 
-    test('reflectedType returns dynamic', () {
-      expect(mirror.reflectedType, dynamic);
+    test('reflectedType returns Object', () {
+      expect(mirror.reflectedType, Object);
     });
 
     test('cannot call newInstance', () {
