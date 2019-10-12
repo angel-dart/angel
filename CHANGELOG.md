@@ -3,6 +3,8 @@
 * Add `allowHttp1` to `AngelHttp2` constructors. https://github.com/angel-dart/angel/issues/108
 * Add `deserializeBody` and `decodeBody` to `RequestContext`. https://github.com/angel-dart/angel/issues/109
 * Add `HostnameRouter`, which allows for routing based on hostname. https://github.com/angel-dart/angel/issues/110
+* Default to using `ThrowingReflector`, instead of `EmptyReflector`. This will give a more descriptive
+error when trying to use controllers, etc. without reflection enabled.
 
 # 2.0.4
 * Prepare for Dart SDK change to `Stream<List<int>>` that are now

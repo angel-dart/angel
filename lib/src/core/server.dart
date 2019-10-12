@@ -355,21 +355,28 @@ class Angel extends Routable {
     return super.use(path, service)..app = this;
   }
 
+  static const String _reflectionErrorMessage =
+      ThrowingReflector.defaultErrorMessage + ' ' + _reflectionInfo;
+
+  static const String _reflectionInfo =
+      'Features like controllers, constructor dependency injection, and `ioc` require reflection, '
+      'and will not work without it.\n\n'
+      'For more, see the documentation:\n'
+      'https://docs.angel-dart.dev/guides/dependency-injection#enabling-dart-mirrors-or-other-reflection';
+
   Angel(
-      {Reflector reflector = const EmptyReflector(),
+      {Reflector reflector =
+          const ThrowingReflector(errorMessage: _reflectionErrorMessage),
       this.environment = angelEnv,
       this.logger,
       this.allowMethodOverrides = true,
       this.serializer,
       this.viewGenerator})
       : super(reflector) {
-    if (reflector == const EmptyReflector()) {
+    if (reflector is EmptyReflector || reflector is ThrowingReflector) {
       var msg =
-          'No `reflector` was passed to the Angel constructor, so reflection will not be available.\n'
-          'Features like controllers, constructor dependency injection, and `ioc` require reflection, '
-          'and will not work without it.\n\n'
-          'For more, see the documentation:\n'
-          'https://docs.angel-dart.dev/guides/dependency-injection#enabling-dart-mirrors-or-other-reflection';
+          'No `reflector` was passed to the Angel constructor, so reflection will not be available.\n' +
+              _reflectionInfo;
       logger?.warning(msg);
     }
 
