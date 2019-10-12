@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:logging/logging.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 
 Future<void> apiConfigurer(Angel app) async {
   app.get('/', (req, res) => 'Hello, API!');
@@ -16,7 +17,8 @@ Future<void> frontendConfigurer(Angel app) async {
 
 main() async {
   // Logging set up/boilerplate
-  Logger.root.onRecord.listen(print);
+  hierarchicalLoggingEnabled = true;
+  Logger.root.onRecord.listen(prettyLog);
 
   var app = Angel(logger: Logger('angel'));
   var http = AngelHttp(app);
@@ -39,5 +41,7 @@ main() async {
 
   await http.startServer('127.0.0.1', 3000);
   print('Listening at ${http.uri}');
-  print('(See what happens when you visit http://localhost:3000 instead)');
+  print('See what happens when you visit http://localhost:3000 instead '
+      'of http://127.0.0.1:3000. Then, try '
+      'http://api.localhost:3000.');
 }
