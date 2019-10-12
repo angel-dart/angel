@@ -1,3 +1,7 @@
+# 1.1.0
+* `pedantic` lints.
+* Add `ThrowingReflector`, which throws on all operations.
+
 # 1.0.4
 * Slight patch to prevent annoying segfault.
 
