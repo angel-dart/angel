@@ -7,6 +7,9 @@ abstract class QueryBase<T> {
   /// Casts to perform when querying the database.
   Map<String, String> get casts => {};
 
+  /// `AS` aliases to inject into the query, if any.
+  Map<String, String> aliases = {};
+
   /// Values to insert into a prepared statement.
   final Map<String, dynamic> substitutionValues = {};
 
@@ -21,7 +24,12 @@ abstract class QueryBase<T> {
   /// A String of all [fields], joined by a comma (`,`).
   String get fieldSet => fields.map((k) {
         var cast = casts[k];
-        return cast == null ? k : 'CAST ($k AS $cast)';
+        if (!aliases.containsKey(k)) {
+          return cast == null ? k : 'CAST ($k AS $cast)';
+        } else {
+          var inner =  cast == null ? k : '(CAST ($k AS $cast))';
+          return '$inner AS ${aliases[k]}';
+        }
       }).join(', ');
 
   String compile(Set<String> trampoline,

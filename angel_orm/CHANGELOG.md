@@ -1,3 +1,7 @@
+# 2.1.0-beta.1
+* Calls to `leftJoin`, etc. alias all fields in a child query, to prevent
+`ambiguous column a0.id` errors.
+
 # 2.1.0-beta
 * Split the formerly 600+ line `src/query.dart` up into
 separate files.

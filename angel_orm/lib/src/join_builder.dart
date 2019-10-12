@@ -6,6 +6,7 @@ class JoinBuilder {
   final JoinType type;
   final Query from;
   final String key, value, op, alias;
+  final bool aliasAllFields;
 
   /// A callback to produces the expression to join against, i.e.
   /// a table name, or the result of compiling a query.
@@ -13,34 +14,37 @@ class JoinBuilder {
   final List<String> additionalFields;
 
   JoinBuilder(this.type, this.from, this.to, this.key, this.value,
-      {this.op = '=', this.alias, this.additionalFields = const []}) {
+      {this.op = '=',
+      this.alias,
+      this.additionalFields = const [],
+      this.aliasAllFields = false}) {
     assert(to != null,
         'computation of this join threw an error, and returned null.');
   }
 
   String get fieldName {
-    var right = '$to.$value';
-    if (alias != null) right = '$alias.$value';
+    var v = value;
+    if (aliasAllFields) {
+      v = '${alias}_$v';
+    }
+    var right = '${from.tableName}.$v';
+    if (alias != null) right = '$alias.$v';
     return right;
   }
 
   String nameFor(String name) {
-    var right = '$to.$name';
+    if (aliasAllFields) name = '${alias}_$name';
+    var right = '${from.tableName}.$name';
     if (alias != null) right = '$alias.$name';
     return right;
   }
 
   String compile(Set<String> trampoline) {
     var compiledTo = to();
-    if (compiledTo == null) {
-      print(
-          'NULLLLL $to; from $from; key: $key, value: $value, addl: $additionalFields');
-    }
     if (compiledTo == null) return null;
     var b = StringBuffer();
     var left = '${from.tableName}.$key';
     var right = fieldName;
-
     switch (type) {
       case JoinType.inner:
         b.write(' INNER JOIN');

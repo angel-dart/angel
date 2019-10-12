@@ -151,10 +151,17 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
 
     var to = _compileJoin(tableName, trampoline);
     if (to != null) {
+      var alias = _joinAlias(trampoline);
+      if (tableName is Query) {
+        for (var field in tableName.fields) {
+          tableName.aliases[field] = '${alias}_$field';
+        }
+      }
       _joins.add(JoinBuilder(type, this, to, localKey, foreignKey,
           op: op,
-          alias: _joinAlias(trampoline),
-          additionalFields: additionalFields));
+          alias: alias,
+          additionalFields: additionalFields,
+          aliasAllFields: tableName is Query));
     }
   }
 
@@ -228,6 +235,13 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
         var ss = includeTableName ? '$tableName.$s' : s;
         var cast = casts[s];
         if (cast != null) ss = 'CAST ($ss AS $cast)';
+        if (aliases.containsKey(s)) {
+          if (cast != null) {
+            ss = '($ss) AS ${aliases[s]}';
+          } else {
+            ss = '$ss AS ${aliases[s]}';
+          }
+        }
         return ss;
       }));
       _joins.forEach((j) {
