@@ -61,6 +61,14 @@ void main() {
     expect(req.bodyAsList, ['foo', 'bar']);
   });
 
+  test('deserializeBody', () async {
+    var req = await request(
+        asJson: true, bodyFields: {'text': 'Hey', 'complete': false});
+    var todo = await req.deserializeBody(Todo.fromMap);
+    expect(todo.text, 'Hey');
+    expect(todo.completed, false);
+  });
+
   test('throws when body has not been parsed', () async {
     var req = await request(parse: false);
     expect(() => req.bodyAsObject, throwsStateError);
@@ -96,4 +104,14 @@ void main() {
             ],
         throwsStateError);
   });
+}
+
+class Todo {
+  String text;
+  bool completed;
+
+  Todo({this.text, this.completed});
+
+  static Todo fromMap(Map m) =>
+      Todo(text: m['text'] as String, completed: m['complete'] as bool);
 }
