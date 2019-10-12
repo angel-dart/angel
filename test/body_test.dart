@@ -69,6 +69,14 @@ void main() {
     expect(todo.completed, false);
   });
 
+  test('decodeBody', () async {
+    var req = await request(
+        asJson: true, bodyFields: {'text': 'Hey', 'complete': false});
+    var todo = await req.decodeBody(TodoCodec());
+    expect(todo.text, 'Hey');
+    expect(todo.completed, false);
+  });
+
   test('throws when body has not been parsed', () async {
     var req = await request(parse: false);
     expect(() => req.bodyAsObject, throwsStateError);
@@ -114,4 +122,17 @@ class Todo {
 
   static Todo fromMap(Map m) =>
       Todo(text: m['text'] as String, completed: m['complete'] as bool);
+}
+
+class TodoCodec extends Codec<Todo, Map> {
+  @override
+  Converter<Map, Todo> get decoder => TodoDecoder();
+
+  @override
+  Converter<Todo, Map> get encoder => throw UnsupportedError('no encoder');
+}
+
+class TodoDecoder extends Converter<Map, Todo> {
+  @override
+  Todo convert(Map input) => Todo.fromMap(input);
 }
