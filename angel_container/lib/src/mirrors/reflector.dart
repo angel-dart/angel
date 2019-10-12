@@ -79,9 +79,7 @@ class _ReflectedTypeMirror extends ReflectedType {
   _ReflectedTypeMirror(this.mirror)
       : super(
           dart.MirrorSystem.getName(mirror.simpleName),
-          mirror.typeVariables
-              .map((m) => _ReflectedTypeParameter(m))
-              .toList(),
+          mirror.typeVariables.map((m) => _ReflectedTypeParameter(m)).toList(),
           mirror.reflectedType,
         );
 
@@ -111,9 +109,7 @@ class _ReflectedClassMirror extends ReflectedClass {
   _ReflectedClassMirror(this.mirror)
       : super(
           dart.MirrorSystem.getName(mirror.simpleName),
-          mirror.typeVariables
-              .map((m) => _ReflectedTypeParameter(m))
-              .toList(),
+          mirror.typeVariables.map((m) => _ReflectedTypeParameter(m)).toList(),
           [],
           [],
           _declarationsOf(mirror),
@@ -141,8 +137,8 @@ class _ReflectedClassMirror extends ReflectedClass {
       var value = mirror.declarations[key];
 
       if (value is dart.MethodMirror && !value.isConstructor) {
-        out.add(_ReflectedDeclarationMirror(
-            dart.MirrorSystem.getName(key), value));
+        out.add(
+            _ReflectedDeclarationMirror(dart.MirrorSystem.getName(key), value));
       }
     }
 
@@ -245,9 +241,7 @@ class _ReflectedMethodMirror extends ReflectedFunction {
           'This object was reflected without a ClosureMirror, and therefore cannot be directly invoked.');
     }
 
-    return _ReflectedInstanceMirror(closureMirror.invoke(
-        invocation.memberName,
-        invocation.positionalArguments,
-        invocation.namedArguments));
+    return _ReflectedInstanceMirror(closureMirror.invoke(invocation.memberName,
+        invocation.positionalArguments, invocation.namedArguments));
   }
 }

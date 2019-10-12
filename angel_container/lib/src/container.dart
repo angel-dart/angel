@@ -141,7 +141,7 @@ class Container {
   /// Shorthand for registering a factory that injects a singleton when it runs.
   ///
   /// In many cases, you might prefer this to [registerFactory].
-  /// 
+  ///
   /// Returns [f].
   T Function(Container) registerLazySingleton<T>(T Function(Container) f,
       {Type as}) {
@@ -157,7 +157,7 @@ class Container {
 
   /// Registers a factory. Any attempt to resolve the
   /// type within *this* container will return the result of [f].
-  /// 
+  ///
   /// Returns [f].
   T Function(Container) registerFactory<T>(T Function(Container) f, {Type as}) {
     as ??= T;
@@ -172,7 +172,7 @@ class Container {
 
   /// Registers a singleton. Any attempt to resolve the
   /// type within *this* container will return [object].
-  /// 
+  ///
   /// Returns [object].
   T registerSingleton<T>(T object, {Type as}) {
     as ??= T == dynamic ? as : T;
