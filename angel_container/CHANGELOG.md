@@ -1,6 +1,8 @@
 # 1.1.0
 * `pedantic` lints.
 * Add `ThrowingReflector`, which throws on all operations.
+* `EmptyReflector` uses `Object` instead of `dynamic` as its returned
+type, as the `dynamic` type is (apparently?) no longer a valid constant value.
 
 # 1.0.4
 * Slight patch to prevent annoying segfault.
