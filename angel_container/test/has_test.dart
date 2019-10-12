@@ -5,11 +5,11 @@ void main() {
   Container container;
 
   setUp(() {
-    container = new Container(const EmptyReflector())
-      ..registerSingleton<Song>(new Song(title: 'I Wish'))
+    container = Container(const EmptyReflector())
+      ..registerSingleton<Song>(Song(title: 'I Wish'))
       ..registerNamedSingleton('foo', 1)
       ..registerFactory<Artist>((container) {
-        return new Artist(
+        return Artist(
           name: 'Stevie Wonder',
           song: container.make<Song>(),
         );

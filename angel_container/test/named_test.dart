@@ -5,8 +5,8 @@ void main() {
   Container container;
 
   setUp(() {
-    container = new Container(const EmptyReflector());
-    container.registerNamedSingleton('foo', new Foo(bar: 'baz'));
+    container = Container(const EmptyReflector());
+    container.registerNamedSingleton('foo', Foo(bar: 'baz'));
   });
 
   test('fetch by name', () {
@@ -14,7 +14,7 @@ void main() {
   });
 
   test('cannot redefine', () {
-    expect(() => container.registerNamedSingleton('foo', new Foo(bar: 'quux')),
+    expect(() => container.registerNamedSingleton('foo', Foo(bar: 'quux')),
         throwsStateError);
   });
 

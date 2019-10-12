@@ -8,7 +8,7 @@ final Map<Symbol, String> _symbolNames = <Symbol, String>{};
 /// Use this in contexts where you know you won't need any reflective capabilities.
 class EmptyReflector extends Reflector {
   /// A [RegExp] that can be used to extract the name of a symbol without reflection.
-  static final RegExp symbolRegex = new RegExp(r'Symbol\("([^"]+)"\)');
+  static final RegExp symbolRegex = RegExp(r'Symbol\("([^"]+)"\)');
 
   const EmptyReflector();
 
@@ -47,13 +47,13 @@ class _EmptyReflectedClass extends ReflectedClass {
             const <ReflectedInstance>[],
             const <ReflectedFunction>[],
             const <ReflectedDeclaration>[],
-            dynamic);
+            Object);
 
   @override
   ReflectedInstance newInstance(
       String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
-    throw new UnsupportedError(
+    throw UnsupportedError(
         'Classes reflected via an EmptyReflector cannot be instantiated.');
   }
 
@@ -70,13 +70,13 @@ class _EmptyReflectedClass extends ReflectedClass {
 
 class _EmptyReflectedType extends ReflectedType {
   const _EmptyReflectedType()
-      : super('(empty)', const <ReflectedTypeParameter>[], dynamic);
+      : super('(empty)', const <ReflectedTypeParameter>[], Object);
 
   @override
   ReflectedInstance newInstance(
       String constructorName, List positionalArguments,
       [Map<String, dynamic> namedArguments, List<Type> typeArguments]) {
-    throw new UnsupportedError(
+    throw UnsupportedError(
         'Types reflected via an EmptyReflector cannot be instantiated.');
   }
 
@@ -102,7 +102,7 @@ class _EmptyReflectedInstance extends ReflectedInstance {
 
   @override
   ReflectedInstance getField(String name) {
-    throw new UnsupportedError(
+    throw UnsupportedError(
         'Instances reflected via an EmptyReflector cannot call getField().');
   }
 }
@@ -120,7 +120,7 @@ class _EmptyReflectedFunction extends ReflectedFunction {
 
   @override
   ReflectedInstance invoke(Invocation invocation) {
-    throw new UnsupportedError(
+    throw UnsupportedError(
         'Instances reflected via an EmptyReflector cannot call invoke().');
   }
 }

@@ -5,7 +5,7 @@ import 'package:angel_container/mirrors.dart';
 
 Future<void> main() async {
   // Create a container instance.
-  var container = new Container(const MirrorsReflector());
+  var container = Container(const MirrorsReflector());
 
   // Register a singleton.
   container.registerSingleton<Engine>(Engine(40));

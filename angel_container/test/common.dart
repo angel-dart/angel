@@ -6,11 +6,11 @@ import 'package:test/test.dart';
 void returnVoidFromAFunction(int x) {}
 
 void testReflector(Reflector reflector) {
-  var blaziken = new Pokemon('Blaziken', PokemonType.fire);
+  var blaziken = Pokemon('Blaziken', PokemonType.fire);
   Container container;
 
   setUp(() {
-    container = new Container(reflector);
+    container = Container(reflector);
     container.registerSingleton(blaziken);
     container.registerFactory<Future<int>>((_) async => 46);
   });
@@ -108,7 +108,7 @@ class Pokemon {
   Pokemon(this.name, this.type);
 
   factory Pokemon.changeName(Pokemon other, String name) {
-    return new Pokemon(name, other.type);
+    return Pokemon(name, other.type);
   }
 
   @override

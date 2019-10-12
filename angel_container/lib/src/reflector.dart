@@ -15,7 +15,7 @@ abstract class Reflector {
   ReflectedInstance reflectInstance(Object object);
 
   ReflectedType reflectFutureOf(Type type) {
-    throw new UnsupportedError('`reflectFutureOf` requires `dart:mirrors`.');
+    throw UnsupportedError('`reflectFutureOf` requires `dart:mirrors`.');
   }
 }
 

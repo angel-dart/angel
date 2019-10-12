@@ -3,8 +3,8 @@ import 'package:test/test.dart';
 
 void main() {
   test('returns the same instance', () {
-    var container = new Container(const EmptyReflector())
-      ..registerLazySingleton<Dummy>((_) => new Dummy('a'));
+    var container = Container(const EmptyReflector())
+      ..registerLazySingleton<Dummy>((_) => Dummy('a'));
 
     var first = container.make<Dummy>();
     expect(container.make<Dummy>(), first);

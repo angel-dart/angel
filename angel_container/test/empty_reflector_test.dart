@@ -103,13 +103,13 @@ void main() {
     });
 
     test('cannot invoke', () {
-      var invocation = new Invocation.method(#drive, []);
+      var invocation = Invocation.method(#drive, []);
       expect(() => mirror.invoke(invocation), throwsUnsupportedError);
     });
   });
 
   group('reflectInstance', () {
-    var mirror = reflector.reflectInstance(new Truck());
+    var mirror = reflector.reflectInstance(Truck());
 
     test('reflectee returns null', () {
       expect(mirror.reflectee, null);

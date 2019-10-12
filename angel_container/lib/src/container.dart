@@ -19,7 +19,7 @@ class Container {
   ///
   /// Use this to create children of a global "scope."
   Container createChild() {
-    return new Container._child(this);
+    return Container._child(this);
   }
 
   /// Determines if the container has an injection of the given type.
@@ -61,7 +61,7 @@ class Container {
   /// `Future<T>` or `T`.
   Future<T> makeAsync<T>([Type type]) {
     type ??= T;
-    Type futureType = null; //.Future<T>.value(null).runtimeType;
+    Type futureType; //.Future<T>.value(null).runtimeType;
 
     if (T == dynamic) {
       try {
@@ -78,7 +78,7 @@ class Container {
     } else if (futureType != null) {
       return make(futureType);
     } else {
-      throw new ReflectionException(
+      throw ReflectionException(
           'No injection for Future<$type> or $type was found.');
     }
   }
@@ -115,7 +115,7 @@ class Container {
 
       var constructor = reflectedType.constructors.firstWhere(
           (c) => isDefault(c.name),
-          orElse: () => throw new ReflectionException(
+          orElse: () => throw ReflectionException(
               '${reflectedType.name} has no default constructor, and therefore cannot be instantiated.'));
 
       for (var param in constructor.parameters) {
@@ -133,7 +133,7 @@ class Container {
           positional,
           named, []).reflectee as T;
     } else {
-      throw new ReflectionException(
+      throw ReflectionException(
           '$type is not a class, and therefore cannot be instantiated.');
     }
   }
@@ -156,7 +156,7 @@ class Container {
     as ??= T;
 
     if (_factories.containsKey(as)) {
-      throw new StateError('This container already has a factory for $as.');
+      throw StateError('This container already has a factory for $as.');
     }
 
     _factories[as] = f;
@@ -166,7 +166,7 @@ class Container {
     as ??= T == dynamic ? as : T;
 
     if (_singletons.containsKey(as ?? object.runtimeType)) {
-      throw new StateError(
+      throw StateError(
           'This container already has a singleton for ${as ?? object.runtimeType}.');
     }
 
@@ -185,7 +185,7 @@ class Container {
     } else if (_parent != null) {
       return _parent.findByName<T>(name);
     } else {
-      throw new StateError(
+      throw StateError(
           'This container does not have a singleton named "$name".');
     }
   }
@@ -196,8 +196,7 @@ class Container {
   /// to enable injecting multiple instances of a type within the same container hierarchy.
   void registerNamedSingleton<T>(String name, T object) {
     if (_namedSingletons.containsKey(name)) {
-      throw new StateError(
-          'This container already has a singleton named "$name".');
+      throw StateError('This container already has a singleton named "$name".');
     }
 
     _namedSingletons[name] = object;
