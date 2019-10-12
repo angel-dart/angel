@@ -10,10 +10,14 @@ import 'package:path/path.dart' as p;
 final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 final MediaType _fallbackMediaType = MediaType('application', 'octet-stream');
 
+/// A middleware class that forwards requests (reverse proxies) to an upstream server.
+///
+/// Supports WebSockets, in addition to regular HTTP requests.
 class Proxy {
   String _prefix;
 
-  final http.BaseClient httpClient;
+  /// The underlying [Client] to use.
+  final http.Client httpClient;
 
   /// If `true` (default), then the plug-in will ignore failures to connect to the proxy, and allow other handlers to run.
   final bool recoverFromDead;
@@ -25,25 +29,52 @@ class Proxy {
   final Duration timeout;
 
   Proxy(
-    this.httpClient,
-    this.baseUrl, {
+    baseUrl, {
+    http.Client httpClient,
     this.publicPath = '/',
     this.recoverFromDead = true,
     this.recoverFrom404 = true,
     this.timeout,
-  }) {
-    if (!baseUrl.hasScheme || !baseUrl.hasAuthority)
+  })  : this.baseUrl = baseUrl is Uri ? baseUrl : Uri.parse(baseUrl.toString()),
+        this.httpClient = httpClient ?? http.Client() {
+    if (!this.baseUrl.hasScheme || !this.baseUrl.hasAuthority) {
       throw ArgumentError(
           'Invalid `baseUrl`. URI must have both a scheme and authority.');
-    if (this.recoverFromDead == null)
+    }
+    if (this.recoverFromDead == null) {
       throw ArgumentError.notNull("recoverFromDead");
-    if (this.recoverFrom404 == null)
+    }
+    if (this.recoverFrom404 == null) {
       throw ArgumentError.notNull("recoverFrom404");
+    }
 
     _prefix = publicPath?.replaceAll(_straySlashes, '') ?? '';
   }
 
   void close() => httpClient.close();
+
+  /// A handler that serves the file at the given path, unless the user has requested that path.
+  ///
+  /// You can also limit this functionality to specific values of the `Accept` header, ex. `text/html`.
+  /// If [accepts] is `null`, OR at least one of the content types in [accepts] is present,
+  /// the view will be served.
+  RequestHandler pushState(String path, {Iterable accepts}) {
+    var vPath = path.replaceAll(_straySlashes, '');
+    if (_prefix?.isNotEmpty == true) vPath = '$_prefix/$vPath';
+
+    return (RequestContext req, ResponseContext res) {
+      var path = req.path.replaceAll(_straySlashes, '');
+      if (path == vPath) return Future<bool>.value(true);
+
+      if (accepts?.isNotEmpty == true) {
+        if (!accepts.any((x) => req.accepts(x, strict: true))) {
+          return Future<bool>.value(true);
+        }
+      }
+
+      return servePath(vPath, req, res);
+    };
+  }
 
   /// Handles an incoming HTTP request.
   Future<bool> handleRequest(RequestContext req, ResponseContext res) {

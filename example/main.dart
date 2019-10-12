@@ -2,20 +2,17 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_proxy/angel_proxy.dart';
-import 'package:http/io_client.dart' as http;
 import 'package:logging/logging.dart';
 
 final Duration timeout = Duration(seconds: 5);
 
 main() async {
   var app = Angel();
-  var client = http.IOClient();
 
   // Forward any /api requests to pub.
   // By default, if the host throws a 404, the request will fall through to the next handler.
   var pubProxy = Proxy(
-    client,
-    Uri.parse('https://pub.dartlang.org'),
+    'https://pub.dartlang.org',
     publicPath: '/pub',
     timeout: timeout,
   );
@@ -25,8 +22,7 @@ main() async {
   //
   // Play around with this at http://www.websocket.org/echo.html.
   var echoProxy = Proxy(
-    client,
-    Uri.parse('http://echo.websocket.org'),
+    'http://echo.websocket.org',
     publicPath: '/echo',
     timeout: timeout,
   );
@@ -40,8 +36,7 @@ main() async {
 
   // Anything else should fall through to dartlang.org.
   var dartlangProxy = Proxy(
-    client,
-    Uri.parse('https://dartlang.org'),
+    'https://dartlang.org',
     timeout: timeout,
     recoverFrom404: false,
   );

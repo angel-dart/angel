@@ -4,7 +4,6 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_proxy/angel_proxy.dart';
 import 'package:angel_test/angel_test.dart';
-import 'package:http/io_client.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:mock_request/mock_request.dart';
 import 'package:test/test.dart';
@@ -37,10 +36,7 @@ main() {
     });
     app.get('/bar', (req, res) => res.write('normal'));
 
-    var httpClient = http.IOClient();
-
     layer = Proxy(
-      httpClient,
       Uri(scheme: 'http', host: server.address.address, port: server.port),
       publicPath: '/proxy',
     );

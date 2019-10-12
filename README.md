@@ -10,12 +10,9 @@ import 'package:angel_proxy/angel_proxy.dart';
 import 'package:http/http.dart' as http;
 
 main() async {
-  // ...
-  
-  var client = http.Client();
-  
-  // Forward requests instead of serving statically
-  var proxy1 = Proxy(client, Uri.parse('http://localhost:3000'));
+  // Forward requests instead of serving statically.
+  // You can also pass a URI, instead of a string.
+  var proxy1 = Proxy('http://localhost:3000');
   
   // handle all methods (GET, POST, ...)
   app.fallback(proxy.handleRequest);
@@ -24,12 +21,12 @@ main() async {
 
 You can also restrict the proxy to serving only from a specific root:
 ```dart
-Proxy(client, baseUrl, publicPath: '/remote');
+Proxy(baseUrl, publicPath: '/remote');
 ```
 
 Also, you can map requests to a root path on the remote server:
 ```dart
-Proxy(client, baseUrl.replace(path: '/path'));
+Proxy(baseUrl.replace(path: '/path'));
 ```
 
 Request bodies will be forwarded as well, if they are not empty. This allows things like POST requests to function.

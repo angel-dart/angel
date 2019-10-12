@@ -17,12 +17,10 @@ main() {
   setUp(() async {
     app = Angel();
     var appHttp = AngelHttp(app);
-    var httpClient = http.IOClient();
 
     testServer = await startTestServer();
 
     var proxy1 = Proxy(
-      httpClient,
       Uri(
           scheme: 'http',
           host: testServer.address.address,
@@ -30,7 +28,7 @@ main() {
       publicPath: '/proxy',
     );
 
-    var proxy2 = Proxy(httpClient, proxy1.baseUrl.replace(path: '/foo'));
+    var proxy2 = Proxy(proxy1.baseUrl.replace(path: '/foo'));
     print('Proxy 1 on: ${proxy1.baseUrl}');
     print('Proxy 2 on: ${proxy2.baseUrl}');
 
@@ -40,10 +38,6 @@ main() {
     app.fallback((req, res) {
       print('Intercepting empty from ${req.uri}');
       res.write('intercept empty');
-    });
-
-    app.shutdownHooks.add((_) async {
-      httpClient.close();
     });
 
     app.logger = Logger('angel');

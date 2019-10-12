@@ -1,3 +1,9 @@
+# 2.2.0
+* Use `http.Client` instead of `http.BaseClient`, and make it an
+optional parameter.
+* Allow `baseUrl` to accept `Uri` or `String`.
+* Add `Proxy.pushState`.
+
 # 2.1.2
 * Apply lints.
 
