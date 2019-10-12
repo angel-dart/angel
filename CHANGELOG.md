@@ -1,4 +1,4 @@
-# 2.0.5
+# 2.0.5-beta
 * Make `@Expose()` in `Controller` optional. https://github.com/angel-dart/angel/issues/107
 * Add `allowHttp1` to `AngelHttp2` constructors. https://github.com/angel-dart/angel/issues/108
 * Add `deserializeBody` and `decodeBody` to `RequestContext`. https://github.com/angel-dart/angel/issues/109
