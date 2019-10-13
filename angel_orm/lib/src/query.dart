@@ -42,7 +42,8 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   /// Preprends the [tableName] to the [String], [s].
   String adornWithTableName(String s) {
     if (expressions.containsKey(s)) {
-      return '(${expressions[s]} AS $s)';
+      return '${expressions[s]} AS $s';
+      // return '(${expressions[s]} AS $s)';
     } else {
       return '$tableName.$s';
     }
@@ -256,13 +257,15 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
             ss = '$ss AS ${aliases[s]}';
           }
           if (expressions.containsKey(s)) {
-            ss = '($ss)';
+            // ss = '($ss)';
           }
         } else if (expressions.containsKey(s)) {
           if (cast != null) {
-            ss = '(($ss) AS $s)';
+            ss = '($ss) AS $s';
+            // ss = '(($ss) AS $s)';
           } else {
-            ss = '($ss AS $s)';
+            ss = '$ss AS $s';
+            // ss = '($ss AS $s)';
           }
         }
         return ss;

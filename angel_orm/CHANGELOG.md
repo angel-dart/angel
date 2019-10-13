@@ -1,3 +1,6 @@
+# 2.1.0-beta.3
+* Remove parentheses from `AS` when renaming raw `expressions`.
+
 # 2.1.0-beta.2
 * Add `expressions` to `Query`, to support custom SQL expressions that are
 read as normal fields.
