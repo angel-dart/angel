@@ -27,7 +27,7 @@ abstract class QueryBase<T> {
         if (!aliases.containsKey(k)) {
           return cast == null ? k : 'CAST ($k AS $cast)';
         } else {
-          var inner =  cast == null ? k : '(CAST ($k AS $cast))';
+          var inner = cast == null ? k : '(CAST ($k AS $cast))';
           return '$inner AS ${aliases[k]}';
         }
       }).join(', ');
