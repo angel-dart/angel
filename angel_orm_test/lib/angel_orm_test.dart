@@ -1,4 +1,5 @@
 export 'src/belongs_to_test.dart';
+export 'src/custom_expr_test.dart';
 export 'src/edge_case_test.dart';
 export 'src/enum_and_nested_test.dart';
 export 'src/has_many_test.dart';

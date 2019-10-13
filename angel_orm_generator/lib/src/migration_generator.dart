@@ -82,6 +82,9 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
 
             List<String> dup = [];
             ctx.columns.forEach((name, col) {
+              // Skip custom-expression columns.
+              if (col.hasExpression) return;
+
               var key = ctx.buildContext.resolveFieldName(name);
 
               if (dup.contains(key)) {

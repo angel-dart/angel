@@ -1,3 +1,7 @@
+# 2.1.0-beta.2
+* Add `expressions` to `Query`, to support custom SQL expressions that are
+read as normal fields.
+
 # 2.1.0-beta.1
 * Calls to `leftJoin`, etc. alias all fields in a child query, to prevent
 `ambiguous column a0.id` errors.

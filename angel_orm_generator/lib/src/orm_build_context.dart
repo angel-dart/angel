@@ -291,6 +291,17 @@ Future<OrmBuildContext> buildOrmContext(
       if (column?.type == null) {
         throw 'Cannot infer SQL column type for field "${ctx.buildContext.originalClassName}.${field.name}" with type "${field.type.displayName}".';
       }
+
+      // Expressions...
+      column = Column(
+        isNullable: column.isNullable,
+        length: column.length,
+        type: column.type,
+        indexType: column.indexType,
+        expression:
+            ConstantReader(columnAnnotation).peek('expression')?.stringValue,
+      );
+
       ctx.columns[field.name] = column;
 
       if (!ctx.effectiveFields.any((f) => f.name == field.name)) {
@@ -372,6 +383,14 @@ class OrmBuildContext {
   final Map<String, RelationshipReader> relations = {};
 
   OrmBuildContext(this.buildContext, this.ormAnnotation, this.tableName);
+
+  bool isNotCustomExprField(FieldElement field) {
+    var col = columns[field.name];
+    return col?.hasExpression != true;
+  }
+
+  Iterable<FieldElement> get effectiveNormalFields =>
+      effectiveFields.where(isNotCustomExprField);
 }
 
 class _ColumnType implements ColumnType {

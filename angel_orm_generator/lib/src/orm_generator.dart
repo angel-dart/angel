@@ -275,6 +275,16 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               Code('trampoline.add(tableName);'),
             ]);
 
+            // Add any manual SQL expressions.
+            ctx.columns.forEach((name, col) {
+              if (col != null && col.hasExpression) {
+                var lhs = refer('expressions').index(
+                    literalString(ctx.buildContext.resolveFieldName(name)));
+                var rhs = literalString(col.expression);
+                b.addExpression(lhs.assign(rhs));
+              }
+            });
+
             // Add a constructor that initializes _where
             b.addExpression(
               refer('_where')
@@ -499,7 +509,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           ..annotations.add(refer('override'))
           ..type = MethodType.getter
           ..body = Block((b) {
-            var references = ctx.effectiveFields.map((f) => refer(f.name));
+            var references =
+                ctx.effectiveNormalFields.map((f) => refer(f.name));
             b.addExpression(literalList(references).returned);
           });
       }));
@@ -507,7 +518,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       var initializers = <Code>[];
 
       // Add builders for each field
-      for (var field in ctx.effectiveFields) {
+      for (var field in ctx.effectiveNormalFields) {
         var name = field.name;
         var args = <Expression>[];
         DartType type;
@@ -620,7 +631,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       }));
 
       // Each field generates a getter and setter
-      for (var field in ctx.effectiveFields) {
+      for (var field in ctx.effectiveNormalFields) {
         var fType = field.type;
         var name = ctx.buildContext.resolveFieldName(field.name);
         var type = convertTypeReference(field.type);
@@ -684,7 +695,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             ..name = 'model'
             ..type = ctx.buildContext.modelClassType))
           ..body = Block((b) {
-            for (var field in ctx.effectiveFields) {
+            for (var field in ctx.effectiveNormalFields) {
               if (isSpecialId(ctx, field) || field is RelationFieldImpl) {
                 continue;
               }
@@ -692,7 +703,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   .assign(refer('model').property(field.name)));
             }
 
-            for (var field in ctx.effectiveFields) {
+            for (var field in ctx.effectiveNormalFields) {
               if (field is RelationFieldImpl) {
                 var original = field.originalFieldName;
                 var prop = refer('model').property(original);

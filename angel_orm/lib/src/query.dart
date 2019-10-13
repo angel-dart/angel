@@ -17,6 +17,10 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   // the parent's context.
   final Query parent;
 
+  /// A map of field names to explicit SQL expressions. The expressions will be aliased
+  /// to the given names.
+  final Map<String, String> expressions = {};
+
   String _crossJoin, _groupBy;
   int _limit, _offset;
 
@@ -36,7 +40,13 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   QueryValues get values;
 
   /// Preprends the [tableName] to the [String], [s].
-  String adornWithTableName(String s) => '$tableName.$s';
+  String adornWithTableName(String s) {
+    if (expressions.containsKey(s)) {
+      return '(${expressions[s]} AS $s)';
+    } else {
+      return '$tableName.$s';
+    }
+  }
 
   /// Returns a unique version of [name], which will not produce a collision within
   /// the context of this [query].
@@ -233,6 +243,10 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     } else {
       f = List<String>.from(fields.map((s) {
         var ss = includeTableName ? '$tableName.$s' : s;
+        if (expressions.containsKey(s)) {
+          // ss = '(' + expressions[s] + ')';
+          ss = expressions[s];
+        }
         var cast = casts[s];
         if (cast != null) ss = 'CAST ($ss AS $cast)';
         if (aliases.containsKey(s)) {
@@ -240,6 +254,15 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
             ss = '($ss) AS ${aliases[s]}';
           } else {
             ss = '$ss AS ${aliases[s]}';
+          }
+          if (expressions.containsKey(s)) {
+            ss = '($ss)';
+          }
+        } else if (expressions.containsKey(s)) {
+          if (cast != null) {
+            ss = '(($ss) AS $s)';
+          } else {
+            ss = '($ss AS $s)';
           }
         }
         return ss;

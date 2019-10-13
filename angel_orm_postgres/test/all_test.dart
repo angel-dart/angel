@@ -12,6 +12,8 @@ void main() {
   group('postgresql', () {
     group('belongsTo',
         () => belongsToTests(pg(['author', 'book']), close: closePg));
+    group('customExpr',
+        () => customExprTests(pg(['custom_expr']), close: closePg));
     group(
         'edgeCase',
         () => edgeCaseTests(pg(['unorthodox', 'weird_join', 'song', 'numba']),
