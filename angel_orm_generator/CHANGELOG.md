@@ -1,3 +1,6 @@
+# 2.1.0-beta.2
+* Support for custom SQL expressions.
+
 # 2.1.0-beta.1
 * `OrmBuildContext` caching is now local to a `Builder`, so `watch`
 *should* finally always run when required. Should resolve
