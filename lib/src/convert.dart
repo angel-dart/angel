@@ -32,21 +32,24 @@ Future<shelf.Request> convertRequest(RequestContext req, ResponseContext res,
   requestedUri = Uri.parse('http://${req.hostname}');
   requestedUri = requestedUri.replace(path: req.uri.path);
 
-  onHijack = (void hijack(StreamChannel<List<int>> channel)) {
-    Future.sync(res.detach).then((_) {
+  onHijack = (void Function(StreamChannel<List<int>> channel) hijack) async {
+    try {
+      print('a');
+      await res.detach();
+      print('b');
       var ctrl = StreamChannelController<List<int>>();
       if (req.hasParsedBody) {
         req.body.listen(ctrl.local.sink.add,
             onError: ctrl.local.sink.addError, onDone: ctrl.local.sink.close);
       } else {
-        ctrl.local.sink.close();
+        await ctrl.local.sink.close();
       }
-      ctrl.local.stream.pipe(res);
+      scheduleMicrotask(() => ctrl.local.stream.pipe(res));
       hijack(ctrl.foreign);
-    }).catchError((e, st) {
-      app.logger?.severe('An error occurred while hijacking a shelf request', e,
-          st as StackTrace);
-    });
+    } catch (e, st) {
+      app.logger
+          ?.severe('An error occurred while hijacking a shelf request', e, st);
+    }
   };
 
   var url = req.uri;
