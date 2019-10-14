@@ -7,11 +7,22 @@ import 'shelf_request.dart';
 
 class ShelfResponseContext extends ResponseContext<ShelfResponseContext> {
   final Angel app;
-  final ShelfRequestContext correspondingRequest;
   final StreamController<List<int>> _ctrl = StreamController();
   bool _isOpen = true, _isDetached = false;
 
-  ShelfResponseContext(this.app, this.correspondingRequest);
+  ShelfResponseContext(this.app);
+
+  ShelfRequestContext _correspondingRequest;
+
+  ShelfRequestContext get correspondingRequest => _correspondingRequest;
+
+  set correspondingRequest(ShelfRequestContext value) {
+    if (_correspondingRequest == null) {
+      _correspondingRequest = value;
+    } else {
+      throw StateError('The corresponding request has already been assigned.');
+    }
+  }
 
   shelf.Response get shelfResponse {
     return shelf.Response(statusCode, body: _ctrl.stream, headers: headers);
