@@ -10,7 +10,7 @@ main() async {
   Logger.root
     ..level = Level.ALL
     ..onRecord.listen(prettyLog);
-    
+
   var app = Angel(logger: Logger('angel_shelf_demo'));
   var http = AngelHttp(app);
 

@@ -8,11 +8,18 @@ import 'shelf_request.dart';
 class ShelfResponseContext extends ResponseContext<ShelfResponseContext> {
   final Angel app;
   final StreamController<List<int>> _ctrl = StreamController();
-  bool _isOpen = true, _isDetached = false;
+  bool _isOpen = true,
+      _isDetached = false,
+      _wasClosedByHandler = false,
+      _handlersAreDone = false;
 
   ShelfResponseContext(this.app);
 
   ShelfRequestContext _correspondingRequest;
+
+  bool get wasClosedByHandler => _wasClosedByHandler;
+
+  void closeSilently() => _handlersAreDone = true;
 
   ShelfRequestContext get correspondingRequest => _correspondingRequest;
 
@@ -30,7 +37,9 @@ class ShelfResponseContext extends ResponseContext<ShelfResponseContext> {
 
   @override
   Future<void> close() {
-    _isOpen = false;
+    if (!_handlersAreDone) {
+      _isOpen = false;
+    }
     _ctrl.close();
     return super.close();
   }

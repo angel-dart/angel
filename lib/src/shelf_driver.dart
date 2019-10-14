@@ -7,15 +7,68 @@ import 'shelf_response.dart';
 
 class AngelShelf extends Driver<shelf.Request, ShelfResponseContext,
     Stream<shelf.Request>, ShelfRequestContext, ShelfResponseContext> {
-  AngelShelf.custom(Angel app, {bool useZone = true})
-      : super(app, (_, __) => throw _unsupported(), useZone: useZone);
+  final StreamController<shelf.Request> incomingRequests = StreamController();
+
+  final FutureOr<shelf.Response> Function() notFound;
+
+  AngelShelf(Angel app, {FutureOr<shelf.Response> Function() notFound})
+      : this.notFound =
+            notFound ?? (() => shelf.Response.notFound('Not Found')),
+        super(app, null, useZone: false) {
+    // Inject a final handler that will keep responses open, if we are using the
+    // driver as a middleware.
+    app.fallback((req, res) {
+      if (res is ShelfResponseContext) {
+        res.closeSilently();
+      }
+      return true;
+    });
+  }
+
+  Future<Stream<shelf.Request>> Function(dynamic, int) get serverGenerator =>
+      (_, __) async => incomingRequests.stream;
 
   static UnsupportedError _unsupported() => UnsupportedError(
       'AngelShelf cannot mount a standalone server, or return a URI.');
 
   Future<shelf.Response> handler(shelf.Request request) async {
     var response = ShelfResponseContext(app);
-    await handleRawRequest(request, response);
+    var result = await handleRawRequest(request, response);
+    if (result is shelf.Response) {
+      return result;
+    } else if (!response.isOpen) {
+      return response.shelfResponse;
+    } else {
+      // return await handler(request);
+      return notFound();
+    }
+  }
+
+  shelf.Handler middleware(shelf.Handler handler) {
+    return (request) async {
+      var response = ShelfResponseContext(app);
+      var result = await handleRawRequest(request, response);
+      if (result is shelf.Response) {
+        return result;
+      } else if (!response.isOpen) {
+        return response.shelfResponse;
+      } else {
+        return await handler(request);
+      }
+    };
+  }
+
+  @override
+  Future<shelf.Response> handleAngelHttpException(
+      AngelHttpException e,
+      StackTrace st,
+      RequestContext req,
+      ResponseContext res,
+      shelf.Request request,
+      ShelfResponseContext response,
+      {bool ignoreFinalizers = false}) async {
+    await super.handleAngelHttpException(e, st, req, res, request, response,
+        ignoreFinalizers: ignoreFinalizers);
     return response.shelfResponse;
   }
 
@@ -38,7 +91,7 @@ class AngelShelf extends Driver<shelf.Request, ShelfResponseContext,
   @override
   Future<ShelfRequestContext> createRequestContext(
       shelf.Request request, ShelfResponseContext response) {
-    var path = uri.path.replaceAll(_straySlashes, '');
+    var path = request.url.path.replaceAll(_straySlashes, '');
     if (path.isEmpty) path = '/';
     var rq =
         ShelfRequestContext(app, app.container.createChild(), request, path);
