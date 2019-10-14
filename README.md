@@ -30,8 +30,8 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'api/api.dart';
 
 main() async {
-  var app = new Angel();
-  var http = new AngelHttp(app);
+  var app = Angel();
+  var http = AngelHttp(app);
 
   // Angel routes on top
   await app.mountController<ApiController>();
@@ -39,7 +39,7 @@ main() async {
   // Re-route all other traffic to an
   // existing application.
   app.fallback(embedShelf(
-    new shelf.Pipeline()
+    shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
       .addHandler(_echoRequest)
   ));
@@ -62,7 +62,7 @@ handleRequest(shelf.Request request) {
   var req = request.context['angel_shelf.request'] as RequestContext;
 
   // ... And then interact with it.
-  req.container.registerNamedSingleton<Foo>('from_shelf', new Foo());
+  req.container.registerNamedSingleton<Foo>('from_shelf', Foo());
 
   // `req.container` is also available.
   var container = request.context['angel_shelf.container'] as Container;

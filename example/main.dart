@@ -2,11 +2,17 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_shelf/angel_shelf.dart';
+import 'package:logging/logging.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 import 'package:shelf_static/shelf_static.dart';
 
 main() async {
-  var app = new Angel();
-  var http = new AngelHttp(app);
+  Logger.root
+    ..level = Level.ALL
+    ..onRecord.listen(prettyLog);
+    
+  var app = Angel(logger: Logger('angel_shelf_demo'));
+  var http = AngelHttp(app);
 
   // `shelf` request handler
   var shelfHandler = createStaticHandler('.',
@@ -21,9 +27,9 @@ main() async {
     return false; // End execution of handlers, so we don't proxy to dartlang.org when we don't need to.
   });
 
-  // Proxy any other request through to the static file handler
+  // Pass any other request through to the static file handler
   app.fallback(wrappedHandler);
 
   await http.startServer(InternetAddress.loopbackIPv4, 8080);
-  print('Proxying at ${http.uri}');
+  print('Running at ${http.uri}');
 }

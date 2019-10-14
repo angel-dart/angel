@@ -13,19 +13,21 @@ import 'convert.dart';
 RequestHandler embedShelf(shelf.Handler handler,
     {String handlerPath,
     Map<String, Object> context,
-    bool throwOnNullResponse: false}) {
+    bool throwOnNullResponse = false}) {
   return (RequestContext req, ResponseContext res) async {
     var shelfRequest = await convertRequest(req, res,
         handlerPath: handlerPath, context: context);
     try {
       var result = await handler(shelfRequest);
       if (result is! shelf.Response && result != null) return result;
-      if (result == null && throwOnNullResponse == true)
-        throw new AngelHttpException('Internal Server Error');
+      if (result == null && throwOnNullResponse == true) {
+        throw AngelHttpException('Internal Server Error');
+      }
       await mergeShelfResponse(result, res);
       return false;
     } on shelf.HijackException {
       // On hijack, do nothing, because the hijack handlers already call res.detach();
+      return null;
     } catch (e) {
       rethrow;
     }

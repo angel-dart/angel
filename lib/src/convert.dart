@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/http.dart';
-import 'package:angel_framework/http2.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
 /// Creates a [shelf.Request]  analogous to the input [req].
 ///
-/// The new request's `context` will contain [req.container] as `angel_shelf.container`, as well as
+/// The request's `context` will contain [req.container] as `angel_shelf.container`, as well as
 /// the provided [context], if any.
 ///
 /// The context will also have the original request available as `angel_shelf.request`.
@@ -30,47 +28,26 @@ Future<shelf.Request> convertRequest(RequestContext req, ResponseContext res,
   String protocolVersion;
   Uri requestedUri;
 
-  if (req is HttpRequestContext && res is HttpResponseContext) {
-    protocolVersion = req.rawRequest.protocolVersion;
-    requestedUri = req.rawRequest.requestedUri;
+  protocolVersion = '1.1';
+  requestedUri = Uri.parse('http://${req.hostname}');
+  requestedUri = requestedUri.replace(path: req.uri.path);
 
-    onHijack = (void hijack(StreamChannel<List<int>> channel)) {
-      new Future(() async {
-        var rs = res.detach();
-        var socket = await rs.detachSocket(writeHeaders: false);
-        var ctrl = new StreamChannelController<List<int>>();
-        var body = await req.parseRawRequestBuffer() ?? [];
-        ctrl.local.sink.add(body ?? []);
-        socket.listen(ctrl.local.sink.add,
+  onHijack = (void hijack(StreamChannel<List<int>> channel)) {
+    Future.sync(res.detach).then((_) {
+      var ctrl = StreamChannelController<List<int>>();
+      if (req.hasParsedBody) {
+        req.body.listen(ctrl.local.sink.add,
             onError: ctrl.local.sink.addError, onDone: ctrl.local.sink.close);
-        ctrl.local.stream.pipe(socket);
-        hijack(ctrl.foreign);
-      }).catchError((e, st) {
-        app.logger?.severe('An error occurred while hijacking a shelf request',
-            e, st as StackTrace);
-      });
-    };
-  } else if (req is Http2RequestContext && res is Http2ResponseContext) {
-    protocolVersion = '2.0';
-    requestedUri = req.uri;
-
-    onHijack = (void hijack(StreamChannel<List<int>> channel)) {
-      new Future(() async {
-        var rs = await res.detach();
-        var ctrl = new StreamChannelController<List<int>>();
-        var body = await req.parseRawRequestBuffer() ?? [];
-        ctrl.local.sink.add(body ?? []);
-        ctrl.local.stream.listen(rs.sendData, onDone: rs.terminate);
-        hijack(ctrl.foreign);
-      }).catchError((e, st) {
-        stderr.writeln('An error occurred while hijacking a shelf request: $e');
-        stderr.writeln(st);
-      });
-    };
-  } else {
-    throw new UnsupportedError(
-        '`embedShelf` is only supported for HTTP and HTTP2 requests in Angel.');
-  }
+      } else {
+        ctrl.local.sink.close();
+      }
+      ctrl.local.stream.pipe(res);
+      hijack(ctrl.foreign);
+    }).catchError((e, st) {
+      app.logger?.severe('An error occurred while hijacking a shelf request', e,
+          st as StackTrace);
+    });
+  };
 
   var url = req.uri;
 
@@ -78,12 +55,12 @@ Future<shelf.Request> convertRequest(RequestContext req, ResponseContext res,
     url = url.replace(path: url.path.substring(1));
   }
 
-  return new shelf.Request(req.method, requestedUri,
+  return shelf.Request(req.method, requestedUri,
       protocolVersion: protocolVersion,
       headers: headers,
       handlerPath: handlerPath,
       url: url,
-      body: (await req.parseRawRequestBuffer()) ?? [],
+      body: req.body,
       context: {'angel_shelf.request': req}
         ..addAll({'angel_shelf.container': req.container})
         ..addAll(context ?? {}),
