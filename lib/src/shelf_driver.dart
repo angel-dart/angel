@@ -25,6 +25,11 @@ class AngelShelf extends Driver<shelf.Request, ShelfResponseContext,
     });
   }
 
+  Future<Stream<shelf.Request>> close() {
+    incomingRequests.close();
+    return super.close();
+  }
+
   Future<Stream<shelf.Request>> Function(dynamic, int) get serverGenerator =>
       (_, __) async => incomingRequests.stream;
 

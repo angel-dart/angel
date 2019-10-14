@@ -29,8 +29,12 @@ main() async {
   }));
 
   // Next, create an AngelShelf driver.
+  //
   // If we have startup hooks we want to run, we need to call
   // `startServer`. Otherwise, it can be omitted.
+  // Of course, if you call `startServer`, know that to run
+  // shutdown/cleanup logic, you need to call `close` eventually,
+  // too.
   var angelShelf = AngelShelf(app);
   await angelShelf.startServer();
 
