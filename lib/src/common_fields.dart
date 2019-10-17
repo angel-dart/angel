@@ -11,29 +11,46 @@ class TextField extends Field<String> {
   /// If `true` (default), then the input will be trimmed before validation.
   final bool trim;
 
+  /// If not `null`, then if the value of [confirmedAs] in the body is not
+  /// identical, an error will be returned.
+  final String confirmedAs;
+
   TextField(String name,
       {String label,
       bool isRequired = true,
       this.isTextArea = false,
-      this.trim = true})
+      this.trim = true,
+      this.confirmedAs})
       : super(name, label: label, isRequired: isRequired);
 
   @override
   FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
       renderer.visitTextField(this);
 
+  String _normalize(String s) {
+    if (trim) {
+      s = s?.trim();
+    }
+    return s;
+  }
+
   @override
   FutureOr<FieldReadResult<String>> read(RequestContext req,
       Map<String, dynamic> fields, Iterable<UploadedFile> files) {
-    var value = fields[name] as String;
-    if (trim) {
-      value = value?.trim();
-    }
+    var value = _normalize(fields[name] as String);
     if (value == null) {
       return null;
     } else if (trim && value.isEmpty) {
       return null;
     } else {
+      if (confirmedAs != null) {
+        var confirmed = _normalize(fields[confirmedAs] as String);
+        if (confirmed != value) {
+          return FieldReadResult.failure(
+              ['"$name" and "$confirmedAs" must be identical.']);
+        }
+      }
+
       return FieldReadResult.success(value);
     }
   }
