@@ -9,5 +9,7 @@ abstract class FormRenderer<T> {
 
   FutureOr<T> visitBoolField(BoolField field);
 
+  FutureOr<T> visitNumField(NumField field);
+
   FutureOr<T> visitTextField(TextField field);
 }

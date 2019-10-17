@@ -109,7 +109,7 @@ class Form {
 
     for (var field in fields) {
       var result = await field.read(
-          query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
+          req, query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
       if (result == null && field.isRequired) {
         errors.add(reportMissingField(field.name, query: query));
       } else if (!result.isSuccess) {
