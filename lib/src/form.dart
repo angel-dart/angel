@@ -9,25 +9,24 @@ import 'field.dart';
 ///
 /// Example:
 /// ```dart
-/// import 'package:angel_forms/angel_forms.dart';
 /// import 'package:angel_validate/angel_validate.dart';
 ///
 /// var myForm = Form(fields: [
-///   TextField('username').match([]),
+///   TextField('username').match([minLength(8)]),
 ///   TextField('password', confirmedAs: 'confirm_password'),
 /// ])
 ///
 /// app.post('/login', (req, res) async {
-///   var loginRequest =
-///     await myForm.decode(req, loginRequestSerializer);
-///   // Do something with the decode object...
+///   var loginBody =
+///     await myForm.decode(req, loginBodySerializer);
+///   // Do something with the decoded object...
 /// });
 /// ```
 class Form {
+  /// A custom error message to provide the user if validation fails.
   final String errorMessage;
 
   final List<Field> _fields = [];
-  final List<String> _errors = [];
 
   static const String defaultErrorMessage =
       'There were errors in your submission. '
@@ -37,10 +36,11 @@ class Form {
     fields?.forEach(addField);
   }
 
+  /// Returns the fields in this form.
   List<Field> get fields => _fields;
 
-  List<String> get errors => _errors;
-
+  /// Helper for adding fields. Passing [matchers] will result in them
+  /// being applied to the [field].
   Field<T> addField<T>(Field<T> field, {Iterable<Matcher> matchers}) {
     if (matchers != null) {
       field = field.match(matchers);
@@ -49,15 +49,19 @@ class Form {
     return field;
   }
 
+  /// Deserializes the result of calling [validate].
   Future<T> deserialize<T>(
       RequestContext req, T Function(Map<String, dynamic>) f) {
     return validate(req).then(f);
   }
 
+  /// Uses the [codec] to [deserialize] the result of calling [validate].
   Future<T> decode<T>(RequestContext req, Codec<T, Map> codec) {
     return deserialize(req, codec.decode);
   }
 
+  /// Calls [read], and returns the filtered request body.
+  /// If there is even one error, then an [AngelHttpException] is thrown.
   Future<Map<String, dynamic>> validate(RequestContext req) async {
     var result = await read(req);
     if (!result.isSuccess) {
