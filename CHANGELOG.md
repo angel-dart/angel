@@ -1,3 +1,6 @@
+# 3.0.0-alpha
+* Rewrite, based on `Field` and `Form`, rather than strings.
+
 # 2.0.2
 * Deduplicate error messages.
 
