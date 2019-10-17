@@ -3,31 +3,53 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:matcher/matcher.dart';
 import 'form_renderer.dart';
 
+/// Holds the result of validating a field.
 class FieldReadResult<T> {
+  /// If `true`, then validation was successful.
+  /// If `false`, [errors] must not be empty.
   final bool isSuccess;
+
+  /// The value provided by the user.
   final T value;
+
+  /// Any errors that arose during validation.
   final Iterable<String> errors;
 
   FieldReadResult.success(this.value)
       : isSuccess = true,
-        errors = null;
+        errors = [];
 
   FieldReadResult.failure(this.errors)
       : isSuccess = false,
         value = null;
 }
 
+/// An abstraction used to fetch values from request bodies, in a type-safe manner.
 abstract class Field<T> {
+  /// The name of this field. This is the name that users should include in
+  /// request bodies.
   final String name;
+
+  /// An optional label for the field.
   final String label;
+
+  /// Whether the field is required. If `true`, then if it is not
+  /// present, an error will be generated.
   final bool isRequired;
 
   Field(this.name, {this.label, this.isRequired = false});
 
+  /// Reads the value from the request body.
+  ///
+  /// If it returns `null` and [isRequired] is `true`, an error must
+  /// be generated.
   FutureOr<FieldReadResult<T>> read(RequestContext req);
 
+  /// Accepts a form renderer.
   FutureOr<U> accept<U>(FormRenderer<U> renderer);
 
+  /// Wraps this instance in one that throws an error if any of the
+  /// [matchers] fails.
   Field<T> match(Iterable<Matcher> matchers) => _MatchedField(this, matchers);
 }
 
