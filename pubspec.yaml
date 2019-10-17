@@ -6,7 +6,9 @@ environment:
   sdk: ">=2.0.0 <3.0.0"
 dependencies:
   angel_framework: ^2.0.0
+  duration: ^2.0.0
   html_builder: ^1.0.0
+  image: ^2.0.0
   matcher: ^0.12.5
 dev_dependencies:
   angel_orm: ^2.1.0-beta

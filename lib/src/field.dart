@@ -38,7 +38,10 @@ abstract class Field<T> {
   /// present, an error will be generated.
   final bool isRequired;
 
-  Field(this.name, {this.label, this.isRequired = true});
+  /// The input `type` attribute, if applicable.
+  final String type;
+
+  Field(this.name, this.type, {this.label, this.isRequired = true});
 
   /// Reads the value from the request body.
   ///
@@ -91,7 +94,8 @@ class _MatchedField<T> extends Field<T> {
   final Iterable<Matcher> matchers;
 
   _MatchedField(this.inner, this.matchers)
-      : super(inner.name, label: inner.label, isRequired: inner.isRequired) {
+      : super(inner.name, inner.type,
+            label: inner.label, isRequired: inner.isRequired) {
     assert(matchers.isNotEmpty);
   }
 

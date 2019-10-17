@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:image/image.dart';
 import 'field.dart';
 import 'form_renderer.dart';
 
@@ -20,8 +22,9 @@ class TextField extends Field<String> {
       bool isRequired = true,
       this.isTextArea = false,
       this.trim = true,
-      this.confirmedAs})
-      : super(name, label: label, isRequired: isRequired);
+      this.confirmedAs,
+      String type = 'text'})
+      : super(name, type, label: label, isRequired: isRequired);
 
   @override
   FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
@@ -59,8 +62,9 @@ class TextField extends Field<String> {
 /// A [Field] that checks simply for its presence in the given data.
 /// Typically used for checkboxes.
 class BoolField extends Field<bool> {
-  BoolField(String name, {String label, bool isRequired = true})
-      : super(name, label: label, isRequired: isRequired);
+  BoolField(String name,
+      {String label, bool isRequired = true, String type = 'checkbox'})
+      : super(name, type, label: label, isRequired: isRequired);
 
   @override
   FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
@@ -89,8 +93,13 @@ class NumField<T extends num> extends Field<T> {
   final num step;
 
   NumField(String name,
-      {String label, bool isRequired = true, this.max, this.min, this.step})
-      : super(name, label: label, isRequired: isRequired) {
+      {String label,
+      String type = 'number',
+      bool isRequired = true,
+      this.max,
+      this.min,
+      this.step})
+      : super(name, type, label: label, isRequired: isRequired) {
     _textField = TextField(name, label: label, isRequired: isRequired);
   }
 
@@ -127,8 +136,14 @@ class NumField<T extends num> extends Field<T> {
 /// A [NumField] that coerces its value to a [double].
 class DoubleField extends NumField<double> {
   DoubleField(String name,
-      {String label, bool isRequired = true, num step, double min, double max})
+      {String label,
+      String type = 'number',
+      bool isRequired = true,
+      num step,
+      double min,
+      double max})
       : super(name,
+            type: type,
             label: label,
             isRequired: isRequired,
             step: step,
@@ -153,9 +168,15 @@ class DoubleField extends NumField<double> {
 /// Passing a [double] will result in an error, so [step] defaults to 1.
 class IntField extends NumField<int> {
   IntField(String name,
-      {String label, bool isRequired = true, num step = 1, int min, int max})
+      {String label,
+      String type = 'number',
+      bool isRequired = true,
+      num step = 1,
+      int min,
+      int max})
       : super(name,
             label: label,
+            type: type,
             isRequired: isRequired,
             step: step,
             min: min,
@@ -175,6 +196,156 @@ class IntField extends NumField<int> {
         return FieldReadResult.success(result.value);
       } else {
         return FieldReadResult.failure(['"$name" must be an integer.']);
+      }
+    }
+  }
+}
+
+/// A [Field] that parses its value as an ISO6801 [DateTime].
+class DateTimeField extends Field<DateTime> {
+  // Reuse text validation logic.
+  TextField _textField;
+
+  /// The minimum/maximum value for the field.
+  final DateTime min, max;
+
+  /// The amount for a form field to increment by.
+  final num step;
+
+  DateTimeField(String name,
+      {String label,
+      bool isRequired = true,
+      this.max,
+      this.min,
+      this.step,
+      String type = 'datetime-local'})
+      : super(name, type, label: label, isRequired: isRequired) {
+    _textField = TextField(name, label: label, isRequired: isRequired);
+  }
+
+  @override
+  FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
+      renderer.visitDateTimeField(this);
+
+  @override
+  Future<FieldReadResult<DateTime>> read(RequestContext req,
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
+    var result = await _textField.read(req, fields, files);
+    if (result == null) {
+      return null;
+    } else if (result.isSuccess != true) {
+      return FieldReadResult.failure(result.errors);
+    } else {
+      var value = DateTime.tryParse(result.value);
+      if (value != null) {
+        return FieldReadResult.success(value);
+      } else {
+        return FieldReadResult.failure(
+            ['"$name" must be a properly-formatted date.']);
+      }
+    }
+  }
+}
+
+/// A [Field] that validates an [UploadedFile].
+class FileField extends Field<UploadedFile> {
+  /// If `true` (default), then the file must have a `content-type`.
+  final bool requireContentType;
+
+  /// If `true` (default: `false`), then the file must have an associated
+  /// filename.
+  final bool requireFilename;
+
+  /// If provided, then the `content-type` must be present in this [Iterable].
+  final Iterable<MediaType> allowedContentTypes;
+
+  FileField(String name,
+      {String label,
+      bool isRequired = true,
+      this.requireContentType = true,
+      this.requireFilename = false,
+      this.allowedContentTypes})
+      : super(name, 'file', label: label, isRequired: isRequired) {
+    assert(allowedContentTypes == null || allowedContentTypes.isNotEmpty);
+  }
+
+  @override
+  FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
+      renderer.visitFileField(this);
+
+  @override
+  FutureOr<FieldReadResult<UploadedFile>> read(RequestContext req,
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) {
+    var file = files.firstWhere((f) => f.name == name, orElse: () => null);
+    if (file == null) {
+      return null;
+    } else if ((requireContentType || allowedContentTypes != null) &&
+        file.contentType == null) {
+      return FieldReadResult.failure(
+          ['A content type must be given for file "$name".']);
+    } else if (requireFilename && file.filename == null) {
+      return FieldReadResult.failure(
+          ['A filename must be given for file "$name".']);
+    } else if (allowedContentTypes != null &&
+        !allowedContentTypes.contains(file.contentType)) {
+      return FieldReadResult.failure([
+        'File "$name" cannot have content type '
+            '"${file.contentType}". Allowed types: '
+            '${allowedContentTypes.join(', ')}'
+      ]);
+    } else {
+      return FieldReadResult.success(file);
+    }
+  }
+}
+
+/// A wrapper around [FileField] that reads its input into an [Image].
+///
+/// **CAUTION**: The uploaded file will be read in memory.
+class ImageField extends Field<Image> {
+  FileField _fileField;
+
+  /// The underlying [FileField].
+  FileField get fileField => _fileField;
+
+  ImageField(String name,
+      {String label,
+      bool isRequired = true,
+      bool requireContentType = true,
+      bool requireFilename = false,
+      Iterable<MediaType> allowedContentTypes})
+      : super(name, 'file', label: label, isRequired: isRequired) {
+    _fileField = FileField(name,
+        label: label,
+        isRequired: isRequired,
+        requireContentType: requireContentType,
+        requireFilename: requireFilename,
+        allowedContentTypes: allowedContentTypes);
+  }
+
+  @override
+  FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
+      renderer.visitImageField(this);
+
+  @override
+  FutureOr<FieldReadResult<Image>> read(RequestContext req,
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
+    var result = await fileField.read(req, fields, files);
+    if (result == null) {
+      return null;
+    } else if (!result.isSuccess) {
+      return FieldReadResult.failure(result.errors);
+    } else {
+      try {
+        var image = decodeImage(await result.value.readAsBytes());
+        if (image == null) {
+          return FieldReadResult.failure(['"$name" must be an image file.']);
+        } else {
+          return FieldReadResult.success(image);
+        }
+      } on ImageException catch (e) {
+        return FieldReadResult.failure(
+            ['Error in image file "$name": ${e.message}']);
       }
     }
   }

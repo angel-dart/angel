@@ -9,6 +9,12 @@ abstract class FormRenderer<T> {
 
   FutureOr<T> visitBoolField(BoolField field);
 
+  FutureOr<T> visitDateTimeField(DateTimeField field);
+
+  FutureOr<T> visitFileField(FileField field);
+
+  FutureOr<T> visitImageField(ImageField field);
+
   FutureOr<T> visitNumField(NumField field);
 
   FutureOr<T> visitTextField(TextField field);
