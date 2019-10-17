@@ -32,6 +32,12 @@ class Form {
       'There were errors in your submission. '
       'Please make sure all fields entered correctly, and submit it again.';
 
+  /// Computes an error message in the case of a missing required field.
+  static String reportMissingField(String fieldName, {bool query = false}) {
+    var type = query ? 'query parameter' : 'field';
+    return 'The $type "$fieldName" is required.';
+  }
+
   Form({this.errorMessage = defaultErrorMessage, Iterable<Field> fields}) {
     fields?.forEach(addField);
   }
@@ -50,20 +56,32 @@ class Form {
   }
 
   /// Deserializes the result of calling [validate].
+  ///
+  /// If [query] is `true` (default: `false`), then the value will
+  /// be read from the request `queryParameters` instead.
   Future<T> deserialize<T>(
-      RequestContext req, T Function(Map<String, dynamic>) f) {
-    return validate(req).then(f);
+      RequestContext req, T Function(Map<String, dynamic>) f,
+      {bool query = false}) {
+    return validate(req, query: query).then(f);
   }
 
   /// Uses the [codec] to [deserialize] the result of calling [validate].
-  Future<T> decode<T>(RequestContext req, Codec<T, Map> codec) {
-    return deserialize(req, codec.decode);
+  ///
+  /// If [query] is `true` (default: `false`), then the value will
+  /// be read from the request `queryParameters` instead.
+  Future<T> decode<T>(RequestContext req, Codec<T, Map> codec,
+      {bool query = false}) {
+    return deserialize(req, codec.decode, query: query);
   }
 
   /// Calls [read], and returns the filtered request body.
   /// If there is even one error, then an [AngelHttpException] is thrown.
-  Future<Map<String, dynamic>> validate(RequestContext req) async {
-    var result = await read(req);
+  ///
+  /// If [query] is `true` (default: `false`), then the value will
+  /// be read from the request `queryParameters` instead.
+  Future<Map<String, dynamic>> validate(RequestContext req,
+      {bool query = false}) async {
+    var result = await read(req, query: query);
     if (!result.isSuccess) {
       throw AngelHttpException.badRequest(
           message: errorMessage, errors: result.errors.toList());
@@ -76,15 +94,24 @@ class Form {
   /// whether valid values were provided for all [fields].
   ///
   /// In most cases, you'll want to use [validate] instead.
-  Future<FieldReadResult<Map<String, dynamic>>> read(RequestContext req) async {
+  ///
+  /// If [query] is `true` (default: `false`), then the value will
+  /// be read from the request `queryParameters` instead.
+  Future<FieldReadResult<Map<String, dynamic>>> read(RequestContext req,
+      {bool query = false}) async {
     var out = <String, dynamic>{};
     var errors = <String>[];
-    await req.parseBody();
+    var uploadedFiles = <UploadedFile>[];
+    if (req.hasParsedBody || !query) {
+      await req.parseBody();
+      uploadedFiles = req.uploadedFiles;
+    }
 
     for (var field in fields) {
-      var result = await field.read(req);
+      var result = await field.read(
+          query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
       if (result == null && field.isRequired) {
-        errors.add('The field "${field.name}" is required.');
+        errors.add(reportMissingField(field.name, query: query));
       } else if (!result.isSuccess) {
         errors.addAll(result.errors);
       } else {

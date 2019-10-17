@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:matcher/matcher.dart';
+import 'form.dart';
 import 'form_renderer.dart';
 
 /// Holds the result of validating a field.
@@ -37,13 +38,14 @@ abstract class Field<T> {
   /// present, an error will be generated.
   final bool isRequired;
 
-  Field(this.name, {this.label, this.isRequired = false});
+  Field(this.name, {this.label, this.isRequired = true});
 
   /// Reads the value from the request body.
   ///
   /// If it returns `null` and [isRequired] is `true`, an error must
   /// be generated.
-  FutureOr<FieldReadResult<T>> read(RequestContext req);
+  FutureOr<FieldReadResult<T>> read(
+      Map<String, dynamic> fields, Iterable<UploadedFile> files);
 
   /// Accepts a form renderer.
   FutureOr<U> accept<U>(FormRenderer<U> renderer);
@@ -51,6 +53,37 @@ abstract class Field<T> {
   /// Wraps this instance in one that throws an error if any of the
   /// [matchers] fails.
   Field<T> match(Iterable<Matcher> matchers) => _MatchedField(this, matchers);
+
+  /// Calls [read], and returns the retrieve value from the body.
+  ///
+  /// If [query] is `true` (default: `false`), then the value will
+  /// be read from the request `queryParameters` instead.
+  ///
+  /// If there is an error, then an [AngelHttpException] is thrown.
+  /// If a [defaultValue] is provided, it will be returned in case of an
+  /// error or missing value.
+  Future<T> getValue(RequestContext req,
+      {String errorMessage, T defaultValue, bool query = false}) async {
+    var uploadedFiles = <UploadedFile>[];
+    if (req.hasParsedBody || !query) {
+      await req.parseBody();
+      uploadedFiles = req.uploadedFiles;
+    }
+    var result =
+        await read(query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
+    if (result?.isSuccess != true && defaultValue != null) {
+      return defaultValue;
+    } else if (result == null) {
+      errorMessage ??= Form.reportMissingField(name, query: query);
+      throw AngelHttpException.badRequest(message: errorMessage);
+    } else if (!result.isSuccess) {
+      errorMessage ??= result.errors.first;
+      throw AngelHttpException.badRequest(
+          message: errorMessage, errors: result.errors.toList());
+    } else {
+      return result.value;
+    }
+  }
 }
 
 class _MatchedField<T> extends Field<T> {
@@ -66,8 +99,9 @@ class _MatchedField<T> extends Field<T> {
   FutureOr<U> accept<U>(FormRenderer<U> renderer) => inner.accept(renderer);
 
   @override
-  Future<FieldReadResult<T>> read(RequestContext req) async {
-    var result = await inner.read(req);
+  Future<FieldReadResult<T>> read(
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
+    var result = await inner.read(fields, files);
     if (!result.isSuccess) {
       return result;
     } else {
