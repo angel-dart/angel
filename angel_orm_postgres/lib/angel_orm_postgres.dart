@@ -4,13 +4,6 @@ import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
 import 'package:postgres/postgres.dart';
 
-/// Use the renamed [PostgreSqlExecutor] instead.
-@deprecated
-class PostgreSQLExecutor extends PostgreSqlExecutor {
-  PostgreSQLExecutor(PostgreSQLExecutionContext connection, {Logger logger})
-      : super(connection, logger: logger);
-}
-
 /// A [QueryExecutor] that queries a PostgreSQL database.
 class PostgreSqlExecutor extends QueryExecutor {
   PostgreSQLExecutionContext _connection;
@@ -78,15 +71,6 @@ class PostgreSqlExecutor extends QueryExecutor {
       return returnValue;
     }
   }
-}
-
-/// Use the renamed [PostgreSqlExecutorPool] instead.
-@deprecated
-class PostgreSQLExecutorPool extends PostgreSqlExecutorPool {
-  PostgreSQLExecutorPool(
-      int size, PostgreSQLConnection Function() connectionFactory,
-      {Logger logger})
-      : super(size, connectionFactory, logger: logger);
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
