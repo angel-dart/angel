@@ -1,3 +1,6 @@
+# 1.1.0-beta.1
+* Improvements in how transactions are handled; rethrow failed exceptions after rolling back.
+
 # 1.1.0-beta
 * Updates for `package:angel_orm@2.1.0-beta`.
 

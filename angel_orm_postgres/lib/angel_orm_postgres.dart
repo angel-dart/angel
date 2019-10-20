@@ -50,16 +50,32 @@ class PostgreSqlExecutor extends QueryExecutor {
   @override
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
     if (_connection is! PostgreSQLConnection) return await f(this);
-    T result;
-    try {
-      logger?.fine('Entering transaction');
-      await (_connection as PostgreSQLConnection).transaction((ctx) async {
+
+    var conn = _connection as PostgreSQLConnection;
+    T returnValue;
+
+    var txResult = await conn.transaction((ctx) async {
+      try {
+        logger?.fine('Entering transaction');
         var tx = PostgreSqlExecutor(ctx, logger: logger);
-        result = await f(tx);
-      });
-    } finally {
-      logger?.fine('Exiting transaction');
-      return result;
+        returnValue = await f(tx);
+      } catch (e) {
+        ctx.cancelTransaction(reason: e.toString());
+        rethrow;
+      } finally {
+        logger?.fine('Exiting transaction');
+      }
+    });
+
+    if (txResult is PostgreSQLRollback) {
+      if (txResult.reason == null) {
+        throw StateError('The transaction was cancelled.');
+      } else {
+        throw StateError(
+            'The transaction was cancelled with reason "${txResult.reason}".');
+      }
+    } else {
+      return returnValue;
     }
   }
 }
