@@ -10,7 +10,7 @@ import 'di_test.dart' as di;
 import 'encoders_buffer_test.dart' as encoders_buffer;
 import 'env_test.dart' as env;
 import 'exception_test.dart' as exception;
-import 'extension_test.dart' as extension;
+import 'extension_test.dart' as extension_test;
 import 'find_one_test.dart' as find_one;
 import 'general_test.dart' as general;
 import 'hooked_test.dart' as hooked;
@@ -42,7 +42,7 @@ main() {
   group('encoders_buffer', encoders_buffer.main);
   group('env', env.main);
   group('exception', exception.main);
-  group('extension', extension.main);
+  group('extension', extension_test.main);
   group('find_one', find_one.main);
   group('general', general.main);
   group('hooked', hooked.main);

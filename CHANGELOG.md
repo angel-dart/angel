@@ -1,3 +1,7 @@
+# 2.0.5
+* Fix a new (did not appear before 2.6/2.7) type error causing compilation to fail.
+https://github.com/angel-dart/framework/issues/249
+
 # 2.0.5-beta
 * Make `@Expose()` in `Controller` optional. https://github.com/angel-dart/angel/issues/107
 * Add `allowHttp1` to `AngelHttp2` constructors. https://github.com/angel-dart/angel/issues/108

@@ -95,12 +95,12 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
 
   /// Adds hooks to this instance.
   void addHooks(Angel app) {
-    Hooks hooks = getAnnotation<Hooks>(inner, app.container.reflector);
+    var hooks = getAnnotation<Hooks>(inner, app.container.reflector);
     List<HookedServiceEventListener<Id, Data, T>> before = [], after = [];
 
     if (hooks != null) {
-      before.addAll(hooks.before);
-      after.addAll(hooks.after);
+      before.addAll(hooks.before.cast());
+      after.addAll(hooks.after.cast());
     }
 
     void applyListeners(
@@ -111,7 +111,7 @@ class HookedService<Id, Data, T extends Service<Id, Data>>
         ..addAll(isAfter == true ? after : before);
 
       if (hooks != null) {
-        listeners.addAll(isAfter == true ? hooks.after : hooks.before);
+        listeners.addAll((isAfter == true ? hooks.after : hooks.before).cast());
       }
 
       listeners.forEach(dispatcher.listen);
