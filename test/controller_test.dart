@@ -71,7 +71,7 @@ bool bar(RequestContext req, ResponseContext res) {
 
 main() {
   Angel app;
-  TodoController ctrl;
+  TodoController todoController;
   NoExposeController noExposeCtrl;
   HttpServer server;
   http.Client client = http.Client();
@@ -86,7 +86,7 @@ main() {
 
     // Register as a singleton, just for the purpose of this test
     if (!app.container.has<TodoController>()) {
-      app.container.registerSingleton(ctrl = TodoController());
+      app.container.registerSingleton(todoController = TodoController());
     }
 
     // Using mountController<T>();
@@ -94,12 +94,12 @@ main() {
 
     noExposeCtrl = await app.mountController<NoExposeController>();
 
-    // Place controller in group...
-    app.group('/ctrl_group', (router) {
-      app.container
-          .make<TodoController>()
-          .applyRoutes(router, app.container.reflector);
-    });
+    // Place controller in group. The applyRoutes() call, however, is async.
+    // Until https://github.com/angel-dart/route/issues/28 is closed,
+    // this will need to be done by manually mounting the router.
+    var subRouter = Router<RequestHandler>();
+    await todoController.applyRoutes(subRouter, app.container.reflector);
+    app.mount('/ctrl_group', subRouter);
 
     print(app.controllers);
     app.dumpTree();
@@ -115,7 +115,7 @@ main() {
   });
 
   test('basic', () {
-    expect(ctrl.app, app);
+    expect(todoController.app, app);
   });
 
   test('create dynamic handler', () async {
