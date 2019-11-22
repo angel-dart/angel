@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:angel_orm/angel_orm.dart';
-import 'package:angel_orm/src/query.dart';
 import 'package:logging/logging.dart';
 // import 'package:pool/pool.dart';
 import 'package:sqljocky5/connection/connection.dart';
@@ -10,12 +9,27 @@ class MySqlExecutor extends QueryExecutor {
   /// An optional [Logger] to write to.
   final Logger logger;
 
-  final MySqlConnection _connection;
-  Transaction _transaction;
+  final Querier _connection;
 
   MySqlExecutor(this._connection, {this.logger});
 
-  Future<void> close() => _connection.close();
+  Future<void> close() {
+    if (_connection is MySqlConnection) {
+      return (_connection as MySqlConnection).close();
+    } else {
+      return Future.value();
+    }
+  }
+
+  Future<Transaction> _startTransaction() {
+    if (_connection is Transaction) {
+      return Future.value(_connection as Transaction);
+    } else if (_connection is MySqlConnection) {
+      return (_connection as MySqlConnection).begin();
+    } else {
+      throw StateError('Connection must be transaction or connection');
+    }
+  }
 
   @override
   Future<List<List>> query(
@@ -35,21 +49,21 @@ class MySqlExecutor extends QueryExecutor {
           .then((results) => results.map((r) => r.toList()).toList());
     } else {
       return Future(() async {
-        _transaction ??= await _connection.begin();
+        var tx = await _startTransaction();
 
         try {
           var writeResults =
-              await _transaction.prepared(query, substitutionValues.values);
+              await tx.prepared(query, substitutionValues.values);
           var fieldSet = returningFields.map((s) => '`$s`').join(',');
           var fetchSql = 'select $fieldSet from $tableName where id = ?;';
           logger?.fine(fetchSql);
           var readResults =
-              await _transaction.prepared(fetchSql, [writeResults.insertId]);
+              await tx.prepared(fetchSql, [writeResults.insertId]);
           var mapped = readResults.map((r) => r.toList()).toList();
-          await _transaction.commit();
+          await tx.commit();
           return mapped;
         } catch (_) {
-          await _transaction?.rollback();
+          await tx?.rollback();
           rethrow;
         }
       });
@@ -57,21 +71,21 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function() f) {
-    if (_transaction != null) {
-      return Future.sync(f);
-    } else {
-      return Future(() async {
-        try {
-          _transaction = await _connection.begin();
-          var result = await f();
-          await _transaction.commit();
-          return result;
-        } catch (_) {
-          await _transaction?.rollback();
-          rethrow;
-        }
-      });
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
+    if (_connection is Transaction) {
+      return await f(this);
+    }
+
+    Transaction tx;
+    try {
+      tx = await _startTransaction();
+      var executor = MySqlExecutor(tx, logger: logger);
+      var result = await f(executor);
+      await tx.commit();
+      return result;
+    } catch (_) {
+      await tx?.rollback();
+      rethrow;
     }
   }
 }
