@@ -27,6 +27,7 @@ dependencies:
   quiver_hashcode: ^2.0.0
   recase: ^2.0.0
   stack_trace: ^1.0.0
+  string_scanner: ^1.0.0
   tuple: ^1.0.0
   uuid: ^2.0.0-rc.1
 dev_dependencies:
