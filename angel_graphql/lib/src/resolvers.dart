@@ -10,7 +10,7 @@ Map<String, dynamic> _fetchRequestInfo(Map<String, dynamic> arguments) {
 
 Map<String, dynamic> _getQuery(Map<String, dynamic> arguments) {
   var f = Map<String, dynamic>.from(arguments)..remove('id')..remove('data');
-  return f.isEmpty ? null : {};
+  return f.isEmpty ? null : f;
 }
 
 /// A GraphQL resolver that `index`es an Angel service.
