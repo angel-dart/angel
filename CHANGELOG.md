@@ -1,4 +1,6 @@
-# 2.0.5
+# 2.1.0
+* This release was originally planned to be `2.0.5`, but it adds several features, and has
+therefore been bumped to `2.1.0`.
 * Fix a new (did not appear before 2.6/2.7) type error causing compilation to fail.
 https://github.com/angel-dart/framework/issues/249
 
