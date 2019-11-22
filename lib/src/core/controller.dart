@@ -47,7 +47,8 @@ class Controller {
   }
 
   /// Applies the routes from this [Controller] to some [router].
-  Future<String> applyRoutes(Router<RequestHandler> router, Reflector reflector) async {
+  Future<String> applyRoutes(
+      Router<RequestHandler> router, Reflector reflector) async {
     // Load global expose decl
     var classMirror = reflector.reflectClass(this.runtimeType);
     Expose exposeDecl = findExpose(reflector);

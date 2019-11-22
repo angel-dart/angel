@@ -96,8 +96,7 @@ class HostnameRouter {
           // app.dumpTree();
 
           var r = app.optimizedRouter;
-          var resolved =
-              r.resolveAbsolute(req.path, method: req.method);
+          var resolved = r.resolveAbsolute(req.path, method: req.method);
           var pipeline = MiddlewarePipeline<RequestHandler>(resolved);
           // print('Pipeline: $pipeline');
           for (var handler in pipeline.handlers) {
