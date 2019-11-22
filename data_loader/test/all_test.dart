@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:data_loader/data_loader.dart';
 import 'package:test/test.dart';
 
@@ -16,6 +17,30 @@ void main() {
     var batch = await Future.wait([zero, one, two]);
     print('Fetched result: $batch');
     expect(batch, ['0.00', '1.00', '2.00']);
+  });
+
+  test('dedupe', () async {
+    var loader = DataLoader<int, Map<int, List<int>>>((ids) {
+      return ids.map(
+        (i) => {i: ids.toList()},
+      );
+    });
+
+    var zero = loader.load(0);
+    var one = loader.load(1);
+    var two = loader.load(2);
+    var anotherZero = loader.load(0);
+    var batch = await Future.wait([zero, one, two, anotherZero]);
+
+    expect(
+      batch,
+      [
+        { 0: [0, 1, 2]},
+        { 1: [0, 1, 2]},
+        { 2: [0, 1, 2]},
+        { 0: [0, 1, 2]},
+      ],
+    );
   });
 
   group('cache', () {
