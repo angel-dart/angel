@@ -12,16 +12,17 @@ class Route<T> {
 
   Route(this.path, {@required this.method, @required this.handlers})
       : _routeDefinition = RouteGrammar.routeDefinition
-            .parse(new SpanScanner(path.replaceAll(_straySlashes, '')))
+            .parse(SpanScanner(path.replaceAll(_straySlashes, '')))
             .value {
-    if (_routeDefinition?.segments?.isNotEmpty != true)
+    if (_routeDefinition?.segments?.isNotEmpty != true) {
       _parser = match('').map((r) => RouteResult({}));
+    }
   }
 
   factory Route.join(Route<T> a, Route<T> b) {
     var start = a.path.replaceAll(_straySlashes, '');
     var end = b.path.replaceAll(_straySlashes, '');
-    return new Route('$start/$end'.replaceAll(_straySlashes, ''),
+    return Route('$start/$end'.replaceAll(_straySlashes, ''),
         method: b.method, handlers: b.handlers);
   }
 
@@ -33,21 +34,22 @@ class Route<T> {
   }
 
   Route<T> clone() {
-    return new Route<T>(path, method: method, handlers: handlers)
+    return Route<T>(path, method: method, handlers: handlers)
       .._cache.addAll(_cache);
   }
 
   String makeUri(Map<String, dynamic> params) {
-    var b = new StringBuffer();
+    var b = StringBuffer();
     int i = 0;
 
     for (var seg in _routeDefinition.segments) {
       if (i++ > 0) b.write('/');
-      if (seg is ConstantSegment)
+      if (seg is ConstantSegment) {
         b.write(seg.text);
-      else if (seg is ParameterSegment) {
-        if (!params.containsKey(seg.name))
-          throw new ArgumentError('Missing parameter "${seg.name}".');
+      } else if (seg is ParameterSegment) {
+        if (!params.containsKey(seg.name)) {
+          throw ArgumentError('Missing parameter "${seg.name}".');
+        }
         b.write(params[seg.name]);
       }
     }

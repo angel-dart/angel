@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:angel_route/angel_route.dart';
 
 main() {
-  final router = new Router();
+  final router = Router();
 
   router.get('/whois/~:user', () {});
 
@@ -42,7 +42,7 @@ main() {
   });
 }
 
-SomeQuery someQuery(id) => new SomeQuery();
+SomeQuery someQuery(id) => SomeQuery();
 
 class SomeQuery {
   List<SomeQueryReview> get reviews => [

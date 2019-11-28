@@ -2,7 +2,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var router = new Router()
+  var router = Router()
     ..get('/int/int:id', '')
     ..get('/double/double:id', '')
     ..get('/num/num:id', '');

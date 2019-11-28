@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('uri params decoded', () {
-    var router = new Router()..get('/a/:a/b/:b', '');
+    var router = Router()..get('/a/:a/b/:b', '');
 
     var encoded =
         '/a/' + Uri.encodeComponent('<<<') + '/b/' + Uri.encodeComponent('???');

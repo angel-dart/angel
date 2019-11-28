@@ -12,13 +12,13 @@ basic(BrowserRouter router) {
       $h1.text = 'No Active Route';
       $ul.children
         ..clear()
-        ..add(new LIElement()..text = '(empty)');
+        ..add(LIElement()..text = '(empty)');
     } else {
       $h1.text = 'Active Route: ${route.name ?? route.path}';
       $ul.children
         ..clear()
         ..addAll(result.allHandlers
-            .map((handler) => new LIElement()..text = handler.toString()));
+            .map((handler) => LIElement()..text = handler.toString()));
     }
   });
 

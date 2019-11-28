@@ -36,7 +36,7 @@ a `Router` in itself.
 ```dart
 
 main() {
-  final router = new Router();
+  final router = Router();
   
   router.get('/users', () {});
   
@@ -75,7 +75,7 @@ needs a lot of flexibility with which to handle requests.
 
 ```dart
 main() {
-  final router = new Router();
+  final router = Router();
   
   router
     .chain('middleware1')
@@ -112,7 +112,7 @@ To prevent this for a given anchor, do any of the following:
 
 ```dart
 main() {
-  final router = new BrowserRouter();
+  final router = BrowserRouter();
   // ..
   router.onRoute.listen((route) {
     if (route == null)
@@ -133,7 +133,7 @@ Use [allParams](https://www.dartdocs.org/documentation/angel_route/1.0.3/angel_r
 in a `RoutingResult` to get them as a nice `Map`:
 
 ```dart
-var router = new Router();
+var router = Router();
 router.get('/book/:id/authors', () => ...);
 
 var result = router.resolve('/book/foo/authors');

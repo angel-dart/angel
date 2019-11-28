@@ -2,7 +2,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var router = new Router();
+  var router = Router();
   router.get('/songs/*/key', 'of life');
   router.get('/isnt/she/*', 'lovely');
   router.all('*', 'stevie');

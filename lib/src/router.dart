@@ -15,13 +15,13 @@ part 'routing_result.dart';
 
 part 'symlink_route.dart';
 
-//final RegExp _param = new RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
-//final RegExp _rgxEnd = new RegExp(r'\$+$');
-//final RegExp _rgxStart = new RegExp(r'^\^+');
+//final RegExp _param = RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
+//final RegExp _rgxEnd = RegExp(r'\$+$');
+//final RegExp _rgxStart = RegExp(r'^\^+');
 //final RegExp _rgxStraySlashes =
-//    new RegExp(r'(^((\\+/)|(/))+)|(((\\+/)|(/))+$)');
-//final RegExp _slashDollar = new RegExp(r'/+\$');
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+//    RegExp(r'(^((\\+/)|(/))+)|(((\\+/)|(/))+$)');
+//final RegExp _slashDollar = RegExp(r'/+\$');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// An abstraction over complex [Route] trees. Use this instead of the raw API. :)
 class Router<T> {
@@ -33,10 +33,10 @@ class Router<T> {
   final List<Route<T>> _routes = [];
   bool _useCache = false;
 
-  List<T> get middleware => new List<T>.unmodifiable(_middleware);
+  List<T> get middleware => List<T>.unmodifiable(_middleware);
 
   Map<Pattern, Router<T>> get mounted =>
-      new Map<Pattern, Router<T>>.unmodifiable(_mounted);
+      Map<Pattern, Router<T>>.unmodifiable(_mounted);
 
   List<Route<T>> get routes {
     return _routes.fold<List<Route<T>>>([], (out, route) {
@@ -45,7 +45,7 @@ class Router<T> {
             route.router.routes.fold<List<Route<T>>>([], (out, r) {
           return out
             ..add(
-              route.path.isEmpty ? r : new Route.join(route, r),
+              route.path.isEmpty ? r : Route.join(route, r),
             );
         });
 
@@ -71,15 +71,16 @@ class Router<T> {
   Route<T> addRoute(String method, String path, T handler,
       {Iterable<T> middleware}) {
     middleware ??= <T>[];
-    if (_useCache == true)
-      throw new StateError('Cannot add routes after caching is enabled.');
+    if (_useCache == true) {
+      throw StateError('Cannot add routes after caching is enabled.');
+    }
 
     // Check if any mounted routers can match this
     final handlers = <T>[handler];
 
     if (middleware != null) handlers.insertAll(0, middleware);
 
-    final route = new Route<T>(path, method: method, handlers: handlers);
+    final route = Route<T>(path, method: method, handlers: handlers);
     _routes.add(route);
     return route;
   }
@@ -89,16 +90,16 @@ class Router<T> {
   ///
   /// The resulting router can be chained, too.
   _ChainedRouter<T> chain(Iterable<T> middleware) {
-    var piped = new _ChainedRouter<T>(this, middleware);
-    var route = new SymlinkRoute<T>('/', piped);
+    var piped = _ChainedRouter<T>(this, middleware);
+    var route = SymlinkRoute<T>('/', piped);
     _routes.add(route);
     return piped;
   }
 
   /// Returns a [Router] with a duplicated version of this tree.
   Router<T> clone() {
-    final router = new Router<T>();
-    final newMounted = new Map<Pattern, Router<T>>.from(mounted);
+    final router = Router<T>();
+    final newMounted = Map<Pattern, Router<T>>.from(mounted);
 
     for (var route in routes) {
       if (route is! SymlinkRoute<T>) {
@@ -106,7 +107,7 @@ class Router<T> {
       } else if (route is SymlinkRoute<T>) {
         final newRouter = route.router.clone();
         newMounted[route.path] = newRouter;
-        final symlink = new SymlinkRoute<T>(route.path, newRouter);
+        final symlink = SymlinkRoute<T>(route.path, newRouter);
         router._routes.add(symlink);
       }
     }
@@ -120,7 +121,7 @@ class Router<T> {
       {callback(String tree),
       String header = 'Dumping route tree:',
       String tab = '  '}) {
-    final buf = new StringBuffer();
+    final buf = StringBuffer();
     int tabs = 0;
 
     if (header != null && header.isNotEmpty) {
@@ -130,7 +131,9 @@ class Router<T> {
     buf.writeln('<root>');
 
     indent() {
-      for (int i = 0; i < tabs; i++) buf.write(tab);
+      for (int i = 0; i < tabs; i++) {
+        buf.write(tab);
+      }
     }
 
     dumpRouter(Router router) {
@@ -167,7 +170,7 @@ class Router<T> {
   SymlinkRoute<T> group(String path, void callback(Router<T> router),
       {Iterable<T> middleware, String name}) {
     middleware ??= <T>[];
-    final router = new Router<T>().._middleware.addAll(middleware);
+    final router = Router<T>().._middleware.addAll(middleware);
     callback(router);
     return mount(path, router)..name = name;
   }
@@ -225,7 +228,7 @@ class Router<T> {
 
         // Search by path
         if (!resolved) {
-          var scanner = new SpanScanner(param.replaceAll(_straySlashes, ''));
+          var scanner = SpanScanner(param.replaceAll(_straySlashes, ''));
           for (Route route in search.routes) {
             int pos = scanner.position;
             if (route.parser.parse(scanner).successful && scanner.isDone) {
@@ -238,28 +241,30 @@ class Router<T> {
 
               resolved = true;
               break;
-            } else
+            } else {
               scanner.position = pos;
+            }
           }
         }
 
         if (!resolved) {
-          throw new RoutingException(
+          throw RoutingException(
               'Cannot resolve route for link param "$param".');
         }
       } else if (param is Route) {
         segments.add(param.path.replaceAll(_straySlashes, ''));
       } else if (param is Map<String, dynamic>) {
         if (lastRoute == null) {
-          throw new RoutingException(
+          throw RoutingException(
               'Maps in link params must be preceded by a Route or String.');
         } else {
           segments.removeLast();
           segments.add(lastRoute.makeUri(param).replaceAll(_straySlashes, ''));
         }
-      } else
-        throw new RoutingException(
+      } else {
+        throw RoutingException(
             'Link param $param is not Route, String, or Map<String, dynamic>.');
+      }
     }
 
     return absolute
@@ -273,7 +278,7 @@ class Router<T> {
       {String method = 'GET', bool strip = true}) {
     final cleanRelative =
         strip == false ? relative : stripStraySlashes(relative);
-    var scanner = new SpanScanner(cleanRelative);
+    var scanner = SpanScanner(cleanRelative);
 
     bool crawl(Router<T> r) {
       bool success = false;
@@ -292,7 +297,7 @@ class Router<T> {
           var parseResult = route.parser.parse(scanner);
 
           if (parseResult.successful && scanner.isDone) {
-            var result = new RoutingResult<T>(
+            var result = RoutingResult<T>(
                 parseResult: parseResult,
                 params: parseResult.value.params,
                 shallowRoute: route,
@@ -342,10 +347,10 @@ class Router<T> {
 
   /// Incorporates another [Router]'s routes into this one's.
   SymlinkRoute<T> mount(String path, Router<T> router) {
-    final route = new SymlinkRoute<T>(path, router);
+    final route = SymlinkRoute<T>(path, router);
     _mounted[route.path] = router;
     _routes.add(route);
-    //route._head = new RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));
+    //route._head = RegExp(route.matcher.pattern.replaceAll(_rgxEnd, ''));
 
     return route;
   }
@@ -414,7 +419,7 @@ class _ChainedRouter<T> extends Router<T> {
   @override
   SymlinkRoute<T> group(String path, void callback(Router<T> router),
       {Iterable<T> middleware, String name}) {
-    final router = new _ChainedRouter<T>(
+    final router = _ChainedRouter<T>(
         _root, []..addAll(_handlers)..addAll(middleware ?? []));
     callback(router);
     return mount(path, router)..name = name;
@@ -430,9 +435,9 @@ class _ChainedRouter<T> extends Router<T> {
 
   @override
   _ChainedRouter<T> chain(Iterable<T> middleware) {
-    final piped = new _ChainedRouter<T>.empty().._root = _root;
+    final piped = _ChainedRouter<T>.empty().._root = _root;
     piped._handlers.addAll([]..addAll(_handlers)..addAll(middleware));
-    var route = new SymlinkRoute<T>('/', piped);
+    var route = SymlinkRoute<T>('/', piped);
     _routes.add(route);
     return piped;
   }
@@ -440,7 +445,7 @@ class _ChainedRouter<T> extends Router<T> {
 
 /// Optimizes a router by condensing all its routes into one level.
 Router<T> flatten<T>(Router<T> router) {
-  var flattened = new Router<T>();
+  var flattened = Router<T>();
 
   for (var route in router.routes) {
     if (route is SymlinkRoute<T>) {

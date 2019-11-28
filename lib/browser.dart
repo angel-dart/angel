@@ -5,8 +5,8 @@ import 'package:path/path.dart' as p;
 
 import 'angel_route.dart';
 
-final RegExp _hash = new RegExp(r'^#/');
-final RegExp _straySlashes = new RegExp(r'(^/+)|(/+$)');
+final RegExp _hash = RegExp(r'^#/');
+final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 
 /// A variation of the [Router] support both hash routing and push state.
 abstract class BrowserRouter<T> extends Router<T> {
@@ -20,8 +20,8 @@ abstract class BrowserRouter<T> extends Router<T> {
   /// `listen` as `true` will call `listen` after initialization.
   factory BrowserRouter({bool hash = false, bool listen = false}) {
     return hash
-        ? new _HashRouter<T>(listen: listen)
-        : new _PushStateRouter<T>(listen: listen);
+        ? _HashRouter<T>(listen: listen)
+        : _PushStateRouter<T>(listen: listen);
   }
 
   BrowserRouter._() : super();
@@ -49,8 +49,8 @@ abstract class _BrowserRouterImpl<T> extends Router<T>
   bool _listening = false;
   Route _current;
   StreamController<RoutingResult<T>> _onResolve =
-      new StreamController<RoutingResult<T>>();
-  StreamController<Route<T>> _onRoute = new StreamController<Route<T>>();
+      StreamController<RoutingResult<T>>();
+  StreamController<Route<T>> _onRoute = StreamController<Route<T>>();
 
   Route get currentRoute => _current;
 
@@ -96,8 +96,8 @@ abstract class _BrowserRouterImpl<T> extends Router<T>
 
   @override
   void listen() {
-    if (_listening)
-      throw new StateError('The router is already listening for page changes.');
+    if (_listening) {
+      throw StateError('The router is already listening for page changes.');}
     _listening = true;
     _listen();
   }
@@ -153,10 +153,10 @@ class _PushStateRouter<T> extends _BrowserRouterImpl<T> {
   _PushStateRouter({bool listen, Route root}) : super(listen: listen) {
     var $base = window.document.querySelector('base[href]') as BaseElement;
 
-    if ($base?.href?.isNotEmpty != true)
-      throw new StateError(
+    if ($base?.href?.isNotEmpty != true) {
+      throw StateError(
           'You must have a <base href="<base-url-here>"> element present in your document to run the push state router.');
-    _basePath = $base.href.replaceAll(_straySlashes, '');
+     } _basePath = $base.href.replaceAll(_straySlashes, '');
     if (listen) this.listen();
   }
 

@@ -2,7 +2,7 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  final router = new Router();
+  final router = Router();
 
   router.get('/', 'GET').name = 'root';
   router.get('/user/:id', 'GET');

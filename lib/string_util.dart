@@ -12,8 +12,9 @@ String stripStray(String haystack, String needle) {
     firstSlash = -1;
   }
 
-  if (firstSlash == haystack.length - 1)
+  if (firstSlash == haystack.length - 1) {
     return haystack.length == 1 ? '' : haystack.substring(0, firstSlash);
+  }
 
   // Find last leading index of slash
   for (int i = firstSlash + 1; i < haystack.length; i++) {

@@ -2,14 +2,14 @@ import 'package:angel_route/angel_route.dart';
 import 'package:test/test.dart';
 
 main() {
-  final router = new Router()..get('/hello', '')..get('/user/:id', '');
+  final router = Router()..get('/hello', '')..get('/user/:id', '');
 
   router.group('/book/:id', (router) {
     router.get('/reviews', '');
     router.get('/readers/:readerId', '');
   });
 
-  router.mount('/color', new Router()..get('/:name/shades', ''));
+  router.mount('/color', Router()..get('/:name/shades', ''));
 
   setUp(router.dumpTree);
 
@@ -17,7 +17,9 @@ main() {
     final p = {};
     final resolved = router.resolveAll(path, path);
     print('Resolved $path => ${resolved.map((r) => r.allParams).toList()}');
-    for (final result in resolved) p.addAll(result.allParams);
+    for (final result in resolved) {
+      p.addAll(result.allParams);
+    }
     expect(p, equals(params));
   }
 

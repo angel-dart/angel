@@ -2,17 +2,17 @@ part of angel_route.src.router;
 
 class RouteGrammar {
   static const String notSlashRgx = r'([^/]+)';
-  //static final RegExp rgx = new RegExp(r'\((.+)\)');
+  //static final RegExp rgx = RegExp(r'\((.+)\)');
   static final Parser<String> notSlash =
-      match<String>(new RegExp(notSlashRgx)).value((r) => r.span.text);
+      match<String>(RegExp(notSlashRgx)).value((r) => r.span.text);
 
   static final Parser<Match> regExp =
-      match<Match>(new RegExp(r'\(([^\n)]+)\)([^/]+)?'))
+      match<Match>(RegExp(r'\(([^\n)]+)\)([^/]+)?'))
           .value((r) => r.scanner.lastMatch);
 
-  static final Parser<Match> parameterName = match<Match>(
-          new RegExp('$notSlashRgx?' r':([A-Za-z0-9_]+)' r'([^(/\n])?'))
-      .value((r) => r.scanner.lastMatch);
+  static final Parser<Match> parameterName =
+      match<Match>(RegExp('$notSlashRgx?' r':([A-Za-z0-9_]+)' r'([^(/\n])?'))
+          .value((r) => r.scanner.lastMatch);
 
   static final Parser<ParameterSegment> parameterSegment = chain([
     parameterName,
@@ -40,17 +40,17 @@ class RouteGrammar {
       }
     }
 
-    var s = new ParameterSegment(match[2], rgx);
-    return r.value[1] == true ? new OptionalSegment(s) : s;
+    var s = ParameterSegment(match[2], rgx);
+    return r.value[1] == true ? OptionalSegment(s) : s;
   });
 
   static final Parser<ParsedParameterSegment> parsedParameterSegment = chain([
-    match(new RegExp(r'(int|num|double)'),
+    match(RegExp(r'(int|num|double)'),
             errorMessage: 'Expected "int","double", or "num".')
         .map((r) => r.span.text),
     parameterSegment,
   ]).map((r) {
-    return new ParsedParameterSegment(
+    return ParsedParameterSegment(
         r.value[0] as String, r.value[1] as ParameterSegment);
   });
 
@@ -60,11 +60,11 @@ class RouteGrammar {
     var m = r.scanner.lastMatch;
     var pre = m[1] ?? '';
     var post = m[2] ?? '';
-    return new WildcardSegment(pre, post);
+    return WildcardSegment(pre, post);
   });
 
   static final Parser<ConstantSegment> constantSegment =
-      notSlash.map<ConstantSegment>((r) => new ConstantSegment(r.value));
+      notSlash.map<ConstantSegment>((r) => ConstantSegment(r.value));
 
   static final Parser<SlashSegment> slashSegment =
       match(SlashSegment.rgx).map((_) => SlashSegment());
@@ -79,14 +79,14 @@ class RouteGrammar {
 
   // static final Parser<RouteDefinition> routeDefinition = routeSegment
   //     .star()
-  //     .map<RouteDefinition>((r) => new RouteDefinition(r.value ?? []))
+  //     .map<RouteDefinition>((r) => RouteDefinition(r.value ?? []))
   //     .surroundedBy(match(RegExp(r'/*')).opt());
 
   static final Parser slashes = match(RegExp(r'/*'));
 
   static final Parser<RouteDefinition> routeDefinition = routeSegment
       .separatedBy(slashes)
-      .map<RouteDefinition>((r) => new RouteDefinition(r.value ?? []))
+      .map<RouteDefinition>((r) => RouteDefinition(r.value ?? []))
       .surroundedBy(slashes.opt());
 }
 
@@ -101,11 +101,12 @@ class RouteDefinition {
     for (int i = 0; i < segments.length; i++) {
       var s = segments[i];
       bool isLast = i == segments.length - 1;
-      if (out == null)
+      if (out == null) {
         out = s.compile(isLast);
-      else
+      } else {
         out = s.compileNext(
             out.then(match('/')).index(0).cast<RouteResult>(), isLast);
+      }
     }
 
     return out;
@@ -175,8 +176,8 @@ class WildcardSegment extends RouteSegment {
 
   RegExp _compile(bool isLast) {
     return RegExp('$pre(${_symbol(isLast)})$post');
-    // if (isLast) return match(new RegExp(r'.*'));
-    // return match(new RegExp(r'[^/]*'));
+    // if (isLast) return match(RegExp(r'.*'));
+    // return match(RegExp(r'[^/]*'));
   }
 
   @override

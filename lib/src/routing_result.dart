@@ -28,7 +28,9 @@ class RoutingResult<T> {
   RoutingResult<T> get deepest {
     var search = this;
 
-    while (search?.nested?.isNotEmpty == true) search = search.nested.first;
+    while (search?.nested?.isNotEmpty == true) {
+      search = search.nested.first;
+    }
 
     return search;
   }
@@ -54,7 +56,9 @@ class RoutingResult<T> {
       handlers.addAll(result.handlers);
 
       if (result.nested?.isNotEmpty == true) {
-        for (var r in result.nested) crawl(r);
+        for (var r in result.nested) {
+          crawl(r);
+        }
       }
     }
 
@@ -71,7 +75,9 @@ class RoutingResult<T> {
       params.addAll(result.params);
 
       if (result.nested?.isNotEmpty == true) {
-        for (var r in result.nested) crawl(r);
+        for (var r in result.nested) {
+          crawl(r);
+        }
       }
     }
 

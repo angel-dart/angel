@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('resolve / on /', () {
-    var router = new Router()
+    var router = Router()
       ..group('/', (router) {
         router.group('/', (router) {
           router.get('/', 'ok');

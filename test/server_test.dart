@@ -4,14 +4,14 @@ import 'package:angel_route/angel_route.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
-const List<Map<String, String>> people = const [
-  const {'name': 'John Smith'}
+const List<Map<String, String>> people = [
+  {'name': 'John Smith'}
 ];
 
 main() {
   http.Client client;
 
-  final Router router = new Router();
+  final Router router = Router();
   HttpServer server;
   String url;
 
@@ -48,14 +48,14 @@ main() {
     });
   });
 
-  final beatles = new Router();
+  final beatles = Router();
 
   beatles.post('/spinal_clacker', (req, res) {
     res.write('come ');
     return true;
   });
 
-  final yellow = new Router()
+  final yellow = Router()
     ..get('/submarine', (req, res) {
       res.write('we all live in a');
       return false;
@@ -73,7 +73,7 @@ main() {
   router.mount('/beatles', beatles);
 
   setUp(() async {
-    client = new http.Client();
+    client = http.Client();
 
     router.dumpTree();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -85,7 +85,7 @@ main() {
       // Easy middleware pipeline
       final results =
           router.resolveAbsolute(req.uri.toString(), method: req.method);
-      final pipeline = new MiddlewarePipeline(results);
+      final pipeline = MiddlewarePipeline(results);
 
       if (pipeline.handlers.isEmpty) {
         res
