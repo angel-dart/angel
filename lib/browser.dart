@@ -97,7 +97,8 @@ abstract class _BrowserRouterImpl<T> extends Router<T>
   @override
   void listen() {
     if (_listening) {
-      throw StateError('The router is already listening for page changes.');}
+      throw StateError('The router is already listening for page changes.');
+    }
     _listening = true;
     _listen();
   }
@@ -156,7 +157,8 @@ class _PushStateRouter<T> extends _BrowserRouterImpl<T> {
     if ($base?.href?.isNotEmpty != true) {
       throw StateError(
           'You must have a <base href="<base-url-here>"> element present in your document to run the push state router.');
-     } _basePath = $base.href.replaceAll(_straySlashes, '');
+    }
+    _basePath = $base.href.replaceAll(_straySlashes, '');
     if (listen) this.listen();
   }
 
