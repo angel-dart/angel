@@ -64,6 +64,12 @@ main() {
         (r) => r.id == reviewId);
     });
   }, middleware: [put, middleware, here]);
+
+  // Grouping can also take async callbacks.
+  await router.groupAsync('/hello', (router) async {
+    var name = await getNameFromFileSystem();
+    router.get(name, (req, res) => '...');
+  });
 }
 ```
 

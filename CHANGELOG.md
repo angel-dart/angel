@@ -1,3 +1,6 @@
+# 3.1.0
+* Add `Router.groupAsync`
+
 # 3.0.6
 * Remove static default values for `middleware`.
 

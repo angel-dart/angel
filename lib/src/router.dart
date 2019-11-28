@@ -1,18 +1,15 @@
 library angel_route.src.router;
 
+import 'dart:async';
 import 'package:combinator/combinator.dart';
 import 'package:meta/meta.dart';
 import 'package:string_scanner/string_scanner.dart';
 
 import '../string_util.dart';
 import 'routing_exception.dart';
-
 part 'grammar.dart';
-
 part 'route.dart';
-
 part 'routing_result.dart';
-
 part 'symlink_route.dart';
 
 //final RegExp _param = RegExp(r':([A-Za-z0-9_]+)(\((.+)\))?');
@@ -172,6 +169,16 @@ class Router<T> {
     middleware ??= <T>[];
     final router = Router<T>().._middleware.addAll(middleware);
     callback(router);
+    return mount(path, router)..name = name;
+  }
+
+  /// Asynchronous equivalent of [group].
+  Future<SymlinkRoute<T>> groupAsync(
+      String path, FutureOr<void> callback(Router<T> router),
+      {Iterable<T> middleware, String name}) async {
+    middleware ??= <T>[];
+    final router = Router<T>().._middleware.addAll(middleware);
+    await callback(router);
     return mount(path, router)..name = name;
   }
 
@@ -422,6 +429,16 @@ class _ChainedRouter<T> extends Router<T> {
     final router = _ChainedRouter<T>(
         _root, []..addAll(_handlers)..addAll(middleware ?? []));
     callback(router);
+    return mount(path, router)..name = name;
+  }
+
+  @override
+  Future<SymlinkRoute<T>> groupAsync(
+      String path, FutureOr<void> callback(Router<T> router),
+      {Iterable<T> middleware, String name}) async {
+    final router = _ChainedRouter<T>(
+        _root, []..addAll(_handlers)..addAll(middleware ?? []));
+    await callback(router);
     return mount(path, router)..name = name;
   }
 
