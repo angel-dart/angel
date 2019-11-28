@@ -1,3 +1,6 @@
+# 3.1.0+1
+* Accidentally hit `CTRL-C` while uploading `3.1.0`; this version ensures everything is ok.
+
 # 3.1.0
 * Add `Router.groupAsync`
 
