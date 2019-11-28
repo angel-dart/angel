@@ -327,23 +327,23 @@ class GraphQL {
     var groupedFieldSet =
         collectFields(document, objectType, selectionSet, variableValues);
     var resultMap = <String, dynamic>{};
+    var futureResultMap = <String, FutureOr<dynamic>>{};
 
     for (var responseKey in groupedFieldSet.keys) {
       var fields = groupedFieldSet[responseKey];
-
       for (var field in fields) {
         var fieldName =
             field.field.fieldName.alias?.name ?? field.field.fieldName.name;
-        var responseValue;
+        FutureOr<dynamic> futureResponseValue;
 
         if (fieldName == '__typename') {
-          responseValue = objectType.name;
+          futureResponseValue = objectType.name;
         } else {
           var fieldType = objectType.fields
               .firstWhere((f) => f.name == fieldName, orElse: () => null)
               ?.type;
           if (fieldType == null) continue;
-          responseValue = await executeField(
+          futureResponseValue = executeField(
               document,
               fieldName,
               objectType,
@@ -355,10 +355,12 @@ class GraphQL {
               globalVariables);
         }
 
-        resultMap[responseKey] = responseValue;
+        futureResultMap[responseKey] = futureResponseValue;
       }
     }
-
+    for (var f in futureResultMap.keys) {
+      resultMap[f] = await futureResultMap[f];
+    }
     return resultMap;
   }
 
@@ -534,11 +536,16 @@ class GraphQL {
       }
 
       var innerType = fieldType.ofType;
-      var out = [];
+      var futureOut = [];
 
       for (var resultItem in (result as Iterable)) {
-        out.add(await completeValue(document, '(item in "$fieldName")',
+        futureOut.add(completeValue(document, '(item in "$fieldName")',
             innerType, fields, resultItem, variableValues, globalVariables));
+      }
+
+      var out = [];
+      for (var f in futureOut) {
+        out.add(await f);
       }
 
       return out;
