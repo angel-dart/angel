@@ -155,7 +155,7 @@ with custom parameters (ex. `@HasOne(foreignKey: 'foreign_id')`).
 @serializable
 @orm
 abstract class _Author extends Model {
-  @hasMany // Use the defaults, and auto-compute `foreignKey`
+  @HasMany // Use the defaults, and auto-compute `foreignKey`
   List<_Book> books;
   
   // Also supports parameters...
