@@ -33,8 +33,8 @@ class GraphQL {
     }
 
     if (introspect) {
-      var allTypes = <GraphQLType>[];
-      allTypes.addAll(this.customTypes);
+      var allTypes = fetchAllTypes(schema, [...this.customTypes]);
+
       _schema = reflectSchema(_schema, allTypes);
 
       for (var type in allTypes.toSet()) {

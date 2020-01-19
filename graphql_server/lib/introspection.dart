@@ -7,21 +7,9 @@ import 'package:graphql_schema/graphql_schema.dart';
 /// [allTypes] should contain all types, not directly defined in the schema, that you
 /// would like to have introspection available for.
 GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
-  for (var type in allTypes.toList()) {
-    var custom = _fetchAllTypesFromType(type);
-
-    for (var t in custom) {
-      if (!allTypes.contains(t)) {
-        allTypes.add(t);
-      }
-    }
-  }
-
-  var objectTypes = fetchAllTypes(schema, allTypes);
-
   var typeType = _reflectSchemaTypes();
   var directiveType = _reflectDirectiveType();
-  allTypes.addAll(objectTypes);
+
   Set<GraphQLType> allTypeSet;
 
   var schemaType = objectType('__Schema', fields: [
@@ -61,11 +49,11 @@ GraphQLSchema reflectSchema(GraphQLSchema schema, List<GraphQLType> allTypes) {
     graphQLInt,
     directiveType,
     typeType,
+    directiveType,
     schemaType,
     _typeKindType,
     _directiveLocationType,
     _reflectFields(),
-    _reflectDirectiveType(),
     _reflectInputValueType(),
     _reflectEnumValueType(),
   ]);
@@ -108,9 +96,9 @@ GraphQLObjectType _reflectSchemaTypes() {
         'ofType',
         _reflectSchemaTypes(),
         resolve: (type, _) {
-          if (type is GraphQLListType) {
+          if (type is GraphQLListType)
             return type.ofType;
-          } else if (type is GraphQLNonNullableType) return type.ofType;
+          else if (type is GraphQLNonNullableType) return type.ofType;
           return null;
         },
       ),
@@ -236,7 +224,7 @@ GraphQLObjectType _createTypeType() {
       'fields',
       listOf(fieldType),
       inputs: [
-        GraphQLFieldInput(
+        new GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
@@ -253,7 +241,7 @@ GraphQLObjectType _createTypeType() {
       'enumValues',
       listOf(enumValueType.nonNullable()),
       inputs: [
-        GraphQLFieldInput(
+        new GraphQLFieldInput(
           'includeDeprecated',
           graphQLBoolean,
           defaultValue: false,
@@ -434,71 +422,100 @@ GraphQLObjectType _reflectEnumValueType() {
 }
 
 List<GraphQLType> fetchAllTypes(
-    GraphQLSchema schema, List<GraphQLType> allTypes) {
-  var types = <GraphQLType>[];
-
-  types.addAll(_fetchAllTypesFromObject(schema.queryType));
-
-  if (schema.mutationType != null) {
-    types.addAll(_fetchAllTypesFromObject(schema.mutationType));
-  }
-
-  if (schema.subscriptionType != null) {
-    types.addAll(_fetchAllTypesFromObject(schema.subscriptionType));
-  }
-
-  return types;
+    GraphQLSchema schema, List<GraphQLType> specifiedTypes) {
+  return CollectTypes({
+    schema.queryType,
+    if (schema.mutationType != null) schema.mutationType,
+    if (schema.subscriptionType != null) schema.subscriptionType,
+    ...specifiedTypes,
+  }).types.toList();
 }
 
-List<GraphQLType> _fetchAllTypesFromObject(GraphQLObjectType objectType) {
-  var types = <GraphQLType>[objectType];
+class CollectTypes {
+  Set<GraphQLType> traversedTypes = {};
 
-  for (var field in objectType.fields) {
-    if (field.type is GraphQLObjectType) {
-      types.addAll(_fetchAllTypesFromObject(field.type as GraphQLObjectType));
-    } else if (field.type is GraphQLInputObjectType) {
-      for (var v in (field.type as GraphQLInputObjectType).inputFields) {
-        types.addAll(_fetchAllTypesFromType(v.type));
+  Set<GraphQLType> get types => traversedTypes;
+
+  CollectTypes(Iterable<GraphQLType> types) {
+    types.forEach(_fetchAllTypesFromType);
+  }
+
+  CollectTypes.fromRootObject(GraphQLObjectType type) {
+    _fetchAllTypesFromObject(type);
+  }
+
+  void _fetchAllTypesFromObject(GraphQLObjectType objectType) {
+    if (traversedTypes.contains(objectType)) {
+      return null;
+    }
+
+    traversedTypes.add(objectType);
+
+    for (var field in objectType.fields) {
+      if (field.type is GraphQLObjectType) {
+        _fetchAllTypesFromObject(field.type as GraphQLObjectType);
+      } else if (field.type is GraphQLInputObjectType) {
+        for (var v in (field.type as GraphQLInputObjectType).inputFields) {
+          _fetchAllTypesFromType(v.type);
+        }
+      } else {
+        _fetchAllTypesFromType(field.type);
       }
-    } else {
-      types.addAll(_fetchAllTypesFromType(field.type));
+
+      for (var input in field.inputs ?? <GraphQLFieldInput>[]) {
+        _fetchAllTypesFromType(input.type);
+      }
     }
 
-    for (var input in field.inputs ?? <GraphQLFieldInput>[]) {
-      types.addAll(_fetchAllTypesFromType(input.type));
-    }
-  }
-
-  for (var i in objectType.interfaces) {
-    types.addAll(_fetchAllTypesFromObject(i));
-  }
-
-  return types;
-}
-
-Iterable<GraphQLType> _fetchAllTypesFromType(GraphQLType type) {
-  var types = <GraphQLType>[];
-
-  if (type is GraphQLNonNullableType) {
-    types.addAll(_fetchAllTypesFromType(type.ofType));
-  } else if (type is GraphQLListType) {
-    types.addAll(_fetchAllTypesFromType(type.ofType));
-  } else if (type is GraphQLObjectType) {
-    types.addAll(_fetchAllTypesFromObject(type));
-  } else if (type is GraphQLEnumType) {
-    types.add(type);
-  } else if (type is GraphQLInputObjectType) {
-    for (var v in type.inputFields) {
-      types.addAll(_fetchAllTypesFromType(v.type));
-    }
-
-    types.add(type);
-  } else if (type is GraphQLUnionType) {
-    types.add(type);
-
-    for (var t in type.possibleTypes) {
-      types.addAll(_fetchAllTypesFromType(t));
+    for (var i in objectType.interfaces) {
+      _fetchAllTypesFromObject(i);
     }
   }
-  return types;
+
+  void _fetchAllTypesFromType(GraphQLType type) {
+    if (traversedTypes.contains(type)) {
+      return null;
+    }
+
+    /*
+     * Unwrap generics
+     */
+    if (type is GraphQLNonNullableType) {
+      return _fetchAllTypesFromType(type.ofType);
+    }
+    if (type is GraphQLListType) {
+      return _fetchAllTypesFromType(type.ofType);
+    }
+
+    /*
+     * Handle simple types
+     */
+    if (type is GraphQLEnumType) {
+      traversedTypes.add(type);
+      return null;
+    }
+    if (type is GraphQLUnionType) {
+      traversedTypes.add(type);
+      for (var t in type.possibleTypes) {
+        _fetchAllTypesFromType(t);
+      }
+      return null;
+    }
+    if (type is GraphQLInputObjectType) {
+      traversedTypes.add(type);
+      for (var v in type.inputFields) {
+        _fetchAllTypesFromType(v.type);
+      }
+      return null;
+    }
+
+    /*
+     * defer to object type traverser
+     */
+    if (type is GraphQLObjectType) {
+      return _fetchAllTypesFromObject(type);
+    }
+
+    return null;
+  }
 }
