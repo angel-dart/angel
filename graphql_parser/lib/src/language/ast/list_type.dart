@@ -3,12 +3,29 @@ import 'node.dart';
 import 'package:source_span/source_span.dart';
 import 'type.dart';
 
+/// Represents a type that holds a list of another type.
 class ListTypeContext extends Node {
-  final Token LBRACKET, RBRACKET;
-  final TypeContext type;
+  /// The source tokens.
+  final Token lBracketToken, rBracketToken;
 
-  ListTypeContext(this.LBRACKET, this.type, this.RBRACKET);
+  /// The inner type.
+  final TypeContext innerType;
+
+  ListTypeContext(this.lBracketToken, this.innerType, this.rBracketToken);
+
+  /// Use [innerType] instead.
+  @deprecated
+  TypeContext get type => innerType;
+
+  /// Use [lBracketToken] instead.
+  @deprecated
+  Token get LBRACKET => lBracketToken;
+
+  /// Use [rBracketToken] instead.
+  @deprecated
+  Token get RBRACKET => rBracketToken;
 
   @override
-  FileSpan get span => LBRACKET.span.expand(type.span).expand(RBRACKET.span);
+  FileSpan get span =>
+      lBracketToken.span.expand(innerType.span).expand(rBracketToken.span);
 }

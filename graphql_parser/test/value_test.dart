@@ -64,7 +64,7 @@ main() {
 
   test('exceptions', () {
     var throwsSyntaxError = predicate((x) {
-      var parser = parse(x.toString())..parseValue();
+      var parser = parse(x.toString())..parseInputValue();
       return parser.errors.isNotEmpty;
     }, 'fails to parse value');
 
@@ -72,9 +72,9 @@ main() {
   });
 }
 
-ValueContext parseValue(String text) => parse(text).parseValue();
+InputValueContext parseValue(String text) => parse(text).parseInputValue();
 
-Matcher isValue(value) => new _IsValue(value);
+Matcher isValue(value) => _IsValue(value);
 
 class _IsValue extends Matcher {
   final value;
@@ -87,7 +87,7 @@ class _IsValue extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    var v = item is ValueContext ? item : parseValue(item.toString());
-    return equals(value).matches(v.value, matchState);
+    var v = item is InputValueContext ? item : parseValue(item.toString());
+    return equals(value).matches(v.computeValue({}), matchState);
   }
 }

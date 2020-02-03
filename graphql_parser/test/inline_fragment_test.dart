@@ -47,7 +47,7 @@ InlineFragmentContext parseInlineFragment(String text) =>
 
 Matcher isInlineFragment(String name,
         {Matcher directives, Matcher selectionSet}) =>
-    new _IsInlineFragment(name, directives, selectionSet);
+    _IsInlineFragment(name, directives, selectionSet);
 
 class _IsInlineFragment extends Matcher {
   final String name;

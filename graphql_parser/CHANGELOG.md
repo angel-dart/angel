@@ -1,3 +1,9 @@
+# 1.2.0
+* Combine `ValueContext` and `VariableContext` into a single `InputValueContext` supertype.
+    * Add `T computeValue(Map<String, dynamic> variables);`
+    * Resolve [#23](https://github.com/angel-dart/graphql/issues/23).
+* Deprecate old `ValueOrVariable` class, and parser/AST methods related to it.
+
 # 1.1.4
 * Fix broken int variable parsing - https://github.com/angel-dart/graphql/pull/32
 

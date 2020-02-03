@@ -37,11 +37,10 @@ main() {
 DirectiveContext parseDirective(String text) => parse(text).parseDirective();
 
 Matcher isDirective(String name, {Matcher valueOrVariable, Matcher argument}) =>
-    new _IsDirective(name,
-        valueOrVariable: valueOrVariable, argument: argument);
+    _IsDirective(name, valueOrVariable: valueOrVariable, argument: argument);
 
 Matcher isDirectiveList(List<Matcher> directives) =>
-    new _IsDirectiveList(directives);
+    _IsDirectiveList(directives);
 
 class _IsDirective extends Matcher {
   final String name;
@@ -57,8 +56,9 @@ class _IsDirective extends Matcher {
       return valueOrVariable.describe(desc.add(' and '));
     } else if (argument != null) {
       return argument.describe(desc.add(' and '));
-    } else
+    } else {
       return desc;
+    }
   }
 
   @override
@@ -67,20 +67,26 @@ class _IsDirective extends Matcher {
         item is DirectiveContext ? item : parseDirective(item.toString());
     if (directive == null) return false;
     if (valueOrVariable != null) {
-      if (directive.valueOrVariable == null)
+      if (directive.value == null) {
         return false;
-      else
-        return valueOrVariable.matches(
-            directive.valueOrVariable.value?.value ??
-                directive.valueOrVariable.variable?.name,
-            matchState);
+      } else {
+        var v = directive.value;
+        if (v is VariableContext) {
+          return valueOrVariable.matches(v.name, matchState);
+        } else {
+          return valueOrVariable.matches(
+              directive.value.computeValue({}), matchState);
+        }
+      }
     } else if (argument != null) {
-      if (directive.argument == null)
+      if (directive.argument == null) {
         return false;
-      else
+      } else {
         return argument.matches(directive.argument, matchState);
-    } else
+      }
+    } else {
       return true;
+    }
   }
 }
 

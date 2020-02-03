@@ -3,28 +3,37 @@ import 'package:source_span/source_span.dart';
 
 import '../syntax_error.dart';
 import '../token.dart';
-import 'value.dart';
+import 'input_value.dart';
 
-class StringValueContext extends ValueContext {
-  final Token STRING;
+/// A GraphQL string value literal.
+class StringValueContext extends InputValueContext<String> {
+  /// The source token.
+  final Token stringToken;
+
+  /// Whether this is a block string.
   final bool isBlockString;
 
-  StringValueContext(this.STRING, {this.isBlockString: false});
+  StringValueContext(this.stringToken, {this.isBlockString = false});
 
   @override
-  FileSpan get span => STRING.span;
+  FileSpan get span => stringToken.span;
 
+  /// Use [stringToken] instead.
+  @deprecated
+  Token get STRING => stringToken;
+
+  /// The [String] value of the [stringToken].
   String get stringValue {
     String text;
 
     if (!isBlockString) {
-      text = STRING.text.substring(1, STRING.text.length - 1);
+      text = stringToken.text.substring(1, stringToken.text.length - 1);
     } else {
-      text = STRING.text.substring(3, STRING.text.length - 3).trim();
+      text = stringToken.text.substring(3, stringToken.text.length - 3).trim();
     }
 
     var codeUnits = text.codeUnits;
-    var buf = new StringBuffer();
+    var buf = StringBuffer();
 
     for (int i = 0; i < codeUnits.length; i++) {
       var ch = codeUnits[i];
@@ -35,9 +44,9 @@ class StringValueContext extends ValueContext {
               c2 = codeUnits[++i],
               c3 = codeUnits[++i],
               c4 = codeUnits[++i];
-          var hexString = new String.fromCharCodes([c1, c2, c3, c4]);
+          var hexString = String.fromCharCodes([c1, c2, c3, c4]);
           var hexNumber = int.parse(hexString, radix: 16);
-          buf.write(new String.fromCharCode(hexNumber));
+          buf.write(String.fromCharCode(hexNumber));
           continue;
         }
 
@@ -63,8 +72,9 @@ class StringValueContext extends ValueContext {
             default:
               buf.writeCharCode(next);
           }
-        } else
-          throw new SyntaxError('Unexpected "\\" in string literal.', span);
+        } else {
+          throw SyntaxError('Unexpected "\\" in string literal.', span);
+        }
       } else {
         buf.writeCharCode(ch);
       }
@@ -74,5 +84,5 @@ class StringValueContext extends ValueContext {
   }
 
   @override
-  get value => stringValue;
+  String computeValue(Map<String, dynamic> variables) => stringValue;
 }

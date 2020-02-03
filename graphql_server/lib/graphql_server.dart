@@ -55,7 +55,7 @@ class GraphQL {
 
   GraphQLType convertType(TypeContext ctx) {
     if (ctx.listType != null) {
-      return GraphQLListType(convertType(ctx.listType.type));
+      return GraphQLListType(convertType(ctx.listType.innerType));
     } else if (ctx.typeName != null) {
       switch (ctx.typeName.name) {
         case 'Int':
@@ -161,7 +161,8 @@ class GraphQL {
 
       if (value == null) {
         if (defaultValue != null) {
-          coercedValues[variableName] = defaultValue.value.value;
+          coercedValues[variableName] =
+              defaultValue.value.computeValue(variableValues);
         } else if (!variableType.isNullable) {
           throw GraphQLException.fromSourceSpan(
               'Missing required variable "$variableName".',
@@ -402,25 +403,10 @@ class GraphQL {
       var argumentType = argumentDefinition.type;
       var defaultValue = argumentDefinition.defaultValue;
 
-      var value = argumentValues.firstWhere((a) => a.name == argumentName,
-          orElse: () => null);
+      var argumentValue = argumentValues
+          .firstWhere((a) => a.name == argumentName, orElse: () => null);
 
-      if (value?.valueOrVariable?.variable != null) {
-        var variableName = value.valueOrVariable.variable.name;
-        var variableValue = variableValues[variableName];
-
-        if (variableValues.containsKey(variableName)) {
-          coercedValues[argumentName] = variableValue;
-        } else if (defaultValue != null || argumentDefinition.defaultsToNull) {
-          coercedValues[argumentName] = defaultValue;
-        } else if (argumentType is GraphQLNonNullableType) {
-          throw GraphQLException.fromSourceSpan(
-              'Missing value for argument "$argumentName" of field "$fieldName".',
-              value.valueOrVariable.span);
-        } else {
-          continue;
-        }
-      } else if (value == null) {
+      if (argumentValue == null) {
         if (defaultValue != null || argumentDefinition.defaultsToNull) {
           coercedValues[argumentName] = defaultValue;
         } else if (argumentType is GraphQLNonNullableType) {
@@ -432,7 +418,7 @@ class GraphQL {
       } else {
         try {
           var validation = argumentType.validate(
-              fieldName, value.valueOrVariable.value.value);
+              argumentName, argumentValue.value.computeValue(variableValues));
 
           if (!validation.successful) {
             var errors = <GraphQLExceptionError>[
@@ -440,7 +426,7 @@ class GraphQL {
                 'Type coercion error for value of argument "$argumentName" of field "$fieldName".',
                 locations: [
                   GraphExceptionErrorLocation.fromSourceLocation(
-                      value.valueOrVariable.span.start)
+                      argumentValue.value.span.start)
                 ],
               )
             ];
@@ -451,7 +437,7 @@ class GraphQL {
                   error,
                   locations: [
                     GraphExceptionErrorLocation.fromSourceLocation(
-                        value.valueOrVariable.span.start)
+                        argumentValue.value.span.start)
                   ],
                 ),
               );
@@ -468,14 +454,14 @@ class GraphQL {
               'Type coercion error for value of argument "$argumentName" of field "$fieldName".',
               locations: [
                 GraphExceptionErrorLocation.fromSourceLocation(
-                    value.valueOrVariable.span.start)
+                    argumentValue.value.span.start)
               ],
             ),
             GraphQLExceptionError(
               e.message.toString(),
               locations: [
                 GraphExceptionErrorLocation.fromSourceLocation(
-                    value.valueOrVariable.span.start)
+                    argumentValue.value.span.start)
               ],
             ),
           ]);
@@ -706,25 +692,27 @@ class GraphQL {
       SelectionContext selection, Map<String, dynamic> variableValues) {
     if (selection.field == null) return null;
     var directive = selection.field.directives.firstWhere((d) {
-      var vv = d.valueOrVariable;
-      if (vv.value != null) return vv.value.value == name;
-      return vv.variable.name == name;
+      var vv = d.value;
+      if (vv is VariableContext) {
+        return vv.name == name;
+      } else {
+        return vv.computeValue(variableValues) == name;
+      }
     }, orElse: () => null);
 
     if (directive == null) return null;
     if (directive.argument?.name != argumentName) return null;
 
-    var vv = directive.argument.valueOrVariable;
-
-    if (vv.value != null) return vv.value.value;
-
-    var vname = vv.variable.name;
-    if (!variableValues.containsKey(vname)) {
-      throw GraphQLException.fromSourceSpan(
-          'Unknown variable: "$vname"', vv.span);
+    var vv = directive.argument.value;
+    if (vv is VariableContext) {
+      var vname = vv.name;
+      if (!variableValues.containsKey(vname)) {
+        throw GraphQLException.fromSourceSpan(
+            'Unknown variable: "$vname"', vv.span);
+      }
+      return variableValues[vname];
     }
-
-    return variableValues[vname];
+    return vv.computeValue(variableValues);
   }
 
   bool doesFragmentTypeApply(

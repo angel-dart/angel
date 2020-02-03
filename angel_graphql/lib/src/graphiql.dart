@@ -9,7 +9,7 @@ RequestHandler graphiQL(
     {String graphQLEndpoint = '/graphql', String subscriptionsEndpoint}) {
   return (req, res) {
     res
-      ..contentType = new MediaType('text', 'html')
+      ..contentType = MediaType('text', 'html')
       ..write(renderGraphiql(
           graphqlEndpoint: graphQLEndpoint,
           subscriptionsEndpoint: subscriptionsEndpoint))
@@ -30,7 +30,7 @@ String renderGraphiql(
   <script src="//unpkg.com/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>
   ''';
     subscriptionsFetcher = '''
-  let subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient('$subscriptionsEndpoint', {
+  let subscriptionsClient = window.SubscriptionsTransportWs.SubscriptionClient('$subscriptionsEndpoint', {
     reconnect: true
   });
   let $fetcherName = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(subscriptionsClient, graphQLFetcher);

@@ -32,10 +32,9 @@ ArgumentContext parseArgument(String text) => parse(text).parseArgument();
 List<ArgumentContext> parseArgumentList(String text) =>
     parse(text).parseArguments();
 
-Matcher isArgument(String name, value) => new _IsArgument(name, value);
+Matcher isArgument(String name, value) => _IsArgument(name, value);
 
-Matcher isArgumentList(List<Matcher> arguments) =>
-    new _IsArgumentList(arguments);
+Matcher isArgumentList(List<Matcher> arguments) => _IsArgumentList(arguments);
 
 class _IsArgument extends Matcher {
   final String name;
@@ -53,11 +52,11 @@ class _IsArgument extends Matcher {
     var arg = item is ArgumentContext ? item : parseArgument(item.toString());
     if (arg == null) return false;
     print(arg.span.highlight());
+
+    var v = arg.value;
     return equals(name).matches(arg.name, matchState) &&
-        equals(value).matches(
-            arg.valueOrVariable.value?.value ??
-                arg.valueOrVariable.variable?.name,
-            matchState);
+        ((v is VariableContext && equals(value).matches(v.name, matchState)) ||
+            equals(value).matches(arg.value.computeValue({}), matchState));
   }
 }
 

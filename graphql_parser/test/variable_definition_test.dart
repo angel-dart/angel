@@ -42,7 +42,7 @@ VariableDefinitionContext parseVariableDefinition(String text) =>
 
 Matcher isVariableDefinition(String name,
         {Matcher type, Matcher defaultValue}) =>
-    new _IsVariableDefinition(name, type, defaultValue);
+    _IsVariableDefinition(name, type, defaultValue);
 
 class _IsVariableDefinition extends Matcher {
   final String name;

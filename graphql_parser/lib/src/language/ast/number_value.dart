@@ -1,18 +1,21 @@
 import 'dart:math' as math;
 import 'package:source_span/source_span.dart';
 import '../token.dart';
-import 'value.dart';
+import 'input_value.dart';
 
-class NumberValueContext extends ValueContext<num> {
-  final Token NUMBER;
+/// A GraphQL number literal.
+class NumberValueContext extends InputValueContext<num> {
+  /// The source token.
+  final Token numberToken;
 
-  NumberValueContext(this.NUMBER);
+  NumberValueContext(this.numberToken);
 
+  /// The [num] value of the [numberToken].
   num get numberValue {
-    var text = NUMBER.text;
-    if (!text.contains('E') && !text.contains('e'))
+    var text = numberToken.text;
+    if (!text.contains('E') && !text.contains('e')) {
       return num.parse(text);
-    else {
+    } else {
       var split = text.split(text.contains('E') ? 'E' : 'e');
       var base = num.parse(split[0]);
       var exp = num.parse(split[1]);
@@ -20,9 +23,13 @@ class NumberValueContext extends ValueContext<num> {
     }
   }
 
-  @override
-  num get value => numberValue;
+  /// Use [numberToken] instead.
+  @deprecated
+  Token get NUMBER => numberToken;
 
   @override
-  FileSpan get span => NUMBER.span;
+  FileSpan get span => numberToken.span;
+
+  @override
+  num computeValue(Map<String, dynamic> variables) => numberValue;
 }

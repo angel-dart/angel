@@ -25,7 +25,7 @@ FragmentSpreadContext parseFragmentSpread(String text) =>
     parse(text).parseFragmentSpread();
 
 Matcher isFragmentSpread(String name, {Matcher directives}) =>
-    new _IsFragmentSpread(name, directives);
+    _IsFragmentSpread(name, directives);
 
 class _IsFragmentSpread extends Matcher {
   final String name;
@@ -35,9 +35,10 @@ class _IsFragmentSpread extends Matcher {
 
   @override
   Description describe(Description description) {
-    if (directives != null)
+    if (directives != null) {
       return directives.describe(
           description.add('is a fragment spread named "$name" that also '));
+    }
     return description.add('is a fragment spread named "$name"');
   }
 
@@ -48,9 +49,10 @@ class _IsFragmentSpread extends Matcher {
         : parseFragmentSpread(item.toString());
     if (spread == null) return false;
     if (spread.name != name) return false;
-    if (directives != null)
+    if (directives != null) {
       return directives.matches(spread.directives, matchState);
-    else
+    } else {
       return true;
+    }
   }
 }

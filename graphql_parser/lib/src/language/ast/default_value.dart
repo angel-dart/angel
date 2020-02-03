@@ -1,14 +1,22 @@
-import '../token.dart';
-import 'node.dart';
 import 'package:source_span/source_span.dart';
-import 'value.dart';
+import '../token.dart';
+import 'input_value.dart';
+import 'node.dart';
 
+/// The default value to be passed to an [ArgumentContext].
 class DefaultValueContext extends Node {
-  final Token EQUALS;
-  final ValueContext value;
+  /// The source token.
+  final Token equalsToken;
 
-  DefaultValueContext(this.EQUALS, this.value);
+  /// The default value for the argument.
+  final InputValueContext value;
+
+  DefaultValueContext(this.equalsToken, this.value);
+
+  /// Use [equalsToken] instead.
+  @deprecated
+  Token get EQUALS => equalsToken;
 
   @override
-  FileSpan get span => EQUALS.span.expand(value.span);
+  FileSpan get span => equalsToken.span.expand(value.span);
 }

@@ -49,10 +49,10 @@ main() {
 TypeContext parseType(String text) => parse(text).parseType();
 
 Matcher isListType(Matcher innerType, {bool isNullable}) =>
-    new _IsListType(innerType, isNullable: isNullable != false);
+    _IsListType(innerType, isNullable: isNullable != false);
 
 Matcher isType(String name, {bool isNullable}) =>
-    new _IsType(name, nonNull: isNullable != true);
+    _IsType(name, nonNull: isNullable != true);
 
 class _IsListType extends Matcher {
   final Matcher innerType;
@@ -72,7 +72,7 @@ class _IsListType extends Matcher {
     var type = item is TypeContext ? item : parseType(item.toString());
     if (type.listType == null) return false;
     if (type.isNullable != (isNullable != false)) return false;
-    return innerType.matches(type.listType.type, matchState);
+    return innerType.matches(type.listType.innerType, matchState);
   }
 }
 
@@ -84,10 +84,11 @@ class _IsType extends Matcher {
 
   @override
   Description describe(Description description) {
-    if (nonNull == true)
+    if (nonNull == true) {
       return description.add('is non-null type named "$name"');
-    else
+    } else {
       return description.add('is nullable type named "$name"');
+    }
   }
 
   @override

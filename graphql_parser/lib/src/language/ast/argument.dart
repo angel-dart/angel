@@ -1,17 +1,34 @@
 import 'package:source_span/source_span.dart';
 import '../token.dart';
 import 'node.dart';
-import 'value_or_variable.dart';
+import 'input_value.dart';
 
+/// An argument passed to a [FieldContext].
 class ArgumentContext extends Node {
-  final Token NAME, COLON;
-  final ValueOrVariableContext valueOrVariable;
+  /// The source tokens.
+  final Token nameToken, colonToken;
 
-  ArgumentContext(this.NAME, this.COLON, this.valueOrVariable);
+  /// The value of the argument.
+  final InputValueContext value;
 
-  String get name => NAME.text;
+  ArgumentContext(this.nameToken, this.colonToken, this.value);
+
+  /// Use [value] instead.
+  @deprecated
+  InputValueContext get valueOrVariable => value;
+
+  /// Use [nameToken] instead.
+  @deprecated
+  Token get NAME => nameToken;
+
+  /// Use [colonToken] instead.
+  @deprecated
+  Token get COLON => colonToken;
+
+  /// The name of the argument, as a [String].
+  String get name => nameToken.text;
 
   @override
   FileSpan get span =>
-      NAME.span.expand(COLON.span).expand(valueOrVariable.span);
+      nameToken.span.expand(colonToken.span).expand(value.span);
 }

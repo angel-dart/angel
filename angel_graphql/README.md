@@ -74,7 +74,7 @@ Future configureServer(Angel app) async {
                 convertDartType(Todo),
                 resolve: resolveViaServiceRead(todoService),
                 inputs: [
-                    new GraphQLFieldInput('id', graphQLId.nonNullable()),
+                    GraphQLFieldInput('id', graphQLId.nonNullable()),
                 ],
             ),
         ],
@@ -107,7 +107,7 @@ In *development*, it's also highly recommended to mount the
 interface, for easy querying and feedback.
 
 ```dart
-app.all('/graphql', graphQLHttp(new GraphQL(schema)));
+app.all('/graphql', graphQLHttp(GraphQL(schema)));
 app.get('/graphiql', graphiQL());
 ```
 
@@ -116,7 +116,7 @@ All that's left now is just to start the server!
 ```dart
 var server = await http.startServer('127.0.0.1', 3000);
 var uri =
-    new Uri(scheme: 'http', host: server.address.address, port: server.port);
+    Uri(scheme: 'http', host: server.address.address, port: server.port);
 var graphiqlUri = uri.replace(path: 'graphiql');
 print('Listening at $uri');
 print('Access graphiql at $graphiqlUri');
@@ -214,7 +214,7 @@ var queryType = objectType(
         convertDartType(Todo),
         resolve: resolveViaServiceRead(todoService),
         inputs: [
-          new GraphQLFieldInput('id', graphQLId.nonNullable()),
+          GraphQLFieldInput('id', graphQLId.nonNullable()),
         ],
       ),
     ],

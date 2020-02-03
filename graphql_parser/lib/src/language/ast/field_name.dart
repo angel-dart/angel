@@ -3,16 +3,25 @@ import '../token.dart';
 import 'alias.dart';
 import 'node.dart';
 
+/// The name of a GraphQL [FieldContext], which may or may not be [alias]ed.
 class FieldNameContext extends Node {
-  final Token NAME;
+  /// The source token.
+  final Token nameToken;
+
+  /// An (optional) alias for the field.
   final AliasContext alias;
 
-  FieldNameContext(this.NAME, [this.alias]) {
-    assert(NAME != null || alias != null);
+  FieldNameContext(this.nameToken, [this.alias]) {
+    assert(nameToken != null || alias != null);
   }
 
-  String get name => NAME?.text;
+  /// Use [nameToken] instead.
+  @deprecated
+  Token get NAME => nameToken;
+
+  /// The [String] value of the [nameToken], if any.
+  String get name => nameToken?.text;
 
   @override
-  FileSpan get span => alias?.span ?? NAME.span;
+  FileSpan get span => alias?.span ?? nameToken.span;
 }

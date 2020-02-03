@@ -1,3 +1,10 @@
+# 1.1.0
+* Updates for `package:graphql_parser@1.2.0`.
+* Now that variables are `InputValueContext` descendants, handle them the
+same way as other values in `coerceArgumentValues`. TLDR - Removed
+now-obsolete, variable-specific logic in `coerceArgumentValues`.
+* Pass `argumentName`, not `fieldName`, to type validations.
+
 # 1.0.3
 * Make field resolution asynchronous.
 * Make introspection cycle-safe.
