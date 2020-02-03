@@ -82,7 +82,6 @@ RequestHandler graphQLHttp(GraphQL graphQL,
             return await executeMap(req.bodyAsMap);
           }
         } else if (req.headers.contentType?.mimeType == 'multipart/form-data') {
-          // TODO: Support file uploads in batch requests.
           var fields = await req.parseBody().then((_) => req.bodyAsMap);
           var operations = fields['operations'] as String;
           if (operations == null) {
