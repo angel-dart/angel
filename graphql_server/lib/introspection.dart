@@ -423,12 +423,19 @@ GraphQLObjectType _reflectEnumValueType() {
 
 List<GraphQLType> fetchAllTypes(
     GraphQLSchema schema, List<GraphQLType> specifiedTypes) {
-  return CollectTypes({
-    schema.queryType,
-    if (schema.mutationType != null) schema.mutationType,
-    if (schema.subscriptionType != null) schema.subscriptionType,
-    ...specifiedTypes,
-  }).types.toList();
+  var data = Set<GraphQLType>()
+    ..add(schema.queryType)
+    ..addAll(specifiedTypes);
+
+  if (schema.mutationType != null) {
+    data.add(schema.mutationType);
+  }
+
+  if (schema.subscriptionType != null) {
+    data.add(schema.subscriptionType);
+  }
+
+  return CollectTypes(data).types.toList();
 }
 
 class CollectTypes {
