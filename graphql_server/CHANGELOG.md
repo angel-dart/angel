@@ -1,3 +1,8 @@
+# 1.0.3
+* Make field resolution asynchronous.
+* Make introspection cycle-safe.
+* Thanks @deep-guarav and @micimize!
+
 # 1.0.2
 * https://github.com/angel-dart/graphql/pull/32
 
