@@ -19,8 +19,9 @@ final RegExp _straySlashes = RegExp(r'(^/+)|(/+$)');
 class AngelHttp extends Driver<HttpRequest, HttpResponse, HttpServer,
     HttpRequestContext, HttpResponseContext> {
   @override
-  Uri get uri =>
-      Uri(scheme: 'http', host: server.address.address, port: server.port);
+  Uri get uri => server == null
+      ? Uri()
+      : Uri(scheme: 'http', host: server.address.address, port: server.port);
 
   AngelHttp._(Angel app,
       Future<HttpServer> Function(dynamic, int) serverGenerator, bool useZone)

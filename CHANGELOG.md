@@ -1,3 +1,6 @@
+# 2.1.1
+* `AngelHttp.uri` now returns an empty `Uri` if the server is not listening.
+
 # 2.1.0
 * This release was originally planned to be `2.0.5`, but it adds several features, and has
 therefore been bumped to `2.1.0`.

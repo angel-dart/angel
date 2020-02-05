@@ -5,7 +5,7 @@ import 'package:angel_container/mirrors.dart';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:mock_request/mock_request.dart';
-import 'package:pedantic/pedantic.dart';
+
 import 'package:test/test.dart';
 
 main() {
@@ -40,7 +40,7 @@ main() {
 
   test('String type annotation', () async {
     var rq = MockHttpRequest('GET', Uri.parse('/string/hello'));
-    unawaited(rq.close());
+    (rq.close());
     await http.handleRequest(rq);
     var rs = await rq.response.transform(utf8.decoder).join();
     expect(rs, json.encode('hello'));
@@ -48,7 +48,7 @@ main() {
 
   test('Primitive after parsed param injection', () async {
     var rq = MockHttpRequest('GET', Uri.parse('/num/parsed/24'));
-    unawaited(rq.close());
+    (rq.close());
     await http.handleRequest(rq);
     var rs = await rq.response.transform(utf8.decoder).join();
     expect(rs, json.encode(24));
@@ -56,7 +56,7 @@ main() {
 
   test('globally-injected primitive', () async {
     var rq = MockHttpRequest('GET', Uri.parse('/num/global'));
-    unawaited(rq.close());
+    (rq.close());
     await http.handleRequest(rq);
     var rs = await rq.response.transform(utf8.decoder).join();
     expect(rs, json.encode(305));
@@ -65,7 +65,7 @@ main() {
   test('unparsed primitive throws error', () async {
     try {
       var rq = MockHttpRequest('GET', Uri.parse('/num/unparsed/32'));
-      unawaited(rq.close());
+      (rq.close());
       var req = await http.createRequestContext(rq, rq.response);
       var res = await http.createResponseContext(rq, rq.response, req);
       await app.runContained((num unparsed) => unparsed, req, res);

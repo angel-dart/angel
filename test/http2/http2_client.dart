@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart';
 import 'package:http2/transport.dart';
-import 'package:pedantic/pedantic.dart';
 
 /// Simple HTTP/2 client
 class Http2Client extends BaseClient {
@@ -47,7 +46,7 @@ class Http2Client extends BaseClient {
     if (body.isNotEmpty) {
       stream.sendData(body, endStream: true);
     } else {
-      unawaited(stream.outgoingMessages.close());
+      (stream.outgoingMessages.close());
     }
 
     return stream;
