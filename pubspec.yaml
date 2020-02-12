@@ -1,5 +1,5 @@
 name: angel_security
-version: 2.0.0-alpha
+version: 2.0.0-alpha.1
 description: Angel infrastructure for improving security, rate limiting, and more.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/security
