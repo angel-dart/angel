@@ -5,17 +5,17 @@ import 'package:logging/logging.dart';
 import 'package:sembast/sembast_io.dart';
 
 main() async {
-  var app = new Angel();
+  var app = Angel();
   var db = await databaseFactoryIo.openDatabase('todos.db');
 
   app
-    ..logger = (new Logger('angel_sembast_example')..onRecord.listen(print))
-    ..use('/api/todos', new SembastService(db, store: 'todos'))
+    ..logger = (Logger('angel_sembast_example')..onRecord.listen(print))
+    ..use('/api/todos', SembastService(db, store: 'todos'))
     ..shutdownHooks.add((_) => db.close());
 
-  var http = new AngelHttp(app);
+  var http = AngelHttp(app);
   var server = await http.startServer('127.0.0.1', 3000);
   var uri =
-      new Uri(scheme: 'http', host: server.address.address, port: server.port);
+      Uri(scheme: 'http', host: server.address.address, port: server.port);
   print('angel_sembast example listening at $uri');
 }
