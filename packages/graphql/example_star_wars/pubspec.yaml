@@ -1,0 +1,21 @@
+name: star_wars
+publish_to: none
+dependencies:
+  #angel_file_service: ^1.0.0
+  angel_graphql:
+    path: ../angel_graphql
+  angel_hot: ^2.0.0-alpha
+  angel_serialize: ^2.0.0
+  io: ^0.3.2
+dev_dependencies:
+  angel_serialize_generator: ^2.0.0
+  build_runner: ^1.0.0
+  graphql_generator:
+    path: ../graphql_generator
+dependency_overrides:
+  graphql_parser:
+    path: ../graphql_parser
+  graphql_schema:
+    path: ../graphql_schema
+  graphql_server:
+    path: ../graphql_server

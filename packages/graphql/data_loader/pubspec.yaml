@@ -1,0 +1,11 @@
+name: data_loader
+version: 1.0.0
+author: Tobe O <thosakwe@gmail.com>
+description: Batch and cache database lookups. Works well with GraphQL. Ported from JS.
+homepage: https://github.com/angel-dart/graphql
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dev_dependencies:
+  graphql_schema: ^1.0.0
+  pedantic: ^1.0.0
+  test: ">=0.12.0 <2.0.0"

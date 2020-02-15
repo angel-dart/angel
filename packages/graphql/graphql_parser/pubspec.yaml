@@ -1,0 +1,15 @@
+name: graphql_parser
+version: 1.1.4
+description: Parses GraphQL queries and schemas. Also includes classes for the GraphQL AST.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/graphql
+environment:
+  sdk: ">=1.8.0 <3.0.0"
+dependencies:
+  charcode: ^1.0.0
+  source_span: ^1.0.0
+  string_scanner: ^1.0.0
+dev_dependencies:
+  matcher: any
+  pedantic: ^1.0.0
+  test: ">=0.12.0 <2.0.0"
