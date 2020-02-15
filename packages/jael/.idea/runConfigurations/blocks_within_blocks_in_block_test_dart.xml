@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="blocks within blocks in block_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true" nameIsGenerated="true">
+    <option name="filePath" value="$PROJECT_DIR$/jael_preprocessor/test/block_test.dart" />
+    <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+    <option name="testName" value="blocks within blocks" />
+    <method />
+  </configuration>
+</component>

@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="tests in dsx_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true" nameIsGenerated="true">
+    <option name="filePath" value="$PROJECT_DIR$/jael/test/render/dsx_test.dart" />
+    <option name="testRunnerOptions" value="-j4" />
+    <method />
+  </configuration>
+</component>

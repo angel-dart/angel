@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/angel_jael">
+      <excludeFolder url="file://$MODULE_DIR$/angel_jael/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/angel_jael/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/angel_jael/build" />
+    </content>
+    <content url="file://$MODULE_DIR$/build_jael">
+      <excludeFolder url="file://$MODULE_DIR$/build_jael/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/build_jael/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/build_jael/build" />
+    </content>
+    <content url="file://$MODULE_DIR$/dsx">
+      <excludeFolder url="file://$MODULE_DIR$/dsx/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/dsx/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/dsx/build" />
+    </content>
+    <content url="file://$MODULE_DIR$/dsx_generator">
+      <excludeFolder url="file://$MODULE_DIR$/dsx_generator/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/dsx_generator/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/dsx_generator/build" />
+    </content>
+    <content url="file://$MODULE_DIR$/jael">
+      <excludeFolder url="file://$MODULE_DIR$/jael/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/jael/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/jael/build" />
+    </content>
+    <content url="file://$MODULE_DIR$/jael_preprocessor">
+      <excludeFolder url="file://$MODULE_DIR$/jael_preprocessor/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/jael_preprocessor/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/jael_preprocessor/build" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
+  </component>
+</module>

@@ -1,0 +1,10 @@
+builders:
+  jael_web:
+    import: "package:jael_web/builder.dart"
+    builder_factories:
+      - jaelComponentBuilder
+    build_extensions:
+      .dart:
+        - .jael_web_cmp.g.part
+    auto_apply: root_package
+    applies_builders: ["source_gen|combining_builder", "source_gen|part_cleanup"]

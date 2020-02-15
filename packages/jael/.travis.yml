@@ -1,0 +1,2 @@
+language: dart
+script: bash ./travis.sh
