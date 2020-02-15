@@ -1,0 +1,16 @@
+name: angel_production
+version: 1.0.0
+description: Helpers for concurrency, message-passing, rotating loggers, and other production functionality in Angel.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/production
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_container: ^1.0.0-alpha
+  angel_framework: ^2.0.0-alpha
+  args: ^1.0.0
+  io: ^0.3.2
+  logging: ^0.11.3
+  pub_sub: ^2.0.0
+dev_dependencies:
+  pedantic: ^1.0.0
