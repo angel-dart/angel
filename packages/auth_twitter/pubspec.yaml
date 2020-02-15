@@ -1,0 +1,20 @@
+author: "Tobe O <thosakwe@gmail.com>"
+description: "package:angel_auth strategy for Twitter login. Auto-signs requests."
+environment:
+  sdk: ">=2.0.0 <3.0.0"
+homepage: "https://github.com/angel-dart/auth_twitter.git"
+name: "angel_auth_twitter"
+version: 2.0.0
+dependencies:
+  angel_auth: ^2.0.0
+  angel_framework: ^2.0.0-alpha
+  http: ">=0.11.0 <0.13.0"
+  path: ^1.0.0
+  # oauth:
+  #   git:
+  #     url: git://github.com/sh4869/oauth.dart.git
+  #     ref: develop
+  twitter: ^1.0.0
+dev_dependencies:
+  logging: ^0.11.0
+  pedantic: ^1.0.0
