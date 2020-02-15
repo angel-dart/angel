@@ -1,0 +1,1616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="" />
+    <ignored path="$PROJECT_DIR$/.tmp/" />
+    <ignored path="$PROJECT_DIR$/temp/" />
+    <ignored path="$PROJECT_DIR$/tmp/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/framework$All_Tests__for_coverage_.coverage" NAME="All Tests (for coverage) Coverage Results" MODIFIED="1498830529713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="DartCoverageRunner" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" CONTEXT_FILE_PATH="$PROJECT_DIR$/test/all.dart" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="framework" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="services_test.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/services_test.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="16">
+              <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
+              <folding>
+                <element signature="e#0#46#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="service.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/service.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="358">
+              <caret line="191" column="33" lean-forward="true" selection-start-line="191" selection-start-column="33" selection-end-line="191" selection-end-column="33" />
+              <folding>
+                <element signature="e#39#59#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="request_context.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/request_context.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="464">
+              <caret line="29" column="29" selection-start-line="29" selection-start-column="29" selection-end-line="29" selection-end-column="29" />
+              <folding>
+                <element signature="e#47#67#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pubspec.yaml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="159">
+              <caret line="10" column="12" lean-forward="true" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="precontained_test.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/precontained_test.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="160">
+              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="map_service.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/map_service.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="384">
+              <caret line="24" column="2" selection-start-line="24" selection-start-column="2" selection-end-line="24" selection-end-column="2" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="hooked_service.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/hooked_service.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="7216">
+              <caret line="459" column="46" selection-start-line="459" selection-start-column="46" selection-end-line="459" selection-end-column="46" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="core.dart" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/core/core.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="128">
+              <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
+              <folding>
+                <element signature="e#0#32#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Gherkin feature file" />
+        <option value="Dart File" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>handleRe</find>
+      <find>get container</find>
+      <find>Parameter</find>
+      <find>log</find>
+      <find>mirrors</find>
+      <find>dart:mirror</find>
+      <find>dart:io</find>
+      <find>_Par</find>
+      <find>waterfall</find>
+      <find>wtf</find>
+      <find>errorHan</find>
+      <find>nested</find>
+      <find>_parent =</find>
+      <find>headers['content</find>
+      <find>skip</find>
+      <find>Provi</find>
+      <find>contentTy</find>
+      <find>abc</find>
+      <find>/chained</find>
+      <find>flatten</find>
+      <find>sendRe</find>
+      <find>enableB</find>
+      <find>Hooks</find>
+      <find>Middleware</find>
+      <find>/meta</find>
+      <find>complet</find>
+      <find>parseI</find>
+      <find>read(</find>
+      <find>as</find>
+      <find>serviceP</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>FutureOr</replace>
+      <replace>var body = await getBody(rs);</replace>
+      <replace />
+      <replace>=</replace>
+      <replace>{</replace>
+      <replace>'accept'</replace>
+      <replace>'content-type'</replace>
+      <replace>403</replace>
+      <replace>(RequestContext req, res)</replace>
+      <replace>headers: headers.cast&lt;String, String&gt;(),</replace>
+      <replace>this.</replace>
+      <replace>'text/html'</replace>
+      <replace>'application/json'</replace>
+      <replace>as $1</replace>
+      <replace>as Map$1</replace>
+      <replace>IsInstanceOf</replace>
+      <replace>[Iterable]</replace>
+      <replace>_foldStringDynamic(result)</replace>
+      <replace>Angel(MirrorsReflector())</replace>
+      <replace>json.encode</replace>
+      <replace>Angel(reflector: M</replace>
+      <replace>dart:convert</replace>
+      <replace>dart:io</replace>
+      <replace>json.decode</replace>
+      <replace>rawRequest.</replace>
+      <replace>rawResponse.</replace>
+      <replace>));</replace>
+      <replace>req</replace>
+      <replace>req.container</replace>
+      <replace>close()</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>C:\Users\thosa\Source\Angel\framework\lib</dir>
+      <dir>C:\Users\thosa\Source\Angel\framework\lib\src\http</dir>
+      <dir>C:\Users\thosa\Source\Angel\framework\test</dir>
+      <dir>$PROJECT_DIR$/lib/src</dir>
+      <dir>$PROJECT_DIR$/lib</dir>
+      <dir>$PROJECT_DIR$/test</dir>
+      <dir>$PROJECT_DIR$</dir>
+      <dir>$PROJECT_DIR$/lib/src/core</dir>
+    </dirStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="1.0.0" />
+      </map>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/test/hm.dart" />
+        <option value="$PROJECT_DIR$/test/find_one_test.dart" />
+        <option value="$PROJECT_DIR$/test/extension_test.dart" />
+        <option value="$PROJECT_DIR$/test/accepts_test.dart" />
+        <option value="$PROJECT_DIR$/example/templating.dart" />
+        <option value="$PROJECT_DIR$/lib/hooks.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/typed_service.dart" />
+        <option value="$PROJECT_DIR$/test/typed_service_test.dart" />
+        <option value="$PROJECT_DIR$/test/all.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/angel_base.dart" />
+        <option value="$PROJECT_DIR$/test/general_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/metadata.dart" />
+        <option value="$PROJECT_DIR$/example/view.dart" />
+        <option value="$PROJECT_DIR$/test/di_test.dart" />
+        <option value="$PROJECT_DIR$/test/repeat_request_test.dart" />
+        <option value="$PROJECT_DIR$/test/controller_test.dart" />
+        <option value="$PROJECT_DIR$/performance/hello/main.dart" />
+        <option value="$PROJECT_DIR$/test/primitives_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/http_request_context.dart" />
+        <option value="$PROJECT_DIR$/example/handle_error.dart" />
+        <option value="$PROJECT_DIR$/example/json.dart" />
+        <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.3/lib/src/mirrors/reflector.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/controller.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/injection.dart" />
+        <option value="$PROJECT_DIR$/example/main.dart" />
+        <option value="$PROJECT_DIR$/test/view_generator_test.dart" />
+        <option value="$PROJECT_DIR$/test/common.dart" />
+        <option value="$PROJECT_DIR$/test/server_test.dart" />
+        <option value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
+        <option value="$PROJECT_DIR$/test/serialize_test.dart" />
+        <option value="$PROJECT_DIR$/test/precontained_test.dart" />
+        <option value="$PROJECT_DIR$/test/encoders_buffer_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/util.dart" />
+        <option value="$PROJECT_DIR$/test/routing_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/response_context.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/angel_http.dart" />
+        <option value="$PROJECT_DIR$/lib/src/http/http_response_context.dart" />
+        <option value="$PROJECT_DIR$/test/streaming_test.dart" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/lib/src/core/request_context.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/anonymous_service.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/service.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/map_service.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/routable.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/server.dart" />
+        <option value="$PROJECT_DIR$/test/services_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/hooked_service.dart" />
+        <option value="$PROJECT_DIR$/lib/src/core/core.dart" />
+        <option value="$PROJECT_DIR$/test/hooked_test.dart" />
+        <option value="$PROJECT_DIR$/CHANGELOG.md" />
+        <option value="$PROJECT_DIR$/pubspec.yaml" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="MavenProjectNavigator">
+    <treeState>
+      <expand />
+      <select />
+    </treeState>
+  </component>
+  <component name="NodePackageJsonFileManager">
+    <packageJsonPaths />
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="94" />
+    <option name="y" value="23" />
+    <option name="width" value="1342" />
+    <option name="height" value="784" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="Scope" currentSubView="Project Files" proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="AndroidView" />
+      <pane id="ProjectPane" />
+      <pane id="PackagesPane" />
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="example" type="cbb8eebc:String" user="example" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="lib" type="cbb8eebc:String" user="lib" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="lib" type="cbb8eebc:String" user="lib" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="lib" type="cbb8eebc:String" user="lib" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="core" type="cbb8eebc:String" user="core" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="lib" type="cbb8eebc:String" user="lib" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="http" type="cbb8eebc:String" user="http" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="framework" type="cbb8eebc:String" user="framework" />
+              <item name="test" type="cbb8eebc:String" user="test" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="GO_FMT" value="false" />
+    <property name="HbShouldOpenHtmlAsHb" value="" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/thosakwe/Source/Dart/framework/lib/src/http/request_context.dart" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="dart.analysis.tool.window.force.activate" value="false" />
+    <property name="go.gopath.indexing.explicitly.defined" value="true" />
+    <property name="js-jscs-nodeInterpreter" value="C:\Program Files (x86)\nodejs\node.exe" />
+    <property name="js.eslint.eslintPackage" value="" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path" value="node" />
+    <property name="options.lastSelected" value="preferences.externalResources" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="dart.settings" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test" />
+      <recent name="$PROJECT_DIR$/lib/src/core" />
+      <recent name="$PROJECT_DIR$/lib/src/http" />
+      <recent name="$PROJECT_DIR$/lib/src/util" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Dart Test.tests in framework (PRODUCTION)">
+    <configuration name="Can serialize function result as JSON in routing_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/routing_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="Can serialize function result as JSON" />
+    </configuration>
+    <configuration name="Chained routes in routing_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/routing_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="Chained routes" />
+    </configuration>
+    <configuration name="can create data in services_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/services_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="can create data" />
+    </configuration>
+    <configuration name="can delete data in services_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/services_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="can delete data" />
+    </configuration>
+    <configuration name="can send html in server_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/server_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="can send html" />
+    </configuration>
+    <configuration name="can use app.properties like members in util_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/util_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="can use app.properties like members" />
+      <option name="testRunnerOptions" value="-j 4" />
+    </configuration>
+    <configuration name="contains provider in before and after in hooked_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/hooked_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="contains provider in before and after" />
+    </configuration>
+    <configuration name="default view generator in view_generator_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/view_generator_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="default view generator" />
+    </configuration>
+    <configuration name="global injection added to injection map in server_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/server_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="global injection added to injection map" />
+      <option name="testRunnerOptions" value="-j 4" />
+    </configuration>
+    <configuration name="handleAngelHttpException in server_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/server_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="handleAngelHttpException" />
+    </configuration>
+    <configuration name="listen before and after in hooked_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/hooked_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="listen before and after" />
+    </configuration>
+    <configuration name="middleware in controller_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/controller_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="middleware" />
+    </configuration>
+    <configuration name="only uses one encoder in encoders_buffer_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/encoders_buffer_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="only uses one encoder" />
+    </configuration>
+    <configuration name="tests in accepts_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/accepts_test.dart" />
+      <option name="testName" value="accepts_test.dart" />
+    </configuration>
+    <configuration name="tests in anonymous_service_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/anonymous_service_test.dart" />
+      <option name="testName" value="anonymous_service_test.dart" />
+    </configuration>
+    <configuration name="tests in encoders_buffer_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/encoders_buffer_test.dart" />
+      <option name="testName" value="encoders_buffer_test.dart" />
+    </configuration>
+    <configuration name="tests in exception_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/exception_test.dart" />
+      <option name="testName" value="exception_test.dart" />
+    </configuration>
+    <configuration name="tests in extension_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/extension_test.dart" />
+      <option name="testName" value="extension_test.dart" />
+    </configuration>
+    <configuration name="tests in parameter_meta_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/parameter_meta_test.dart" />
+      <option name="testName" value="parameter_meta_test.dart" />
+    </configuration>
+    <configuration name="tests in precontained_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/precontained_test.dart" />
+      <option name="testName" value="precontained_test.dart" />
+    </configuration>
+    <configuration name="tests in primitives_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/primitives_test.dart" />
+      <option name="testName" value="primitives_test.dart" />
+    </configuration>
+    <configuration name="tests in repeat_request_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/repeat_request_test.dart" />
+      <option name="testName" value="repeat_request_test.dart" />
+    </configuration>
+    <configuration name="tests in server_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/server_test.dart" />
+      <option name="testName" value="server_test.dart" />
+    </configuration>
+    <configuration name="tests in streaming_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/streaming_test.dart" />
+      <option name="testName" value="streaming_test.dart" />
+    </configuration>
+    <configuration name="tests in typed_service_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/typed_service_test.dart" />
+      <option name="testName" value="typed_service_test.dart" />
+    </configuration>
+    <configuration default="true" type="BashConfigurationType" factoryName="Bash">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="INTERPRETER_PATH" value="C:\Windows\system32\bash.exe" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <module name="" />
+      <envs />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="cucumber.js" factoryName="Cucumber.js">
+      <option name="cucumberJsArguments" value="" />
+      <option name="executablePath" />
+      <option name="filePath" />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+    </configuration>
+    <list>
+      <item itemvalue="Dart Command Line App.All Tests (PRODUCTION)" />
+      <item itemvalue="Dart Command Line App.performance::hello (DEV)" />
+      <item itemvalue="Dart Command Line App.performance::hello (PRODUCTION)" />
+      <item itemvalue="Dart Command Line App.All Tests (for coverage)" />
+      <item itemvalue="Dart Command Line App.performance::hello::raw" />
+      <item itemvalue="Dart Command Line App.main.dart" />
+      <item itemvalue="Dart Command Line App.view.dart" />
+      <item itemvalue="Dart Command Line App.handle_error.dart" />
+      <item itemvalue="Dart Command Line App.json.dart" />
+      <item itemvalue="Dart Test.tests in framework" />
+      <item itemvalue="Dart Test.tests in framework (PRODUCTION)" />
+      <item itemvalue="Dart Test.Can serialize function result as JSON in routing_test.dart" />
+      <item itemvalue="Dart Test.Match routes, even with query params in routing_test.dart" />
+      <item itemvalue="Dart Test.listen before and after in hooked_test.dart" />
+      <item itemvalue="Dart Test.tests in extension_test.dart" />
+      <item itemvalue="Dart Test.global injection added to injection map in server_test.dart" />
+      <item itemvalue="Dart Test.middleware in controller_test.dart" />
+      <item itemvalue="Dart Test.injects header or throws in parameter_meta_test.dart" />
+      <item itemvalue="Dart Test.injects session or throws in parameter_meta_test.dart" />
+      <item itemvalue="Dart Test.tests in parameter_meta_test.dart" />
+      <item itemvalue="Dart Test.Chained routes in routing_test.dart" />
+      <item itemvalue="Dart Test.only match route with matching method in routing_test.dart" />
+      <item itemvalue="Dart Test.only uses one encoder in encoders_buffer_test.dart" />
+      <item itemvalue="Dart Test.can send html in server_test.dart" />
+      <item itemvalue="Dart Test.tests in primitives_test.dart" />
+      <item itemvalue="Dart Test.tests in repeat_request_test.dart" />
+      <item itemvalue="Dart Test.tests in encoders_buffer_test.dart" />
+      <item itemvalue="Dart Test.tests in streaming_test.dart" />
+      <item itemvalue="Dart Test.can create data in services_test.dart" />
+      <item itemvalue="Dart Test.can delete data in services_test.dart" />
+      <item itemvalue="Dart Test.can use app.properties like members in util_test.dart" />
+      <item itemvalue="Dart Test.tests in accepts_test.dart" />
+      <item itemvalue="Dart Test.contains provider in before and after in hooked_test.dart" />
+      <item itemvalue="Dart Test.tests in server_test.dart" />
+      <item itemvalue="Dart Test.tests in anonymous_service_test.dart" />
+      <item itemvalue="Dart Test.tests in exception_test.dart" />
+      <item itemvalue="Dart Test.tests in typed_service_test.dart" />
+      <item itemvalue="Dart Test.default view generator in view_generator_test.dart" />
+      <item itemvalue="Dart Test.tests in precontained_test.dart" />
+      <item itemvalue="Dart Test.Controller Tests" />
+      <item itemvalue="Dart Test.DI Tests" />
+      <item itemvalue="Dart Test.Hooked Tests" />
+      <item itemvalue="Dart Test.Routing Tests" />
+      <item itemvalue="Dart Test.tests in server_test.dart (PRODUCTION)" />
+      <item itemvalue="Dart Test.All Tests" />
+      <item itemvalue="Dart Test.cannot write after close in streaming_test.dart" />
+      <item itemvalue="Dart Test.encoding in encoders_buffer_test.dart" />
+      <item itemvalue="Dart Test.encoding in streaming_test.dart" />
+      <item itemvalue="Dart Test.handleAngelHttpException in server_test.dart" />
+      <item itemvalue="Dart Test.can fetch data in services_test.dart" />
+      <item itemvalue="Dart Test.tests in find_one_test.dart" />
+      <item itemvalue="Dart Test.metadata in hooked_test.dart" />
+      <item itemvalue="Dart Test.Middleware via metadata in routing_test.dart" />
+    </list>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7b89ff1e-1260-4dcf-9c3d-345de0471ea1" name="Default" comment="" />
+      <created>1481236071442</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1481236071442</updated>
+      <workItem from="1481236073268" duration="1150000" />
+      <workItem from="1481238230885" duration="38000" />
+      <workItem from="1481377809918" duration="1319000" />
+      <workItem from="1481389675241" duration="158000" />
+      <workItem from="1481390924053" duration="19000" />
+      <workItem from="1483149948840" duration="930000" />
+      <workItem from="1484451782119" duration="617000" />
+      <workItem from="1492276672342" duration="1478000" />
+      <workItem from="1493086837879" duration="726000" />
+      <workItem from="1493088139942" duration="140000" />
+      <workItem from="1493090308747" duration="91000" />
+      <workItem from="1493247154761" duration="249000" />
+      <workItem from="1493439393087" duration="103000" />
+      <workItem from="1495887910182" duration="895000" />
+      <workItem from="1495996220490" duration="67000" />
+      <workItem from="1496058266595" duration="1116000" />
+      <workItem from="1496752349569" duration="695000" />
+      <workItem from="1497200020318" duration="40000" />
+      <workItem from="1497200155899" duration="120000" />
+      <workItem from="1497825298573" duration="2603000" />
+      <workItem from="1497985699191" duration="902000" />
+      <workItem from="1498770817945" duration="3845000" />
+      <workItem from="1498826328044" duration="5519000" />
+      <workItem from="1498960523007" duration="89000" />
+      <workItem from="1499604258765" duration="188000" />
+      <workItem from="1499618669602" duration="520000" />
+      <workItem from="1499726708949" duration="2021000" />
+      <workItem from="1499805699713" duration="409000" />
+      <workItem from="1499967777286" duration="36000" />
+      <workItem from="1500824399224" duration="86000" />
+      <workItem from="1501768538452" duration="11206000" />
+      <workItem from="1502831499213" duration="7608000" />
+      <workItem from="1503931951079" duration="2851000" />
+      <workItem from="1506050384140" duration="5198000" />
+      <workItem from="1506088028663" duration="997000" />
+      <workItem from="1506090042437" duration="1751000" />
+      <workItem from="1506275395906" duration="424000" />
+      <workItem from="1506281553143" duration="657000" />
+      <workItem from="1507123481086" duration="2629000" />
+      <workItem from="1507496428508" duration="1038000" />
+      <workItem from="1507502664740" duration="80000" />
+      <workItem from="1507556590639" duration="230000" />
+      <workItem from="1507641822711" duration="9103000" />
+      <workItem from="1507683296351" duration="15215000" />
+      <workItem from="1507775636910" duration="962000" />
+      <workItem from="1508004276122" duration="3000" />
+      <workItem from="1509177543314" duration="8319000" />
+      <workItem from="1511026448813" duration="1268000" />
+      <workItem from="1511549258198" duration="9423000" />
+      <workItem from="1511567573554" duration="731000" />
+      <workItem from="1511569587672" duration="606000" />
+      <workItem from="1511642216372" duration="531000" />
+      <workItem from="1511674447575" duration="576000" />
+      <workItem from="1511749291765" duration="8015000" />
+      <workItem from="1512570822083" duration="1079000" />
+      <workItem from="1512882177311" duration="187000" />
+      <workItem from="1513103172812" duration="165000" />
+      <workItem from="1513103483207" duration="18000" />
+      <workItem from="1513103506825" duration="139000" />
+      <workItem from="1517332581856" duration="858000" />
+      <workItem from="1517973177718" duration="9736000" />
+      <workItem from="1522434729364" duration="100000" />
+      <workItem from="1523041434716" duration="3254000" />
+      <workItem from="1526435792950" duration="2668000" />
+      <workItem from="1526439485584" duration="1904000" />
+      <workItem from="1528385352077" duration="29000" />
+      <workItem from="1528432209488" duration="9947000" />
+      <workItem from="1528668755509" duration="1661000" />
+      <workItem from="1528671477893" duration="1263000" />
+      <workItem from="1529435353495" duration="592000" />
+      <workItem from="1529523346006" duration="682000" />
+      <workItem from="1529713102021" duration="161000" />
+      <workItem from="1529722767717" duration="59000" />
+      <workItem from="1529722829709" duration="1759000" />
+      <workItem from="1529724977574" duration="1752000" />
+      <workItem from="1530115464302" duration="135000" />
+      <workItem from="1530124258733" duration="601000" />
+      <workItem from="1530230623749" duration="89000" />
+      <workItem from="1531145856019" duration="691000" />
+      <workItem from="1531146644160" duration="3494000" />
+      <workItem from="1531151880119" duration="141000" />
+      <workItem from="1531154836670" duration="378000" />
+      <workItem from="1531407760497" duration="1958000" />
+      <workItem from="1533353660185" duration="262000" />
+      <workItem from="1534009494986" duration="594000" />
+      <workItem from="1534546784803" duration="353000" />
+      <workItem from="1534547885788" duration="9908000" />
+      <workItem from="1534793956753" duration="15012000" />
+      <workItem from="1534863259966" duration="198000" />
+      <workItem from="1534873119036" duration="4624000" />
+      <workItem from="1536696642254" duration="1497000" />
+      <workItem from="1536698151028" duration="788000" />
+    </task>
+    <task id="LOCAL-00118" summary="Make reflector a named parameter">
+      <created>1534732811445</created>
+      <option name="number" value="00118" />
+      <option name="presentableId" value="LOCAL-00118" />
+      <option name="project" value="LOCAL" />
+      <updated>1534732811445</updated>
+    </task>
+    <task id="LOCAL-00119" summary="Force dep on Dart &gt;=2.0.0-dev">
+      <created>1534732848038</created>
+      <option name="number" value="00119" />
+      <option name="presentableId" value="LOCAL-00119" />
+      <option name="project" value="LOCAL" />
+      <updated>1534732848038</updated>
+    </task>
+    <task id="LOCAL-00120" summary="CHANGELOG now only reflects on 2.0.0-alpha+">
+      <created>1534732927698</created>
+      <option name="number" value="00120" />
+      <option name="presentableId" value="LOCAL-00120" />
+      <option name="project" value="LOCAL" />
+      <updated>1534732927698</updated>
+    </task>
+    <task id="LOCAL-00121" summary="Remove Jael example">
+      <created>1534733134792</created>
+      <option name="number" value="00121" />
+      <option name="presentableId" value="LOCAL-00121" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733134792</updated>
+    </task>
+    <task id="LOCAL-00122" summary="Depend on package:file">
+      <created>1534733155846</created>
+      <option name="number" value="00122" />
+      <option name="presentableId" value="LOCAL-00122" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733155846</updated>
+    </task>
+    <task id="LOCAL-00123" summary="Upgrade combinator dependency">
+      <created>1534733208240</created>
+      <option name="number" value="00123" />
+      <option name="presentableId" value="LOCAL-00123" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733208240</updated>
+    </task>
+    <task id="LOCAL-00124" summary="Upgrade body_parser dependency">
+      <created>1534733242302</created>
+      <option name="number" value="00124" />
+      <option name="presentableId" value="LOCAL-00124" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733242302</updated>
+    </task>
+    <task id="LOCAL-00125" summary="Update description">
+      <created>1534733436519</created>
+      <option name="number" value="00125" />
+      <option name="presentableId" value="LOCAL-00125" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733436520</updated>
+    </task>
+    <task id="LOCAL-00126" summary="Completely removed the `AngelBase` class">
+      <created>1534733754509</created>
+      <option name="number" value="00126" />
+      <option name="presentableId" value="LOCAL-00126" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733754509</updated>
+    </task>
+    <task id="LOCAL-00127" summary="Completely removed the `AngelBase` class">
+      <created>1534733780470</created>
+      <option name="number" value="00127" />
+      <option name="presentableId" value="LOCAL-00127" />
+      <option name="project" value="LOCAL" />
+      <updated>1534733780470</updated>
+    </task>
+    <task id="LOCAL-00128" summary="Remove all usage of dart2_constant">
+      <created>1534734389546</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1534734389546</updated>
+    </task>
+    <task id="LOCAL-00129" summary="Add more to parseId">
+      <created>1534735099537</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1534735099537</updated>
+    </task>
+    <task id="LOCAL-00130" summary="Make parseId static + docs">
+      <created>1534735212786</created>
+      <option name="number" value="00130" />
+      <option name="presentableId" value="LOCAL-00130" />
+      <option name="project" value="LOCAL" />
+      <updated>1534735212787</updated>
+    </task>
+    <task id="LOCAL-00131" summary="Make RequestContext generic">
+      <created>1534735654118</created>
+      <option name="number" value="00131" />
+      <option name="presentableId" value="LOCAL-00131" />
+      <option name="project" value="LOCAL" />
+      <updated>1534735654118</updated>
+    </task>
+    <task id="LOCAL-00132" summary="Make RequestContext generic">
+      <created>1534735707304</created>
+      <option name="number" value="00132" />
+      <option name="presentableId" value="LOCAL-00132" />
+      <option name="project" value="LOCAL" />
+      <updated>1534735707304</updated>
+    </task>
+    <task id="LOCAL-00133" summary="Completely remove RequestContext.io">
+      <created>1534735919739</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1534735919739</updated>
+    </task>
+    <task id="LOCAL-00134" summary="Completely remove ResponseContext.io">
+      <created>1534736377619</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
+      <option name="project" value="LOCAL" />
+      <updated>1534736377619</updated>
+    </task>
+    <task id="LOCAL-00135" summary="Rename HTTP request+response impl, drop the &quot;impl&quot;">
+      <created>1534736459394</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
+      <option name="project" value="LOCAL" />
+      <updated>1534736459394</updated>
+    </task>
+    <task id="LOCAL-00136" summary="Make lazy parsing the default">
+      <created>1534736798816</created>
+      <option name="number" value="00136" />
+      <option name="presentableId" value="LOCAL-00136" />
+      <option name="project" value="LOCAL" />
+      <updated>1534736798816</updated>
+    </task>
+    <task id="LOCAL-00137" summary="Rename body parsing methods">
+      <created>1534737069329</created>
+      <option name="number" value="00137" />
+      <option name="presentableId" value="LOCAL-00137" />
+      <option name="project" value="LOCAL" />
+      <updated>1534737069329</updated>
+    </task>
+    <task id="LOCAL-00138" summary="Update query parsing">
+      <created>1534738194991</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1534738194991</updated>
+    </task>
+    <task id="LOCAL-00139" summary="Update CHANGELOG">
+      <created>1534738209023</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
+      <option name="project" value="LOCAL" />
+      <updated>1534738209023</updated>
+    </task>
+    <task id="LOCAL-00140" summary="Remove req.injections">
+      <created>1534794125343</created>
+      <option name="number" value="00140" />
+      <option name="presentableId" value="LOCAL-00140" />
+      <option name="project" value="LOCAL" />
+      <updated>1534794125343</updated>
+    </task>
+    <task id="LOCAL-00141" summary="Remove Angel.inject">
+      <created>1534794207777</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
+      <option name="project" value="LOCAL" />
+      <updated>1534794207778</updated>
+    </task>
+    <task id="LOCAL-00142" summary="Remove dep on package:pool">
+      <created>1534794372882</created>
+      <option name="number" value="00142" />
+      <option name="presentableId" value="LOCAL-00142" />
+      <option name="project" value="LOCAL" />
+      <updated>1534794372882</updated>
+    </task>
+    <task id="LOCAL-00143" summary="waterfall now only accepts RequestHandler">
+      <created>1534794629985</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
+      <option name="project" value="LOCAL" />
+      <updated>1534794629985</updated>
+    </task>
+    <task id="LOCAL-00144" summary="Remove req.inject">
+      <created>1534794764995</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
+      <option name="project" value="LOCAL" />
+      <updated>1534794764995</updated>
+    </task>
+    <task id="LOCAL-00145" summary="Implement HttpReqCtx.container">
+      <created>1534794944288</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
+      <option name="project" value="LOCAL" />
+      <updated>1534794944288</updated>
+    </task>
+    <task id="LOCAL-00146" summary="Remove usage of removed symbols">
+      <created>1534795218407</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1534795218407</updated>
+    </task>
+    <task id="LOCAL-00147" summary="Force all handlers to (req, res) { ... }">
+      <created>1534796466854</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1534796466854</updated>
+    </task>
+    <task id="LOCAL-00148" summary="Move all existing handlers to (req, res) or IoC-based">
+      <created>1534797818435</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1534797818435</updated>
+    </task>
+    <task id="LOCAL-00149" summary="Removed debug property">
+      <created>1534798410411</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1534798410411</updated>
+    </task>
+    <task id="LOCAL-00150" summary="Starts up, but is broken">
+      <created>1534798717707</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1534798717707</updated>
+    </task>
+    <task id="LOCAL-00151" summary="Routable.use only accepts a Service">
+      <created>1534812824990</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1534812824990</updated>
+    </task>
+    <task id="LOCAL-00152" summary="Add flags to Angel constructor">
+      <created>1534813505067</created>
+      <option name="number" value="00152" />
+      <option name="presentableId" value="LOCAL-00152" />
+      <option name="project" value="LOCAL" />
+      <updated>1534813505067</updated>
+    </task>
+    <task id="LOCAL-00153" summary="Catch sync errors when using zone">
+      <created>1534813932227</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
+      <option name="project" value="LOCAL" />
+      <updated>1534813932227</updated>
+    </task>
+    <task id="LOCAL-00154" summary="ResponseContext.isBuffered">
+      <created>1534814859355</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1534814859355</updated>
+    </task>
+    <task id="LOCAL-00155" summary="Make LockableBytesBuilder public">
+      <created>1534815148128</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1534815148128</updated>
+    </task>
+    <task id="LOCAL-00156" summary="Remove ResponseContext.dispose">
+      <created>1534815933898</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1534815933898</updated>
+    </task>
+    <task id="LOCAL-00157" summary="Remove releaseCOrrespondingRequest">
+      <created>1534816646962</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1534816646962</updated>
+    </task>
+    <task id="LOCAL-00158" summary="ioc uses executeHandler">
+      <created>1534819472503</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1534819472503</updated>
+    </task>
+    <task id="LOCAL-00159" summary="Default to const EmptyReflector()">
+      <created>1534861361523</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
+      <option name="project" value="LOCAL" />
+      <updated>1534861361524</updated>
+    </task>
+    <task id="LOCAL-00160" summary="dart:mirrors is completely gone from Angel">
+      <created>1534861733989</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
+      <option name="project" value="LOCAL" />
+      <updated>1534861733990</updated>
+    </task>
+    <task id="LOCAL-00161" summary="All tests pass">
+      <created>1534877443455</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1534877443455</updated>
+    </task>
+    <task id="LOCAL-00162" summary="CHANGELOG + bump to 2.0.0-alpha.1">
+      <created>1534877529522</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1534877529522</updated>
+    </task>
+    <task id="LOCAL-00163" summary="Add &lt;Id, Data&gt;">
+      <created>1536696871863</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1536696871864</updated>
+    </task>
+    <task id="LOCAL-00164" summary="Added generic to Routable.use">
+      <created>1536697507787</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1536697507787</updated>
+    </task>
+    <task id="LOCAL-00165" summary="Add generics to hooked service listeners">
+      <created>1536698069495</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1536698069495</updated>
+    </task>
+    <task id="LOCAL-00166" summary="Bump to 2.0.0-alpha.3">
+      <created>1536698423774</created>
+      <option name="number" value="00166" />
+      <option name="presentableId" value="LOCAL-00166" />
+      <option name="project" value="LOCAL" />
+      <updated>1536698423774</updated>
+    </task>
+    <option name="localTasksCounter" value="167" />
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="tests_in_framework - 2018.08.21 at 14h 38m 02s.xml">
+      <configuration name="tests in framework" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="encoding_in_encoders_buffer_test_dart - 2018.08.21 at 14h 39m 23s.xml">
+      <configuration name="encoding in encoders_buffer_test.dart" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="tests_in_framework - 2018.08.21 at 14h 40m 24s.xml">
+      <configuration name="tests in framework" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="tests_in_streaming_test_dart - 2018.08.21 at 14h 40m 35s.xml">
+      <configuration name="tests in streaming_test.dart" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="encoding_in_streaming_test_dart - 2018.08.21 at 14h 41m 04s.xml">
+      <configuration name="encoding in streaming_test.dart" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="encoding_in_streaming_test_dart - 2018.08.21 at 14h 45m 12s.xml">
+      <configuration name="encoding in streaming_test.dart" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="encoding_in_streaming_test_dart - 2018.08.21 at 14h 45m 57s.xml">
+      <configuration name="encoding in streaming_test.dart" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="encoding_in_streaming_test_dart - 2018.08.21 at 14h 46m 49s.xml">
+      <configuration name="encoding in streaming_test.dart" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="tests_in_framework - 2018.08.21 at 14h 47m 22s.xml">
+      <configuration name="tests in framework" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+    <history-entry file="tests_in_framework_(PRODUCTION) - 2018.08.21 at 14h 48m 10s.xml">
+      <configuration name="tests in framework (PRODUCTION)" configurationId="DartTestRunConfigurationType" />
+    </history-entry>
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="194326000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="94" y="23" width="1342" height="784" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info anchor="right" id="Palette" order="3" />
+      <window_info anchor="bottom" id="Tool Output" order="7" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5035524" side_tool="true" weight="0.34188035" />
+      <window_info anchor="right" id="Maven Projects" order="3" />
+      <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Dart Analysis" order="7" weight="0.31004366" />
+      <window_info anchor="right" id="Flutter Outline" order="4" />
+      <window_info id="Capture Tool" order="2" />
+      <window_info id="Designer" order="2" />
+      <window_info anchor="right" id="Database" order="3" />
+      <window_info anchor="bottom" id="ANTLR Preview" order="7" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.24962063" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info id="UI Designer" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39857143" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32714286" />
+      <window_info anchor="bottom" id="Messages" order="7" weight="0.33478895" />
+      <window_info anchor="right" id="Palette&#9;" order="3" />
+      <window_info id="Image Layers" order="2" />
+      <window_info anchor="right" id="Capture Analysis" order="3" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4964476" weight="0.3973799" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32905984" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.44978166" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.28615385" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32905984" />
+      <window_info anchor="right" id="SciView" order="4" />
+      <window_info anchor="right" id="Theme Preview" order="3" />
+      <window_info id="Favorites" order="3" side_tool="true" />
+      <window_info anchor="right" id="Flutter Inspector" order="4" />
+      <window_info anchor="bottom" id="DB Execution Console" order="8" />
+      <window_info anchor="right" id="Coverage" order="3" side_tool="true" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info id="DB Browser" order="2" weight="0.32998413" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Data View" order="4" />
+      <window_info anchor="bottom" id="Message" order="0" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <MESSAGE value="Remove dep on package:pool" />
+    <MESSAGE value="waterfall now only accepts RequestHandler" />
+    <MESSAGE value="Remove req.inject" />
+    <MESSAGE value="Implement HttpReqCtx.container" />
+    <MESSAGE value="Remove usage of removed symbols" />
+    <MESSAGE value="Force all handlers to (req, res) { ... }" />
+    <MESSAGE value="Move all existing handlers to (req, res) or IoC-based" />
+    <MESSAGE value="Removed debug property" />
+    <MESSAGE value="Starts up, but is broken" />
+    <MESSAGE value="Routable.use only accepts a Service" />
+    <MESSAGE value="Add flags to Angel constructor" />
+    <MESSAGE value="Catch sync errors when using zone" />
+    <MESSAGE value="ResponseContext.isBuffered" />
+    <MESSAGE value="Make LockableBytesBuilder public" />
+    <MESSAGE value="Remove ResponseContext.dispose" />
+    <MESSAGE value="Remove releaseCOrrespondingRequest" />
+    <MESSAGE value="ioc uses executeHandler" />
+    <MESSAGE value="Default to const EmptyReflector()" />
+    <MESSAGE value="dart:mirrors is completely gone from Angel" />
+    <MESSAGE value="All tests pass" />
+    <MESSAGE value="CHANGELOG + bump to 2.0.0-alpha.1" />
+    <MESSAGE value="Add &lt;Id, Data&gt;" />
+    <MESSAGE value="Added generic to Routable.use" />
+    <MESSAGE value="Add generics to hooked service listeners" />
+    <MESSAGE value="Bump to 2.0.0-alpha.3" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bump to 2.0.0-alpha.3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="6" />
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/example/json.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-282">
+          <caret column="20" selection-start-column="20" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/performance/hello/main.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="258">
+          <caret line="26" column="22" selection-start-line="26" selection-start-column="22" selection-end-line="26" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/Cellar/dart/2.0.0/libexec/lib/async/future.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="259" column="17" selection-start-line="259" selection-start-column="17" selection-end-line="259" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.2/lib/src/mirrors/reflector.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="220">
+          <caret line="32" column="40" selection-start-line="32" selection-start-column="40" selection-end-line="32" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.3/lib/src/mirrors/reflector.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="188" column="26" selection-start-line="188" selection-start-column="26" selection-end-line="188" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/opt/dart/libexec/lib/internal/iterable.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="413" column="28" selection-start-line="413" selection-start-column="28" selection-end-line="413" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.4/lib/src/mirrors/reflector.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="81">
+          <caret line="52" column="43" selection-start-line="52" selection-start-column="43" selection-end-line="52" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.4/lib/src/reflector.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="166" column="6" selection-start-line="166" selection-start-column="6" selection-end-line="166" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_route-3.0.0/lib/src/router.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="97">
+          <caret line="361" column="11" selection-start-line="361" selection-start-column="11" selection-end-line="361" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/angel_container-1.0.0-alpha.5/lib/src/reflector.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="430">
+          <caret line="53" column="7" selection-start-line="53" selection-start-column="7" selection-end-line="53" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/controller.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="109">
+          <caret line="100" column="45" lean-forward="true" selection-start-line="100" selection-start-column="45" selection-end-line="100" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pubspec.lock">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="208">
+          <caret line="13" column="12" selection-start-line="13" selection-start-column="12" selection-end-line="13" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/accepts_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="41" column="67" lean-forward="true" selection-start-line="41" selection-start-column="67" selection-end-line="41" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/extension_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="256">
+          <caret line="16" column="33" lean-forward="true" selection-start-line="16" selection-start-column="33" selection-end-line="16" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/exception_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-602" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/find_one_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/general_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="15" column="62" lean-forward="true" selection-start-line="15" selection-start-column="62" selection-end-line="15" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/view_generator_test.dart">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file:///usr/local/Cellar/dart/2.0.0/libexec/lib/_http/http.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="1010" column="57" lean-forward="true" selection-start-line="1010" selection-start-column="57" selection-end-line="1010" selection-end-column="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/http.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/server_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="193">
+          <caret line="25" column="22" lean-forward="true" selection-start-line="25" selection-start-column="22" selection-end-line="25" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/parameter_meta_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="163">
+          <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/serialize_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="134">
+          <caret line="17" column="38" selection-start-line="17" selection-start-column="38" selection-end-line="17" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/injection.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="29">
+          <caret line="136" column="17" selection-start-line="136" selection-start-column="17" selection-end-line="136" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/metadata.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/routing_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="115">
+          <caret line="68" lean-forward="true" selection-start-line="68" selection-end-line="69" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/response_context.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="186">
+          <caret line="309" column="12" selection-start-line="309" selection-start-column="12" selection-end-line="309" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/mock_request-1.0.3/lib/src/response.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="89" column="11" selection-start-line="89" selection-start-column="11" selection-end-line="89" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/util.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="21" column="19" lean-forward="true" selection-start-line="21" selection-start-column="19" selection-end-line="21" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/di_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="24" column="41" lean-forward="true" selection-start-line="24" selection-start-column="41" selection-end-line="24" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/example/main.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="368">
+          <caret line="23" column="19" lean-forward="true" selection-start-line="23" selection-start-column="19" selection-end-line="23" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/angel_http.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="328" column="36" lean-forward="true" selection-start-line="328" selection-start-column="36" selection-end-line="328" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/encoders_buffer_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="41" column="11" lean-forward="true" selection-start-line="41" selection-start-column="11" selection-end-line="41" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/streaming_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="172">
+          <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/http/http_response_context.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="154" column="49" selection-start-line="154" selection-start-column="49" selection-end-line="154" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/typed_service.dart" />
+    <entry file="file://$PROJECT_DIR$/lib/src/core/server.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="328" column="3" lean-forward="true" selection-start-line="328" selection-start-column="3" selection-end-line="328" selection-end-column="3" />
+          <folding>
+            <element signature="e#38#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/routable.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="86" column="17" selection-start-line="86" selection-start-column="17" selection-end-line="86" selection-end-column="17" />
+          <folding>
+            <element signature="e#40#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="124">
+            <caret line="20" column="49" selection-start-line="20" selection-start-column="49" selection-end-line="20" selection-end-column="49" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/map_service.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="384">
+          <caret line="24" column="2" selection-start-line="24" selection-start-column="2" selection-end-line="24" selection-end-column="2" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/hooked_service.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7216">
+          <caret line="459" column="46" selection-start-line="459" selection-start-column="46" selection-end-line="459" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/core.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/common.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="31" column="27" lean-forward="true" selection-start-line="31" selection-start-column="27" selection-end-line="31" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="144">
+            <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/anonymous_service.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="13" column="2" selection-start-line="13" selection-start-column="2" selection-end-line="13" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/hooked_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="416">
+          <caret line="125" column="48" lean-forward="true" selection-start-line="125" selection-start-column="48" selection-end-line="125" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/services_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#46#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/service.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="358">
+          <caret line="191" column="33" lean-forward="true" selection-start-line="191" selection-start-column="33" selection-end-line="191" selection-end-column="33" />
+          <folding>
+            <element signature="e#39#59#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/core/request_context.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="464">
+          <caret line="29" column="29" selection-start-line="29" selection-start-column="29" selection-end-line="29" selection-end-column="29" />
+          <folding>
+            <element signature="e#47#67#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/precontained_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="159">
+          <caret line="10" column="12" lean-forward="true" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>No facets are configured</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <last-edited>jquery</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>framework</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+                <option value="0.6" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <last-edited>Dart SDK</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

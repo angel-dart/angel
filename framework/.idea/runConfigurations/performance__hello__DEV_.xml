@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="performance::hello (DEV)" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/performance/hello/main.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$" />
+    <method />
+  </configuration>
+</component>

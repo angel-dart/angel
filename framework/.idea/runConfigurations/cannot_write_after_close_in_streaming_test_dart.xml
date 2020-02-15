@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="cannot write after close in streaming_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true" nameIsGenerated="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/streaming_test.dart" />
+    <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+    <option name="testName" value="cannot write after close" />
+    <method />
+  </configuration>
+</component>

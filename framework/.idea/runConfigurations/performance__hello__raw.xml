@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="performance::hello::raw" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="checkedMode" value="false" />
+    <option name="filePath" value="$PROJECT_DIR$/performance/hello/raw.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$" />
+    <method />
+  </configuration>
+</component>

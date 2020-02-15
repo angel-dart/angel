@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="tests in server_test.dart (PRODUCTION)" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true">
+    <option name="envs">
+      <entry key="ANGEL_ENV" value="production" />
+    </option>
+    <option name="filePath" value="$PROJECT_DIR$/test/server_test.dart" />
+    <method />
+  </configuration>
+</component>
