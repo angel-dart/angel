@@ -1,0 +1,4 @@
+language: dart
+script: bash tool/.travis.sh
+dart:
+  - stable

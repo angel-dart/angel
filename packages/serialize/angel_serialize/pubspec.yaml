@@ -1,0 +1,13 @@
+name: angel_serialize
+version: 2.2.3+3
+description: Static annotations powering Angel model serialization. Combine with angel_serialize_generator for flexible modeling.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/serialize
+environment:
+  sdk: '>=2.0.0-dev <3.0.0'
+dependencies:
+  angel_model: ^1.0.0
+  collection: ^1.0.0
+  meta: ^1.0.0
+  pedantic: ^1.0.0
+  quiver_hashcode: ^2.0.0

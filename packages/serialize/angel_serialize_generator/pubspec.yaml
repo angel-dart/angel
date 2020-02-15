@@ -1,0 +1,28 @@
+name: angel_serialize_generator
+version: 2.5.0
+description: Model serialization generators, designed for use with Angel. Combine with angel_serialize for flexible modeling.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/serialize
+environment:
+  sdk: '>=2.0.0 <3.0.0'
+dependencies:
+  analyzer: ">=0.27.1 <2.0.0"
+  angel_model: ^1.0.0
+  angel_serialize: ^2.2.0
+  build: ">=0.12.0 <2.0.0"
+  build_config: ">=0.3.0 <2.0.0"
+  code_buffer: ^1.0.0
+  code_builder: ^3.0.0
+  meta: ^1.0.0
+  path: ^1.0.0
+  recase: ^2.0.0
+  source_gen: ^0.9.0
+  quiver: ^2.0.0
+dev_dependencies:
+  build_runner: ^1.0.0
+  collection: ^1.0.0
+  pedantic: ^1.0.0
+  test: ^1.0.0
+# dependency_overrides:
+#   angel_serialize:
+#     path: ../angel_serialize
