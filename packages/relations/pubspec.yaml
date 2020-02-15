@@ -1,0 +1,12 @@
+author: Tobe O <thosakwe@gmail.com>
+description: Database-agnostic relations between Angel services.
+homepage: "https://github.com/angel-dart/relations.git"
+name: angel_relations
+version: 1.0.1
+environment:
+  sdk: ">=1.19.0"
+dependencies: 
+  angel_framework: ^1.0.0-dev
+dev_dependencies:
+  angel_seeder: ^1.0.0
+  test: ^0.12.0
