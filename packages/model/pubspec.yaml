@@ -1,0 +1,9 @@
+name: angel_model
+version: 1.0.3
+description: Angel's basic data model class, no longer with the added weight of the whole framework.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/model
+environment:
+  sdk: ">=1.8.0 <3.0.0"
+dev_dependencies:
+  pedantic: ^1.0.0
