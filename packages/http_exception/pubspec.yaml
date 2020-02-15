@@ -1,0 +1,11 @@
+name: angel_http_exception
+version: 1.1.0
+description: Exception class that can be serialized to JSON and serialized to clients.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/http_exception
+environment:
+  sdk: ">=1.19.0 <3.0.0"
+dependencies:
+  dart2_constant: ^1.0.0
+dev_dependencies:
+  pedantic: ^1.0.0
