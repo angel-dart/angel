@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Multiple Proxies",
+            "type": "dart-cli",
+            "request": "launch",
+            "program": "${workspaceRoot}/example/multiple.dart"
+        }
+    ]
+}
