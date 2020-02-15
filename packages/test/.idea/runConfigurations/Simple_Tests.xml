@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Simple Tests" type="DartTestRunConfigurationType" factoryName="Dart Test" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/test/simple_test.dart" />
+    <option name="testRunnerOptions" value="-j 4" />
+    <method />
+  </configuration>
+</component>
