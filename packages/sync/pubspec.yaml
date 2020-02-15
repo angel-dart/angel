@@ -1,0 +1,15 @@
+name: angel_sync
+version: 2.0.0
+description: Easily synchronize and scale WebSockets using package:pub_sub.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/sync
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  angel_websocket: ^2.0.0-alpha
+  pub_sub: ^2.0.0
+  stream_channel: ^1.0.0
+dev_dependencies:
+  angel_test: ^2.0.0-alpha
+  test: ^1.0.0
