@@ -1,0 +1,13 @@
+name: angel_container
+version: 1.1.0
+author: Tobe O <thosakwe@gmail.com>
+description: A hierarchical DI container, and pluggable backends for reflection.
+homepage: https://github.com/angel-dart/container.git
+environment:
+  sdk: ">=1.8.0 <3.0.0"
+dependencies:
+  collection: ^1.0.0
+  quiver: ^2.0.0
+dev_dependencies:
+  pedantic: ^1.0.0
+  test: ^1.0.0
