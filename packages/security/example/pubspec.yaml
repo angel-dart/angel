@@ -1,0 +1,8 @@
+name: example
+publish_to: none
+dependencies:
+  angel_production: ^1.0.0
+  angel_redis: ^1.0.0
+  angel_security:
+    path: ../
+  pretty_logging: ^1.0.0

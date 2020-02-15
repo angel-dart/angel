@@ -1,0 +1,19 @@
+name: angel_security
+version: 2.0.0-alpha.1
+description: Angel infrastructure for improving security, rate limiting, and more.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/security
+environment: 
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies: 
+  angel_framework: ^2.0.0
+  crypto: ^2.0.0
+dev_dependencies: 
+  angel_auth: ^2.0.0
+  angel_production: ^1.0.0
+  angel_redis: ^1.0.0
+  angel_test: ^2.0.0
+  angel_validate: ^2.0.0
+  pedantic: ^1.0.0
+  pretty_logging: ^1.0.0
+  test: ^1.0.0
