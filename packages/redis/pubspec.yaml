@@ -1,0 +1,13 @@
+name: angel_redis
+version: 1.0.0
+description: An Angel service provider for Redis. Works well for caching volatile data.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/redis
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  angel_http_exception: ^1.0.0
+  resp_client: ^0.1.6
+dev_dependencies:
+  test: ^1.0.0
