@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Simple tool script that pulls an angel-dart/<name> project into ./packages/<name>.
+
+if [ "$1" == "" ]; then
+  echo "usage: pull_subproject <name>"
+  exit 1
+fi
+
+set -ex
+git subtree add prefix="./packages/$1" "https://github.com/angel-dart/$1.git" master
