@@ -7,8 +7,6 @@
 
 **A polished, production-ready backend framework in Dart.**
 
-*Note: This repo is an application boilerplate ,and not the underlying framework library.*
-
 -----
 ## About
 Angel is a full-stack Web framework in Dart. It aims to
@@ -16,10 +14,13 @@ streamline development by providing many common features
 out-of-the-box in a consistent manner.
 
 With features like the following, Angel is the all-in-one framework you should choose to build your next project:
-* [GraphQL Support](https://github.com/angel-dart/graphql)
-* [PostgreSQL ORM](https://github.com/angel-dart/orm)
-* [Dependency Injection](https://docs.angel-dart.dev/guides/dependency-injection)
-* And [much more](https://github.com/angel-dart)...
+* GraphQL Support
+* PostgreSQL ORM
+* Dependency Injection
+* Static File Handling
+* And much more...
+
+See all the packages in the `packages/` directory.
 
 ## Installation & Setup
 
@@ -58,3 +59,5 @@ You can also view the [API Documentation](http://www.dartdocs.org/documentation/
 
 There is also an [Awesome Angel :fire:](https://github.com/angel-dart/awesome-angel) list.
 
+## Contributing
+Interested in contributing to Angel? Start by reading the contribution guide [here](CONTRIBUTING.md).
