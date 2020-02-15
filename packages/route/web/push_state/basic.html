@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/push_state">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Push State Router</title>
+    <style>
+        #routes li {
+            display: inline;
+            margin-right: 1em;
+        }
+    </style>
+</head>
+<body>
+<ul id="routes">
+    <li><a href="/a">Route A</a></li>
+    <li><a href="/b">Route B</a></li>
+    <li><a href="/b/a">Route B/A</a></li>
+    <li><a href="/b/b">Route B/B</a></li>
+    <li><a href="/c">Route C</a></li>
+</ul>
+<h1>No Active Route</h1>
+<i>Handler Sequence:</i>
+<ul id="handlers">
+    <li>(empty)</li>
+</ul>
+<script src="basic.dart.js"></script>
+</body>
+</html>
