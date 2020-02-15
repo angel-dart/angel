@@ -1,0 +1,28 @@
+author: Tobe O <thosakwe@gmail.com>
+description: Command-line tools for the Angel framework, including scaffolding.
+homepage: https://github.com/angel-dart/angel_cli
+name: angel_cli
+version: 2.1.7+1
+dependencies: 
+  analyzer: ">=0.32.0 <2.0.0"
+  args: ^1.0.0
+  code_builder: ^3.0.0
+  dart_style: ^1.0.0
+  glob: ^1.1.0
+  http: ^0.12.0
+  io: ^0.3.2
+  inflection2: ^0.4.2
+  mustache4dart: ^3.0.0-dev.1.0
+  path: ^1.0.0
+  prompts: ^1.0.0
+  pubspec_parse: ^0.1.2
+  quiver: ^2.0.0
+  recase: ^2.0.0
+  shutdown: ^0.4.0
+  watcher: ^0.9.7
+  yaml: ^2.0.0
+  #yamlicious: ^0.0.5
+environment: 
+  sdk: ">=2.0.0-dev <3.0.0"
+executables: 
+  angel: angel
