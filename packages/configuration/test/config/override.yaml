@@ -1,0 +1,5 @@
+hello: goodbye
+foo:
+  version: baz
+merge:
+  hello: goodbye

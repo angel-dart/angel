@@ -1,0 +1,8 @@
+set_via: default
+artist: $JUSTIN
+angel:
+  framework: $ANGEL_FRAMEWORK
+must_be_null: $NONEXISTENT_KEY_FOO_BAR_BAZ_QUUX
+merge:
+  map: true
+  hello: world
