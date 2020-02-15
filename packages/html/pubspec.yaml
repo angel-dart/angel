@@ -1,0 +1,16 @@
+name: angel_html
+version: 2.0.0
+description: Support for rendering html_builder AST's as responses in Angel.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/html_builder
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  html_builder: ^1.0.0
+dev_dependencies:
+  angel_test: ^2.0.0-alpha
+  html: ^0.13.2
+  logging: ^0.11.0
+  test: ^1.0.0
+  pedantic: ^1.0.0
