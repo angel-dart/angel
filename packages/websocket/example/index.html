@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Angel WS</title>
+  </head>
+  <body>
+    <script>
+      var url = location.protocol === "https:" ? "wss://" : "ws://";
+      url += location.hostname;
+      if (location.port) url += ":" + location.port;
+      url += "/ws";
+
+      var ws = new WebSocket(url);
+      window.ws = ws;
+      ws.onmessage = function(msg) {
+        console.info(JSON.parse(JSON.parse(msg.data).data));
+      };
+
+      window.sendWs = function(msg) {
+        var data = { type: "ping", data: msg };
+        ws.send(JSON.stringify(data));
+      };
+
+      console.info('Connected! Type sendWs("Hey!") to play around.');
+    </script>
+  </body>
+</html>
