@@ -1,0 +1,20 @@
+name: angel_orm_test
+publish_to: none
+description: Common tests for Angel ORM backends.
+environment:
+  sdk: ">=2.0.0 <3.0.0"
+dependencies:
+  angel_migration:
+    path: ../angel_migration
+  angel_model: ^1.0.0
+  angel_orm: ^2.0.0
+  angel_serialize: ^2.0.0
+  test: ^1.0.0
+dev_dependencies:
+  angel_orm_generator:
+    path: ../angel_orm_generator
+  angel_framework: ^2.0.0
+  build_runner: ^1.0.0
+dependency_overrides:
+  angel_orm:
+    path: ../angel_orm

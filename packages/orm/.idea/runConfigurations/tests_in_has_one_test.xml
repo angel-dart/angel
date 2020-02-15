@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="tests in has_one_test" type="DartTestRunConfigurationType" factoryName="Dart Test" folderName="leg" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/angel_orm_generator/test/has_one_test.dart" />
+    <method />
+  </configuration>
+</component>

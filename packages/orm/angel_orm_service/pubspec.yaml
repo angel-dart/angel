@@ -1,0 +1,29 @@
+name: angel_orm_service
+version: 1.0.0
+description: Service implementation that wraps over Angel ORM Query classes.
+homepage: https://github.com/angel-dart/orm
+author: Tobe O <thosakwe@gmail.com>
+environment:
+  sdk: ">=2.0.0 <3.0.0"
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  angel_orm: ^2.0.0
+dev_dependencies:
+  angel_migration: ^2.0.0-alpha
+  angel_migration_runner:
+    path: ../angel_migration_runner
+  angel_orm_generator:
+    path: ../angel_orm_generator
+  angel_orm_postgres:
+    path: ../angel_orm_postgres
+  angel_orm_test:
+    path: ../angel_orm_test
+  angel_serialize: ^2.0.0
+  build_runner: ^1.0.0
+  logging: ^0.11.0
+  pedantic: ^1.0.0
+  postgres: ^1.0.0
+  test: ^1.0.0
+dependency_overrides:
+  angel_migration:
+    path: ../angel_migration

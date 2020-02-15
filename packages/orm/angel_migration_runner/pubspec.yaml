@@ -1,0 +1,13 @@
+name: angel_migration_runner
+version: 2.0.0
+description: Command-line based database migration runner for Angel's ORM.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/migration
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_migration: ^2.0.0-alpha
+  angel_orm: ^2.0.0-dev.2
+  args: ^1.0.0
+  charcode: ^1.0.0
+  postgres: ">=0.9.5 <2.0.0"
