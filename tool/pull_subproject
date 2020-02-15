@@ -10,6 +10,6 @@ fi
 set -ex
 shift
 
-for project in "$#"; do
-  git subtree add prefix="./packages/$project" "https://github.com/angel-dart/$project.git" master
+for project in "$*"; do
+  git subtree add --prefix="./packages/$project" "https://github.com/angel-dart/$project.git" master
 done
