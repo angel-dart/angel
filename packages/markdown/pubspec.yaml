@@ -1,0 +1,15 @@
+name: angel_markdown
+version: 2.0.0
+description: Angel Markdown view generator. Write static sites, with no build step.
+author: Tobe O <thosakwe@gmail.com>
+homepage: https://github.com/angel-dart/markdown
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  file: ^5.0.0
+  markdown: ^2.0.0
+dev_dependencies:
+  angel_test: ^2.0.0
+  pedantic: ^1.0.0
+  test: ^1.0.0
