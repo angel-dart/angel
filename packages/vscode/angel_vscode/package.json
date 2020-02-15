@@ -1,0 +1,85 @@
+{
+    "name": "angel-dart-vscode",
+    "displayName": "Angel",
+    "description": "Snippets and IDE support for the Angel server framework within VSCode.",
+    "version": "0.2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/angel-dart/vscode"
+    },
+    "icon": "media/logo.png",
+    "publisher": "thosakwe0541",
+    "engines": {
+        "vscode": "^1.28.0"
+    },
+    "categories": [
+        "Snippets"
+    ],
+    "keywords": [
+        "angel",
+        "angel-dart",
+        "dart",
+        "jael",
+        "template",
+        "templating",
+        "flutter",
+        "fuchsia"
+    ],
+    "activationEvents": [
+        "onLanguage:jael"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "_commands": [
+            {
+                "command": "extension.sayHello",
+                "title": "Hello World"
+            }
+        ],
+        "languages": [
+            {
+                "id": "jael",
+                "aliases": [
+                    "Jael"
+                ],
+                "extensions": [
+                    ".jael"
+                ],
+                "configuration": "./syntaxes/jael-language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "jael",
+                "scopeName": "source.jael",
+                "path": "./syntaxes/jael.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "dart",
+                "path": "./snippets/angel.json"
+            },
+            {
+                "language": "jael",
+                "path": "./snippets/jael.json"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^7.0.43",
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^5.1.1"
+    }
+}

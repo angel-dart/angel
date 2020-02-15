@@ -1,0 +1,115 @@
+{
+  ".source.dart": {
+    "controller": {
+      "prefix": "angel:controller",
+      "description": "Generate an Angel Controller.",
+      "body": [
+        "import 'package:angel_framework/angel_framework.dart';",
+        "",
+        "@Expose('/$1')",
+        "class $1Controller extends Controller {",
+        "   @Expose('/')",
+        "   String hello() {",
+        "       return 'Hello, world';",
+        "   }",
+        "   $2",
+        "}"
+      ]
+    },
+    "websocket_controller": {
+      "prefix": "angel:websocket_controller",
+      "description": "Generate an Angel WebSocketController.",
+      "body": [
+        "import 'package:angel_websocket/server.dart';",
+        "",
+        "class $1Controller extends WebSocketController {",
+        "   $1Controller(AngelWebSocket ws) : super(ws);",
+        "",
+        "   @ExposeWs('ping')",
+        "   void hello(WebSocketContext socket) {",
+        "       socket.send('pong', {'message': 'Hello, world!'});",
+        "   }",
+        "   $2",
+        "}"
+      ]
+    },
+    "model": {
+      "prefix": "angel:model",
+      "description": "Generate an Angel Model.",
+      "body": [
+        "import 'package:angel_model/angel_model.dart';",
+        "import 'package:angel_serialize/angel_serialize.dart';",
+        "part '$2.g.dart';",
+        "part '$2.serializer.g.dart';",
+        "",
+        "@serializable",
+        "abstract class _$1 extends Model {",
+        "   $3",
+        "}"
+      ]
+    },
+    "migration": {
+      "prefix": "angel:migration",
+      "description": "Generate an Angel ORM Migration.",
+      "body": [
+        "import 'package:angel_migration.dart/angel_migration.dart';",
+        "",
+        "class $1Migration extends Migration {",
+        "   @override",
+        "   void up(Schema schema) {",
+        "       schema.create('$2', (table) {",
+        "           table.serial('id').primaryKey();",
+        "           table.date('created_at');",
+        "           table.date('updated_at');",
+        "           $3",
+        "       });",
+        "   }",
+        "",
+        "   @override",
+        "   void down(Schema schema) {",
+        "       schema.drop('$2');",
+        "   }",
+        "}"
+      ]
+    },
+    "plugin": {
+      "prefix": "angel:plugin",
+      "description": "Generate an Angel plugin.",
+      "body": [
+        "import 'package:angel_framework/angel_framework.dart';",
+        "",
+        "AngelConfigurer $1() {",
+        "   return (Angel app) async {",
+        "       // Work some magic...",
+        "       $2",
+        "   };",
+        "}"
+      ]
+    },
+    "test_driver": {
+      "prefix": "angel:test",
+      "description": "Generate an Angel test driver.",
+      "body": [
+        "import 'dart:io';",
+        "import 'package:$1/$1.dart' as $1;",
+        "import 'package:angel_framework/angel_framework.dart';",
+        "import 'package:angel_test/angel_test.dart';",
+        "import 'package:test/test.dart';",
+        "",
+        "main() async {",
+        "   TestClient client;",
+        "",
+        "   setUp(() async {",
+        "       var app = new Angel();",
+        "       await app.configure($1.configureServer);",
+        "       client = await connectTo(app);",
+        "   });",
+        "",
+        "   tearDown(() => client.close());",
+        "",
+        "   // Add your tests here...",
+        "}"
+      ]
+    }
+  }
+}

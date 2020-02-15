@@ -1,0 +1,53 @@
+{
+  ".source.jael": {
+    "block": {
+      "prefix": "block",
+      "description": "Insert a named <block> tag.",
+      "body": ["<block name=\"$1\">", "   $2", "</block>"]
+    },
+    "comment": {
+      "prefix": "comment",
+      "description": "Insert a comment.",
+      "body": ["<!-- $1 -->"]
+    },
+    "declare": {
+      "prefix": "declare",
+      "description": "Insert a <declare> tag.",
+      "body": ["<declare $1=$2>", "   $3", "</declare>"]
+    },
+    "element": {
+      "prefix": "element",
+      "description": "Insert a custom <element> tag.",
+      "body": ["<element name=\"$1\">", "   $2", "</element>"]
+    },
+    "extend": {
+      "prefix": "extend",
+      "description": "Insert an <extend> tag.",
+      "body": ["<extend src=\"$1\">", "   $2", "</extend>"]
+    },
+    "for-each": {
+      "prefix": "for-each",
+      "description": "Insert a <for-each> tag.",
+      "body": ["<${1:div} for-each=$2 as=\"$3\">", "   $4", "</$1>"]
+    },
+    "include": {
+      "prefix": "include",
+      "description": "Insert an <include /> tag.",
+      "body": ["<include src=\"$1\"/>"]
+    },
+    "switch": {
+      "prefix": "switch",
+      "description": "Insert a <switch> tag.",
+      "body": [
+        "<switch value=$1>",
+        "   <case value=$2>",
+        "       $3",
+        "   </case>",
+        "   <default>",
+        "       $4",
+        "   </default>",
+        "</switch>"
+      ]
+    }
+  }
+}

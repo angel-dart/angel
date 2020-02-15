@@ -1,0 +1,172 @@
+{
+  "fileTypes": ["jael"],
+  "name": "Jael",
+  "scopeName": "source.jael",
+  "patterns": [
+    {
+      "include": "#expressions"
+    },
+    {
+      "match": "\\b(DOCTYPE|doctype)\\b",
+      "name": "keyword.doctype.jael"
+    },
+    {
+      "match": "[:,\\.]",
+      "name": "punctuation.jael"
+    },
+    {
+      "begin": "{{-?",
+      "end": "}}",
+      "beginCaptures": {
+        "0": {
+          "name": "keyword.operator.jael"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "keyword.operator.jael"
+        }
+      },
+      "patterns": [{ "include": "#expressions" }, { "include": "#operators" }]
+    },
+    {
+      "begin": "<\\s*(script)[^>]*>",
+      "end": "(.*)<\\s*/\\s*(script)[^>]*>",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.tag.embedded.js.jael"
+        }
+      },
+      "endCaptures": {
+        "1": {
+          "name": "source.js",
+          "contentName": "source.js"
+        },
+        "2": {
+          "name": "keyword.tag.embedded.js.jael"
+        }
+      },
+      "contentName": "source.js",
+      "patterns": [{ "include": "source.js" }]
+    },
+    {
+      "begin": "<\\s*(style)[^>]*>",
+      "end": "<\\s*/\\s*(style)[^>]*>",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.tag.embedded.css.jael"
+        }
+      },
+      "endCaptures": {
+        "1": {
+          "name": "keyword.tag.embedded.css.jael"
+        }
+      },
+      "contentName": "source.css",
+      "patterns": [{ "include": "source.css" }]
+    },
+    {
+      "match": "\\b(block|declare|for-each|extend|if|include|switch)\\b",
+      "name": "keyword.control.jael"
+    },
+    {
+      "match": "<\\s*/?\\s*([A-Za-z_][A-Za-z0-9_-]*)(\\s*[A-Za-z_][A-Za-z0-9_]*(?!=)\\s*)*\\b",
+      "captures": {
+        "1": {
+          "name": "keyword.tag.jael"
+        },
+        "2": {
+          "name": "storage.name.jael"
+        }
+      }
+    },
+    {
+      "match": "@[A-Za-z_][A-Za-z0-9_]*",
+      "name": "storage.argument.jael"
+    },
+    {
+      "match": "\\b(@?[A-Za-z_][A-Za-z0-9_]*)=",
+      "captures": {
+        "1": {
+          "name": "storage.name.jael"
+        }
+      }
+    },
+    {
+      "captures": {
+        "0": {
+          "name": "punctuation.definition.comment.jael"
+        }
+      },
+      "begin": "<!--",
+      "end": "-->",
+      "name": "comment.jael"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "source.html"
+    }
+  ],
+  "repository": {
+    "operators": {
+      "patterns": [
+        {
+          "match": "((!?=)|\\+|\\*|-|/|\\?|(\\?\\.)|%|\\[|\\])",
+          "name": "keyword.operator.jael"
+        }
+      ]
+    },
+    "expressions": {
+      "patterns": [
+        {
+          "match": "\\b[<>]\\b",
+          "name": "keyword.operator.jael"
+        },
+        {
+          "begin": "'",
+          "end": "'",
+          "name": "string.quoted.single.jael",
+          "patterns": [
+            {
+              "name": "constant.character.escape.jael",
+              "match": "\\\\[bfnrt']"
+            }
+          ]
+        },
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.jael",
+          "patterns": [
+            {
+              "name": "constant.character.escape.jael",
+              "match": "\\\\[bfnrt\"]"
+            }
+          ]
+        },
+        {
+          "match": "\\b(true|false|null)\\b",
+          "name": "constant.language.jael"
+        },
+        {
+          "match": "\\b-?[0-9]+(\\.[0-9]+)?([Ee][0-9]+)?\\b",
+          "name": "constant.numeric.jael"
+        },
+        {
+          "match": "\\b0x[A-Fa-f0-9]+\\b",
+          "name": "constant.numeric.jael"
+        },
+        {
+          "match": "([A-Za-z_][A-Za-z0-9_]*)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.jael"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
