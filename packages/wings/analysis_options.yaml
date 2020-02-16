@@ -1,0 +1,6 @@
+include: package:pedantic/analysis_options.yaml
+analyzer:
+  exclude:
+    - cmake_dart_utils/example/*
+  strong-mode:
+    implicit-casts: false

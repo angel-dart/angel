@@ -1,0 +1,6 @@
+[submodule "cmake_dart_utils"]
+	path = cmake_dart_utils
+	url = https://github.com/thosakwe/cmake_dart_utils.git
+[submodule "lib/src/http-parser"]
+	path = lib/src/http-parser
+	url = https://github.com/nodejs/http-parser.git

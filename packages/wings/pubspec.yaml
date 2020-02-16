@@ -1,0 +1,11 @@
+name: angel_wings
+environment:
+  sdk: ">=2.0.0-dev <3.0.0"
+dependencies:
+  angel_framework: ^2.0.0-alpha
+  mock_request: ^1.0.0
+dev_dependencies:
+  angel_static: ^2.0.0
+  io: ^0.3.2
+  pedantic: ^1.0.0
+  pretty_logging: ^1.0.0
