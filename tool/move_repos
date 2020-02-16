@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import os
+from github import Github
+
+github_token = os.getenv("GITHUB_TOKEN")
+packages_dir = "./packages"
+
+if not github_token:
+    print("$GITHUB_TOKEN environment variable missing.")
+    quit()
+
+gh = Github(github_token)
+
+for basename in os.listdir(packages_dir):
+    path = os.path.join(packages_dir, basename)
+    if os.path.isdir(path):
+        print("===Entering repo `" + basename + "`")
+        repo = gh.get_repo("angel-dart/" + basename)
+        if repo.owner.login != "angel-dart-archive":
+            # Manually do the transfer...
+            params = {"new_owner": "angel-dart-archive"}
+            repo._requester.requestJsonAndCheck(
+                    "POST", repo.url + "/transfer", input=params,
+            )
+            print("======Transferred `" + basename + "` to angel-dart-archive")
+        if repo.archived:
+            print("======SKIPPED ARCHIVED REPO")
+            continue
+        new_desc = "moved to angel-dart/angel/packages/" + basename
+        new_homepage = "https://github.com/angel-dart/angel/tree/master/packages/" + basename
+        if (repo.description != new_desc) or (repo.homepage != new_homepage):
+            repo.edit(description=new_desc, homepage=new_homepage)
+            print("======Changed description+homepage")
+
+        open_issues = repo.get_issues(state="open")
+        for issue in open_issues:
+            label_name = "package:" + basename
+            label_found = False
+            for label in issue.labels:
+                if label.name == label_name:
+                    label_found = True
+                    break
+            if not label_found:
+                issue.edit(labels=[label_name])
+                print("======Labeled issue \"" + issue.title + "\"")
+
+            # Duplicate the issue in angel-dart/angel...
+            angel = gh.get_repo("angel-dart/angel")
+            body = "*This issue was originally created by @" + issue.user.login
+            body += " here, before being automatically moved: "
+            body += "\n" + issue.html_url
+            body += "*\n\n---\n" + issue.body
+            new_issue = angel.create_issue(title=issue.title, labels=[label_name], body=body)
+            for comment in issue.get_comments():
+                comment_body = "@" + comment.user.login + " commented:\n\n" + comment.body
+                new_issue.create_comment(comment_body)
+            new_body = "*This issue was automatically moved to: " + new_issue.html_url + "."
+            issue.edit(state='closed', body=new_body)
+            print("======Moved issue \"" + issue.title + "\"")
+        
+        open_pulls = repo.get_pulls(state="open")
+        for pull in open_pulls:
+            msg = "Hi, @" + pull.user.login + "! Thanks again for this PR."
+            msg += "\n\nAll Angel subprojects have been consolidated into a single monorepo: "
+            msg += "https://github.com/angel-dart/angel."
+            msg += "\n\nPlease fork the monorepo, and open a new PR there instead."
+            pull.create_issue_comment(msg)
+            pull.edit(state='closed')
+            print("======Commented on + closed PR \"" + pull.title + "\"")
+
+        # Archive the repository!
+        repo.edit(archived=True)
+        print("======Archived `" + basename + "`. Rest in Peace!")
