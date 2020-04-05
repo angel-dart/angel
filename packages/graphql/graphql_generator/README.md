@@ -16,10 +16,11 @@ like descriptions, deprecation reasons, etc.
 
 ```dart
 @graphQLClass
+@GraphQLDocumentation(description: 'Todo object type')
 class Todo {
   String text;
 
-  @GraphQLDocumentation(description: 'Whether this item is complete.')
+  /// Whether this item is complete
   bool isComplete;
 }
 
@@ -42,9 +43,10 @@ part of 'main.dart';
 /// Auto-generated from [Todo].
 final GraphQLObjectType todoGraphQLType = objectType('Todo',
     isInterface: false,
+    description: 'Todo object type',
     interfaces: [],
     fields: [
       field('text', graphQLString),
-      field('isComplete', graphQLBoolean)
+      field('isComplete', graphQLBoolean, description: 'Whether this item is complete')
     ]);
 ```
