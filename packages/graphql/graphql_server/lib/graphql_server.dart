@@ -458,7 +458,7 @@ class GraphQL {
               ],
             ),
             GraphQLExceptionError(
-              e.message.toString(),
+              e.toString(),
               locations: [
                 GraphExceptionErrorLocation.fromSourceLocation(
                     argumentValue.value.span.start)
