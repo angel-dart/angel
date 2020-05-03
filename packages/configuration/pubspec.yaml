@@ -1,16 +1,17 @@
 name: angel_configuration
 description: Automatic YAML application configuration loader for Angel, with .env support.
-version: 2.1.0
+version: 2.2.0
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/angel_configuration
 environment:
-  sdk: ">=2.0.0-dev <3.0.0"
+  sdk: ">=2.0.0 <3.0.0"
 dependencies:
-  angel_framework: ^2.0.0-alpha
+  angel_framework: ^2.0.0
   dotenv: ^1.0.0
   file: ^5.0.0
   merge_map: ^1.0.0
   yaml: ^2.0.0
 dev_dependencies:
   io: ^0.3.2
+  pedantic: ^1.0.0
   test: ^1.0.0
