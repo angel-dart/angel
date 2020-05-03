@@ -1,13 +1,15 @@
 library angel_configuration;
 
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:file/file.dart';
 import 'package:merge_map/merge_map.dart';
 import 'package:yaml/yaml.dart';
 
-_loadYamlFile(Map map, File yamlFile, Map<String, String> env,
-    void warn(String msg)) async {
+Future<void> _loadYamlFile(Map map, File yamlFile, Map<String, String> env,
+    void Function(String msg) warn) async {
   if (await yamlFile.exists()) {
     var config = loadYaml(await yamlFile.readAsString());
 
@@ -17,7 +19,7 @@ _loadYamlFile(Map map, File yamlFile, Map<String, String> env,
       return;
     }
 
-    Map<String, dynamic> out = {};
+    var out = {};
 
     for (String key in config.keys) {
       out[key] = _applyEnv(config[key], env ?? {}, warn);
@@ -33,37 +35,40 @@ _loadYamlFile(Map map, File yamlFile, Map<String, String> env,
   }
 }
 
-_applyEnv(var v, Map<String, String> env, void warn(String msg)) {
+Object _applyEnv(
+    var v, Map<String, String> env, void Function(String msg) warn) {
   if (v is String) {
     if (v.startsWith(r'$') && v.length > 1) {
       var key = v.substring(1);
-      if (env.containsKey(key))
+      if (env.containsKey(key)) {
         return env[key];
-      else {
+      } else {
         warn(
             'Your configuration calls for loading the value of "$key" from the system environment, but it is not defined. Defaulting to `null`.');
         return null;
       }
-    } else
+    } else {
       return v;
+    }
   } else if (v is Iterable) {
     return v.map((x) => _applyEnv(x, env ?? {}, warn)).toList();
   } else if (v is Map) {
     return v.keys
         .fold<Map>({}, (out, k) => out..[k] = _applyEnv(v[k], env ?? {}, warn));
-  } else
+  } else {
     return v;
+  }
 }
 
 /// Loads [configuration], and returns a [Map].
 ///
 /// You can override [onWarning]; otherwise, configuration errors will throw.
 Future<Map> loadStandaloneConfiguration(FileSystem fileSystem,
-    {String directoryPath: "./config",
+    {String directoryPath = './config',
     String overrideEnvironmentName,
     String envPath,
-    void onWarning(String message)}) async {
-  Directory sourceDirectory = fileSystem.directory(directoryPath);
+    void Function(String message) onWarning}) async {
+  var sourceDirectory = fileSystem.directory(directoryPath);
   var env = dotenv.env;
   var envFile = sourceDirectory.childFile(envPath ?? '.env');
 
@@ -71,19 +76,19 @@ Future<Map> loadStandaloneConfiguration(FileSystem fileSystem,
     dotenv.load(envFile.absolute.uri.toFilePath());
   }
 
-  String environmentName = env['ANGEL_ENV'] ?? 'development';
+  var environmentName = env['ANGEL_ENV'] ?? 'development';
 
   if (overrideEnvironmentName != null) {
     environmentName = overrideEnvironmentName;
   }
 
-  onWarning ??= (String message) => throw new StateError(message);
+  onWarning ??= (String message) => throw StateError(message);
   var out = {};
 
   var defaultYaml = sourceDirectory.childFile('default.yaml');
   await _loadYamlFile(out, defaultYaml, env, onWarning);
 
-  String configFilePath = "$environmentName.yaml";
+  var configFilePath = '$environmentName.yaml';
   var configFile = sourceDirectory.childFile(configFilePath);
 
   await _loadYamlFile(out, configFile, env, onWarning);
@@ -98,11 +103,11 @@ Future<Map> loadStandaloneConfiguration(FileSystem fileSystem,
 ///
 /// You can also specify a custom [envPath] to load system configuration from.
 AngelConfigurer configuration(FileSystem fileSystem,
-    {String directoryPath: "./config",
+    {String directoryPath = './config',
     String overrideEnvironmentName,
     String envPath}) {
   return (Angel app) async {
-    Directory sourceDirectory = fileSystem.directory(directoryPath);
+    var sourceDirectory = fileSystem.directory(directoryPath);
     var env = dotenv.env;
     var envFile = sourceDirectory.childFile(envPath ?? '.env');
 
@@ -115,7 +120,7 @@ AngelConfigurer configuration(FileSystem fileSystem,
       }
     }
 
-    String environmentName = env['ANGEL_ENV'] ?? 'development';
+    var environmentName = env['ANGEL_ENV'] ?? 'development';
 
     if (overrideEnvironmentName != null) {
       environmentName = overrideEnvironmentName;
@@ -128,7 +133,7 @@ AngelConfigurer configuration(FileSystem fileSystem,
     var defaultYaml = sourceDirectory.childFile('default.yaml');
     await _loadYamlFile(app.configuration, defaultYaml, env, warn);
 
-    String configFilePath = "$environmentName.yaml";
+    var configFilePath = '$environmentName.yaml';
     var configFile = sourceDirectory.childFile(configFilePath);
 
     await _loadYamlFile(app.configuration, configFile, env, warn);

@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_configuration/angel_configuration.dart';
 import 'package:file/local.dart';
 import 'package:io/ansi.dart';
 import 'package:test/test.dart';
 
-main() async {
+Future<void> main() async {
   // Note: Set ANGEL_ENV to 'development'
-  var app = new Angel();
+  var app = Angel();
   var fileSystem = const LocalFileSystem();
 
   await app.configure(configuration(
@@ -24,13 +26,13 @@ main() async {
     );
     print('Standalone: $config');
     expect(config, {
-      "angel": {"framework": "cool"},
-      "must_be_null": null,
-      "artist": "Timberlake",
-      "merge": {"map": true, "hello": "world"},
-      "set_via": "default",
-      "hello": "world",
-      "foo": {"version": "bar"}
+      'angel': {'framework': 'cool'},
+      'must_be_null': null,
+      'artist': 'Timberlake',
+      'merge': {'map': true, 'hello': 'world'},
+      'set_via': 'default',
+      'hello': 'world',
+      'foo': {'version': 'bar'}
     });
   });
 
@@ -40,7 +42,7 @@ main() async {
   });
 
   test('will load default.yaml if exists', () {
-    expect(app.configuration["set_via"], equals("default"));
+    expect(app.configuration['set_via'], equals('default'));
   });
 
   test('will load .env if exists', () {
