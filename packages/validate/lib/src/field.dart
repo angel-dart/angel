@@ -47,7 +47,7 @@ abstract class Field<T> {
   ///
   /// If it returns `null` and [isRequired] is `true`, an error must
   /// be generated.
-  FutureOr<FieldReadResult<T>> read(RequestContext req,
+  FutureOr<FieldReadResult<T>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files);
 
   /// Accepts a form renderer.
@@ -72,8 +72,8 @@ abstract class Field<T> {
       await req.parseBody();
       uploadedFiles = req.uploadedFiles;
     }
-    var result = await read(
-        req, query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
+    var result =
+        await read(query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
     if (result?.isSuccess != true && defaultValue != null) {
       return defaultValue;
     } else if (result == null) {
@@ -103,9 +103,9 @@ class _MatchedField<T> extends Field<T> {
   FutureOr<U> accept<U>(FormRenderer<U> renderer) => inner.accept(renderer);
 
   @override
-  Future<FieldReadResult<T>> read(RequestContext req,
+  Future<FieldReadResult<T>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
-    var result = await inner.read(req, fields, files);
+    var result = await inner.read(fields, files);
     if (!result.isSuccess) {
       return result;
     } else {

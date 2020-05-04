@@ -109,7 +109,36 @@ class Form {
 
     for (var field in fields) {
       var result = await field.read(
-          req, query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
+          query ? req.queryParameters : req.bodyAsMap, uploadedFiles);
+      if (result == null && field.isRequired) {
+        errors.add(reportMissingField(field.name, query: query));
+      } else if (!result.isSuccess) {
+        errors.addAll(result.errors);
+      } else {
+        out[field.name] = result.value;
+      }
+    }
+
+    if (errors.isNotEmpty) {
+      return FieldReadResult.failure(errors);
+    } else {
+      return FieldReadResult.success(out);
+    }
+  }
+
+  /// Same as [read], but reads data directly from a [map].
+  ///
+  /// If [query] is `true`, resulting error messages will be generated as though
+  /// the field were being read from a map of query parameters.
+  Future<FieldReadResult<Map<String, dynamic>>> readFromMap(
+      Map<String, dynamic> map,
+      {bool query = false}) async {
+    var out = <String, dynamic>{};
+    var errors = <String>[];
+    var uploadedFiles = <UploadedFile>[];
+
+    for (var field in fields) {
+      var result = await field.read(map, uploadedFiles);
       if (result == null && field.isRequired) {
         errors.add(reportMissingField(field.name, query: query));
       } else if (!result.isSuccess) {

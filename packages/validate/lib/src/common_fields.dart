@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image/image.dart';
 import 'field.dart';
+import 'form.dart';
 import 'form_renderer.dart';
 
 /// A [Field] that accepts plain text.
@@ -38,7 +40,7 @@ class TextField extends Field<String> {
   }
 
   @override
-  FutureOr<FieldReadResult<String>> read(RequestContext req,
+  FutureOr<FieldReadResult<String>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) {
     var value = _normalize(fields[name] as String);
     if (value == null) {
@@ -71,7 +73,7 @@ class BoolField extends Field<bool> {
       renderer.visitBoolField(this);
 
   @override
-  FutureOr<FieldReadResult<bool>> read(RequestContext req,
+  FutureOr<FieldReadResult<bool>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) {
     if (fields.containsKey(name)) {
       return FieldReadResult.success(true);
@@ -108,9 +110,9 @@ class NumField<T extends num> extends Field<T> {
       renderer.visitNumField(this);
 
   @override
-  Future<FieldReadResult<T>> read(RequestContext req,
+  Future<FieldReadResult<T>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
-    var result = await _textField.read(req, fields, files);
+    var result = await _textField.read(fields, files);
     if (result == null) {
       return null;
     } else if (result.isSuccess != true) {
@@ -151,9 +153,9 @@ class DoubleField extends NumField<double> {
             max: max);
 
   @override
-  Future<FieldReadResult<double>> read(RequestContext req,
+  Future<FieldReadResult<double>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
-    var result = await super.read(req, fields, files);
+    var result = await super.read(fields, files);
     if (result == null) {
       return null;
     } else if (!result.isSuccess) {
@@ -183,9 +185,9 @@ class IntField extends NumField<int> {
             max: max);
 
   @override
-  Future<FieldReadResult<int>> read(RequestContext req,
+  Future<FieldReadResult<int>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
-    var result = await super.read(req, fields, files);
+    var result = await super.read(fields, files);
     if (result == null) {
       return null;
     } else if (!result.isSuccess) {
@@ -228,9 +230,9 @@ class DateTimeField extends Field<DateTime> {
       renderer.visitDateTimeField(this);
 
   @override
-  Future<FieldReadResult<DateTime>> read(RequestContext req,
+  Future<FieldReadResult<DateTime>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
-    var result = await _textField.read(req, fields, files);
+    var result = await _textField.read(fields, files);
     if (result == null) {
       return null;
     } else if (result.isSuccess != true) {
@@ -274,7 +276,7 @@ class FileField extends Field<UploadedFile> {
       renderer.visitFileField(this);
 
   @override
-  FutureOr<FieldReadResult<UploadedFile>> read(RequestContext req,
+  FutureOr<FieldReadResult<UploadedFile>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) {
     var file = files.firstWhere((f) => f.name == name, orElse: () => null);
     if (file == null) {
@@ -328,9 +330,9 @@ class ImageField extends Field<Image> {
       renderer.visitImageField(this);
 
   @override
-  FutureOr<FieldReadResult<Image>> read(RequestContext req,
+  FutureOr<FieldReadResult<Image>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
-    var result = await fileField.read(req, fields, files);
+    var result = await fileField.read(fields, files);
     if (result == null) {
       return null;
     } else if (!result.isSuccess) {
@@ -348,5 +350,46 @@ class ImageField extends Field<Image> {
             ['Error in image file "$name": ${e.message}']);
       }
     }
+  }
+}
+
+class MapField extends Field<Map<String, dynamic>> {
+  @override
+  final String name;
+  final Form form;
+
+  MapField(this.name, this.form, {String label, bool isRequired = true})
+      : super(name, 'text', label: label, isRequired: isRequired);
+
+  @override
+  FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
+      renderer.visitMapField(this);
+
+  @override
+  FutureOr<FieldReadResult<Map<String, dynamic>>> read(
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) {
+    var value = fields[name];
+    Map mapValue;
+
+    // Value can be either a Map, or a JSON-encoded Map.
+    if (value == null) {
+      return null;
+    } else if (value is Map) {
+      mapValue = value;
+    } else if (value is String) {
+      var decoded = json.decode(value);
+      if (decoded is Map) {
+        mapValue = decoded;
+      } else {
+        return FieldReadResult.failure([
+          'If "$name" is given as a string, then it must produce a map/dict/object when decoded as JSON.'
+        ]);
+      }
+    } else {
+      return FieldReadResult.failure(
+          ['"$name" must be either a map/dict/object, or a string.']);
+    }
+
+
   }
 }

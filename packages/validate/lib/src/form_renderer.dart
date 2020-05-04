@@ -18,4 +18,6 @@ abstract class FormRenderer<T> {
   FutureOr<T> visitNumField(NumField field);
 
   FutureOr<T> visitTextField(TextField field);
+
+  FutureOr<T> visitMapField(MapField field);
 }
