@@ -261,6 +261,8 @@ class FileField extends Field<UploadedFile> {
   /// If provided, then the `content-type` must be present in this [Iterable].
   final Iterable<MediaType> allowedContentTypes;
 
+  Iterable<String> _allowedContentTypeStrings;
+
   FileField(String name,
       {String label,
       bool isRequired = true,
@@ -269,6 +271,8 @@ class FileField extends Field<UploadedFile> {
       this.allowedContentTypes})
       : super(name, 'file', label: label, isRequired: isRequired) {
     assert(allowedContentTypes == null || allowedContentTypes.isNotEmpty);
+    _allowedContentTypeStrings =
+        _allowedContentTypeStrings?.map((c) => c.toString());
   }
 
   @override
@@ -288,12 +292,12 @@ class FileField extends Field<UploadedFile> {
     } else if (requireFilename && file.filename == null) {
       return FieldReadResult.failure(
           ['A filename must be given for file "$name".']);
-    } else if (allowedContentTypes != null &&
-        !allowedContentTypes.contains(file.contentType)) {
+    } else if (_allowedContentTypeStrings != null &&
+        !_allowedContentTypeStrings.contains(file.contentType.toString())) {
       return FieldReadResult.failure([
         'File "$name" cannot have content type '
             '"${file.contentType}". Allowed types: '
-            '${allowedContentTypes.join(', ')}'
+            '${_allowedContentTypeStrings.join(', ')}'
       ]);
     } else {
       return FieldReadResult.success(file);

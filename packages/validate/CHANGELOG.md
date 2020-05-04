@@ -1,5 +1,6 @@
 # 3.0.0-alpha.1
 * Add `MapField` and `UriField`.
+* Fix how `FileField` handles allowed content types.
 
 # 3.0.0-alpha
 * Rewrite, based on `Field` and `Form`, rather than strings.
