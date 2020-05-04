@@ -72,6 +72,14 @@ Future<void> main() async {
     </html>
     ''');
   });
+  
+  app.post('/b', (req, res) async {
+    var form = Form(fields: [
+      MapField('todo', todoForm),
+    ]);
+    var data = await form.read(req);
+    return data;
+  });
 
   app.fallback((req, res) => throw AngelHttpException.notFound());
 
@@ -82,7 +90,7 @@ Future<void> main() async {
     }
   };
 
-  await http.startServer('127.0.0.1', 3000);
+  await http.startServer('127.0.0.1', 3011);
   print('Listening at ${http.uri}');
 }
 

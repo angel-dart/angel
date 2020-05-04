@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:matcher/matcher.dart';
 import 'form.dart';
@@ -56,6 +57,14 @@ abstract class Field<T> {
   /// Wraps this instance in one that throws an error if any of the
   /// [matchers] fails.
   Field<T> match(Iterable<Matcher> matchers) => _MatchedField(this, matchers);
+
+  /// Wraps this instance in one that calls the [converter] to deserialize
+  /// the value into another type.
+  Field<U> deserialize<U>(FutureOr<U> Function(T) converter) =>
+      _DeserializeField(this, converter);
+
+  /// Same as [deserialize], but uses a [codec] to deserialize data.
+  Field<U> decode<U>(Codec<U, T> codec) => deserialize(codec.decode);
 
   /// Calls [read], and returns the retrieve value from the body.
   ///
@@ -121,6 +130,29 @@ class _MatchedField<T> extends Field<T> {
       } else {
         return FieldReadResult.failure(errors);
       }
+    }
+  }
+}
+
+class _DeserializeField<T, U> extends Field<U> {
+  final Field<T> inner;
+  final FutureOr<U> Function(T) converter;
+
+  _DeserializeField(this.inner, this.converter)
+      : super(inner.name, inner.type,
+            label: inner.label, isRequired: inner.isRequired);
+
+  @override
+  FutureOr<X> accept<X>(FormRenderer<X> renderer) => inner.accept(renderer);
+
+  @override
+  FutureOr<FieldReadResult<U>> read(
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
+    var result = await inner.read(fields, files);
+    if (!result.isSuccess) {
+      return FieldReadResult.failure(result.errors);
+    } else {
+      return FieldReadResult.success(await converter(result.value));
     }
   }
 }

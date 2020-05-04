@@ -353,12 +353,12 @@ class ImageField extends Field<Image> {
   }
 }
 
+/// A [Field] implementation that reads structured data by decoding it with a [Form].
 class MapField extends Field<Map<String, dynamic>> {
-  @override
-  final String name;
+  /// The underlying [Form] that specifies the types of data this object must contained.
   final Form form;
 
-  MapField(this.name, this.form, {String label, bool isRequired = true})
+  MapField(String name, this.form, {String label, bool isRequired = true})
       : super(name, 'text', label: label, isRequired: isRequired);
 
   @override
@@ -369,17 +369,17 @@ class MapField extends Field<Map<String, dynamic>> {
   FutureOr<FieldReadResult<Map<String, dynamic>>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) {
     var value = fields[name];
-    Map mapValue;
+    Map<String, dynamic> mapValue;
 
     // Value can be either a Map, or a JSON-encoded Map.
     if (value == null) {
       return null;
     } else if (value is Map) {
-      mapValue = value;
+      mapValue = value.cast();
     } else if (value is String) {
       var decoded = json.decode(value);
       if (decoded is Map) {
-        mapValue = decoded;
+        mapValue = decoded.cast();
       } else {
         return FieldReadResult.failure([
           'If "$name" is given as a string, then it must produce a map/dict/object when decoded as JSON.'
@@ -390,6 +390,6 @@ class MapField extends Field<Map<String, dynamic>> {
           ['"$name" must be either a map/dict/object, or a string.']);
     }
 
-
+    return form.readFromMap(mapValue);
   }
 }
