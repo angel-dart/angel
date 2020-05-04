@@ -21,8 +21,31 @@ Future<void> _loadYamlFile(Map map, File yamlFile, Map<String, String> env,
 
     var out = {};
 
-    for (String key in config.keys) {
-      out[key] = _applyEnv(config[key], env ?? {}, warn);
+    var configMap = config as Map;
+
+    // Check for _include
+    if (configMap.containsKey('_include')) {
+      var include = configMap.remove('_include');
+      var includeList = include is Iterable ? include.toList() : [include];
+      for (var inc in includeList) {
+        if (inc is! String) {
+          warn('Included item $inc is not a String.');
+        } else {
+          var p = yamlFile.fileSystem.path;
+          var includeFilePath = p.join(yamlFile.parent.path, inc);
+          var includeFile = yamlFile.fileSystem.file(includeFilePath);
+          if (!await includeFile.exists()) {
+            warn(
+                'Included configuration file "$includeFilePath" does not exist.');
+          } else {
+            await _loadYamlFile(out, includeFile, env, warn);
+          }
+        }
+      }
+    }
+
+    for (String key in configMap.keys) {
+      out[key] = _applyEnv(configMap[key], env ?? {}, warn);
     }
 
     map.addAll(mergeMap(
@@ -107,35 +130,21 @@ AngelConfigurer configuration(FileSystem fileSystem,
     String overrideEnvironmentName,
     String envPath}) {
   return (Angel app) async {
-    var sourceDirectory = fileSystem.directory(directoryPath);
-    var env = dotenv.env;
-    var envFile = sourceDirectory.childFile(envPath ?? '.env');
-
-    if (await envFile.exists()) {
-      try {
-        dotenv.load(envFile.absolute.uri.toFilePath());
-      } catch (_) {
-        app.logger?.warning(
-            'WARNING: Found an environment configuration at ${envFile.absolute.path}, but it was invalidly formatted. Refusing to load it.');
-      }
-    }
-
-    var environmentName = env['ANGEL_ENV'] ?? 'development';
-
-    if (overrideEnvironmentName != null) {
-      environmentName = overrideEnvironmentName;
-    }
-
-    void warn(String message) {
-      app.logger?.warning('WARNING: $message');
-    }
-
-    var defaultYaml = sourceDirectory.childFile('default.yaml');
-    await _loadYamlFile(app.configuration, defaultYaml, env, warn);
-
-    var configFilePath = '$environmentName.yaml';
-    var configFile = sourceDirectory.childFile(configFilePath);
-
-    await _loadYamlFile(app.configuration, configFile, env, warn);
+    var config = await loadStandaloneConfiguration(
+      fileSystem,
+      directoryPath: directoryPath,
+      overrideEnvironmentName: overrideEnvironmentName,
+      envPath: envPath,
+      onWarning: app.logger == null
+          ? null
+          : (msg) => app.logger?.warning('WARNING: $msg'),
+    );
+    app.configuration.addAll(mergeMap(
+      [
+        app.configuration,
+        config,
+      ],
+      acceptNull: true,
+    ));
   };
 }

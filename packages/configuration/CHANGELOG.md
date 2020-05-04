@@ -1,3 +1,8 @@
+# 2.2.0
+* Allow including one configuration within another.
+* Badly-formatted `.env` files will no longer issue a warning,
+but instead throw an exception.
+
 # 2.1.0
 * Add `loadStandaloneConfiguration`.
 

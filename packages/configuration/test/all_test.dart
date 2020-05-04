@@ -4,11 +4,15 @@ import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_configuration/angel_configuration.dart';
 import 'package:file/local.dart';
 import 'package:io/ansi.dart';
+import 'package:logging/logging.dart';
+import 'package:pretty_logging/pretty_logging.dart';
 import 'package:test/test.dart';
 
 Future<void> main() async {
+  Logger.root.onRecord.listen(prettyLog);
+
   // Note: Set ANGEL_ENV to 'development'
-  var app = Angel();
+  var app = Angel(logger: Logger('angel_configuration'));
   var fileSystem = const LocalFileSystem();
 
   await app.configure(configuration(
