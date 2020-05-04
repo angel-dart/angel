@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_framework/http.dart';
 import 'package:angel_validate/angel_validate.dart';
@@ -5,7 +7,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:logging/logging.dart';
 import 'package:pretty_logging/pretty_logging.dart';
 
-main() async {
+Future<void> main() async {
   Logger.root
     ..level = Level.ALL
     ..onRecord.listen(prettyLog);

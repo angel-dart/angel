@@ -3,12 +3,10 @@
 [![build status](https://travis-ci.org/angel-dart/validate.svg)](https://travis-ci.org/angel-dart/validate)
 
 Strongly-typed form handlers and validators for Angel.
+Version `3.x` is a major improvement over `2.x`, though it does include breaking changes.
 
-Validation library based on the `matcher` library, with Angel support.
-Why re-invent the wheel, when you can use the same validators you already
-use for tests?
-
-For convenience's sake, this library also exports `matcher`.
+`package:angel_validate` allows you to easily sanitize incoming data, and to deserialize
+that data into Dart classes (usually using `package:angel_serialize`).
 
 # Field
 The basic unit is the `Field` class, which is a type-safe way to read
@@ -21,6 +19,13 @@ app.get('/hello', (req, res) async {
   var name = await nameField.getValue(req, query: true); // String
   return 'Hello, $name!';
 });
+```
+
+A `Field` can also use `Matcher` objects from `package:matcher` (which you may recognize from
+its usage in `package:test`):
+
+```dart
+var positiveNumberField = IntField('pos_num').match([isPositive]);
 ```
 
 There are several included field types:
