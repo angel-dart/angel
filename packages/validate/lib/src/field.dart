@@ -115,7 +115,9 @@ class _MatchedField<T> extends Field<T> {
   Future<FieldReadResult<T>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
     var result = await inner.read(fields, files);
-    if (!result.isSuccess) {
+    if (result == null) {
+      return null;
+    } else if (!result.isSuccess) {
       return result;
     } else {
       var errors = <String>[];
@@ -149,7 +151,9 @@ class _DeserializeField<T, U> extends Field<U> {
   FutureOr<FieldReadResult<U>> read(
       Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
     var result = await inner.read(fields, files);
-    if (!result.isSuccess) {
+    if (result == null) {
+      return null;
+    } else if (!result.isSuccess) {
       return FieldReadResult.failure(result.errors);
     } else {
       return FieldReadResult.success(await converter(result.value));

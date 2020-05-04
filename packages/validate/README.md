@@ -28,15 +28,30 @@ its usage in `package:test`):
 var positiveNumberField = IntField('pos_num').match([isPositive]);
 ```
 
+A `MapField` can embed a `Form` (forms covered below), and when combined with
+`Field.deserialize`, can be used to deserialize structured data as a body field:
+
+```dart
+app.post('/map_field', (req, res) async {
+  var form = Form(fields: [
+    MapField('todo', todoForm).deserialize(Todo.fromMap),
+  ]);
+
+  var data = await form.validate(req);
+  print(data['todo'] is Todo);
+});
+```
+
 There are several included field types:
-* `TextField`
-* `BoolField`
-* `NumField`
-* `DoubleField`
-* `IntField`
-* `DateTimeField`
-* `FileField`
-* `ImageField`
+* `TextField` - Standard text input.
+* `BoolField` - Checks if a field is present; used for checkboxes.
+* `NumField` - Base class that parses input as a number.
+* `DoubleField` - Specialization of `NumField` for doubles.
+* `IntField` - Specialization of `NumField` for integers.
+* `DateTimeField` - Parses an input as an ISO-8601 date.
+* `FileField` - Validates a file in `req.uploadedFiles`.
+* `ImageField` - Uses `package:image` to decode an `UploadedFile` into an image.
+* `MapField` - Validates a Map using a Form.
 
 # Forms
 The `Form` class lets you combine `Field` instances, and decode
@@ -55,9 +70,15 @@ var todo = await todoForm.deserialize(req, TodoSerializer.fromMap);
 // Same as above, but with a Codec<Todo, Map> (i.e. via `angel_serialize`).
 var todo = await todoForm.decode(req, todoSerializer);
 
+// Same as above, but returns the plain Map without any deserialization.
+var todoMap = await todoForm.validate(req);
+
 // Lower-level functionality, typically not called directly.
 // Use it if you want to handle validation errors directly, without
 // throwing exceptions.
+var result = await todoForm.read(req);
+print(result.isSuccess);
+print(result.errors.length);
 
 @serializable
 class _Todo {

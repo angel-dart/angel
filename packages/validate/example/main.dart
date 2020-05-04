@@ -72,13 +72,18 @@ Future<void> main() async {
     </html>
     ''');
   });
-  
-  app.post('/b', (req, res) async {
+
+  // You can use a [MapField] to embed one [Form] with another.
+  // In this example, we embed the [todoForm], but also call `.deserialize`,
+  // so that the final value we see is a [Todo] instance, rather than a [Map].
+  app.post('/map_field', (req, res) async {
     var form = Form(fields: [
-      MapField('todo', todoForm),
+      MapField('todo', todoForm).deserialize(Todo.fromMap),
     ]);
-    var data = await form.read(req);
-    return data;
+    var data = await form.validate(req);
+    var b = StringBuffer();
+    b.write(data);
+    return b.toString();
   });
 
   app.fallback((req, res) => throw AngelHttpException.notFound());
@@ -103,4 +108,7 @@ class Todo {
   static Todo fromMap(Map map) {
     return Todo(map['text'] as String, map['is_complete'] as bool);
   }
+
+  @override
+  String toString() => 'Todo($text, $isComplete)';
 }
