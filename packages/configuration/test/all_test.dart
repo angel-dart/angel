@@ -33,11 +33,16 @@ Future<void> main() async {
       'angel': {'framework': 'cool'},
       'must_be_null': null,
       'artist': 'Timberlake',
+      'included': true,
       'merge': {'map': true, 'hello': 'world'},
       'set_via': 'default',
       'hello': 'world',
       'foo': {'version': 'bar'}
     });
+  });
+
+  test('obeys included paths', () async {
+    expect(app.configuration['included'], true);
   });
 
   test('can load based on ANGEL_ENV', () async {

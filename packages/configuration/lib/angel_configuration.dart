@@ -21,7 +21,7 @@ Future<void> _loadYamlFile(Map map, File yamlFile, Map<String, String> env,
 
     var out = {};
 
-    var configMap = config as Map;
+    var configMap = Map.of(config as Map);
 
     // Check for _include
     if (configMap.containsKey('_include')) {

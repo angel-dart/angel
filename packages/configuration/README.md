@@ -38,8 +38,16 @@ You can also load configuration from the environment:
 system_path: $PATH
 ```
 
-If a `.env` file is present in your configuration directory, then it will be loaded before
+If a `.env` file is present in your configuration directory (i.e. `config/.env`), then it will be loaded before
 applying YAML configuration.
+
+You can also include values from one file into another:
+```yaml
+_include:
+  - "./include-prod.yaml"
+  - "./include-misc.yaml"
+_include: "just-one-file.yaml"
+```
 
 **Server-side**
 Call `configuration()`. The loaded configuration will be available in your application's
