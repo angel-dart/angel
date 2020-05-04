@@ -1,5 +1,5 @@
 name: angel_validate
-version: 3.0.0-alpha
+version: 3.0.0-alpha.1
 description: Strongly-typed form handlers and validators for the Angel framework.
 author: Tobe O <thosakwe@gmail.com>
 homepage: https://github.com/angel-dart/validate

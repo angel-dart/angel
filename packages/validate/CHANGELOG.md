@@ -1,3 +1,6 @@
+# 3.0.0-alpha.1
+* Add `MapField`.
+
 # 3.0.0-alpha
 * Rewrite, based on `Field` and `Form`, rather than strings.
 
