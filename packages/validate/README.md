@@ -52,6 +52,7 @@ There are several included field types:
 * `FileField` - Validates a file in `req.uploadedFiles`.
 * `ImageField` - Uses `package:image` to decode an `UploadedFile` into an image.
 * `MapField` - Validates a Map using a Form.
+* `UriField` - Parses text input into a `Uri` object.
 
 # Forms
 The `Form` class lets you combine `Field` instances, and decode

@@ -393,3 +393,37 @@ class MapField extends Field<Map<String, dynamic>> {
     return form.readFromMap(mapValue);
   }
 }
+
+/// A [Field] that parses plain text as a [Uri].
+class UriField extends Field<Uri> {
+  // Reuse text validation logic.
+  TextField _textField;
+
+  UriField(String name,
+      {String label, String type = 'url', bool isRequired = true})
+      : super(name, type, label: label, isRequired: isRequired) {
+    _textField = TextField(name, label: label, isRequired: isRequired);
+  }
+
+  @override
+  FutureOr<U> accept<U>(FormRenderer<U> renderer) =>
+      renderer.visitUriField(this);
+
+  @override
+  FutureOr<FieldReadResult<Uri>> read(
+      Map<String, dynamic> fields, Iterable<UploadedFile> files) async {
+    var result = await _textField.read(fields, files);
+    if (result == null) {
+      return null;
+    } else if (result.isSuccess != true) {
+      return FieldReadResult.failure(result.errors);
+    } else {
+      var value = Uri.tryParse(result.value);
+      if (value != null) {
+        return FieldReadResult.success(value);
+      } else {
+        return FieldReadResult.failure(['"$name" must be a valid URI.']);
+      }
+    }
+  }
+}
