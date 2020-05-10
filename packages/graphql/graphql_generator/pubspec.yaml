@@ -10,7 +10,7 @@ dependencies:
   angel_model: ^1.0.0
   angel_serialize_generator: ^2.0.0
   build: ^1.0.0
-  build_config: any
+  build_config: ^0.4.0
   code_builder: ^3.0.0
   graphql_schema: ^1.0.2
   recase: ^2.0.0
