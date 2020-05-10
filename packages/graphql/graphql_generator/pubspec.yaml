@@ -9,7 +9,7 @@ dependencies:
   analyzer: '>=0.27.1 <2.0.0'
   angel_model: ^1.0.0
   angel_serialize_generator: ^2.0.0
-  build: any
+  build: ^1.0.0
   build_config: any
   code_builder: ^3.0.0
   graphql_schema: ^1.0.2
