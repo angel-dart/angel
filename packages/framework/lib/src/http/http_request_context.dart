@@ -87,9 +87,13 @@ class HttpRequestContext extends RequestContext<HttpRequest> {
     }
 
     ctx.app = app;
-    ctx._contentType = request.headers.contentType == null
-        ? null
-        : MediaType.parse(request.headers.contentType.toString());
+    try {
+      ctx._contentType = request.headers.contentType == null
+          ? null
+          : MediaType.parse(request.headers.contentType.toString());
+    } on FormatException {
+      ctx._contentType = null;
+    }
     ctx._override = override;
 
     /*
