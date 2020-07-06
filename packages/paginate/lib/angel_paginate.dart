@@ -21,7 +21,7 @@ class Paginator<T> {
   bool get canGoBack => _page > 0;
 
   /// Returns `true` if there are more items at greater page indices than the current one.
-  bool get canGoForward => _page < _lastPage();
+  bool get canGoForward => (_page + 1) < _lastPage();
 
   /// The current page index.
   int get index => _page;
@@ -57,8 +57,7 @@ class Paginator<T> {
         nextPage: _page >= last - 1 ? -1 : _page + 2,
         startIndex: it.isEmpty ? -1 : offset,
         endIndex: offset + it.length - 1,
-        itemsPerPage:
-            itemsPerPage < _items.length ? itemsPerPage : _items.length,
+        itemsPerPage: itemsPerPage < _items.length ? itemsPerPage : _items.length,
         total: len);
   }
 
@@ -109,15 +108,14 @@ class Paginator<T> {
 
 /// Stores the result of a pagination.
 abstract class PaginationResult<T> {
-  factory PaginationResult.fromMap(Map<String, dynamic> map) =>
-      new _PaginationResultImpl((map['data'] as Iterable).cast<T>(),
-          currentPage: map['current_page'],
-          endIndex: map['end_index'],
-          itemsPerPage: map['items_per_page'],
-          nextPage: map['next_page'],
-          previousPage: map['previous_page'],
-          startIndex: map['start_index'],
-          total: map['total']);
+  factory PaginationResult.fromMap(Map<String, dynamic> map) => new _PaginationResultImpl((map['data'] as Iterable).cast<T>(),
+      currentPage: map['current_page'],
+      endIndex: map['end_index'],
+      itemsPerPage: map['items_per_page'],
+      nextPage: map['next_page'],
+      previousPage: map['previous_page'],
+      startIndex: map['start_index'],
+      total: map['total']);
 
   List<T> get data;
 
@@ -146,13 +144,7 @@ class _PaginationResultImpl<T> implements PaginationResult<T> {
   final int currentPage;
 
   _PaginationResultImpl(this._data,
-      {this.currentPage,
-      this.endIndex,
-      this.itemsPerPage,
-      this.nextPage,
-      this.previousPage,
-      this.startIndex,
-      this.total});
+      {this.currentPage, this.endIndex, this.itemsPerPage, this.nextPage, this.previousPage, this.startIndex, this.total});
 
   @override
   List<T> get data => _cachedData ?? (_cachedData = new List<T>.from(_data));
