@@ -10,4 +10,4 @@ dependencies:
   collection: ^1.0.0
   meta: ^1.0.0
   pedantic: ^1.0.0
-  quiver_hashcode: ^2.0.0
+  quiver: ^2.0.0

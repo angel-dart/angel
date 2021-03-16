@@ -12,7 +12,7 @@ dependencies:
   crypto: ^2.0.0
   http_parser: ^3.0.0
   meta: ^1.0.0
-  quiver_hashcode: ^2.0.0
+  quiver: ^2.0.0
 dev_dependencies:
   http: ^0.12.0
   io: ^0.3.2

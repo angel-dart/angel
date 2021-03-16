@@ -1,7 +1,7 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
-import 'package:quiver_hashcode/hashcode.dart';
+import 'package:quiver/core.dart';
 
 /// A common class containing parsing and validation logic for third-party authentication configuration.
 class ExternalAuthOptions {
