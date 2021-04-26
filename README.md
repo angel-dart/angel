@@ -1,3 +1,20 @@
+# ARCHIVED
+Angel is no longer being maintained. You can read my reasons for discontinuing the project here: https://www.reddit.com/r/dartlang/comments/h0z413/looks_like_the_angel_webbackend_framework_wont_be/ftpaxmo/
+
+At the moment, there is one fork of Angel that adds null-safety support. If you intend to upgrade
+existing Angel projects to the more recent versions of Dart, then it's your best bet.
+
+The fork can be found here: https://github.com/dukefirehawk/angel
+
+Existing Angel projects have three options:
+* Remain on an older version of the Dart VM
+* Use the forked versions of the packages to support null-safety
+* Switch to a new framework, and/or language
+
+Thanks for 4 years. It was a fun ride, but it's time for me to move on. :wave:
+
+---
+
 [![The Angel Framework](https://angel-dart.github.io/assets/images/logo.png)](https://angel-dart.dev)
 
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/angel_dart/discussion)
